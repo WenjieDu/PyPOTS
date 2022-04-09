@@ -11,7 +11,10 @@ import tempfile
 import warnings
 from urllib.request import urlretrieve
 
+import numpy as np
 import pandas as pd
+
+CACHED_DATASET_DIR = os.path.join(os.path.dirname(__file__), ".cached_datasets")
 
 DATABASE = {
     # github.com/WenjieDu/Time_Series_Database/tree/main/datasets/PhysioNet-2012
@@ -33,6 +36,29 @@ DATABASE = {
         'https://archive.ics.uci.edu/ml/machine-learning-databases/00501/PRSA2017_Data_20130301-20170228.zip',
 
 }
+
+
+def window_truncate(feature_vectors, seq_len):
+    """ Generate time series samples, truncating windows from time-series data with a given sequence length.
+
+    Parameters
+    ----------
+    feature_vectors : array, shape of [total_length, feature_num]
+        Time-series data.
+    seq_len : int,
+        Sequence length.
+
+    Returns
+    -------
+    array,
+        Truncated time series with given sequence length.
+    """
+    start_indices = np.asarray(range(feature_vectors.shape[0] // seq_len)) * seq_len
+    sample_collector = []
+    for idx in start_indices:
+        sample_collector.append(feature_vectors[idx: idx + seq_len])
+
+    return np.asarray(sample_collector).astype('float32')
 
 
 def download_and_extract(url, saving_path):
@@ -86,6 +112,26 @@ def download_and_extract(url, saving_path):
     return saving_path
 
 
+def delete_all_cached_data():
+    """ Delete CACHED_DATASET_DIR if exists.
+    """
+    # if CACHED_DATASET_DIR does not exist, abort
+    if not os.path.exists(CACHED_DATASET_DIR):
+        print('No cached data. Aborting.')
+        exit()
+    # if CACHED_DATASET_DIR exists, then purge
+    try:
+        print(f'Purging all cached data under {CACHED_DATASET_DIR}...')
+        shutil.rmtree(CACHED_DATASET_DIR, ignore_errors=True)
+        # check if succeed
+        if not os.path.exists(CACHED_DATASET_DIR):
+            print('Purge successfully.')
+        else:
+            raise FileExistsError(f'Deleting operation failed. {CACHED_DATASET_DIR} still exists.')
+    except shutil.Error:
+        raise shutil.Error('Operation failed.')
+
+
 def load_specific_dataset(dataset_name):
     """ Load dataset with given name.
 
@@ -100,8 +146,7 @@ def load_specific_dataset(dataset_name):
         Loaded dataset.
     """
     assert dataset_name in DATABASE.keys(), f'Input dataset name "{dataset_name}" is not in the database {DATABASE}.'
-    cached_dataset_dir = os.path.join(os.path.dirname(__file__), "..", ".cached_datasets")
-    dataset_saving_path = os.path.join(cached_dataset_dir, dataset_name)
+    dataset_saving_path = os.path.join(CACHED_DATASET_DIR, dataset_name)
     if not os.path.exists(dataset_saving_path):  # if the dataset is not cached, then download it
         os.makedirs(dataset_saving_path)
         if isinstance(DATABASE[dataset_name], list):
@@ -116,6 +161,11 @@ def load_specific_dataset(dataset_name):
     try:
         if dataset_name == 'physionet_2012':
             return load_physionet2012(dataset_saving_path)
+        elif dataset_name == 'electricity_load_diagrams':
+            return load_electricity(dataset_saving_path)
+        elif dataset_name == 'beijing_multisite_air_quality':
+            return load_beijing_air_quality(dataset_saving_path)
+        print('Loading finished.')
     except FileExistsError:
         shutil.rmtree(dataset_saving_path, ignore_errors=True)
         warnings.warn(
@@ -126,9 +176,10 @@ def load_specific_dataset(dataset_name):
 def load_physionet2012(local_path):
     """ Load dataset PhysioNet Challenge 2012, which is a time-series classification dataset.
 
-    Notes
-    -----
-
+    Parameters
+    ----------
+    local_path : str,
+        The local path of dir saving the raw data of PhysioNet Challenge 2012.
 
     Returns
     -------
@@ -136,6 +187,15 @@ def load_physionet2012(local_path):
         Time-series feature vectors.
     y : pandas.Series,
         Classification labels.
+
+    Notes
+    -----
+    The preprocessing workflow is the same with the one used in paper :cite:`du2022SAITS`.
+    All samples contain 48 time steps. Truncated if the sample has more than 48 steps. Padded if
+    the sample has less than 48 steps. Static features such as 'Age', 'Gender', 'ICUType', 'Height',
+    are removed. Column 'Time' also gets removed. Following 12 samples are dropped because of containing
+    no time-series information at all: 147514, 142731, 145611, 140501, 155655, 143656, 156254, 150309,
+    140936, 141264, 150649, 142998.
     """
 
     time_series_measurements_dir = ['set-a', 'set-b', 'set-c']
@@ -182,5 +242,51 @@ def load_physionet2012(local_path):
     df = df.drop(['Age', 'Gender', 'ICUType', 'Height'], axis=1)
     df = df.reset_index(drop=True)
     X = df.drop('Time', axis=1)  # we don't need Time column
-
     return X, y
+
+
+def load_electricity(local_path):
+    """ Load dataset PhysioNet Challenge 2012.
+
+    Parameters
+    ----------
+    local_path : str,
+        The local path of dir saving the raw data of Electricity Load Diagrams.
+
+    Returns
+    -------
+    X : pandas.DataFrame
+        The time-series data of Electricity Load Diagrams.
+    """
+    file_path = os.path.join(local_path, 'LD2011_2014.txt')
+    df = pd.read_csv(file_path, index_col=0, sep=';', decimal=',')
+    df.index = pd.to_datetime(df.index)
+    # feature_names = df.columns.tolist()
+    # feature_num = len(feature_names)
+    df['datetime'] = pd.to_datetime(df.index)
+    return df
+
+
+def load_beijing_air_quality(local_path):
+    """ Load dataset Beijing Multi-site Air Quality.
+
+    Parameters
+    ----------
+    local_path : str,
+        The local path of dir saving the raw data of Beijing Multi-site Air Quality.
+
+    Returns
+    -------
+    X : pandas.DataFrame
+        The time-series data of Beijing Multi-site Air Quality.
+    """
+    dir_path = os.path.join(local_path, 'PRSA_Data_20130301-20170228')
+    df_collector = []
+    file_list = os.listdir(dir_path)
+    for filename in file_list:
+        file_path = os.path.join(dir_path, filename)
+        current_df = pd.read_csv(file_path)
+        df_collector.append(current_df)
+        print(f'Reading {file_path}, data shape {current_df.shape}')
+    df = pd.concat(df_collector, axis=0)
+    return df
