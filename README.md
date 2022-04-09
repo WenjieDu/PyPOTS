@@ -14,6 +14,10 @@
     </a>
     <!-- Hits number -->
     <img src="https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2FPyPOTS%2FPyPOTS&count_bg=%23009A0A&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=Hits&edge_flat=false">
+    <!-- Chat on Gitter -->
+    <a alt='Gitter room' href='https://gitter.im/PyPOTS-toolbox/community'>
+        <img src="https://img.shields.io/gitter/room/PyPOTS-toolbox/community?color=60A98D&logo=gitter&logoColor=D02D4D">
+    </a>
 </p>
 
 ⦿ `Motivation`: Due to all kinds of reasons like failure of collection sensors, communication error, and unexpected malfunction, missing values are common to see in time series from the real-world environment. This makes partially-observed time series (POTS) a pervasive problem in open-world modeling and prevents advanced data analysis. Although this problem is important, the area of data mining on POTS still lacks a dedicated toolkit. PyPOTS is created to fulfill this blank, to become a handy toolbox that is going to make data mining on POTS be easy rather than tedious, to help engineers and researchers focus more on the core problems in their hands rather than on how to deal with the missing parts in their data.
