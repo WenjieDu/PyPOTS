@@ -14,13 +14,13 @@ setup(
     license='MIT',
     author='Wenjie Du',
     author_email='wenjay.du@gmail.com',
-    url='https://github.com/pypots/pypots',
-    download_url='https://github.com/pypots/pypots/archive/master.zip',
+    url='https://github.com/WenjieDu/PyPOTS',
+    download_url='https://github.com/WenjieDu/PyPOTS/archive/master.zip',
     keywords=[
         'data mining', 'neural networks', 'machine learning', 'deep learning',
         'partially observed', 'time series', 'missing data', 'missing values',
     ],
-    packages=find_packages(),
+    packages=find_packages(exclude=['tests']),
     include_package_data=True,
     install_requires=[
         'matplotlib',
