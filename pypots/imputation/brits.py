@@ -15,7 +15,7 @@ from torch.autograd import Variable
 from torch.nn.parameter import Parameter
 from torch.utils.data import DataLoader
 
-from pypots.datasets.base import BaseDataset
+from pypots.datasets.base import Dataset4BRITS
 from pypots.imputation.base import BaseImputer
 from pypots.utils.metrics import cal_mae
 
@@ -185,11 +185,11 @@ class RITS(nn.Module):
         self.feat_reg = FeatureRegression(self.feature_num)
         self.combining_weight = nn.Linear(self.feature_num * 2, self.feature_num)
 
-    def impute(self, data, direction):
+    def impute(self, inputs, direction):
         """ The imputation function.
         Parameters
         ----------
-        data : dict,
+        inputs : dict,
             Input data, a dictionary includes feature values, missing masks, and time-gap values.
         direction : str, 'forward'/'backward'
             A keyword to extract data from parameter `data`.
@@ -205,9 +205,9 @@ class RITS(nn.Module):
         reconstruction_loss : float tensor,
             reconstruction loss
         """
-        values = data[direction]['X']  # feature values
-        masks = data[direction]['missing_mask']  # missing masks
-        deltas = data[direction]['deltas']  # time-gap values
+        values = inputs[direction]['X']  # feature values
+        masks = inputs[direction]['missing_mask']  # missing masks
+        deltas = inputs[direction]['deltas']  # time-gap values
 
         # create hidden states and cell states for the lstm cell
         hidden_states = torch.zeros((values.size()[0], self.rnn_hidden_size), device=self.device)
@@ -252,19 +252,22 @@ class RITS(nn.Module):
         imputed_data = masks * values + (1 - masks) * estimations
         return imputed_data, hidden_states, reconstruction_MAE, reconstruction_loss
 
-    def forward(self, data, direction='forward'):
+    def forward(self, inputs, direction='forward'):
         """ Forward processing of the NN module.
         Parameters
         ----------
-        data : dict, the input data
-        direction : a keyword to extract data from parameter `data`, 'forward'/'backward'
+        inputs : dict,
+            The input data.
+
+        direction : string, 'forward'/'backward'
+            A keyword to extract data from parameter `data`.
 
         Returns
         -------
         dict,
             A dictionary includes all results.
         """
-        imputed_data, hidden_state, reconstruction_MAE, reconstruction_loss = self.impute(data, direction)
+        imputed_data, hidden_state, reconstruction_MAE, reconstruction_loss = self.impute(inputs, direction)
         reconstruction_MAE /= self.seq_len
         # for each iteration, reconstruction_loss increases its value for 3 times
         reconstruction_loss /= (self.seq_len * 3)
@@ -308,13 +311,13 @@ class _BRITS(nn.Module):
         self.rits_f = RITS(seq_len, feature_num, rnn_hidden_size, device)
         self.rits_b = RITS(seq_len, feature_num, rnn_hidden_size, device)
 
-    def impute(self, data):
+    def impute(self, inputs):
         """ Impute the missing data. Only impute, this is for test stage.
 
         Parameters
         ----------
-        data : dict,
-            The dictionary includes all input data.
+        inputs : dict,
+            A dictionary includes all input data.
 
         Returns
         -------
@@ -322,8 +325,8 @@ class _BRITS(nn.Module):
             The feature vectors with missing part imputed.
 
         """
-        imputed_data_f, _, _, _ = self.rits_f.impute(data, 'forward')
-        imputed_data_b, _, _, _ = self.rits_b.impute(data, 'backward')
+        imputed_data_f, _, _, _ = self.rits_f.impute(inputs, 'forward')
+        imputed_data_b, _, _, _ = self.rits_b.impute(inputs, 'backward')
         imputed_data_b = {'imputed_data_b': imputed_data_b}
         imputed_data_b = self.reverse(imputed_data_b)['imputed_data_b']
         imputed_data = (imputed_data_f + imputed_data_b) / 2
@@ -400,112 +403,22 @@ class _BRITS(nn.Module):
 
         return ret_f
 
-    def forward(self, data):
+    def forward(self, inputs):
         """ Forward processing of BRITS.
 
         Parameters
         ----------
-        data : dict,
+        inputs : dict,
             The input data.
 
         Returns
         -------
         dict, A dictionary includes all results.
         """
-        ret_f = self.rits_f(data, 'forward')
-        ret_b = self.reverse(self.rits_b(data, 'backward'))
+        ret_f = self.rits_f(inputs, 'forward')
+        ret_b = self.reverse(self.rits_b(inputs, 'backward'))
         ret = self.merge_ret(ret_f, ret_b)
         return ret
-
-
-def parse_delta(missing_mask):
-    """ Generate time-gap (delta) matrix from missing masks.
-
-    Parameters
-    ----------
-    missing_mask : array, shape of [seq_len, n_features]
-        Binary masks indicate missing values.
-
-    Returns
-    -------
-    array,
-        Delta matrix indicates time gaps of missing values.
-        Its math definition please refer to :cite:`che2018MissingData`.
-    """
-    assert len(missing_mask.shape) == 2, f'missing_mask should has two dimensions, ' \
-                                         f'shape like [seq_len, n_features], ' \
-                                         f'while the input is {missing_mask.shape}'
-    seq_len, n_features = missing_mask.shape
-    delta = []
-    for step in range(seq_len):
-        if step == 0:
-            delta.append(np.zeros(n_features))
-        else:
-            delta.append(np.ones(n_features) + (1 - missing_mask[step]) * delta[-1])
-    return np.asarray(delta)
-
-
-class Dataset4BRITS(BaseDataset):
-    """ Dataset class for BRITS.
-
-    Parameters
-    ----------
-    X : array-like, shape of [n_samples, seq_len, n_features]
-        Time-series feature vector.
-    y : array-like, shape of [n_samples], optional, default=None,
-        Classification labels of according time-series samples.
-    """
-
-    def __init__(self, X, y=None):
-        super(Dataset4BRITS, self).__init__(X, y)
-
-    def __len__(self):
-        return len(self.X)
-
-    def __getitem__(self, idx):
-        """ Fetch data according to index.
-
-        Parameters
-        ----------
-        idx : int,
-            The index to fetch the specified sample.
-
-        Returns
-        -------
-        dict,
-            A dict contains
-            index : int tensor,
-                The index of the sample.
-            X : tensor,
-                The feature vector for model input.
-            missing_mask : tensor,
-                The mask indicates all missing values in X.
-            delta : tensor,
-                The delta matrix contains time gaps of missing values.
-            label (optional) : tensor,
-                The target label of the time-series sample.
-        """
-        X = self.X[idx]
-        missing_mask = (~np.isnan(X)).astype(np.float32)
-        X = np.nan_to_num(X)
-
-        forward = {'X': X, 'missing_mask': missing_mask, 'deltas': parse_delta(missing_mask)}
-        backward = {'X': np.flip(forward['X'], axis=0).copy(),
-                    'missing_mask': np.flip(forward['missing_mask'], axis=0).copy()}
-        backward['deltas'] = parse_delta(backward['missing_mask'])
-        sample = [
-            torch.tensor(idx),
-            # for forward
-            torch.from_numpy(forward['X'].astype('float32')),
-            torch.from_numpy(forward['missing_mask'].astype('float32')),
-            torch.from_numpy(forward['deltas'].astype('float32')),
-            # for backward
-            torch.from_numpy(backward['X'].astype('float32')),
-            torch.from_numpy(backward['missing_mask'].astype('float32')),
-            torch.from_numpy(backward['deltas'].astype('float32')),
-        ]
-
-        return sample
 
 
 class BRITS(BaseImputer):
@@ -570,6 +483,8 @@ class BRITS(BaseImputer):
         self.model = None
         self.optimizer = None
         self.data_loader = None
+        self.best_loss = float('inf')
+        self.best_model_dict = None
 
     def fit(self, X):
         """ Fit the model on the given training data.
@@ -587,19 +502,21 @@ class BRITS(BaseImputer):
         self.model = _BRITS(self.seq_len, self.feature_num, self.rnn_hidden_size, self.device)
         self.model = self.model.to(self.device)
         training_set = Dataset4BRITS(X)  # time_gaps is necessary for BRITS
-        train_loader = DataLoader(training_set, batch_size=self.batch_size, shuffle=True)
-        self._train_model(train_loader)
+        training_loader = DataLoader(training_set, batch_size=self.batch_size, shuffle=True)
+        self._train_model(training_loader)
         self.model.load_state_dict(self.best_model_dict)
         return self
 
     def _train_model(self, training_loader):
+        self.model.train()
         self.optimizer = torch.optim.Adam(self.model.parameters(),
                                           lr=self.lr,
                                           weight_decay=self.weight_decay)
+
+        # each training starts from the very beginning, so reset the loss and model dict here
         self.best_loss = float('inf')
         self.best_model_dict = None
 
-        self.model.train()
         for epoch in range(self.epochs):
             loss_collector = []
             for idx, data in enumerate(training_loader):
@@ -607,19 +524,59 @@ class BRITS(BaseImputer):
                 indices, X, missing_mask, deltas, back_X, back_missing_mask, back_deltas = \
                     map(lambda x: x.to(self.device), data)
                 # assemble input data
-                inputs = {'indices': indices,
-                          'forward': {'X': X, 'missing_mask': missing_mask, 'deltas': deltas},
-                          'backward': {'X': back_X, 'missing_mask': back_missing_mask, 'deltas': back_deltas}
-                          }
+                inputs = {
+                    'indices': indices,
+                    'forward': {
+                        'X': X,
+                        'missing_mask': missing_mask,
+                        'deltas': deltas
+                    },
+                    'backward': {
+                        'X': back_X,
+                        'missing_mask': back_missing_mask,
+                        'deltas': back_deltas
+                    }
+                }
                 self.optimizer.zero_grad()
                 results = self.model.forward(inputs)
                 results['loss'].backward()
                 self.optimizer.step()
                 loss_collector.append(results['loss'].item())
-            print('epoch {epoch}: training loss {train_loss} '.format(
-                epoch=epoch, train_loss=np.mean(loss_collector)))
 
-        self.model.eval()
+            epoch_mean_loss = np.mean(loss_collector)  # mean loss of the current epoch
+            print(f'epoch {epoch}: training loss {epoch_mean_loss:.4f} ')
+
+            if epoch_mean_loss <= self.best_loss:
+                self.best_loss = epoch_mean_loss
+                self.best_model_dict = self.model.state_dict()
+
+        self.model.eval()  # set the model as eval status to freeze it.
 
     def impute(self, X):
-        return self.model.impute(X)
+        test_set = Dataset4BRITS(X)
+        test_loader = DataLoader(test_set, batch_size=self.batch_size, shuffle=False)
+        imputation_collector = []
+
+        with torch.no_grad():
+            for idx, data in enumerate(test_loader):
+                indices, X, missing_mask, deltas, back_X, back_missing_mask, back_deltas = \
+                    map(lambda x: x.to(self.device), data)
+                # assemble input data
+                inputs = {
+                    'indices': indices,
+                    'forward': {
+                        'X': X,
+                        'missing_mask': missing_mask,
+                        'deltas': deltas
+                    },
+                    'backward': {
+                        'X': back_X,
+                        'missing_mask': back_missing_mask,
+                        'deltas': back_deltas
+                    }
+                }
+                imputed_data = self.model.impute(inputs)
+                imputation_collector.append(imputed_data)
+
+        imputation_collector = torch.cat(imputation_collector)
+        return imputation_collector.cpu().detach().numpy()
