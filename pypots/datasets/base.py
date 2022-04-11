@@ -10,6 +10,8 @@ import torch
 from sklearn.utils import check_random_state
 from torch.utils.data import Dataset
 
+from pypots.datasets.corrupt import mcar
+
 
 def generate_random_walk(n_samples=1000, n_steps=24, n_features=10, mu=0., std=1., random_state=None):
     """
@@ -40,135 +42,6 @@ def generate_random_walk(n_samples=1000, n_steps=24, n_features=10, mu=0., std=1
     for t in range(1, n_steps):
         ts_samples[:, t, :] = ts_samples[:, t - 1, :] + noise[:, t, :]
     return ts_samples
-
-
-class Corruptor:
-    """ Corrupt data by adding missing values to it with optional missing patterns (MCAR,MAR,MNAR).
-
-    Parameters
-    ----------
-    data : array,
-        Time series data.
-
-    rate : float in (0,1),
-        Artificially missing rate, rate of observed values which will be artificially masked as missing.
-
-        Note that,
-        `rate` = (number of artificially missing values) / np.sum(~np.isnan(self.data)),
-        not (number of artificially missing values) / np.product(self.data.shape),
-        considering that the given data may already contain missing values,
-        the latter way may be confusing because if the original missing rate >= `rate`,
-        Corruptor will do nothing, i.e. it won't play the role it has to be.
-
-    Attributes
-    ----------
-    original_shape : tuple,
-        The original shape of `data`.
-    """
-
-    def __init__(self, data, rate):
-        self.data = data
-        self.original_shape = data.shape
-        self.rate = rate
-
-    def originally_missing_rate(self):
-        """ Calculate the originally missing rate of the raw data.
-
-        Returns
-        -------
-        originally_missing_rate, float,
-            The originally missing rate of the raw data.
-        """
-        originally_missing_rate = np.sum(np.isnan(self.data)) / np.product(self.data.shape)
-        return originally_missing_rate
-
-    @staticmethod
-    def fill_nan_with_mask(data, mask):
-        """ Fill missing values in `data` with nan according to mask.
-
-        Parameters
-        ----------
-        data : array,
-            Data vector having missing values filled with numbers (i.e. not nan).
-
-        mask : array,
-            Mask vector contains binary values indicating which values are missing in `data`.
-
-        Returns
-        -------
-        array,
-            Data vector having missing values placed with np.nan.
-        """
-        assert data.shape == mask.shape, f'Shapes of data and mask must match, ' \
-                                         f'but data.shape={data.shape}, mask.shape={mask.shape}'
-        mask = bool(mask)
-        data[mask] = np.nan
-        return data
-
-    def mcar(self, nan=0):
-        """ Create completely random missing values (MCAR case).
-
-        Parameters
-        ----------
-        nan : int/float, optional,
-            Value to be used to fill NaN values.
-
-        Returns
-        -------
-        X_intact : array,
-            Original data with missing values (nan) filled with given parameter `nan`, with observed values intact.
-            X_intact is for loss calculation in the masked imputation task.
-        X : array,
-            Original X with artificial missing values. X is for model input.
-            Both originally-missing and artificially-missing values are filled with given parameter `nan`.
-        missing_mask : array,
-            The mask indicates all missing values in X.
-        indicating_mask : array,
-            The mask indicates the artificially-missing values in X, namely missing parts different from X_intact.
-        """
-        X = self.data.flatten()
-        # select random indices for artificial mask
-        indices = np.where(~np.isnan(X))[0].tolist()  # get the indices of observed values
-        indices = np.random.choice(indices, int(len(indices) * self.rate), replace=False)
-        # create artificially-missing values by selected indices
-        X[indices] = np.nan  # mask values selected by indices
-        indicating_mask = ((~np.isnan(X)) ^ (~np.isnan(X))).astype(np.float32)
-        missing_mask = (~np.isnan(X)).astype(np.float32)
-        X = np.nan_to_num(X, nan=nan)
-        X_intact = np.nan_to_num(self.data, nan=nan)
-        # reshape into time-series data
-        X = X.reshape(self.original_shape)
-        missing_mask = missing_mask.reshape(self.original_shape)
-        indicating_mask = indicating_mask.reshape(self.original_shape)
-        return X_intact, X, missing_mask, indicating_mask
-
-    def mar(self, nan=0):
-        """ Create random missing values (MAR case).
-
-        Parameters
-        ----------
-        nan : int/float, optional,
-            Value to be used to fill NaN values.
-
-        Returns
-        -------
-
-        """
-        pass
-
-    def mnar(self, nan=0):
-        """ Create not-random missing values (MNAR case).
-
-        Parameters
-        ----------
-        nan : int/float, optional,
-            Value to be used to fill NaN values.
-
-        Returns
-        -------
-
-        """
-        pass
 
 
 class BaseDataset(Dataset):
@@ -226,5 +99,150 @@ class BaseDataset(Dataset):
 
         if self.y:
             sample['label'] = torch.from_numpy(self.y[idx])
+
+        return sample
+
+
+class Dataset4BRITS(BaseDataset):
+    """ Dataset class for BRITS.
+
+    Parameters
+    ----------
+    X : array-like, shape of [n_samples, seq_len, n_features]
+        Time-series feature vector.
+    y : array-like, shape of [n_samples], optional, default=None,
+        Classification labels of according time-series samples.
+    """
+
+    def __init__(self, X, y=None):
+        super(Dataset4BRITS, self).__init__(X, y)
+
+    @staticmethod
+    def parse_delta(missing_mask):
+        """ Generate time-gap (delta) matrix from missing masks.
+
+        Parameters
+        ----------
+        missing_mask : array, shape of [seq_len, n_features]
+            Binary masks indicate missing values.
+
+        Returns
+        -------
+        delta, array,
+            Delta matrix indicates time gaps of missing values.
+            Its math definition please refer to :cite:`che2018MissingData`.
+        """
+
+        assert len(missing_mask.shape) == 2, f'missing_mask should has two dimensions, ' \
+                                             f'shape like [seq_len, n_features], ' \
+                                             f'while the input is {missing_mask.shape}'
+        seq_len, n_features = missing_mask.shape
+        delta = []
+        for step in range(seq_len):
+            if step == 0:
+                delta.append(np.zeros(n_features))
+            else:
+                delta.append(np.ones(n_features) + (1 - missing_mask[step]) * delta[-1])
+        return np.asarray(delta)
+
+    def __getitem__(self, idx):
+        """ Fetch data according to index.
+
+        Parameters
+        ----------
+        idx : int,
+            The index to fetch the specified sample.
+
+        Returns
+        -------
+        dict,
+            A dict contains
+            index : int tensor,
+                The index of the sample.
+            X : tensor,
+                The feature vector for model input.
+            missing_mask : tensor,
+                The mask indicates all missing values in X.
+            delta : tensor,
+                The delta matrix contains time gaps of missing values.
+            label (optional) : tensor,
+                The target label of the time-series sample.
+        """
+        X = self.X[idx]
+        missing_mask = (~np.isnan(X)).astype(np.float32)
+        X = np.nan_to_num(X)
+
+        forward = {
+            'X': X,
+            'missing_mask': missing_mask,
+            'deltas': self.parse_delta(missing_mask)
+        }
+        backward = {
+            'X': np.flip(forward['X'], axis=0).copy(),
+            'missing_mask': np.flip(forward['missing_mask'], axis=0).copy()
+        }
+        backward['deltas'] = self.parse_delta(backward['missing_mask'])
+
+        sample = [
+            torch.tensor(idx),
+            # for forward
+            torch.from_numpy(forward['X'].astype('float32')),
+            torch.from_numpy(forward['missing_mask'].astype('float32')),
+            torch.from_numpy(forward['deltas'].astype('float32')),
+            # for backward
+            torch.from_numpy(backward['X'].astype('float32')),
+            torch.from_numpy(backward['missing_mask'].astype('float32')),
+            torch.from_numpy(backward['deltas'].astype('float32')),
+        ]
+
+        if self.y is not None:
+            sample.append(torch.from_numpy(self.y[idx]))
+
+        return sample
+
+
+class Dataset4MIT(BaseDataset):
+    """ Dataset for models that need MIT (masked imputation task) in their training, such as SAITS.
+
+    For more information about MIT, please refer to :cite:`du2022SAITS`.
+
+    Parameters
+    ----------
+    X : array-like, shape of [n_samples, seq_len, n_features]
+        Time-series feature vector.
+
+    y : array-like, shape of [n_samples], optional, default=None,
+        Classification labels of according time-series samples.
+
+    rate : float, in (0,1),
+        Artificially missing rate, rate of the observed values which will be artificially masked as missing.
+
+        Note that,
+        `rate` = (number of artificially missing values) / np.sum(~np.isnan(self.data)),
+        not (number of artificially missing values) / np.product(self.data.shape),
+        considering that the given data may already contain missing values,
+        the latter way may be confusing because if the original missing rate >= `rate`,
+        the function will do nothing, i.e. it won't play the role it has to be.
+
+    """
+
+    def __init__(self, X, y=None, rate=0.2):
+        super(Dataset4MIT, self).__init__(X, y)
+        self.rate = rate
+
+    def __getitem__(self, idx):
+        X = self.X[idx]
+        X_intact, X, missing_mask, indicating_mask = mcar(X, rate=self.rate)
+
+        sample = [
+            torch.tensor(idx),
+            torch.from_numpy(X_intact.astype('float32')),
+            torch.from_numpy(X.astype('float32')),
+            torch.from_numpy(missing_mask.astype('float32')),
+            torch.from_numpy(indicating_mask.astype('float32')),
+        ]
+
+        if self.y is not None:
+            sample.append(torch.from_numpy(self.y[idx]))
 
         return sample
