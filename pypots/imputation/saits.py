@@ -52,7 +52,7 @@ class _SAITS(nn.Module):
     def impute(self, inputs):
         X, masks = inputs['X'], inputs['missing_mask']
         # first DMSA block
-        input_X_for_first = torch.cat([X, masks], dim=2) if self.input_with_mask else X
+        input_X_for_first = torch.cat([X, masks], dim=2)
         input_X_for_first = self.embedding_1(input_X_for_first)
         enc_output = self.dropout(self.position_enc(input_X_for_first))  # namely, term e in the math equation
         for encoder_layer in self.layer_stack_for_first_block:
@@ -62,7 +62,7 @@ class _SAITS(nn.Module):
         X_prime = masks * X + (1 - masks) * X_tilde_1
 
         # second DMSA block
-        input_X_for_second = torch.cat([X_prime, masks], dim=2) if self.input_with_mask else X_prime
+        input_X_for_second = torch.cat([X_prime, masks], dim=2)
         input_X_for_second = self.embedding_2(input_X_for_second)
         enc_output = self.position_enc(input_X_for_second)  # namely term alpha in math algo
         for encoder_layer in self.layer_stack_for_second_block:
