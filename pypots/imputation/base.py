@@ -32,6 +32,16 @@ class BaseImputer(ABC):
         self : object,
             Trained imputer.
         """
+        return self
+
+    def _train_model(self, training_loader):
+        """ Model training procedure.
+        Parameters
+        ----------
+        training_loader : torch.utils.data.Dataset object
+            Data loader for training
+
+        """
         pass
 
     @abstractmethod
