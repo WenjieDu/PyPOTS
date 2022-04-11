@@ -10,7 +10,7 @@ import torch
 from sklearn.utils import check_random_state
 from torch.utils.data import Dataset
 
-from pypots.datasets.corrupt import mcar
+from pypots.data.corrupt import mcar
 
 
 def generate_random_walk(n_samples=1000, n_steps=24, n_features=10, mu=0., std=1., random_state=None):
