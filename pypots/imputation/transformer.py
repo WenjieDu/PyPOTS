@@ -150,10 +150,12 @@ class PositionalEncoding(nn.Module):
 
 class _TransformerEncoder(nn.Module):
     def __init__(self, n_layers, d_time, d_feature, d_model, d_inner, n_head, d_k, d_v, dropout,
-                 device):
+                 ORT_weight=1, MIT_weight=1, device=None):
         super().__init__()
         self.n_layers = n_layers
         actual_d_feature = d_feature * 2
+        self.ORT_weight = ORT_weight
+        self.MIT_weight = MIT_weight
         self.device = device
 
         self.layer_stack_for_first_block = nn.ModuleList([
@@ -188,14 +190,18 @@ class _TransformerEncoder(nn.Module):
     def forward(self, inputs):
         X, masks = inputs['X'], inputs['missing_mask']
         imputed_data, learned_presentation = self.impute(inputs)
-        reconstruction_MAE = cal_mae(learned_presentation, X, masks)
+        reconstruction_loss = cal_mae(learned_presentation, X, masks)
 
         # have to cal imputation loss in the val stage; no need to cal imputation loss here in the tests stage
-        imputation_MAE = cal_mae(learned_presentation, inputs['X_holdout'], inputs['indicating_mask'])
+        imputation_loss = cal_mae(learned_presentation, inputs['X_holdout'], inputs['indicating_mask'])
 
-        return {'imputed_data': imputed_data,
-                'reconstruction_loss': reconstruction_MAE, 'imputation_loss': imputation_MAE,
-                'reconstruction_MAE': reconstruction_MAE, 'imputation_MAE': imputation_MAE}
+        loss = self.ORT_weight * reconstruction_loss + self.MIT_weight * imputation_loss
+
+        return {
+            'imputed_data': imputed_data,
+            'reconstruction_loss': reconstruction_loss, 'imputation_loss': imputation_loss,
+            'loss': loss
+        }
 
 
 class Transformer(BaseImputer):
@@ -214,6 +220,8 @@ class Transformer(BaseImputer):
                  patience=10,
                  batch_size=32,
                  weight_decay=1e-5,
+                 ORT_weight=1,
+                 MIT_weight=1,
                  device=None):
         super(Transformer, self).__init__()
 
@@ -227,6 +235,8 @@ class Transformer(BaseImputer):
         self.d_k = d_k
         self.d_v = d_v
         self.dropout = dropout
+        self.ORT_weight = ORT_weight
+        self.MIT_weight = MIT_weight
 
         # training hype-parameters
         self.batch_size = batch_size
@@ -248,7 +258,8 @@ class Transformer(BaseImputer):
 
     def fit(self, X):
         self.model = _TransformerEncoder(self.n_layers, self.seq_len, self.n_features, self.d_model, self.d_inner,
-                                         self.n_head, self.d_k, self.d_v, self.dropout, self.device)
+                                         self.n_head, self.d_k, self.d_v, self.dropout,
+                                         self.ORT_weight, self.MIT_weight, self.device)
         self.model = self.model.to(self.device)
         training_set = Dataset4MIT(X)
         training_loader = DataLoader(training_set, batch_size=self.batch_size, shuffle=True)
