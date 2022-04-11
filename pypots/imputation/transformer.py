@@ -174,7 +174,7 @@ class _TransformerEncoder(nn.Module):
 
     def impute(self, inputs):
         X, masks = inputs['X'], inputs['missing_mask']
-        input_X = torch.cat([X, masks], dim=2) if self.input_with_mask else X
+        input_X = torch.cat([X, masks], dim=2)
         input_X = self.embedding(input_X)
         enc_output = self.dropout(self.position_enc(input_X))
 
