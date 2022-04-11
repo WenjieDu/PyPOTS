@@ -44,7 +44,7 @@ def fill_nan_with_mask(X, mask):
     assert X.shape == mask.shape, f'Shapes of data and mask must match, ' \
                                   f'but X.shape={X.shape}, mask.shape={mask.shape}'
     mask = mask.astype(bool)
-    X[mask] = np.nan
+    X[~mask] = np.nan
     return X
 
 
@@ -85,20 +85,21 @@ def mcar(X, rate, nan=0):
     indicating_mask : array,
         The mask indicates the artificially-missing values in X, namely missing parts different from X_intact.
     """
-    X_intact = np.copy(X)  # keep a copy of originally observed values in X_intact
-    X_intact = np.nan_to_num(X_intact, nan=nan)
 
     original_shape = X.shape
     X = X.flatten()
+    X_intact = np.copy(X)  # keep a copy of originally observed values in X_intact
     # select random indices for artificial mask
     indices = np.where(~np.isnan(X))[0].tolist()  # get the indices of observed values
     indices = np.random.choice(indices, int(len(indices) * rate), replace=False)
     # create artificially-missing values by selected indices
     X[indices] = np.nan  # mask values selected by indices
-    indicating_mask = ((~np.isnan(X)) ^ (~np.isnan(X))).astype(np.float32)
+    indicating_mask = ((~np.isnan(X_intact)) ^ (~np.isnan(X))).astype(np.float32)
     missing_mask = (~np.isnan(X)).astype(np.float32)
+    X_intact = np.nan_to_num(X_intact, nan=nan)
     X = np.nan_to_num(X, nan=nan)
     # reshape into time-series data
+    X_intact = X_intact.reshape(original_shape)
     X = X.reshape(original_shape)
     missing_mask = missing_mask.reshape(original_shape)
     indicating_mask = indicating_mask.reshape(original_shape)
