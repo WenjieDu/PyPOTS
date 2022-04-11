@@ -7,7 +7,7 @@
     <!-- Python version -->
     <img src='https://img.shields.io/badge/python-v3-green'>
     <!-- License -->
-    <img src='https://img.shields.io/badge/License-MIT-brightgreen'>
+    <img src='https://img.shields.io/badge/License-GPL--v3-brightgreen'>
     <!-- PyPI download number -->
     <a alt='PyPI download number' href='https://pypi.org/project/pypots'>
         <img src='https://static.pepy.tech/personalized-badge/pypots?period=total&units=international_system&left_color=grey&right_color=blue&left_text=Downloads'>
