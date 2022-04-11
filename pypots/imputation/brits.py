@@ -505,6 +505,7 @@ class BRITS(BaseImputer):
         training_loader = DataLoader(training_set, batch_size=self.batch_size, shuffle=True)
         self._train_model(training_loader)
         self.model.load_state_dict(self.best_model_dict)
+        self.model.eval()  # set the model as eval status to freeze it.
         return self
 
     def _train_model(self, training_loader):
@@ -546,11 +547,13 @@ class BRITS(BaseImputer):
             epoch_mean_loss = np.mean(loss_collector)  # mean loss of the current epoch
             print(f'epoch {epoch}: training loss {epoch_mean_loss:.4f} ')
 
-            if epoch_mean_loss <= self.best_loss:
+            if epoch_mean_loss < self.best_loss:
                 self.best_loss = epoch_mean_loss
                 self.best_model_dict = self.model.state_dict()
-
-        self.model.eval()  # set the model as eval status to freeze it.
+            else:
+                self.patience -= 1
+                if self.patience == 0:
+                    break
 
     def impute(self, X):
         test_set = Dataset4BRITS(X)

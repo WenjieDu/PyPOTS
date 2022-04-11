@@ -21,7 +21,7 @@ from pypots.utils.metrics import cal_mae
 class _SAITS(nn.Module):
     def __init__(self, n_layers, d_time, d_feature, d_model, d_inner, n_head, d_k, d_v, dropout,
                  diagonal_attention_mask=True, ORT_weight=1, MIT_weight=1, device=None):
-        super().__init__()
+        super(_SAITS, self).__init__()
         self.n_layers = n_layers
         actual_d_feature = d_feature * 2
         self.ORT_weight = ORT_weight
@@ -80,7 +80,9 @@ class _SAITS(nn.Module):
             attn_weights = attn_weights.mean(dim=3)
             attn_weights = torch.transpose(attn_weights, 1, 2)
 
-        combining_weights = F.sigmoid(self.weight_combine(torch.cat([masks, attn_weights], dim=2)))  # namely term eta
+        combining_weights = torch.sigmoid(
+            self.weight_combine(torch.cat([masks, attn_weights], dim=2))
+        )  # namely term eta
         # combine X_tilde_1 and X_tilde_2
         X_tilde_3 = (1 - combining_weights) * X_tilde_2 + combining_weights * X_tilde_1
         X_c = masks * X + (1 - masks) * X_tilde_3  # replace non-missing part with original data
@@ -172,6 +174,7 @@ class SAITS(BaseImputer):
         training_loader = DataLoader(training_set, batch_size=self.batch_size, shuffle=True)
         self._train_model(training_loader)
         self.model.load_state_dict(self.best_model_dict)
+        self.model.eval()  # set the model as eval status to freeze it.
         return self
 
     def _train_model(self, training_loader):
@@ -207,11 +210,13 @@ class SAITS(BaseImputer):
             epoch_mean_loss = np.mean(loss_collector)  # mean loss of the current epoch
             print(f'epoch {epoch}: training loss {epoch_mean_loss:.4f} ')
 
-            if epoch_mean_loss <= self.best_loss:
+            if epoch_mean_loss < self.best_loss:
                 self.best_loss = epoch_mean_loss
                 self.best_model_dict = self.model.state_dict()
-
-        self.model.eval()  # set the model as eval status to freeze it.
+            else:
+                self.patience -= 1
+                if self.patience == 0:
+                    break
 
     def impute(self, X):
         test_set = Dataset4MIT(X)

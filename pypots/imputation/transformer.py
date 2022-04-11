@@ -151,7 +151,7 @@ class PositionalEncoding(nn.Module):
 class _TransformerEncoder(nn.Module):
     def __init__(self, n_layers, d_time, d_feature, d_model, d_inner, n_head, d_k, d_v, dropout,
                  ORT_weight=1, MIT_weight=1, device=None):
-        super().__init__()
+        super(_TransformerEncoder, self).__init__()
         self.n_layers = n_layers
         actual_d_feature = d_feature * 2
         self.ORT_weight = ORT_weight
@@ -265,6 +265,7 @@ class Transformer(BaseImputer):
         training_loader = DataLoader(training_set, batch_size=self.batch_size, shuffle=True)
         self._train_model(training_loader)
         self.model.load_state_dict(self.best_model_dict)
+        self.model.eval()  # set the model as eval status to freeze it.
         return self
 
     def _train_model(self, training_loader):
@@ -300,11 +301,13 @@ class Transformer(BaseImputer):
             epoch_mean_loss = np.mean(loss_collector)  # mean loss of the current epoch
             print(f'epoch {epoch}: training loss {epoch_mean_loss:.4f} ')
 
-            if epoch_mean_loss <= self.best_loss:
+            if epoch_mean_loss < self.best_loss:
                 self.best_loss = epoch_mean_loss
                 self.best_model_dict = self.model.state_dict()
-
-        self.model.eval()  # set the model as eval status to freeze it.
+            else:
+                self.patience -= 1
+                if self.patience == 0:
+                    break
 
     def impute(self, X):
         test_set = Dataset4MIT(X)
