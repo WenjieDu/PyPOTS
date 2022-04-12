@@ -206,8 +206,6 @@ class _TransformerEncoder(nn.Module):
 
 class Transformer(BaseImputer):
     def __init__(self,
-                 seq_len,
-                 n_features,
                  n_layers,
                  d_model,
                  d_inner,
@@ -226,8 +224,6 @@ class Transformer(BaseImputer):
         super(Transformer, self).__init__()
 
         # model hype-parameters
-        self.seq_len = seq_len
-        self.n_features = n_features
         self.n_layers = n_layers
         self.d_model = d_model
         self.d_inner = d_inner
@@ -257,7 +253,10 @@ class Transformer(BaseImputer):
         self.best_model_dict = None
 
     def fit(self, X):
-        self.model = _TransformerEncoder(self.n_layers, self.seq_len, self.n_features, self.d_model, self.d_inner,
+        assert len(X.shape) == 3, f'Input should have 3 dimensions [n_samples, seq_len, n_features],' \
+                                  f'while the input.shape={X.shape}'
+        _, seq_len, n_features = X.shape
+        self.model = _TransformerEncoder(self.n_layers, seq_len, n_features, self.d_model, self.d_inner,
                                          self.n_head, self.d_k, self.d_v, self.dropout,
                                          self.ORT_weight, self.MIT_weight, self.device)
         self.model = self.model.to(self.device)

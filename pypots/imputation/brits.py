@@ -140,7 +140,7 @@ class RITS(nn.Module):
     ----------
     seq_len : int,
         sequence length (number of time steps)
-    feature_num : int,
+    n_features : int,
         number of features (input dimensions)
     rnn_hidden_size : int,
         the hidden size of the RNN cell
@@ -163,7 +163,7 @@ class RITS(nn.Module):
     ----------
     seq_len : int,
         sequence length (number of time steps)
-    feature_num : int,
+    n_features : int,
         number of features (input dimensions)
     rnn_hidden_size : int,
         the hidden size of the RNN cell
@@ -171,19 +171,19 @@ class RITS(nn.Module):
         specify running the model on which device, CPU/GPU
     """
 
-    def __init__(self, seq_len, feature_num, rnn_hidden_size, device=None):
+    def __init__(self, seq_len, n_features, rnn_hidden_size, device=None):
         super(RITS, self).__init__()
         self.seq_len = seq_len
-        self.feature_num = feature_num
+        self.n_features = n_features
         self.rnn_hidden_size = rnn_hidden_size
         self.device = device
 
-        self.rnn_cell = nn.LSTMCell(self.feature_num * 2, self.rnn_hidden_size)
-        self.temp_decay_h = TemporalDecay(input_size=self.feature_num, output_size=self.rnn_hidden_size, diag=False)
-        self.temp_decay_x = TemporalDecay(input_size=self.feature_num, output_size=self.feature_num, diag=True)
-        self.hist_reg = nn.Linear(self.rnn_hidden_size, self.feature_num)
-        self.feat_reg = FeatureRegression(self.feature_num)
-        self.combining_weight = nn.Linear(self.feature_num * 2, self.feature_num)
+        self.rnn_cell = nn.LSTMCell(self.n_features * 2, self.rnn_hidden_size)
+        self.temp_decay_h = TemporalDecay(input_size=self.n_features, output_size=self.rnn_hidden_size, diag=False)
+        self.temp_decay_x = TemporalDecay(input_size=self.n_features, output_size=self.n_features, diag=True)
+        self.hist_reg = nn.Linear(self.rnn_hidden_size, self.n_features)
+        self.feat_reg = FeatureRegression(self.n_features)
+        self.combining_weight = nn.Linear(self.n_features * 2, self.n_features)
 
     def impute(self, inputs, direction):
         """ The imputation function.
@@ -200,8 +200,6 @@ class RITS(nn.Module):
             [batch size, sequence length, feature number]
         hidden_states: tensor,
             [batch size, RNN hidden size]
-        reconstruction_MAE : float tensor,
-            mean absolute error of reconstruction
         reconstruction_loss : float tensor,
             reconstruction loss
         """
@@ -215,7 +213,6 @@ class RITS(nn.Module):
 
         estimations = []
         reconstruction_loss = 0.0
-        reconstruction_MAE = 0.0
 
         # imputation period
         for t in range(self.seq_len):
@@ -239,8 +236,7 @@ class RITS(nn.Module):
             alpha = torch.sigmoid(self.combining_weight(torch.cat([gamma_x, m], dim=1)))
 
             c_h = alpha * z_h + (1 - alpha) * x_h
-            reconstruction_MAE += cal_mae(c_h, x, m)
-            reconstruction_loss += reconstruction_MAE
+            reconstruction_loss += cal_mae(c_h, x, m)
 
             c_c = m * x + (1 - m) * c_h
             estimations.append(c_h.unsqueeze(dim=1))
@@ -250,7 +246,7 @@ class RITS(nn.Module):
 
         estimations = torch.cat(estimations, dim=1)
         imputed_data = masks * values + (1 - masks) * estimations
-        return imputed_data, hidden_states, reconstruction_MAE, reconstruction_loss
+        return imputed_data, hidden_states, reconstruction_loss
 
     def forward(self, inputs, direction='forward'):
         """ Forward processing of the NN module.
@@ -267,15 +263,13 @@ class RITS(nn.Module):
         dict,
             A dictionary includes all results.
         """
-        imputed_data, hidden_state, reconstruction_MAE, reconstruction_loss = self.impute(inputs, direction)
-        reconstruction_MAE /= self.seq_len
+        imputed_data, hidden_state, reconstruction_loss = self.impute(inputs, direction)
         # for each iteration, reconstruction_loss increases its value for 3 times
         reconstruction_loss /= (self.seq_len * 3)
 
         ret_dict = {
             'consistency_loss': torch.tensor(0.0, device=self.device),  # single direction, has no consistency loss
             'reconstruction_loss': reconstruction_loss,
-            'reconstruction_MAE': reconstruction_MAE,
             'imputed_data': imputed_data,
             'final_hidden_state': hidden_state
         }
@@ -290,7 +284,7 @@ class _BRITS(nn.Module):
     ----------
     seq_len : int,
         sequence length (number of time steps)
-    feature_num : int,
+    n_features : int,
         number of features (input dimensions)
     rnn_hidden_size : int,
         the hidden size of the RNN cell
@@ -300,16 +294,16 @@ class _BRITS(nn.Module):
         the backward RITS model
     """
 
-    def __init__(self, seq_len, feature_num, rnn_hidden_size, device=None):
+    def __init__(self, seq_len, n_features, rnn_hidden_size, device=None):
         super(_BRITS, self).__init__()
         # data settings
         self.seq_len = seq_len
-        self.feature_num = feature_num
+        self.n_features = n_features
         # imputer settings
         self.rnn_hidden_size = rnn_hidden_size
         # create models
-        self.rits_f = RITS(seq_len, feature_num, rnn_hidden_size, device)
-        self.rits_b = RITS(seq_len, feature_num, rnn_hidden_size, device)
+        self.rits_f = RITS(seq_len, n_features, rnn_hidden_size, device)
+        self.rits_b = RITS(seq_len, n_features, rnn_hidden_size, device)
 
     def impute(self, inputs):
         """ Impute the missing data. Only impute, this is for test stage.
@@ -325,8 +319,8 @@ class _BRITS(nn.Module):
             The feature vectors with missing part imputed.
 
         """
-        imputed_data_f, _, _, _ = self.rits_f.impute(inputs, 'forward')
-        imputed_data_b, _, _, _ = self.rits_b.impute(inputs, 'backward')
+        imputed_data_f, _, _ = self.rits_f.impute(inputs, 'forward')
+        imputed_data_b, _, _ = self.rits_b.impute(inputs, 'backward')
         imputed_data_b = {'imputed_data_b': imputed_data_b}
         imputed_data_b = self.reverse(imputed_data_b)['imputed_data_b']
         imputed_data = (imputed_data_f + imputed_data_b) / 2
@@ -393,10 +387,8 @@ class _BRITS(nn.Module):
             Merged results in a dictionary.
         """
         consistency_loss = self.get_consistency_loss(ret_f['imputed_data'], ret_b['imputed_data'])
-        reconstruction_MAE = (ret_f['reconstruction_MAE'] + ret_b['reconstruction_MAE']) / 2
         ret_f['imputed_data'] = (ret_f['imputed_data'] + ret_b['imputed_data']) / 2
         ret_f['consistency_loss'] = consistency_loss
-        ret_f['reconstruction_MAE'] = reconstruction_MAE
         ret_f['loss'] = consistency_loss + \
                         ret_f['reconstruction_loss'] + \
                         ret_b['reconstruction_loss']
@@ -435,10 +427,6 @@ class BRITS(BaseImputer):
 
     Parameters
     ----------
-    seq_len : int,
-        Sequence length/ time steps of the input.
-    n_features : int,
-        Features number of the input data.
     rnn_hidden_size : int,
         The size of the RNN hidden state.
     learning_rate : float (0,1),
@@ -456,8 +444,6 @@ class BRITS(BaseImputer):
     """
 
     def __init__(self,
-                 seq_len,
-                 n_features,
                  rnn_hidden_size,
                  learning_rate=1e-3,
                  epochs=100,
@@ -467,8 +453,6 @@ class BRITS(BaseImputer):
                  device=None):
         super(BRITS, self).__init__()
 
-        self.seq_len = seq_len
-        self.n_features = n_features
         self.rnn_hidden_size = rnn_hidden_size
         self.batch_size = batch_size
         self.epochs = epochs
@@ -491,15 +475,17 @@ class BRITS(BaseImputer):
 
         Parameters
         ----------
-        array-like of shape [n_samples, sequence length (time steps), n_features],
+        X : array, shape [n_samples, sequence length (time steps), n_features],
 
         Returns
         -------
         self : object,
             Trained model.
         """
-
-        self.model = _BRITS(self.seq_len, self.n_features, self.rnn_hidden_size, self.device)
+        assert len(X.shape) == 3, f'Input should have 3 dimensions [n_samples, seq_len, n_features],' \
+                                  f'while the input.shape={X.shape}'
+        _, seq_len, n_features = X.shape
+        self.model = _BRITS(seq_len, n_features, self.rnn_hidden_size, self.device)
         self.model = self.model.to(self.device)
         training_set = Dataset4BRITS(X)  # time_gaps is necessary for BRITS
         training_loader = DataLoader(training_set, batch_size=self.batch_size, shuffle=True)
