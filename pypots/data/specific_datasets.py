@@ -10,6 +10,7 @@ import pickle
 import shutil
 import tempfile
 import warnings
+from sys import exit
 from urllib.request import urlretrieve
 
 import numpy as np
@@ -87,24 +88,10 @@ def _download_and_extract(url, saving_path):
 
     if suffix in no_need_decompression_format:
         raw_data_saving_path = os.path.join(saving_path, file_name)
-        urlretrieve(url, raw_data_saving_path)
-        print(f"Successfully downloaded data to {raw_data_saving_path}.")
     elif suffix in supported_compression_format:
         # create temp dir for raw data saving
         tmp_dir = tempfile.mkdtemp()
         raw_data_saving_path = os.path.join(tmp_dir, file_name)
-        # download and save the raw dataset
-        urlretrieve(url, raw_data_saving_path)
-        print(f"Successfully downloaded data to {raw_data_saving_path}.")
-        os.makedirs(saving_path, exist_ok=True)
-        try:
-            shutil.unpack_archive(raw_data_saving_path, saving_path)
-            print(f"Successfully extracted data to {saving_path}")
-        except gzip.BadGzipFile:
-            warnings.warn("The compressed file is corrupted, aborting.", category=RuntimeWarning)
-            return None
-        finally:
-            shutil.rmtree(tmp_dir, ignore_errors=True)
     else:
         warnings.warn(
             "The compression format is not supported, aborting. "
@@ -112,6 +99,28 @@ def _download_and_extract(url, saving_path):
             category=RuntimeWarning
         )
         return None
+
+    # download and save the raw dataset
+    try:
+        urlretrieve(url, raw_data_saving_path)
+    # except Exception as e:
+    except Exception as e:
+        shutil.rmtree(saving_path, ignore_errors=True)
+        print(f"Exception: {e}\n"
+              f"Download failed. Aborting.")
+        exit()
+    print(f"Successfully downloaded data to {raw_data_saving_path}.")
+
+    try:
+        os.makedirs(saving_path, exist_ok=True)
+        shutil.unpack_archive(raw_data_saving_path, saving_path)
+        print(f"Successfully extracted data to {saving_path}")
+    except gzip.BadGzipFile:
+        warnings.warn("The compressed file is corrupted, aborting.", category=RuntimeWarning)
+        return None
+    finally:
+        shutil.rmtree(tmp_dir, ignore_errors=True)
+
     return saving_path
 
 
