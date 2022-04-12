@@ -193,7 +193,7 @@ class _TransformerEncoder(nn.Module):
         reconstruction_loss = cal_mae(learned_presentation, X, masks)
 
         # have to cal imputation loss in the val stage; no need to cal imputation loss here in the tests stage
-        imputation_loss = cal_mae(learned_presentation, inputs['X_holdout'], inputs['indicating_mask'])
+        imputation_loss = cal_mae(learned_presentation, inputs['X_intact'], inputs['indicating_mask'])
 
         loss = self.ORT_weight * reconstruction_loss + self.MIT_weight * imputation_loss
 
@@ -307,7 +307,9 @@ class Transformer(BaseImputer):
             else:
                 self.patience -= 1
                 if self.patience == 0:
+                    print('Exceeded the training patience. Terminating the training procedure...')
                     break
+        print('Finished all training epochs.')
 
     def impute(self, X):
         test_set = Dataset4MIT(X)

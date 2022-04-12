@@ -236,7 +236,7 @@ class RITS(nn.Module):
             z_h = self.feat_reg(x_c)
             reconstruction_loss += cal_mae(z_h, x, m)
 
-            alpha = F.sigmoid(self.combining_weight(torch.cat([gamma_x, m], dim=1)))
+            alpha = torch.sigmoid(self.combining_weight(torch.cat([gamma_x, m], dim=1)))
 
             c_h = alpha * z_h + (1 - alpha) * x_h
             reconstruction_MAE += cal_mae(c_h, x, m)
@@ -437,7 +437,7 @@ class BRITS(BaseImputer):
     ----------
     seq_len : int,
         Sequence length/ time steps of the input.
-    feature_num : int,
+    n_features : int,
         Features number of the input data.
     rnn_hidden_size : int,
         The size of the RNN hidden state.
@@ -457,7 +457,7 @@ class BRITS(BaseImputer):
 
     def __init__(self,
                  seq_len,
-                 feature_num,
+                 n_features,
                  rnn_hidden_size,
                  learning_rate=1e-3,
                  epochs=100,
@@ -468,7 +468,7 @@ class BRITS(BaseImputer):
         super(BRITS, self).__init__()
 
         self.seq_len = seq_len
-        self.feature_num = feature_num
+        self.n_features = n_features
         self.rnn_hidden_size = rnn_hidden_size
         self.batch_size = batch_size
         self.epochs = epochs
@@ -499,7 +499,7 @@ class BRITS(BaseImputer):
             Trained model.
         """
 
-        self.model = _BRITS(self.seq_len, self.feature_num, self.rnn_hidden_size, self.device)
+        self.model = _BRITS(self.seq_len, self.n_features, self.rnn_hidden_size, self.device)
         self.model = self.model.to(self.device)
         training_set = Dataset4BRITS(X)  # time_gaps is necessary for BRITS
         training_loader = DataLoader(training_set, batch_size=self.batch_size, shuffle=True)
@@ -553,7 +553,9 @@ class BRITS(BaseImputer):
             else:
                 self.patience -= 1
                 if self.patience == 0:
+                    print('Exceeded the training patience. Terminating the training procedure...')
                     break
+        print('Finished all training epochs.')
 
     def impute(self, X):
         test_set = Dataset4BRITS(X)

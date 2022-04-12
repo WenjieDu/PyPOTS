@@ -216,7 +216,9 @@ class SAITS(BaseImputer):
             else:
                 self.patience -= 1
                 if self.patience == 0:
+                    print('Exceeded the training patience. Terminating the training procedure...')
                     break
+        print('Finished all training epochs.')
 
     def impute(self, X):
         test_set = Dataset4MIT(X)
