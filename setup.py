@@ -1,17 +1,17 @@
 from setuptools import setup, find_packages
 
-from pypots.version import __version__
+from pypots.__version__ import version
 
 with open('./README.md', encoding='utf-8') as f:
     README = f.read()
 
 setup(
     name='pypots',
-    version=__version__,
+    version=version,
     description='A Python Toolbox for Data Mining on Partially-Observed Time Series',
     long_description=README,
     long_description_content_type='text/markdown',
-    license='GPL-v3',
+    license='GPL-3.0',
     author='Wenjie Du',
     author_email='wenjay.du@gmail.com',
     url='https://github.com/WenjieDu/PyPOTS',

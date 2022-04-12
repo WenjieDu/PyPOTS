@@ -4,7 +4,6 @@ Utilities for loading specific datasets.
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: GPL-v3
 
-import gzip
 import os
 import pickle
 import shutil
@@ -111,15 +110,16 @@ def _download_and_extract(url, saving_path):
         exit()
     print(f"Successfully downloaded data to {raw_data_saving_path}.")
 
-    try:
-        os.makedirs(saving_path, exist_ok=True)
-        shutil.unpack_archive(raw_data_saving_path, saving_path)
-        print(f"Successfully extracted data to {saving_path}")
-    except gzip.BadGzipFile:
-        warnings.warn("The compressed file is corrupted, aborting.", category=RuntimeWarning)
-        return None
-    finally:
-        shutil.rmtree(tmp_dir, ignore_errors=True)
+    if suffix in supported_compression_format:  # if the file is compressed, then unpack it
+        try:
+            os.makedirs(saving_path, exist_ok=True)
+            shutil.unpack_archive(raw_data_saving_path, saving_path)
+            print(f"Successfully extracted data to {saving_path}")
+        except shutil.Error:
+            warnings.warn("The compressed file is corrupted, aborting.", category=RuntimeWarning)
+            return None
+        finally:
+            shutil.rmtree(tmp_dir, ignore_errors=True)
 
     return saving_path
 
@@ -157,7 +157,7 @@ def delete_all_cached_data():
         shutil.rmtree(CACHED_DATASET_DIR, ignore_errors=True)
         # check if succeed
         if not os.path.exists(CACHED_DATASET_DIR):
-            print('Purge successfully.')
+            print('Successfully purged.')
         else:
             raise FileExistsError(f'Deleting operation failed. {CACHED_DATASET_DIR} still exists.')
     except shutil.Error:
@@ -224,7 +224,7 @@ def load_specific_dataset(dataset_name, use_cache=True):
                 result = load_electricity(dataset_saving_path)
             elif dataset_name == 'beijing_multisite_air_quality':
                 result = load_beijing_air_quality(dataset_saving_path)
-            print('Loading finished.')
+            print('Successfully loaded.')
         except FileExistsError:
             shutil.rmtree(dataset_saving_path, ignore_errors=True)
             warnings.warn(
