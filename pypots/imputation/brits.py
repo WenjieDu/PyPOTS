@@ -15,7 +15,7 @@ from torch.autograd import Variable
 from torch.nn.parameter import Parameter
 from torch.utils.data import DataLoader
 
-from pypots.data.base import Dataset4BRITS
+from pypots.data.base import DatasetForBRITS
 from pypots.imputation.base import BaseImputer
 from pypots.utils.metrics import cal_mae
 
@@ -487,7 +487,7 @@ class BRITS(BaseImputer):
         _, seq_len, n_features = X.shape
         self.model = _BRITS(seq_len, n_features, self.rnn_hidden_size, self.device)
         self.model = self.model.to(self.device)
-        training_set = Dataset4BRITS(X)  # time_gaps is necessary for BRITS
+        training_set = DatasetForBRITS(X)  # time_gaps is necessary for BRITS
         training_loader = DataLoader(training_set, batch_size=self.batch_size, shuffle=True)
         self._train_model(training_loader)
         self.model.load_state_dict(self.best_model_dict)
@@ -544,7 +544,7 @@ class BRITS(BaseImputer):
         print('Finished all training epochs.')
 
     def impute(self, X):
-        test_set = Dataset4BRITS(X)
+        test_set = DatasetForBRITS(X)
         test_loader = DataLoader(test_set, batch_size=self.batch_size, shuffle=False)
         imputation_collector = []
 

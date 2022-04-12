@@ -9,3 +9,4 @@ PyPOTS package.
 from . import data
 from . import imputation
 from . import utils
+from .__version__ import version as __version__
