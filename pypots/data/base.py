@@ -3,7 +3,7 @@ Utilities for data manipulation
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
-# License: MIT
+# License: GPL-v3
 
 import numpy as np
 import torch

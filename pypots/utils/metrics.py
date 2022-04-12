@@ -2,7 +2,7 @@
 Utilities for evaluation metrics
 """
 # Created by Wenjie Du <wenjay.du@gmail.com>
-# License: MIT
+# License: GPL-v3
 
 import torch
 import numpy as np

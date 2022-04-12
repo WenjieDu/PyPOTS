@@ -3,7 +3,7 @@ Expose all usable time-series imputation models.
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
-# License: MIT
+# License: GPL-v3
 
 from .brits import BRITS
 from .saits import SAITS

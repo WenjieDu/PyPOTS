@@ -3,7 +3,7 @@ Corrupt data by adding missing values to it with optional missing patterns (MCAR
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
-# License: MIT
+# License: GPL-v3
 
 import numpy as np
 
@@ -46,6 +46,15 @@ def fill_nan_with_mask(X, mask):
     mask = mask.astype(bool)
     X[~mask] = np.nan
     return X
+
+
+def little_mcar_test(X):
+    """Little's MCAR Test.
+
+    Refer to :cite:`little1988TestMCAR`
+    """
+    # TODO: Little's MCAR test
+    raise NotImplementedError('MCAR test has not been implemented yet.')
 
 
 def mcar(X, rate, nan=0):
@@ -131,6 +140,7 @@ def mar(X, rate, nan=0):
     -------
 
     """
+    # TODO: Create missing values in MAR case
     raise NotImplementedError('MAR case has not been implemented yet.')
 
 
@@ -159,4 +169,5 @@ def mnar(X, rate, nan=0):
     -------
 
     """
+    # TODO: Create missing values in MNAR case
     raise NotImplementedError('MNAR case has not been implemented yet.')

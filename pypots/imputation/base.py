@@ -2,7 +2,7 @@
 The base class for imputation models.
 """
 # Created by Wenjie Du <wenjay.du@gmail.com>
-# License: MIT
+# License: GPL-v3
 
 
 from abc import ABC, abstractmethod
