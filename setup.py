@@ -29,6 +29,8 @@ setup(
         'scipy',
         'torch',
         'pandas',
+        'pycorruptor',
+        'tsdb'
     ],
     setup_requires=['setuptools>=38.6.0'],
 )

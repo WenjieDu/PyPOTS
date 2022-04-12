@@ -12,7 +12,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import DataLoader
 
-from pypots.data.base import Dataset4MIT
+from pypots.data.base import DatasetForMIT
 from pypots.imputation.base import BaseImputer
 from pypots.imputation.transformer import EncoderLayer, PositionalEncoding
 from pypots.utils.metrics import cal_mae
@@ -169,7 +169,7 @@ class SAITS(BaseImputer):
                             self.d_k, self.d_v, self.dropout, self.diagonal_attention_mask,
                             self.ORT_weight, self.MIT_weight, self.device)
         self.model = self.model.to(self.device)
-        training_set = Dataset4MIT(X)
+        training_set = DatasetForMIT(X)
         training_loader = DataLoader(training_set, batch_size=self.batch_size, shuffle=True)
         self._train_model(training_loader)
         self.model.load_state_dict(self.best_model_dict)
@@ -220,7 +220,7 @@ class SAITS(BaseImputer):
         print('Finished all training epochs.')
 
     def impute(self, X):
-        test_set = Dataset4MIT(X)
+        test_set = DatasetForMIT(X)
         test_loader = DataLoader(test_set, batch_size=self.batch_size, shuffle=False)
         imputation_collector = []
 

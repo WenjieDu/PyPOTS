@@ -7,10 +7,9 @@ Utilities for data manipulation
 
 import numpy as np
 import torch
+from pycorruptor import mcar
 from sklearn.utils import check_random_state
 from torch.utils.data import Dataset
-
-from pypots.data.corrupt import mcar
 
 
 def generate_random_walk(n_samples=1000, n_steps=24, n_features=10, mu=0., std=1., random_state=None):
@@ -103,7 +102,7 @@ class BaseDataset(Dataset):
         return sample
 
 
-class Dataset4BRITS(BaseDataset):
+class DatasetForBRITS(BaseDataset):
     """ Dataset class for BRITS.
 
     Parameters
@@ -115,7 +114,7 @@ class Dataset4BRITS(BaseDataset):
     """
 
     def __init__(self, X, y=None):
-        super(Dataset4BRITS, self).__init__(X, y)
+        super(DatasetForBRITS, self).__init__(X, y)
 
     @staticmethod
     def parse_delta(missing_mask):
@@ -201,7 +200,7 @@ class Dataset4BRITS(BaseDataset):
         return sample
 
 
-class Dataset4MIT(BaseDataset):
+class DatasetForMIT(BaseDataset):
     """ Dataset for models that need MIT (masked imputation task) in their training, such as SAITS.
 
     For more information about MIT, please refer to :cite:`du2022SAITS`.
@@ -227,7 +226,7 @@ class Dataset4MIT(BaseDataset):
     """
 
     def __init__(self, X, y=None, rate=0.2):
-        super(Dataset4MIT, self).__init__(X, y)
+        super(DatasetForMIT, self).__init__(X, y)
         self.rate = rate
 
     def __getitem__(self, idx):
