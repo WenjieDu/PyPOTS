@@ -2,4 +2,4 @@
 
 """
 # Created by Wenjie Du <wenjay.du@gmail.com>
-# License: MIT
+# License: GPL-v3

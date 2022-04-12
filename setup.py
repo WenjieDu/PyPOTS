@@ -11,7 +11,7 @@ setup(
     description='A Python Toolbox for Data Mining on Partially-Observed Time Series',
     long_description=README,
     long_description_content_type='text/markdown',
-    license='MIT',
+    license='GPL-v3',
     author='Wenjie Du',
     author_email='wenjay.du@gmail.com',
     url='https://github.com/WenjieDu/PyPOTS',

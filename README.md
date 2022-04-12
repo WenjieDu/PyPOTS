@@ -14,9 +14,9 @@
     </a>
     <!-- Hits number -->
     <img src='https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2FPyPOTS%2FPyPOTS&count_bg=%23009A0A&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=Hits&edge_flat=false'>
-    <!-- Chat on Gitter -->
-    <a alt='Gitter room' href='https://gitter.im/PyPOTS-toolbox/community'>
-        <img src='https://img.shields.io/gitter/room/PyPOTS-toolbox/community?color=60A98D&logo=gitter&logoColor=D02D4D'>
+    <!-- Chat in Discussions -->
+    <a alt='GitHub Discussions' href='https://github.com/WenjieDu/PyPOTS/discussions'>
+        <img src='https://img.shields.io/badge/Chat-in_Discussions-green?logo=github&color=60A98D'>
     </a>
 </p>
 
@@ -24,8 +24,25 @@
 
 ⦿ `Mission`: PyPOTS will keep integrating classical and the latest state-of-the-art data mining algorithms for partially-observed multivariate time series. For sure, besides various algorithms, PyPOTS is going to have unified APIs together with detailed documentation and interactive examples across algorithms as tutorials.
 
----
+## ❖ Installation
+Install the latest release from PyPI: 
+> pip install pypots
 
-‼️ PyPOTS is currently under development. A very first dev version will be released ASAP. <ins>If you like it and look forward to its growth, please give PyPOTS a star and watch it to keep you posted on its progress and to let me know that its development is meaningful. If you have any feedback, or want to contribute ideas/suggestions or share time-series related algorithms/papers, please join PyPOTS community and <a alt='Gitter room' href='https://gitter.im/PyPOTS-toolbox/community'><img align='center' src='https://img.shields.io/gitter/room/PyPOTS-toolbox/community?color=60A98D&logo=gitter&logoColor=D02D4D'></a>, or [drop me an email](mailto:wenjay.du@gmail.com).</ins> 
+Install with the latest code on GitHub: 
+> pip install `https://github.com/WenjieDu/PyPOTS/archive/master.zip`
+
+## ❖ Available Algorithms
+| Task Type  | Model Type | Algorithm    | Year    | Reference |        
+|------------|------------|--------------|---------|-----------|
+| Imputation | Neural Network | SAITS: Self-Attention-based Imputation for Time Series | 2022 | [^1] |
+| Imputation | Neural Network | Transformer | 2017 | [^2] [^1] |
+| Imputation,<br>Classification | Neural Network | BRITS: Bidirectional Recurrent Imputation for Time Series | 2018 | [^3] |
+
+---
+‼️ PyPOTS is currently under development. If you like it and look forward to its growth, <ins>please give PyPOTS a star and watch it to keep you posted on its progress and to let me know that its development is meaningful</ins>. If you have any feedback, or want to contribute ideas/suggestions or share time-series related algorithms/papers, please join PyPOTS community and <a alt='GitHub Discussions' href='https://github.com/WenjieDu/PyPOTS/discussions'><img align='center' src='https://img.shields.io/badge/Chat-in_Discussions-green?logo=github&color=60A98D'></a>, or [drop me an email](mailto:wenjay.du@gmail.com).
 
 Thank you all for your attention! 😃
+
+[^1]: Du, W., Cote, D., & Liu, Y. (2022). SAITS: Self-Attention-based Imputation for Time Series. ArXiv, abs/2202.08516.
+[^2]: Vaswani, A., Shazeer, N.M., Parmar, N., Uszkoreit, J., Jones, L., Gomez, A.N., Kaiser, L., & Polosukhin, I. (2017). Attention is All you Need. NeurIPS 2017.
+[^3]: Cao, W., Wang, D., Li, J., Zhou, H., Li, L., & Li, Y. (2018). BRITS: Bidirectional Recurrent Imputation for Time Series. NeurIPS 2018.

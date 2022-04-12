@@ -2,7 +2,7 @@
 Utilities for loading specific datasets.
 """
 # Created by Wenjie Du <wenjay.du@gmail.com>
-# License: MIT
+# License: GPL-v3
 
 import gzip
 import os
@@ -37,6 +37,8 @@ DATABASE = {
         'https://archive.ics.uci.edu/ml/machine-learning-databases/00501/PRSA2017_Data_20130301-20170228.zip',
 
 }
+
+AVAILABLE_DATASETS = list(DATABASE.keys())
 
 
 def window_truncate(feature_vectors, seq_len):
