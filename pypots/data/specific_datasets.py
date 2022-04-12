@@ -6,6 +6,7 @@ Utilities for loading specific datasets.
 
 import gzip
 import os
+import pickle
 import shutil
 import tempfile
 import warnings
@@ -61,7 +62,7 @@ def window_truncate(feature_vectors, seq_len):
     return np.asarray(sample_collector).astype('float32')
 
 
-def download_and_extract(url, saving_path):
+def _download_and_extract(url, saving_path):
     """ Download dataset from the given url and extract to the given saving path.
 
     Parameters
@@ -112,6 +113,26 @@ def download_and_extract(url, saving_path):
     return saving_path
 
 
+def download_and_extract(dataset_name, dataset_saving_path):
+    """ Wrapper of _download_and_extract.
+
+    Parameters
+    ----------
+    dataset_name :
+    dataset_saving_path :
+
+    Returns
+    -------
+
+    """
+    os.makedirs(dataset_saving_path)
+    if isinstance(DATABASE[dataset_name], list):
+        for link in DATABASE[dataset_name]:
+            _download_and_extract(link, dataset_saving_path)
+    else:
+        _download_and_extract(DATABASE[dataset_name], dataset_saving_path)
+
+
 def delete_all_cached_data():
     """ Delete CACHED_DATASET_DIR if exists.
     """
@@ -132,13 +153,35 @@ def delete_all_cached_data():
         raise shutil.Error('Operation failed.')
 
 
-def load_specific_dataset(dataset_name):
+def pickle_dump(data, path):
+    try:
+        with open(path, 'wb') as f:
+            pickle.dump(data, f, protocol=pickle.HIGHEST_PROTOCOL)
+    except pickle.PicklingError:
+        print('Pickling failed. No cache will be saved.')
+    return path
+
+
+def pickle_load(path):
+    try:
+        with open(path, 'rb') as f:
+            data = pickle.load(f)
+    except pickle.UnpicklingError:
+        print('Cached data corrupted. Aborting...\n'
+              'Please rerun func load_specific_dataset with option use_cache=False')
+    return data
+
+
+def load_specific_dataset(dataset_name, use_cache=True):
     """ Load dataset with given name.
 
     Parameters
     ----------
     dataset_name : str,
         The name of the specific dataset in DATABASE.
+
+    use_cache : bool,
+        Whether to use cache (including data downloading and processing)
 
     Returns
     -------
@@ -148,29 +191,36 @@ def load_specific_dataset(dataset_name):
     assert dataset_name in DATABASE.keys(), f'Input dataset name "{dataset_name}" is not in the database {DATABASE}.'
     dataset_saving_path = os.path.join(CACHED_DATASET_DIR, dataset_name)
     if not os.path.exists(dataset_saving_path):  # if the dataset is not cached, then download it
-        os.makedirs(dataset_saving_path)
-        if isinstance(DATABASE[dataset_name], list):
-            for link in DATABASE[dataset_name]:
-                download_and_extract(link, dataset_saving_path)
-        else:
-            download_and_extract(DATABASE[dataset_name], dataset_saving_path)
+        download_and_extract(dataset_name, dataset_saving_path)
     else:
-        print(f'Dataset {dataset_name} is already cached. Directly loading...')
+        if use_cache:
+            print(f'Dataset {dataset_name} has already been downloaded. Start processing directly...')
+        else:
+            # if not use cache, then delete the downloaded data dir (including processing cache)
+            shutil.rmtree(dataset_saving_path, ignore_errors=True)
+            download_and_extract(dataset_name, dataset_saving_path)
 
     # if cached, then load directly
-    try:
-        if dataset_name == 'physionet_2012':
-            return load_physionet2012(dataset_saving_path)
-        elif dataset_name == 'electricity_load_diagrams':
-            return load_electricity(dataset_saving_path)
-        elif dataset_name == 'beijing_multisite_air_quality':
-            return load_beijing_air_quality(dataset_saving_path)
-        print('Loading finished.')
-    except FileExistsError:
-        shutil.rmtree(dataset_saving_path, ignore_errors=True)
-        warnings.warn(
-            'Dataset corrupted, already deleted. Please reload it to re-download the raw data.'
-        )
+    cache_path = os.path.join(dataset_saving_path, dataset_name + '_cache.pkl')
+    if os.path.exists(cache_path):
+        print(f'Dataset {dataset_name} has already been cached. Loading directly...')
+        result = pickle_load(cache_path)
+    else:
+        try:
+            if dataset_name == 'physionet_2012':
+                result = load_physionet2012(dataset_saving_path)
+            elif dataset_name == 'electricity_load_diagrams':
+                result = load_electricity(dataset_saving_path)
+            elif dataset_name == 'beijing_multisite_air_quality':
+                result = load_beijing_air_quality(dataset_saving_path)
+            print('Loading finished.')
+        except FileExistsError:
+            shutil.rmtree(dataset_saving_path, ignore_errors=True)
+            warnings.warn(
+                'Dataset corrupted, already deleted. Please rerun load_specific_dataset() to re-download the raw data.'
+            )
+        pickle_dump(result, cache_path)
+    return result
 
 
 def load_physionet2012(local_path):
@@ -183,10 +233,12 @@ def load_physionet2012(local_path):
 
     Returns
     -------
-    X : pandas.DataFrame,
-        Time-series feature vectors.
-    y : pandas.Series,
-        Classification labels.
+    data : dict
+        A dictionary contains X and y:
+            X : pandas.DataFrame,
+                Time-series feature vectors.
+            y : pandas.Series,
+                Classification labels.
 
     Notes
     -----
@@ -242,7 +294,11 @@ def load_physionet2012(local_path):
     df = df.drop(['Age', 'Gender', 'ICUType', 'Height'], axis=1)
     df = df.reset_index(drop=True)
     X = df.drop('Time', axis=1)  # we don't need Time column
-    return X, y
+    data = {
+        'X': X,
+        'y': y
+    }
+    return data
 
 
 def load_electricity(local_path):
@@ -255,8 +311,10 @@ def load_electricity(local_path):
 
     Returns
     -------
-    X : pandas.DataFrame
-        The time-series data of Electricity Load Diagrams.
+    data : dict
+        A dictionary contains X:
+            X : pandas.DataFrame
+                The time-series data of Electricity Load Diagrams.
     """
     file_path = os.path.join(local_path, 'LD2011_2014.txt')
     df = pd.read_csv(file_path, index_col=0, sep=';', decimal=',')
@@ -264,7 +322,10 @@ def load_electricity(local_path):
     # feature_names = df.columns.tolist()
     # feature_num = len(feature_names)
     df['datetime'] = pd.to_datetime(df.index)
-    return df
+    data = {
+        'X': df,
+    }
+    return data
 
 
 def load_beijing_air_quality(local_path):
@@ -277,8 +338,10 @@ def load_beijing_air_quality(local_path):
 
     Returns
     -------
-    X : pandas.DataFrame
-        The time-series data of Beijing Multi-site Air Quality.
+    data : dict
+        A dictionary contains X:
+            X : pandas.DataFrame
+                The time-series data of Beijing Multi-site Air Quality.
     """
     dir_path = os.path.join(local_path, 'PRSA_Data_20130301-20170228')
     df_collector = []
@@ -289,4 +352,7 @@ def load_beijing_air_quality(local_path):
         df_collector.append(current_df)
         print(f'Reading {file_path}, data shape {current_df.shape}')
     df = pd.concat(df_collector, axis=0)
-    return df
+    data = {
+        'X': df,
+    }
+    return data
