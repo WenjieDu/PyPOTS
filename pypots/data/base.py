@@ -84,6 +84,28 @@ class DatasetForBRITS(BaseDataset):
     def __init__(self, X, y=None):
         super(DatasetForBRITS, self).__init__(X, y)
 
+        # calculate all delta here.
+        # Training will take too much time if we put delta calculation in __getitem__().
+        forward_missing_mask = (~np.isnan(X)).astype(np.float32)
+        forward_X = np.nan_to_num(X)
+        forward_delta = self.parse_delta(forward_missing_mask)
+        backward_X = np.flip(forward_X, axis=1).copy()
+        backward_missing_mask = np.flip(forward_missing_mask, axis=1).copy()
+        backward_delta = self.parse_delta(backward_missing_mask)
+
+        self.data = {
+            'forward': {
+                'X': forward_X,
+                'missing_mask': forward_missing_mask,
+                'delta': forward_delta
+            },
+            'backward': {
+                'X': backward_X,
+                'missing_mask': backward_missing_mask,
+                'delta': backward_delta
+            },
+        }
+
     @staticmethod
     def parse_delta(missing_mask):
         """ Generate time-gap (delta) matrix from missing masks.
@@ -100,17 +122,25 @@ class DatasetForBRITS(BaseDataset):
             Its math definition please refer to :cite:`che2018MissingData`.
         """
 
-        assert len(missing_mask.shape) == 2, f'missing_mask should has two dimensions, ' \
-                                             f'shape like [seq_len, n_features], ' \
+        assert len(missing_mask.shape) == 3, f'missing_mask should has 3 dimensions, ' \
+                                             f'shape like [n_samples, seq_len, n_features], ' \
                                              f'while the input is {missing_mask.shape}'
-        seq_len, n_features = missing_mask.shape
-        delta = []
-        for step in range(seq_len):
-            if step == 0:
-                delta.append(np.zeros(n_features))
-            else:
-                delta.append(np.ones(n_features) + (1 - missing_mask[step]) * delta[-1])
-        return np.asarray(delta)
+        n_samples, seq_len, n_features = missing_mask.shape
+        delta_collector = []
+        for m_mask in missing_mask:
+            delta = []
+            for step in range(seq_len):
+                if step == 0:
+                    delta.append(np.zeros(n_features))
+                else:
+                    delta.append(np.ones(n_features) + (1 - m_mask[step]) * delta[-1])
+            delta = np.asarray(delta)
+            delta_collector.append(delta)
+        return np.asarray(delta_collector)
+
+    # TODO: preprocess the dataset and cache it, mainly for saving the time of calculating deltas
+    def preprocess_and_cache(self):
+        pass
 
     def __getitem__(self, idx):
         """ Fetch data according to index.
@@ -135,31 +165,16 @@ class DatasetForBRITS(BaseDataset):
             label (optional) : tensor,
                 The target label of the time-series sample.
         """
-        X = self.X[idx]
-        missing_mask = (~np.isnan(X)).astype(np.float32)
-        X = np.nan_to_num(X)
-
-        forward = {
-            'X': X,
-            'missing_mask': missing_mask,
-            'deltas': self.parse_delta(missing_mask)
-        }
-        backward = {
-            'X': np.flip(forward['X'], axis=0).copy(),
-            'missing_mask': np.flip(forward['missing_mask'], axis=0).copy()
-        }
-        backward['deltas'] = self.parse_delta(backward['missing_mask'])
-
         sample = [
             torch.tensor(idx),
             # for forward
-            torch.from_numpy(forward['X'].astype('float32')),
-            torch.from_numpy(forward['missing_mask'].astype('float32')),
-            torch.from_numpy(forward['deltas'].astype('float32')),
+            torch.from_numpy(self.data['forward']['X'].astype('float32')),
+            torch.from_numpy(self.data['forward']['missing_mask'].astype('float32')),
+            torch.from_numpy(self.data['forward']['deltas'].astype('float32')),
             # for backward
-            torch.from_numpy(backward['X'].astype('float32')),
-            torch.from_numpy(backward['missing_mask'].astype('float32')),
-            torch.from_numpy(backward['deltas'].astype('float32')),
+            torch.from_numpy(self.data['backward']['X'].astype('float32')),
+            torch.from_numpy(self.data['backward']['missing_mask'].astype('float32')),
+            torch.from_numpy(self.data['backward']['deltas'].astype('float32')),
         ]
 
         if self.y is not None:
