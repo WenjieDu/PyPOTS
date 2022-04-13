@@ -5,18 +5,17 @@ The base class for imputation models.
 # License: GPL-v3
 
 
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 
-import torch
+from pypots.base import BaseModel
 
 
-class BaseImputer(ABC):
+class BaseImputer(BaseModel):
     """ Abstract class for all imputation models.
     """
 
-    @abstractmethod
-    def __init__(self):
-        pass
+    def __init__(self, device):
+        super(BaseImputer, self).__init__(device)
 
     @abstractmethod
     def fit(self, X):
@@ -34,16 +33,6 @@ class BaseImputer(ABC):
         """
         return self
 
-    def _train_model(self, training_loader):
-        """ Model training procedure.
-        Parameters
-        ----------
-        training_loader : torch.utils.data.Dataset object
-            Data loader for training
-
-        """
-        pass
-
     @abstractmethod
     def impute(self, X):
         """ Impute missing data with the trained model.
@@ -59,32 +48,3 @@ class BaseImputer(ABC):
             Imputed data.
         """
         pass
-
-    def save_model(self, saving_path):
-        """ Save the model to a disk file.
-
-        Parameters
-        ----------
-        saving_path : the given path to save the model
-        """
-        try:
-            torch.save(self, saving_path)
-        except Exception as e:
-            print(e)
-        print(f'Saved successfully to {saving_path}.')
-
-    @staticmethod
-    def load_model(file_path):
-        """ Load model from a disk file.
-
-        Parameters
-        ----------
-        file_path : the path to a pre-saved model file.
-
-        Returns
-        -------
-        object,
-            Loaded model object.
-
-        """
-        return torch.load(file_path)
