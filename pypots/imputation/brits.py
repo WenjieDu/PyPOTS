@@ -462,7 +462,6 @@ class BRITS(BaseImputer):
 
         self.model = None
         self.optimizer = None
-        self.data_loader = None
         self.best_loss = float('inf')
         self.best_model_dict = None
 
