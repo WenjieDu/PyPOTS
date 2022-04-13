@@ -129,7 +129,7 @@ class SAITS(BaseImputer):
                  ORT_weight=1,
                  MIT_weight=1,
                  device=None):
-        super(SAITS, self).__init__()
+        super(SAITS, self).__init__(device)
 
         # model hype-parameters
         self.n_layers = n_layers
@@ -149,11 +149,6 @@ class SAITS(BaseImputer):
         self.patience = patience
         self.lr = learning_rate
         self.weight_decay = weight_decay
-
-        if device is None:
-            self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-        else:
-            self.device = device
 
         self.model = None
         self.optimizer = None

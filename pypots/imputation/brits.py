@@ -451,7 +451,7 @@ class BRITS(BaseImputer):
                  batch_size=32,
                  weight_decay=1e-5,
                  device=None):
-        super(BRITS, self).__init__()
+        super(BRITS, self).__init__(device)
 
         self.rnn_hidden_size = rnn_hidden_size
         self.batch_size = batch_size
@@ -459,10 +459,6 @@ class BRITS(BaseImputer):
         self.patience = patience
         self.lr = learning_rate
         self.weight_decay = weight_decay
-        if device is None:
-            self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-        else:
-            self.device = device
 
         self.model = None
         self.optimizer = None
