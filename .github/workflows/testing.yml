@@ -14,6 +14,7 @@ jobs:
     build:
         runs-on: ${{ matrix.os }}
         strategy:
+            fail-fast: false
             matrix:
                 os: [ubuntu-latest, windows-latest]
                 python-version: [3.6, 3.7, 3.8, 3.9]
@@ -39,6 +40,6 @@ jobs:
 
             - name: Coverage report
               env:
-                  GITHUB_TOKEN: ${{ secrets.WORKFLOW_TESTING }}
+                  GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
               run: |
                   coveralls --service=github
