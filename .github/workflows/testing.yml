@@ -16,8 +16,8 @@ jobs:
         strategy:
             fail-fast: false
             matrix:
-                os: [ubuntu-latest, windows-latest]
-                python-version: [3.6, 3.7, 3.8, 3.9]
+                os: [ubuntu-latest, windows-latest, macOS-latest]
+                python-version: [3.6, 3.9]
 
         steps:
             - uses: actions/checkout@v3
@@ -32,14 +32,12 @@ jobs:
                   pip install -r requirements.txt
                   pip install pytest
                   pip install coverage
-                  pip install coveralls
 
             - name: Test with pytest
               run: |
                   coverage run --source=pypots -m pytest
 
-            - name: Coverage report
-              env:
-                  GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
-              run: |
-                  coveralls --service=github
+            - name: Report Coverage
+              uses: coverallsapp/github-action@master
+              with:
+                  github-token: ${{ secrets.ACCESS_TOKEN }}
