@@ -11,7 +11,7 @@ on:
             - dev
 
 jobs:
-    build:
+    test:
         runs-on: ${{ matrix.os }}
         strategy:
             fail-fast: false
@@ -37,7 +37,12 @@ jobs:
               run: |
                   coverage run --source=pypots -m pytest
 
-            - name: Report Coverage
+            - name: Write the LCOV report
+              run: |
+                  coverage lcov
+
+            - name: Submit report
               uses: coverallsapp/github-action@master
               with:
                   github-token: ${{ secrets.ACCESS_TOKEN }}
+                  path-to-lcov: 'coverage.lcov'
