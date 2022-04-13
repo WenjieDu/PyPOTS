@@ -168,13 +168,13 @@ class DatasetForBRITS(BaseDataset):
         sample = [
             torch.tensor(idx),
             # for forward
-            torch.from_numpy(self.data['forward']['X'].astype('float32')),
-            torch.from_numpy(self.data['forward']['missing_mask'].astype('float32')),
-            torch.from_numpy(self.data['forward']['deltas'].astype('float32')),
+            torch.from_numpy(self.data['forward']['X'][idx].astype('float32')),
+            torch.from_numpy(self.data['forward']['missing_mask'][idx].astype('float32')),
+            torch.from_numpy(self.data['forward']['delta'][idx].astype('float32')),
             # for backward
-            torch.from_numpy(self.data['backward']['X'].astype('float32')),
-            torch.from_numpy(self.data['backward']['missing_mask'].astype('float32')),
-            torch.from_numpy(self.data['backward']['deltas'].astype('float32')),
+            torch.from_numpy(self.data['backward']['X'][idx].astype('float32')),
+            torch.from_numpy(self.data['backward']['missing_mask'][idx].astype('float32')),
+            torch.from_numpy(self.data['backward']['delta'][idx].astype('float32')),
         ]
 
         if self.y is not None:
