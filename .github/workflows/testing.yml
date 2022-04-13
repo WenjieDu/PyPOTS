@@ -31,18 +31,20 @@ jobs:
                   python -m pip install --upgrade pip
                   pip install -r requirements.txt
                   pip install pytest
-                  pip install coverage
+                  pip install pytest-cov
 
             - name: Test with pytest
               run: |
-                  coverage run --source=pypots -m pytest
+                  pytest --cov=./ --cov-report=xml
 
-            - name: Write the LCOV report
-              run: |
-                  coverage lcov
-
-            - name: Submit report
-              uses: coverallsapp/github-action@master
+            - name: Upload coverage to Codecov
+              uses: codecov/codecov-action@v2
               with:
-                  github-token: ${{ secrets.ACCESS_TOKEN }}
-                  path-to-lcov: 'coverage.lcov'
+                  directory: ./coverage/reports/
+                  env_vars: OS,PYTHON
+                  fail_ci_if_error: true
+                  files: ./coverage1.xml,./coverage2.xml
+                  flags: unittests
+                  name: codecov-umbrella
+                  path_to_write_report: ./coverage/codecov_report.txt
+                  verbose: true
