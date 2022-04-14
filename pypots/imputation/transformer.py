@@ -10,11 +10,11 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from pycorruptor import mcar, fill_nan_with_mask
 from torch.utils.data import DataLoader
 
-from pypots.base import BaseNNModel
 from pypots.data.base import DatasetForMIT
-from pypots.imputation.base import BaseImputer
+from pypots.imputation.base import BaseNNImputer
 from pypots.utils.metrics import cal_mae
 
 
@@ -205,7 +205,7 @@ class _TransformerEncoder(nn.Module):
         }
 
 
-class Transformer(BaseNNModel, BaseImputer):
+class Transformer(BaseNNImputer):
     def __init__(self,
                  n_layers,
                  d_model,
@@ -253,9 +253,11 @@ class Transformer(BaseNNModel, BaseImputer):
         if val_X is None:
             self._train_model(training_loader)
         else:
+            val_X_intact, val_X, val_X_missing_mask, val_X_indicating_mask = mcar(val_X, 0.2)
+            val_X = fill_nan_with_mask(val_X, val_X_missing_mask)
             val_set = DatasetForMIT(val_X)
             val_loader = DataLoader(val_set, batch_size=self.batch_size, shuffle=False)
-            self._train_model(training_loader, val_loader)
+            self._train_model(training_loader, val_loader, val_X_intact, val_X_indicating_mask)
 
         self.model.load_state_dict(self.best_model_dict)
         self.model.eval()  # set the model as eval status to freeze it.
