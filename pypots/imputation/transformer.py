@@ -12,8 +12,9 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import DataLoader
 
+from pypots.base import BaseNNModel
 from pypots.data.base import DatasetForMIT
-from pypots.imputation.base import BaseNNImputer
+from pypots.imputation.base import BaseImputer
 from pypots.utils.metrics import cal_mae
 
 
@@ -204,7 +205,7 @@ class _TransformerEncoder(nn.Module):
         }
 
 
-class Transformer(BaseNNImputer):
+class Transformer(BaseNNModel, BaseImputer):
     def __init__(self,
                  n_layers,
                  d_model,

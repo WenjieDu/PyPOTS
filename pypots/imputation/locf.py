@@ -25,7 +25,7 @@ class LOCF(BaseImputer):
         super(LOCF, self).__init__('cpu')
         self.nan = nan
 
-    def fit(self, X):
+    def fit(self, train_X, val_X=None):
         warnings.warn(
             'LOCF (Last Observed Carried Forward) imputation class has no parameter to train. '
             'Please run func impute(X) directly.'

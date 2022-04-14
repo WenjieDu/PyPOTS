@@ -28,6 +28,7 @@ setup(
         'scikit_learn',
         'scipy',
         'torch',
+        'tensorboard',
         'pandas',
         'pycorruptor',
         'tsdb'
