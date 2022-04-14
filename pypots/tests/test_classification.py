@@ -38,7 +38,6 @@ class TestBRITS(unittest.TestCase):
 
     def test_impute(self):
         predictions = self.brits.classify(self.X)
-        # assert not np.isnan(imputed_X).any(), 'Output still has missing values after running impute().'
 
 
 if __name__ == '__main__':
