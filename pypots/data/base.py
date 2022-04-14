@@ -178,7 +178,7 @@ class DatasetForBRITS(BaseDataset):
         ]
 
         if self.y is not None:
-            sample.append(self.y[idx])
+            sample.append(torch.tensor(self.y[idx], dtype=torch.long))
 
         return sample
 
@@ -225,6 +225,6 @@ class DatasetForMIT(BaseDataset):
         ]
 
         if self.y is not None:
-            sample.append(self.y[idx])
+            sample.append(torch.tensor(self.y[idx], dtype=torch.long))
 
         return sample
