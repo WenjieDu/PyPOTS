@@ -7,7 +7,6 @@ Some part of the code is from https://github.com/caow13/BRITS.
 
 import math
 
-import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -16,7 +15,7 @@ from torch.nn.parameter import Parameter
 from torch.utils.data import DataLoader
 
 from pypots.data.base import DatasetForBRITS
-from pypots.imputation.base import BaseImputer
+from pypots.imputation.base import BaseNNImputer
 from pypots.utils.metrics import cal_mae
 
 
@@ -413,7 +412,7 @@ class _BRITS(nn.Module):
         return ret
 
 
-class BRITS(BaseImputer):
+class BRITS(BaseNNImputer):
     """ BRITS implementation of BaseImputer
 
     Attributes
@@ -451,92 +450,67 @@ class BRITS(BaseImputer):
                  batch_size=32,
                  weight_decay=1e-5,
                  device=None):
-        super(BRITS, self).__init__(device)
+        super(BRITS, self).__init__(learning_rate, epochs, patience, batch_size, weight_decay, device)
 
         self.rnn_hidden_size = rnn_hidden_size
-        self.batch_size = batch_size
-        self.epochs = epochs
-        self.patience = patience
-        self.lr = learning_rate
-        self.weight_decay = weight_decay
 
-        self.model = None
-        self.optimizer = None
-        self.best_loss = float('inf')
-        self.best_model_dict = None
-
-    def fit(self, X):
+    def fit(self, train_X, val_X=None):
         """ Fit the model on the given training data.
 
         Parameters
         ----------
-        X : array, shape [n_samples, sequence length (time steps), n_features],
+        train_X : array, shape of [n_samples, sequence length (time steps), n_features],
+            Data for training.
+        val_X : array, optional, shape of [n_samples, sequence length (time steps), n_features],
+            Data for validating.
 
         Returns
         -------
         self : object,
             Trained model.
         """
-        assert len(X.shape) == 3, f'Input should have 3 dimensions [n_samples, seq_len, n_features],' \
-                                  f'while the input.shape={X.shape}'
-        _, seq_len, n_features = X.shape
+        assert len(train_X.shape) == 3, f'train_X should have 3 dimensions [n_samples, seq_len, n_features],' \
+                                        f'while train_X.shape={train_X.shape}'
+        if val_X is not None:
+            assert len(train_X.shape) == 3, f'val_X should have 3 dimensions [n_samples, seq_len, n_features],' \
+                                            f'while val_X.shape={train_X.shape}'
+
+        _, seq_len, n_features = train_X.shape
         self.model = _BRITS(seq_len, n_features, self.rnn_hidden_size, self.device)
         self.model = self.model.to(self.device)
-        training_set = DatasetForBRITS(X)  # time_gaps is necessary for BRITS
+        training_set = DatasetForBRITS(train_X)  # time_gaps is necessary for BRITS
         training_loader = DataLoader(training_set, batch_size=self.batch_size, shuffle=True)
-        self._train_model(training_loader)
+
+        if val_X is None:
+            self._train_model(training_loader)
+        else:
+            val_set = DatasetForBRITS(val_X)
+            val_loader = DataLoader(val_set, batch_size=self.batch_size, shuffle=False)
+            self._train_model(training_loader, val_loader)
+
         self.model.load_state_dict(self.best_model_dict)
         self.model.eval()  # set the model as eval status to freeze it.
         return self
 
-    def _train_model(self, training_loader):
-        self.model.train()
-        self.optimizer = torch.optim.Adam(self.model.parameters(),
-                                          lr=self.lr,
-                                          weight_decay=self.weight_decay)
-
-        # each training starts from the very beginning, so reset the loss and model dict here
-        self.best_loss = float('inf')
-        self.best_model_dict = None
-
-        for epoch in range(self.epochs):
-            loss_collector = []
-            for idx, data in enumerate(training_loader):
-                # fetch data
-                indices, X, missing_mask, deltas, back_X, back_missing_mask, back_deltas = \
-                    map(lambda x: x.to(self.device), data)
-                # assemble input data
-                inputs = {
-                    'indices': indices,
-                    'forward': {
-                        'X': X,
-                        'missing_mask': missing_mask,
-                        'deltas': deltas
-                    },
-                    'backward': {
-                        'X': back_X,
-                        'missing_mask': back_missing_mask,
-                        'deltas': back_deltas
-                    }
-                }
-                self.optimizer.zero_grad()
-                results = self.model.forward(inputs)
-                results['loss'].backward()
-                self.optimizer.step()
-                loss_collector.append(results['loss'].item())
-
-            epoch_mean_loss = np.mean(loss_collector)  # mean loss of the current epoch
-            print(f'epoch {epoch}: training loss {epoch_mean_loss:.4f} ')
-
-            if epoch_mean_loss < self.best_loss:
-                self.best_loss = epoch_mean_loss
-                self.best_model_dict = self.model.state_dict()
-            else:
-                self.patience -= 1
-                if self.patience == 0:
-                    print('Exceeded the training patience. Terminating the training procedure...')
-                    break
-        print('Finished all training epochs.')
+    def input_data_processing(self, data):
+        # fetch data
+        indices, X, missing_mask, deltas, back_X, back_missing_mask, back_deltas = \
+            map(lambda x: x.to(self.device), data)
+        # assemble input data
+        inputs = {
+            'indices': indices,
+            'forward': {
+                'X': X,
+                'missing_mask': missing_mask,
+                'deltas': deltas
+            },
+            'backward': {
+                'X': back_X,
+                'missing_mask': back_missing_mask,
+                'deltas': back_deltas
+            }
+        }
+        return inputs
 
     def impute(self, X):
         test_set = DatasetForBRITS(X)
@@ -545,22 +519,7 @@ class BRITS(BaseImputer):
 
         with torch.no_grad():
             for idx, data in enumerate(test_loader):
-                indices, X, missing_mask, deltas, back_X, back_missing_mask, back_deltas = \
-                    map(lambda x: x.to(self.device), data)
-                # assemble input data
-                inputs = {
-                    'indices': indices,
-                    'forward': {
-                        'X': X,
-                        'missing_mask': missing_mask,
-                        'deltas': deltas
-                    },
-                    'backward': {
-                        'X': back_X,
-                        'missing_mask': back_missing_mask,
-                        'deltas': back_deltas
-                    }
-                }
+                inputs = self.input_data_processing(data)
                 imputed_data = self.model.impute(inputs)
                 imputation_collector.append(imputed_data)
 

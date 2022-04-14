@@ -13,7 +13,7 @@ import torch.nn.functional as F
 from torch.utils.data import DataLoader
 
 from pypots.data.base import DatasetForMIT
-from pypots.imputation.base import BaseImputer
+from pypots.imputation.base import BaseNNImputer
 from pypots.utils.metrics import cal_mae
 
 
@@ -204,7 +204,7 @@ class _TransformerEncoder(nn.Module):
         }
 
 
-class Transformer(BaseImputer):
+class Transformer(BaseNNImputer):
     def __init__(self,
                  n_layers,
                  d_model,
@@ -213,15 +213,15 @@ class Transformer(BaseImputer):
                  d_k,
                  d_v,
                  dropout,
+                 ORT_weight=1,
+                 MIT_weight=1,
                  learning_rate=1e-3,
                  epochs=100,
                  patience=10,
                  batch_size=32,
                  weight_decay=1e-5,
-                 ORT_weight=1,
-                 MIT_weight=1,
                  device=None):
-        super(Transformer, self).__init__(device)
+        super(Transformer, self).__init__(learning_rate, epochs, patience, batch_size, weight_decay, device)
 
         # model hype-parameters
         self.n_layers = n_layers
@@ -234,75 +234,43 @@ class Transformer(BaseImputer):
         self.ORT_weight = ORT_weight
         self.MIT_weight = MIT_weight
 
-        # training hype-parameters
-        self.batch_size = batch_size
-        self.epochs = epochs
-        self.patience = patience
-        self.lr = learning_rate
-        self.weight_decay = weight_decay
+    def fit(self, train_X, val_X=None):
+        assert len(train_X.shape) == 3, f'train_X should have 3 dimensions [n_samples, seq_len, n_features],' \
+                                        f'while train_X.shape={train_X.shape}'
+        if val_X is not None:
+            assert len(train_X.shape) == 3, f'val_X should have 3 dimensions [n_samples, seq_len, n_features],' \
+                                            f'while val_X.shape={train_X.shape}'
 
-        self.model = None
-        self.optimizer = None
-        self.best_loss = float('inf')
-        self.best_model_dict = None
+        _, seq_len, n_features = train_X.shape
 
-    def fit(self, X):
-        assert len(X.shape) == 3, f'Input should have 3 dimensions [n_samples, seq_len, n_features],' \
-                                  f'while the input.shape={X.shape}'
-        _, seq_len, n_features = X.shape
         self.model = _TransformerEncoder(self.n_layers, seq_len, n_features, self.d_model, self.d_inner,
                                          self.n_head, self.d_k, self.d_v, self.dropout,
                                          self.ORT_weight, self.MIT_weight, self.device)
         self.model = self.model.to(self.device)
-        training_set = DatasetForMIT(X)
+        training_set = DatasetForMIT(train_X)
         training_loader = DataLoader(training_set, batch_size=self.batch_size, shuffle=True)
-        self._train_model(training_loader)
+        if val_X is None:
+            self._train_model(training_loader)
+        else:
+            val_set = DatasetForMIT(val_X)
+            val_loader = DataLoader(val_set, batch_size=self.batch_size, shuffle=False)
+            self._train_model(training_loader, val_loader)
+
         self.model.load_state_dict(self.best_model_dict)
         self.model.eval()  # set the model as eval status to freeze it.
         return self
 
-    def _train_model(self, training_loader):
-        self.model.train()
-        self.optimizer = torch.optim.Adam(self.model.parameters(),
-                                          lr=self.lr,
-                                          weight_decay=self.weight_decay)
+    def input_data_processing(self, data):
+        indices, X_intact, X, missing_mask, indicating_mask = map(lambda x: x.to(self.device), data)
 
-        # each training starts from the very beginning, so reset the loss and model dict here
-        self.best_loss = float('inf')
-        self.best_model_dict = None
+        inputs = {
+            'X': X,
+            'X_intact': X_intact,
+            'missing_mask': missing_mask,
+            'indicating_mask': indicating_mask
+        }
 
-        for epoch in range(self.epochs):
-            loss_collector = []
-            for idx, data in enumerate(training_loader):
-                # fetch data
-                indices, X_intact, X, missing_mask, indicating_mask = \
-                    map(lambda x: x.to(self.device), data)
-
-                inputs = {
-                    'X': X,
-                    'X_intact': X_intact,
-                    'missing_mask': missing_mask,
-                    'indicating_mask': indicating_mask
-                }
-
-                self.optimizer.zero_grad()
-                results = self.model.forward(inputs)
-                results['loss'].backward()
-                self.optimizer.step()
-                loss_collector.append(results['loss'].item())
-
-            epoch_mean_loss = np.mean(loss_collector)  # mean loss of the current epoch
-            print(f'epoch {epoch}: training loss {epoch_mean_loss:.4f} ')
-
-            if epoch_mean_loss < self.best_loss:
-                self.best_loss = epoch_mean_loss
-                self.best_model_dict = self.model.state_dict()
-            else:
-                self.patience -= 1
-                if self.patience == 0:
-                    print('Exceeded the training patience. Terminating the training procedure...')
-                    break
-        print('Finished all training epochs.')
+        return inputs
 
     def impute(self, X):
         test_set = DatasetForMIT(X)
@@ -311,15 +279,7 @@ class Transformer(BaseImputer):
 
         with torch.no_grad():
             for idx, data in enumerate(test_loader):
-                indices, X_intact, X, missing_mask, indicating_mask = \
-                    map(lambda x: x.to(self.device), data)
-                # assemble input data
-                inputs = {
-                    'X': X,
-                    'X_intact': X_intact,
-                    'missing_mask': missing_mask,
-                    'indicating_mask': indicating_mask
-                }
+                inputs = self.input_data_processing(data)
                 imputed_data, _ = self.model.impute(inputs)
                 imputation_collector.append(imputed_data)
 
