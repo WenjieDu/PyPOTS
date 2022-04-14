@@ -178,7 +178,7 @@ class DatasetForBRITS(BaseDataset):
         ]
 
         if self.y is not None:
-            sample.append(torch.from_numpy(self.y[idx]))
+            sample.append(self.y[idx])
 
         return sample
 
@@ -225,6 +225,6 @@ class DatasetForMIT(BaseDataset):
         ]
 
         if self.y is not None:
-            sample.append(torch.from_numpy(self.y[idx]))
+            sample.append(self.y[idx])
 
         return sample
