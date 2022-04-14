@@ -10,8 +10,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import DataLoader
 
-from pypots.base import BaseNNModel
-from pypots.classification.base import BaseClassifier
+from pypots.classification.base import BaseNNClassifier
 from pypots.data.base import DatasetForBRITS
 from pypots.imputation.brits import (
     RITS as imputation_RITS,
@@ -100,7 +99,7 @@ class _BRITS(imputation_BRITS, nn.Module):
         return merged_ret
 
 
-class BRITS(BaseNNModel, BaseClassifier):
+class BRITS(BaseNNClassifier):
     """ BRITS implementation of BaseClassifier.
 
     Attributes
@@ -141,10 +140,9 @@ class BRITS(BaseNNModel, BaseClassifier):
                  batch_size=32,
                  weight_decay=1e-5,
                  device=None):
-        super(BRITS, self).__init__(learning_rate, epochs, patience, batch_size, weight_decay, device)
+        super(BRITS, self).__init__(n_classes, learning_rate, epochs, patience, batch_size, weight_decay, device)
 
         self.rnn_hidden_size = rnn_hidden_size
-        self.n_classes = n_classes
         self.classification_weight = classification_weight
         self.reconstruction_weight = reconstruction_weight
 
