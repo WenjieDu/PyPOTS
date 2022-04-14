@@ -19,16 +19,19 @@ class BaseClassifier(BaseModel):
         super(BaseClassifier, self).__init__(device)
 
     @abstractmethod
-    def fit(self, X, y):
+    def fit(self, train_X, train_y, val_X=None, val_y=None):
         """ Train the imputer.
 
         Parameters
         ----------
-        X : array-like of shape [n_samples, sequence length (time steps), n_features],
+        train_X : array-like of shape [n_samples, sequence length (time steps), n_features],
             Time-series data for training, can contain missing values.
-
-        y : array,
-            Classification labels.
+        train_y : array,
+            Classification labels for training.
+        val_X : array-like of shape [n_samples, sequence length (time steps), n_features],
+            Time-series data for validation, can contain missing values.
+        val_y : array,
+            Classification labels for validation.
 
         Returns
         -------
@@ -38,16 +41,13 @@ class BaseClassifier(BaseModel):
         return self
 
     @abstractmethod
-    def classify(self, X, y):
+    def classify(self, X):
         """ Impute missing data with the trained model.
 
         Parameters
         ----------
         X : array-like of shape [n_samples, sequence length (time steps), n_features],
             Time-series data for imputing contains missing values.
-
-        y : array,
-            Classification labels.
 
         Returns
         -------
