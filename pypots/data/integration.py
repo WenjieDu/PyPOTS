@@ -7,7 +7,16 @@ Integrate with data functions from other libraries.
 
 
 import pycorruptor as corruptor
-from tsdb import load_specific_dataset as _load_specific_dataset
+from tsdb import AVAILABLE_DATASETS as _AVAILABLE_DATASETS
+from tsdb import (
+    load_specific_dataset as _load_specific_dataset,
+    # delete_all_cached_data,
+    # CACHED_DATASET_DIR,
+    # pickle_load,
+    # pickle_dump,
+)
+
+AVAILABLE_DATASETS = _AVAILABLE_DATASETS
 
 
 def fill_nan_with_mask(X, mask):

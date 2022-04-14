@@ -6,9 +6,10 @@ Base class for main models in PyPOTS.
 # License: GLP-v3
 
 
-from abc import ABC
+from abc import ABC, abstractmethod
 
 import torch
+from torch.utils.tensorboard import SummaryWriter
 
 
 class BaseModel(ABC):
@@ -16,10 +17,17 @@ class BaseModel(ABC):
     """
 
     def __init__(self, device):
+        self.logger = {}
+
         if device is None:
             self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         else:
             self.device = device
+
+    def save_logs_to_tensorboard(self, saving_path):
+        tb_summary_writer = SummaryWriter(saving_path)
+        tb_summary_writer.add_custom_scalars(self.logger)
+        tb_summary_writer.close()
 
     def save_model(self, saving_path):
         """ Save the model to a disk file.
