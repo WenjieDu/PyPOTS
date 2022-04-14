@@ -11,3 +11,10 @@ from .base import (
     DatasetForBRITS,
     DatasetForMIT,
 )
+
+from .integration import (
+    fill_nan_with_mask,
+    mcar,
+    load_specific_dataset,
+
+)
