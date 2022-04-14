@@ -14,8 +14,9 @@ from torch.autograd import Variable
 from torch.nn.parameter import Parameter
 from torch.utils.data import DataLoader
 
+from pypots.base import BaseNNModel
 from pypots.data.base import DatasetForBRITS
-from pypots.imputation.base import BaseNNImputer
+from pypots.imputation.base import BaseImputer
 from pypots.utils.metrics import cal_mae
 
 
@@ -412,7 +413,7 @@ class _BRITS(nn.Module):
         return ret
 
 
-class BRITS(BaseNNImputer):
+class BRITS(BaseNNModel, BaseImputer):
     """ BRITS implementation of BaseImputer
 
     Attributes
