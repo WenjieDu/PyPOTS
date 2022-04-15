@@ -35,7 +35,7 @@ def mcar(X, rate, nan=0):
 
 
 def load_specific_dataset(dataset_name, use_cache=True):
-    print('Loading the dataset with TSDB (https://github.com/WenjieDu/Time_Series_Database)...')
+    print(f'Loading the dataset {dataset_name} with TSDB (https://github.com/WenjieDu/Time_Series_Database)...')
     return _load_specific_dataset(dataset_name, use_cache)
 
 

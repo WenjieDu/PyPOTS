@@ -516,6 +516,7 @@ class BRITS(BaseNNImputer):
         return inputs
 
     def impute(self, X):
+        self.model.eval()  # set the model as eval status to freeze it.
         test_set = DatasetForBRITS(X)
         test_loader = DataLoader(test_set, batch_size=self.batch_size, shuffle=False)
         imputation_collector = []
