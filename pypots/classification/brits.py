@@ -86,8 +86,8 @@ class _BRITS(imputation_BRITS, nn.Module):
         """
         merged_ret, ret_f, ret_b = self.classify(inputs)
         # inputs['label'] = F.one_hot(inputs['label'], self.n_classes)
-        ret_f['classification_loss'] = F.nll_loss(ret_f['prediction'], inputs['label'])
-        ret_b['classification_loss'] = F.nll_loss(ret_b['prediction'], inputs['label'])
+        ret_f['classification_loss'] = F.nll_loss(torch.log(ret_f['prediction']), inputs['label'])
+        ret_b['classification_loss'] = F.nll_loss(torch.log(ret_b['prediction']), inputs['label'])
         consistency_loss = self.get_consistency_loss(ret_f['imputed_data'], ret_b['imputed_data'])
         classification_loss = (ret_f['classification_loss'] + ret_b['classification_loss']) / 2
         merged_ret['consistency_loss'] = consistency_loss
@@ -207,6 +207,7 @@ class BRITS(BaseNNClassifier):
         return inputs
 
     def classify(self, X):
+        self.model.eval()  # set the model as eval status to freeze it.
         test_set = DatasetForBRITS(X)
         test_loader = DataLoader(test_set, batch_size=self.batch_size, shuffle=False)
         prediction_collector = []
