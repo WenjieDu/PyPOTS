@@ -24,7 +24,11 @@ class BaseDataset(Dataset):
 
     def __init__(self, X, y=None):
         super(BaseDataset, self).__init__()
+        assert isinstance(X, np.ndarray), f'X should be numpy array, but got {type(X)}'
         assert len(X.shape) == 3, "X should have 3 dimensions, [n_samples, seq_len, n_features]."
+        if y is not None:
+            assert isinstance(y, np.ndarray), f'y should be numpy array, but got {type(y)}'
+
         self.X = X
         self.y = y
         self.seq_len = self.X.shape[1]
@@ -54,20 +58,7 @@ class BaseDataset(Dataset):
             label (optional) : tensor,
                 The target label of the time-series sample.
         """
-        X_intact = self.X[idx]
-
-        missing_mask = (~np.isnan(X_intact)).astype(np.float32)
-        X_intact = np.nan_to_num(X_intact)
-        sample = {
-            'index': torch.tensor(idx),
-            'X': torch.from_numpy(X_intact),  # no artificially missing values, so X_intact is for model input
-            'missing_mask': torch.from_numpy(missing_mask),
-        }
-
-        if self.y:
-            sample['label'] = torch.from_numpy(self.y[idx])
-
-        return sample
+        pass
 
 
 class DatasetForBRITS(BaseDataset):
