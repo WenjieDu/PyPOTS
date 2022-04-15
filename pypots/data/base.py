@@ -44,19 +44,6 @@ class BaseDataset(Dataset):
         ----------
         idx : int,
             The index to fetch the specified sample.
-
-        Returns
-        -------
-        dict,
-            A dict contains
-            index : int tensor,
-                The index of the sample.
-            X : tensor,
-                The feature vector for model input.
-            missing_mask : tensor,
-                The mask indicates all missing values in X.
-            label (optional) : tensor,
-                The target label of the time-series sample.
         """
         pass
 
