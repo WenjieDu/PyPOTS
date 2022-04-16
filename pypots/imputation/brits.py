@@ -15,7 +15,7 @@ from torch.autograd import Variable
 from torch.nn.parameter import Parameter
 from torch.utils.data import DataLoader
 
-from pypots.data.base import DatasetForBRITS
+from pypots.data import DatasetForBRITS
 from pypots.imputation.base import BaseNNImputer
 from pypots.utils.metrics import cal_mae
 
