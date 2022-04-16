@@ -45,4 +45,5 @@ jobs:
               uses: coverallsapp/github-action@master
               with:
                   github-token: ${{ secrets.ACCESS_TOKEN }}
+                  NODE_COVERALLS_DEBUG: 1
                   path-to-lcov: 'coverage.lcov'
