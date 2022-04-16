@@ -11,7 +11,7 @@ import torch.nn.functional as F
 from torch.utils.data import DataLoader
 
 from pypots.classification.base import BaseNNClassifier
-from pypots.data.base import DatasetForBRITS
+from pypots.data import DatasetForBRITS
 from pypots.imputation.brits import (
     RITS as imputation_RITS,
     _BRITS as imputation_BRITS
