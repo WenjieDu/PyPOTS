@@ -9,7 +9,7 @@ import unittest
 
 import numpy as np
 
-from pypots.classification import BRITS
+from pypots.classification import BRITS, GRUD
 from pypots.data import generate_random_walk_for_classification
 
 
@@ -38,6 +38,33 @@ class TestBRITS(unittest.TestCase):
 
     def test_impute(self):
         predictions = self.brits.classify(self.X)
+
+
+class TestGRUD(unittest.TestCase):
+    def setUp(self) -> None:
+        # generate time-series classification data
+        X, y = generate_random_walk_for_classification(n_classes=3, n_samples_each_class=10)
+        X[X < 0] = np.nan  # create missing values
+        self.X = X
+        self.y = y
+        self.grud = GRUD(256, n_classes=3, epochs=1)
+        self.grud.fit(self.X, self.y)
+
+    def test_parameters(self):
+        assert (hasattr(self.grud, 'model')
+                and self.grud.model is not None)
+
+        assert (hasattr(self.grud, 'optimizer')
+                and self.grud.optimizer is not None)
+
+        assert hasattr(self.grud, 'best_loss')
+        self.assertNotEqual(self.grud.best_loss, float('inf'))
+
+        assert (hasattr(self.grud, 'best_model_dict')
+                and self.grud.best_model_dict is not None)
+
+    def test_impute(self):
+        predictions = self.grud.classify(self.X)
 
 
 if __name__ == '__main__':

@@ -11,6 +11,38 @@ import torch
 from pypots.data.base import BaseDataset
 
 
+def parse_delta(missing_mask):
+    """ Generate time-gap (delta) matrix from missing masks.
+
+    Parameters
+    ----------
+    missing_mask : array, shape of [seq_len, n_features]
+        Binary masks indicate missing values.
+
+    Returns
+    -------
+    delta, array,
+        Delta matrix indicates time gaps of missing values.
+        Its math definition please refer to :cite:`che2018MissingData`.
+    """
+
+    assert len(missing_mask.shape) == 3, f'missing_mask should has 3 dimensions, ' \
+                                         f'shape like [n_samples, seq_len, n_features], ' \
+                                         f'while the input is {missing_mask.shape}'
+    n_samples, seq_len, n_features = missing_mask.shape
+    delta_collector = []
+    for m_mask in missing_mask:
+        delta = []
+        for step in range(seq_len):
+            if step == 0:
+                delta.append(np.zeros(n_features))
+            else:
+                delta.append(np.ones(n_features) + (1 - m_mask[step]) * delta[-1])
+        delta = np.asarray(delta)
+        delta_collector.append(delta)
+    return np.asarray(delta_collector)
+
+
 class DatasetForBRITS(BaseDataset):
     """ Dataset class for BRITS.
 
@@ -29,10 +61,10 @@ class DatasetForBRITS(BaseDataset):
         # Training will take too much time if we put delta calculation in __getitem__().
         forward_missing_mask = (~np.isnan(X)).astype(np.float32)
         forward_X = np.nan_to_num(X)
-        forward_delta = self.parse_delta(forward_missing_mask)
+        forward_delta = parse_delta(forward_missing_mask)
         backward_X = np.flip(forward_X, axis=1).copy()
         backward_missing_mask = np.flip(forward_missing_mask, axis=1).copy()
-        backward_delta = self.parse_delta(backward_missing_mask)
+        backward_delta = parse_delta(backward_missing_mask)
 
         self.data = {
             'forward': {
@@ -46,42 +78,6 @@ class DatasetForBRITS(BaseDataset):
                 'delta': backward_delta
             },
         }
-
-    @staticmethod
-    def parse_delta(missing_mask):
-        """ Generate time-gap (delta) matrix from missing masks.
-
-        Parameters
-        ----------
-        missing_mask : array, shape of [seq_len, n_features]
-            Binary masks indicate missing values.
-
-        Returns
-        -------
-        delta, array,
-            Delta matrix indicates time gaps of missing values.
-            Its math definition please refer to :cite:`che2018MissingData`.
-        """
-
-        assert len(missing_mask.shape) == 3, f'missing_mask should has 3 dimensions, ' \
-                                             f'shape like [n_samples, seq_len, n_features], ' \
-                                             f'while the input is {missing_mask.shape}'
-        n_samples, seq_len, n_features = missing_mask.shape
-        delta_collector = []
-        for m_mask in missing_mask:
-            delta = []
-            for step in range(seq_len):
-                if step == 0:
-                    delta.append(np.zeros(n_features))
-                else:
-                    delta.append(np.ones(n_features) + (1 - m_mask[step]) * delta[-1])
-            delta = np.asarray(delta)
-            delta_collector.append(delta)
-        return np.asarray(delta_collector)
-
-    # TODO: preprocess the dataset and cache it, mainly for saving the time of calculating deltas
-    def preprocess_and_cache(self):
-        pass
 
     def __getitem__(self, idx):
         """ Fetch data according to index.

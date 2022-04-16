@@ -6,6 +6,7 @@ Expose all usable data manipulation classes and functions.
 # License: GPL-v3
 
 from .DatasetForBRITS import DatasetForBRITS
+from .DatasetForGRUD import DatasetForGRUD
 from .DatasetForMIT import DatasetForMIT
 from .generating import generate_random_walk, generate_random_walk_for_classification
 from .integration import (
