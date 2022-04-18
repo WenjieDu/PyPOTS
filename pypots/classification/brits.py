@@ -27,7 +27,7 @@ class RITS(imputation_RITS):
     def forward(self, inputs, direction='forward'):
         ret_dict = super(RITS, self).forward(inputs, direction)
         logits = self.classifier(ret_dict['final_hidden_state'])
-        ret_dict['prediction'] = torch.softmax(logits, 1)  # TODO: need to confirm the dim
+        ret_dict['prediction'] = torch.softmax(logits, dim=1)
         return ret_dict
 
 

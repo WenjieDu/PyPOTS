@@ -13,7 +13,7 @@ import torch.nn.functional as F
 from pycorruptor import mcar, fill_nan_with_mask
 from torch.utils.data import DataLoader
 
-from pypots.data import DatasetForMIT
+from pypots.data.dataset_for_mit import DatasetForMIT
 from pypots.imputation.base import BaseNNImputer
 from pypots.utils.metrics import cal_mae
 

@@ -56,8 +56,6 @@ class _GRUD(nn.Module):
 
         logits = self.classifier(hidden_state)
         prediction = torch.softmax(logits, dim=1)
-        # print(f'logits: {logits}, logits.shape: {logits.shape}')
-        # print(f'prediction: {prediction}')
         return prediction
 
     def forward(self, inputs):
