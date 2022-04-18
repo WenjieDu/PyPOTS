@@ -1,4 +1,4 @@
-<a href='https://github.com/WenjieDu/PyPOTS'><img src='https://raw.githubusercontent.com/WenjieDu/PyPOTS/main/docs/figs/PyPOTS%20logo.svg?sanitize=true' width='190' align='right' /></a>
+<a href='https://github.com/PyPOTS/PyPOTS'><img src='https://raw.githubusercontent.com/PyPOTS/PyPOTS/main/docs/figs/PyPOTS%20logo.svg?sanitize=true' width='190' align='right' /></a>
 
 # <p align='center'> Welcome to PyPOTS </p>
 ### <p align='center'> A Python Toolbox for Data Mining on Partially-Observed Time Series </p>
@@ -12,12 +12,16 @@
     <a alt='PyPI download number' href='https://pypi.org/project/pypots'>
         <img src='https://static.pepy.tech/personalized-badge/pypots?period=total&units=international_system&left_color=grey&right_color=blue&left_text=Downloads'>
     </a>
-    <!-- Hits number -->
-    <img src='https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2FPyPOTS%2FPyPOTS&count_bg=%23009A0A&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=Hits&edge_flat=false'>
     <!-- Chat in Discussions -->
-    <a alt='GitHub Discussions' href='https://github.com/WenjieDu/PyPOTS/discussions'>
+    <a alt='GitHub Discussions' href='https://github.com/PyPOTS/PyPOTS/discussions'>
         <img src='https://img.shields.io/badge/Chat-in_Discussions-green?logo=github&color=60A98D'>
     </a>
+    <!-- Code of Conduct -->
+    <a alt='CODE_OF_CONDUCT' href='CODE_OF_CONDUCT.md'> 
+        <img src='https://img.shields.io/badge/Contributor%20Covenant-v2.1-4baaaa.svg'>
+    </a>
+    <!-- Hits number -->
+    <img src='https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2FPyPOTS%2FPyPOTS&count_bg=%23009A0A&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=Visits&edge_flat=false'>
 </p>
 
 ⦿ `Motivation`: Due to all kinds of reasons like failure of collection sensors, communication error, and unexpected malfunction, missing values are common to see in time series from the real-world environment. This makes partially-observed time series (POTS) a pervasive problem in open-world modeling and prevents advanced data analysis. Although this problem is important, the area of data mining on POTS still lacks a dedicated toolkit. PyPOTS is created to fulfill this blank, to become a handy toolbox that is going to make data mining on POTS easy rather than tedious, to help engineers and researchers focus more on the core problems in their hands rather than on how to deal with the missing parts in their data.
@@ -29,7 +33,7 @@ Install the latest release from PyPI:
 > pip install pypots
 
 Install with the latest code on GitHub: 
-> pip install `https://github.com/WenjieDu/PyPOTS/archive/master.zip`
+> pip install `https://github.com/PyPOTS/PyPOTS/archive/master.zip`
 
 ## ❖ Available Algorithms
 | Task Type  | Model Type | Algorithm    | Year    | Reference |        
@@ -40,7 +44,7 @@ Install with the latest code on GitHub:
 | Classification | Neural Network | GRU-D | 2018 | [^4] |
 
 ---
-‼️ PyPOTS is currently under development. If you like it and look forward to its growth, <ins>please give PyPOTS a star and watch it to keep you posted on its progress and to let me know that its development is meaningful</ins>. If you have any feedback, or want to contribute ideas/suggestions or share time-series related algorithms/papers, please join PyPOTS community and <a alt='GitHub Discussions' href='https://github.com/WenjieDu/PyPOTS/discussions'><img align='center' src='https://img.shields.io/badge/Chat-in_Discussions-green?logo=github&color=60A98D'></a>, or [drop me an email](mailto:wenjay.du@gmail.com).
+‼️ PyPOTS is currently under development. If you like it and look forward to its growth, <ins>please give PyPOTS a star and watch it to keep you posted on its progress and to let me know that its development is meaningful</ins>. If you have any feedback, or want to contribute ideas/suggestions or share time-series related algorithms/papers, please join PyPOTS community and <a alt='GitHub Discussions' href='https://github.com/PyPOTS/PyPOTS/discussions'><img align='center' src='https://img.shields.io/badge/Chat-in_Discussions-green?logo=github&color=60A98D'></a>, or [drop me an email](mailto:wenjay.du@gmail.com).
 
 Thank you all for your attention! 😃
 
