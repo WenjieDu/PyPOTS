@@ -42,7 +42,7 @@ def generate_random_walk(n_samples=1000, n_steps=24, n_features=10, mu=0., std=1
 
 
 def generate_random_walk_for_classification(n_classes=2, n_samples_each_class=500, n_steps=24, n_features=10,
-                                            random_state=None):
+                                            shuffle=True, random_state=None):
     ts_collector = []
     label_collector = []
 
@@ -59,4 +59,13 @@ def generate_random_walk_for_classification(n_classes=2, n_samples_each_class=50
 
     ts_collector = np.asarray(ts_collector)
     label_collector = np.asarray(label_collector)
+
+    # if shuffling, then shuffle the order of samples
+    if shuffle:
+        indices = np.arange(len(ts_collector))
+        np.random.shuffle(indices)
+        ts_collector = ts_collector[indices]
+        ts_collector = ts_collector[indices]
+        label_collector = label_collector[indices]
+
     return ts_collector, label_collector
