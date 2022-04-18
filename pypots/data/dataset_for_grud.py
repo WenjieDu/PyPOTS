@@ -8,7 +8,7 @@ Dataset class for model GRUD.
 import numpy as np
 import torch
 
-from pypots.data.DatasetForBRITS import parse_delta
+from pypots.data.dataset_for_brits import parse_delta
 from pypots.data.base import BaseDataset
 from pypots.imputation import LOCF
 
