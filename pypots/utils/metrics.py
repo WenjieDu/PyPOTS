@@ -69,7 +69,7 @@ def cal_binary_classification_metrics(predictions, targets, pos_label=1):
     classification_metrics : dict
         A dictionary contains classification metrics and useful results:
         predictions: binary categories of the prediction results;
-        acc_score: prediction accuracy;
+        accuracy: prediction accuracy;
         precision: prediction precision;
         recall: prediction recall;
         f1: F1-score;
@@ -91,19 +91,22 @@ def cal_binary_classification_metrics(predictions, targets, pos_label=1):
 
     if len(predictions.shape) == 1 or (len(predictions.shape) == 2 and predictions.shape[1] == 1):
         predictions = np.asarray(predictions).flatten()  # turn the array shape into [n_samples]
+        binary_predictions = predictions
         prediction_categories = (predictions >= 0.5).astype(int)
     elif len(predictions.shape) == 2 and predictions.shape[1] > 1:
         prediction_categories = np.argmax(predictions, axis=1)
+        binary_predictions = np.take(predictions, prediction_categories)
     else:
         raise f'predictions dimensions should be 1 or 2, but got predictions.shape: {predictions.shape}'
-    precision, recall, f1 = cal_precision_recall_f1(targets, prediction_categories, pos_label=pos_label)
-    pr_auc, precisions, recalls, _ = cal_pr_auc(targets, predictions, pos_label=pos_label)
+
+    precision, recall, f1 = cal_precision_recall_f1(prediction_categories, targets, pos_label=pos_label)
+    pr_auc, precisions, recalls, _ = cal_pr_auc(binary_predictions, targets, pos_label=pos_label)
     acc_score = cal_acc(prediction_categories, targets)
-    ROC_AUC, fprs, tprs, _ = cal_roc_auc(predictions, targets)
+    ROC_AUC, fprs, tprs, _ = cal_roc_auc(binary_predictions, targets)
     PR_AUC = metrics.auc(recalls, precisions)
     classification_metrics = {
         'predictions': prediction_categories,
-        'acc_score': acc_score,
+        'accuracy': acc_score,
         'precision': precision,
         'recall': recall,
         'f1': f1,
@@ -200,11 +203,10 @@ def cal_roc_auc(predictions, targets, pos_label=1):
         Increasing thresholds on the decision function used to compute FPR and TPR.
 
     """
-    auc = metrics.roc_auc_score(y_true=targets, y_score=predictions,
-                                pos_label=pos_label)
     fprs, tprs, thresholds = metrics.roc_curve(y_true=targets, y_score=predictions,
                                                pos_label=pos_label)
-    return auc, fprs, tprs, thresholds
+    roc_auc = metrics.auc(fprs, tprs)
+    return roc_auc, fprs, tprs, thresholds
 
 
 def cal_acc(predictions, targets):
