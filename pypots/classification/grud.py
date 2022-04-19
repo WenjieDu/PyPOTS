@@ -111,6 +111,8 @@ class GRUD(BaseNNClassifier):
     """
 
     def __init__(self,
+                 seq_len,
+                 n_features,
                  rnn_hidden_size,
                  n_classes,
                  learning_rate=1e-3,
@@ -119,9 +121,12 @@ class GRUD(BaseNNClassifier):
                  batch_size=32,
                  weight_decay=1e-5,
                  device=None):
-        super(GRUD, self).__init__(n_classes, learning_rate, epochs, patience, batch_size, weight_decay, device)
+        super(GRUD, self).__init__(seq_len, n_features, n_classes, learning_rate, epochs, patience, batch_size,
+                                   weight_decay, device)
 
         self.rnn_hidden_size = rnn_hidden_size
+        self.model = _GRUD(self.seq_len, self.n_features, self.rnn_hidden_size, self.n_classes, self.device)
+        self.model = self.model.to(self.device)
 
     def fit(self, train_X, train_y, val_X=None, val_y=None):
         """ Fit the model on the given training data.
@@ -144,9 +149,6 @@ class GRUD(BaseNNClassifier):
             assert len(train_X.shape) == 3, f'val_X should have 3 dimensions [n_samples, seq_len, n_features],' \
                                             f'while val_X.shape={train_X.shape}'
 
-        _, seq_len, n_features = train_X.shape
-        self.model = _GRUD(seq_len, n_features, self.rnn_hidden_size, self.n_classes, self.device)
-        self.model = self.model.to(self.device)
         training_set = DatasetForGRUD(train_X, train_y)
         training_loader = DataLoader(training_set, batch_size=self.batch_size, shuffle=True)
 

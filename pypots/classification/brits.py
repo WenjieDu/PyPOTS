@@ -129,6 +129,8 @@ class BRITS(BaseNNClassifier):
     """
 
     def __init__(self,
+                 seq_len,
+                 n_features,
                  rnn_hidden_size,
                  n_classes,
                  classification_weight=1,
@@ -139,11 +141,16 @@ class BRITS(BaseNNClassifier):
                  batch_size=32,
                  weight_decay=1e-5,
                  device=None):
-        super(BRITS, self).__init__(n_classes, learning_rate, epochs, patience, batch_size, weight_decay, device)
+        super(BRITS, self).__init__(seq_len, n_features, n_classes, learning_rate, epochs, patience, batch_size,
+                                    weight_decay, device)
 
         self.rnn_hidden_size = rnn_hidden_size
         self.classification_weight = classification_weight
         self.reconstruction_weight = reconstruction_weight
+
+        self.model = _BRITS(self.seq_len, self.n_features, self.rnn_hidden_size, self.n_classes,
+                            self.classification_weight, self.reconstruction_weight, self.device)
+        self.model = self.model.to(self.device)
 
     def fit(self, train_X, train_y, val_X=None, val_y=None):
         """ Fit the model on the given training data.
@@ -166,10 +173,6 @@ class BRITS(BaseNNClassifier):
             assert len(train_X.shape) == 3, f'val_X should have 3 dimensions [n_samples, seq_len, n_features],' \
                                             f'while val_X.shape={train_X.shape}'
 
-        _, seq_len, n_features = train_X.shape
-        self.model = _BRITS(seq_len, n_features, self.rnn_hidden_size, self.n_classes,
-                            self.classification_weight, self.reconstruction_weight, self.device)
-        self.model = self.model.to(self.device)
         training_set = DatasetForBRITS(train_X, train_y)  # time_gaps is necessary for BRITS
         training_loader = DataLoader(training_set, batch_size=self.batch_size, shuffle=True)
 
