@@ -444,6 +444,8 @@ class BRITS(BaseNNImputer):
     """
 
     def __init__(self,
+                 seq_len,
+                 n_features,
                  rnn_hidden_size,
                  learning_rate=1e-3,
                  epochs=100,
@@ -451,9 +453,13 @@ class BRITS(BaseNNImputer):
                  batch_size=32,
                  weight_decay=1e-5,
                  device=None):
-        super(BRITS, self).__init__(learning_rate, epochs, patience, batch_size, weight_decay, device)
+        super(BRITS, self).__init__(seq_len, n_features, learning_rate, epochs, patience, batch_size, weight_decay,
+                                    device)
 
         self.rnn_hidden_size = rnn_hidden_size
+
+        self.model = _BRITS(self.seq_len, self.n_features, self.rnn_hidden_size, self.device)
+        self.model = self.model.to(self.device)
 
     def fit(self, train_X, val_X=None):
         """ Fit the model on the given training data.
@@ -476,9 +482,6 @@ class BRITS(BaseNNImputer):
             assert len(train_X.shape) == 3, f'val_X should have 3 dimensions [n_samples, seq_len, n_features],' \
                                             f'while val_X.shape={train_X.shape}'
 
-        _, seq_len, n_features = train_X.shape
-        self.model = _BRITS(seq_len, n_features, self.rnn_hidden_size, self.device)
-        self.model = self.model.to(self.device)
         training_set = DatasetForBRITS(train_X)  # time_gaps is necessary for BRITS
         training_loader = DataLoader(training_set, batch_size=self.batch_size, shuffle=True)
 

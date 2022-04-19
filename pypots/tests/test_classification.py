@@ -38,7 +38,8 @@ class TestBRITS(unittest.TestCase):
         self.val_y = val_y
         self.test_X = test_X
         self.test_y = test_y
-        self.brits = BRITS(256, n_classes=N_CLASSES, epochs=EPOCHS)
+        _, seq_len, n_features = train_X.shape
+        self.brits = BRITS(seq_len, n_features, 256, n_classes=N_CLASSES, epochs=EPOCHS)
         self.brits.fit(self.train_X, self.train_y, self.val_X, self.val_y)
 
     def test_parameters(self):
@@ -70,7 +71,8 @@ class TestGRUD(unittest.TestCase):
         self.val_y = val_y
         self.test_X = test_X
         self.test_y = test_y
-        self.grud = GRUD(256, n_classes=N_CLASSES, epochs=EPOCHS)
+        _, seq_len, n_features = train_X.shape
+        self.grud = GRUD(seq_len, n_features, 256, n_classes=N_CLASSES, epochs=EPOCHS)
         self.grud.fit(self.train_X, self.train_y, self.val_X, self.val_y)
 
     def test_parameters(self):

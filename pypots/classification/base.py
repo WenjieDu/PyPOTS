@@ -61,8 +61,9 @@ class BaseClassifier(BaseModel):
 
 
 class BaseNNClassifier(BaseNNModel, BaseClassifier):
-    def __init__(self, n_classes, learning_rate, epochs, patience, batch_size, weight_decay, device):
-        super().__init__(learning_rate, epochs, patience, batch_size, weight_decay, device)
+    def __init__(self, seq_len, n_features, n_classes, learning_rate, epochs, patience, batch_size, weight_decay,
+                 device):
+        super().__init__(seq_len, n_features, learning_rate, epochs, patience, batch_size, weight_decay, device)
         self.n_classes = n_classes
 
     @abstractmethod

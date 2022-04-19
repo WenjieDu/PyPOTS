@@ -113,6 +113,8 @@ class _SAITS(nn.Module):
 
 class SAITS(BaseNNImputer):
     def __init__(self,
+                 seq_len,
+                 n_features,
                  n_layers,
                  d_model,
                  d_inner,
@@ -129,7 +131,8 @@ class SAITS(BaseNNImputer):
                  batch_size=32,
                  weight_decay=1e-5,
                  device=None):
-        super(SAITS, self).__init__(learning_rate, epochs, patience, batch_size, weight_decay, device)
+        super(SAITS, self).__init__(seq_len, n_features, learning_rate, epochs, patience, batch_size, weight_decay,
+                                    device)
 
         # model hype-parameters
         self.n_layers = n_layers
@@ -143,6 +146,11 @@ class SAITS(BaseNNImputer):
         self.ORT_weight = ORT_weight
         self.MIT_weight = MIT_weight
 
+        self.model = _SAITS(self.n_layers, self.seq_len, self.n_features, self.d_model, self.d_inner, self.n_head,
+                            self.d_k, self.d_v, self.dropout, self.diagonal_attention_mask,
+                            self.ORT_weight, self.MIT_weight, self.device)
+        self.model = self.model.to(self.device)
+
     def fit(self, train_X, val_X=None):
         assert len(train_X.shape) == 3, f'train_X should have 3 dimensions [n_samples, seq_len, n_features],' \
                                         f'while train_X.shape={train_X.shape}'
@@ -150,11 +158,6 @@ class SAITS(BaseNNImputer):
             assert len(train_X.shape) == 3, f'val_X should have 3 dimensions [n_samples, seq_len, n_features],' \
                                             f'while val_X.shape={train_X.shape}'
 
-        _, seq_len, n_features = train_X.shape
-        self.model = _SAITS(self.n_layers, seq_len, n_features, self.d_model, self.d_inner, self.n_head,
-                            self.d_k, self.d_v, self.dropout, self.diagonal_attention_mask,
-                            self.ORT_weight, self.MIT_weight, self.device)
-        self.model = self.model.to(self.device)
         training_set = DatasetForMIT(train_X)
         training_loader = DataLoader(training_set, batch_size=self.batch_size, shuffle=True)
         if val_X is None:

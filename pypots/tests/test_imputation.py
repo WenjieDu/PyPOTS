@@ -36,7 +36,8 @@ def gene_data():
 class TestSAITS(unittest.TestCase):
     def setUp(self) -> None:
         self.train_X, self.val_X, self.test_X, self.test_X_intact, self.test_X_indicating_mask = gene_data()
-        self.saits = SAITS(n_layers=2, d_model=256, d_inner=128, n_head=4,
+        _, seq_len, n_features = self.train_X.shape
+        self.saits = SAITS(seq_len, n_features, n_layers=2, d_model=256, d_inner=128, n_head=4,
                            d_k=64, d_v=64, dropout=0.1, epochs=EPOCH)
         self.saits.fit(self.train_X, self.val_X)
 
@@ -63,7 +64,8 @@ class TestSAITS(unittest.TestCase):
 class TestTransformer(unittest.TestCase):
     def setUp(self) -> None:
         self.train_X, self.val_X, self.test_X, self.test_X_intact, self.test_X_indicating_mask = gene_data()
-        self.transformer = Transformer(n_layers=2, d_model=256, d_inner=128, n_head=4,
+        _, seq_len, n_features = self.train_X.shape
+        self.transformer = Transformer(seq_len, n_features, n_layers=2, d_model=256, d_inner=128, n_head=4,
                                        d_k=64, d_v=64, dropout=0.1, epochs=EPOCH)
         self.transformer.fit(self.train_X, self.val_X)
 
@@ -90,7 +92,8 @@ class TestTransformer(unittest.TestCase):
 class TestBRITS(unittest.TestCase):
     def setUp(self) -> None:
         self.train_X, self.val_X, self.test_X, self.test_X_intact, self.test_X_indicating_mask = gene_data()
-        self.brits = BRITS(256, epochs=EPOCH)
+        _, seq_len, n_features = self.train_X.shape
+        self.brits = BRITS(seq_len, n_features, 256, epochs=EPOCH)
         self.brits.fit(self.train_X, self.val_X)
 
     def test_parameters(self):
