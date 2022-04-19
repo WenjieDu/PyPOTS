@@ -59,6 +59,7 @@ class BaseNNModel(BaseModel):
         self.batch_size = batch_size
         self.epochs = epochs
         self.patience = patience
+        self.original_patience = patience
         self.lr = learning_rate
         self.weight_decay = weight_decay
 

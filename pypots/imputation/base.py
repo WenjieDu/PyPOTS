@@ -110,6 +110,7 @@ class BaseNNImputer(BaseNNModel, BaseImputer):
             if mean_loss < self.best_loss:
                 self.best_loss = mean_loss
                 self.best_model_dict = self.model.state_dict()
+                self.patience = self.original_patience
             else:
                 self.patience -= 1
                 if self.patience == 0:
