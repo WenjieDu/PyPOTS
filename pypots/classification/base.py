@@ -101,7 +101,7 @@ class BaseNNClassifier(BaseNNModel, BaseClassifier):
                         results = self.model.forward(inputs)
                         epoch_val_loss_collector.append(results['loss'].item())
 
-                mean_val_loss = np.mean(epoch_train_loss_collector)
+                mean_val_loss = np.mean(epoch_val_loss_collector)
                 self.logger['validating_loss'].append(mean_val_loss)
                 print(f'epoch {epoch}: training loss {mean_train_loss:.4f}, validating loss {mean_val_loss:.4f}')
                 mean_loss = mean_val_loss

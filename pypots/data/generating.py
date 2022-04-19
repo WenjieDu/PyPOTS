@@ -65,7 +65,6 @@ def generate_random_walk_for_classification(n_classes=2, n_samples_each_class=50
         indices = np.arange(len(ts_collector))
         np.random.shuffle(indices)
         ts_collector = ts_collector[indices]
-        ts_collector = ts_collector[indices]
         label_collector = label_collector[indices]
 
     return ts_collector, label_collector
