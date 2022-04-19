@@ -53,7 +53,8 @@ def cal_mre(inputs, target, mask=None):
 
 def cal_binary_classification_metrics(predictions, targets, pos_label=1):
     """ Calculate the evaluation metrics for the binary classification task,
-        including accuracy, precision, recall, f1 score, area under ROC curve, and area under Precision-Recall curve
+        including accuracy, precision, recall, f1 score, area under ROC curve, and area under Precision-Recall curve.
+        If targets contains multiple categories, please set the positive category as `pos_label`.
 
     Parameters
     ----------
@@ -61,8 +62,9 @@ def cal_binary_classification_metrics(predictions, targets, pos_label=1):
         Estimated predictions (probabilities) returned by a classifier or a decision function.
     targets : array-like, 1d or 2d, shape of [n_samples] or [n_samples, 1]
         Ground truth (correct) classification results.
-    pos_label: int, default=1
+    pos_label : int, default=1
         The label of the positive class.
+        Note that pos_label is also the index used to extract binary prediction probabilities from `predictions`.
 
     Returns
     -------
@@ -93,16 +95,26 @@ def cal_binary_classification_metrics(predictions, targets, pos_label=1):
         predictions = np.asarray(predictions).flatten()  # turn the array shape into [n_samples]
         binary_predictions = predictions
         prediction_categories = (predictions >= 0.5).astype(int)
+        binary_prediction_categories = prediction_categories
     elif len(predictions.shape) == 2 and predictions.shape[1] > 1:
         prediction_categories = np.argmax(predictions, axis=1)
-        binary_predictions = np.take(predictions, prediction_categories)
+        binary_predictions = predictions[:, pos_label]
+        binary_prediction_categories = (prediction_categories == pos_label).astype(int)
     else:
         raise f'predictions dimensions should be 1 or 2, but got predictions.shape: {predictions.shape}'
 
-    precision, recall, f1 = cal_precision_recall_f1(prediction_categories, targets, pos_label=pos_label)
-    pr_auc, precisions, recalls, _ = cal_pr_auc(binary_predictions, targets, pos_label=pos_label)
+    # accuracy score doesn't have to be of binary classification
     acc_score = cal_acc(prediction_categories, targets)
-    ROC_AUC, fprs, tprs, _ = cal_roc_auc(binary_predictions, targets)
+
+    # turn targets into binary targets
+    mask_val = -1 if pos_label == 0 else 0
+    mask = targets == pos_label
+    binary_targets = np.copy(targets)
+    binary_targets[~mask] = mask_val
+
+    precision, recall, f1 = cal_precision_recall_f1(binary_prediction_categories, binary_targets, pos_label)
+    pr_auc, precisions, recalls, _ = cal_pr_auc(binary_predictions, binary_targets, pos_label)
+    ROC_AUC, fprs, tprs, _ = cal_roc_auc(binary_predictions, binary_targets, pos_label)
     PR_AUC = metrics.auc(recalls, precisions)
     classification_metrics = {
         'predictions': prediction_categories,
@@ -144,7 +156,7 @@ def cal_precision_recall_f1(predictions, targets, pos_label=1):
     """
     precision, recall, f1, _ = metrics.precision_recall_fscore_support(targets, predictions,
                                                                        pos_label=pos_label)
-    precision, recall, f1 = precision[1], recall[1], f1[1]
+    precision, recall, f1 = precision[pos_label], recall[pos_label], f1[pos_label]
     return precision, recall, f1
 
 
@@ -184,7 +196,7 @@ def cal_roc_auc(predictions, targets, pos_label=1):
 
     Parameters
     ----------
-    predictions : array-like, 1d or 2d, [n_samples] or [n_samples, n_categories]
+    predictions : array-like, 1d, [n_samples]
         Estimated predictions (probabilities) returned by a classifier or a decision function.
     targets : array-like, 1d or 2d, shape of [n_samples] or [n_samples, 1]
         Ground truth (correct) classification results.
