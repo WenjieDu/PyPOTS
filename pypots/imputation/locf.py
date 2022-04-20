@@ -31,8 +31,25 @@ class LOCF(BaseImputer):
             'Please run func impute(X) directly.'
         )
 
-    @staticmethod
-    def locf(X):
+    def _locf_numpy(self, X):
+        """ Numpy implementation of LOCF.
+
+        Parameters
+        ----------
+        X : array,
+            Time series containing missing values (NaN) to be imputed.
+
+        Returns
+        -------
+        X_imputed : array,
+            Imputed time series.
+
+        Notes
+        -----
+        This implementation gets inspired by the question on StackOverflow:
+        https://stackoverflow.com/questions/41190852/most-efficient-way-to-forward-fill-nan-values-in-numpy-array
+
+        """
         assert len(X.shape) == 3, f'Input X should have 3 dimensions [n_samples, seq_len, n_features], ' \
                                   f'but the actual shape of X: {X.shape}'
 
@@ -44,9 +61,20 @@ class LOCF(BaseImputer):
         collector = []
         for x, i in zip(trans_X, idx):
             collector.append(x[np.arange(seq_len)[:, None], i])
-        out = np.asarray(collector)
-        out = out.transpose((0, 2, 1))
-        return out
+        X_imputed = np.asarray(collector)
+        X_imputed = X_imputed.transpose((0, 2, 1))
+
+        # If there are values still missing,
+        # they are missing at the beginning of the time-series sequence.
+        # Impute them with self.nan
+        if np.isnan(X_imputed).any():
+            X_imputed = np.nan_to_num(X_imputed, nan=self.nan)
+
+        return X_imputed
+
+    def _locf_torch(self, X):
+        # TODO: do we need a torch implementation utilizing GPU for acceleration?
+        pass
 
     def impute(self, X):
         """ Impute missing values
@@ -54,21 +82,15 @@ class LOCF(BaseImputer):
         Parameters
         ----------
         X : array,
-            Time-series vectors.
+            Time-series vectors containing missing values (NaN).
 
         Returns
         -------
         array,
-            Imputed vectors.
+            Imputed time series.
 
         """
 
-        imputed_X = self.locf(X)
+        X_imputed = self._locf_numpy(X)
 
-        # If there are values still missing,
-        # they are missing at the beginning of the time-series sequence.
-        # Impute them with self.nan
-        if np.isnan(imputed_X).any():
-            imputed_X = np.nan_to_num(imputed_X, nan=self.nan)
-
-        return imputed_X
+        return X_imputed
