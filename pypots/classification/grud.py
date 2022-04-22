@@ -121,9 +121,11 @@ class GRUD(BaseNNClassifier):
                  batch_size=32,
                  weight_decay=1e-5,
                  device=None):
-        super(GRUD, self).__init__(seq_len, n_features, n_classes, learning_rate, epochs, patience, batch_size,
+        super(GRUD, self).__init__(n_classes, learning_rate, epochs, patience, batch_size,
                                    weight_decay, device)
 
+        self.seq_len = seq_len
+        self.n_features = n_features
         self.rnn_hidden_size = rnn_hidden_size
         self.model = _GRUD(self.seq_len, self.n_features, self.rnn_hidden_size, self.n_classes, self.device)
         self.model = self.model.to(self.device)

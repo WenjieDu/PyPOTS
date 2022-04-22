@@ -2,6 +2,7 @@
 PyTorch Raindrop model.
 
 Part of the code is from https://github.com/mims-harvard/Raindrop
+# TODO: code need to be simplified
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
@@ -477,7 +478,6 @@ class Raindrop(BaseNNClassifier):
     """
 
     def __init__(self,
-                 seq_len,
                  n_features,
                  n_layers,
                  d_model,
@@ -496,7 +496,7 @@ class Raindrop(BaseNNClassifier):
                  batch_size=32,
                  weight_decay=1e-5,
                  device=None):
-        super(Raindrop, self).__init__(seq_len, n_features, n_classes, learning_rate, epochs, patience, batch_size,
+        super(Raindrop, self).__init__(n_classes, learning_rate, epochs, patience, batch_size,
                                        weight_decay, device)
 
         self.model = _Raindrop(n_layers, n_features, d_model, d_inner, n_heads, n_classes, dropout, max_len, d_static,
