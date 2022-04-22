@@ -27,11 +27,15 @@ setup(
         'numpy',
         'scikit_learn',
         'scipy',
-        'torch',
+        'torch>=1.10',  # torch_sparse v0.6.13 needs torch>1.9
+        'torch_sparse',
+        'torch_scatter',
         'tensorboard',
         'pandas',
         'pycorruptor',
-        'tsdb'
+        'tsdb',
+        'pyg'
+
     ],
     setup_requires=['setuptools>=38.6.0'],
 )

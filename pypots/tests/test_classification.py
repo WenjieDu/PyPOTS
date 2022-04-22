@@ -7,7 +7,9 @@ Test cases for
 
 import unittest
 
-from pypots.classification import BRITS, GRUD
+import torch
+
+from pypots.classification import BRITS, GRUD, Raindrop
 from pypots.data import generate_random_walk_for_classification
 from pypots.data import mcar, fill_nan_with_mask
 from pypots.utils.metrics import cal_binary_classification_metrics
@@ -90,6 +92,40 @@ class TestGRUD(unittest.TestCase):
 
     def test_classify(self):
         predictions = self.grud.classify(self.test_X)
+        metrics = cal_binary_classification_metrics(predictions, self.test_y)
+        print(metrics)
+        assert metrics['roc_auc'] >= 0.5, 'ROC AUC < 0.5, there must be bugs here'
+
+
+class TestRaindrop(unittest.TestCase):
+    def setUp(self) -> None:
+        train_X, train_y, val_X, val_y, test_X, test_y = gene_data()
+        self.train_X = train_X
+        self.train_y = train_y
+        self.val_X = val_X
+        self.val_y = val_y
+        self.test_X = test_X
+        self.test_y = test_y
+        _, seq_len, n_features = train_X.shape
+        self.raindrop = Raindrop(24, 10, 2, 120, 256, 2, N_CLASSES, 0.3, 24, 0, 'mean',
+                                 False, False, epochs=EPOCHS)
+        self.raindrop.fit(self.train_X, self.train_y, self.val_X, self.val_y)
+
+    def test_parameters(self):
+        assert (hasattr(self.raindrop, 'model')
+                and self.raindrop.model is not None)
+
+        assert (hasattr(self.raindrop, 'optimizer')
+                and self.raindrop.optimizer is not None)
+
+        assert hasattr(self.raindrop, 'best_loss')
+        self.assertNotEqual(self.raindrop.best_loss, float('inf'))
+
+        assert (hasattr(self.raindrop, 'best_model_dict')
+                and self.raindrop.best_model_dict is not None)
+
+    def test_classify(self):
+        predictions = self.raindrop.classify(self.test_X)
         metrics = cal_binary_classification_metrics(predictions, self.test_y)
         print(metrics)
         assert metrics['roc_auc'] >= 0.5, 'ROC AUC < 0.5, there must be bugs here'
