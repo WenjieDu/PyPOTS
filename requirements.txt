@@ -3,6 +3,8 @@ numpy
 scikit_learn
 scipy
 torch>=1.10
+torch_sparse
+torch_scatter
 torch_geometric
 tensorboard
 pandas
