@@ -2,7 +2,8 @@ matplotlib
 numpy
 scikit_learn
 scipy
-torch
+torch>=1.10
+torch_geometric
 tensorboard
 pandas
 pycorruptor
