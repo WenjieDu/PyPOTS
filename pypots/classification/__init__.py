@@ -7,3 +7,11 @@ Expose all time-series classification models.
 
 from .brits import BRITS
 from .grud import GRUD
+from .raindrop import Raindrop
+
+__all__ = [
+    'BRITS',
+    'GRUD',
+    'Raindrop',
+
+]
