@@ -57,8 +57,8 @@ class BaseImputer(BaseModel):
 
 
 class BaseNNImputer(BaseNNModel, BaseImputer):
-    def __init__(self, seq_len, n_features, learning_rate, epochs, patience, batch_size, weight_decay, device):
-        super().__init__(seq_len, n_features, learning_rate, epochs, patience, batch_size, weight_decay, device)
+    def __init__(self, learning_rate, epochs, patience, batch_size, weight_decay, device):
+        super().__init__(learning_rate, epochs, patience, batch_size, weight_decay, device)
 
     @abstractmethod
     def input_data_processing(self, data):

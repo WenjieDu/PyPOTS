@@ -131,9 +131,10 @@ class SAITS(BaseNNImputer):
                  batch_size=32,
                  weight_decay=1e-5,
                  device=None):
-        super(SAITS, self).__init__(seq_len, n_features, learning_rate, epochs, patience, batch_size, weight_decay,
-                                    device)
+        super(SAITS, self).__init__(learning_rate, epochs, patience, batch_size, weight_decay, device)
 
+        self.seq_len = seq_len
+        self.n_features = n_features
         # model hype-parameters
         self.n_layers = n_layers
         self.d_model = d_model

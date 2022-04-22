@@ -453,9 +453,10 @@ class BRITS(BaseNNImputer):
                  batch_size=32,
                  weight_decay=1e-5,
                  device=None):
-        super(BRITS, self).__init__(seq_len, n_features, learning_rate, epochs, patience, batch_size, weight_decay,
-                                    device)
+        super(BRITS, self).__init__(learning_rate, epochs, patience, batch_size, weight_decay, device)
 
+        self.seq_len = seq_len
+        self.n_features = n_features
         self.rnn_hidden_size = rnn_hidden_size
 
         self.model = _BRITS(self.seq_len, self.n_features, self.rnn_hidden_size, self.device)

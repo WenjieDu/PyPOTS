@@ -71,11 +71,8 @@ class BaseNNModel(BaseModel):
     """ Abstract class for all neural-network models.
     """
 
-    def __init__(self, seq_len, n_features, learning_rate, epochs, patience, batch_size, weight_decay, device):
+    def __init__(self, learning_rate, epochs, patience, batch_size, weight_decay, device):
         super(BaseNNModel, self).__init__(device)
-
-        self.seq_len = seq_len
-        self.n_features = n_features
 
         # training hype-parameters
         self.batch_size = batch_size
