@@ -2,7 +2,7 @@ matplotlib
 numpy
 scikit_learn
 scipy
-torch==1.11.0
+torch>=1.10
 torch_sparse==0.6.13
 torch_scatter
 torch_geometric
