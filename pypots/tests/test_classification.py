@@ -7,8 +7,6 @@ Test cases for
 
 import unittest
 
-import torch
-
 from pypots.classification import BRITS, GRUD, Raindrop
 from pypots.data import generate_random_walk_for_classification
 from pypots.data import mcar, fill_nan_with_mask
@@ -107,7 +105,7 @@ class TestRaindrop(unittest.TestCase):
         self.test_X = test_X
         self.test_y = test_y
         _, seq_len, n_features = train_X.shape
-        self.raindrop = Raindrop(24, 10, 2, 120, 256, 2, N_CLASSES, 0.3, 24, 0, 'mean',
+        self.raindrop = Raindrop(10, 2, 120, 256, 2, N_CLASSES, 0.3, 24, 0, 'mean',
                                  False, False, epochs=EPOCHS)
         self.raindrop.fit(self.train_X, self.train_y, self.val_X, self.val_y)
 

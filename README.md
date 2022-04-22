@@ -20,7 +20,6 @@
     </a>
     <!-- Visit number -->
     <img src='https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2FPyPOTS%2FPyPOTS&count_bg=%23009A0A&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=Visits&edge_flat=false'>
-    <br>
     <!-- Chat in Discussions -->
     <a alt='GitHub Discussions' href='https://github.com/PyPOTS/PyPOTS/discussions'>
         <img src='https://img.shields.io/badge/Chat-in_Discussions-green?logo=github&color=60A98D'>
@@ -49,8 +48,8 @@ Install with the latest code on GitHub:
 | Imputation | Neural Network | Transformer | 2017 | [^2] [^1] |
 | Imputation,<br>Classification | Neural Network | BRITS: Bidirectional Recurrent Imputation for Time Series | 2018 | [^3] |
 | Classification | Neural Network | GRU-D | 2018 | [^4] |
-| Imputation | Naive | LOCF (Last Observation Carried Forward) | -    | - |
 | Classification | Neural Network | Raindrop | 2022 | [^5] |
+| Imputation | Naive | LOCF (Last Observation Carried Forward) | - | - |
 
 ---
 ‼️ PyPOTS is currently under developing. If you like it and look forward to its growth, <ins>please give PyPOTS a star and watch it to keep you posted on its progress and to let me know that its development is meaningful</ins>. If you have any feedback, or want to contribute ideas/suggestions or share time-series related algorithms/papers, please join PyPOTS community and <a alt='GitHub Discussions' href='https://github.com/PyPOTS/PyPOTS/discussions'><img align='center' src='https://img.shields.io/badge/Chat-in_Discussions-green?logo=github&color=60A98D'></a>, or [drop me an email](mailto:wenjay.du@gmail.com).

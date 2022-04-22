@@ -51,15 +51,15 @@ def cal_mre(inputs, target, mask=None):
         return lib.mean(lib.abs(inputs - target)) / (lib.sum(lib.abs(target)) + 1e-9)
 
 
-def cal_binary_classification_metrics(predictions, targets, pos_label=1):
+def cal_binary_classification_metrics(prob_predictions, targets, pos_label=1):
     """ Calculate the evaluation metrics for the binary classification task,
         including accuracy, precision, recall, f1 score, area under ROC curve, and area under Precision-Recall curve.
         If targets contains multiple categories, please set the positive category as `pos_label`.
 
     Parameters
     ----------
-    predictions : array-like, 1d or 2d, [n_samples] or [n_samples, n_categories]
-        Estimated predictions (probabilities) returned by a classifier or a decision function.
+    prob_predictions : array-like, 1d or 2d, [n_samples] or [n_samples, n_categories]
+        Estimated probability predictions returned by a decision function.
     targets : array-like, 1d or 2d, shape of [n_samples] or [n_samples, 1]
         Ground truth (correct) classification results.
     pos_label : int, default=1
@@ -91,17 +91,17 @@ def cal_binary_classification_metrics(predictions, targets, pos_label=1):
     else:
         raise f'targets dimensions should be 1 or 2, but got targets.shape: {targets.shape}'
 
-    if len(predictions.shape) == 1 or (len(predictions.shape) == 2 and predictions.shape[1] == 1):
-        predictions = np.asarray(predictions).flatten()  # turn the array shape into [n_samples]
-        binary_predictions = predictions
-        prediction_categories = (predictions >= 0.5).astype(int)
+    if len(prob_predictions.shape) == 1 or (len(prob_predictions.shape) == 2 and prob_predictions.shape[1] == 1):
+        prob_predictions = np.asarray(prob_predictions).flatten()  # turn the array shape into [n_samples]
+        binary_predictions = prob_predictions
+        prediction_categories = (prob_predictions >= 0.5).astype(int)
         binary_prediction_categories = prediction_categories
-    elif len(predictions.shape) == 2 and predictions.shape[1] > 1:
-        prediction_categories = np.argmax(predictions, axis=1)
-        binary_predictions = predictions[:, pos_label]
+    elif len(prob_predictions.shape) == 2 and prob_predictions.shape[1] > 1:
+        prediction_categories = np.argmax(prob_predictions, axis=1)
+        binary_predictions = prob_predictions[:, pos_label]
         binary_prediction_categories = (prediction_categories == pos_label).astype(int)
     else:
-        raise f'predictions dimensions should be 1 or 2, but got predictions.shape: {predictions.shape}'
+        raise f'predictions dimensions should be 1 or 2, but got predictions.shape: {prob_predictions.shape}'
 
     # accuracy score doesn't have to be of binary classification
     acc_score = cal_acc(prediction_categories, targets)
@@ -132,13 +132,13 @@ def cal_binary_classification_metrics(predictions, targets, pos_label=1):
     return classification_metrics
 
 
-def cal_precision_recall_f1(predictions, targets, pos_label=1):
+def cal_precision_recall_f1(prob_predictions, targets, pos_label=1):
     """ Calculate precision, recall, and F1-score of model predictions.
 
     Parameters
     ----------
-    predictions : array-like, 1d or 2d, [n_samples] or [n_samples, n_categories]
-        Estimated predictions (probabilities) returned by a classifier or a decision function.
+    prob_predictions : array-like, 1d or 2d, [n_samples] or [n_samples, n_categories]
+        Estimated probability predictions returned by a decision function.
     targets : array-like, 1d or 2d, shape of [n_samples] or [n_samples, 1]
         Ground truth (correct) classification results.
     pos_label: int, default=1
@@ -154,19 +154,19 @@ def cal_precision_recall_f1(predictions, targets, pos_label=1):
         The F1 score of model predictions.
 
     """
-    precision, recall, f1, _ = metrics.precision_recall_fscore_support(targets, predictions,
+    precision, recall, f1, _ = metrics.precision_recall_fscore_support(targets, prob_predictions,
                                                                        pos_label=pos_label)
     precision, recall, f1 = precision[pos_label], recall[pos_label], f1[pos_label]
     return precision, recall, f1
 
 
-def cal_pr_auc(predictions, targets, pos_label=1):
+def cal_pr_auc(prob_predictions, targets, pos_label=1):
     """ Calculate precisions, recalls, and area under PR curve of model predictions.
 
     Parameters
     ----------
-    predictions : array-like, 1d or 2d, [n_samples] or [n_samples, n_categories]
-        Estimated predictions (probabilities) returned by a classifier or a decision function.
+    prob_predictions : array-like, 1d or 2d, [n_samples] or [n_samples, n_categories]
+        Estimated probability predictions returned by a decision function.
     targets : array-like, 1d or 2d, shape of [n_samples] or [n_samples, 1]
         Ground truth (correct) classification results.
     pos_label: int, default=1
@@ -185,19 +185,19 @@ def cal_pr_auc(predictions, targets, pos_label=1):
 
     """
 
-    precisions, recalls, thresholds = metrics.precision_recall_curve(targets, predictions,
+    precisions, recalls, thresholds = metrics.precision_recall_curve(targets, prob_predictions,
                                                                      pos_label=pos_label)
     pr_auc = metrics.auc(recalls, precisions)
     return pr_auc, precisions, recalls, thresholds
 
 
-def cal_roc_auc(predictions, targets, pos_label=1):
+def cal_roc_auc(prob_predictions, targets, pos_label=1):
     """ Calculate false positive rates, true positive rates, and area under AUC curve of model predictions.
 
     Parameters
     ----------
-    predictions : array-like, 1d, [n_samples]
-        Estimated predictions (probabilities) returned by a classifier or a decision function.
+    prob_predictions : array-like, 1d, [n_samples]
+        Estimated probabilities/predictions returned by a decision function.
     targets : array-like, 1d or 2d, shape of [n_samples] or [n_samples, 1]
         Ground truth (correct) classification results.
     pos_label: int, default=1
@@ -215,19 +215,19 @@ def cal_roc_auc(predictions, targets, pos_label=1):
         Increasing thresholds on the decision function used to compute FPR and TPR.
 
     """
-    fprs, tprs, thresholds = metrics.roc_curve(y_true=targets, y_score=predictions,
+    fprs, tprs, thresholds = metrics.roc_curve(y_true=targets, y_score=prob_predictions,
                                                pos_label=pos_label)
     roc_auc = metrics.auc(fprs, tprs)
     return roc_auc, fprs, tprs, thresholds
 
 
-def cal_acc(predictions, targets):
+def cal_acc(class_predictions, targets):
     """ Calculate accuracy score of model predictions.
 
     Parameters
     ----------
-    predictions : array-like, 1d or 2d, [n_samples] or [n_samples, n_categories]
-        Estimated predictions (probabilities) returned by a classifier or a decision function.
+    class_predictions : array-like, 1d or 2d, [n_samples] or [n_samples, n_categories]
+        Estimated classification predictions returned by a classifier.
     targets : array-like, 1d or 2d, shape of [n_samples] or [n_samples, 1]
         Ground truth (correct) classification results.
 
@@ -237,5 +237,41 @@ def cal_acc(predictions, targets):
         The accuracy of model predictions.
 
     """
-    acc_score = metrics.accuracy_score(targets, predictions)
+    acc_score = metrics.accuracy_score(targets, class_predictions)
     return acc_score
+
+
+def cal_rand_index(class_predictions, targets):
+    """ Calculate Rand Index, a measure of the similarity between two data clusterings.
+
+    Parameters
+    ----------
+    class_predictions : array
+        Estimated classification predictions returned by a classifier.
+    targets : array
+        Ground truth (correct) classification results.
+
+    Returns
+    -------
+    RI : float
+        Rand index.
+    """
+    # # detailed implementation
+    # n = len(targets)
+    # TP = 0
+    # TN = 0
+    # for i in range(n - 1):
+    #     for j in range(i + 1, n):
+    #         if targets[i] != targets[j]:
+    #             if class_predictions[i] != class_predictions[j]:
+    #                 TN += 1
+    #         else:
+    #             if class_predictions[i] == class_predictions[j]:
+    #                 TP += 1
+    #
+    # RI = n * (n - 1) / 2
+    # RI = (TP + TN) / RI
+
+    RI = metrics.rand_score(targets, class_predictions)
+
+    return RI
