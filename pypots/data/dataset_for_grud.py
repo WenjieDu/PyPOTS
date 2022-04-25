@@ -25,7 +25,7 @@ class DatasetForGRUD(BaseDataset):
     """
 
     def __init__(self, X, y=None):
-        super(DatasetForGRUD, self).__init__(X, y)
+        super().__init__(X, y)
 
         self.locf = LOCF()
         self.missing_mask = (~np.isnan(X)).astype(np.float32)

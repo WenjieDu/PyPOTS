@@ -1,5 +1,5 @@
 """
-Test cases for 
+Test cases for classification models.
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
@@ -8,8 +8,7 @@ Test cases for
 import unittest
 
 from pypots.classification import BRITS, GRUD, Raindrop
-from pypots.data import generate_random_walk_for_classification
-from pypots.data import mcar, fill_nan_with_mask
+from pypots.data import generate_random_walk_for_classification, mcar, fill_nan_with_mask
 from pypots.utils.metrics import cal_binary_classification_metrics
 
 EPOCHS = 5
@@ -27,6 +26,42 @@ def gene_data():
     train_y, val_y, test_y = y[:600], y[600:800], y[800:]
     return train_X, train_y, val_X, val_y, test_X, test_y
 
+
+# def gene_physionet2012_data():
+#     from pypots.data import load_specific_dataset
+#     from sklearn.preprocessing import StandardScaler
+#     from sklearn.model_selection import train_test_split
+#     # generate samples
+#     df = load_specific_dataset('physionet_2012')
+#     X = df['X']
+#     y = df['y']
+#     all_recordID = X['RecordID'].unique()
+#     train_set_ids, test_set_ids = train_test_split(all_recordID, test_size=0.2)
+#     train_set_ids, val_set_ids = train_test_split(train_set_ids, test_size=0.2)
+#     train_set = X[X['RecordID'].isin(train_set_ids)]
+#     val_set = X[X['RecordID'].isin(val_set_ids)]
+#     test_set = X[X['RecordID'].isin(test_set_ids)]
+#     train_set = train_set.drop('RecordID', axis=1)
+#     val_set = val_set.drop('RecordID', axis=1)
+#     test_set = test_set.drop('RecordID', axis=1)
+#     train_X, val_X, test_X = train_set.to_numpy(), val_set.to_numpy(), test_set.to_numpy()
+#     # normalization
+#     scaler = StandardScaler()
+#     train_X = scaler.fit_transform(train_X)
+#     val_X = scaler.transform(val_X)
+#     test_X = scaler.transform(test_X)
+#     # reshape into time series samples
+#     train_X = train_X.reshape(len(train_set_ids), 48, -1)
+#     val_X = val_X.reshape(len(val_set_ids), 48, -1)
+#     test_X = test_X.reshape(len(test_set_ids), 48, -1)
+#
+#     train_y = y[y.index.isin(train_set_ids)]
+#     val_y = y[y.index.isin(val_set_ids)]
+#     test_y = y[y.index.isin(test_set_ids)]
+#     train_y, val_y, test_y = train_y.to_numpy(), val_y.to_numpy(), test_y.to_numpy()
+#
+#     return train_X, train_y.flatten(), val_X, val_y.flatten(), test_X, test_y.flatten()
+# gene_data = gene_physionet2012_data
 
 class TestBRITS(unittest.TestCase):
     def setUp(self) -> None:
@@ -105,7 +140,7 @@ class TestRaindrop(unittest.TestCase):
         self.test_X = test_X
         self.test_y = test_y
         _, seq_len, n_features = train_X.shape
-        self.raindrop = Raindrop(10, 2, 120, 256, 2, N_CLASSES, 0.3, 24, 0, 'mean',
+        self.raindrop = Raindrop(n_features, 2, 148, 256, 2, N_CLASSES, 0.3, seq_len, 0, 'mean',
                                  False, False, epochs=EPOCHS)
         self.raindrop.fit(self.train_X, self.train_y, self.val_X, self.val_y)
 

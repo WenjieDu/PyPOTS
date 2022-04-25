@@ -20,12 +20,12 @@ from pypots.imputation.brits import (
 
 class RITS(imputation_RITS):
     def __init__(self, seq_len, n_features, rnn_hidden_size, n_classes, device=None):
-        super(RITS, self).__init__(seq_len, n_features, rnn_hidden_size, device)
+        super().__init__(seq_len, n_features, rnn_hidden_size, device)
         self.dropout = nn.Dropout(p=0.25)
         self.classifier = nn.Linear(self.rnn_hidden_size, n_classes)
 
     def forward(self, inputs, direction='forward'):
-        ret_dict = super(RITS, self).forward(inputs, direction)
+        ret_dict = super().forward(inputs, direction)
         logits = self.classifier(ret_dict['final_hidden_state'])
         ret_dict['prediction'] = torch.softmax(logits, dim=1)
         return ret_dict
@@ -34,7 +34,7 @@ class RITS(imputation_RITS):
 class _BRITS(imputation_BRITS, nn.Module):
     def __init__(self, seq_len, n_features, rnn_hidden_size, n_classes,
                  classification_weight, reconstruction_weight, device=None):
-        super(_BRITS, self).__init__(seq_len, n_features, rnn_hidden_size)
+        super().__init__(seq_len, n_features, rnn_hidden_size)
         self.seq_len = seq_len
         self.n_features = n_features
         self.rnn_hidden_size = rnn_hidden_size
@@ -141,7 +141,7 @@ class BRITS(BaseNNClassifier):
                  batch_size=32,
                  weight_decay=1e-5,
                  device=None):
-        super(BRITS, self).__init__(n_classes, learning_rate, epochs, patience, batch_size, weight_decay, device)
+        super().__init__(n_classes, learning_rate, epochs, patience, batch_size, weight_decay, device)
 
         self.seq_len = seq_len
         self.n_features = n_features
@@ -152,6 +152,7 @@ class BRITS(BaseNNClassifier):
         self.model = _BRITS(self.seq_len, self.n_features, self.rnn_hidden_size, self.n_classes,
                             self.classification_weight, self.reconstruction_weight, self.device)
         self.model = self.model.to(self.device)
+        self._print_model_size()
 
     def fit(self, train_X, train_y, val_X=None, val_y=None):
         """ Fit the model on the given training data.

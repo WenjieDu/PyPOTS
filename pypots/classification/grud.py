@@ -16,7 +16,7 @@ from pypots.imputation.brits import TemporalDecay
 
 class _GRUD(nn.Module):
     def __init__(self, seq_len, n_features, rnn_hidden_size, n_classes, device=None):
-        super(_GRUD, self).__init__()
+        super().__init__()
         self.seq_len = seq_len
         self.n_features = n_features
         self.rnn_hidden_size = rnn_hidden_size
@@ -121,14 +121,14 @@ class GRUD(BaseNNClassifier):
                  batch_size=32,
                  weight_decay=1e-5,
                  device=None):
-        super(GRUD, self).__init__(n_classes, learning_rate, epochs, patience, batch_size,
-                                   weight_decay, device)
+        super().__init__(n_classes, learning_rate, epochs, patience, batch_size, weight_decay, device)
 
         self.seq_len = seq_len
         self.n_features = n_features
         self.rnn_hidden_size = rnn_hidden_size
         self.model = _GRUD(self.seq_len, self.n_features, self.rnn_hidden_size, self.n_classes, self.device)
         self.model = self.model.to(self.device)
+        self._print_model_size()
 
     def fit(self, train_X, train_y, val_X=None, val_y=None):
         """ Fit the model on the given training data.

@@ -243,6 +243,7 @@ def cal_acc(class_predictions, targets):
 
 def cal_rand_index(class_predictions, targets):
     """ Calculate Rand Index, a measure of the similarity between two data clusterings.
+        Refer to :cite:`rand1971RandIndex`.
 
     Parameters
     ----------

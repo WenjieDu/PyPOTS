@@ -1,4 +1,4 @@
-<a href='https://github.com/PyPOTS/PyPOTS'><img src='https://raw.githubusercontent.com/PyPOTS/PyPOTS/main/docs/figs/PyPOTS%20logo.svg?sanitize=true' width='220' align='right' /></a>
+<a href='https://github.com/PyPOTS/PyPOTS'><img src='https://raw.githubusercontent.com/PyPOTS/PyPOTS/main/docs/figs/PyPOTS%20logo.svg?sanitize=true' width='205' align='right' /></a>
 
 # <p align='center'> Welcome to PyPOTS </p>
 ### <p align='center'> A Python Toolbox for Data Mining on Partially-Observed Time Series </p>
