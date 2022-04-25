@@ -40,7 +40,7 @@ class FeatureRegression(nn.Module):
     """
 
     def __init__(self, input_size):
-        super(FeatureRegression, self).__init__()
+        super().__init__()
         self.W = Parameter(torch.Tensor(input_size, input_size))
         self.b = Parameter(torch.Tensor(input_size))
 
@@ -94,7 +94,7 @@ class TemporalDecay(nn.Module):
     """
 
     def __init__(self, input_size, output_size, diag=False):
-        super(TemporalDecay, self).__init__()
+        super().__init__()
         self.diag = diag
         self.W = Parameter(torch.Tensor(output_size, input_size))
         self.b = Parameter(torch.Tensor(output_size))
@@ -172,7 +172,7 @@ class RITS(nn.Module):
     """
 
     def __init__(self, seq_len, n_features, rnn_hidden_size, device=None):
-        super(RITS, self).__init__()
+        super().__init__()
         self.seq_len = seq_len
         self.n_features = n_features
         self.rnn_hidden_size = rnn_hidden_size
@@ -295,7 +295,7 @@ class _BRITS(nn.Module):
     """
 
     def __init__(self, seq_len, n_features, rnn_hidden_size, device=None):
-        super(_BRITS, self).__init__()
+        super().__init__()
         # data settings
         self.seq_len = seq_len
         self.n_features = n_features
@@ -453,7 +453,7 @@ class BRITS(BaseNNImputer):
                  batch_size=32,
                  weight_decay=1e-5,
                  device=None):
-        super(BRITS, self).__init__(learning_rate, epochs, patience, batch_size, weight_decay, device)
+        super().__init__(learning_rate, epochs, patience, batch_size, weight_decay, device)
 
         self.seq_len = seq_len
         self.n_features = n_features
@@ -461,6 +461,7 @@ class BRITS(BaseNNImputer):
 
         self.model = _BRITS(self.seq_len, self.n_features, self.rnn_hidden_size, self.device)
         self.model = self.model.to(self.device)
+        self._print_model_size()
 
     def fit(self, train_X, val_X=None):
         """ Fit the model on the given training data.

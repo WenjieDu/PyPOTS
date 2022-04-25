@@ -35,11 +35,11 @@ def generate_random_walk(n_samples=1000, n_steps=24, n_features=10, mu=0., std=1
         Generated random walk time series.
     """
     seed = check_random_state(random_state)
-    ts_samples = np.empty((n_samples, n_steps, n_features))
-    noise = seed.randn(n_samples, n_steps, n_features) * std + mu
-    ts_samples[:, 0, :] = noise[:, 0, :]
+    ts_samples = np.zeros([n_samples, n_steps, n_features])
+    random_values = seed.randn(n_samples, n_steps, n_features) * std + mu
+    ts_samples[:, 0, :] = random_values[:, 0, :]
     for t in range(1, n_steps):
-        ts_samples[:, t, :] = ts_samples[:, t - 1, :] + noise[:, t, :]
+        ts_samples[:, t, :] = ts_samples[:, t - 1, :] + random_values[:, t, :]
     ts_samples = np.asarray(ts_samples)
     return ts_samples
 

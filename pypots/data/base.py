@@ -22,7 +22,7 @@ class BaseDataset(Dataset):
     """
 
     def __init__(self, X, y=None):
-        super(BaseDataset, self).__init__()
+        super().__init__()
         assert isinstance(X, np.ndarray), f'X should be numpy array, but got {type(X)}'
         assert len(X.shape) == 3, "X should have 3 dimensions, [n_samples, seq_len, n_features]."
         if y is not None:

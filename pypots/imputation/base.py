@@ -19,7 +19,7 @@ class BaseImputer(BaseModel):
     """
 
     def __init__(self, device):
-        super(BaseImputer, self).__init__(device)
+        super().__init__(device)
 
     @abstractmethod
     def fit(self, train_X, val_X=None):

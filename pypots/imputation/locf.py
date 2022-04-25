@@ -22,7 +22,7 @@ class LOCF(BaseImputer):
     """
 
     def __init__(self, nan=0):
-        super(LOCF, self).__init__('cpu')
+        super().__init__('cpu')
         self.nan = nan
 
     def fit(self, train_X, val_X=None):

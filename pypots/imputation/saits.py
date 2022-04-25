@@ -21,7 +21,7 @@ from pypots.utils.metrics import cal_mae
 class _SAITS(nn.Module):
     def __init__(self, n_layers, d_time, d_feature, d_model, d_inner, n_head, d_k, d_v, dropout,
                  diagonal_attention_mask=True, ORT_weight=1, MIT_weight=1, device=None):
-        super(_SAITS, self).__init__()
+        super().__init__()
         self.n_layers = n_layers
         actual_d_feature = d_feature * 2
         self.ORT_weight = ORT_weight
@@ -131,7 +131,7 @@ class SAITS(BaseNNImputer):
                  batch_size=32,
                  weight_decay=1e-5,
                  device=None):
-        super(SAITS, self).__init__(learning_rate, epochs, patience, batch_size, weight_decay, device)
+        super().__init__(learning_rate, epochs, patience, batch_size, weight_decay, device)
 
         self.seq_len = seq_len
         self.n_features = n_features
@@ -151,6 +151,7 @@ class SAITS(BaseNNImputer):
                             self.d_k, self.d_v, self.dropout, self.diagonal_attention_mask,
                             self.ORT_weight, self.MIT_weight, self.device)
         self.model = self.model.to(self.device)
+        self._print_model_size()
 
     def fit(self, train_X, val_X=None):
         assert len(train_X.shape) == 3, f'train_X should have 3 dimensions [n_samples, seq_len, n_features],' \

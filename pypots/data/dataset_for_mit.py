@@ -37,7 +37,7 @@ class DatasetForMIT(BaseDataset):
     """
 
     def __init__(self, X, y=None, rate=0.2):
-        super(DatasetForMIT, self).__init__(X, y)
+        super().__init__(X, y)
         self.rate = rate
 
     def __getitem__(self, idx):

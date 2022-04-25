@@ -2,7 +2,7 @@
 PyTorch Raindrop model.
 
 Part of the code is from https://github.com/mims-harvard/Raindrop
-# TODO: code need to be simplified
+# TODO: code need to be simplified. Also have to add processing methods for static features.
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
@@ -34,31 +34,26 @@ from pypots.data import DatasetForGRUD
 
 
 class PositionalEncodingTF(nn.Module):
-    def __init__(self, d_model, max_len=500, MAX=10000):
-        super(PositionalEncodingTF, self).__init__()
+    def __init__(self, d_model, max_len=500):
+        super().__init__()
         self.max_len = max_len
-        self.d_model = d_model
-        self.MAX = MAX
         self._num_timescales = d_model // 2
 
-    def getPE(self, P_time):
-        B = P_time.shape[1]
-
+    def get_positional_encoding(self, P_time):
         timescales = self.max_len ** np.linspace(0, 1, self._num_timescales)
 
-        times = torch.Tensor(P_time.cpu()).unsqueeze(2)
+        times = torch.Tensor(P_time).unsqueeze(2)
         scaled_time = times / torch.Tensor(timescales[None, None, :])
         pe = torch.cat([torch.sin(scaled_time), torch.cos(scaled_time)], axis=-1)  # T x B x d_model
         pe = pe.type(torch.FloatTensor)
-
         return pe
 
     def forward(self, P_time):
-        pe = self.getPE(P_time)
+        pe = self.get_positional_encoding(P_time)
         return pe
 
 
-class Observation_progation(MessagePassing):
+class ObservationPropagation(MessagePassing):
     _alpha: OptTensor
 
     def __init__(self, in_channels: Union[int, Tuple[int, int]], out_channels: int,
@@ -280,7 +275,7 @@ class Observation_progation(MessagePassing):
 class _Raindrop(nn.Module):
     def __init__(self, n_layers, n_features, d_model, d_inner, n_heads, n_classes, dropout=0.3, max_len=215, d_static=9,
                  aggregation='mean', sensor_wise_mask=False, static=False, device=None):
-        super(_Raindrop, self).__init__()
+        super().__init__()
         self.n_layers = n_layers
         self.n_features = n_features
         self.d_model = d_model
@@ -296,16 +291,21 @@ class _Raindrop(nn.Module):
         self.device = device
 
         # create models
-        self.global_structure = torch.ones(10, 10, device=self.device)
+        self.global_structure = torch.ones(n_features, n_features, device=self.device)
         if self.static:
             self.emb = nn.Linear(d_static, n_features)
+        assert d_model / n_features == int(d_model / n_features), 'd_model must be divisible by n_features'
         self.d_ob = int(d_model / n_features)
         self.encoder = nn.Linear(n_features * self.d_ob, n_features * self.d_ob)
         d_pe = 16
         self.pos_encoder = PositionalEncodingTF(d_pe, max_len)
         if self.sensor_wise_mask:
+            dim_check = n_features * (self.d_ob + d_pe)
+            assert dim_check / n_heads == int(dim_check / n_heads), 'dim_check must be divisible by n_heads'
             encoder_layers = TransformerEncoderLayer(n_features * (self.d_ob + d_pe), n_heads, d_inner, dropout)
         else:
+            dim_check = d_model + d_pe
+            assert dim_check / n_heads == int(dim_check / n_heads), 'dim_check must be divisible by n_heads'
             encoder_layers = TransformerEncoderLayer(d_model + d_pe, n_heads, d_inner, dropout)
         self.transformer_encoder = TransformerEncoder(encoder_layers, n_layers)
 
@@ -313,11 +313,11 @@ class _Raindrop(nn.Module):
 
         self.R_u = Parameter(torch.Tensor(1, self.n_features * self.d_ob))
 
-        self.ob_propagation = Observation_progation(in_channels=max_len * self.d_ob, out_channels=max_len * self.d_ob,
-                                                    heads=1, n_nodes=n_features, ob_dim=self.d_ob)
-        self.ob_propagation_layer2 = Observation_progation(in_channels=max_len * self.d_ob,
-                                                           out_channels=max_len * self.d_ob, heads=1,
-                                                           n_nodes=n_features, ob_dim=self.d_ob)
+        self.ob_propagation = ObservationPropagation(in_channels=max_len * self.d_ob, out_channels=max_len * self.d_ob,
+                                                     heads=1, n_nodes=n_features, ob_dim=self.d_ob)
+        self.ob_propagation_layer2 = ObservationPropagation(in_channels=max_len * self.d_ob,
+                                                            out_channels=max_len * self.d_ob, heads=1,
+                                                            n_nodes=n_features, ob_dim=self.d_ob)
         if static:
             d_final = d_model + d_pe + n_features
         else:
@@ -333,18 +333,32 @@ class _Raindrop(nn.Module):
         self.init_weights()
 
     def init_weights(self):
-        initrange = 1e-10
-        self.encoder.weight.data.uniform_(-initrange, initrange)
+        init_range = 1e-10
+        self.encoder.weight.data.uniform_(-init_range, init_range)
         if self.static:
-            self.emb.weight.data.uniform_(-initrange, initrange)
+            self.emb.weight.data.uniform_(-init_range, init_range)
         glorot(self.R_u)
 
     def classify(self, inputs):
-        """Input to the model:
-        src = P: [215, 128, 36] : 36 nodes, 128 samples, each sample each channel has a feature with 215-D vector
-        static = Pstatic: [128, 9]: this one doesn't matter; static features
-        times = Ptime: [215, 128]: the timestamps
-        lengths = lengths: [128]: the number of nonzero recordings.
+        """ Forward processing of BRITS.
+
+        Parameters
+        ----------
+        inputs : dict,
+            The input data.
+
+        Returns
+        -------
+        dict, A dictionary includes all results.
+            X : array, shape of [seq_len, n_samples, n_features]
+                Time series data. If samples have different lengths, then need to be padded first.
+            static : array, shape of [n_samples, n_features]
+                Static features.
+            times : array, shape of [seq_len, n_samples]
+                Timestamps of time series data.
+            lengths : array, shape of [n_samples]
+                Number of nonzero recordings.
+            missing_mask : array, shape of [seq_len, n_samples, n_features]
         """
         src = inputs['X']
         static = inputs['static']
@@ -352,7 +366,7 @@ class _Raindrop(nn.Module):
         lengths = inputs['lengths']
         missing_mask = inputs['missing_mask']
 
-        maxlen, batch_size = src.shape[0], src.shape[1]
+        max_len, batch_size = src.shape[0], src.shape[1]
 
         src = torch.repeat_interleave(src, self.d_ob, dim=-1)
         h = F.relu(src * self.R_u)
@@ -362,7 +376,7 @@ class _Raindrop(nn.Module):
 
         h = self.dropout(h)
 
-        mask = torch.arange(maxlen)[None, :] >= (lengths.cpu()[:, None])
+        mask = torch.arange(max_len)[None, :] >= (lengths.cpu()[:, None])
         mask = mask.squeeze(1)
 
         x = h
@@ -378,32 +392,34 @@ class _Raindrop(nn.Module):
         output = torch.zeros([n_step, batch_size, self.n_features * self.d_ob], device=self.device)
 
         alpha_all = torch.zeros([edge_index.shape[1], batch_size], device=self.device)
+
+        # iterate on each sample
         for unit in range(0, batch_size):
-            stepdata = x[:, unit, :]
+            step_data = x[:, unit, :]
             p_t = pe[:, unit, :]
 
-            stepdata = stepdata.reshape([n_step, self.n_features, self.d_ob]).permute(1, 0, 2)
-            stepdata = stepdata.reshape(self.n_features, n_step * self.d_ob)
+            step_data = step_data.reshape([n_step, self.n_features, self.d_ob]).permute(1, 0, 2)
+            step_data = step_data.reshape(self.n_features, n_step * self.d_ob)
 
-            stepdata, attentionweights = self.ob_propagation(stepdata, p_t=p_t, edge_index=edge_index,
-                                                             edge_weights=edge_weights,
-                                                             use_beta=False, edge_attr=None,
-                                                             return_attention_weights=True)
+            step_data, attention_weights = self.ob_propagation(step_data, p_t=p_t, edge_index=edge_index,
+                                                               edge_weights=edge_weights,
+                                                               use_beta=False, edge_attr=None,
+                                                               return_attention_weights=True)
 
-            edge_index_layer2 = attentionweights[0]
-            edge_weights_layer2 = attentionweights[1].squeeze(-1)
+            edge_index_layer2 = attention_weights[0]
+            edge_weights_layer2 = attention_weights[1].squeeze(-1)
 
-            stepdata, attentionweights = self.ob_propagation_layer2(stepdata, p_t=p_t, edge_index=edge_index_layer2,
-                                                                    edge_weights=edge_weights_layer2,
-                                                                    use_beta=False, edge_attr=None,
-                                                                    return_attention_weights=True)
+            step_data, attention_weights = self.ob_propagation_layer2(step_data, p_t=p_t, edge_index=edge_index_layer2,
+                                                                      edge_weights=edge_weights_layer2,
+                                                                      use_beta=False, edge_attr=None,
+                                                                      return_attention_weights=True)
 
-            stepdata = stepdata.view([self.n_features, n_step, self.d_ob])
-            stepdata = stepdata.permute([1, 0, 2])
-            stepdata = stepdata.reshape([-1, self.n_features * self.d_ob])
+            step_data = step_data.view([self.n_features, n_step, self.d_ob])
+            step_data = step_data.permute([1, 0, 2])
+            step_data = step_data.reshape([-1, self.n_features * self.d_ob])
 
-            output[:, unit, :] = stepdata
-            alpha_all[:, unit] = attentionweights[1].squeeze(-1)
+            output[:, unit, :] = step_data
+            alpha_all[:, unit] = attention_weights[1].squeeze(-1)
 
         # distance = torch.cdist(alpha_all.T, alpha_all.T, p=2)
         # distance = torch.mean(distance)
@@ -428,8 +444,8 @@ class _Raindrop(nn.Module):
             for se in range(self.n_features):
                 r_out = r_out.view(-1, batch_size, self.n_features, (self.d_ob + 16))
                 out = r_out[:, :, se, :]
-                len = torch.sum(extended_missing_mask[:, :, se], dim=0).unsqueeze(1)
-                out_sensor = torch.sum(out * (1 - extended_missing_mask[:, :, se].unsqueeze(-1)), dim=0) / (len + 1)
+                l_ = torch.sum(extended_missing_mask[:, :, se], dim=0).unsqueeze(1)  # length
+                out_sensor = torch.sum(out * (1 - extended_missing_mask[:, :, se].unsqueeze(-1)), dim=0) / (l_ + 1)
                 output[:, se, :] = out_sensor
             output = output.view([-1, self.n_features * (self.d_ob + 16)])
         elif self.aggregation == 'mean':
@@ -439,6 +455,7 @@ class _Raindrop(nn.Module):
 
         if static is not None:
             output = torch.cat([output, emb], dim=1)
+
         logits = self.mlp_static(output)
         prediction = torch.softmax(logits, dim=1)
 
@@ -496,12 +513,13 @@ class Raindrop(BaseNNClassifier):
                  batch_size=32,
                  weight_decay=1e-5,
                  device=None):
-        super(Raindrop, self).__init__(n_classes, learning_rate, epochs, patience, batch_size,
+        super().__init__(n_classes, learning_rate, epochs, patience, batch_size,
                                        weight_decay, device)
 
         self.model = _Raindrop(n_layers, n_features, d_model, d_inner, n_heads, n_classes, dropout, max_len, d_static,
                                aggregation, sensor_wise_mask, static=static, device=self.device)
         self.model = self.model.to(self.device)
+        self._print_model_size()
 
     def fit(self, train_X, train_y, val_X=None, val_y=None):
         """ Fit the model on the given training data.

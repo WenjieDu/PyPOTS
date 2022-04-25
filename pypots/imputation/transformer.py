@@ -98,7 +98,7 @@ class PositionWiseFeedForward(nn.Module):
 class EncoderLayer(nn.Module):
     def __init__(self, d_time, d_feature, d_model, d_inner, n_head, d_k, d_v, dropout=0.1, attn_dropout=0.1,
                  diagonal_attention_mask=False, device=None):
-        super(EncoderLayer, self).__init__()
+        super().__init__()
 
         self.diagonal_attention_mask = diagonal_attention_mask
         self.device = device
@@ -129,7 +129,7 @@ class EncoderLayer(nn.Module):
 
 class PositionalEncoding(nn.Module):
     def __init__(self, d_hid, n_position=200):
-        super(PositionalEncoding, self).__init__()
+        super().__init__()
         # Not a parameter
         self.register_buffer('pos_table', self._get_sinusoid_encoding_table(n_position, d_hid))
 
@@ -152,7 +152,7 @@ class PositionalEncoding(nn.Module):
 class _TransformerEncoder(nn.Module):
     def __init__(self, n_layers, d_time, d_feature, d_model, d_inner, n_head, d_k, d_v, dropout,
                  ORT_weight=1, MIT_weight=1, device=None):
-        super(_TransformerEncoder, self).__init__()
+        super().__init__()
         self.n_layers = n_layers
         actual_d_feature = d_feature * 2
         self.ORT_weight = ORT_weight
@@ -224,7 +224,7 @@ class Transformer(BaseNNImputer):
                  batch_size=32,
                  weight_decay=1e-5,
                  device=None):
-        super(Transformer, self).__init__(learning_rate, epochs, patience, batch_size, weight_decay, device)
+        super().__init__(learning_rate, epochs, patience, batch_size, weight_decay, device)
 
         self.seq_len = seq_len
         self.n_features = n_features
@@ -243,6 +243,7 @@ class Transformer(BaseNNImputer):
                                          self.n_head, self.d_k, self.d_v, self.dropout,
                                          self.ORT_weight, self.MIT_weight, self.device)
         self.model = self.model.to(self.device)
+        self._print_model_size()
 
     def fit(self, train_X, val_X=None):
         assert len(train_X.shape) == 3, f'train_X should have 3 dimensions [n_samples, seq_len, n_features],' \

@@ -72,7 +72,7 @@ class BaseNNModel(BaseModel):
     """
 
     def __init__(self, learning_rate, epochs, patience, batch_size, weight_decay, device):
-        super(BaseNNModel, self).__init__(device)
+        super().__init__(device)
 
         # training hype-parameters
         self.batch_size = batch_size
@@ -90,3 +90,9 @@ class BaseNNModel(BaseModel):
             'training_loss': [],
             'validating_loss': []
         }
+
+    def _print_model_size(self):
+        """ Print the number of trainable parameters in the initialized NN model.
+        """
+        num_params = sum(p.numel() for p in self.model.parameters() if p.requires_grad)
+        print(f'Model initialized successfully. Number of the trainable parameters: {num_params}')

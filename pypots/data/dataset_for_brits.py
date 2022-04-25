@@ -55,7 +55,7 @@ class DatasetForBRITS(BaseDataset):
     """
 
     def __init__(self, X, y=None):
-        super(DatasetForBRITS, self).__init__(X, y)
+        super().__init__(X, y)
 
         # calculate all delta here.
         # Training will take too much time if we put delta calculation in __getitem__().
