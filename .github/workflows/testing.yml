@@ -1,51 +1,51 @@
-name: PyPOTS Testing
-
-on:
-    push:
-        branches:
-            - main
-            - dev
-    pull_request:
-        branches:
-            - main
-            - dev
-
-jobs:
-    test:
-        runs-on: ${{ matrix.os }}
-        strategy:
-            fail-fast: false
-            matrix:
-                os: [ubuntu-latest, windows-latest, macOS-latest]
-                python-version: [3.6, 3.9]
-
-        steps:
-            - uses: actions/checkout@v3
-            - name: Set up Python ${{ matrix.python-version }}
-              uses: actions/setup-python@v3
-              with:
-                  python-version: ${{ matrix.python-version }}
-
-            - name: Install dependencies
-              run: |
-                  python -m pip install --upgrade pip
-                  pip install torch==1.9.1
-                  pip install -r requirements.txt
-                  pip install pytest
-                  pip install coverage
-
-            - name: Test with pytest
-              run: |
-                  coverage run --source=pypots -m pytest
-
-#            - name: Write the LCOV report
-#              run: |
-#                  coverage lcov
+#name: PyPOTS Testing
 #
-#            - name: Submit report
-#              uses: coverallsapp/github-action@master
-#              env:
-#                  NODE_COVERALLS_DEBUG: 1
+#on:
+#    push:
+#        branches:
+#            - main
+#            - dev
+#    pull_request:
+#        branches:
+#            - main
+#            - dev
+#
+#jobs:
+#    test:
+#        runs-on: ${{ matrix.os }}
+#        strategy:
+#            fail-fast: false
+#            matrix:
+#                os: [ubuntu-latest, windows-latest, macOS-latest]
+#                python-version: [3.6, 3.9]
+#
+#        steps:
+#            - uses: actions/checkout@v3
+#            - name: Set up Python ${{ matrix.python-version }}
+#              uses: actions/setup-python@v3
 #              with:
-#                  github-token: ${{ secrets.ACCESS_TOKEN }}
-#                  path-to-lcov: 'coverage.lcov'
+#                  python-version: ${{ matrix.python-version }}
+#
+#            - name: Install dependencies
+#              run: |
+#                  python -m pip install --upgrade pip
+#                  pip install torch==1.9.1
+#                  pip install -r requirements.txt
+#                  pip install pytest
+#                  pip install coverage
+#
+#            - name: Test with pytest
+#              run: |
+#                  coverage run --source=pypots -m pytest
+#
+##            - name: Write the LCOV report
+##              run: |
+##                  coverage lcov
+##
+##            - name: Submit report
+##              uses: coverallsapp/github-action@master
+##              env:
+##                  NODE_COVERALLS_DEBUG: 1
+##              with:
+##                  github-token: ${{ secrets.ACCESS_TOKEN }}
+##                  path-to-lcov: 'coverage.lcov'
