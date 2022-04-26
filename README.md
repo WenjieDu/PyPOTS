@@ -49,7 +49,7 @@ Install with the latest code on GitHub:
 | Imputation,<br>Classification | Neural Network | BRITS (Bidirectional Recurrent Imputation for Time Series) | 2018 | [^3] |
 | Classification | Neural Network | GRU-D | 2018 | [^4] |
 | Classification | Neural Network | Raindrop | 2022 | [^5] |
-| Clustering,<br>Imputation | Neural Network | CRLI (Clustering Representation Learning on Incomplete time-series data) | 2021 | [^6] |
+| Clustering | Neural Network | CRLI (Clustering Representation Learning on Incomplete time-series data) | 2021 | [^6] |
 | Imputation | Naive | LOCF (Last Observation Carried Forward) | - | - |
 
 ---
