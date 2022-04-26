@@ -27,8 +27,8 @@ setup(
         'numpy',
         'scikit_learn',
         'scipy',
-        'torch>=1.9, <1.10',  # torch_sparse v0.6.12 requires 1.9<=torch<1.10, v0.6.13 needs torch>=1.10
-        'torch_sparse==0.6.12',
+        'torch>=1.10',  # torch_sparse v0.6.12 requires 1.9<=torch<1.10, v0.6.13 needs torch>=1.10
+        'torch_sparse==0.6.13',
         'torch_scatter',
         'torch_geometric',
         'tensorboard',
