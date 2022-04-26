@@ -1,4 +1,4 @@
-<a href='https://github.com/PyPOTS/PyPOTS'><img src='https://raw.githubusercontent.com/PyPOTS/PyPOTS/main/docs/figs/PyPOTS%20logo.svg?sanitize=true' width='195' align='right' /></a>
+<a href='https://github.com/PyPOTS/PyPOTS'><img src='https://raw.githubusercontent.com/PyPOTS/PyPOTS/main/docs/figs/PyPOTS%20logo.svg?sanitize=true' width='190' align='right' /></a>
 
 # <p align='center'> Welcome to PyPOTS </p>
 ### <p align='center'> A Python Toolbox for Data Mining on Partially-Observed Time Series </p>
@@ -46,9 +46,10 @@ Install with the latest code on GitHub:
 |------------|------------|-------------|------|-----------|
 | Imputation | Neural Network | SAITS: Self-Attention-based Imputation for Time Series | 2022 | [^1] |
 | Imputation | Neural Network | Transformer | 2017 | [^2] [^1] |
-| Imputation,<br>Classification | Neural Network | BRITS: Bidirectional Recurrent Imputation for Time Series | 2018 | [^3] |
+| Imputation,<br>Classification | Neural Network | BRITS (Bidirectional Recurrent Imputation for Time Series) | 2018 | [^3] |
 | Classification | Neural Network | GRU-D | 2018 | [^4] |
 | Classification | Neural Network | Raindrop | 2022 | [^5] |
+| Clustering,<br>Imputation | Neural Network | CRLI (Clustering Representation Learning on Incomplete time-series data) | 2021 | [^6] |
 | Imputation | Naive | LOCF (Last Observation Carried Forward) | - | - |
 
 ---
@@ -61,3 +62,4 @@ Thank you all for your attention! 😃
 [^3]: Cao, W., Wang, D., Li, J., Zhou, H., Li, L., & Li, Y. (2018). BRITS: Bidirectional Recurrent Imputation for Time Series. NeurIPS 2018.
 [^4]: Che, Z., Purushotham, S., Cho, K., Sontag, D.A., & Liu, Y. (2018). Recurrent Neural Networks for Multivariate Time Series with Missing Values. Scientific Reports, 8.
 [^5]: Zhang, X., Zeman, M., Tsiligkaridis, T., & Zitnik, M. (2022). Graph-Guided Network for Irregularly Sampled Multivariate Time Series. ICLR 2022.
+[^6]: Ma, Q., Chen, C., Li, S., & Cottrell, G. W. (2021). Learning Representations for Incomplete Time Series Clustering. AAAI 2021. 
