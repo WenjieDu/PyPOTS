@@ -248,9 +248,9 @@ def cal_rand_index(class_predictions, targets):
     Parameters
     ----------
     class_predictions : array
-        Estimated classification predictions returned by a classifier.
+        Clustering results returned by a clusterer.
     targets : array
-        Ground truth (correct) classification results.
+        Ground truth (correct) clustering results.
 
     Returns
     -------
@@ -276,3 +276,28 @@ def cal_rand_index(class_predictions, targets):
     RI = metrics.rand_score(targets, class_predictions)
 
     return RI
+
+
+def cal_cluster_purity(class_predictions, targets):
+    """ Calculate cluster purity.
+
+    Parameters
+    ----------
+    class_predictions : array
+        Clustering results returned by a clusterer.
+    targets : array
+        Ground truth (correct) clustering results.
+
+    Returns
+    -------
+    cluster_purity : float
+        cluster purity.
+
+    Notes
+    -----
+    This function is from the answer https://stackoverflow.com/a/51672699 on StackOverflow.
+
+    """
+    contingency_matrix = metrics.cluster.contingency_matrix(targets, class_predictions)
+    cluster_purity = np.sum(np.amax(contingency_matrix, axis=0)) / np.sum(contingency_matrix)
+    return cluster_purity
