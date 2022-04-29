@@ -1,4 +1,4 @@
-<a href='https://github.com/PyPOTS/PyPOTS'><img src='https://raw.githubusercontent.com/PyPOTS/PyPOTS/main/docs/figs/PyPOTS%20logo.svg?sanitize=true' width='190' align='right' /></a>
+<a href='https://github.com/WenjieDu/PyPOTS'><img src='https://raw.githubusercontent.com/WenjieDu/PyPOTS/main/docs/figs/PyPOTS%20logo.svg?sanitize=true' width='190' align='right' /></a>
 
 # <p align='center'> Welcome to PyPOTS </p>
 ### <p align='center'> A Python Toolbox for Data Mining on Partially-Observed Time Series </p>
@@ -11,8 +11,8 @@
     <!-- License -->
     <img src='https://img.shields.io/badge/License-GPL--v3-green?color=79C641'>
     <!-- GitHub Testing -->
-    <a alt='GitHub Testing' href='https://github.com/PyPOTS/PyPOTS/actions/workflows/testing.yml'> 
-        <img src='https://github.com/PyPOTS/PyPOTS/actions/workflows/testing.yml/badge.svg'>
+    <a alt='GitHub Testing' href='https://github.com/WenjieDu/PyPOTS/actions/workflows/testing.yml'> 
+        <img src='https://github.com/WenjieDu/PyPOTS/actions/workflows/testing.yml/badge.svg'>
     </a>
     <!-- PyPI download number -->
     <a alt='PyPI download number' href='https://pypi.org/project/pypots'>
@@ -21,7 +21,7 @@
     <!-- Visit number -->
     <img src='https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2FPyPOTS%2FPyPOTS&count_bg=%23009A0A&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=Visits&edge_flat=false'>
     <!-- Chat in Discussions -->
-    <a alt='GitHub Discussions' href='https://github.com/PyPOTS/PyPOTS/discussions'>
+    <a alt='GitHub Discussions' href='https://github.com/WenjieDu/PyPOTS/discussions'>
         <img src='https://img.shields.io/badge/Chat-in_Discussions-green?logo=github&color=60A98D'>
     </a>
     <!-- Code of Conduct -->
@@ -39,21 +39,22 @@ Install the latest release from PyPI:
 > pip install pypots
 
 Install with the latest code on GitHub: 
-> pip install `https://github.com/PyPOTS/PyPOTS/archive/master.zip`
+> pip install `https://github.com/WenjieDu/PyPOTS/archive/main.zip`
 
 ## ❖ Available Algorithms
-| Task Type  | Model Type | Algorithm   | Year | Reference |        
-|------------|------------|-------------|------|-----------|
-| Imputation | Neural Network | SAITS: Self-Attention-based Imputation for Time Series | 2022 | [^1] |
-| Imputation | Neural Network | Transformer | 2017 | [^2] [^1] |
-| Imputation,<br>Classification | Neural Network | BRITS (Bidirectional Recurrent Imputation for Time Series) | 2018 | [^3] |
-| Classification | Neural Network | GRU-D | 2018 | [^4] |
-| Classification | Neural Network | Raindrop | 2022 | [^5] |
-| Clustering | Neural Network | CRLI (Clustering Representation Learning on Incomplete time-series data) | 2021 | [^6] |
-| Imputation | Naive | LOCF (Last Observation Carried Forward) | - | - |
+| Task                          | Type           | Algorithm                                                                | Year | Reference |        
+|-------------------------------|----------------|--------------------------------------------------------------------------|------|-----------|
+| Imputation                    | Neural Network | SAITS: Self-Attention-based Imputation for Time Series                   | 2022 | [^1]      |
+| Imputation                    | Neural Network | Transformer                                                              | 2017 | [^2] [^1] |
+| Imputation,<br>Classification | Neural Network | BRITS (Bidirectional Recurrent Imputation for Time Series)               | 2018 | [^3]      |
+| Imputation                    | Naive          | LOCF (Last Observation Carried Forward)                                  | -    | -         |
+| Classification                | Neural Network | GRU-D                                                                    | 2018 | [^4]      |
+| Classification                | Neural Network | Raindrop                                                                 | 2022 | [^5]      |
+| Clustering                    | Neural Network | CRLI (Clustering Representation Learning on Incomplete time-series data) | 2021 | [^6]      |
+| Clustering                    | Neural Network | VaDER (Variational Deep Embedding with Recurrence)                       | 2019 | [^7]      |
 
 ---
-‼️ PyPOTS is currently under developing. If you like it and look forward to its growth, <ins>please give PyPOTS a star and watch it to keep you posted on its progress and to let me know that its development is meaningful</ins>. If you have any feedback, or want to contribute ideas/suggestions or share time-series related algorithms/papers, please join PyPOTS community and <a alt='GitHub Discussions' href='https://github.com/PyPOTS/PyPOTS/discussions'><img align='center' src='https://img.shields.io/badge/Chat-in_Discussions-green?logo=github&color=60A98D'></a>, or [drop me an email](mailto:wenjay.du@gmail.com).
+‼️ PyPOTS is currently under developing. If you like it and look forward to its growth, <ins>please give PyPOTS a star and watch it to keep you posted on its progress and to let me know that its development is meaningful</ins>. If you have any feedback, or want to contribute ideas/suggestions or share time-series related algorithms/papers, please join PyPOTS community and <a alt='GitHub Discussions' href='https://github.com/WenjieDu/PyPOTS/discussions'><img align='center' src='https://img.shields.io/badge/Chat-in_Discussions-green?logo=github&color=60A98D'></a>, or [drop me an email](mailto:wenjay.du@gmail.com).
 
 Thank you all for your attention! 😃
 
@@ -62,4 +63,5 @@ Thank you all for your attention! 😃
 [^3]: Cao, W., Wang, D., Li, J., Zhou, H., Li, L., & Li, Y. (2018). BRITS: Bidirectional Recurrent Imputation for Time Series. NeurIPS 2018.
 [^4]: Che, Z., Purushotham, S., Cho, K., Sontag, D.A., & Liu, Y. (2018). Recurrent Neural Networks for Multivariate Time Series with Missing Values. Scientific Reports, 8.
 [^5]: Zhang, X., Zeman, M., Tsiligkaridis, T., & Zitnik, M. (2022). Graph-Guided Network for Irregularly Sampled Multivariate Time Series. ICLR 2022.
-[^6]: Ma, Q., Chen, C., Li, S., & Cottrell, G. W. (2021). Learning Representations for Incomplete Time Series Clustering. AAAI 2021. 
+[^6]: Ma, Q., Chen, C., Li, S., & Cottrell, G. W. (2021). Learning Representations for Incomplete Time Series Clustering. AAAI 2021.
+[^7]: Jong, J.D., Emon, M.A., Wu, P., Karki, R., Sood, M., Godard, P., Ahmad, A., Vrooman, H.A., Hofmann-Apitius, M., & Fröhlich, H. (2019). Deep learning for clustering of multivariate clinical patient trajectories with missing values. GigaScience, 8.
