@@ -91,6 +91,14 @@ class GMMLayer(nn.Module):
         self.var_c_unscaled = Parameter(torch.Tensor(n_clusters, d_hidden))
         self.phi_c_unscaled = Parameter(torch.Tensor(n_clusters))
 
+    def set_values(self, mu, var, phi):
+        assert mu.shape == self.mu_c_unscaled.shape
+        assert var.shape == self.var_c_unscaled.shape
+        assert phi.shape == self.phi_c_unscaled.shape
+        self.mu_c_unscaled = torch.nn.Parameter(mu)
+        self.var_c_unscaled = torch.nn.Parameter(var)
+        self.phi_c_unscaled = torch.nn.Parameter(phi)
+
     def forward(self):
         mu_c = self.mu_c_unscaled
         var_c = F.softplus(self.var_c_unscaled)
@@ -335,6 +343,7 @@ class VaDER(BaseNNClusterer):
         self.best_loss = float('inf')
         self.best_model_dict = None
 
+        # pretrain to initialize parameters of GMM layer
         for epoch in range(self.pretrain_epochs):
             self.model.train()
             for idx, data in enumerate(training_loader):
@@ -343,9 +352,6 @@ class VaDER(BaseNNClusterer):
                 results = self.model.forward(inputs, pretrain=True)
                 results['loss'].backward()
                 self.optimizer.step()
-
-        # init parameters of GMM layer
-        # self.model.eval()
         with torch.no_grad():
             sample_collector = []
             for _ in range(10):  # sampling 10 times
@@ -359,11 +365,13 @@ class VaDER(BaseNNClusterer):
             # get GMM parameters
             phi = np.log(gmm.weights_ + 1e-9)  # inverse softmax
             mu = gmm.means_
-
             var = inverse_softplus(gmm.covariances_)
-            self.model.gmm_layer.mu_c_unscaled = torch.nn.Parameter(torch.from_numpy(mu).to(self.device))
-            self.model.gmm_layer.phi_c_unscaled = torch.nn.Parameter(torch.from_numpy(phi).to(self.device))
-            self.model.gmm_layer.var_c_unscaled = torch.nn.Parameter(torch.from_numpy(var).to(self.device))
+            # use trained GMM's parameters to init GMM layer's
+            self.model.gmm_layer.set_values(
+                torch.from_numpy(mu).to(self.device),
+                torch.from_numpy(var).to(self.device),
+                torch.from_numpy(phi).to(self.device),
+            )
 
         for epoch in range(self.epochs):
             self.model.train()
