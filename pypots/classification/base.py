@@ -119,4 +119,7 @@ class BaseNNClassifier(BaseNNModel, BaseClassifier):
                 if self.patience == 0:
                     print('Exceeded the training patience. Terminating the training procedure...')
                     break
+
+        if np.equal(self.best_loss, float('inf')):
+            raise ValueError('Something is wrong. best_loss is Nan after training.')
         print('Finished training.')
