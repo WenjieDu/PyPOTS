@@ -12,14 +12,12 @@ on:
 
 jobs:
     test:
-        if: ${{ false }}  # disable for now
-
         runs-on: ${{ matrix.os }}
         strategy:
             fail-fast: false
             matrix:
                 os: [ubuntu-latest, windows-latest, macOS-latest]
-                python-version: [3.6, 3.9]
+                python-version: [3.7, 3.9]
 
         steps:
             - uses: actions/checkout@v3
@@ -31,7 +29,7 @@ jobs:
             - name: Install dependencies
               run: |
                   python -m pip install --upgrade pip
-                  pip install torch==1.9.1
+                  pip install torch==1.10.2
                   pip install -r requirements.txt
                   pip install pytest
                   pip install coverage
@@ -40,14 +38,12 @@ jobs:
               run: |
                   coverage run --source=pypots -m pytest
 
-#            - name: Write the LCOV report
-#              run: |
-#                  coverage lcov
-#
-#            - name: Submit report
-#              uses: coverallsapp/github-action@master
-#              env:
-#                  NODE_COVERALLS_DEBUG: 1
-#              with:
-#                  github-token: ${{ secrets.ACCESS_TOKEN }}
-#                  path-to-lcov: 'coverage.lcov'
+            - name: Write the LCOV report
+              run: |
+                  coverage lcov
+
+            - name: Submit report
+              uses: coverallsapp/github-action@master
+              with:
+                  github-token: ${{ secrets.GITHUB_TOKEN }}
+                  path-to-lcov: 'coverage.lcov'
