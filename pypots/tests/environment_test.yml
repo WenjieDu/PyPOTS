@@ -11,11 +11,11 @@ dependencies:
     - scikit-learn
     - matplotlib
     - tensorboard
-    - pytorch>=1.10+cpuonly
+    - pytorch>=1.10
     - pyg
-    - pytest-xdist
+    - pytest
     - coverage
     - pip:
-        - torchdiffeq
-        - pycorruptor
-        - tsdb
+          - torchdiffeq
+          - pycorruptor
+          - tsdb

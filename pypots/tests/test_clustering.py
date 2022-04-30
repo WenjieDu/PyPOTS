@@ -9,30 +9,24 @@ import unittest
 
 from pypots.clustering.crli import CRLI
 from pypots.clustering.vader import VaDER
-from pypots.data import generate_random_walk_for_classification, mcar, fill_nan_with_mask
 from pypots.utils.metrics import cal_rand_index, cal_cluster_purity
+from .test_data_unified import gene_data
 
-EPOCHS = 5
-N_CLASSES = 5
-
-
-def gene_data():
-    # generate samples
-    X, y = generate_random_walk_for_classification(n_classes=N_CLASSES, n_samples_each_class=500)
-    # create random missing values
-    _, X, missing_mask, _ = mcar(X, 0.3)
-    X = fill_nan_with_mask(X, missing_mask)
-    return X, y
+EPOCHS = 10
 
 
 class TestCRLI(unittest.TestCase):
     def setUp(self) -> None:
-        X, y = gene_data()  # generate time-series data
-        self.X = X
-        self.y = y
-        self.crli = CRLI(seq_len=24, n_features=10, n_clusters=N_CLASSES,
+        data = gene_data()
+        self.train_X = data['train_X']
+        self.train_y = data['train_y']
+        # self.val_X = data['val_X']
+        # self.val_y = data['val_y']
+        # self.test_X = data['test_X']
+        # self.test_y = data['test_y']
+        self.crli = CRLI(seq_len=data['n_steps'], n_features=data['n_features'], n_clusters=data['n_classes'],
                          n_generator_layers=2, rnn_hidden_size=128, epochs=EPOCHS)
-        self.crli.fit(X)
+        self.crli.fit(self.train_X)
 
     def test_parameters(self):
         assert (hasattr(self.crli, 'model')
@@ -50,20 +44,20 @@ class TestCRLI(unittest.TestCase):
                 and self.crli.best_model_dict is not None)
 
     def test_cluster(self):
-        clustering = self.crli.cluster(self.X)
-        RI = cal_rand_index(clustering, self.y)
-        CP = cal_cluster_purity(clustering, self.y)
+        clustering = self.crli.cluster(self.train_X)
+        RI = cal_rand_index(clustering, self.train_y)
+        CP = cal_cluster_purity(clustering, self.train_y)
         print(f'RI: {RI}\nCP: {CP}')
 
 
 class TestVaDER(unittest.TestCase):
     def setUp(self) -> None:
-        X, y = gene_data()  # generate time-series data
-        self.X = X
-        self.y = y
-        self.vader = VaDER(seq_len=24, n_features=10, n_clusters=N_CLASSES,
+        data = gene_data()
+        self.train_X = data['train_X']
+        self.train_y = data['train_y']
+        self.vader = VaDER(seq_len=data['n_steps'], n_features=data['n_features'], n_clusters=data['n_classes'],
                            rnn_hidden_size=128, d_mu_stddev=5, pretrain_epochs=5, epochs=EPOCHS)
-        self.vader.fit(X)
+        self.vader.fit(self.train_X)
 
     def test_parameters(self):
         assert (hasattr(self.vader, 'model')
@@ -79,9 +73,9 @@ class TestVaDER(unittest.TestCase):
                 and self.vader.best_model_dict is not None)
 
     def test_cluster(self):
-        clustering = self.vader.cluster(self.X)
-        RI = cal_rand_index(clustering, self.y)
-        CP = cal_cluster_purity(clustering, self.y)
+        clustering = self.vader.cluster(self.train_X)
+        RI = cal_rand_index(clustering, self.train_y)
+        CP = cal_cluster_purity(clustering, self.train_y)
         print(f'RI: {RI}\nCP: {CP}')
 
 
