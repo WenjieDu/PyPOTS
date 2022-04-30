@@ -25,24 +25,24 @@ jobs:
             - name: Set up Conda
               uses: conda-incubator/setup-miniconda@v2
               with:
+                  activate-environment: pypots-test
                   python-version: ${{ matrix.python-version }}
-                  environment-file: environment.yml
-                  activate-environment: pypots
-
-            - name: Install testing dependencies
+                  environment-file: environment_test.yml
+                  auto-activate-base: false
               run: |
-                  conda install pytest
-                  conda install coverage
+                  which python
+                  conda info
+                  conda list
 
             - name: Test with pytest
               run: |
-                  coverage run --source=pypots -m pytest
+                  python -m coverage run --source=pypots -m pytest -n auto
 
             - name: Generate the LCOV report
               run: |
-                  coverage lcov
+                  python -m coverage lcov
 
-            - name: Submit report
+            - name: Submit the report
               uses: coverallsapp/github-action@master
               with:
                   github-token: ${{ secrets.GITHUB_TOKEN }}

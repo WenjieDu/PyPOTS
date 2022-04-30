@@ -1,0 +1,21 @@
+name: pypots-test
+channels:
+    - pytorch
+    - pyg
+    - conda-forge
+    - defaults
+dependencies:
+    - numpy
+    - scipy
+    - pandas
+    - scikit-learn
+    - matplotlib
+    - tensorboard
+    - pytorch>=1.10+cpuonly
+    - pyg
+    - pytest-xdist
+    - coverage
+    - pip:
+        - torchdiffeq
+        - pycorruptor
+        - tsdb
