@@ -1,6 +1,7 @@
 name: pypots
 channels:
     - pytorch
+    - pyg
     - conda-forge
     - defaults
 dependencies:
@@ -8,14 +9,13 @@ dependencies:
     - pip
     - numpy
     - scipy
+    - pandas
     - scikit-learn
     - matplotlib
-    - pytorch>=1.10
     - tensorboard
-    - pandas
+    - pytorch>=1.10
+    - pyg
     - pip:
-        - torch_sparse==0.6.13
-        - torch_scatter
-        - torch_geometric
+        - torchdiffeq
         - pycorruptor
         - tsdb
