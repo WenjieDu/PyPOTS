@@ -17,7 +17,7 @@ from pypots.imputation import (
     LOCF,
 )
 from pypots.utils.metrics import cal_mae
-from .test_data_unified import gene_data
+from .unified_data_for_test import gene_data
 
 EPOCH = 10
 

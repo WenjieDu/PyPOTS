@@ -6,6 +6,7 @@ Generate the unified test data.
 # License: GLP-v3
 
 
+import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 
@@ -72,7 +73,21 @@ def gene_physionet2012():
     # generate samples
     df = load_specific_dataset('physionet_2012')
     X = df['X']
-    # X = X.drop[df['static_features']]
+    X = X.drop(df['static_features'], axis=1)
+
+    def apply_func(df_temp):
+        missing = list(set(range(0, 48)).difference(set(df_temp['Time'])))
+        missing_part = pd.DataFrame({'Time': missing})
+        df_temp = df_temp.append(missing_part, ignore_index=False, sort=False)
+        df_temp = df_temp.set_index('Time').sort_index().reset_index()
+        df_temp = df_temp.iloc[:48]
+        return df_temp
+
+    X = X.groupby('RecordID').apply(apply_func)
+    X = X.drop('RecordID', axis=1)
+    X = X.reset_index()
+    X = X.drop(['level_1', 'Time'], axis=1)
+
     y = df['y']
     all_recordID = X['RecordID'].unique()
     train_set_ids, test_set_ids = train_test_split(all_recordID, test_size=0.2)

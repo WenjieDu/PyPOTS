@@ -10,7 +10,7 @@ import unittest
 from pypots.clustering.crli import CRLI
 from pypots.clustering.vader import VaDER
 from pypots.utils.metrics import cal_rand_index, cal_cluster_purity
-from .test_data_unified import gene_data
+from .unified_data_for_test import gene_data
 
 EPOCHS = 10
 
