@@ -27,7 +27,7 @@ jobs:
               with:
                   activate-environment: pypots-test
                   python-version: ${{ matrix.python-version }}
-                  environment-file: environment_test.yml
+                  environment-file: pypots/tests/environment_test.yml
                   auto-activate-base: false
 
             - name: Check the test environment
