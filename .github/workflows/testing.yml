@@ -21,24 +21,24 @@ jobs:
 
         steps:
             - uses: actions/checkout@v3
-            - name: Set up Python ${{ matrix.python-version }}
-              uses: actions/setup-python@v3
+
+            - name: Set up Conda
+              uses: conda-incubator/setup-miniconda@v2
               with:
                   python-version: ${{ matrix.python-version }}
+                  environment-file: environment.yml
+                  activate-environment: pypots
 
-            - name: Install dependencies
+            - name: Install testing dependencies
               run: |
-                  python -m pip install --upgrade pip
-                  pip install torch==1.10.2
-                  pip install -r requirements.txt
-                  pip install pytest
-                  pip install coverage
+                  conda install pytest
+                  conda install coverage
 
             - name: Test with pytest
               run: |
                   coverage run --source=pypots -m pytest
 
-            - name: Write the LCOV report
+            - name: Generate the LCOV report
               run: |
                   coverage lcov
 
