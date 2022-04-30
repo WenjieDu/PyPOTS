@@ -59,16 +59,10 @@ class TestCRLI(unittest.TestCase):
 class TestVaDER(unittest.TestCase):
     def setUp(self) -> None:
         X, y = gene_data()  # generate time-series data
-        # from sklearn.preprocessing import StandardScaler
-        # scaler = StandardScaler()
-        # n_sample = X.shape[0]
-        # X = X.reshape(n_sample * 24, 10)
-        # X = scaler.fit_transform(X)
-        # X = X.reshape(n_sample, 24, 10)
         self.X = X
         self.y = y
         self.vader = VaDER(seq_len=24, n_features=10, n_clusters=N_CLASSES,
-                           rnn_hidden_size=128, d_mu_stddev=2, pretrain_epochs=5, epochs=EPOCHS)
+                           rnn_hidden_size=128, d_mu_stddev=5, pretrain_epochs=5, epochs=EPOCHS)
         self.vader.fit(X)
 
     def test_parameters(self):

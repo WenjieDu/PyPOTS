@@ -1,20 +1,20 @@
-name: pypots
+name: pypots-test
 channels:
     - pytorch
     - pyg
     - conda-forge
     - defaults
 dependencies:
-    - python=3.7.13
-    - pip
     - numpy
     - scipy
     - pandas
     - scikit-learn
     - matplotlib
     - tensorboard
-    - pytorch>=1.10
+    - pytorch>=1.10+cpuonly
     - pyg
+    - pytest-xdist
+    - coverage
     - pip:
         - torchdiffeq
         - pycorruptor
