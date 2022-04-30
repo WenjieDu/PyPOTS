@@ -9,9 +9,7 @@ Test cases for imputation models.
 import unittest
 
 import numpy as np
-from pycorruptor import mcar, fill_nan_with_mask
 
-from pypots.data import generate_random_walk
 from pypots.imputation import (
     SAITS,
     Transformer,
@@ -19,25 +17,20 @@ from pypots.imputation import (
     LOCF,
 )
 from pypots.utils.metrics import cal_mae
+from .test_data_unified import gene_data
 
-EPOCH = 5
-
-
-def gene_data():
-    X = generate_random_walk()  # generate time-series data
-    train_X, val_X, test_X = X[:600], X[600:800], X[800:]
-    _, train_X, train_X_missing_mask, _ = mcar(train_X, 0.3)
-    test_X_intact, test_X, test_X_missing_mask, test_X_indicating_mask = mcar(train_X, 0.3)
-    train_X = fill_nan_with_mask(train_X, train_X_missing_mask)
-    test_X = fill_nan_with_mask(test_X, test_X_missing_mask)
-    return train_X, val_X, test_X, test_X_intact, test_X_indicating_mask
+EPOCH = 10
 
 
 class TestSAITS(unittest.TestCase):
     def setUp(self) -> None:
-        self.train_X, self.val_X, self.test_X, self.test_X_intact, self.test_X_indicating_mask = gene_data()
-        _, seq_len, n_features = self.train_X.shape
-        self.saits = SAITS(seq_len, n_features, n_layers=2, d_model=256, d_inner=128, n_head=4,
+        data = gene_data()
+        self.train_X = data['train_X']
+        self.val_X = data['val_X']
+        self.test_X = data['test_X']
+        self.test_X_intact = data['test_X_intact']
+        self.test_X_indicating_mask = data['test_X_indicating_mask']
+        self.saits = SAITS(data['n_steps'], data['n_features'], n_layers=2, d_model=256, d_inner=128, n_head=4,
                            d_k=64, d_v=64, dropout=0.1, epochs=EPOCH)
         self.saits.fit(self.train_X, self.val_X)
 
@@ -63,9 +56,14 @@ class TestSAITS(unittest.TestCase):
 
 class TestTransformer(unittest.TestCase):
     def setUp(self) -> None:
-        self.train_X, self.val_X, self.test_X, self.test_X_intact, self.test_X_indicating_mask = gene_data()
-        _, seq_len, n_features = self.train_X.shape
-        self.transformer = Transformer(seq_len, n_features, n_layers=2, d_model=256, d_inner=128, n_head=4,
+        data = gene_data()
+        self.train_X = data['train_X']
+        self.val_X = data['val_X']
+        self.test_X = data['test_X']
+        self.test_X_intact = data['test_X_intact']
+        self.test_X_indicating_mask = data['test_X_indicating_mask']
+        self.transformer = Transformer(data['n_steps'], data['n_features'], n_layers=2, d_model=256, d_inner=128,
+                                       n_head=4,
                                        d_k=64, d_v=64, dropout=0.1, epochs=EPOCH)
         self.transformer.fit(self.train_X, self.val_X)
 
@@ -91,9 +89,13 @@ class TestTransformer(unittest.TestCase):
 
 class TestBRITS(unittest.TestCase):
     def setUp(self) -> None:
-        self.train_X, self.val_X, self.test_X, self.test_X_intact, self.test_X_indicating_mask = gene_data()
-        _, seq_len, n_features = self.train_X.shape
-        self.brits = BRITS(seq_len, n_features, 256, epochs=EPOCH)
+        data = gene_data()
+        self.train_X = data['train_X']
+        self.val_X = data['val_X']
+        self.test_X = data['test_X']
+        self.test_X_intact = data['test_X_intact']
+        self.test_X_indicating_mask = data['test_X_indicating_mask']
+        self.brits = BRITS(data['n_steps'], data['n_features'], 256, epochs=EPOCH)
         self.brits.fit(self.train_X, self.val_X)
 
     def test_parameters(self):
