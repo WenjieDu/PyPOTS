@@ -140,7 +140,7 @@ class TestRaindrop(unittest.TestCase):
         self.test_X = test_X
         self.test_y = test_y
         _, seq_len, n_features = train_X.shape
-        self.raindrop = Raindrop(n_features, 2, 148, 256, 2, N_CLASSES, 0.3, seq_len, 0, 'mean',
+        self.raindrop = Raindrop(n_features, 2, 100, 256, 2, N_CLASSES, 0.3, seq_len, 0, 'mean',
                                  False, False, epochs=EPOCHS)
         self.raindrop.fit(self.train_X, self.train_y, self.val_X, self.val_y)
 
