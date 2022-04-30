@@ -9,7 +9,7 @@ import unittest
 
 from pypots.classification import BRITS, GRUD, Raindrop
 from pypots.utils.metrics import cal_binary_classification_metrics
-from .test_data_unified import gene_data
+from .unified_data_for_test import gene_data
 
 EPOCHS = 10
 
