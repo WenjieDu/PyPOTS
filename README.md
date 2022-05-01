@@ -14,6 +14,10 @@
     <a alt='GitHub Testing' href='https://github.com/WenjieDu/PyPOTS/actions/workflows/testing.yml'> 
         <img src='https://github.com/WenjieDu/PyPOTS/actions/workflows/testing.yml/badge.svg'>
     </a>
+    <!-- Coveralls report -->
+    <a alt='Coveralls report' href='https://coveralls.io/github/WenjieDu/PyPOTS'> 
+        <img src='https://coveralls.io/repos/github/WenjieDu/PyPOTS/badge.svg'>
+    </a>
     <!-- PyPI download number -->
     <a alt='PyPI download number' href='https://pypi.org/project/pypots'>
         <img src='https://static.pepy.tech/personalized-badge/pypots?period=total&units=international_system&left_color=grey&right_color=blue&left_text=Total Downloads'>
