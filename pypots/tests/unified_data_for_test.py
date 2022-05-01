@@ -130,5 +130,6 @@ def gene_physionet2012():
     return data
 
 
-# control using which dataset
-gene_data = gene_physionet2012
+# generate and cache data first.
+# Otherwise, file lock will cause bug if running test parallely with pytest-xdist.
+DATA = gene_random_walk_data()

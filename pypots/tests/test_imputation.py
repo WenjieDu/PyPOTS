@@ -17,21 +17,20 @@ from pypots.imputation import (
     LOCF,
 )
 from pypots.utils.metrics import cal_mae
-from .unified_data_for_test import gene_data
+from .unified_data_for_test import DATA
 
 EPOCH = 5
 
 
 class TestSAITS(unittest.TestCase):
     def setUp(self) -> None:
-        data = gene_data()
-        self.train_X = data['train_X']
-        self.val_X = data['val_X']
-        self.test_X = data['test_X']
-        self.test_X_intact = data['test_X_intact']
-        self.test_X_indicating_mask = data['test_X_indicating_mask']
+        self.train_X = DATA['train_X']
+        self.val_X = DATA['val_X']
+        self.test_X = DATA['test_X']
+        self.test_X_intact = DATA['test_X_intact']
+        self.test_X_indicating_mask = DATA['test_X_indicating_mask']
         print('Running test cases for SAITS...')
-        self.saits = SAITS(data['n_steps'], data['n_features'], n_layers=2, d_model=256, d_inner=128, n_head=4,
+        self.saits = SAITS(DATA['n_steps'], DATA['n_features'], n_layers=2, d_model=256, d_inner=128, n_head=4,
                            d_k=64, d_v=64, dropout=0.1, epochs=EPOCH)
         self.saits.fit(self.train_X, self.val_X)
 
@@ -57,14 +56,13 @@ class TestSAITS(unittest.TestCase):
 
 class TestTransformer(unittest.TestCase):
     def setUp(self) -> None:
-        data = gene_data()
-        self.train_X = data['train_X']
-        self.val_X = data['val_X']
-        self.test_X = data['test_X']
-        self.test_X_intact = data['test_X_intact']
-        self.test_X_indicating_mask = data['test_X_indicating_mask']
+        self.train_X = DATA['train_X']
+        self.val_X = DATA['val_X']
+        self.test_X = DATA['test_X']
+        self.test_X_intact = DATA['test_X_intact']
+        self.test_X_indicating_mask = DATA['test_X_indicating_mask']
         print('Running test cases for Transformer...')
-        self.transformer = Transformer(data['n_steps'], data['n_features'], n_layers=2, d_model=256, d_inner=128,
+        self.transformer = Transformer(DATA['n_steps'], DATA['n_features'], n_layers=2, d_model=256, d_inner=128,
                                        n_head=4,
                                        d_k=64, d_v=64, dropout=0.1, epochs=EPOCH)
         self.transformer.fit(self.train_X, self.val_X)
@@ -91,14 +89,13 @@ class TestTransformer(unittest.TestCase):
 
 class TestBRITS(unittest.TestCase):
     def setUp(self) -> None:
-        data = gene_data()
-        self.train_X = data['train_X']
-        self.val_X = data['val_X']
-        self.test_X = data['test_X']
-        self.test_X_intact = data['test_X_intact']
-        self.test_X_indicating_mask = data['test_X_indicating_mask']
+        self.train_X = DATA['train_X']
+        self.val_X = DATA['val_X']
+        self.test_X = DATA['test_X']
+        self.test_X_intact = DATA['test_X_intact']
+        self.test_X_indicating_mask = DATA['test_X_indicating_mask']
         print('Running test cases for BRITS...')
-        self.brits = BRITS(data['n_steps'], data['n_features'], 256, epochs=EPOCH)
+        self.brits = BRITS(DATA['n_steps'], DATA['n_features'], 256, epochs=EPOCH)
         self.brits.fit(self.train_X, self.val_X)
 
     def test_parameters(self):
@@ -123,12 +120,11 @@ class TestBRITS(unittest.TestCase):
 
 class TestLOCF(unittest.TestCase):
     def setUp(self) -> None:
-        data = gene_data()
-        self.train_X = data['train_X']
-        self.val_X = data['val_X']
-        self.test_X = data['test_X']
-        self.test_X_intact = data['test_X_intact']
-        self.test_X_indicating_mask = data['test_X_indicating_mask']
+        self.train_X = DATA['train_X']
+        self.val_X = DATA['val_X']
+        self.test_X = DATA['test_X']
+        self.test_X_intact = DATA['test_X_intact']
+        self.test_X_indicating_mask = DATA['test_X_indicating_mask']
         print('Running test cases for LOCF...')
         self.locf = LOCF(nan=0)
 

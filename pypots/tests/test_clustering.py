@@ -10,22 +10,17 @@ import unittest
 from pypots.clustering.crli import CRLI
 from pypots.clustering.vader import VaDER
 from pypots.utils.metrics import cal_rand_index, cal_cluster_purity
-from .unified_data_for_test import gene_data
+from .unified_data_for_test import DATA
 
 EPOCHS = 5
 
 
 class TestCRLI(unittest.TestCase):
     def setUp(self) -> None:
-        data = gene_data()
-        self.train_X = data['train_X']
-        self.train_y = data['train_y']
-        # self.val_X = data['val_X']
-        # self.val_y = data['val_y']
-        # self.test_X = data['test_X']
-        # self.test_y = data['test_y']
+        self.train_X = DATA['train_X']
+        self.train_y = DATA['train_y']
         print('Running test cases for CRLI...')
-        self.crli = CRLI(seq_len=data['n_steps'], n_features=data['n_features'], n_clusters=data['n_classes'],
+        self.crli = CRLI(seq_len=DATA['n_steps'], n_features=DATA['n_features'], n_clusters=DATA['n_classes'],
                          n_generator_layers=2, rnn_hidden_size=128, epochs=EPOCHS)
         self.crli.fit(self.train_X)
 
@@ -53,11 +48,10 @@ class TestCRLI(unittest.TestCase):
 
 class TestVaDER(unittest.TestCase):
     def setUp(self) -> None:
-        data = gene_data()
-        self.train_X = data['train_X']
-        self.train_y = data['train_y']
+        self.train_X = DATA['train_X']
+        self.train_y = DATA['train_y']
         print('Running test cases for VaDER...')
-        self.vader = VaDER(seq_len=data['n_steps'], n_features=data['n_features'], n_clusters=data['n_classes'],
+        self.vader = VaDER(seq_len=DATA['n_steps'], n_features=DATA['n_features'], n_clusters=DATA['n_classes'],
                            rnn_hidden_size=128, d_mu_stddev=5, pretrain_epochs=5, epochs=EPOCHS)
         self.vader.fit(self.train_X)
 
