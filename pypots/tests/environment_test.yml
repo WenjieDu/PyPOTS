@@ -13,7 +13,7 @@ dependencies:
     - tensorboard
     - pytorch>=1.10
     - pyg
-    - pytest
+    - pytest-xdist
     - coverage
     - pip:
           - torchdiffeq

@@ -19,7 +19,7 @@ from pypots.imputation import (
 from pypots.utils.metrics import cal_mae
 from .unified_data_for_test import gene_data
 
-EPOCH = 10
+EPOCH = 5
 
 
 class TestSAITS(unittest.TestCase):
@@ -30,6 +30,7 @@ class TestSAITS(unittest.TestCase):
         self.test_X = data['test_X']
         self.test_X_intact = data['test_X_intact']
         self.test_X_indicating_mask = data['test_X_indicating_mask']
+        print('Running test cases for SAITS...')
         self.saits = SAITS(data['n_steps'], data['n_features'], n_layers=2, d_model=256, d_inner=128, n_head=4,
                            d_k=64, d_v=64, dropout=0.1, epochs=EPOCH)
         self.saits.fit(self.train_X, self.val_X)
@@ -62,6 +63,7 @@ class TestTransformer(unittest.TestCase):
         self.test_X = data['test_X']
         self.test_X_intact = data['test_X_intact']
         self.test_X_indicating_mask = data['test_X_indicating_mask']
+        print('Running test cases for Transformer...')
         self.transformer = Transformer(data['n_steps'], data['n_features'], n_layers=2, d_model=256, d_inner=128,
                                        n_head=4,
                                        d_k=64, d_v=64, dropout=0.1, epochs=EPOCH)
@@ -95,6 +97,7 @@ class TestBRITS(unittest.TestCase):
         self.test_X = data['test_X']
         self.test_X_intact = data['test_X_intact']
         self.test_X_indicating_mask = data['test_X_indicating_mask']
+        print('Running test cases for BRITS...')
         self.brits = BRITS(data['n_steps'], data['n_features'], 256, epochs=EPOCH)
         self.brits.fit(self.train_X, self.val_X)
 
@@ -120,7 +123,13 @@ class TestBRITS(unittest.TestCase):
 
 class TestLOCF(unittest.TestCase):
     def setUp(self) -> None:
-        self.train_X, self.val_X, self.test_X, self.test_X_intact, self.test_X_indicating_mask = gene_data()
+        data = gene_data()
+        self.train_X = data['train_X']
+        self.val_X = data['val_X']
+        self.test_X = data['test_X']
+        self.test_X_intact = data['test_X_intact']
+        self.test_X_indicating_mask = data['test_X_indicating_mask']
+        print('Running test cases for LOCF...')
         self.locf = LOCF(nan=0)
 
     def test_parameters(self):
@@ -128,9 +137,9 @@ class TestLOCF(unittest.TestCase):
                 and self.locf.nan is not None)
 
     def test_impute(self):
-        imputed_X = self.locf.impute(self.test_X)
-        assert not np.isnan(imputed_X).any(), 'Output still has missing values after running impute().'
-        test_MAE = cal_mae(imputed_X, self.test_X_intact, self.test_X_indicating_mask)
+        test_X_imputed = self.locf.impute(self.test_X)
+        assert not np.isnan(test_X_imputed).any(), 'Output still has missing values after running impute().'
+        test_MAE = cal_mae(test_X_imputed, self.test_X_intact, self.test_X_indicating_mask)
         print(f'LOCF test_MAE: {test_MAE}')
 
 
