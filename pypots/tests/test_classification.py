@@ -9,23 +9,22 @@ import unittest
 
 from pypots.classification import BRITS, GRUD, Raindrop
 from pypots.utils.metrics import cal_binary_classification_metrics
-from .unified_data_for_test import gene_data
+from .unified_data_for_test import DATA
 
 EPOCHS = 5
 
 
 class TestBRITS(unittest.TestCase):
     def setUp(self) -> None:
-        data = gene_data()
-        self.train_X = data['train_X']
-        self.train_y = data['train_y']
-        self.val_X = data['val_X']
-        self.val_y = data['val_y']
-        self.test_X = data['test_X']
-        self.test_y = data['test_y']
+        self.train_X = DATA['train_X']
+        self.train_y = DATA['train_y']
+        self.val_X = DATA['val_X']
+        self.val_y = DATA['val_y']
+        self.test_X = DATA['test_X']
+        self.test_y = DATA['test_y']
         print('Running test cases for BRITS...')
-        self.brits = BRITS(data['n_steps'], data['n_features'], 256,
-                           n_classes=data['n_classes'], epochs=EPOCHS)
+        self.brits = BRITS(DATA['n_steps'], DATA['n_features'], 256,
+                           n_classes=DATA['n_classes'], epochs=EPOCHS)
         self.brits.fit(self.train_X, self.train_y, self.val_X, self.val_y)
 
     def test_parameters(self):
@@ -49,21 +48,19 @@ class TestBRITS(unittest.TestCase):
               f'F1: {metrics["f1"]},\n'
               f'Precision: {metrics["precision"]},\n'
               f'Recall: {metrics["recall"]},\n')
-        if metrics['roc_auc'] >= 0.5:
-            raise RuntimeWarning('ROC-AUC < 0.5')
+        assert metrics['roc_auc'] >= 0.5, 'ROC-AUC < 0.5'
 
 
 class TestGRUD(unittest.TestCase):
     def setUp(self) -> None:
-        data = gene_data()
-        self.train_X = data['train_X']
-        self.train_y = data['train_y']
-        self.val_X = data['val_X']
-        self.val_y = data['val_y']
-        self.test_X = data['test_X']
-        self.test_y = data['test_y']
+        self.train_X = DATA['train_X']
+        self.train_y = DATA['train_y']
+        self.val_X = DATA['val_X']
+        self.val_y = DATA['val_y']
+        self.test_X = DATA['test_X']
+        self.test_y = DATA['test_y']
         print('Running test cases for GRUD...')
-        self.grud = GRUD(data['n_steps'], data['n_features'], 256, n_classes=data['n_classes'], epochs=EPOCHS)
+        self.grud = GRUD(DATA['n_steps'], DATA['n_features'], 256, n_classes=DATA['n_classes'], epochs=EPOCHS)
         self.grud.fit(self.train_X, self.train_y, self.val_X, self.val_y)
 
     def test_parameters(self):
@@ -87,22 +84,20 @@ class TestGRUD(unittest.TestCase):
               f'F1: {metrics["f1"]},\n'
               f'Precision: {metrics["precision"]},\n'
               f'Recall: {metrics["recall"]},\n')
-        if metrics['roc_auc'] >= 0.5:
-            raise RuntimeWarning('ROC-AUC < 0.5')
+        assert metrics['roc_auc'] >= 0.5, 'ROC-AUC < 0.5'
 
 
 class TestRaindrop(unittest.TestCase):
     def setUp(self) -> None:
-        data = gene_data()
-        self.train_X = data['train_X']
-        self.train_y = data['train_y']
-        self.val_X = data['val_X']
-        self.val_y = data['val_y']
-        self.test_X = data['test_X']
-        self.test_y = data['test_y']
+        self.train_X = DATA['train_X']
+        self.train_y = DATA['train_y']
+        self.val_X = DATA['val_X']
+        self.val_y = DATA['val_y']
+        self.test_X = DATA['test_X']
+        self.test_y = DATA['test_y']
         print('Running test cases for Raindrop...')
-        self.raindrop = Raindrop(data['n_features'], 2, data['n_features'] * 4, 256, 2, data['n_classes'], 0.3,
-                                 data['n_steps'], 0, 'mean', False, False, epochs=EPOCHS)
+        self.raindrop = Raindrop(DATA['n_features'], 2, DATA['n_features'] * 4, 256, 2, DATA['n_classes'], 0.3,
+                                 DATA['n_steps'], 0, 'mean', False, False, epochs=EPOCHS)
         self.raindrop.fit(self.train_X, self.train_y, self.val_X, self.val_y)
 
     def test_parameters(self):
@@ -126,8 +121,7 @@ class TestRaindrop(unittest.TestCase):
               f'F1: {metrics["f1"]},\n'
               f'Precision: {metrics["precision"]},\n'
               f'Recall: {metrics["recall"]},\n')
-        if metrics['roc_auc'] >= 0.5:
-            raise RuntimeWarning('ROC-AUC < 0.5')
+        assert metrics['roc_auc'] >= 0.5, 'ROC-AUC < 0.5'
 
 
 if __name__ == '__main__':
