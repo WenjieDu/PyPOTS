@@ -42,7 +42,7 @@ jobs:
 
             - name: Test with pytest
               run: |
-                  python -m coverage run --source=pypots -m pytest -n auto
+                  python -m pytest -n auto --cov=pypots 
 
             - name: Generate the LCOV report
               run: |
