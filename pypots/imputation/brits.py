@@ -138,7 +138,7 @@ class RITS(nn.Module):
 
     Attributes
     ----------
-    seq_len : int,
+    n_steps : int,
         sequence length (number of time steps)
     n_features : int,
         number of features (input dimensions)
@@ -161,7 +161,7 @@ class RITS(nn.Module):
 
     Parameters
     ----------
-    seq_len : int,
+    n_steps : int,
         sequence length (number of time steps)
     n_features : int,
         number of features (input dimensions)
@@ -171,9 +171,9 @@ class RITS(nn.Module):
         specify running the model on which device, CPU/GPU
     """
 
-    def __init__(self, seq_len, n_features, rnn_hidden_size, device=None):
+    def __init__(self, n_steps, n_features, rnn_hidden_size, device=None):
         super().__init__()
-        self.seq_len = seq_len
+        self.n_steps = n_steps
         self.n_features = n_features
         self.rnn_hidden_size = rnn_hidden_size
         self.device = device
@@ -215,7 +215,7 @@ class RITS(nn.Module):
         reconstruction_loss = 0.0
 
         # imputation period
-        for t in range(self.seq_len):
+        for t in range(self.n_steps):
             # data shape: [batch, time, features]
             x = values[:, t, :]  # values
             m = masks[:, t, :]  # mask
@@ -265,7 +265,7 @@ class RITS(nn.Module):
         """
         imputed_data, hidden_state, reconstruction_loss = self.impute(inputs, direction)
         # for each iteration, reconstruction_loss increases its value for 3 times
-        reconstruction_loss /= (self.seq_len * 3)
+        reconstruction_loss /= (self.n_steps * 3)
 
         ret_dict = {
             'consistency_loss': torch.tensor(0.0, device=self.device),  # single direction, has no consistency loss
@@ -282,7 +282,7 @@ class _BRITS(nn.Module):
 
     Attributes
     ----------
-    seq_len : int,
+    n_steps : int,
         sequence length (number of time steps)
     n_features : int,
         number of features (input dimensions)
@@ -294,16 +294,16 @@ class _BRITS(nn.Module):
         the backward RITS model
     """
 
-    def __init__(self, seq_len, n_features, rnn_hidden_size, device=None):
+    def __init__(self, n_steps, n_features, rnn_hidden_size, device=None):
         super().__init__()
         # data settings
-        self.seq_len = seq_len
+        self.n_steps = n_steps
         self.n_features = n_features
         # imputer settings
         self.rnn_hidden_size = rnn_hidden_size
         # create models
-        self.rits_f = RITS(seq_len, n_features, rnn_hidden_size, device)
-        self.rits_b = RITS(seq_len, n_features, rnn_hidden_size, device)
+        self.rits_f = RITS(n_steps, n_features, rnn_hidden_size, device)
+        self.rits_b = RITS(n_steps, n_features, rnn_hidden_size, device)
 
     def impute(self, inputs):
         """ Impute the missing data. Only impute, this is for test stage.
@@ -420,8 +420,10 @@ class BRITS(BaseNNImputer):
     ----------
     model : object,
         The underlying BRITS model.
+
     optimizer : object,
         The optimizer for model training.
+
     data_loader : object,
         The data loader for dataset loading.
 
@@ -429,22 +431,28 @@ class BRITS(BaseNNImputer):
     ----------
     rnn_hidden_size : int,
         The size of the RNN hidden state.
+
     learning_rate : float (0,1),
         The learning rate parameter for the optimizer.
+
     weight_decay : float in (0,1),
         The weight decay parameter for the optimizer.
+
     epochs : int,
         The number of training epochs.
+
     patience : int,
         The number of epochs with loss non-decreasing before early stopping the training.
+
     batch_size : int,
         The batch size of the training input.
+
     device :
         Run the model on which device.
     """
 
     def __init__(self,
-                 seq_len,
+                 n_steps,
                  n_features,
                  rnn_hidden_size,
                  learning_rate=1e-3,
@@ -455,11 +463,11 @@ class BRITS(BaseNNImputer):
                  device=None):
         super().__init__(learning_rate, epochs, patience, batch_size, weight_decay, device)
 
-        self.seq_len = seq_len
+        self.n_steps = n_steps
         self.n_features = n_features
         self.rnn_hidden_size = rnn_hidden_size
 
-        self.model = _BRITS(self.seq_len, self.n_features, self.rnn_hidden_size, self.device)
+        self.model = _BRITS(self.n_steps, self.n_features, self.rnn_hidden_size, self.device)
         self.model = self.model.to(self.device)
         self._print_model_size()
 
@@ -468,9 +476,10 @@ class BRITS(BaseNNImputer):
 
         Parameters
         ----------
-        train_X : array, shape of [n_samples, sequence length (time steps), n_features],
+        train_X : array-like, shape of [n_samples, n_steps, n_features],
             Data for training.
-        val_X : array, optional, shape of [n_samples, sequence length (time steps), n_features],
+
+        val_X : array-like, optional, shape of [n_samples, n_steps, n_features],
             Data for validating.
 
         Returns
@@ -478,11 +487,9 @@ class BRITS(BaseNNImputer):
         self : object,
             Trained model.
         """
-        assert len(train_X.shape) == 3, f'train_X should have 3 dimensions [n_samples, seq_len, n_features],' \
-                                        f'while train_X.shape={train_X.shape}'
+        train_X = self.check_input(self.n_steps, self.n_features, train_X)
         if val_X is not None:
-            assert len(train_X.shape) == 3, f'val_X should have 3 dimensions [n_samples, seq_len, n_features],' \
-                                            f'while val_X.shape={train_X.shape}'
+            val_X = self.check_input(self.n_steps, self.n_features, val_X)
 
         training_set = DatasetForBRITS(train_X)  # time_gaps is necessary for BRITS
         training_loader = DataLoader(training_set, batch_size=self.batch_size, shuffle=True)
@@ -500,10 +507,21 @@ class BRITS(BaseNNImputer):
         self.model.eval()  # set the model as eval status to freeze it.
         return self
 
-    def input_data_processing(self, data):
+    def assemble_input_data(self, data):
+        """ Assemble the input data into a dictionary.
+
+        Parameters
+        ----------
+        data : list
+            A list containing data fetched from Dataset by Dataload.
+
+        Returns
+        -------
+        inputs : dict
+            A dictionary with data assembled.
+        """
         # fetch data
-        indices, X, missing_mask, deltas, back_X, back_missing_mask, back_deltas = \
-            map(lambda x: x.to(self.device), data)
+        indices, X, missing_mask, deltas, back_X, back_missing_mask, back_deltas = data
         # assemble input data
         inputs = {
             'indices': indices,
@@ -518,9 +536,11 @@ class BRITS(BaseNNImputer):
                 'deltas': back_deltas
             }
         }
+
         return inputs
 
     def impute(self, X):
+        X = self.check_input(self.n_steps, self.n_features, X)
         self.model.eval()  # set the model as eval status to freeze it.
         test_set = DatasetForBRITS(X)
         test_loader = DataLoader(test_set, batch_size=self.batch_size, shuffle=False)
@@ -528,7 +548,7 @@ class BRITS(BaseNNImputer):
 
         with torch.no_grad():
             for idx, data in enumerate(test_loader):
-                inputs = self.input_data_processing(data)
+                inputs = self.assemble_input_data(data)
                 imputed_data = self.model.impute(inputs)
                 imputation_collector.append(imputed_data)
 

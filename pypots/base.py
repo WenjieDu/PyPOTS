@@ -72,7 +72,7 @@ class BaseModel(ABC):
                 pass
             elif isinstance(y, list):
                 y = torch.tensor(y)
-            elif isinstance(X, np.ndarray):
+            elif isinstance(y, np.ndarray):
                 y = torch.from_numpy(y)
             else:
                 raise TypeError('y should be an instance of list/np.ndarray/torch.Tensor, '

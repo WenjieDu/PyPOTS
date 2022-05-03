@@ -19,8 +19,8 @@ from pypots.imputation.brits import (
 
 
 class RITS(imputation_RITS):
-    def __init__(self, seq_len, n_features, rnn_hidden_size, n_classes, device=None):
-        super().__init__(seq_len, n_features, rnn_hidden_size, device)
+    def __init__(self, n_steps, n_features, rnn_hidden_size, n_classes, device=None):
+        super().__init__(n_steps, n_features, rnn_hidden_size, device)
         self.dropout = nn.Dropout(p=0.25)
         self.classifier = nn.Linear(self.rnn_hidden_size, n_classes)
 
@@ -32,16 +32,16 @@ class RITS(imputation_RITS):
 
 
 class _BRITS(imputation_BRITS, nn.Module):
-    def __init__(self, seq_len, n_features, rnn_hidden_size, n_classes,
+    def __init__(self, n_steps, n_features, rnn_hidden_size, n_classes,
                  classification_weight, reconstruction_weight, device=None):
-        super().__init__(seq_len, n_features, rnn_hidden_size)
-        self.seq_len = seq_len
+        super().__init__(n_steps, n_features, rnn_hidden_size)
+        self.n_steps = n_steps
         self.n_features = n_features
         self.rnn_hidden_size = rnn_hidden_size
         self.n_classes = n_classes
         # create models
-        self.rits_f = RITS(seq_len, n_features, rnn_hidden_size, n_classes, device)
-        self.rits_b = RITS(seq_len, n_features, rnn_hidden_size, n_classes, device)
+        self.rits_f = RITS(n_steps, n_features, rnn_hidden_size, n_classes, device)
+        self.rits_b = RITS(n_steps, n_features, rnn_hidden_size, n_classes, device)
         self.classification_weight = classification_weight
         self.reconstruction_weight = reconstruction_weight
 
@@ -129,7 +129,7 @@ class BRITS(BaseNNClassifier):
     """
 
     def __init__(self,
-                 seq_len,
+                 n_steps,
                  n_features,
                  rnn_hidden_size,
                  n_classes,
@@ -143,13 +143,13 @@ class BRITS(BaseNNClassifier):
                  device=None):
         super().__init__(n_classes, learning_rate, epochs, patience, batch_size, weight_decay, device)
 
-        self.seq_len = seq_len
+        self.n_steps = n_steps
         self.n_features = n_features
         self.rnn_hidden_size = rnn_hidden_size
         self.classification_weight = classification_weight
         self.reconstruction_weight = reconstruction_weight
 
-        self.model = _BRITS(self.seq_len, self.n_features, self.rnn_hidden_size, self.n_classes,
+        self.model = _BRITS(self.n_steps, self.n_features, self.rnn_hidden_size, self.n_classes,
                             self.classification_weight, self.reconstruction_weight, self.device)
         self.model = self.model.to(self.device)
         self._print_model_size()
@@ -169,11 +169,8 @@ class BRITS(BaseNNClassifier):
         self : object,
             Trained model.
         """
-        assert len(train_X.shape) == 3, f'train_X should have 3 dimensions [n_samples, seq_len, n_features],' \
-                                        f'while train_X.shape={train_X.shape}'
-        if val_X is not None:
-            assert len(train_X.shape) == 3, f'val_X should have 3 dimensions [n_samples, seq_len, n_features],' \
-                                            f'while val_X.shape={train_X.shape}'
+        train_X, train_y = self.check_input(self.n_steps, self.n_features, train_X, train_y)
+        val_X, val_y = self.check_input(self.n_steps, self.n_features, val_X, val_y)
 
         training_set = DatasetForBRITS(train_X, train_y)  # time_gaps is necessary for BRITS
         training_loader = DataLoader(training_set, batch_size=self.batch_size, shuffle=True)
@@ -189,10 +186,22 @@ class BRITS(BaseNNClassifier):
         self.model.eval()  # set the model as eval status to freeze it.
         return self
 
-    def input_data_processing(self, data):
+    def assemble_input_data(self, data):
+        """ Assemble the input data into a dictionary.
+
+        Parameters
+        ----------
+        data : list
+            A list containing data fetched from Dataset by Dataload.
+
+        Returns
+        -------
+        inputs : dict
+            A dictionary with data assembled.
+        """
         # fetch data
-        indices, X, missing_mask, deltas, back_X, back_missing_mask, back_deltas, label = \
-            map(lambda x: x.to(self.device), data)
+        indices, X, missing_mask, deltas, back_X, back_missing_mask, back_deltas, label = data
+
         # assemble input data
         inputs = {
             'indices': indices,
@@ -211,6 +220,7 @@ class BRITS(BaseNNClassifier):
         return inputs
 
     def classify(self, X):
+        X = self.check_input(self.n_steps, self.n_features, X)
         self.model.eval()  # set the model as eval status to freeze it.
         test_set = DatasetForBRITS(X)
         test_loader = DataLoader(test_set, batch_size=self.batch_size, shuffle=False)
@@ -219,8 +229,7 @@ class BRITS(BaseNNClassifier):
         with torch.no_grad():
             for idx, data in enumerate(test_loader):
                 # cannot use input_data_processing, cause here has no label
-                indices, X, missing_mask, deltas, back_X, back_missing_mask, back_deltas = \
-                    map(lambda x: x.to(self.device), data)
+                indices, X, missing_mask, deltas, back_X, back_missing_mask, back_deltas = data
                 # assemble input data
                 inputs = {
                     'indices': indices,

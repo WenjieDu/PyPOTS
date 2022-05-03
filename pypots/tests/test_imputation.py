@@ -16,8 +16,8 @@ from pypots.imputation import (
     BRITS,
     LOCF,
 )
+from pypots.tests.unified_data_for_test import DATA
 from pypots.utils.metrics import cal_mae
-from .unified_data_for_test import DATA
 
 EPOCH = 5
 

@@ -1,8 +1,12 @@
 """
-PyTorch Raindrop model.
+PyTorch Raindrop model. Refer :cite:`zhang2022Raindrop` for more information.
+Inspired by the original implementation from https://github.com/mims-harvard/Raindrop
 
-Part of the code is from https://github.com/mims-harvard/Raindrop
-# TODO: code need to be simplified. Also have to add processing methods for static features.
+Notes
+-----
+Due to the original implementation puts too many useless arguments and is not elegant, I simply the code.
+If you need a version of the original implementation, please refer to my previous commit here
+https://github.com/WenjieDu/PyPOTS/blob/c381ad1853b465ebb918134d8bf6f6cf2996c9d3/pypots/classification/raindrop.py
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
@@ -34,22 +38,34 @@ from pypots.data import DatasetForGRUD
 
 
 class PositionalEncodingTF(nn.Module):
-    def __init__(self, d_model, max_len=500):
-        super().__init__()
-        self.max_len = max_len
-        self._num_timescales = d_model // 2
+    """ Generate positional encoding according to time information.
+    """
 
-    def get_positional_encoding(self, P_time):
+    def __init__(self, d_pe, max_len=500):
+        super().__init__()
+        assert d_pe % 2 == 0, 'd_pe should be even, otherwise the output dims will be not equal to d_pe'
+        self.max_len = max_len
+        self._num_timescales = d_pe // 2
+
+    def forward(self, time_vectors):
+        """ Generate positional encoding.
+
+        Parameters
+        ----------
+        time_vectors : tensor,
+            Tensor embeds time information.
+
+        Returns
+        -------
+        pe : tensor,
+            Positional encoding with d_pe dims.
+        """
         timescales = self.max_len ** np.linspace(0, 1, self._num_timescales)
 
-        times = torch.Tensor(P_time).unsqueeze(2)
+        times = time_vectors.unsqueeze(2)
         scaled_time = times / torch.Tensor(timescales[None, None, :])
         pe = torch.cat([torch.sin(scaled_time), torch.cos(scaled_time)], axis=-1)  # T x B x d_model
         pe = pe.type(torch.FloatTensor)
-        return pe
-
-    def forward(self, P_time):
-        pe = self.get_positional_encoding(P_time)
         return pe
 
 
@@ -57,9 +73,8 @@ class ObservationPropagation(MessagePassing):
     _alpha: OptTensor
 
     def __init__(self, in_channels: Union[int, Tuple[int, int]], out_channels: int,
-                 n_nodes: int, ob_dim: int,
-                 heads: int = 1, concat: bool = True, beta: bool = False,
-                 dropout: float = 0., edge_dim: Optional[int] = None,
+                 n_nodes: int, ob_dim: int, heads: int = 1, concat: bool = True,
+                 beta: bool = False, dropout: float = 0., edge_dim: Optional[int] = None,
                  bias: bool = True, root_weight: bool = True, **kwargs):
         kwargs.setdefault('aggr', 'add')
         super().__init__(node_dim=0, **kwargs)
@@ -197,7 +212,7 @@ class ObservationPropagation(MessagePassing):
                 index: Tensor, ptr: OptTensor,
                 size_i: Optional[int]) -> Tensor:
         use_beta = self.use_beta
-        if use_beta == True:
+        if use_beta:
             n_step = self.p_t.shape[0]
             n_edges = x_i.shape[0]
 
@@ -210,7 +225,7 @@ class ObservationPropagation(MessagePassing):
             beta = torch.mean(h_W * aa, dim=-1)
 
         if edge_weights is not None:
-            if use_beta == True:
+            if use_beta:
                 gamma = beta * (edge_weights.unsqueeze(-1))
                 gamma = torch.repeat_interleave(gamma, self.ob_dim, dim=-1)
 
@@ -226,7 +241,7 @@ class ObservationPropagation(MessagePassing):
                 gamma = edge_weights.unsqueeze(-1)
 
         self.index = index
-        if use_beta == True:
+        if use_beta:
             self._alpha = torch.mean(gamma, dim=-1)
         else:
             self._alpha = gamma
@@ -235,7 +250,7 @@ class ObservationPropagation(MessagePassing):
         gamma = F.dropout(gamma, p=self.dropout, training=self.training)
 
         decompose = False
-        if decompose == False:
+        if not decompose:
             out = F.relu(self.lin_value(x_i)).view(-1, self.heads, self.out_channels)
         else:
             source_nodes = self.edge_index[0]
@@ -243,7 +258,7 @@ class ObservationPropagation(MessagePassing):
             w1 = self.nodewise_weights[source_nodes].unsqueeze(-1)
             w2 = self.nodewise_weights[target_nodes].unsqueeze(1)
             out = torch.bmm(x_i.view(-1, self.heads, self.out_channels), torch.bmm(w1, w2))
-        if use_beta == True:
+        if use_beta:
             out = out * gamma.view(-1, self.heads, out.shape[-1])
         else:
             out = out * gamma.view(-1, self.heads, 1)
@@ -269,7 +284,8 @@ class ObservationPropagation(MessagePassing):
     def __repr__(self):
         return '{}({}, {}, heads={})'.format(self.__class__.__name__,
                                              self.in_channels,
-                                             self.out_channels, self.heads)
+                                             self.out_channels,
+                                             self.heads)
 
 
 class _Raindrop(nn.Module):
@@ -290,22 +306,22 @@ class _Raindrop(nn.Module):
         self.static = static
         self.device = device
 
-        # create models
+        # create modules
         self.global_structure = torch.ones(n_features, n_features, device=self.device)
         if self.static:
             self.emb = nn.Linear(d_static, n_features)
-        assert d_model / n_features == int(d_model / n_features), 'd_model must be divisible by n_features'
+        assert d_model % n_features == 0, 'd_model must be divisible by n_features'
         self.d_ob = int(d_model / n_features)
         self.encoder = nn.Linear(n_features * self.d_ob, n_features * self.d_ob)
         d_pe = 16
         self.pos_encoder = PositionalEncodingTF(d_pe, max_len)
         if self.sensor_wise_mask:
             dim_check = n_features * (self.d_ob + d_pe)
-            assert dim_check / n_heads == int(dim_check / n_heads), 'dim_check must be divisible by n_heads'
+            assert dim_check % n_heads == 0, 'dim_check must be divisible by n_heads'
             encoder_layers = TransformerEncoderLayer(n_features * (self.d_ob + d_pe), n_heads, d_inner, dropout)
         else:
             dim_check = d_model + d_pe
-            assert dim_check / n_heads == int(dim_check / n_heads), 'dim_check must be divisible by n_heads'
+            assert dim_check % n_heads == 0, 'dim_check must be divisible by n_heads'
             encoder_layers = TransformerEncoderLayer(d_model + d_pe, n_heads, d_inner, dropout)
         self.transformer_encoder = TransformerEncoder(encoder_layers, n_layers)
 
@@ -350,15 +366,15 @@ class _Raindrop(nn.Module):
         Returns
         -------
         dict, A dictionary includes all results.
-            X : array, shape of [seq_len, n_samples, n_features]
+            X : array, shape of [n_steps, n_samples, n_features]
                 Time series data. If samples have different lengths, then need to be padded first.
             static : array, shape of [n_samples, n_features]
                 Static features.
-            times : array, shape of [seq_len, n_samples]
+            times : array, shape of [n_steps, n_samples]
                 Timestamps of time series data.
             lengths : array, shape of [n_samples]
                 Number of nonzero recordings.
-            missing_mask : array, shape of [seq_len, n_samples, n_features]
+            missing_mask : array, shape of [n_steps, n_samples, n_features]
         """
         src = inputs['X']
         static = inputs['static']
@@ -415,7 +431,7 @@ class _Raindrop(nn.Module):
                                                                       return_attention_weights=True)
 
             step_data = step_data.view([self.n_features, n_step, self.d_ob])
-            step_data = step_data.permute([1, 0, 2])
+            step_data = step_data.permute([1, 0, 2])  # [n_step, n_features, d_ob]
             step_data = step_data.reshape([-1, self.n_features * self.d_ob])
 
             output[:, unit, :] = step_data
@@ -514,8 +530,10 @@ class Raindrop(BaseNNClassifier):
                  weight_decay=1e-5,
                  device=None):
         super().__init__(n_classes, learning_rate, epochs, patience, batch_size,
-                                       weight_decay, device)
+                         weight_decay, device)
 
+        self.n_features = n_features
+        self.n_steps = max_len
         self.model = _Raindrop(n_layers, n_features, d_model, d_inner, n_heads, n_classes, dropout, max_len, d_static,
                                aggregation, sensor_wise_mask, static=static, device=self.device)
         self.model = self.model.to(self.device)
@@ -536,11 +554,8 @@ class Raindrop(BaseNNClassifier):
         self : object,
             Trained model.
         """
-        assert len(train_X.shape) == 3, f'train_X should have 3 dimensions [n_samples, seq_len, n_features],' \
-                                        f'while train_X.shape={train_X.shape}'
-        if val_X is not None:
-            assert len(train_X.shape) == 3, f'val_X should have 3 dimensions [n_samples, seq_len, n_features],' \
-                                            f'while val_X.shape={train_X.shape}'
+        train_X, train_y = self.check_input(self.n_steps, self.n_features, train_X, train_y)
+        val_X, val_y = self.check_input(self.n_steps, self.n_features, val_X, val_y)
 
         training_set = DatasetForGRUD(train_X, train_y)
         training_loader = DataLoader(training_set, batch_size=self.batch_size, shuffle=True)
@@ -556,15 +571,25 @@ class Raindrop(BaseNNClassifier):
         self.model.eval()  # set the model as eval status to freeze it.
         return self
 
-    def input_data_processing(self, data):
-        # fetch data
-        indices, X, X_filledLOCF, missing_mask, deltas, empirical_mean, label = \
-            map(lambda x: x.to(self.device), data)
-        # assemble input data
+    def assemble_input_data(self, data):
+        """ Assemble the input data into a dictionary.
 
-        bz, seq_len, n_features = X.shape
-        lengths = torch.tensor([seq_len] * bz, dtype=torch.float)
-        times = torch.tensor(range(seq_len), dtype=torch.float).repeat(bz, 1)
+        Parameters
+        ----------
+        data : list
+            A list containing data fetched from Dataset by Dataload.
+
+        Returns
+        -------
+        inputs : dict
+            A dictionary with data assembled.
+        """
+        # fetch data
+        indices, X, X_filledLOCF, missing_mask, deltas, empirical_mean, label = data
+
+        bz, n_steps, n_features = X.shape
+        lengths = torch.tensor([n_steps] * bz, dtype=torch.float)
+        times = torch.tensor(range(n_steps), dtype=torch.float).repeat(bz, 1)
 
         X = X.permute(1, 0, 2)
         missing_mask = missing_mask.permute(1, 0, 2)
@@ -581,6 +606,7 @@ class Raindrop(BaseNNClassifier):
         return inputs
 
     def classify(self, X):
+        X = self.check_input(self.n_steps, self.n_features, X)
         self.model.eval()  # set the model as eval status to freeze it.
         test_set = DatasetForGRUD(X)
         test_loader = DataLoader(test_set, batch_size=self.batch_size, shuffle=False)
@@ -589,13 +615,12 @@ class Raindrop(BaseNNClassifier):
         with torch.no_grad():
             for idx, data in enumerate(test_loader):
                 # cannot use input_data_processing, cause here has no label
-                indices, X, X_filledLOCF, missing_mask, deltas, empirical_mean = \
-                    map(lambda x: x.to(self.device), data)
+                indices, X, X_filledLOCF, missing_mask, deltas, empirical_mean = data
                 # assemble input data
 
-                bz, seq_len, n_features = X.shape
-                lengths = torch.tensor([seq_len] * bz, dtype=torch.float)
-                times = torch.tensor(range(seq_len), dtype=torch.float).repeat(bz, 1)
+                bz, n_steps, n_features = X.shape
+                lengths = torch.tensor([n_steps] * bz, dtype=torch.float)
+                times = torch.tensor(range(n_steps), dtype=torch.float).repeat(bz, 1)
 
                 X = X.permute(1, 0, 2)
                 missing_mask = missing_mask.permute(1, 0, 2)

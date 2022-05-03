@@ -207,7 +207,7 @@ class _TransformerEncoder(nn.Module):
 
 class Transformer(BaseNNImputer):
     def __init__(self,
-                 seq_len,
+                 n_steps,
                  n_features,
                  n_layers,
                  d_model,
@@ -226,7 +226,7 @@ class Transformer(BaseNNImputer):
                  device=None):
         super().__init__(learning_rate, epochs, patience, batch_size, weight_decay, device)
 
-        self.seq_len = seq_len
+        self.n_steps = n_steps
         self.n_features = n_features
         # model hype-parameters
         self.n_layers = n_layers
@@ -239,18 +239,16 @@ class Transformer(BaseNNImputer):
         self.ORT_weight = ORT_weight
         self.MIT_weight = MIT_weight
 
-        self.model = _TransformerEncoder(self.n_layers, self.seq_len, self.n_features, self.d_model, self.d_inner,
+        self.model = _TransformerEncoder(self.n_layers, self.n_steps, self.n_features, self.d_model, self.d_inner,
                                          self.n_head, self.d_k, self.d_v, self.dropout,
                                          self.ORT_weight, self.MIT_weight, self.device)
         self.model = self.model.to(self.device)
         self._print_model_size()
 
     def fit(self, train_X, val_X=None):
-        assert len(train_X.shape) == 3, f'train_X should have 3 dimensions [n_samples, seq_len, n_features],' \
-                                        f'while train_X.shape={train_X.shape}'
+        train_X = self.check_input(self.n_steps, self.n_features, train_X)
         if val_X is not None:
-            assert len(train_X.shape) == 3, f'val_X should have 3 dimensions [n_samples, seq_len, n_features],' \
-                                            f'while val_X.shape={train_X.shape}'
+            val_X = self.check_input(self.n_steps, self.n_features, val_X)
 
         training_set = DatasetForMIT(train_X)
         training_loader = DataLoader(training_set, batch_size=self.batch_size, shuffle=True)
@@ -267,8 +265,21 @@ class Transformer(BaseNNImputer):
         self.model.eval()  # set the model as eval status to freeze it.
         return self
 
-    def input_data_processing(self, data):
-        indices, X_intact, X, missing_mask, indicating_mask = map(lambda x: x.to(self.device), data)
+    def assemble_input_data(self, data):
+        """ Assemble the input data into a dictionary.
+
+        Parameters
+        ----------
+        data : list
+            A list containing data fetched from Dataset by Dataload.
+
+        Returns
+        -------
+        inputs : dict
+            A dictionary with data assembled.
+        """
+
+        indices, X_intact, X, missing_mask, indicating_mask = data
 
         inputs = {
             'X': X,
@@ -280,6 +291,7 @@ class Transformer(BaseNNImputer):
         return inputs
 
     def impute(self, X):
+        X = self.check_input(self.n_steps, self.n_features, X)
         self.model.eval()  # set the model as eval status to freeze it.
         test_set = DatasetForMIT(X)
         test_loader = DataLoader(test_set, batch_size=self.batch_size, shuffle=False)
@@ -287,7 +299,7 @@ class Transformer(BaseNNImputer):
 
         with torch.no_grad():
             for idx, data in enumerate(test_loader):
-                inputs = self.input_data_processing(data)
+                inputs = self.assemble_input_data(data)
                 imputed_data, _ = self.model.impute(inputs)
                 imputation_collector.append(imputed_data)
 
