@@ -89,10 +89,12 @@ class BaseModel(ABC):
         saving_path : str
             Local disk path to save the tensorboard file.
         """
-        tb_summary_writer = SummaryWriter(saving_path)
-        tb_summary_writer.add_custom_scalars(self.logger)
-        tb_summary_writer.close()
-        print(f'Log saved successfully to {saving_path}.')
+        # TODO: find a solution for log saving
+        raise IOError('This function is not ready for users.')
+        # tb_summary_writer = SummaryWriter(saving_path)
+        # tb_summary_writer.add_custom_scalars(self.logger)
+        # tb_summary_writer.close()
+        # print(f'Log saved successfully to {saving_path}.')
 
     def save_model(self, saving_path):
         """ Save the model to a disk file.
