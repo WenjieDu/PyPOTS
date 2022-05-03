@@ -278,6 +278,26 @@ def cal_rand_index(class_predictions, targets):
     return RI
 
 
+def cal_adjusted_rand_index(class_predictions, targets):
+    """ Calculate adjusted Rand Index.
+    Refer to :cite:`hubert1985AdjustedRI`.
+
+    Parameters
+    ----------
+    class_predictions : array
+        Clustering results returned by a clusterer.
+    targets : array
+        Ground truth (correct) clustering results.
+
+    Returns
+    -------
+    aRI : float
+        Adjusted Rand index.
+    """
+    aRI = metrics.adjusted_rand_score(targets, class_predictions)
+    return aRI
+
+
 def cal_cluster_purity(class_predictions, targets):
     """ Calculate cluster purity.
 
