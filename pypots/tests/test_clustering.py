@@ -73,7 +73,6 @@ class TestVaDER(unittest.TestCase):
         RI = cal_rand_index(clustering, self.train_y)
         CP = cal_cluster_purity(clustering, self.train_y)
         print(f'RI: {RI}\nCP: {CP}')
-        self.vader.save_logs_to_tensorboard('test_log_saving')
 
 
 if __name__ == '__main__':
