@@ -189,13 +189,13 @@ class Decoder(nn.Module):
 
 
 class _CRLI(nn.Module):
-    def __init__(self, seq_len, n_features, n_clusters, n_generator_layers, rnn_hidden_size, decoder_fcn_output_dims,
+    def __init__(self, n_steps, n_features, n_clusters, n_generator_layers, rnn_hidden_size, decoder_fcn_output_dims,
                  lambda_kmeans, rnn_cell_type='GRU', device='cpu'):
         super().__init__()
         self.generator = Generator(n_generator_layers, n_features, rnn_hidden_size, rnn_cell_type, device)
         self.discriminator = Discriminator(rnn_cell_type, n_features, device)
         self.decoder = Decoder(
-            seq_len, rnn_hidden_size * 2, n_features, decoder_fcn_output_dims, device
+            n_steps, rnn_hidden_size * 2, n_features, decoder_fcn_output_dims, device
         )  # fully connected network is included in Decoder
         self.kmeans = KMeans(n_clusters=n_clusters)  # TODO: implement KMean with torch for gpu acceleration
 
@@ -251,7 +251,7 @@ class _CRLI(nn.Module):
 
 class CRLI(BaseNNClusterer):
     def __init__(self,
-                 seq_len,
+                 n_steps,
                  n_features,
                  n_clusters,
                  n_generator_layers,
@@ -270,10 +270,12 @@ class CRLI(BaseNNClusterer):
         super().__init__(n_clusters, learning_rate, epochs, patience, batch_size, weight_decay, device)
         assert G_steps > 0 and D_steps > 0, 'G_steps and D_steps should both >0'
 
+        self.n_steps = n_steps
+        self.n_features = n_features
         self.G_steps = G_steps
         self.D_steps = D_steps
 
-        self.model = _CRLI(seq_len, n_features, n_clusters, n_generator_layers, rnn_hidden_size,
+        self.model = _CRLI(n_steps, n_features, n_clusters, n_generator_layers, rnn_hidden_size,
                            decoder_fcn_output_dims, lambda_kmeans, rnn_cell_type, device)
         self.model = self.model.to(self.device)
         self._print_model_size()
@@ -283,8 +285,7 @@ class CRLI(BaseNNClusterer):
         }
 
     def fit(self, train_X):
-        assert len(train_X.shape) == 3, f'train_X should have 3 dimensions [n_samples, seq_len, n_features],' \
-                                        f'while train_X.shape={train_X.shape}'
+        train_X = self.check_input(self.n_steps, self.n_features, train_X)
         training_set = DatasetForGRUD(train_X)
         training_loader = DataLoader(training_set, batch_size=self.batch_size, shuffle=True)
         self._train_model(training_loader)
@@ -292,9 +293,22 @@ class CRLI(BaseNNClusterer):
         self.model.eval()  # set the model as eval status to freeze it.
         return self
 
-    def input_data_processing(self, data):
+    def assemble_input_data(self, data):
+        """ Assemble the input data into a dictionary.
+
+        Parameters
+        ----------
+        data : list
+            A list containing data fetched from Dataset by Dataload.
+
+        Returns
+        -------
+        inputs : dict
+            A dictionary with data assembled.
+        """
         # fetch data
-        indices, X, X_filledLOCF, missing_mask, deltas, empirical_mean = map(lambda x: x.to(self.device), data)
+        indices, X, _, missing_mask, _, _ = data
+
         inputs = {
             'X': X,
             'missing_mask': missing_mask,
@@ -316,51 +330,62 @@ class CRLI(BaseNNClusterer):
         self.best_loss = float('inf')
         self.best_model_dict = None
 
-        for epoch in range(self.epochs):
-            self.model.train()
-            epoch_train_loss_G_collector = []
-            epoch_train_loss_D_collector = []
-            for idx, data in enumerate(training_loader):
-                inputs = self.input_data_processing(data)
+        try:
+            for epoch in range(self.epochs):
+                self.model.train()
+                epoch_train_loss_G_collector = []
+                epoch_train_loss_D_collector = []
+                for idx, data in enumerate(training_loader):
+                    inputs = self.assemble_input_data(data)
 
-                for _ in range(self.D_steps):
-                    self.D_optimizer.zero_grad()
-                    results = self.model.forward(inputs, training_object='discriminator')
-                    results['l_disc'].backward(retain_graph=True)
-                    self.D_optimizer.step()
-                    epoch_train_loss_D_collector.append(results['l_disc'].item())
+                    for _ in range(self.D_steps):
+                        self.D_optimizer.zero_grad()
+                        results = self.model.forward(inputs, training_object='discriminator')
+                        results['l_disc'].backward(retain_graph=True)
+                        self.D_optimizer.step()
+                        epoch_train_loss_D_collector.append(results['l_disc'].item())
 
-                for _ in range(self.G_steps):
-                    self.G_optimizer.zero_grad()
-                    results = self.model.forward(inputs, training_object='generator')
-                    results['l_gene'].backward()
-                    self.G_optimizer.step()
-                    epoch_train_loss_G_collector.append(results['l_gene'].item())
+                    for _ in range(self.G_steps):
+                        self.G_optimizer.zero_grad()
+                        results = self.model.forward(inputs, training_object='generator')
+                        results['l_gene'].backward()
+                        self.G_optimizer.step()
+                        epoch_train_loss_G_collector.append(results['l_gene'].item())
 
-            mean_train_G_loss = np.mean(epoch_train_loss_G_collector)  # mean training loss of the current epoch
-            mean_train_D_loss = np.mean(epoch_train_loss_D_collector)  # mean training loss of the current epoch
-            self.logger['training_loss_generator'].append(mean_train_G_loss)
-            self.logger['training_loss_discriminator'].append(mean_train_D_loss)
-            print(f'epoch {epoch}: '
-                  f'training loss_generator {mean_train_G_loss:.4f}, '
-                  f'train loss_discriminator {mean_train_D_loss:.4f}')
-            mean_loss = mean_train_G_loss
+                mean_train_G_loss = np.mean(epoch_train_loss_G_collector)  # mean training loss of the current epoch
+                mean_train_D_loss = np.mean(epoch_train_loss_D_collector)  # mean training loss of the current epoch
+                self.logger['training_loss_generator'].append(mean_train_G_loss)
+                self.logger['training_loss_discriminator'].append(mean_train_D_loss)
+                print(f'epoch {epoch}: '
+                      f'training loss_generator {mean_train_G_loss:.4f}, '
+                      f'train loss_discriminator {mean_train_D_loss:.4f}')
+                mean_loss = mean_train_G_loss
 
-            if mean_loss < self.best_loss:
-                self.best_loss = mean_loss
-                self.best_model_dict = self.model.state_dict()
-                self.patience = self.original_patience
+                if mean_loss < self.best_loss:
+                    self.best_loss = mean_loss
+                    self.best_model_dict = self.model.state_dict()
+                    self.patience = self.original_patience
+                else:
+                    self.patience -= 1
+                    if self.patience == 0:
+                        print('Exceeded the training patience. Terminating the training procedure...')
+                        break
+        except Exception as e:
+            print(f'Exception: {e}')
+            if self.best_model_dict is None:
+                raise RuntimeError('Training got interrupted. Model was not get trained. Please try fit() again.')
             else:
-                self.patience -= 1
-                if self.patience == 0:
-                    print('Exceeded the training patience. Terminating the training procedure...')
-                    break
+                RuntimeWarning('Training got interrupted. '
+                               'Model will load the best parameters so far for testing. '
+                               "If you don't want it, please try fit() again.")
 
         if np.equal(self.best_loss, float('inf')):
             raise ValueError('Something is wrong. best_loss is Nan after training.')
+
         print('Finished training.')
 
     def cluster(self, X):
+        X = self.check_input(self.n_steps, self.n_features, X)
         self.model.eval()  # set the model as eval status to freeze it.
         test_set = DatasetForGRUD(X)
         test_loader = DataLoader(test_set, batch_size=self.batch_size, shuffle=False)
@@ -368,7 +393,7 @@ class CRLI(BaseNNClusterer):
 
         with torch.no_grad():
             for idx, data in enumerate(test_loader):
-                inputs = self.input_data_processing(data)
+                inputs = self.assemble_input_data(data)
                 inputs = self.model.cluster(inputs)
                 latent_collector.append(inputs['fcn_latent'])
 

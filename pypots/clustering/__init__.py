@@ -6,7 +6,9 @@ Expose all clustering models for partially-observed time series here.
 # License: GPL-v3
 
 from pypots.clustering.crli import CRLI
+from pypots.clustering.vader import VaDER
 
 __all__ = [
-    'CRLI'
+    'CRLI',
+    'VaDER'
 ]

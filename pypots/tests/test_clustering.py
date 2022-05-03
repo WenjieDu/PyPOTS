@@ -9,8 +9,8 @@ import unittest
 
 from pypots.clustering.crli import CRLI
 from pypots.clustering.vader import VaDER
+from pypots.tests.unified_data_for_test import DATA
 from pypots.utils.metrics import cal_rand_index, cal_cluster_purity
-from .unified_data_for_test import DATA
 
 EPOCHS = 5
 
@@ -20,7 +20,7 @@ class TestCRLI(unittest.TestCase):
         self.train_X = DATA['train_X']
         self.train_y = DATA['train_y']
         print('Running test cases for CRLI...')
-        self.crli = CRLI(seq_len=DATA['n_steps'], n_features=DATA['n_features'], n_clusters=DATA['n_classes'],
+        self.crli = CRLI(n_steps=DATA['n_steps'], n_features=DATA['n_features'], n_clusters=DATA['n_classes'],
                          n_generator_layers=2, rnn_hidden_size=128, epochs=EPOCHS)
         self.crli.fit(self.train_X)
 
@@ -51,7 +51,7 @@ class TestVaDER(unittest.TestCase):
         self.train_X = DATA['train_X']
         self.train_y = DATA['train_y']
         print('Running test cases for VaDER...')
-        self.vader = VaDER(seq_len=DATA['n_steps'], n_features=DATA['n_features'], n_clusters=DATA['n_classes'],
+        self.vader = VaDER(n_steps=DATA['n_steps'], n_features=DATA['n_features'], n_clusters=DATA['n_classes'],
                            rnn_hidden_size=128, d_mu_stddev=5, pretrain_epochs=5, epochs=EPOCHS)
         self.vader.fit(self.train_X)
 
@@ -73,6 +73,7 @@ class TestVaDER(unittest.TestCase):
         RI = cal_rand_index(clustering, self.train_y)
         CP = cal_cluster_purity(clustering, self.train_y)
         print(f'RI: {RI}\nCP: {CP}')
+        self.vader.save_logs_to_tensorboard('test_log_saving')
 
 
 if __name__ == '__main__':

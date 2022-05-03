@@ -15,9 +15,9 @@ from pypots.imputation.brits import TemporalDecay
 
 
 class _GRUD(nn.Module):
-    def __init__(self, seq_len, n_features, rnn_hidden_size, n_classes, device=None):
+    def __init__(self, n_steps, n_features, rnn_hidden_size, n_classes, device=None):
         super().__init__()
-        self.seq_len = seq_len
+        self.n_steps = n_steps
         self.n_features = n_features
         self.rnn_hidden_size = rnn_hidden_size
         self.n_classes = n_classes
@@ -38,7 +38,7 @@ class _GRUD(nn.Module):
 
         hidden_state = torch.zeros((values.size()[0], self.rnn_hidden_size), device=self.device)
 
-        for t in range(self.seq_len):
+        for t in range(self.n_steps):
             # for data, [batch, time, features]
             x = values[:, t, :]  # values
             m = masks[:, t, :]  # mask
@@ -111,7 +111,7 @@ class GRUD(BaseNNClassifier):
     """
 
     def __init__(self,
-                 seq_len,
+                 n_steps,
                  n_features,
                  rnn_hidden_size,
                  n_classes,
@@ -123,10 +123,10 @@ class GRUD(BaseNNClassifier):
                  device=None):
         super().__init__(n_classes, learning_rate, epochs, patience, batch_size, weight_decay, device)
 
-        self.seq_len = seq_len
+        self.n_steps = n_steps
         self.n_features = n_features
         self.rnn_hidden_size = rnn_hidden_size
-        self.model = _GRUD(self.seq_len, self.n_features, self.rnn_hidden_size, self.n_classes, self.device)
+        self.model = _GRUD(self.n_steps, self.n_features, self.rnn_hidden_size, self.n_classes, self.device)
         self.model = self.model.to(self.device)
         self._print_model_size()
 
@@ -145,11 +145,8 @@ class GRUD(BaseNNClassifier):
         self : object,
             Trained model.
         """
-        assert len(train_X.shape) == 3, f'train_X should have 3 dimensions [n_samples, seq_len, n_features],' \
-                                        f'while train_X.shape={train_X.shape}'
-        if val_X is not None:
-            assert len(train_X.shape) == 3, f'val_X should have 3 dimensions [n_samples, seq_len, n_features],' \
-                                            f'while val_X.shape={train_X.shape}'
+        train_X, train_y = self.check_input(self.n_steps, self.n_features, train_X, train_y)
+        val_X, val_y = self.check_input(self.n_steps, self.n_features, val_X, val_y)
 
         training_set = DatasetForGRUD(train_X, train_y)
         training_loader = DataLoader(training_set, batch_size=self.batch_size, shuffle=True)
@@ -165,10 +162,22 @@ class GRUD(BaseNNClassifier):
         self.model.eval()  # set the model as eval status to freeze it.
         return self
 
-    def input_data_processing(self, data):
+    def assemble_input_data(self, data):
+        """ Assemble the input data into a dictionary.
+
+        Parameters
+        ----------
+        data : list
+            A list containing data fetched from Dataset by Dataload.
+
+        Returns
+        -------
+        inputs : dict
+            A dictionary with data assembled.
+        """
         # fetch data
-        indices, X, X_filledLOCF, missing_mask, deltas, empirical_mean, label = \
-            map(lambda x: x.to(self.device), data)
+        indices, X, X_filledLOCF, missing_mask, deltas, empirical_mean, label = data
+
         # assemble input data
         inputs = {
             'indices': indices,
@@ -182,6 +191,7 @@ class GRUD(BaseNNClassifier):
         return inputs
 
     def classify(self, X):
+        X = self.check_input(self.n_steps, self.n_features, X)
         self.model.eval()  # set the model as eval status to freeze it.
         test_set = DatasetForGRUD(X)
         test_loader = DataLoader(test_set, batch_size=self.batch_size, shuffle=False)
@@ -190,8 +200,7 @@ class GRUD(BaseNNClassifier):
         with torch.no_grad():
             for idx, data in enumerate(test_loader):
                 # cannot use input_data_processing, cause here has no label
-                indices, X, X_filledLOCF, missing_mask, deltas, empirical_mean = \
-                    map(lambda x: x.to(self.device), data)
+                indices, X, X_filledLOCF, missing_mask, deltas, empirical_mean = data
                 # assemble input data
                 inputs = {
                     'indices': indices,

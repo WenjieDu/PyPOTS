@@ -5,8 +5,6 @@ Utilities for data manipulation
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: GPL-v3
 
-import numpy as np
-
 from torch.utils.data import Dataset
 
 
@@ -15,22 +13,20 @@ class BaseDataset(Dataset):
 
     Parameters
     ----------
-    X : array-like, shape of [n_samples, seq_len, n_features]
+    X : tensor, shape of [n_samples, n_steps, n_features]
         Time-series feature vector.
-    y : array-like, shape of [n_samples], optional, default=None,
+
+    y : tensor, shape of [n_samples], optional, default=None,
         Classification labels of according time-series samples.
     """
 
     def __init__(self, X, y=None):
         super().__init__()
-        assert isinstance(X, np.ndarray), f'X should be numpy array, but got {type(X)}'
-        assert len(X.shape) == 3, "X should have 3 dimensions, [n_samples, seq_len, n_features]."
-        if y is not None:
-            assert isinstance(y, np.ndarray), f'y should be numpy array, but got {type(y)}'
-
+        # types and shapes had been checked after X and y input into the model
+        # So they are safe to use here. No need to check again.
         self.X = X
         self.y = y
-        self.seq_len = self.X.shape[1]
+        self.n_steps = self.X.shape[1]
         self.n_features = self.X.shape[2]
 
     def __len__(self):
