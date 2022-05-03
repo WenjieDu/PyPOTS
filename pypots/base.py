@@ -6,6 +6,7 @@ Base class for main models in PyPOTS.
 # License: GLP-v3
 from abc import ABC
 
+import numpy as np
 import torch
 from torch.utils.tensorboard import SummaryWriter
 
@@ -23,10 +24,75 @@ class BaseModel(ABC):
         else:
             self.device = device
 
+    def check_input(self, expected_n_steps, expected_n_features, X, y=None):
+        """ Check value type and shape of input X and y
+
+        Parameters
+        ----------
+        expected_n_steps : int
+            Number of time steps of input time series (X) that the model expects.
+            This value is the same with the argument `n_steps` used to initialize the model.
+
+        expected_n_features : int
+            Number of feature dimensions of input time series (X) that the model expects.
+            This value is the same with the argument `n_features` used to initialize the model.
+
+        X : array-like,
+            Time-series data that must have a shape like [n_samples, expected_n_steps, expected_n_features].
+
+        y : array-like
+            Labels of time-series samples (X) that must have a shape like [n_samples] or [n_samples, n_classes].
+
+        Returns
+        -------
+        X : tensor
+
+        y : tensor
+        """
+        if isinstance(X, torch.Tensor):
+            pass
+        elif isinstance(X, list):
+            X = torch.tensor(X)
+        elif isinstance(X, np.ndarray):
+            X = torch.from_numpy(X)
+        else:
+            raise TypeError('X should be an instance of list/np.ndarray/torch.Tensor, '
+                            f'but got {type(X)}')
+
+        X_shape = X.shape
+        assert len(X_shape) == 3, f'input should have 3 dimensions [n_samples, seq_len, n_features],' \
+                                  f'but got shape={X.shape}'
+        assert X_shape[1] == expected_n_steps
+        assert X_shape[2] == expected_n_features
+
+        if y is not None:
+            assert len(X) == len(y), f'lengths of X and y must match, ' \
+                                     f'but got f{len(X)} and {len(y)}'
+            if isinstance(y, torch.Tensor):
+                pass
+            elif isinstance(y, list):
+                y = torch.tensor(y)
+            elif isinstance(X, np.ndarray):
+                y = torch.from_numpy(y)
+            else:
+                raise TypeError('y should be an instance of list/np.ndarray/torch.Tensor, '
+                                f'but got {type(y)}')
+            return X.to(self.device), y.to(self.device)
+        else:
+            return X.to(self.device)
+
     def save_logs_to_tensorboard(self, saving_path):
+        """ Save logs (self.logger) into a tensorboard file.
+
+        Parameters
+        ----------
+        saving_path : str
+            Local disk path to save the tensorboard file.
+        """
         tb_summary_writer = SummaryWriter(saving_path)
         tb_summary_writer.add_custom_scalars(self.logger)
         tb_summary_writer.close()
+        print(f'Log saved successfully to {saving_path}.')
 
     def save_model(self, saving_path):
         """ Save the model to a disk file.
