@@ -8,6 +8,7 @@ Refer to paper :cite:`dejong2019VaDER`.
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: GLP-v3
 
+
 import numpy as np
 import torch
 import torch.nn as nn
@@ -74,13 +75,13 @@ class PeepholeLSTMCell(nn.LSTMCell):
                    dim=1
                )
 
-        i = F.sigmoid(wxhc[:, :self.hidden_size])
-        f = F.sigmoid(wxhc[:, self.hidden_size:2 * self.hidden_size])
-        g = F.tanh(wxhc[:, 2 * self.hidden_size:3 * self.hidden_size])
-        o = F.sigmoid(wxhc[:, 3 * self.hidden_size:])
+        i = torch.sigmoid(wxhc[:, :self.hidden_size])
+        f = torch.sigmoid(wxhc[:, self.hidden_size:2 * self.hidden_size])
+        g = torch.tanh(wxhc[:, 2 * self.hidden_size:3 * self.hidden_size])
+        o = torch.sigmoid(wxhc[:, 3 * self.hidden_size:])
 
         c = f * c + i * g
-        h = o * F.tanh(c)
+        h = o * torch.tanh(c)
         return h, c
 
 
@@ -89,7 +90,7 @@ class GMMLayer(nn.Module):
         super().__init__()
         self.mu_c_unscaled = Parameter(torch.Tensor(n_clusters, d_hidden))
         self.var_c_unscaled = Parameter(torch.Tensor(n_clusters, d_hidden))
-        self.phi_c_unscaled = Parameter(torch.Tensor(n_clusters))
+        self.phi_c_unscaled = torch.Tensor(n_clusters)
 
     def set_values(self, mu, var, phi):
         assert mu.shape == self.mu_c_unscaled.shape
@@ -97,12 +98,12 @@ class GMMLayer(nn.Module):
         assert phi.shape == self.phi_c_unscaled.shape
         self.mu_c_unscaled = torch.nn.Parameter(mu)
         self.var_c_unscaled = torch.nn.Parameter(var)
-        self.phi_c_unscaled = torch.nn.Parameter(phi)
+        self.phi_c_unscaled = torch.tensor(phi)
 
     def forward(self):
         mu_c = self.mu_c_unscaled
         var_c = F.softplus(self.var_c_unscaled)
-        phi_c = F.softmax(self.phi_c_unscaled)
+        phi_c = torch.softmax(self.phi_c_unscaled, dim=0)
         return mu_c, var_c, phi_c
 
 
