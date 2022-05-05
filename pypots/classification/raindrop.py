@@ -34,7 +34,7 @@ from torch_scatter import scatter
 from torch_sparse import SparseTensor
 
 from pypots.classification.base import BaseNNClassifier
-from pypots.data import DatasetForGRUD
+from pypots.data.dataset_for_grud import DatasetForGRUD
 
 
 class PositionalEncodingTF(nn.Module):
