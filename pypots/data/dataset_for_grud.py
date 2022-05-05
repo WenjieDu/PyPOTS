@@ -10,7 +10,7 @@ import torch
 
 from pypots.data.base import BaseDataset
 from pypots.data.dataset_for_brits import parse_delta
-from pypots.imputation import LOCF
+from pypots.imputation.locf import LOCF
 
 
 class DatasetForGRUD(BaseDataset):
