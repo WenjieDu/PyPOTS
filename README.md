@@ -6,6 +6,8 @@
 <p align='center'>
     <!-- Python version -->
     <img src='https://img.shields.io/badge/python-v3-yellowgreen'>
+    <!-- PyTorch-->
+    <img src='https://img.shields.io/static/v1?label=%E2%9D%A4%EF%B8%8F&message=PyTorch&color=DC583A'>
     <!-- PyPI version -->
     <img alt="PyPI" src="https://img.shields.io/pypi/v/pypots?color=green&label=PyPI">
     <!-- License -->
