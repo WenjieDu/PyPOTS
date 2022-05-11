@@ -159,12 +159,7 @@ class _TransformerEncoder(nn.Module):
         self.MIT_weight = MIT_weight
         self.device = device
 
-        self.layer_stack_for_first_block = nn.ModuleList([
-            EncoderLayer(d_time, actual_d_feature, d_model, d_inner, n_head, d_k, d_v, dropout, 0,
-                         False, device)
-            for _ in range(n_layers)
-        ])
-        self.layer_stack_for_second_block = nn.ModuleList([
+        self.layer_stack = nn.ModuleList([
             EncoderLayer(d_time, actual_d_feature, d_model, d_inner, n_head, d_k, d_v, dropout, 0,
                          False, device)
             for _ in range(n_layers)
@@ -181,7 +176,7 @@ class _TransformerEncoder(nn.Module):
         input_X = self.embedding(input_X)
         enc_output = self.dropout(self.position_enc(input_X))
 
-        for encoder_layer in self.layer_stack_for_first_block:
+        for encoder_layer in self.layer_stack:
             enc_output, _ = encoder_layer(enc_output)
 
         learned_presentation = self.reduce_dim(enc_output)
