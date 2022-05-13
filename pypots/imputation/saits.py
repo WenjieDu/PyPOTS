@@ -9,7 +9,7 @@ Some part of the code is from https://github.com/WenjieDu/SAITS.
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from pycorruptor import mcar, fill_nan_with_mask
+from pycorruptor import mcar, masked_fill
 from torch.utils.data import DataLoader
 
 from pypots.data.dataset_for_mit import DatasetForMIT
@@ -165,7 +165,7 @@ class SAITS(BaseNNImputer):
             self._train_model(training_loader)
         else:
             val_X_intact, val_X, val_X_missing_mask, val_X_indicating_mask = mcar(val_X, 0.2)
-            val_X = fill_nan_with_mask(val_X, val_X_missing_mask)
+            val_X = masked_fill(val_X, ~val_X_missing_mask)
             val_set = DatasetForMIT(val_X)
             val_loader = DataLoader(val_set, batch_size=self.batch_size, shuffle=False)
             self._train_model(training_loader, val_loader, val_X_intact, val_X_indicating_mask)

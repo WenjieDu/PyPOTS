@@ -10,7 +10,7 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 
-from pypots.data import generate_random_walk_for_classification, mcar, fill_nan_with_mask
+from pypots.data import generate_random_walk_for_classification, mcar, masked_fill
 from pypots.data import load_specific_dataset
 
 
@@ -32,9 +32,9 @@ def gene_random_walk_data():
     train_X, val_X, train_y, val_y = train_test_split(train_X, train_y, test_size=0.2)
     # create random missing values
     _, train_X, missing_mask, _ = mcar(train_X, 0.3)
-    train_X = fill_nan_with_mask(train_X, missing_mask)
+    train_X = masked_fill(train_X, ~missing_mask)
     _, val_X, missing_mask, _ = mcar(val_X, 0.3)
-    val_X = fill_nan_with_mask(val_X, missing_mask)
+    val_X = masked_fill(val_X, ~missing_mask)
     # test set is left to mask after normalization
 
     train_X = train_X.reshape(-1, n_features)
@@ -52,7 +52,7 @@ def gene_random_walk_data():
 
     # mask values in the test set as ground truth
     test_X_intact, test_X, test_X_missing_mask, test_X_indicating_mask = mcar(test_X, 0.3)
-    test_X = fill_nan_with_mask(test_X, test_X_missing_mask)
+    test_X = masked_fill(test_X, ~test_X_missing_mask)
 
     data = {
         'n_classes': n_classes,
@@ -115,7 +115,7 @@ def gene_physionet2012():
     train_y, val_y, test_y = train_y.to_numpy(), val_y.to_numpy(), test_y.to_numpy()
 
     test_X_intact, test_X, test_X_missing_mask, test_X_indicating_mask = mcar(test_X, 0.1)
-    test_X = fill_nan_with_mask(test_X, test_X_missing_mask)
+    test_X = masked_fill(test_X, ~test_X_missing_mask)
 
     data = {
         'n_classes': 2,
