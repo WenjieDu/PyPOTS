@@ -12,6 +12,10 @@ from pypots.data.generating import generate_random_walk, generate_random_walk_fo
 from pypots.data.integration import (
     masked_fill,
     mcar,
+    pickle_load,
+    pickle_dump,
+)
+from pypots.data.load_specific_datasets import (
+    list_supported_datasets,
     load_specific_dataset,
-    list_available_datasets,
 )
