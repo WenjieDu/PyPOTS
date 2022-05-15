@@ -52,36 +52,43 @@ class MultiRNNCell(nn.Module):
         self.output_layer = nn.Linear(d_hidden, d_input)
 
     def forward(self, inputs):
-        X = inputs['X']
+        X, missing_mask = inputs['X'], inputs['missing_mask']
         bz, n_steps, _ = X.shape
         hidden_state = torch.zeros((bz, self.d_hidden), device=self.device)
         hidden_state_collector = torch.empty((bz, n_steps, self.d_hidden), device=self.device)
-        # output_collector = torch.empty((bz, n_steps, self.d_input), device=self.device)
+        output_collector = torch.empty((bz, n_steps, self.d_input), device=self.device)
         if self.cell_type == 'LSTM':
             # TODO: cell states should have different shapes
             cell_states = torch.zeros((self.d_input, self.d_hidden), device=self.device)
             for step in range(n_steps):
                 x = X[:, step, :]
+                estimation = self.output_layer(hidden_state)
+                output_collector[:, step] = estimation
+                imputed_x = missing_mask[:, step] * x + (1 - missing_mask[:, step]) * estimation
                 for i in range(self.n_layer):
                     if i == 0:
-                        hidden_state, cell_states = self.model[i](x, (hidden_state, cell_states))
+                        hidden_state, cell_states = self.model[i](imputed_x, (hidden_state, cell_states))
                     else:
                         hidden_state, cell_states = self.model[i](hidden_state, (hidden_state, cell_states))
-
                 hidden_state_collector[:, step, :] = hidden_state
 
         elif self.cell_type == 'GRU':
             for step in range(n_steps):
                 x = X[:, step, :]
+                estimation = self.output_layer(hidden_state)
+                output_collector[:, step] = estimation
+                imputed_x = missing_mask[:, step] * x + (1 - missing_mask[:, step]) * estimation
                 for i in range(self.n_layer):
                     if i == 0:
-                        hidden_state = self.model[i](x, hidden_state)
+                        hidden_state = self.model[i](imputed_x, hidden_state)
                     else:
                         hidden_state = self.model[i](hidden_state, hidden_state)
 
                 hidden_state_collector[:, step, :] = hidden_state
 
-        output_collector = self.output_layer(hidden_state_collector)
+        output_collector = output_collector[:, 1:]
+        estimation = self.output_layer(hidden_state).unsqueeze(1)
+        output_collector = torch.concat([output_collector, estimation], dim=1)
         return output_collector, hidden_state
 
 
