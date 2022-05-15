@@ -6,7 +6,6 @@ Integrate with data functions from other libraries.
 # License: GLP-v3
 
 
-import numpy as np
 import pycorruptor as corruptor
 from tsdb import (
     pickle_load as _pickle_load,
@@ -21,7 +20,7 @@ def cal_missing_rate(X):
     return corruptor.cal_missing_rate(X)
 
 
-def masked_fill(X, mask, val=np.nan):
+def masked_fill(X, mask, val):
     return corruptor.masked_fill(X, mask, val)
 
 

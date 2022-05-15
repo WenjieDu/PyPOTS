@@ -10,10 +10,10 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from pycorruptor import mcar, masked_fill
 from torch.utils.data import DataLoader
 
 from pypots.data.dataset_for_mit import DatasetForMIT
+from pypots.data.integration import mcar, masked_fill
 from pypots.imputation.base import BaseNNImputer
 from pypots.utils.metrics import cal_mae
 
@@ -251,7 +251,7 @@ class Transformer(BaseNNImputer):
             self._train_model(training_loader)
         else:
             val_X_intact, val_X, val_X_missing_mask, val_X_indicating_mask = mcar(val_X, 0.2)
-            val_X = masked_fill(val_X, 1 - val_X_missing_mask)
+            val_X = masked_fill(val_X, 1 - val_X_missing_mask, np.nan)
             val_set = DatasetForMIT(val_X)
             val_loader = DataLoader(val_set, batch_size=self.batch_size, shuffle=False)
             self._train_model(training_loader, val_loader, val_X_intact, val_X_indicating_mask)
