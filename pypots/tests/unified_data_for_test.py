@@ -13,14 +13,9 @@ from pypots.data import generate_random_walk_for_classification, mcar, masked_fi
 from pypots.data import load_specific_dataset
 
 
-def gene_random_walk_data():
+def gene_random_walk_data(n_steps=24, n_features=10, n_classes=2, n_samples_each_class=1000):
     """ Generate a random-walk dataset.
     """
-    n_classes = 2
-    n_samples_each_class = 1000
-    n_steps = 24
-    n_features = 10
-
     # generate samples
     X, y = generate_random_walk_for_classification(n_classes=n_classes,
                                                    n_samples_each_class=n_samples_each_class,
