@@ -54,16 +54,17 @@ Install with the latest code on GitHub:
 > pip install `https://github.com/WenjieDu/PyPOTS/archive/main.zip`
 
 ## ❖ Available Algorithms
-| Task                          | Type           | Algorithm                                                                | Year | Reference |        
-|-------------------------------|----------------|--------------------------------------------------------------------------|------|-----------|
-| Imputation                    | Neural Network | SAITS: Self-Attention-based Imputation for Time Series                   | 2022 | [^1]      |
-| Imputation                    | Neural Network | Transformer                                                              | 2017 | [^2] [^1] |
-| Imputation,<br>Classification | Neural Network | BRITS (Bidirectional Recurrent Imputation for Time Series)               | 2018 | [^3]      |
-| Imputation                    | Naive          | LOCF (Last Observation Carried Forward)                                  | -    | -         |
-| Classification                | Neural Network | GRU-D                                                                    | 2018 | [^4]      |
-| Classification                | Neural Network | Raindrop                                                                 | 2022 | [^5]      |
-| Clustering                    | Neural Network | CRLI (Clustering Representation Learning on Incomplete time-series data) | 2021 | [^6]      |
-| Clustering                    | Neural Network | VaDER (Variational Deep Embedding with Recurrence)                       | 2019 | [^7]      |
+| Task                          | Type           | Algorithm                                                                 | Year | Reference |        
+|-------------------------------|----------------|---------------------------------------------------------------------------|------|-----------|
+| Imputation                    | Neural Network | SAITS: Self-Attention-based Imputation for Time Series                    | 2022 | [^1]      |
+| Imputation                    | Neural Network | Transformer                                                               | 2017 | [^2] [^1] |
+| Imputation,<br>Classification | Neural Network | BRITS (Bidirectional Recurrent Imputation for Time Series)                | 2018 | [^3]      |
+| Imputation                    | Naive          | LOCF (Last Observation Carried Forward)                                   | -    | -         |
+| Classification                | Neural Network | GRU-D                                                                     | 2018 | [^4]      |
+| Classification                | Neural Network | Raindrop                                                                  | 2022 | [^5]      |
+| Clustering                    | Neural Network | CRLI (Clustering Representation Learning on Incomplete time-series data)  | 2021 | [^6]      |
+| Clustering                    | Neural Network | VaDER (Variational Deep Embedding with Recurrence)                        | 2019 | [^7]      |
+| Forecasting                   | Probabilistic  | BTTF (Bayesian Temporal Tensor Factorization)                             | 2021 | [^8]      |
 
 ---
 ‼️ PyPOTS is currently under developing. If you like it and look forward to its growth, <ins>please give PyPOTS a star and watch it to keep you posted on its progress and to let me know that its development is meaningful</ins>. If you have any feedback, or want to contribute ideas/suggestions or share time-series related algorithms/papers, please join PyPOTS community and <a alt='GitHub Discussions' href='https://github.com/WenjieDu/PyPOTS/discussions'><img align='center' src='https://img.shields.io/badge/Chat-in_Discussions-green?logo=github&color=60A98D'></a>, or [drop me an email](mailto:wenjay.du@gmail.com).
@@ -77,3 +78,4 @@ Thank you all for your attention! 😃
 [^5]: Zhang, X., Zeman, M., Tsiligkaridis, T., & Zitnik, M. (2022). Graph-Guided Network for Irregularly Sampled Multivariate Time Series. ICLR 2022.
 [^6]: Ma, Q., Chen, C., Li, S., & Cottrell, G. W. (2021). Learning Representations for Incomplete Time Series Clustering. AAAI 2021.
 [^7]: Jong, J.D., Emon, M.A., Wu, P., Karki, R., Sood, M., Godard, P., Ahmad, A., Vrooman, H.A., Hofmann-Apitius, M., & Fröhlich, H. (2019). Deep learning for clustering of multivariate clinical patient trajectories with missing values. GigaScience, 8.
+[^8]: Sun, L., & Chen, X. (2021). Bayesian Temporal Factorization for Multidimensional Time Series Prediction. IEEE transactions on pattern analysis and machine intelligence, PP.
