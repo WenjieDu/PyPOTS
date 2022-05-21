@@ -40,18 +40,15 @@
 
 ⦿ `Mission`: PyPOTS is born to become a handy toolbox that is going to make data mining on POTS easy rather than tedious, to help engineers and researchers focus more on the core problems in their hands rather than on how to deal with the missing parts in their data. PyPOTS will keep integrating classical and the latest state-of-the-art data mining algorithms for partially-observed multivariate time series. For sure, besides various algorithms, PyPOTS is going to have unified APIs together with detailed documentation and interactive examples across algorithms as tutorials.
 
-<a href='https://github.com/WenjieDu/TSDB'><img src="https://raw.githubusercontent.com/WenjieDu/TSDB/main/docs/figs/TSDB%20logo.svg?sanitize=true" align='left' width='160'/></a>
+<a href='https://github.com/WenjieDu/TSDB'><img src="https://raw.githubusercontent.com/WenjieDu/TSDB/main/docs/figs/TSDB%20logo.svg?sanitize=true" align='left' width='180'/></a>
 To make various open-source time-series datasets readily available to our users, PyPOTS gets supported by project [TSDB (Time-Series DataBase)](https://github.com/WenjieDu/TSDB), a toolbox making loading time-series datasets super easy! 
 
-Visit [TSDB](https://github.com/WenjieDu/TSDB) right now to know more about this handy tool 🛠!
+Visit [TSDB](https://github.com/WenjieDu/TSDB) right now to know more about this handy tool 🛠! It now supports a total of 119 open-source datasets.
 <br clear='left'>
 
 ## ❖ Installation
-Install the latest release from PyPI: 
+Install the latest release from PyPI:
 > pip install pypots
-
-Install with the latest code on GitHub: 
-> pip install `https://github.com/WenjieDu/PyPOTS/archive/main.zip`
 
 ## ❖ Available Algorithms
 | Task                          | Type           | Algorithm                                                                 | Year | Reference |        
@@ -65,6 +62,22 @@ Install with the latest code on GitHub:
 | Clustering                    | Neural Network | CRLI (Clustering Representation Learning on Incomplete time-series data)  | 2021 | [^6]      |
 | Clustering                    | Neural Network | VaDER (Variational Deep Embedding with Recurrence)                        | 2019 | [^7]      |
 | Forecasting                   | Probabilistic  | BTTF (Bayesian Temporal Tensor Factorization)                             | 2021 | [^8]      |
+
+## ❖ Reference
+If you find PyPOTS is helpful to your research, please cite it as below and ⭐️star this repository to make others notice this work. 🤗
+
+```bibtex
+@misc{du2022PyPOTS,
+author = {Wenjie Du},
+title = {{PyPOTS: A Python Toolbox for Data Mining on Partially-Observed Time Series}},
+howpublished = {\url{https://github.com/wenjiedu/pypots}},
+year = {2022}
+}
+```
+
+or
+
+`Wenjie Du. PyPOTS: A Python Toolbox for Data Mining on Partially-Observed Time Series. https://github.com/wenjiedu/pypots`
 
 ---
 ‼️ PyPOTS is currently under developing. If you like it and look forward to its growth, <ins>please give PyPOTS a star and watch it to keep you posted on its progress and to let me know that its development is meaningful</ins>. If you have any feedback, or want to contribute ideas/suggestions or share time-series related algorithms/papers, please join PyPOTS community and <a alt='GitHub Discussions' href='https://github.com/WenjieDu/PyPOTS/discussions'><img align='center' src='https://img.shields.io/badge/Chat-in_Discussions-green?logo=github&color=60A98D'></a>, or [drop me an email](mailto:wenjay.du@gmail.com).
