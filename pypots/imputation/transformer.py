@@ -12,7 +12,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import DataLoader
 
-from pypots.data import DatasetForMIT, BaseDataset
+from pypots.data.base import BaseDataset
+from pypots.data.dataset_for_mit import DatasetForMIT
 from pypots.data.integration import mcar, masked_fill
 from pypots.imputation.base import BaseNNImputer
 from pypots.utils.metrics import cal_mae
