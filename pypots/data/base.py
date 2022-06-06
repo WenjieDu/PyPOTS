@@ -6,6 +6,7 @@ Utilities for data manipulation
 # License: GPL-v3
 
 from torch.utils.data import Dataset
+import torch
 
 
 class BaseDataset(Dataset):
@@ -40,4 +41,19 @@ class BaseDataset(Dataset):
         idx : int,
             The index to fetch the specified sample.
         """
-        pass
+        X = self.X[idx]
+        missing_mask = ~torch.isnan(X)
+        X = torch.nan_to_num(X)
+
+        sample = [
+            torch.tensor(idx),
+            X.to(torch.float32),
+            missing_mask.to(torch.float32),
+        ]
+
+        if self.y is not None:
+            sample.append(
+                self.y[idx].to(torch.long)
+            )
+
+        return sample
