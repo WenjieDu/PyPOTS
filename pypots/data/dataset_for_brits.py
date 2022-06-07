@@ -26,14 +26,15 @@ def parse_delta(missing_mask):
     """
     # missing_mask is from X, and X's shape and type had been checked. So no need to double-check here.
     n_samples, n_steps, n_features = missing_mask.shape
+    device = missing_mask.device
     delta_collector = []
     for m_mask in missing_mask:
         delta = []
         for step in range(n_steps):
             if step == 0:
-                delta.append(torch.zeros(1, n_features))
+                delta.append(torch.zeros(1, n_features, device=device))
             else:
-                delta.append(torch.ones(1, n_features) + (1 - m_mask[step]) * delta[-1])
+                delta.append(torch.ones(1, n_features, device=device) + (1 - m_mask[step]) * delta[-1])
         delta = torch.concat(delta, dim=0)
         delta_collector.append(delta.unsqueeze(0))
     delta = torch.concat(delta_collector, dim=0)
