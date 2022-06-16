@@ -74,7 +74,7 @@ class _SAITS(nn.Module):
         X_tilde_2 = self.reduce_dim_gamma(F.relu(self.reduce_dim_beta(enc_output)))
 
         # attention-weighted combine
-        attn_weights = attn_weights.squeeze()  # namely term A_hat in Eq.
+        attn_weights = attn_weights.squeeze(dim=1)  # namely term A_hat in Eq.
         if len(attn_weights.shape) == 4:
             # if having more than 1 head, then average attention weights from all heads
             attn_weights = torch.transpose(attn_weights, 1, 3)
