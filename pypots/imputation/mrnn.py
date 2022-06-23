@@ -14,9 +14,15 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.nn.parameter import Parameter
+from torch.utils.data import DataLoader
 
+from pypots.data.base import BaseDataset
+from pypots.data.dataset_for_brits import DatasetForBRITS
+from pypots.data.integration import mcar, masked_fill
+from pypots.imputation.base import BaseNNImputer
 from pypots.imputation.brits import FeatureRegression
-from pypots.utils.metrics import cal_mae, cal_rmse
+from pypots.utils.metrics import cal_mae
+from pypots.utils.metrics import cal_rmse
 
 
 class FCN_Regression(nn.Module):
@@ -51,14 +57,14 @@ class FCN_Regression(nn.Module):
         return x_hat_t
 
 
-class MRNN(nn.Module):
-    def __init__(self, seq_len, feature_num, rnn_hidden_size, **kwargs):
-        super(MRNN, self).__init__()
+class _MRNN(nn.Module):
+    def __init__(self, seq_len, feature_num, rnn_hidden_size, device):
+        super().__init__()
         # data settings
         self.seq_len = seq_len
         self.feature_num = feature_num
         self.rnn_hidden_size = rnn_hidden_size
-        self.device = kwargs["device"]
+        self.device = device
 
         self.f_rnn = nn.GRUCell(self.feature_num * 3, self.rnn_hidden_size)
         self.b_rnn = nn.GRUCell(self.feature_num * 3, self.rnn_hidden_size)
@@ -108,7 +114,7 @@ class MRNN(nn.Module):
             RNN_imputed_data = m * x + (1 - m) * RNN_estimation
             FCN_estimation = self.fcn_regression(
                 x, m, RNN_imputed_data
-            )  # FCN estimation is output extimation
+            )  # FCN estimation is output estimation
             reconstruction_loss += cal_rmse(FCN_estimation, x, m) + cal_rmse(
                 RNN_estimation, x, m
             )
@@ -144,3 +150,91 @@ class MRNN(nn.Module):
             ret_dict["X_holdout"] = data["X_holdout"]
             ret_dict["indicating_mask"] = data["indicating_mask"]
         return ret_dict
+
+
+class MRNN(BaseNNImputer):
+    def __init__(
+        self,
+        n_steps,
+        n_features,
+        rnn_hidden_size,
+        learning_rate=1e-3,
+        epochs=100,
+        patience=10,
+        batch_size=32,
+        weight_decay=1e-5,
+        device=None,
+    ):
+        super().__init__(
+            learning_rate, epochs, patience, batch_size, weight_decay, device
+        )
+
+        self.n_steps = n_steps
+        self.n_features = n_features
+        # model hype-parameters
+        self.rnn_hidden_size = rnn_hidden_size
+
+        self.model = _MRNN(
+            self.n_steps, self.n_features, self.rnn_hidden_size, self.device
+        )
+        self.model = self.model.to(self.device)
+        self._print_model_size()
+
+     def fit(self, train_X, val_X=None):
+            train_X = self.check_input(self.n_steps, self.n_features, train_X)
+            if val_X is not None:
+                val_X = self.check_input(self.n_steps, self.n_features, val_X)
+
+            training_set = DatasetForBRITS(train_X)
+            training_loader = DataLoader(training_set, batch_size=self.batch_size, shuffle=True)
+            if val_X is None:
+                self._train_model(training_loader)
+            else:
+                val_X_intact, val_X, val_X_missing_mask, val_X_indicating_mask = mcar(val_X, 0.2)
+                val_X = masked_fill(val_X, 1 - val_X_missing_mask, torch.nan)
+                val_set = DatasetForBRITS(val_X)
+                val_loader = DataLoader(val_set, batch_size=self.batch_size, shuffle=False)
+                self._train_model(training_loader, val_loader, val_X_intact, val_X_indicating_mask)
+
+            self.model.load_state_dict(self.best_model_dict)
+            self.model.eval()  # set the model as eval status to freeze it.
+
+    def assemble_input_data(self, data):
+            """ Assemble the input data into a dictionary.
+
+            Parameters
+            ----------
+            data : list
+                A list containing data fetched from Dataset by Dataload.
+
+            Returns
+            -------
+            inputs : dict
+                A dictionary with data assembled.
+            """
+            indices, X_intact, X, missing_mask, indicating_mask = data
+
+            inputs = {
+                'X': X,
+                'X_intact': X_intact,
+                'missing_mask': missing_mask,
+                'indicating_mask': indicating_mask
+            }
+
+            return inputs
+
+    def impute(self, X):
+            X = self.check_input(self.n_steps, self.n_features, X)
+            self.model.eval()  # set the model as eval status to freeze it.
+            test_set = BaseDataset(X)
+            test_loader = DataLoader(test_set, batch_size=self.batch_size, shuffle=False)
+            imputation_collector = []
+
+            with torch.no_grad():
+                for idx, data in enumerate(test_loader):
+                    inputs = {'X': data[1], 'missing_mask': data[2]}
+                    imputed_data, _ = self.model.impute(inputs)
+                    imputation_collector.append(imputed_data)
+
+            imputation_collector = torch.cat(imputation_collector)
+            return imputation_collector.cpu().detach().numpy()
