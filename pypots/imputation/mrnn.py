@@ -124,31 +124,23 @@ class _MRNN(nn.Module):
         imputed_data = masks * values + (1 - masks) * estimations
         return imputed_data, [estimations, reconstruction_loss]
 
-    def forward(self, data, stage):
-        values = data["forward"]["X"]
-        masks = data["forward"]["missing_mask"]
-        imputed_data, [estimations, reconstruction_loss] = self.impute(data)
+    def forward(self, inputs, stage):
+        imputed_data, [_, reconstruction_loss] = self.impute(inputs)
         reconstruction_loss /= self.seq_len
-        reconstruction_MAE = cal_mae(estimations.detach(), values, masks)
 
         if stage == "val":
             # have to cal imputation loss in the val stage; no need to cal imputation loss here in the test stage
             imputation_MAE = cal_mae(
-                imputed_data, data["X_holdout"], data["indicating_mask"]
+                imputed_data, inputs["X_holdout"], inputs["indicating_mask"]
             )
         else:
             imputation_MAE = torch.tensor(0.0)
 
         ret_dict = {
             "reconstruction_loss": reconstruction_loss,
-            "reconstruction_MAE": reconstruction_MAE,
             "imputation_loss": imputation_MAE,
-            "imputation_MAE": imputation_MAE,
             "imputed_data": imputed_data,
         }
-        if "X_holdout" in data:
-            ret_dict["X_holdout"] = data["X_holdout"]
-            ret_dict["indicating_mask"] = data["indicating_mask"]
         return ret_dict
 
 
@@ -181,60 +173,60 @@ class MRNN(BaseNNImputer):
         self._print_model_size()
 
      def fit(self, train_X, val_X=None):
-            train_X = self.check_input(self.n_steps, self.n_features, train_X)
-            if val_X is not None:
-                val_X = self.check_input(self.n_steps, self.n_features, val_X)
+        train_X = self.check_input(self.n_steps, self.n_features, train_X)
+        if val_X is not None:
+            val_X = self.check_input(self.n_steps, self.n_features, val_X)
 
-            training_set = DatasetForBRITS(train_X)
-            training_loader = DataLoader(training_set, batch_size=self.batch_size, shuffle=True)
-            if val_X is None:
-                self._train_model(training_loader)
-            else:
-                val_X_intact, val_X, val_X_missing_mask, val_X_indicating_mask = mcar(val_X, 0.2)
-                val_X = masked_fill(val_X, 1 - val_X_missing_mask, torch.nan)
-                val_set = DatasetForBRITS(val_X)
-                val_loader = DataLoader(val_set, batch_size=self.batch_size, shuffle=False)
-                self._train_model(training_loader, val_loader, val_X_intact, val_X_indicating_mask)
+        training_set = DatasetForBRITS(train_X)
+        training_loader = DataLoader(training_set, batch_size=self.batch_size, shuffle=True)
+        if val_X is None:
+            self._train_model(training_loader)
+        else:
+            val_X_intact, val_X, val_X_missing_mask, val_X_indicating_mask = mcar(val_X, 0.2)
+            val_X = masked_fill(val_X, 1 - val_X_missing_mask, torch.nan)
+            val_set = DatasetForBRITS(val_X)
+            val_loader = DataLoader(val_set, batch_size=self.batch_size, shuffle=False)
+            self._train_model(training_loader, val_loader, val_X_intact, val_X_indicating_mask)
 
-            self.model.load_state_dict(self.best_model_dict)
-            self.model.eval()  # set the model as eval status to freeze it.
+        self.model.load_state_dict(self.best_model_dict)
+        self.model.eval()  # set the model as eval status to freeze it.
 
     def assemble_input_data(self, data):
-            """ Assemble the input data into a dictionary.
+        """ Assemble the input data into a dictionary.
 
-            Parameters
-            ----------
-            data : list
-                A list containing data fetched from Dataset by Dataload.
+        Parameters
+        ----------
+        data : list
+            A list containing data fetched from Dataset by Dataload.
 
-            Returns
-            -------
-            inputs : dict
-                A dictionary with data assembled.
-            """
-            indices, X_intact, X, missing_mask, indicating_mask = data
+        Returns
+        -------
+        inputs : dict
+            A dictionary with data assembled.
+        """
+        indices, X_intact, X, missing_mask, indicating_mask = data
 
-            inputs = {
-                'X': X,
-                'X_intact': X_intact,
-                'missing_mask': missing_mask,
-                'indicating_mask': indicating_mask
-            }
+        inputs = {
+            'X': X,
+            'X_intact': X_intact,
+            'missing_mask': missing_mask,
+            'indicating_mask': indicating_mask
+        }
 
-            return inputs
+        return inputs
 
     def impute(self, X):
-            X = self.check_input(self.n_steps, self.n_features, X)
-            self.model.eval()  # set the model as eval status to freeze it.
-            test_set = BaseDataset(X)
-            test_loader = DataLoader(test_set, batch_size=self.batch_size, shuffle=False)
-            imputation_collector = []
+        X = self.check_input(self.n_steps, self.n_features, X)
+        self.model.eval()  # set the model as eval status to freeze it.
+        test_set = BaseDataset(X)
+        test_loader = DataLoader(test_set, batch_size=self.batch_size, shuffle=False)
+        imputation_collector = []
 
-            with torch.no_grad():
-                for idx, data in enumerate(test_loader):
-                    inputs = {'X': data[1], 'missing_mask': data[2]}
-                    imputed_data, _ = self.model.impute(inputs)
-                    imputation_collector.append(imputed_data)
+        with torch.no_grad():
+            for idx, data in enumerate(test_loader):
+                inputs = {'X': data[1], 'missing_mask': data[2]}
+                imputed_data, _ = self.model.impute(inputs)
+                imputation_collector.append(imputed_data)
 
-            imputation_collector = torch.cat(imputation_collector)
-            return imputation_collector.cpu().detach().numpy()
+        imputation_collector = torch.cat(imputation_collector)
+        return imputation_collector.cpu().detach().numpy()
