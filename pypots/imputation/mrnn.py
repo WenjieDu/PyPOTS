@@ -172,27 +172,33 @@ class MRNN(BaseNNImputer):
         self.model = self.model.to(self.device)
         self._print_model_size()
 
-     def fit(self, train_X, val_X=None):
+    def fit(self, train_X, val_X=None):
         train_X = self.check_input(self.n_steps, self.n_features, train_X)
         if val_X is not None:
             val_X = self.check_input(self.n_steps, self.n_features, val_X)
 
         training_set = DatasetForBRITS(train_X)
-        training_loader = DataLoader(training_set, batch_size=self.batch_size, shuffle=True)
+        training_loader = DataLoader(
+            training_set, batch_size=self.batch_size, shuffle=True
+        )
         if val_X is None:
             self._train_model(training_loader)
         else:
-            val_X_intact, val_X, val_X_missing_mask, val_X_indicating_mask = mcar(val_X, 0.2)
+            val_X_intact, val_X, val_X_missing_mask, val_X_indicating_mask = mcar(
+                val_X, 0.2
+            )
             val_X = masked_fill(val_X, 1 - val_X_missing_mask, torch.nan)
             val_set = DatasetForBRITS(val_X)
             val_loader = DataLoader(val_set, batch_size=self.batch_size, shuffle=False)
-            self._train_model(training_loader, val_loader, val_X_intact, val_X_indicating_mask)
+            self._train_model(
+                training_loader, val_loader, val_X_intact, val_X_indicating_mask
+            )
 
         self.model.load_state_dict(self.best_model_dict)
         self.model.eval()  # set the model as eval status to freeze it.
 
     def assemble_input_data(self, data):
-        """ Assemble the input data into a dictionary.
+        """Assemble the input data into a dictionary.
 
         Parameters
         ----------
@@ -207,10 +213,10 @@ class MRNN(BaseNNImputer):
         indices, X_intact, X, missing_mask, indicating_mask = data
 
         inputs = {
-            'X': X,
-            'X_intact': X_intact,
-            'missing_mask': missing_mask,
-            'indicating_mask': indicating_mask
+            "X": X,
+            "X_intact": X_intact,
+            "missing_mask": missing_mask,
+            "indicating_mask": indicating_mask,
         }
 
         return inputs
@@ -224,7 +230,7 @@ class MRNN(BaseNNImputer):
 
         with torch.no_grad():
             for idx, data in enumerate(test_loader):
-                inputs = {'X': data[1], 'missing_mask': data[2]}
+                inputs = {"X": data[1], "missing_mask": data[2]}
                 imputed_data, _ = self.model.impute(inputs)
                 imputation_collector.append(imputed_data)
 
