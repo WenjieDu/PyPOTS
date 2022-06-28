@@ -140,7 +140,7 @@ class BaseNNImputer(BaseNNModel, BaseImputer):
                                'Model will load the best parameters so far for testing. '
                                "If you don't want it, please try fit() again.")
 
-        if torch.equal(self.best_loss.float(), torch.tensor(float('inf'), device=self.device)):
+        if self.best_loss.item() == float('inf'):
             raise ValueError('Something is wrong. best_loss is Nan after training.')
 
         print('Finished training.')
