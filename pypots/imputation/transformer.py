@@ -12,6 +12,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import DataLoader
 
+from pypots.data.base import BaseDataset
 from pypots.data.dataset_for_mit import DatasetForMIT
 from pypots.data.integration import mcar, masked_fill
 from pypots.imputation.base import BaseNNImputer
@@ -288,13 +289,13 @@ class Transformer(BaseNNImputer):
     def impute(self, X):
         X = self.check_input(self.n_steps, self.n_features, X)
         self.model.eval()  # set the model as eval status to freeze it.
-        test_set = DatasetForMIT(X)
+        test_set = BaseDataset(X)
         test_loader = DataLoader(test_set, batch_size=self.batch_size, shuffle=False)
         imputation_collector = []
 
         with torch.no_grad():
             for idx, data in enumerate(test_loader):
-                inputs = self.assemble_input_data(data)
+                inputs = {'X': data[1], 'missing_mask': data[2]}
                 imputed_data, _ = self.model.impute(inputs)
                 imputation_collector.append(imputed_data)
 

@@ -26,6 +26,7 @@ def parse_delta(missing_mask, device=None):
     """
     # missing_mask is from X, and X's shape and type had been checked. So no need to double-check here.
     n_samples, n_steps, n_features = missing_mask.shape
+    device = missing_mask.device
     delta_collector = []
 
     for m_mask in missing_mask:

@@ -11,6 +11,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import DataLoader
 
+from pypots.data.base import BaseDataset
 from pypots.data.dataset_for_mit import DatasetForMIT
 from pypots.data.integration import mcar, masked_fill
 from pypots.imputation.base import BaseNNImputer
@@ -20,13 +21,12 @@ from pypots.utils.metrics import cal_mae
 
 class _SAITS(nn.Module):
     def __init__(self, n_layers, d_time, d_feature, d_model, d_inner, n_head, d_k, d_v, dropout,
-                 diagonal_attention_mask=True, ORT_weight=1, MIT_weight=1, input_with_mask=True, device=None):
+                 diagonal_attention_mask=True, ORT_weight=1, MIT_weight=1, device=None):
         super().__init__()
         self.n_layers = n_layers
-        actual_d_feature = d_feature * 2 if input_with_mask else d_feature
+        actual_d_feature = d_feature * 2
         self.ORT_weight = ORT_weight
         self.MIT_weight = MIT_weight
-        self.input_with_mask = input_with_mask
         self.device = device
 
         self.layer_stack_for_first_block = nn.ModuleList([
@@ -55,7 +55,7 @@ class _SAITS(nn.Module):
     def impute(self, inputs):
         X, masks = inputs['X'], inputs['missing_mask']
         # first DMSA block
-        input_X_for_first = torch.cat([X, masks], dim=2) if self.input_with_mask else X
+        input_X_for_first = torch.cat([X, masks], dim=2)
         input_X_for_first = self.embedding_1(input_X_for_first)
         enc_output = self.dropout(self.position_enc(input_X_for_first))  # namely, term e in the math equation
         for encoder_layer in self.layer_stack_for_first_block:
@@ -65,7 +65,7 @@ class _SAITS(nn.Module):
         X_prime = masks * X + (1 - masks) * X_tilde_1
 
         # second DMSA block
-        input_X_for_second = torch.cat([X_prime, masks], dim=2) if self.input_with_mask else X
+        input_X_for_second = torch.cat([X_prime, masks], dim=2)
         input_X_for_second = self.embedding_2(input_X_for_second)
         enc_output = self.position_enc(input_X_for_second)  # namely term alpha in math algo
         for encoder_layer in self.layer_stack_for_second_block:
@@ -74,7 +74,7 @@ class _SAITS(nn.Module):
         X_tilde_2 = self.reduce_dim_gamma(F.relu(self.reduce_dim_beta(enc_output)))
 
         # attention-weighted combine
-        attn_weights = attn_weights.squeeze()  # namely term A_hat in Eq.
+        attn_weights = attn_weights.squeeze(dim=1)  # namely term A_hat in Eq.
         if len(attn_weights.shape) == 4:
             # if having more than 1 head, then average attention weights from all heads
             attn_weights = torch.transpose(attn_weights, 1, 3)
@@ -200,13 +200,13 @@ class SAITS(BaseNNImputer):
     def impute(self, X):
         X = self.check_input(self.n_steps, self.n_features, X)
         self.model.eval()  # set the model as eval status to freeze it.
-        test_set = DatasetForMIT(X)
+        test_set = BaseDataset(X)
         test_loader = DataLoader(test_set, batch_size=self.batch_size, shuffle=False)
         imputation_collector = []
 
         with torch.no_grad():
             for idx, data in enumerate(test_loader):
-                inputs = self.assemble_input_data(data)
+                inputs = {'X': data[1], 'missing_mask': data[2]}
                 imputed_data, _ = self.model.impute(inputs)
                 imputation_collector.append(imputed_data)
 
