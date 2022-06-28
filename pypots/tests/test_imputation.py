@@ -134,7 +134,7 @@ class TestLOCF(unittest.TestCase):
 
     def test_impute(self):
         test_X_imputed = self.locf.impute(self.test_X)
-        assert not np.isnan(test_X_imputed).any(), 'Output still has missing values after running impute().'
+        self.assertFalse(np.isnan(test_X_imputed).any()) #  'Output still has missing values after running impute().'
         test_MAE = cal_mae(test_X_imputed, self.test_X_intact, self.test_X_indicating_mask)
         print(f'LOCF test_MAE: {test_MAE}')
 
