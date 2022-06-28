@@ -99,21 +99,21 @@ class TestBRITS(unittest.TestCase):
         self.brits.fit(self.train_X, self.val_X)
 
     def test_parameters(self):
-        assert (hasattr(self.brits, 'model')
+        self.assertTrue(hasattr(self.brits, 'model')
                 and self.brits.model is not None)
 
-        assert (hasattr(self.brits, 'optimizer')
+        self.assertTrue(hasattr(self.brits, 'optimizer')
                 and self.brits.optimizer is not None)
 
-        assert hasattr(self.brits, 'best_loss')
+        self.assertTrue(hasattr(self.brits, 'best_loss'))
         self.assertNotEqual(self.brits.best_loss, float('inf'))
 
-        assert (hasattr(self.brits, 'best_model_dict')
+        self.assertTrue(hasattr(self.brits, 'best_model_dict')
                 and self.brits.best_model_dict is not None)
 
     def test_impute(self):
         imputed_X = self.brits.impute(self.test_X)
-        assert not np.isnan(imputed_X).any(), 'Output still has missing values after running impute().'
+        self.assertFalse(np.isnan(imputed_X).any()), 'Output still has missing values after running impute().'
         test_MAE = cal_mae(imputed_X, self.test_X_intact, self.test_X_indicating_mask)
         print(f'BRITS test_MAE: {test_MAE}')
 

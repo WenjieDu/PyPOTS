@@ -76,16 +76,17 @@ class BaseNNImputer(BaseNNModel, BaseImputer):
         try:
             for epoch in range(self.epochs):
                 self.model.train()
-                epoch_train_loss_collector = []
+                epoch_train_loss_collector = torch.zeros(len(training_loader), device=self.device)
                 for idx, data in enumerate(training_loader):
                     inputs = self.assemble_input_data(data)
                     self.optimizer.zero_grad()
                     results = self.model.forward(inputs)
                     results['loss'].backward()
                     self.optimizer.step()
-                    epoch_train_loss_collector.append(results['loss'].item())
+                    with torch.no_grad():
+                        epoch_train_loss_collector[idx] += results['loss']
 
-                mean_train_loss = np.mean(epoch_train_loss_collector)  # mean training loss of the current epoch
+                mean_train_loss = torch.mean(epoch_train_loss_collector).item()  # mean training loss of the current epoch
                 self.logger['training_loss'].append(mean_train_loss)
 
                 if val_loader is not None:
@@ -126,7 +127,7 @@ class BaseNNImputer(BaseNNModel, BaseImputer):
                                'Model will load the best parameters so far for testing. '
                                "If you don't want it, please try fit() again.")
 
-        if np.equal(self.best_loss, float('inf')):
+        if torch.equal(self.best_loss, torch.tensor(float('inf'), device=self.device)):
             raise ValueError('Something is wrong. best_loss is Nan after training.')
 
         print('Finished training.')

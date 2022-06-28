@@ -10,7 +10,7 @@ import torch
 from pypots.data.base import BaseDataset
 
 
-def parse_delta(missing_mask):
+def parse_delta(missing_mask, device=None):
     """ Generate time-gap (delta) matrix from missing masks.
 
     Parameters
@@ -27,13 +27,14 @@ def parse_delta(missing_mask):
     # missing_mask is from X, and X's shape and type had been checked. So no need to double-check here.
     n_samples, n_steps, n_features = missing_mask.shape
     delta_collector = []
+
     for m_mask in missing_mask:
         delta = []
         for step in range(n_steps):
             if step == 0:
-                delta.append(torch.zeros(1, n_features))
+                delta.append(torch.zeros(1, n_features, device=device))
             else:
-                delta.append(torch.ones(1, n_features) + (1 - m_mask[step]) * delta[-1])
+                delta.append(torch.ones(1, n_features, device=device) + (1 - m_mask[step]) * delta[-1])
         delta = torch.concat(delta, dim=0)
         delta_collector.append(delta.unsqueeze(0))
     delta = torch.concat(delta_collector, dim=0)
@@ -52,17 +53,17 @@ class DatasetForBRITS(BaseDataset):
         Classification labels of according time-series samples.
     """
 
-    def __init__(self, X, y=None):
+    def __init__(self, X, y=None, device=None):
         super().__init__(X, y)
 
         # calculate all delta here.
         # Training will take too much time if we put delta calculation in __getitem__().
         forward_missing_mask = (~torch.isnan(X)).type(torch.float32)
         forward_X = torch.nan_to_num(X)
-        forward_delta = parse_delta(forward_missing_mask)
+        forward_delta = parse_delta(forward_missing_mask, device)
         backward_X = torch.flip(forward_X, dims=[1])
         backward_missing_mask = torch.flip(forward_missing_mask, dims=[1])
-        backward_delta = parse_delta(backward_missing_mask)
+        backward_delta = parse_delta(backward_missing_mask, device)
 
         self.data = {
             'forward': {

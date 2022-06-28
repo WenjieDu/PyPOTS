@@ -491,7 +491,7 @@ class BRITS(BaseNNImputer):
         if val_X is not None:
             val_X = self.check_input(self.n_steps, self.n_features, val_X)
 
-        training_set = DatasetForBRITS(train_X)  # time_gaps is necessary for BRITS
+        training_set = DatasetForBRITS(train_X, device=self.device)  # time_gaps is necessary for BRITS
         training_loader = DataLoader(training_set, batch_size=self.batch_size, shuffle=True)
 
         if val_X is None:
@@ -499,7 +499,7 @@ class BRITS(BaseNNImputer):
         else:
             val_X_intact, val_X, val_X_missing_mask, val_X_indicating_mask = mcar(val_X, 0.2)
             val_X = masked_fill(val_X, 1 - val_X_missing_mask, torch.nan)
-            val_set = DatasetForBRITS(val_X)
+            val_set = DatasetForBRITS(val_X, device=self.device)
             val_loader = DataLoader(val_set, batch_size=self.batch_size, shuffle=False)
             self._train_model(training_loader, val_loader, val_X_intact, val_X_indicating_mask)
 
@@ -542,7 +542,7 @@ class BRITS(BaseNNImputer):
     def impute(self, X):
         X = self.check_input(self.n_steps, self.n_features, X)
         self.model.eval()  # set the model as eval status to freeze it.
-        test_set = DatasetForBRITS(X)
+        test_set = DatasetForBRITS(X, device=self.device)
         test_loader = DataLoader(test_set, batch_size=self.batch_size, shuffle=False)
         imputation_collector = []
 
