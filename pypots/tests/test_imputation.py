@@ -95,7 +95,7 @@ class TestBRITS(unittest.TestCase):
         self.test_X_intact = DATA['test_X_intact']
         self.test_X_indicating_mask = DATA['test_X_indicating_mask']
         print('Running test cases for BRITS...')
-        self.brits = BRITS(DATA['n_steps'], DATA['n_features'], 256, epochs=EPOCH)
+        self.brits = BRITS(DATA['n_steps'], DATA['n_features'], 10, epochs=EPOCH)
         self.brits.fit(self.train_X, self.val_X)
 
     def test_parameters(self):
