@@ -124,17 +124,14 @@ class _MRNN(nn.Module):
         imputed_data = masks * values + (1 - masks) * estimations
         return imputed_data, [estimations, reconstruction_loss]
 
-    def forward(self, inputs, stage):
+    def forward(self, inputs):
         imputed_data, [_, reconstruction_loss] = self.impute(inputs)
         reconstruction_loss /= self.seq_len
 
-        if stage == "val":
-            # have to cal imputation loss in the val stage; no need to cal imputation loss here in the test stage
-            imputation_MAE = cal_mae(
-                imputed_data, inputs["X_holdout"], inputs["indicating_mask"]
-            )
-        else:
-            imputation_MAE = torch.tensor(0.0)
+        # have to cal imputation loss in the val stage; no need to cal imputation loss here in the test stage
+        imputation_MAE = cal_mae(
+            imputed_data, inputs["X_holdout"], inputs["indicating_mask"]
+        )
 
         ret_dict = {
             "reconstruction_loss": reconstruction_loss,
