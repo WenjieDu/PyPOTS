@@ -16,7 +16,7 @@ from pypots.imputation import (
     BRITS,
     LOCF,
 )
-from pypots.tests.unified_data_for_test import DATA
+from pypots.tests.unified_data_for_test import DATA, DEVICE
 from pypots.utils.metrics import cal_mae
 
 EPOCH = 5
@@ -31,7 +31,7 @@ class TestSAITS(unittest.TestCase):
         self.test_X_indicating_mask = DATA['test_X_indicating_mask']
         print('Running test cases for SAITS...')
         self.saits = SAITS(DATA['n_steps'], DATA['n_features'], n_layers=2, d_model=256, d_inner=128, n_head=4,
-                           d_k=64, d_v=64, dropout=0.1, epochs=EPOCH)
+                           d_k=64, d_v=64, dropout=0.1, epochs=EPOCH, device=DEVICE)
         self.saits.fit(self.train_X, self.val_X)
 
     def test_parameters(self):
@@ -63,8 +63,7 @@ class TestTransformer(unittest.TestCase):
         self.test_X_indicating_mask = DATA['test_X_indicating_mask']
         print('Running test cases for Transformer...')
         self.transformer = Transformer(DATA['n_steps'], DATA['n_features'], n_layers=2, d_model=256, d_inner=128,
-                                       n_head=4,
-                                       d_k=64, d_v=64, dropout=0.1, epochs=EPOCH)
+                                       n_head=4, d_k=64, d_v=64, dropout=0.1, epochs=EPOCH, device=DEVICE)
         self.transformer.fit(self.train_X, self.val_X)
 
     def test_parameters(self):
@@ -95,7 +94,7 @@ class TestBRITS(unittest.TestCase):
         self.test_X_intact = DATA['test_X_intact']
         self.test_X_indicating_mask = DATA['test_X_indicating_mask']
         print('Running test cases for BRITS...')
-        self.brits = BRITS(DATA['n_steps'], DATA['n_features'], 256, epochs=EPOCH)
+        self.brits = BRITS(DATA['n_steps'], DATA['n_features'], 256, epochs=EPOCH, device=DEVICE)
         self.brits.fit(self.train_X, self.val_X)
 
     def test_parameters(self):
