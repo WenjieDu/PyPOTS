@@ -8,7 +8,7 @@ Test cases for classification models.
 import unittest
 
 from pypots.classification import BRITS, GRUD, Raindrop
-from pypots.tests.unified_data_for_test import DATA
+from pypots.tests.unified_data_for_test import DATA, DEVICE
 from pypots.utils.metrics import cal_binary_classification_metrics
 
 EPOCHS = 5
@@ -24,7 +24,7 @@ class TestBRITS(unittest.TestCase):
         self.test_y = DATA['test_y']
         print('Running test cases for BRITS...')
         self.brits = BRITS(DATA['n_steps'], DATA['n_features'], 256,
-                           n_classes=DATA['n_classes'], epochs=EPOCHS)
+                           n_classes=DATA['n_classes'], epochs=EPOCHS, device=DEVICE)
         self.brits.fit(self.train_X, self.train_y, self.val_X, self.val_y)
 
     def test_parameters(self):
@@ -60,7 +60,8 @@ class TestGRUD(unittest.TestCase):
         self.test_X = DATA['test_X']
         self.test_y = DATA['test_y']
         print('Running test cases for GRUD...')
-        self.grud = GRUD(DATA['n_steps'], DATA['n_features'], 256, n_classes=DATA['n_classes'], epochs=EPOCHS)
+        self.grud = GRUD(DATA['n_steps'], DATA['n_features'], 256, n_classes=DATA['n_classes'], epochs=EPOCHS,
+                         device=DEVICE)
         self.grud.fit(self.train_X, self.train_y, self.val_X, self.val_y)
 
     def test_parameters(self):
@@ -97,7 +98,7 @@ class TestRaindrop(unittest.TestCase):
         self.test_y = DATA['test_y']
         print('Running test cases for Raindrop...')
         self.raindrop = Raindrop(DATA['n_features'], 2, DATA['n_features'] * 4, 256, 2, DATA['n_classes'], 0.3,
-                                 DATA['n_steps'], 0, 'mean', False, False, epochs=EPOCHS)
+                                 DATA['n_steps'], 0, 'mean', False, False, epochs=EPOCHS, device=DEVICE)
         self.raindrop.fit(self.train_X, self.train_y, self.val_X, self.val_y)
 
     def test_parameters(self):
