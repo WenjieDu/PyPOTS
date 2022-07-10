@@ -2,9 +2,10 @@
 Generate the unified test data.
 """
 
-import pandas as pd
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: GLP-v3
+
+import pandas as pd
 import torch
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
@@ -127,4 +128,6 @@ def gene_physionet2012():
 # generate and cache data first.
 # Otherwise, file lock will cause bug if running test parallely with pytest-xdist.
 DATA = gene_random_walk_data()
+
+# determine the device type for model running
 DEVICE = 'cuda' if torch.cuda.is_available() and torch.cuda.device_count() > 0 else 'cpu'
