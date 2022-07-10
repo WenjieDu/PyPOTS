@@ -144,8 +144,8 @@ class BaseModel(ABC):
         """
         try:
             loaded_model = torch.load(model_path, map_location=self.device)
-            if isinstance(loaded_model.model, torch.nn.Module):
-                self.model.load_state_dict(loaded_model.model.state_dict())
+            if isinstance(loaded_model, torch.nn.Module):
+                self.model.load_state_dict(loaded_model.state_dict())
             else:
                 self.model = loaded_model.model
         except Exception as e:
