@@ -52,7 +52,7 @@ class TestVaDER(unittest.TestCase):
         self.train_y = DATA['train_y']
         print('Running test cases for VaDER...')
         self.vader = VaDER(n_steps=DATA['n_steps'], n_features=DATA['n_features'], n_clusters=DATA['n_classes'],
-                           rnn_hidden_size=128, d_mu_stddev=5, pretrain_epochs=10, epochs=EPOCHS, device=DEVICE)
+                           rnn_hidden_size=64, d_mu_stddev=5, pretrain_epochs=20, epochs=EPOCHS, device=DEVICE)
         self.vader.fit(self.train_X)
 
     def test_parameters(self):
