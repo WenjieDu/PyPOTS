@@ -98,11 +98,10 @@ class PositionWiseFeedForward(nn.Module):
 
 class EncoderLayer(nn.Module):
     def __init__(self, d_time, d_feature, d_model, d_inner, n_head, d_k, d_v, dropout=0.1, attn_dropout=0.1,
-                 diagonal_attention_mask=False, device=None):
+                 diagonal_attention_mask=False):
         super().__init__()
 
         self.diagonal_attention_mask = diagonal_attention_mask
-        self.device = device
         self.d_time = d_time
         self.d_feature = d_feature
 
@@ -113,7 +112,7 @@ class EncoderLayer(nn.Module):
 
     def forward(self, enc_input):
         if self.diagonal_attention_mask:
-            mask_time = torch.eye(self.d_time).to(self.device)
+            mask_time = torch.eye(self.d_time).to(enc_input.device)
         else:
             mask_time = None
 
@@ -152,17 +151,16 @@ class PositionalEncoding(nn.Module):
 
 class _TransformerEncoder(nn.Module):
     def __init__(self, n_layers, d_time, d_feature, d_model, d_inner, n_head, d_k, d_v, dropout,
-                 ORT_weight=1, MIT_weight=1, device=None):
+                 ORT_weight=1, MIT_weight=1):
         super().__init__()
         self.n_layers = n_layers
         actual_d_feature = d_feature * 2
         self.ORT_weight = ORT_weight
         self.MIT_weight = MIT_weight
-        self.device = device
 
         self.layer_stack = nn.ModuleList([
             EncoderLayer(d_time, actual_d_feature, d_model, d_inner, n_head, d_k, d_v, dropout, 0,
-                         False, device)
+                         False)
             for _ in range(n_layers)
         ])
 
@@ -237,7 +235,7 @@ class Transformer(BaseNNImputer):
 
         self.model = _TransformerEncoder(self.n_layers, self.n_steps, self.n_features, self.d_model, self.d_inner,
                                          self.n_head, self.d_k, self.d_v, self.dropout,
-                                         self.ORT_weight, self.MIT_weight, self.device)
+                                         self.ORT_weight, self.MIT_weight)
         self.model = self.model.to(self.device)
         self._print_model_size()
 

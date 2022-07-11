@@ -20,7 +20,9 @@ class BaseModel(ABC):
         self.model = None
 
         if device is None:
-            self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+            self.device = torch.device(
+                "cuda:0" if torch.cuda.is_available() and torch.cuda.device_count() > 0 else "cpu"
+            )
         else:
             self.device = device
 

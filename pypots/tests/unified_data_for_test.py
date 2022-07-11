@@ -128,6 +128,3 @@ def gene_physionet2012():
 # generate and cache data first.
 # Otherwise, file lock will cause bug if running test parallely with pytest-xdist.
 DATA = gene_random_walk_data()
-
-# determine the device type for model running
-DEVICE = 'cuda' if torch.cuda.is_available() and torch.cuda.device_count() > 0 else 'cpu'
