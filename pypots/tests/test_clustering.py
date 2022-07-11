@@ -9,7 +9,7 @@ Test cases for clustering models.
 import unittest
 
 from pypots.clustering import VaDER, CRLI
-from pypots.tests.unified_data_for_test import DATA, DEVICE
+from pypots.tests.unified_data_for_test import DATA
 from pypots.utils.metrics import cal_rand_index, cal_cluster_purity
 
 EPOCHS = 5
@@ -21,7 +21,7 @@ class TestCRLI(unittest.TestCase):
         self.train_y = DATA['train_y']
         print('Running test cases for CRLI...')
         self.crli = CRLI(n_steps=DATA['n_steps'], n_features=DATA['n_features'], n_clusters=DATA['n_classes'],
-                         n_generator_layers=2, rnn_hidden_size=128, epochs=EPOCHS, device=DEVICE)
+                         n_generator_layers=2, rnn_hidden_size=128, epochs=EPOCHS)
         self.crli.fit(self.train_X)
 
     def test_parameters(self):
@@ -52,7 +52,7 @@ class TestVaDER(unittest.TestCase):
         self.train_y = DATA['train_y']
         print('Running test cases for VaDER...')
         self.vader = VaDER(n_steps=DATA['n_steps'], n_features=DATA['n_features'], n_clusters=DATA['n_classes'],
-                           rnn_hidden_size=64, d_mu_stddev=5, pretrain_epochs=20, epochs=EPOCHS, device=DEVICE)
+                           rnn_hidden_size=64, d_mu_stddev=5, pretrain_epochs=20, epochs=EPOCHS)
         self.vader.fit(self.train_X)
 
     def test_parameters(self):
