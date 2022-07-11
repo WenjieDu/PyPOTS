@@ -80,7 +80,7 @@ or
 `Wenjie Du. PyPOTS: A Python Toolbox for Data Mining on Partially-Observed Time Series. https://github.com/wenjiedu/pypots`
 
 ---
-‼️ PyPOTS is currently under developing. If you like it and look forward to its growth, <ins>please give PyPOTS a star and watch it to keep you posted on its progress and to let me know that its development is meaningful</ins>. If you have any feedback, or want to contribute ideas/suggestions or share time-series related algorithms/papers, please join PyPOTS community and <a alt='GitHub Discussions' href='https://github.com/WenjieDu/PyPOTS/discussions'><img align='center' src='https://img.shields.io/badge/Chat-in_Discussions-green?logo=github&color=60A98D'></a>, or [drop me an email](mailto:wenjay.du@gmail.com).
+‼️ PyPOTS is currently under developing. If you like it and look forward to its growth, <ins>please give PyPOTS a star and watch it to keep you posted on its progress and to let me know that its development is meaningful</ins>. If you have any feedback, or want to contribute ideas/suggestions or share time-series related algorithms/papers, please join PyPOTS community and <a alt='GitHub Discussions' href='https://github.com/WenjieDu/PyPOTS/discussions'><img align='center' src='https://img.shields.io/badge/Chat-in_Discussions-green?logo=github&color=60A98D'></a>, or create an issue.
 
 Thank you all for your attention! 😃
 
