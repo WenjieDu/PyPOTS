@@ -26,9 +26,9 @@
     </a>
     <!-- Visit number -->
     <img src='https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2FPyPOTS%2FPyPOTS&count_bg=%23009A0A&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=Visits&edge_flat=false'>
-    <!-- Chat in Discussions -->
-    <a alt='GitHub Discussions' href='https://github.com/WenjieDu/PyPOTS/discussions'>
-        <img src='https://img.shields.io/badge/Chat-in_Discussions-green?logo=github&color=60A98D'>
+    <!-- Zenodo DOI -->
+    <a alt='Zenodo DOI' href='https://zenodo.org/badge/latestdoi/475477908'>
+        <img src='https://zenodo.org/badge/475477908.svg'>
     </a>
     <!-- Code of Conduct -->
     <a alt='CODE_OF_CONDUCT' href='CODE_OF_CONDUCT.md'> 
