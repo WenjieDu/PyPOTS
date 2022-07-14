@@ -1,4 +1,4 @@
-name: PyPOTS Testing
+name: Tests
 
 on:
     push:
