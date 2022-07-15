@@ -9,9 +9,13 @@
     <!-- PyTorch-->
     <img src='https://img.shields.io/static/v1?label=%E2%9D%A4%EF%B8%8F&message=PyTorch&color=DC583A'>
     <!-- PyPI version -->
-    <img alt="PyPI" src="https://img.shields.io/pypi/v/pypots?color=green&label=PyPI">
+    <a alt='PyPI download number' href='https://pypi.org/project/pypots'>
+        <img alt="PyPI" src="https://img.shields.io/pypi/v/pypots?color=green&label=PyPI">
+    </a>
     <!-- License -->
-    <img src='https://img.shields.io/badge/License-GPL--v3-green?color=79C641'>
+    <a alt='GPL3 license' href='https://github.com/WenjieDu/PyPOTS/blob/main/LICENSE'>
+        <img src='https://img.shields.io/badge/License-GPL--v3-green?color=79C641'>
+    </a>
     <!-- GitHub Testing -->
     <a alt='GitHub Testing' href='https://github.com/WenjieDu/PyPOTS/actions/workflows/testing.yml'> 
         <img src='https://github.com/WenjieDu/PyPOTS/actions/workflows/testing.yml/badge.svg'>
@@ -21,7 +25,7 @@
         <img src='https://coveralls.io/repos/github/WenjieDu/PyPOTS/badge.svg'>
     </a>
     <!-- PyPI download number -->
-    <a alt='PyPI download number' href='https://pypi.org/project/pypots'>
+    <a alt='PyPI download number' href='https://pepy.tech/project/pypots'>
         <img src='https://static.pepy.tech/personalized-badge/pypots?period=total&units=international_system&left_color=grey&right_color=blue&left_text=Total Downloads'>
     </a>
     <!-- Visit number -->
@@ -71,13 +75,14 @@ If you find PyPOTS is helpful to your research, please cite it as below and ⭐�
 author = {Wenjie Du},
 title = {{PyPOTS: A Python Toolbox for Data Mining on Partially-Observed Time Series}},
 howpublished = {\url{https://github.com/wenjiedu/pypots}},
-year = {2022}
+year = {2022},
+doi = {10.5281/zenodo.6823222},
 }
 ```
 
 or
 
-`Wenjie Du. PyPOTS: A Python Toolbox for Data Mining on Partially-Observed Time Series. https://github.com/wenjiedu/pypots`
+`Wenjie Du. (2022). PyPOTS: A Python Toolbox for Data Mining on Partially-Observed Time Series. Zenodo. https://doi.org/10.5281/zenodo.6823222`
 
 ---
 ‼️ PyPOTS is currently under developing. If you like it and look forward to its growth, <ins>please give PyPOTS a star and watch it to keep you posted on its progress and to let me know that its development is meaningful</ins>. If you have any feedback, or want to contribute ideas/suggestions or share time-series related algorithms/papers, please join PyPOTS community and <a alt='GitHub Discussions' href='https://github.com/WenjieDu/PyPOTS/discussions'><img align='center' src='https://img.shields.io/badge/Chat-in_Discussions-green?logo=github&color=60A98D'></a>, or create an issue.
