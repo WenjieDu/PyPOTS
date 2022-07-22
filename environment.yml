@@ -3,18 +3,18 @@ channels:
     - pytorch
     - pyg
     - conda-forge
-    - defaults
+    - nodefaults
 dependencies:
-    - python=3.7.13
-    - pip
-    - numpy
-    - scipy
-    - pandas
-    - scikit-learn
-    - matplotlib
-    - tensorboard
-    - pytorch>=1.10
-    - pyg
+    - conda-forge::python>=3.7.13
+    - conda-forge::numpy
+    - conda-forge::scipy
+    - conda-forge::pandas>=1.4.1
+    - conda-forge::scikit-learn
+    - conda-forge::matplotlib
+    - conda-forge::tensorboard
+    - pytorch::pytorch>=1.10
+    - pyg::pyg
+    - conda-forge::pip
     - pip:
         - torchdiffeq
         - pycorruptor
