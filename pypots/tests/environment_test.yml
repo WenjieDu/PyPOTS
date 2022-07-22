@@ -5,20 +5,19 @@ channels:
     - conda-forge
     - nodefaults
 dependencies:
-    - conda-forge::python>=3.7.13
+    - pyg::pyg
+    - pytorch::pytorch>=1.10
+    - conda-forge::pip
     - conda-forge::numpy
     - conda-forge::scipy
+    - conda-forge::pandas
     - conda-forge::scikit-learn
-    - conda-forge::pandas>=1.4.1
     - conda-forge::matplotlib
     - conda-forge::tensorboard
-    - conda-forge::pytorch>=1.10
     - conda-forge::pytest-cov
     - conda-forge::pytest-xdist
     - conda-forge::coverage
-    - conda-forge::pip
-    - pyg::pyg
     - pip:
-          - torchdiffeq
-          - pycorruptor
-          - tsdb
+        - torchdiffeq==0.2.3
+        - pycorruptor==0.0.4
+        - tsdb==0.0.7

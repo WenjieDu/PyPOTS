@@ -5,17 +5,17 @@ channels:
     - conda-forge
     - nodefaults
 dependencies:
-    - conda-forge::python>=3.7.13
+    - main::python=3.7.13
+    - conda-forge::pip
     - conda-forge::numpy
     - conda-forge::scipy
-    - conda-forge::pandas>=1.4.1
+    - conda-forge::pandas
     - conda-forge::scikit-learn
     - conda-forge::matplotlib
     - conda-forge::tensorboard
     - pytorch::pytorch>=1.10
-    - conda-forge::pip
     - pyg::pyg
     - pip:
-        - torchdiffeq
-        - pycorruptor
-        - tsdb
+        - torchdiffeq==0.2.3
+        - pycorruptor==0.0.4
+        - tsdb==0.0.7
