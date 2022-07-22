@@ -16,9 +16,9 @@ dependencies:
     - conda-forge::pytest-cov
     - conda-forge::pytest-xdist
     - conda-forge::coverage
-    - conda-forge::torchdiffeq
     - conda-forge::pip
     - pyg::pyg
     - pip:
           - pycorruptor
           - tsdb
+          - torchdiffeq

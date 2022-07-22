@@ -14,8 +14,8 @@ dependencies:
     - conda-forge::tensorboard
     - pytorch::pytorch>=1.10
     - conda-forge::pip
-    - conda-forge::torchdiffeq
     - pyg::pyg
     - pip:
         - pycorruptor
         - tsdb
+        - torchdiffeq
