@@ -3,20 +3,22 @@ channels:
     - pytorch
     - pyg
     - conda-forge
-    - defaults
+    - nodefaults
 dependencies:
-    - numpy
-    - scipy
-    - pandas
-    - scikit-learn
-    - matplotlib
-    - tensorboard
-    - pytorch>=1.10
-    - pyg
-    - pytest-cov
-    - pytest-xdist
-    - coverage
+    - conda-forge::python>=3.7.13
+    - conda-forge::numpy
+    - conda-forge::scipy
+    - conda-forge::scikit-learn
+    - conda-forge::pandas>=1.4.1
+    - conda-forge::matplotlib
+    - conda-forge::tensorboard
+    - conda-forge::pytorch>=1.10
+    - conda-forge::pytest-cov
+    - conda-forge::pytest-xdist
+    - conda-forge::coverage
+    - conda-forge::torchdiffeq
+    - conda-forge::pip
+    - pyg::pyg
     - pip:
-          - torchdiffeq
           - pycorruptor
           - tsdb
