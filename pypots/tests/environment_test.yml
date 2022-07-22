@@ -19,6 +19,6 @@ dependencies:
     - conda-forge::pip
     - pyg::pyg
     - pip:
+          - torchdiffeq
           - pycorruptor
           - tsdb
-          - torchdiffeq
