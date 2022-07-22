@@ -6,17 +6,17 @@ channels:
     - nodefaults
 dependencies:
     - pyg::pyg
-    - pytorch::pytorch>=1.10
-    - conda-forge::pip
-    - conda-forge::numpy
-    - conda-forge::scipy
-    - conda-forge::pandas
-    - conda-forge::scikit-learn
-    - conda-forge::matplotlib
-    - conda-forge::tensorboard
-    - conda-forge::pytest-cov
-    - conda-forge::pytest-xdist
-    - conda-forge::coverage
+    - pytorch::pytorch==1.10
+    - conda-forge::pip==22.2
+    - conda-forge::numpy>=1.21.6
+    - conda-forge::scipy>=1.7.3
+    - conda-forge::pandas>=1.3.5
+    - conda-forge::scikit-learn>=1.0.2
+    - conda-forge::matplotlib==3.5.2
+    - conda-forge::tensorboard==2.9.1
+    - conda-forge::pytest-cov==3.0.0
+    - conda-forge::pytest-xdist==2.5.0
+    - conda-forge::coverage==6.4.2
     - pip:
         - torchdiffeq==0.2.3
         - pycorruptor==0.0.4
