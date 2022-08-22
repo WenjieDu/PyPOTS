@@ -16,7 +16,7 @@ dependencies:
     - conda-forge::pytest-cov=3.0.0
     - conda-forge::pytest-xdist=2.5.0
     - conda-forge::coverage=6.4.4
-    - pytorch::pytorch==1.12.1
+    - pytorch::pytorch==1.11
     - pyg::pyg=2.0.4
     - pip:
         - torchdiffeq==0.2.3
