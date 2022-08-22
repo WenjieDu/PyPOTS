@@ -21,7 +21,7 @@ from pypots.utils.metrics import cal_mae
 
 
 class FeatureRegression(nn.Module):
-    """ The module used to capture the correlation between features for imputation.
+    """The module used to capture the correlation between features for imputation.
 
     Attributes
     ----------
@@ -45,18 +45,18 @@ class FeatureRegression(nn.Module):
         self.b = Parameter(torch.Tensor(input_size))
 
         m = torch.ones(input_size, input_size) - torch.eye(input_size, input_size)
-        self.register_buffer('m', m)
+        self.register_buffer("m", m)
 
         self.reset_parameters()
 
     def reset_parameters(self):
-        stdv = 1. / math.sqrt(self.W.size(0))
+        stdv = 1.0 / math.sqrt(self.W.size(0))
         self.W.data.uniform_(-stdv, stdv)
         if self.b is not None:
             self.b.data.uniform_(-stdv, stdv)
 
     def forward(self, x):
-        """ Forward processing of the NN module.
+        """Forward processing of the NN module.
 
         Parameters
         ----------
@@ -74,7 +74,7 @@ class FeatureRegression(nn.Module):
 
 
 class TemporalDecay(nn.Module):
-    """ The module used to generate the temporal decay factor gamma in the original paper.
+    """The module used to generate the temporal decay factor gamma in the original paper.
 
     Attributes
     ----------
@@ -100,20 +100,20 @@ class TemporalDecay(nn.Module):
         self.b = Parameter(torch.Tensor(output_size))
 
         if self.diag:
-            assert (input_size == output_size)
+            assert input_size == output_size
             m = torch.eye(input_size, input_size)
-            self.register_buffer('m', m)
+            self.register_buffer("m", m)
 
         self.reset_parameters()
 
     def reset_parameters(self):
-        stdv = 1. / math.sqrt(self.W.size(0))
+        stdv = 1.0 / math.sqrt(self.W.size(0))
         self.W.data.uniform_(-stdv, stdv)
         if self.b is not None:
             self.b.data.uniform_(-stdv, stdv)
 
     def forward(self, delta):
-        """ Forward processing of the NN module.
+        """Forward processing of the NN module.
 
         Parameters
         ----------
@@ -134,7 +134,7 @@ class TemporalDecay(nn.Module):
 
 
 class RITS(nn.Module):
-    """ model RITS: Recurrent Imputation for Time Series
+    """model RITS: Recurrent Imputation for Time Series
 
     Attributes
     ----------
@@ -179,14 +179,18 @@ class RITS(nn.Module):
         self.device = device
 
         self.rnn_cell = nn.LSTMCell(self.n_features * 2, self.rnn_hidden_size)
-        self.temp_decay_h = TemporalDecay(input_size=self.n_features, output_size=self.rnn_hidden_size, diag=False)
-        self.temp_decay_x = TemporalDecay(input_size=self.n_features, output_size=self.n_features, diag=True)
+        self.temp_decay_h = TemporalDecay(
+            input_size=self.n_features, output_size=self.rnn_hidden_size, diag=False
+        )
+        self.temp_decay_x = TemporalDecay(
+            input_size=self.n_features, output_size=self.n_features, diag=True
+        )
         self.hist_reg = nn.Linear(self.rnn_hidden_size, self.n_features)
         self.feat_reg = FeatureRegression(self.n_features)
         self.combining_weight = nn.Linear(self.n_features * 2, self.n_features)
 
     def impute(self, inputs, direction):
-        """ The imputation function.
+        """The imputation function.
         Parameters
         ----------
         inputs : dict,
@@ -203,13 +207,17 @@ class RITS(nn.Module):
         reconstruction_loss : float tensor,
             reconstruction loss
         """
-        values = inputs[direction]['X']  # feature values
-        masks = inputs[direction]['missing_mask']  # missing masks
-        deltas = inputs[direction]['deltas']  # time-gap values
+        values = inputs[direction]["X"]  # feature values
+        masks = inputs[direction]["missing_mask"]  # missing masks
+        deltas = inputs[direction]["deltas"]  # time-gap values
 
         # create hidden states and cell states for the lstm cell
-        hidden_states = torch.zeros((values.size()[0], self.rnn_hidden_size), device=self.device)
-        cell_states = torch.zeros((values.size()[0], self.rnn_hidden_size), device=self.device)
+        hidden_states = torch.zeros(
+            (values.size()[0], self.rnn_hidden_size), device=self.device
+        )
+        cell_states = torch.zeros(
+            (values.size()[0], self.rnn_hidden_size), device=self.device
+        )
 
         estimations = []
         reconstruction_loss = 0.0
@@ -242,14 +250,16 @@ class RITS(nn.Module):
             estimations.append(c_h.unsqueeze(dim=1))
 
             inputs = torch.cat([c_c, m], dim=1)
-            hidden_states, cell_states = self.rnn_cell(inputs, (hidden_states, cell_states))
+            hidden_states, cell_states = self.rnn_cell(
+                inputs, (hidden_states, cell_states)
+            )
 
         estimations = torch.cat(estimations, dim=1)
         imputed_data = masks * values + (1 - masks) * estimations
         return imputed_data, hidden_states, reconstruction_loss
 
-    def forward(self, inputs, direction='forward'):
-        """ Forward processing of the NN module.
+    def forward(self, inputs, direction="forward"):
+        """Forward processing of the NN module.
         Parameters
         ----------
         inputs : dict,
@@ -265,19 +275,21 @@ class RITS(nn.Module):
         """
         imputed_data, hidden_state, reconstruction_loss = self.impute(inputs, direction)
         # for each iteration, reconstruction_loss increases its value for 3 times
-        reconstruction_loss /= (self.n_steps * 3)
+        reconstruction_loss /= self.n_steps * 3
 
         ret_dict = {
-            'consistency_loss': torch.tensor(0.0, device=self.device),  # single direction, has no consistency loss
-            'reconstruction_loss': reconstruction_loss,
-            'imputed_data': imputed_data,
-            'final_hidden_state': hidden_state
+            "consistency_loss": torch.tensor(
+                0.0, device=self.device
+            ),  # single direction, has no consistency loss
+            "reconstruction_loss": reconstruction_loss,
+            "imputed_data": imputed_data,
+            "final_hidden_state": hidden_state,
         }
         return ret_dict
 
 
 class _BRITS(nn.Module):
-    """ model BRITS: Bidirectional RITS
+    """model BRITS: Bidirectional RITS
     BRITS consists of two RITS, which take time-series data from two directions (forward/backward) respectively.
 
     Attributes
@@ -306,7 +318,7 @@ class _BRITS(nn.Module):
         self.rits_b = RITS(n_steps, n_features, rnn_hidden_size, device)
 
     def impute(self, inputs):
-        """ Impute the missing data. Only impute, this is for test stage.
+        """Impute the missing data. Only impute, this is for test stage.
 
         Parameters
         ----------
@@ -319,16 +331,16 @@ class _BRITS(nn.Module):
             The feature vectors with missing part imputed.
 
         """
-        imputed_data_f, _, _ = self.rits_f.impute(inputs, 'forward')
-        imputed_data_b, _, _ = self.rits_b.impute(inputs, 'backward')
-        imputed_data_b = {'imputed_data_b': imputed_data_b}
-        imputed_data_b = self.reverse(imputed_data_b)['imputed_data_b']
+        imputed_data_f, _, _ = self.rits_f.impute(inputs, "forward")
+        imputed_data_b, _, _ = self.rits_b.impute(inputs, "backward")
+        imputed_data_b = {"imputed_data_b": imputed_data_b}
+        imputed_data_b = self.reverse(imputed_data_b)["imputed_data_b"]
         imputed_data = (imputed_data_f + imputed_data_b) / 2
         return imputed_data
 
     @staticmethod
     def get_consistency_loss(pred_f, pred_b):
-        """ Calculate the consistency loss between the imputation from two RITS models.
+        """Calculate the consistency loss between the imputation from two RITS models.
 
         Parameters
         ----------
@@ -347,7 +359,7 @@ class _BRITS(nn.Module):
 
     @staticmethod
     def reverse(ret):
-        """ Reverse the array values on the time dimension in the given dictionary.
+        """Reverse the array values on the time dimension in the given dictionary.
 
         Parameters
         ----------
@@ -363,7 +375,9 @@ class _BRITS(nn.Module):
             if tensor_.dim() <= 1:
                 return tensor_
             indices = range(tensor_.size()[1])[::-1]
-            indices = torch.tensor(indices, dtype=torch.long, device=tensor_.device, requires_grad=False)
+            indices = torch.tensor(
+                indices, dtype=torch.long, device=tensor_.device, requires_grad=False
+            )
             return tensor_.index_select(1, indices)
 
         for key in ret:
@@ -372,7 +386,7 @@ class _BRITS(nn.Module):
         return ret
 
     def merge_ret(self, ret_f, ret_b):
-        """ Merge (average) results from two RITS models into one.
+        """Merge (average) results from two RITS models into one.
 
         Parameters
         ----------
@@ -386,17 +400,21 @@ class _BRITS(nn.Module):
         dict,
             Merged results in a dictionary.
         """
-        consistency_loss = self.get_consistency_loss(ret_f['imputed_data'], ret_b['imputed_data'])
-        ret_f['imputed_data'] = (ret_f['imputed_data'] + ret_b['imputed_data']) / 2
-        ret_f['consistency_loss'] = consistency_loss
-        ret_f['loss'] = consistency_loss + \
-                        ret_f['reconstruction_loss'] + \
-                        ret_b['reconstruction_loss']
+        consistency_loss = self.get_consistency_loss(
+            ret_f["imputed_data"], ret_b["imputed_data"]
+        )
+        ret_f["imputed_data"] = (ret_f["imputed_data"] + ret_b["imputed_data"]) / 2
+        ret_f["consistency_loss"] = consistency_loss
+        ret_f["loss"] = (
+            consistency_loss
+            + ret_f["reconstruction_loss"]
+            + ret_b["reconstruction_loss"]
+        )
 
         return ret_f
 
     def forward(self, inputs):
-        """ Forward processing of BRITS.
+        """Forward processing of BRITS.
 
         Parameters
         ----------
@@ -407,14 +425,14 @@ class _BRITS(nn.Module):
         -------
         dict, A dictionary includes all results.
         """
-        ret_f = self.rits_f(inputs, 'forward')
-        ret_b = self.reverse(self.rits_b(inputs, 'backward'))
+        ret_f = self.rits_f(inputs, "forward")
+        ret_b = self.reverse(self.rits_b(inputs, "backward"))
         ret = self.merge_ret(ret_f, ret_b)
         return ret
 
 
 class BRITS(BaseNNImputer):
-    """ BRITS implementation
+    """BRITS implementation
 
     Attributes
     ----------
@@ -451,28 +469,34 @@ class BRITS(BaseNNImputer):
         Run the model on which device.
     """
 
-    def __init__(self,
-                 n_steps,
-                 n_features,
-                 rnn_hidden_size,
-                 learning_rate=1e-3,
-                 epochs=100,
-                 patience=10,
-                 batch_size=32,
-                 weight_decay=1e-5,
-                 device=None):
-        super().__init__(learning_rate, epochs, patience, batch_size, weight_decay, device)
+    def __init__(
+        self,
+        n_steps,
+        n_features,
+        rnn_hidden_size,
+        learning_rate=1e-3,
+        epochs=100,
+        patience=10,
+        batch_size=32,
+        weight_decay=1e-5,
+        device=None,
+    ):
+        super().__init__(
+            learning_rate, epochs, patience, batch_size, weight_decay, device
+        )
 
         self.n_steps = n_steps
         self.n_features = n_features
         self.rnn_hidden_size = rnn_hidden_size
 
-        self.model = _BRITS(self.n_steps, self.n_features, self.rnn_hidden_size, self.device)
+        self.model = _BRITS(
+            self.n_steps, self.n_features, self.rnn_hidden_size, self.device
+        )
         self.model = self.model.to(self.device)
         self._print_model_size()
 
     def fit(self, train_X, val_X=None):
-        """ Fit the model on the given training data.
+        """Fit the model on the given training data.
 
         Parameters
         ----------
@@ -492,23 +516,29 @@ class BRITS(BaseNNImputer):
             val_X = self.check_input(self.n_steps, self.n_features, val_X)
 
         training_set = DatasetForBRITS(train_X)  # time_gaps is necessary for BRITS
-        training_loader = DataLoader(training_set, batch_size=self.batch_size, shuffle=True)
+        training_loader = DataLoader(
+            training_set, batch_size=self.batch_size, shuffle=True
+        )
 
         if val_X is None:
             self._train_model(training_loader)
         else:
-            val_X_intact, val_X, val_X_missing_mask, val_X_indicating_mask = mcar(val_X, 0.2)
+            val_X_intact, val_X, val_X_missing_mask, val_X_indicating_mask = mcar(
+                val_X, 0.2
+            )
             val_X = masked_fill(val_X, 1 - val_X_missing_mask, torch.nan)
             val_set = DatasetForBRITS(val_X)
             val_loader = DataLoader(val_set, batch_size=self.batch_size, shuffle=False)
-            self._train_model(training_loader, val_loader, val_X_intact, val_X_indicating_mask)
+            self._train_model(
+                training_loader, val_loader, val_X_intact, val_X_indicating_mask
+            )
 
         self.model.load_state_dict(self.best_model_dict)
         self.model.eval()  # set the model as eval status to freeze it.
         return self
 
     def assemble_input_data(self, data):
-        """ Assemble the input data into a dictionary.
+        """Assemble the input data into a dictionary.
 
         Parameters
         ----------
@@ -524,17 +554,13 @@ class BRITS(BaseNNImputer):
         indices, X, missing_mask, deltas, back_X, back_missing_mask, back_deltas = data
         # assemble input data
         inputs = {
-            'indices': indices,
-            'forward': {
-                'X': X,
-                'missing_mask': missing_mask,
-                'deltas': deltas
+            "indices": indices,
+            "forward": {"X": X, "missing_mask": missing_mask, "deltas": deltas},
+            "backward": {
+                "X": back_X,
+                "missing_mask": back_missing_mask,
+                "deltas": back_deltas,
             },
-            'backward': {
-                'X': back_X,
-                'missing_mask': back_missing_mask,
-                'deltas': back_deltas
-            }
         }
 
         return inputs

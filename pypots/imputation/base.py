@@ -21,15 +21,14 @@ except ImportError:
 
 
 class BaseImputer(BaseModel):
-    """ Abstract class for all imputation models.
-    """
+    """Abstract class for all imputation models."""
 
     def __init__(self, device):
         super().__init__(device)
 
     @abstractmethod
     def fit(self, train_X, val_X=None):
-        """ Train the imputer.
+        """Train the imputer.
 
         Parameters
         ----------
@@ -47,7 +46,7 @@ class BaseImputer(BaseModel):
 
     @abstractmethod
     def impute(self, X):
-        """ Impute missing data with the trained model.
+        """Impute missing data with the trained model.
 
         Parameters
         ----------
@@ -63,15 +62,23 @@ class BaseImputer(BaseModel):
 
 
 class BaseNNImputer(BaseNNModel, BaseImputer):
-    def __init__(self, learning_rate, epochs, patience, batch_size, weight_decay, device):
-        super().__init__(learning_rate, epochs, patience, batch_size, weight_decay, device)
+    def __init__(
+        self, learning_rate, epochs, patience, batch_size, weight_decay, device
+    ):
+        super().__init__(
+            learning_rate, epochs, patience, batch_size, weight_decay, device
+        )
 
     @abstractmethod
     def assemble_input_data(self, data):
         pass
 
     def _train_model(
-        self, training_loader, val_loader=None, val_X_intact=None, val_indicating_mask=None
+        self,
+        training_loader,
+        val_loader=None,
+        val_X_intact=None,
+        val_indicating_mask=None,
     ):
         self.optimizer = torch.optim.Adam(
             self.model.parameters(), lr=self.lr, weight_decay=self.weight_decay
@@ -135,7 +142,9 @@ class BaseNNImputer(BaseNNModel, BaseImputer):
                         nni.report_final_result(self.best_loss)
 
                 if self.patience == 0:
-                    print("Exceeded the training patience. Terminating the training procedure...")
+                    print(
+                        "Exceeded the training patience. Terminating the training procedure..."
+                    )
                     break
 
         except Exception as e:

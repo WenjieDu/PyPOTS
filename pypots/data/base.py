@@ -10,7 +10,7 @@ import torch
 
 
 class BaseDataset(Dataset):
-    """ Base dataset class in PyPOTS.
+    """Base dataset class in PyPOTS.
 
     Parameters
     ----------
@@ -34,7 +34,7 @@ class BaseDataset(Dataset):
         return len(self.X)
 
     def __getitem__(self, idx):
-        """ Fetch data according to index.
+        """Fetch data according to index.
 
         Parameters
         ----------
@@ -52,8 +52,6 @@ class BaseDataset(Dataset):
         ]
 
         if self.y is not None:
-            sample.append(
-                self.y[idx].to(torch.long)
-            )
+            sample.append(self.y[idx].to(torch.long))
 
         return sample

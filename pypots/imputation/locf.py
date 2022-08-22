@@ -14,7 +14,7 @@ from pypots.imputation.base import BaseImputer
 
 
 class LOCF(BaseImputer):
-    """ LOCF (Last Observed Carried Forward) imputation method.
+    """LOCF (Last Observed Carried Forward) imputation method.
 
     Attributes
     ----------
@@ -33,7 +33,7 @@ class LOCF(BaseImputer):
         )
 
     def locf_numpy(self, X):
-        """ Numpy implementation of LOCF.
+        """Numpy implementation of LOCF.
 
         Parameters
         ----------
@@ -71,7 +71,7 @@ class LOCF(BaseImputer):
         return X_imputed
 
     def locf_torch(self, X):
-        """ Torch implementation of LOCF.
+        """Torch implementation of LOCF.
 
         Parameters
         ----------
@@ -104,7 +104,7 @@ class LOCF(BaseImputer):
         return X_imputed
 
     def impute(self, X):
-        """ Impute missing values
+        """Impute missing values
 
         Parameters
         ----------

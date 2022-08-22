@@ -38,8 +38,7 @@ from pypots.data.dataset_for_grud import DatasetForGRUD
 
 
 class PositionalEncodingTF(nn.Module):
-    """ Generate positional encoding according to time information.
-    """
+    """Generate positional encoding according to time information."""
 
     def __init__(self, d_pe, max_len=500):
         super().__init__()
@@ -50,7 +49,7 @@ class PositionalEncodingTF(nn.Module):
         self._num_timescales = d_pe // 2
 
     def forward(self, time_vectors):
-        """ Generate positional encoding.
+        """Generate positional encoding.
 
         Parameters
         ----------
@@ -131,7 +130,9 @@ class ObservationPropagation(MessagePassing):
         self.bias = Parameter(torch.Tensor(heads * out_channels))
 
         self.n_nodes = n_nodes
-        self.nodewise_weights = Parameter(torch.Tensor(self.n_nodes, heads * out_channels))
+        self.nodewise_weights = Parameter(
+            torch.Tensor(self.n_nodes, heads * out_channels)
+        )
 
         self.increase_dim = Linear(in_channels[1], heads * out_channels * 8)
         self.map_weights = Parameter(torch.Tensor(self.n_nodes, heads * 16))
@@ -259,7 +260,17 @@ class ObservationPropagation(MessagePassing):
 
             p_emb = self.p_t.unsqueeze(0)
 
-            aa = torch.cat([w_v.repeat(1, n_step, 1,), p_emb.repeat(n_edges, 1, 1)], dim=-1)
+            aa = torch.cat(
+                [
+                    w_v.repeat(
+                        1,
+                        n_step,
+                        1,
+                    ),
+                    p_emb.repeat(n_edges, 1, 1),
+                ],
+                dim=-1,
+            )
             beta = torch.mean(h_W * aa, dim=-1)
 
         if edge_weights is not None:
@@ -295,7 +306,9 @@ class ObservationPropagation(MessagePassing):
             target_nodes = self.edge_index[1]
             w1 = self.nodewise_weights[source_nodes].unsqueeze(-1)
             w2 = self.nodewise_weights[target_nodes].unsqueeze(1)
-            out = torch.bmm(x_i.view(-1, self.heads, self.out_channels), torch.bmm(w1, w2))
+            out = torch.bmm(
+                x_i.view(-1, self.heads, self.out_channels), torch.bmm(w1, w2)
+            )
         if use_beta:
             out = out * gamma.view(-1, self.heads, out.shape[-1])
         else:
@@ -320,7 +333,9 @@ class ObservationPropagation(MessagePassing):
         :meth:`__init__` by the :obj:`aggr` argument.
         """
         index = self.index
-        return scatter(inputs, index, dim=self.node_dim, dim_size=dim_size, reduce=self.aggr)
+        return scatter(
+            inputs, index, dim=self.node_dim, dim_size=dim_size, reduce=self.aggr
+        )
 
     def __repr__(self):
         return "{}({}, {}, heads={})".format(
@@ -378,7 +393,9 @@ class _Raindrop(nn.Module):
         else:
             dim_check = d_model + d_pe
             assert dim_check % n_heads == 0, "dim_check must be divisible by n_heads"
-            encoder_layers = TransformerEncoderLayer(d_model + d_pe, n_heads, d_inner, dropout)
+            encoder_layers = TransformerEncoderLayer(
+                d_model + d_pe, n_heads, d_inner, dropout
+            )
         self.transformer_encoder = TransformerEncoder(encoder_layers, n_layers)
 
         self.adj = torch.ones([self.n_features, self.n_features], device=self.device)
@@ -405,7 +422,9 @@ class _Raindrop(nn.Module):
             d_final = d_model + d_pe
 
         self.mlp_static = nn.Sequential(
-            nn.Linear(d_final, d_final), nn.ReLU(), nn.Linear(d_final, n_classes),
+            nn.Linear(d_final, d_final),
+            nn.ReLU(),
+            nn.Linear(d_final, n_classes),
         )
 
         self.dropout = nn.Dropout(dropout)
@@ -419,7 +438,7 @@ class _Raindrop(nn.Module):
         glorot(self.R_u)
 
     def classify(self, inputs):
-        """ Forward processing of BRITS.
+        """Forward processing of BRITS.
 
         Parameters
         ----------
@@ -468,7 +487,9 @@ class _Raindrop(nn.Module):
 
         batch_size = src.shape[1]
         n_step = src.shape[0]
-        output = torch.zeros([n_step, batch_size, self.n_features * self.d_ob], device=self.device)
+        output = torch.zeros(
+            [n_step, batch_size, self.n_features * self.d_ob], device=self.device
+        )
 
         alpha_all = torch.zeros([edge_index.shape[1], batch_size], device=self.device)
 
@@ -477,7 +498,9 @@ class _Raindrop(nn.Module):
             step_data = x[:, unit, :]
             p_t = pe[:, unit, :]
 
-            step_data = step_data.reshape([n_step, self.n_features, self.d_ob]).permute(1, 0, 2)
+            step_data = step_data.reshape([n_step, self.n_features, self.d_ob]).permute(
+                1, 0, 2
+            )
             step_data = step_data.reshape(self.n_features, n_step * self.d_ob)
 
             step_data, attention_weights = self.ob_propagation(
@@ -528,12 +551,16 @@ class _Raindrop(nn.Module):
         lengths2 = lengths.unsqueeze(1).to(self.device)
         mask2 = mask.permute(1, 0).unsqueeze(2).long()
         if sensor_wise_mask:
-            output = torch.zeros([batch_size, self.n_features, self.d_ob + 16], device=self.device)
+            output = torch.zeros(
+                [batch_size, self.n_features, self.d_ob + 16], device=self.device
+            )
             extended_missing_mask = missing_mask.view(-1, batch_size, self.n_features)
             for se in range(self.n_features):
                 r_out = r_out.view(-1, batch_size, self.n_features, (self.d_ob + 16))
                 out = r_out[:, :, se, :]
-                l_ = torch.sum(extended_missing_mask[:, :, se], dim=0).unsqueeze(1)  # length
+                l_ = torch.sum(extended_missing_mask[:, :, se], dim=0).unsqueeze(
+                    1
+                )  # length
                 out_sensor = torch.sum(
                     out * (1 - extended_missing_mask[:, :, se].unsqueeze(-1)), dim=0
                 ) / (l_ + 1)
@@ -631,7 +658,7 @@ class Raindrop(BaseNNClassifier):
         self._print_model_size()
 
     def fit(self, train_X, train_y, val_X=None, val_y=None):
-        """ Fit the model on the given training data.
+        """Fit the model on the given training data.
 
         Parameters
         ----------
@@ -645,11 +672,15 @@ class Raindrop(BaseNNClassifier):
         self : object,
             Trained model.
         """
-        train_X, train_y = self.check_input(self.n_steps, self.n_features, train_X, train_y)
+        train_X, train_y = self.check_input(
+            self.n_steps, self.n_features, train_X, train_y
+        )
         val_X, val_y = self.check_input(self.n_steps, self.n_features, val_X, val_y)
 
         training_set = DatasetForGRUD(train_X, train_y)
-        training_loader = DataLoader(training_set, batch_size=self.batch_size, shuffle=True)
+        training_loader = DataLoader(
+            training_set, batch_size=self.batch_size, shuffle=True
+        )
 
         if val_X is None:
             self._train_model(training_loader)
@@ -663,7 +694,7 @@ class Raindrop(BaseNNClassifier):
         return self
 
     def assemble_input_data(self, data):
-        """ Assemble the input data into a dictionary.
+        """Assemble the input data into a dictionary.
 
         Parameters
         ----------

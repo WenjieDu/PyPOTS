@@ -24,19 +24,27 @@ class _GRUD(nn.Module):
         self.device = device
 
         # create models
-        self.rnn_cell = nn.GRUCell(self.n_features * 2 + self.rnn_hidden_size, self.rnn_hidden_size)
-        self.temp_decay_h = TemporalDecay(input_size=self.n_features, output_size=self.rnn_hidden_size, diag=False)
-        self.temp_decay_x = TemporalDecay(input_size=self.n_features, output_size=self.n_features, diag=True)
+        self.rnn_cell = nn.GRUCell(
+            self.n_features * 2 + self.rnn_hidden_size, self.rnn_hidden_size
+        )
+        self.temp_decay_h = TemporalDecay(
+            input_size=self.n_features, output_size=self.rnn_hidden_size, diag=False
+        )
+        self.temp_decay_x = TemporalDecay(
+            input_size=self.n_features, output_size=self.n_features, diag=True
+        )
         self.classifier = nn.Linear(self.rnn_hidden_size, self.n_classes)
 
     def classify(self, inputs):
-        values = inputs['X']
-        masks = inputs['missing_mask']
-        deltas = inputs['deltas']
-        empirical_mean = inputs['empirical_mean']
-        X_filledLOCF = inputs['X_filledLOCF']
+        values = inputs["X"]
+        masks = inputs["missing_mask"]
+        deltas = inputs["deltas"]
+        empirical_mean = inputs["empirical_mean"]
+        X_filledLOCF = inputs["X_filledLOCF"]
 
-        hidden_state = torch.zeros((values.size()[0], self.rnn_hidden_size), device=self.device)
+        hidden_state = torch.zeros(
+            (values.size()[0], self.rnn_hidden_size), device=self.device
+        )
 
         for t in range(self.n_steps):
             # for data, [batch, time, features]
@@ -59,7 +67,7 @@ class _GRUD(nn.Module):
         return prediction
 
     def forward(self, inputs):
-        """ Forward processing of GRU-D.
+        """Forward processing of GRU-D.
 
         Parameters
         ----------
@@ -72,16 +80,13 @@ class _GRUD(nn.Module):
             A dictionary includes all results.
         """
         prediction = self.classify(inputs)
-        classification_loss = F.nll_loss(torch.log(prediction), inputs['label'])
-        results = {
-            'prediction': prediction,
-            'loss': classification_loss
-        }
+        classification_loss = F.nll_loss(torch.log(prediction), inputs["label"])
+        results = {"prediction": prediction, "loss": classification_loss}
         return results
 
 
 class GRUD(BaseNNClassifier):
-    """ GRU-D implementation of BaseClassifier.
+    """GRU-D implementation of BaseClassifier.
 
     Attributes
     ----------
@@ -110,28 +115,38 @@ class GRUD(BaseNNClassifier):
         Run the model on which device.
     """
 
-    def __init__(self,
-                 n_steps,
-                 n_features,
-                 rnn_hidden_size,
-                 n_classes,
-                 learning_rate=1e-3,
-                 epochs=100,
-                 patience=10,
-                 batch_size=32,
-                 weight_decay=1e-5,
-                 device=None):
-        super().__init__(n_classes, learning_rate, epochs, patience, batch_size, weight_decay, device)
+    def __init__(
+        self,
+        n_steps,
+        n_features,
+        rnn_hidden_size,
+        n_classes,
+        learning_rate=1e-3,
+        epochs=100,
+        patience=10,
+        batch_size=32,
+        weight_decay=1e-5,
+        device=None,
+    ):
+        super().__init__(
+            n_classes, learning_rate, epochs, patience, batch_size, weight_decay, device
+        )
 
         self.n_steps = n_steps
         self.n_features = n_features
         self.rnn_hidden_size = rnn_hidden_size
-        self.model = _GRUD(self.n_steps, self.n_features, self.rnn_hidden_size, self.n_classes, self.device)
+        self.model = _GRUD(
+            self.n_steps,
+            self.n_features,
+            self.rnn_hidden_size,
+            self.n_classes,
+            self.device,
+        )
         self.model = self.model.to(self.device)
         self._print_model_size()
 
     def fit(self, train_X, train_y, val_X=None, val_y=None):
-        """ Fit the model on the given training data.
+        """Fit the model on the given training data.
 
         Parameters
         ----------
@@ -145,11 +160,15 @@ class GRUD(BaseNNClassifier):
         self : object,
             Trained model.
         """
-        train_X, train_y = self.check_input(self.n_steps, self.n_features, train_X, train_y)
+        train_X, train_y = self.check_input(
+            self.n_steps, self.n_features, train_X, train_y
+        )
         val_X, val_y = self.check_input(self.n_steps, self.n_features, val_X, val_y)
 
         training_set = DatasetForGRUD(train_X, train_y)
-        training_loader = DataLoader(training_set, batch_size=self.batch_size, shuffle=True)
+        training_loader = DataLoader(
+            training_set, batch_size=self.batch_size, shuffle=True
+        )
 
         if val_X is None:
             self._train_model(training_loader)
@@ -163,7 +182,7 @@ class GRUD(BaseNNClassifier):
         return self
 
     def assemble_input_data(self, data):
-        """ Assemble the input data into a dictionary.
+        """Assemble the input data into a dictionary.
 
         Parameters
         ----------
@@ -180,13 +199,13 @@ class GRUD(BaseNNClassifier):
 
         # assemble input data
         inputs = {
-            'indices': indices,
-            'X': X,
-            'X_filledLOCF': X_filledLOCF,
-            'missing_mask': missing_mask,
-            'deltas': deltas,
-            'empirical_mean': empirical_mean,
-            'label': label,
+            "indices": indices,
+            "X": X,
+            "X_filledLOCF": X_filledLOCF,
+            "missing_mask": missing_mask,
+            "deltas": deltas,
+            "empirical_mean": empirical_mean,
+            "label": label,
         }
         return inputs
 
@@ -203,12 +222,12 @@ class GRUD(BaseNNClassifier):
                 indices, X, X_filledLOCF, missing_mask, deltas, empirical_mean = data
                 # assemble input data
                 inputs = {
-                    'indices': indices,
-                    'X': X,
-                    'X_filledLOCF': X_filledLOCF,
-                    'missing_mask': missing_mask,
-                    'deltas': deltas,
-                    'empirical_mean': empirical_mean,
+                    "indices": indices,
+                    "X": X,
+                    "X_filledLOCF": X_filledLOCF,
+                    "missing_mask": missing_mask,
+                    "deltas": deltas,
+                    "empirical_mean": empirical_mean,
                 }
 
                 prediction = self.model.classify(inputs)

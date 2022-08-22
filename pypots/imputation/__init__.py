@@ -11,9 +11,8 @@ from pypots.imputation.saits import SAITS
 from pypots.imputation.transformer import Transformer
 
 __all__ = [
-    'BRITS',
-    'Transformer',
-    'SAITS',
-    'LOCF',
-
+    "BRITS",
+    "Transformer",
+    "SAITS",
+    "LOCF",
 ]
