@@ -11,8 +11,10 @@ import numpy as np
 from sklearn.utils import check_random_state
 
 
-def generate_random_walk(n_samples=1000, n_steps=24, n_features=10, mu=0., std=1., random_state=None):
-    """ Generate random walk time-series data.
+def generate_random_walk(
+    n_samples=1000, n_steps=24, n_features=10, mu=0.0, std=1.0, random_state=None
+):
+    """Generate random walk time-series data.
 
     Parameters
     ----------
@@ -44,9 +46,15 @@ def generate_random_walk(n_samples=1000, n_steps=24, n_features=10, mu=0., std=1
     return ts_samples
 
 
-def generate_random_walk_for_classification(n_classes=2, n_samples_each_class=500, n_steps=24, n_features=10,
-                                            shuffle=True, random_state=None):
-    """ Generate random walk time-series data for the classification task.
+def generate_random_walk_for_classification(
+    n_classes=2,
+    n_samples_each_class=500,
+    n_steps=24,
+    n_features=10,
+    shuffle=True,
+    random_state=None,
+):
+    """Generate random walk time-series data for the classification task.
 
     Parameters
     ----------
@@ -82,7 +90,9 @@ def generate_random_walk_for_classification(n_classes=2, n_samples_each_class=50
     std = 1
 
     for c_ in range(n_classes):
-        ts_samples = generate_random_walk(n_samples_each_class, n_steps, n_features, mu, std, random_state)
+        ts_samples = generate_random_walk(
+            n_samples_each_class, n_steps, n_features, mu, std, random_state
+        )
         label_samples = np.asarray([1 for _ in range(n_samples_each_class)]) * c_
         ts_collector.extend(ts_samples)
         label_collector.extend(label_samples)
@@ -101,10 +111,18 @@ def generate_random_walk_for_classification(n_classes=2, n_samples_each_class=50
     return X, y
 
 
-def generate_random_walk_for_anomaly_detection(n_samples=1000, n_steps=24, n_features=10, mu=0., std=1.,
-                                               anomaly_proportion=0.1, anomaly_fraction=0.02, anomaly_scale_factor=2.0,
-                                               random_state=None):
-    """ Generate random walk time-series data for the anomaly-detection task.
+def generate_random_walk_for_anomaly_detection(
+    n_samples=1000,
+    n_steps=24,
+    n_features=10,
+    mu=0.0,
+    std=1.0,
+    anomaly_proportion=0.1,
+    anomaly_fraction=0.02,
+    anomaly_scale_factor=2.0,
+    random_state=None,
+):
+    """Generate random walk time-series data for the anomaly-detection task.
 
     Parameters
     ----------
@@ -134,8 +152,12 @@ def generate_random_walk_for_anomaly_detection(n_samples=1000, n_steps=24, n_fea
     y : array, shape of [n_classes*n_samples_each_class]
         Labels indicating if time-series samples are anomalies.
     """
-    assert 0 < anomaly_proportion < 1, f'anomaly_proportion should be >0 and <1, but got {anomaly_proportion}'
-    assert 0 < anomaly_fraction < 1, f'anomaly_fraction should be >0 and <1, but got {anomaly_fraction}'
+    assert (
+        0 < anomaly_proportion < 1
+    ), f"anomaly_proportion should be >0 and <1, but got {anomaly_proportion}"
+    assert (
+        0 < anomaly_fraction < 1
+    ), f"anomaly_fraction should be >0 and <1, but got {anomaly_fraction}"
     seed = check_random_state(random_state)
     X = seed.randn(n_samples, n_steps, n_features) * std + mu
     n_anomaly = math.floor(n_samples * anomaly_proportion)
@@ -148,10 +170,14 @@ def generate_random_walk_for_anomaly_detection(n_samples=1000, n_steps=24, n_fea
         max_difference = min_val - max_val
         n_points = n_steps * n_features
         n_anomaly_points = int(n_points * anomaly_fraction)
-        point_indices = np.random.choice(a=n_points, size=n_anomaly_points, replace=False)
+        point_indices = np.random.choice(
+            a=n_points, size=n_anomaly_points, replace=False
+        )
         for p_i in point_indices:
-            anomaly_sample[p_i] = mu + np.random.uniform(low=min_val - anomaly_scale_factor * max_difference,
-                                                         high=max_val + anomaly_scale_factor * max_difference)
+            anomaly_sample[p_i] = mu + np.random.uniform(
+                low=min_val - anomaly_scale_factor * max_difference,
+                high=max_val + anomaly_scale_factor * max_difference,
+            )
         X[a_i] = anomaly_sample.reshape(n_steps, n_features)
 
     # create labels

@@ -10,8 +10,7 @@ from pypots.classification.grud import GRUD
 from pypots.classification.raindrop import Raindrop
 
 __all__ = [
-    'BRITS',
-    'GRUD',
-    'Raindrop',
-
+    "BRITS",
+    "GRUD",
+    "Raindrop",
 ]

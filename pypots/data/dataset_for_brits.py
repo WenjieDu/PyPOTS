@@ -11,7 +11,7 @@ from pypots.data.base import BaseDataset
 
 
 def parse_delta(missing_mask):
-    """ Generate time-gap (delta) matrix from missing masks.
+    """Generate time-gap (delta) matrix from missing masks.
 
     Parameters
     ----------
@@ -34,7 +34,10 @@ def parse_delta(missing_mask):
             if step == 0:
                 delta.append(torch.zeros(1, n_features, device=device))
             else:
-                delta.append(torch.ones(1, n_features, device=device) + (1 - m_mask[step]) * delta[-1])
+                delta.append(
+                    torch.ones(1, n_features, device=device)
+                    + (1 - m_mask[step]) * delta[-1]
+                )
         delta = torch.concat(delta, dim=0)
         delta_collector.append(delta.unsqueeze(0))
     delta = torch.concat(delta_collector, dim=0)
@@ -42,7 +45,7 @@ def parse_delta(missing_mask):
 
 
 class DatasetForBRITS(BaseDataset):
-    """ Dataset class for BRITS.
+    """Dataset class for BRITS.
 
     Parameters
     ----------
@@ -66,20 +69,20 @@ class DatasetForBRITS(BaseDataset):
         backward_delta = parse_delta(backward_missing_mask)
 
         self.data = {
-            'forward': {
-                'X': forward_X,
-                'missing_mask': forward_missing_mask,
-                'delta': forward_delta
+            "forward": {
+                "X": forward_X,
+                "missing_mask": forward_missing_mask,
+                "delta": forward_delta,
             },
-            'backward': {
-                'X': backward_X,
-                'missing_mask': backward_missing_mask,
-                'delta': backward_delta
+            "backward": {
+                "X": backward_X,
+                "missing_mask": backward_missing_mask,
+                "delta": backward_delta,
             },
         }
 
     def __getitem__(self, idx):
-        """ Fetch data according to index.
+        """Fetch data according to index.
 
         Parameters
         ----------
@@ -109,18 +112,16 @@ class DatasetForBRITS(BaseDataset):
         sample = [
             torch.tensor(idx),
             # for forward
-            self.data['forward']['X'][idx].to(torch.float32),
-            self.data['forward']['missing_mask'][idx].to(torch.float32),
-            self.data['forward']['delta'][idx].to(torch.float32),
+            self.data["forward"]["X"][idx].to(torch.float32),
+            self.data["forward"]["missing_mask"][idx].to(torch.float32),
+            self.data["forward"]["delta"][idx].to(torch.float32),
             # for backward
-            self.data['backward']['X'][idx].to(torch.float32),
-            self.data['backward']['missing_mask'][idx].to(torch.float32),
-            self.data['backward']['delta'][idx].to(torch.float32),
+            self.data["backward"]["X"][idx].to(torch.float32),
+            self.data["backward"]["missing_mask"][idx].to(torch.float32),
+            self.data["backward"]["delta"][idx].to(torch.float32),
         ]
 
         if self.y is not None:
-            sample.append(
-                self.y[idx].to(torch.long)
-            )
+            sample.append(self.y[idx].to(torch.long))
 
         return sample

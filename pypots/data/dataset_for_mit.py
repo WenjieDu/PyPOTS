@@ -12,7 +12,7 @@ from pypots.data.base import BaseDataset
 
 
 class DatasetForMIT(BaseDataset):
-    """ Dataset for models that need MIT (masked imputation task) in their training, such as SAITS.
+    """Dataset for models that need MIT (masked imputation task) in their training, such as SAITS.
 
     For more information about MIT, please refer to :cite:`du2022SAITS`.
 
@@ -41,7 +41,7 @@ class DatasetForMIT(BaseDataset):
         self.rate = rate
 
     def __getitem__(self, idx):
-        """ Fetch data according to index.
+        """Fetch data according to index.
 
         Parameters
         ----------
@@ -80,8 +80,6 @@ class DatasetForMIT(BaseDataset):
         ]
 
         if self.y is not None:
-            sample.append(
-                self.y[idx].to(torch.long)
-            )
+            sample.append(self.y[idx].to(torch.long))
 
         return sample

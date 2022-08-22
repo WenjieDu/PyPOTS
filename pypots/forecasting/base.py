@@ -15,15 +15,14 @@ from pypots.base import BaseModel, BaseNNModel
 
 
 class BaseForecaster(BaseModel):
-    """ Abstract class for all forecasting models.
-    """
+    """Abstract class for all forecasting models."""
 
     def __init__(self, device):
         super().__init__(device)
 
     @abstractmethod
     def fit(self, train_X):
-        """ Train the cluster.
+        """Train the cluster.
 
         Parameters
         ----------
@@ -39,7 +38,7 @@ class BaseForecaster(BaseModel):
 
     @abstractmethod
     def forecast(self, X):
-        """ Forecast the future the input with the trained model.
+        """Forecast the future the input with the trained model.
 
         Parameters
         ----------
@@ -55,20 +54,24 @@ class BaseForecaster(BaseModel):
 
 
 class BaseNNForecaster(BaseNNModel, BaseForecaster):
-    def __init__(self, learning_rate, epochs, patience, batch_size, weight_decay, device):
-        super().__init__(learning_rate, epochs, patience, batch_size, weight_decay, device)
+    def __init__(
+        self, learning_rate, epochs, patience, batch_size, weight_decay, device
+    ):
+        super().__init__(
+            learning_rate, epochs, patience, batch_size, weight_decay, device
+        )
 
     @abstractmethod
     def assemble_input_data(self, data):
         pass
 
     def _train_model(self, training_loader, val_loader=None):
-        self.optimizer = torch.optim.Adam(self.model.parameters(),
-                                          lr=self.lr,
-                                          weight_decay=self.weight_decay)
+        self.optimizer = torch.optim.Adam(
+            self.model.parameters(), lr=self.lr, weight_decay=self.weight_decay
+        )
 
         # each training starts from the very beginning, so reset the loss and model dict here
-        self.best_loss = float('inf')
+        self.best_loss = float("inf")
         self.best_model_dict = None
 
         try:
@@ -79,12 +82,14 @@ class BaseNNForecaster(BaseNNModel, BaseForecaster):
                     inputs = self.assemble_input_data(data)
                     self.optimizer.zero_grad()
                     results = self.model.forward(inputs)
-                    results['loss'].backward()
+                    results["loss"].backward()
                     self.optimizer.step()
-                    epoch_train_loss_collector.append(results['loss'].item())
+                    epoch_train_loss_collector.append(results["loss"].item())
 
-                mean_train_loss = np.mean(epoch_train_loss_collector)  # mean training loss of the current epoch
-                self.logger['training_loss'].append(mean_train_loss)
+                mean_train_loss = np.mean(
+                    epoch_train_loss_collector
+                )  # mean training loss of the current epoch
+                self.logger["training_loss"].append(mean_train_loss)
 
                 if val_loader is not None:
                     self.model.eval()
@@ -93,14 +98,16 @@ class BaseNNForecaster(BaseNNModel, BaseForecaster):
                         for idx, data in enumerate(val_loader):
                             inputs = self.assemble_input_data(data)
                             results = self.model.forward(inputs)
-                            epoch_val_loss_collector.append(results['loss'].item())
+                            epoch_val_loss_collector.append(results["loss"].item())
 
                     mean_val_loss = np.mean(epoch_val_loss_collector)
-                    self.logger['validating_loss'].append(mean_val_loss)
-                    print(f'epoch {epoch}: training loss {mean_train_loss:.4f}, validating loss {mean_val_loss:.4f}')
+                    self.logger["validating_loss"].append(mean_val_loss)
+                    print(
+                        f"epoch {epoch}: training loss {mean_train_loss:.4f}, validating loss {mean_val_loss:.4f}"
+                    )
                     mean_loss = mean_val_loss
                 else:
-                    print(f'epoch {epoch}: training loss {mean_train_loss:.4f}')
+                    print(f"epoch {epoch}: training loss {mean_train_loss:.4f}")
                     mean_loss = mean_train_loss
 
                 if mean_loss < self.best_loss:
@@ -110,18 +117,24 @@ class BaseNNForecaster(BaseNNModel, BaseForecaster):
                 else:
                     self.patience -= 1
                     if self.patience == 0:
-                        print('Exceeded the training patience. Terminating the training procedure...')
+                        print(
+                            "Exceeded the training patience. Terminating the training procedure..."
+                        )
                         break
         except Exception as e:
-            print(f'Exception: {e}')
+            print(f"Exception: {e}")
             if self.best_model_dict is None:
-                raise RuntimeError('Training got interrupted. Model was not get trained. Please try fit() again.')
+                raise RuntimeError(
+                    "Training got interrupted. Model was not get trained. Please try fit() again."
+                )
             else:
-                RuntimeWarning('Training got interrupted. '
-                               'Model will load the best parameters so far for testing. '
-                               "If you don't want it, please try fit() again.")
+                RuntimeWarning(
+                    "Training got interrupted. "
+                    "Model will load the best parameters so far for testing. "
+                    "If you don't want it, please try fit() again."
+                )
 
-        if np.equal(self.best_loss, float('inf')):
-            raise ValueError('Something is wrong. best_loss is Nan after training.')
+        if np.equal(self.best_loss, float("inf")):
+            raise ValueError("Something is wrong. best_loss is Nan after training.")
 
-        print('Finished training.')
+        print("Finished training.")

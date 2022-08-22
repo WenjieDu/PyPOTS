@@ -50,7 +50,7 @@ class MultiHeadAttention(nn.Module):
         self.w_ks = nn.Linear(d_model, n_head * d_k, bias=False)
         self.w_vs = nn.Linear(d_model, n_head * d_v, bias=False)
 
-        self.attention = ScaledDotProductAttention(d_k ** 0.5, attn_dropout)
+        self.attention = ScaledDotProductAttention(d_k**0.5, attn_dropout)
         self.fc = nn.Linear(n_head * d_v, d_model, bias=False)
 
     def forward(self, q, k, v, attn_mask=None):
@@ -68,7 +68,9 @@ class MultiHeadAttention(nn.Module):
 
         if attn_mask is not None:
             # this mask is imputation mask, which is not generated from each batch, so needs broadcasting on batch dim
-            attn_mask = attn_mask.unsqueeze(0).unsqueeze(1)  # For batch and head axis broadcasting.
+            attn_mask = attn_mask.unsqueeze(0).unsqueeze(
+                1
+            )  # For batch and head axis broadcasting.
 
         v, attn_weights = self.attention(q, k, v, attn_mask)
 
@@ -97,8 +99,19 @@ class PositionWiseFeedForward(nn.Module):
 
 
 class EncoderLayer(nn.Module):
-    def __init__(self, d_time, d_feature, d_model, d_inner, n_head, d_k, d_v, dropout=0.1, attn_dropout=0.1,
-                 diagonal_attention_mask=False):
+    def __init__(
+        self,
+        d_time,
+        d_feature,
+        d_model,
+        d_inner,
+        n_head,
+        d_k,
+        d_v,
+        dropout=0.1,
+        attn_dropout=0.1,
+        diagonal_attention_mask=False,
+    ):
         super().__init__()
 
         self.diagonal_attention_mask = diagonal_attention_mask
@@ -119,7 +132,9 @@ class EncoderLayer(nn.Module):
         residual = enc_input
         # here we apply LN before attention cal, namely Pre-LN, refer paper https://arxiv.org/abs/2002.04745
         enc_input = self.layer_norm(enc_input)
-        enc_output, attn_weights = self.slf_attn(enc_input, enc_input, enc_input, attn_mask=mask_time)
+        enc_output, attn_weights = self.slf_attn(
+            enc_input, enc_input, enc_input, attn_mask=mask_time
+        )
         enc_output = self.dropout(enc_output)
         enc_output += residual
 
@@ -131,38 +146,69 @@ class PositionalEncoding(nn.Module):
     def __init__(self, d_hid, n_position=200):
         super().__init__()
         # Not a parameter
-        self.register_buffer('pos_table', self._get_sinusoid_encoding_table(n_position, d_hid))
+        self.register_buffer(
+            "pos_table", self._get_sinusoid_encoding_table(n_position, d_hid)
+        )
 
     @staticmethod
     def _get_sinusoid_encoding_table(n_position, d_hid):
-        """ Sinusoid position encoding table """
+        """Sinusoid position encoding table"""
 
         def get_position_angle_vec(position):
-            return [position / np.power(10000, 2 * (hid_j // 2) / d_hid) for hid_j in range(d_hid)]
+            return [
+                position / np.power(10000, 2 * (hid_j // 2) / d_hid)
+                for hid_j in range(d_hid)
+            ]
 
-        sinusoid_table = np.array([get_position_angle_vec(pos_i) for pos_i in range(n_position)])
+        sinusoid_table = np.array(
+            [get_position_angle_vec(pos_i) for pos_i in range(n_position)]
+        )
         sinusoid_table[:, 0::2] = np.sin(sinusoid_table[:, 0::2])  # dim 2i
         sinusoid_table[:, 1::2] = np.cos(sinusoid_table[:, 1::2])  # dim 2i+1
         return torch.FloatTensor(sinusoid_table).unsqueeze(0)
 
     def forward(self, x):
-        return x + self.pos_table[:, :x.size(1)].clone().detach()
+        return x + self.pos_table[:, : x.size(1)].clone().detach()
 
 
 class _TransformerEncoder(nn.Module):
-    def __init__(self, n_layers, d_time, d_feature, d_model, d_inner, n_head, d_k, d_v, dropout,
-                 ORT_weight=1, MIT_weight=1):
+    def __init__(
+        self,
+        n_layers,
+        d_time,
+        d_feature,
+        d_model,
+        d_inner,
+        n_head,
+        d_k,
+        d_v,
+        dropout,
+        ORT_weight=1,
+        MIT_weight=1,
+    ):
         super().__init__()
         self.n_layers = n_layers
         actual_d_feature = d_feature * 2
         self.ORT_weight = ORT_weight
         self.MIT_weight = MIT_weight
 
-        self.layer_stack = nn.ModuleList([
-            EncoderLayer(d_time, actual_d_feature, d_model, d_inner, n_head, d_k, d_v, dropout, 0,
-                         False)
-            for _ in range(n_layers)
-        ])
+        self.layer_stack = nn.ModuleList(
+            [
+                EncoderLayer(
+                    d_time,
+                    actual_d_feature,
+                    d_model,
+                    d_inner,
+                    n_head,
+                    d_k,
+                    d_v,
+                    dropout,
+                    0,
+                    False,
+                )
+                for _ in range(n_layers)
+            ]
+        )
 
         self.embedding = nn.Linear(actual_d_feature, d_model)
         self.position_enc = PositionalEncoding(d_model, n_position=d_time)
@@ -170,7 +216,7 @@ class _TransformerEncoder(nn.Module):
         self.reduce_dim = nn.Linear(d_model, d_feature)
 
     def impute(self, inputs):
-        X, masks = inputs['X'], inputs['missing_mask']
+        X, masks = inputs["X"], inputs["missing_mask"]
         input_X = torch.cat([X, masks], dim=2)
         input_X = self.embedding(input_X)
         enc_output = self.dropout(self.position_enc(input_X))
@@ -179,46 +225,55 @@ class _TransformerEncoder(nn.Module):
             enc_output, _ = encoder_layer(enc_output)
 
         learned_presentation = self.reduce_dim(enc_output)
-        imputed_data = masks * X + (1 - masks) * learned_presentation  # replace non-missing part with original data
+        imputed_data = (
+            masks * X + (1 - masks) * learned_presentation
+        )  # replace non-missing part with original data
         return imputed_data, learned_presentation
 
     def forward(self, inputs):
-        X, masks = inputs['X'], inputs['missing_mask']
+        X, masks = inputs["X"], inputs["missing_mask"]
         imputed_data, learned_presentation = self.impute(inputs)
         reconstruction_loss = cal_mae(learned_presentation, X, masks)
 
         # have to cal imputation loss in the val stage; no need to cal imputation loss here in the tests stage
-        imputation_loss = cal_mae(learned_presentation, inputs['X_intact'], inputs['indicating_mask'])
+        imputation_loss = cal_mae(
+            learned_presentation, inputs["X_intact"], inputs["indicating_mask"]
+        )
 
         loss = self.ORT_weight * reconstruction_loss + self.MIT_weight * imputation_loss
 
         return {
-            'imputed_data': imputed_data,
-            'reconstruction_loss': reconstruction_loss, 'imputation_loss': imputation_loss,
-            'loss': loss
+            "imputed_data": imputed_data,
+            "reconstruction_loss": reconstruction_loss,
+            "imputation_loss": imputation_loss,
+            "loss": loss,
         }
 
 
 class Transformer(BaseNNImputer):
-    def __init__(self,
-                 n_steps,
-                 n_features,
-                 n_layers,
-                 d_model,
-                 d_inner,
-                 n_head,
-                 d_k,
-                 d_v,
-                 dropout,
-                 ORT_weight=1,
-                 MIT_weight=1,
-                 learning_rate=1e-3,
-                 epochs=100,
-                 patience=10,
-                 batch_size=32,
-                 weight_decay=1e-5,
-                 device=None):
-        super().__init__(learning_rate, epochs, patience, batch_size, weight_decay, device)
+    def __init__(
+        self,
+        n_steps,
+        n_features,
+        n_layers,
+        d_model,
+        d_inner,
+        n_head,
+        d_k,
+        d_v,
+        dropout,
+        ORT_weight=1,
+        MIT_weight=1,
+        learning_rate=1e-3,
+        epochs=100,
+        patience=10,
+        batch_size=32,
+        weight_decay=1e-5,
+        device=None,
+    ):
+        super().__init__(
+            learning_rate, epochs, patience, batch_size, weight_decay, device
+        )
 
         self.n_steps = n_steps
         self.n_features = n_features
@@ -233,9 +288,19 @@ class Transformer(BaseNNImputer):
         self.ORT_weight = ORT_weight
         self.MIT_weight = MIT_weight
 
-        self.model = _TransformerEncoder(self.n_layers, self.n_steps, self.n_features, self.d_model, self.d_inner,
-                                         self.n_head, self.d_k, self.d_v, self.dropout,
-                                         self.ORT_weight, self.MIT_weight)
+        self.model = _TransformerEncoder(
+            self.n_layers,
+            self.n_steps,
+            self.n_features,
+            self.d_model,
+            self.d_inner,
+            self.n_head,
+            self.d_k,
+            self.d_v,
+            self.dropout,
+            self.ORT_weight,
+            self.MIT_weight,
+        )
         self.model = self.model.to(self.device)
         self._print_model_size()
 
@@ -245,22 +310,28 @@ class Transformer(BaseNNImputer):
             val_X = self.check_input(self.n_steps, self.n_features, val_X)
 
         training_set = DatasetForMIT(train_X)
-        training_loader = DataLoader(training_set, batch_size=self.batch_size, shuffle=True)
+        training_loader = DataLoader(
+            training_set, batch_size=self.batch_size, shuffle=True
+        )
         if val_X is None:
             self._train_model(training_loader)
         else:
-            val_X_intact, val_X, val_X_missing_mask, val_X_indicating_mask = mcar(val_X, 0.2)
+            val_X_intact, val_X, val_X_missing_mask, val_X_indicating_mask = mcar(
+                val_X, 0.2
+            )
             val_X = masked_fill(val_X, 1 - val_X_missing_mask, np.nan)
             val_set = DatasetForMIT(val_X)
             val_loader = DataLoader(val_set, batch_size=self.batch_size, shuffle=False)
-            self._train_model(training_loader, val_loader, val_X_intact, val_X_indicating_mask)
+            self._train_model(
+                training_loader, val_loader, val_X_intact, val_X_indicating_mask
+            )
 
         self.model.load_state_dict(self.best_model_dict)
         self.model.eval()  # set the model as eval status to freeze it.
         return self
 
     def assemble_input_data(self, data):
-        """ Assemble the input data into a dictionary.
+        """Assemble the input data into a dictionary.
 
         Parameters
         ----------
@@ -276,10 +347,10 @@ class Transformer(BaseNNImputer):
         indices, X_intact, X, missing_mask, indicating_mask = data
 
         inputs = {
-            'X': X,
-            'X_intact': X_intact,
-            'missing_mask': missing_mask,
-            'indicating_mask': indicating_mask
+            "X": X,
+            "X_intact": X_intact,
+            "missing_mask": missing_mask,
+            "indicating_mask": indicating_mask,
         }
 
         return inputs
@@ -293,7 +364,7 @@ class Transformer(BaseNNImputer):
 
         with torch.no_grad():
             for idx, data in enumerate(test_loader):
-                inputs = {'X': data[1], 'missing_mask': data[2]}
+                inputs = {"X": data[1], "missing_mask": data[2]}
                 imputed_data, _ = self.model.impute(inputs)
                 imputation_collector.append(imputed_data)
 
