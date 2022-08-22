@@ -1,4 +1,4 @@
-name: pypots
+name: pypots-test
 channels:
     - pytorch
     - pyg
@@ -6,19 +6,19 @@ channels:
     - nodefaults
 dependencies:
     - conda-forge::python
-    - conda-forge::numpy=1.22.4
-    - conda-forge::scipy=1.7.3
-    - conda-forge::pandas=1.4.3
-    - conda-forge::scikit-learn=1.1.2
-    - conda-forge::matplotlib=3.5.3
-    - conda-forge::tensorboard=2.10.0
-    - conda-forge::pip=22.2.2
-    - conda-forge::pytest-cov=3.0.0
-    - conda-forge::pytest-xdist=2.5.0
-    - conda-forge::coverage=6.4.4
-    - pytorch::pytorch==1.11
-    - pyg::pyg=2.0.4
+    - conda-forge::numpy
+    - conda-forge::scipy
+    - conda-forge::pandas
+    - conda-forge::scikit-learn
+    - conda-forge::matplotlib
+    - conda-forge::tensorboard
+    - conda-forge::pip
+    - conda-forge::pytest-cov
+    - conda-forge::pytest-xdist
+    - conda-forge::coverage
+    - pytorch::pytorch==1.11.0
+    - pyg::pyg
     - pip:
-        - torchdiffeq==0.2.3
+        - torchdiffeq
         - pycorruptor==0.0.4
         - tsdb==0.0.7
