@@ -14,7 +14,7 @@ from pypots.imputation.base import BaseImputer
 
 
 class LOCF(BaseImputer):
-    """ LOCF (Last Observed Carried Forward) imputation method.
+    """LOCF (Last Observed Carried Forward) imputation method.
 
     Attributes
     ----------
@@ -23,17 +23,17 @@ class LOCF(BaseImputer):
     """
 
     def __init__(self, nan=0):
-        super().__init__('cpu')
+        super().__init__("cpu")
         self.nan = nan
 
     def fit(self, train_X, val_X=None):
         warnings.warn(
-            'LOCF (Last Observed Carried Forward) imputation class has no parameter to train. '
-            'Please run func impute(X) directly.'
+            "LOCF (Last Observed Carried Forward) imputation class has no parameter to train. "
+            "Please run func impute(X) directly."
         )
 
     def locf_numpy(self, X):
-        """ Numpy implementation of LOCF.
+        """Numpy implementation of LOCF.
 
         Parameters
         ----------
@@ -71,7 +71,7 @@ class LOCF(BaseImputer):
         return X_imputed
 
     def locf_torch(self, X):
-        """ Torch implementation of LOCF.
+        """Torch implementation of LOCF.
 
         Parameters
         ----------
@@ -86,7 +86,7 @@ class LOCF(BaseImputer):
         trans_X = X.permute((0, 2, 1))
         mask = torch.isnan(trans_X)
         n_samples, n_steps, n_features = mask.shape
-        idx = torch.where(~mask, torch.arange(n_features), 0)
+        idx = torch.where(~mask, torch.arange(n_features, device=mask.device), 0)
         idx = torch.cummax(idx, dim=2)
 
         collector = []
@@ -104,7 +104,7 @@ class LOCF(BaseImputer):
         return X_imputed
 
     def impute(self, X):
-        """ Impute missing values
+        """Impute missing values
 
         Parameters
         ----------
@@ -116,8 +116,10 @@ class LOCF(BaseImputer):
         array-like,
             Imputed time series.
         """
-        assert len(X.shape) == 3, f'Input X should have 3 dimensions [n_samples, n_steps, n_features], ' \
-                                  f'but the actual shape of X: {X.shape}'
+        assert len(X.shape) == 3, (
+            f"Input X should have 3 dimensions [n_samples, n_steps, n_features], "
+            f"but the actual shape of X: {X.shape}"
+        )
         if isinstance(X, list):
             X = np.asarray(X)
 
@@ -126,6 +128,7 @@ class LOCF(BaseImputer):
         elif isinstance(X, torch.Tensor):
             X_imputed = self.locf_torch(X).detach().cpu().numpy()
         else:
-            raise TypeError('X must be type of list/np.ndarray/torch.Tensor, '
-                            f'but got {type(X)}')
+            raise TypeError(
+                "X must be type of list/np.ndarray/torch.Tensor, " f"but got {type(X)}"
+            )
         return X_imputed

@@ -14,7 +14,7 @@ from pypots.imputation.locf import LOCF
 
 
 class DatasetForGRUD(BaseDataset):
-    """ Dataset class for model GRUD.
+    """Dataset class for model GRUD.
 
     Parameters
     ----------
@@ -33,11 +33,12 @@ class DatasetForGRUD(BaseDataset):
         self.X = torch.nan_to_num(X)
         self.deltas = parse_delta(self.missing_mask)
         self.X_filledLOCF = self.locf.locf_torch(X)
-        self.empirical_mean = \
-            torch.sum(self.missing_mask * self.X, dim=[0, 1]) / torch.sum(self.missing_mask, dim=[0, 1])
+        self.empirical_mean = torch.sum(
+            self.missing_mask * self.X, dim=[0, 1]
+        ) / torch.sum(self.missing_mask, dim=[0, 1])
 
     def __getitem__(self, idx):
-        """ Fetch data according to index.
+        """Fetch data according to index.
 
         Parameters
         ----------
@@ -77,8 +78,6 @@ class DatasetForGRUD(BaseDataset):
         ]
 
         if self.y is not None:
-            sample.append(
-                self.y[idx].to(torch.long)
-            )
+            sample.append(self.y[idx].to(torch.long))
 
         return sample
