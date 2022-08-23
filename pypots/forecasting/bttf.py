@@ -26,8 +26,16 @@ from pypots.forecasting.base import BaseForecaster
 
 def mvnrnd_pre(mu, Lambda):
     src = normrnd(size=(mu.shape[0],))
-    return solve_ut(cholesky_upper(Lambda, overwrite_a=True, check_finite=False),
-                    src, lower=False, check_finite=False, overwrite_b=True) + mu
+    return (
+        solve_ut(
+            cholesky_upper(Lambda, overwrite_a=True, check_finite=False),
+            src,
+            lower=False,
+            check_finite=False,
+            overwrite_b=True,
+        )
+        + mu
+    )
 
 
 def cov_mat(mat, mat_bar):
@@ -36,25 +44,31 @@ def cov_mat(mat, mat_bar):
 
 
 def ten2mat(tensor, mode):
-    return np.reshape(np.moveaxis(tensor, mode, 0), (tensor.shape[mode], -1), order='F')
+    return np.reshape(np.moveaxis(tensor, mode, 0), (tensor.shape[mode], -1), order="F")
 
 
 def sample_factor_u(tau_sparse_tensor, tau_ind, U, V, X, beta0=1):
-    """Sampling M-by-R factor matrix U and its hyper-parameters (mu_u, Lambda_u).
-    """
+    """Sampling M-by-R factor matrix U and its hyper-parameters (mu_u, Lambda_u)."""
 
     dim1, rank = U.shape
     U_bar = np.mean(U, axis=0)
     temp = dim1 / (dim1 + beta0)
     var_mu_hyper = temp * U_bar
-    var_U_hyper = inv(np.eye(rank) + cov_mat(U, U_bar) + temp * beta0 * np.outer(U_bar, U_bar))
+    var_U_hyper = inv(
+        np.eye(rank) + cov_mat(U, U_bar) + temp * beta0 * np.outer(U_bar, U_bar)
+    )
     var_Lambda_hyper = wishart.rvs(df=dim1 + rank, scale=var_U_hyper)
     var_mu_hyper = mvnrnd_pre(var_mu_hyper, (dim1 + beta0) * var_Lambda_hyper)
 
     var1 = kr_prod(X, V).T
     var2 = kr_prod(var1, var1)
-    var3 = (var2 @ ten2mat(tau_ind, 0).T).reshape([rank, rank, dim1]) + var_Lambda_hyper[:, :, None]
-    var4 = var1 @ ten2mat(tau_sparse_tensor, 0).T + (var_Lambda_hyper @ var_mu_hyper)[:, None]
+    var3 = (var2 @ ten2mat(tau_ind, 0).T).reshape(
+        [rank, rank, dim1]
+    ) + var_Lambda_hyper[:, :, None]
+    var4 = (
+        var1 @ ten2mat(tau_sparse_tensor, 0).T
+        + (var_Lambda_hyper @ var_mu_hyper)[:, None]
+    )
     for i in range(dim1):
         U[i, :] = mvnrnd_pre(solve(var3[:, :, i], var4[:, i]), var3[:, :, i])
 
@@ -62,21 +76,27 @@ def sample_factor_u(tau_sparse_tensor, tau_ind, U, V, X, beta0=1):
 
 
 def sample_factor_v(tau_sparse_tensor, tau_ind, U, V, X, beta0=1):
-    """Sampling N-by-R factor matrix V and its hyper-parameters (mu_v, Lambda_v).
-    """
+    """Sampling N-by-R factor matrix V and its hyper-parameters (mu_v, Lambda_v)."""
 
     dim2, rank = V.shape
     V_bar = np.mean(V, axis=0)
     temp = dim2 / (dim2 + beta0)
     var_mu_hyper = temp * V_bar
-    var_V_hyper = inv(np.eye(rank) + cov_mat(V, V_bar) + temp * beta0 * np.outer(V_bar, V_bar))
+    var_V_hyper = inv(
+        np.eye(rank) + cov_mat(V, V_bar) + temp * beta0 * np.outer(V_bar, V_bar)
+    )
     var_Lambda_hyper = wishart.rvs(df=dim2 + rank, scale=var_V_hyper)
     var_mu_hyper = mvnrnd_pre(var_mu_hyper, (dim2 + beta0) * var_Lambda_hyper)
 
     var1 = kr_prod(X, U).T
     var2 = kr_prod(var1, var1)
-    var3 = (var2 @ ten2mat(tau_ind, 1).T).reshape([rank, rank, dim2]) + var_Lambda_hyper[:, :, None]
-    var4 = var1 @ ten2mat(tau_sparse_tensor, 1).T + (var_Lambda_hyper @ var_mu_hyper)[:, None]
+    var3 = (var2 @ ten2mat(tau_ind, 1).T).reshape(
+        [rank, rank, dim2]
+    ) + var_Lambda_hyper[:, :, None]
+    var4 = (
+        var1 @ ten2mat(tau_sparse_tensor, 1).T
+        + (var_Lambda_hyper @ var_mu_hyper)[:, None]
+    )
     for j in range(dim2):
         V[j, :] = mvnrnd_pre(solve(var3[:, :, j], var4[:, j]), var3[:, :, j])
 
@@ -101,10 +121,12 @@ def sample_var_coefficient(X, time_lags):
     d = time_lags.shape[0]
     tmax = np.max(time_lags)
 
-    Z_mat = X[tmax: dim, :]
+    Z_mat = X[tmax:dim, :]
     Q_mat = np.zeros((dim - tmax, rank * d))
     for k in range(d):
-        Q_mat[:, k * rank: (k + 1) * rank] = X[tmax - time_lags[k]: dim - time_lags[k], :]
+        Q_mat[:, k * rank : (k + 1) * rank] = X[
+            tmax - time_lags[k] : dim - time_lags[k], :
+        ]
     var_Psi0 = np.eye(rank * d) + Q_mat.T @ Q_mat
     var_Psi = inv(var_Psi0)
     var_M = var_Psi @ Q_mat.T @ Z_mat
@@ -123,14 +145,16 @@ def sample_factor_x(tau_sparse_tensor, tau_ind, time_lags, U, V, X, A, Lambda_x)
     d = time_lags.shape[0]
     A0 = np.dstack([A] * d)
     for k in range(d):
-        A0[k * rank: (k + 1) * rank, :, k] = 0
+        A0[k * rank : (k + 1) * rank, :, k] = 0
     mat0 = Lambda_x @ A.T
-    mat1 = np.einsum('kij, jt -> kit', A.reshape([d, rank, rank]), Lambda_x)
-    mat2 = np.einsum('kit, kjt -> ij', mat1, A.reshape([d, rank, rank]))
+    mat1 = np.einsum("kij, jt -> kit", A.reshape([d, rank, rank]), Lambda_x)
+    mat2 = np.einsum("kit, kjt -> ij", mat1, A.reshape([d, rank, rank]))
 
     var1 = kr_prod(V, U).T
     var2 = kr_prod(var1, var1)
-    var3 = (var2 @ ten2mat(tau_ind, 2).T).reshape([rank, rank, dim3]) + Lambda_x[:, :, None]
+    var3 = (var2 @ ten2mat(tau_ind, 2).T).reshape([rank, rank, dim3]) + Lambda_x[
+        :, :, None
+    ]
     var4 = var1 @ ten2mat(tau_sparse_tensor, 2).T
     for t in range(dim3):
         Mt = np.zeros((rank, rank))
@@ -149,8 +173,10 @@ def sample_factor_x(tau_sparse_tensor, tau_ind, time_lags, U, V, X, A, Lambda_x)
             for k in index:
                 temp[:, n] = X[t + time_lags[k] - time_lags, :].reshape(rank * d)
                 n += 1
-            temp0 = X[t + time_lags[index], :].T - np.einsum('ijk, ik -> jk', A0[:, :, index], temp)
-            Nt = np.einsum('kij, jk -> i', mat1[index, :, :], temp0)
+            temp0 = X[t + time_lags[index], :].T - np.einsum(
+                "ijk, ik -> jk", A0[:, :, index], temp
+            )
+            Nt = np.einsum("kij, jk -> i", mat1[index, :, :], temp0)
 
         var3[:, :, t] = var3[:, :, t] + Mt
         if t < tmax:
@@ -178,7 +204,16 @@ def ar4cast(A, X, Sigma, time_lags, multi_step):
     return X_new
 
 
-def _BTTF(dense_tensor, sparse_tensor, init, rank, time_lags, burn_iter, gibbs_iter, multi_step=1):
+def _BTTF(
+    dense_tensor,
+    sparse_tensor,
+    init,
+    rank,
+    time_lags,
+    burn_iter,
+    gibbs_iter,
+    multi_step=1,
+):
     """Bayesian Temporal Tensor Factorization, BTTF."""
 
     dim1, dim2, dim3 = sparse_tensor.shape
@@ -213,10 +248,14 @@ def _BTTF(dense_tensor, sparse_tensor, init, rank, time_lags, burn_iter, gibbs_i
         U = sample_factor_u(tau_sparse_tensor, tau_ind, U, V, X)
         V = sample_factor_v(tau_sparse_tensor, tau_ind, U, V, X)
         A, Sigma = sample_var_coefficient(X, time_lags)
-        X = sample_factor_x(tau_sparse_tensor, tau_ind, time_lags, U, V, X, A, inv(Sigma))
-        tensor_hat = np.einsum('is, js, ts -> ijt', U, V, X)
-        tau = np.random.gamma(1e-6 + 0.5 * np.sum(ind),
-                              1 / (1e-6 + 0.5 * np.sum(((sparse_tensor - tensor_hat) ** 2) * ind)))
+        X = sample_factor_x(
+            tau_sparse_tensor, tau_ind, time_lags, U, V, X, A, inv(Sigma)
+        )
+        tensor_hat = np.einsum("is, js, ts -> ijt", U, V, X)
+        tau = np.random.gamma(
+            1e-6 + 0.5 * np.sum(ind),
+            1 / (1e-6 + 0.5 * np.sum(((sparse_tensor - tensor_hat) ** 2) * ind)),
+        )
         temp_hat += tensor_hat[pos_test]
         if (it + 1) % show_iter == 0 and it < burn_iter:
             # temp_hat = temp_hat / show_iter
@@ -233,7 +272,7 @@ def _BTTF(dense_tensor, sparse_tensor, init, rank, time_lags, burn_iter, gibbs_i
             tensor_hat_plus += tensor_hat
             X0 = ar4cast(A, X, Sigma, time_lags, multi_step)
             X_plus[:, :, it - burn_iter] = X0
-            tensor_new_plus += np.einsum('is, js, ts -> ijt', U, V, X0[- multi_step:, :])
+            tensor_new_plus += np.einsum("is, js, ts -> ijt", U, V, X0[-multi_step:, :])
     tensor_hat = tensor_hat_plus / gibbs_iter
     # print('Imputation MAPE: {:.6}'.format(compute_mape(dense_test, tensor_hat[:, :, : dim3][pos_test])))
     # print('Imputation RMSE: {:.6}'.format(compute_rmse(dense_test, tensor_hat[:, :, : dim3][pos_test])))
@@ -243,7 +282,9 @@ def _BTTF(dense_tensor, sparse_tensor, init, rank, time_lags, burn_iter, gibbs_i
     return tensor_hat, U_plus, V_plus, X_plus, A_plus, Sigma_plus, tau_plus
 
 
-def sample_factor_x_partial(tau_sparse_tensor, tau_ind, time_lags, U, V, X, A, Lambda_x, back_step):
+def sample_factor_x_partial(
+    tau_sparse_tensor, tau_ind, time_lags, U, V, X, A, Lambda_x, back_step
+):
     """Sampling T-by-R factor matrix X."""
 
     dim3, rank = X.shape
@@ -252,15 +293,17 @@ def sample_factor_x_partial(tau_sparse_tensor, tau_ind, time_lags, U, V, X, A, L
     d = time_lags.shape[0]
     A0 = np.dstack([A] * d)
     for k in range(d):
-        A0[k * rank: (k + 1) * rank, :, k] = 0
+        A0[k * rank : (k + 1) * rank, :, k] = 0
     mat0 = Lambda_x @ A.T
-    mat1 = np.einsum('kij, jt -> kit', A.reshape([d, rank, rank]), Lambda_x)
-    mat2 = np.einsum('kit, kjt -> ij', mat1, A.reshape([d, rank, rank]))
+    mat1 = np.einsum("kij, jt -> kit", A.reshape([d, rank, rank]), Lambda_x)
+    mat2 = np.einsum("kit, kjt -> ij", mat1, A.reshape([d, rank, rank]))
 
     var1 = kr_prod(V, U).T
     var2 = kr_prod(var1, var1)
-    var3 = (var2 @ ten2mat(tau_ind[:, :, - back_step:], 2).T).reshape([rank, rank, back_step]) + Lambda_x[:, :, None]
-    var4 = var1 @ ten2mat(tau_sparse_tensor[:, :, - back_step:], 2).T
+    var3 = (var2 @ ten2mat(tau_ind[:, :, -back_step:], 2).T).reshape(
+        [rank, rank, back_step]
+    ) + Lambda_x[:, :, None]
+    var4 = var1 @ ten2mat(tau_sparse_tensor[:, :, -back_step:], 2).T
     for t in range(dim3 - back_step, dim3):
         Mt = np.zeros((rank, rank))
         Nt = np.zeros(rank)
@@ -275,15 +318,24 @@ def sample_factor_x_partial(tau_sparse_tensor, tau_ind, time_lags, U, V, X, A, L
             for k in index:
                 temp[:, n] = X[t + time_lags[k] - time_lags, :].reshape(rank * d)
                 n += 1
-            temp0 = X[t + time_lags[index], :].T - np.einsum('ijk, ik -> jk', A0[:, :, index], temp)
-            Nt = np.einsum('kij, jk -> i', mat1[index, :, :], temp0)
+            temp0 = X[t + time_lags[index], :].T - np.einsum(
+                "ijk, ik -> jk", A0[:, :, index], temp
+            )
+            Nt = np.einsum("kij, jk -> i", mat1[index, :, :], temp0)
         var3[:, :, t + back_step - dim3] = var3[:, :, t + back_step - dim3] + Mt
-        X[t, :] = mvnrnd_pre(solve(var3[:, :, t + back_step - dim3],
-                                   var4[:, t + back_step - dim3] + Nt + Qt), var3[:, :, t + back_step - dim3])
+        X[t, :] = mvnrnd_pre(
+            solve(
+                var3[:, :, t + back_step - dim3],
+                var4[:, t + back_step - dim3] + Nt + Qt,
+            ),
+            var3[:, :, t + back_step - dim3],
+        )
     return X
 
 
-def _BTTF_partial(sparse_tensor, init, rank, time_lags, gibbs_iter, multi_step=1, gamma=10):
+def _BTTF_partial(
+    sparse_tensor, init, rank, time_lags, gibbs_iter, multi_step=1, gamma=10
+):
     """Bayesian Temporal Tensor Factorization, BTTF."""
 
     dim1, dim2, dim3 = sparse_tensor.shape
@@ -304,50 +356,97 @@ def _BTTF_partial(sparse_tensor, init, rank, time_lags, gibbs_iter, multi_step=1
     for it in range(gibbs_iter):
         tau_ind = tau_plus[it] * ind
         tau_sparse_tensor = tau_plus[it] * sparse_tensor
-        X = sample_factor_x_partial(tau_sparse_tensor, tau_ind, time_lags, U_plus[:, :, it], V_plus[:, :, it],
-                                    X_plus[:, :, it], A_plus[:, :, it], inv(Sigma_plus[:, :, it]), back_step)
+        X = sample_factor_x_partial(
+            tau_sparse_tensor,
+            tau_ind,
+            time_lags,
+            U_plus[:, :, it],
+            V_plus[:, :, it],
+            X_plus[:, :, it],
+            A_plus[:, :, it],
+            inv(Sigma_plus[:, :, it]),
+            back_step,
+        )
         X0 = ar4cast(A_plus[:, :, it], X, Sigma_plus[:, :, it], time_lags, multi_step)
         X_new_plus[:, :, it] = X0
-        tensor_new_plus += np.einsum('is, js, ts -> ijt', U_plus[:, :, it], V_plus[:, :, it], X0[- multi_step:, :])
+        tensor_new_plus += np.einsum(
+            "is, js, ts -> ijt", U_plus[:, :, it], V_plus[:, :, it], X0[-multi_step:, :]
+        )
     tensor_hat = tensor_new_plus / gibbs_iter
     tensor_hat[tensor_hat < 0] = 0
 
     return tensor_hat, U_plus, V_plus, X_new_plus, A_plus, Sigma_plus, tau_plus
 
 
-def BTTF_forecast(dense_tensor, sparse_tensor, pred_step, multi_step, rank, time_lags, burn_iter, gibbs_iter, gamma=10):
+def BTTF_forecast(
+    dense_tensor,
+    sparse_tensor,
+    pred_step,
+    multi_step,
+    rank,
+    time_lags,
+    burn_iter,
+    gibbs_iter,
+    gamma=10,
+):
     dim1, dim2, T = dense_tensor.shape
     start_time = T - pred_step
     max_count = int(np.ceil(pred_step / multi_step))
     tensor_hat = np.zeros((dim1, dim2, max_count * multi_step))
     for t in range(max_count):
         if t == 0:
-            init = {"U": 0.1 * np.random.randn(dim1, rank),
-                    "V": 0.1 * np.random.randn(dim2, rank),
-                    "X": 0.1 * np.random.randn(start_time, rank)}
-            tensor, U, V, X_new, A, Sigma, tau = _BTTF(dense_tensor[:, :, : start_time],
-                                                       sparse_tensor[:, :, : start_time],
-                                                       init,
-                                                       rank,
-                                                       time_lags,
-                                                       burn_iter,
-                                                       gibbs_iter,
-                                                       multi_step)
+            init = {
+                "U": 0.1 * np.random.randn(dim1, rank),
+                "V": 0.1 * np.random.randn(dim2, rank),
+                "X": 0.1 * np.random.randn(start_time, rank),
+            }
+            tensor, U, V, X_new, A, Sigma, tau = _BTTF(
+                dense_tensor[:, :, :start_time],
+                sparse_tensor[:, :, :start_time],
+                init,
+                rank,
+                time_lags,
+                burn_iter,
+                gibbs_iter,
+                multi_step,
+            )
         else:
-            init = {"U_plus": U, "V_plus": V, "X_plus": X_new, "A_plus": A, "Sigma_plus": Sigma, "tau_plus": tau}
-            tensor, U, V, X_new, A, Sigma, tau = _BTTF_partial(sparse_tensor[:, :, : start_time + t * multi_step],
-                                                               init,
-                                                               rank,
-                                                               time_lags,
-                                                               gibbs_iter,
-                                                               multi_step,
-                                                               gamma)
-        tensor_hat[:, :, t * multi_step: (t + 1) * multi_step] = tensor[:, :, - multi_step:]
+            init = {
+                "U_plus": U,
+                "V_plus": V,
+                "X_plus": X_new,
+                "A_plus": A,
+                "Sigma_plus": Sigma,
+                "tau_plus": tau,
+            }
+            tensor, U, V, X_new, A, Sigma, tau = _BTTF_partial(
+                sparse_tensor[:, :, : start_time + t * multi_step],
+                init,
+                rank,
+                time_lags,
+                gibbs_iter,
+                multi_step,
+                gamma,
+            )
+        tensor_hat[:, :, t * multi_step : (t + 1) * multi_step] = tensor[
+            :, :, -multi_step:
+        ]
     return tensor_hat
 
 
 class BTTF(BaseForecaster):
-    def __init__(self, n_steps, n_features, pred_step, multi_step, rank, time_lags, burn_iter, gibbs_iter, device=None):
+    def __init__(
+        self,
+        n_steps,
+        n_features,
+        pred_step,
+        multi_step,
+        rank,
+        time_lags,
+        burn_iter,
+        gibbs_iter,
+        device=None,
+    ):
         super().__init__(device)
         self.n_steps = n_steps
         self.n_features = n_features
@@ -359,15 +458,21 @@ class BTTF(BaseForecaster):
         self.gibbs_iter = gibbs_iter
 
     def fit(self, train_X):
-        warnings.warn(
-            'Please run func forecast(X) directly.'
-        )
+        warnings.warn("Please run func forecast(X) directly.")
 
     def forecast(self, X):
-        self.check_input(self.n_steps, self.n_features, X, out_dtype='ndarray')
+        self.check_input(self.n_steps, self.n_features, X, out_dtype="ndarray")
         X = X.transpose((0, 2, 1))
 
-        pred = BTTF_forecast(X, X.copy(), self.pred_step, self.multi_step,
-                             self.rank, self.time_lags, self.burn_iter, self.gibbs_iter)
+        pred = BTTF_forecast(
+            X,
+            X.copy(),
+            self.pred_step,
+            self.multi_step,
+            self.rank,
+            self.time_lags,
+            self.burn_iter,
+            self.gibbs_iter,
+        )
         pred = pred.transpose((0, 2, 1))
         return pred

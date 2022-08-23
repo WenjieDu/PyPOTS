@@ -20,24 +20,61 @@ from pypots.utils.metrics import cal_mae
 
 
 class _SAITS(nn.Module):
-    def __init__(self, n_layers, d_time, d_feature, d_model, d_inner, n_head, d_k, d_v, dropout,
-                 diagonal_attention_mask=True, ORT_weight=1, MIT_weight=1):
+    def __init__(
+        self,
+        n_layers,
+        d_time,
+        d_feature,
+        d_model,
+        d_inner,
+        n_head,
+        d_k,
+        d_v,
+        dropout,
+        diagonal_attention_mask=True,
+        ORT_weight=1,
+        MIT_weight=1,
+    ):
         super().__init__()
         self.n_layers = n_layers
         actual_d_feature = d_feature * 2
         self.ORT_weight = ORT_weight
         self.MIT_weight = MIT_weight
 
-        self.layer_stack_for_first_block = nn.ModuleList([
-            EncoderLayer(d_time, actual_d_feature, d_model, d_inner, n_head, d_k, d_v, dropout, 0,
-                         diagonal_attention_mask)
-            for _ in range(n_layers)
-        ])
-        self.layer_stack_for_second_block = nn.ModuleList([
-            EncoderLayer(d_time, actual_d_feature, d_model, d_inner, n_head, d_k, d_v, dropout, 0,
-                         diagonal_attention_mask)
-            for _ in range(n_layers)
-        ])
+        self.layer_stack_for_first_block = nn.ModuleList(
+            [
+                EncoderLayer(
+                    d_time,
+                    actual_d_feature,
+                    d_model,
+                    d_inner,
+                    n_head,
+                    d_k,
+                    d_v,
+                    dropout,
+                    0,
+                    diagonal_attention_mask,
+                )
+                for _ in range(n_layers)
+            ]
+        )
+        self.layer_stack_for_second_block = nn.ModuleList(
+            [
+                EncoderLayer(
+                    d_time,
+                    actual_d_feature,
+                    d_model,
+                    d_inner,
+                    n_head,
+                    d_k,
+                    d_v,
+                    dropout,
+                    0,
+                    diagonal_attention_mask,
+                )
+                for _ in range(n_layers)
+            ]
+        )
 
         self.dropout = nn.Dropout(p=dropout)
         self.position_enc = PositionalEncoding(d_model, n_position=d_time)
@@ -52,11 +89,13 @@ class _SAITS(nn.Module):
         self.weight_combine = nn.Linear(d_feature + d_time, d_feature)
 
     def impute(self, inputs):
-        X, masks = inputs['X'], inputs['missing_mask']
+        X, masks = inputs["X"], inputs["missing_mask"]
         # first DMSA block
         input_X_for_first = torch.cat([X, masks], dim=2)
         input_X_for_first = self.embedding_1(input_X_for_first)
-        enc_output = self.dropout(self.position_enc(input_X_for_first))  # namely, term e in the math equation
+        enc_output = self.dropout(
+            self.position_enc(input_X_for_first)
+        )  # namely, term e in the math equation
         for encoder_layer in self.layer_stack_for_first_block:
             enc_output, _ = encoder_layer(enc_output)
 
@@ -66,7 +105,9 @@ class _SAITS(nn.Module):
         # second DMSA block
         input_X_for_second = torch.cat([X_prime, masks], dim=2)
         input_X_for_second = self.embedding_2(input_X_for_second)
-        enc_output = self.position_enc(input_X_for_second)  # namely term alpha in math algo
+        enc_output = self.position_enc(
+            input_X_for_second
+        )  # namely term alpha in math algo
         for encoder_layer in self.layer_stack_for_second_block:
             enc_output, attn_weights = encoder_layer(enc_output)
 
@@ -85,11 +126,13 @@ class _SAITS(nn.Module):
         )  # namely term eta
         # combine X_tilde_1 and X_tilde_2
         X_tilde_3 = (1 - combining_weights) * X_tilde_2 + combining_weights * X_tilde_1
-        X_c = masks * X + (1 - masks) * X_tilde_3  # replace non-missing part with original data
+        X_c = (
+            masks * X + (1 - masks) * X_tilde_3
+        )  # replace non-missing part with original data
         return X_c, [X_tilde_1, X_tilde_2, X_tilde_3]
 
     def forward(self, inputs):
-        X, masks = inputs['X'], inputs['missing_mask']
+        X, masks = inputs["X"], inputs["missing_mask"]
         reconstruction_loss = 0
         imputed_data, [X_tilde_1, X_tilde_2, X_tilde_3] = self.impute(inputs)
 
@@ -100,38 +143,45 @@ class _SAITS(nn.Module):
         reconstruction_loss /= 3
 
         # have to cal imputation loss in the val stage; no need to cal imputation loss here in the tests stage
-        imputation_loss = cal_mae(X_tilde_3, inputs['X_intact'], inputs['indicating_mask'])
+        imputation_loss = cal_mae(
+            X_tilde_3, inputs["X_intact"], inputs["indicating_mask"]
+        )
 
         loss = self.ORT_weight * reconstruction_loss + self.MIT_weight * imputation_loss
 
         return {
-            'imputed_data': imputed_data,
-            'reconstruction_loss': reconstruction_loss, 'imputation_loss': imputation_loss,
-            'loss': loss
+            "imputed_data": imputed_data,
+            "reconstruction_loss": reconstruction_loss,
+            "imputation_loss": imputation_loss,
+            "loss": loss,
         }
 
 
 class SAITS(BaseNNImputer):
-    def __init__(self,
-                 n_steps,
-                 n_features,
-                 n_layers,
-                 d_model,
-                 d_inner,
-                 n_head,
-                 d_k,
-                 d_v,
-                 dropout,
-                 diagonal_attention_mask=True,
-                 ORT_weight=1,
-                 MIT_weight=1,
-                 learning_rate=1e-3,
-                 epochs=100,
-                 patience=10,
-                 batch_size=32,
-                 weight_decay=1e-5,
-                 device=None):
-        super().__init__(learning_rate, epochs, patience, batch_size, weight_decay, device)
+    def __init__(
+        self,
+        n_steps,
+        n_features,
+        n_layers,
+        d_model,
+        d_inner,
+        n_head,
+        d_k,
+        d_v,
+        dropout,
+        diagonal_attention_mask=True,
+        ORT_weight=1,
+        MIT_weight=1,
+        learning_rate=1e-3,
+        epochs=100,
+        patience=10,
+        batch_size=32,
+        weight_decay=1e-5,
+        device=None,
+    ):
+        super().__init__(
+            learning_rate, epochs, patience, batch_size, weight_decay, device
+        )
 
         self.n_steps = n_steps
         self.n_features = n_features
@@ -147,9 +197,20 @@ class SAITS(BaseNNImputer):
         self.ORT_weight = ORT_weight
         self.MIT_weight = MIT_weight
 
-        self.model = _SAITS(self.n_layers, self.n_steps, self.n_features, self.d_model, self.d_inner, self.n_head,
-                            self.d_k, self.d_v, self.dropout, self.diagonal_attention_mask,
-                            self.ORT_weight, self.MIT_weight)
+        self.model = _SAITS(
+            self.n_layers,
+            self.n_steps,
+            self.n_features,
+            self.d_model,
+            self.d_inner,
+            self.n_head,
+            self.d_k,
+            self.d_v,
+            self.dropout,
+            self.diagonal_attention_mask,
+            self.ORT_weight,
+            self.MIT_weight,
+        )
         self.model = self.model.to(self.device)
         self._print_model_size()
 
@@ -159,21 +220,27 @@ class SAITS(BaseNNImputer):
             val_X = self.check_input(self.n_steps, self.n_features, val_X)
 
         training_set = DatasetForMIT(train_X)
-        training_loader = DataLoader(training_set, batch_size=self.batch_size, shuffle=True)
+        training_loader = DataLoader(
+            training_set, batch_size=self.batch_size, shuffle=True
+        )
         if val_X is None:
             self._train_model(training_loader)
         else:
-            val_X_intact, val_X, val_X_missing_mask, val_X_indicating_mask = mcar(val_X, 0.2)
+            val_X_intact, val_X, val_X_missing_mask, val_X_indicating_mask = mcar(
+                val_X, 0.2
+            )
             val_X = masked_fill(val_X, 1 - val_X_missing_mask, torch.nan)
             val_set = DatasetForMIT(val_X)
             val_loader = DataLoader(val_set, batch_size=self.batch_size, shuffle=False)
-            self._train_model(training_loader, val_loader, val_X_intact, val_X_indicating_mask)
+            self._train_model(
+                training_loader, val_loader, val_X_intact, val_X_indicating_mask
+            )
 
         self.model.load_state_dict(self.best_model_dict)
         self.model.eval()  # set the model as eval status to freeze it.
 
     def assemble_input_data(self, data):
-        """ Assemble the input data into a dictionary.
+        """Assemble the input data into a dictionary.
 
         Parameters
         ----------
@@ -188,10 +255,10 @@ class SAITS(BaseNNImputer):
         indices, X_intact, X, missing_mask, indicating_mask = data
 
         inputs = {
-            'X': X,
-            'X_intact': X_intact,
-            'missing_mask': missing_mask,
-            'indicating_mask': indicating_mask
+            "X": X,
+            "X_intact": X_intact,
+            "missing_mask": missing_mask,
+            "indicating_mask": indicating_mask,
         }
 
         return inputs
@@ -205,7 +272,7 @@ class SAITS(BaseNNImputer):
 
         with torch.no_grad():
             for idx, data in enumerate(test_loader):
-                inputs = {'X': data[1], 'missing_mask': data[2]}
+                inputs = {"X": data[1], "missing_mask": data[2]}
                 imputed_data, _ = self.model.impute(inputs)
                 imputation_collector.append(imputed_data)
 
