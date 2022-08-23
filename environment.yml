@@ -13,8 +13,8 @@ dependencies:
     - conda-forge::matplotlib
     - conda-forge::tensorboard
     - conda-forge::pip
-    - pytorch::pytorch>=1.10
-    - pyg::pyg
+    - pytorch::pytorch==1.11.0
+    - pyg::pyg==2.0.4
     - pip:
         - torchdiffeq
         - pycorruptor==0.0.4
