@@ -267,6 +267,8 @@ class _VaDER(nn.Module):
             stddev_tilde,
         ) = self.get_results(X, missing_mask)
 
+        device = X.device
+
         # calculate the reconstruction loss
         unscaled_reconstruction_loss = cal_mse(X_reconstructed, X, missing_mask)
         reconstruction_loss = (
@@ -282,14 +284,14 @@ class _VaDER(nn.Module):
         # calculate the latent loss
         var_tilde = torch.exp(stddev_tilde)
         stddev_c = torch.log(var_c + self.eps)
-        log_2pi = torch.log(torch.FloatTensor([2 * torch.pi]))
+        log_2pi = torch.log(torch.tensor([2 * torch.pi], device=device))
         log_phi_c = torch.log(phi_c + self.eps)
 
         batch_size = z.shape[0]
 
         ii, jj = torch.meshgrid(
-            torch.arange(self.n_clusters, dtype=torch.int64, device=X.device),
-            torch.arange(batch_size, dtype=torch.int64, device=X.device),
+            torch.arange(self.n_clusters, dtype=torch.int64, device=device),
+            torch.arange(batch_size, dtype=torch.int64, device=device),
         )
         ii = ii.flatten()
         jj = jj.flatten()
