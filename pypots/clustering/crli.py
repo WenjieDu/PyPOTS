@@ -345,7 +345,7 @@ class CRLI(BaseNNClusterer):
             decoder_fcn_output_dims,
             lambda_kmeans,
             rnn_cell_type,
-            device,
+            self.device,
         )
         self.model = self.model.to(self.device)
         self._print_model_size()
