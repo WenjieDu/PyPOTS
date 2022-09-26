@@ -26,10 +26,8 @@
     </a>
     <!-- PyPI download number -->
     <a alt='PyPI download number' href='https://pepy.tech/project/pypots'>
-        <img src='https://static.pepy.tech/personalized-badge/pypots?period=total&units=international_system&left_color=grey&right_color=blue&left_text=Total Downloads'>
+        <img src='https://static.pepy.tech/personalized-badge/pypots?period=total&units=international_system&left_color=grey&right_color=blue&left_text=Downloads'>
     </a>
-    <!-- Visit number -->
-    <img src='https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2FPyPOTS%2FPyPOTS&count_bg=%23009A0A&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=Visits&edge_flat=false'>
     <!-- Zenodo DOI -->
     <a alt='Zenodo DOI' href='https://zenodo.org/badge/latestdoi/475477908'>
         <img src='https://zenodo.org/badge/475477908.svg'>
@@ -44,7 +42,7 @@
 
 ⦿ `Mission`: PyPOTS is born to become a handy toolbox that is going to make data mining on POTS easy rather than tedious, to help engineers and researchers focus more on the core problems in their hands rather than on how to deal with the missing parts in their data. PyPOTS will keep integrating classical and the latest state-of-the-art data mining algorithms for partially-observed multivariate time series. For sure, besides various algorithms, PyPOTS is going to have unified APIs together with detailed documentation and interactive examples across algorithms as tutorials.
 
-<a href='https://github.com/WenjieDu/TSDB'><img src="https://raw.githubusercontent.com/WenjieDu/TSDB/main/docs/figs/TSDB%20logo.svg?sanitize=true" align='left' width='180'/></a>
+<a href='https://github.com/WenjieDu/TSDB'><img src="https://raw.githubusercontent.com/WenjieDu/TSDB/main/docs/figs/TSDB%20logo.svg?sanitize=true" align='left' width='190'/></a>
 To make various open-source time-series datasets readily available to our users, PyPOTS gets supported by project [TSDB (Time-Series DataBase)](https://github.com/WenjieDu/TSDB), a toolbox making loading time-series datasets super easy! 
 
 Visit [TSDB](https://github.com/WenjieDu/TSDB) right now to know more about this handy tool 🛠! It now supports a total of 119 open-source datasets.
@@ -84,10 +82,13 @@ or
 
 `Wenjie Du. (2022). PyPOTS: A Python Toolbox for Data Mining on Partially-Observed Time Series. Zenodo. https://doi.org/10.5281/zenodo.6823222`
 
----
+## ❖ Attention 👀
+The documentation and tutorials are under construction. And a short paper introducing PyPOTS is on the way! 🚀 Stay tuned please!
+
 ‼️ PyPOTS is currently under developing. If you like it and look forward to its growth, <ins>please give PyPOTS a star and watch it to keep you posted on its progress and to let me know that its development is meaningful</ins>. If you have any feedback, or want to contribute ideas/suggestions or share time-series related algorithms/papers, please join PyPOTS community and <a alt='GitHub Discussions' href='https://github.com/WenjieDu/PyPOTS/discussions'><img align='center' src='https://img.shields.io/badge/Chat-in_Discussions-green?logo=github&color=60A98D'></a>, or create an issue.
 
 Thank you all for your attention! 😃
+
 
 [^1]: Du, W., Cote, D., & Liu, Y. (2022). SAITS: Self-Attention-based Imputation for Time Series. ArXiv, abs/2202.08516.
 [^2]: Vaswani, A., Shazeer, N.M., Parmar, N., Uszkoreit, J., Jones, L., Gomez, A.N., Kaiser, L., & Polosukhin, I. (2017). Attention is All you Need. NeurIPS 2017.
@@ -97,3 +98,9 @@ Thank you all for your attention! 😃
 [^6]: Ma, Q., Chen, C., Li, S., & Cottrell, G. W. (2021). Learning Representations for Incomplete Time Series Clustering. AAAI 2021.
 [^7]: Jong, J.D., Emon, M.A., Wu, P., Karki, R., Sood, M., Godard, P., Ahmad, A., Vrooman, H.A., Hofmann-Apitius, M., & Fröhlich, H. (2019). Deep learning for clustering of multivariate clinical patient trajectories with missing values. GigaScience, 8.
 [^8]: Sun, L., & Chen, X. (2021). Bayesian Temporal Factorization for Multidimensional Time Series Prediction. IEEE transactions on pattern analysis and machine intelligence, PP.
+
+<details>
+<summary>🏠 Visits</summary>
+<img align='left' src='https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2FPyPOTS%2FPyPOTS&count_bg=%23009A0A&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=Visits+since+April+2022&edge_flat=false'>
+</details>
+
