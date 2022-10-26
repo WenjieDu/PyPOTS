@@ -1,0 +1,36 @@
+"""
+PyPOTS CLI (Command Line Interface) tool
+"""
+
+# Created by Wenjie Du <wenjay.du@gmail.com>
+# License: GLP-v3
+
+
+from argparse import ArgumentParser
+
+from pypots.utils.commands.dev import DevCommand
+
+
+def main():
+    parser = ArgumentParser(
+        "PyPOTS Command-Line-Interface tool", usage="pypots-cli <command> [<args>]"
+    )
+    commands_parser = parser.add_subparsers(help="pypots-cli command helpers")
+
+    # Register commands here
+    DevCommand.register_subcommand(commands_parser)
+
+    # Let's go
+    args = parser.parse_args()
+
+    if not hasattr(args, "func"):
+        parser.print_help()
+        exit(1)
+
+    # Run
+    service = args.func(args)
+    service.run()
+
+
+if __name__ == "__main__":
+    main()
