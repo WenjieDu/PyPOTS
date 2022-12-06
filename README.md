@@ -22,7 +22,7 @@
     </a>
     <!-- Coveralls report -->
     <a alt='Coveralls report' href='https://coveralls.io/github/WenjieDu/PyPOTS'> 
-        <img src='https://coveralls.io/repos/github/WenjieDu/PyPOTS/badge.svg'>
+        <img src='https://img.shields.io/coverallsCoverage/github/WenjieDu/PyPOTS?branch=main&logo=coveralls&labelColor=3F5767'>
     </a>
     <!-- PyPI download number -->
     <a alt='PyPI download number' href='https://pepy.tech/project/pypots'>
@@ -35,6 +35,10 @@
     <!-- Code of Conduct -->
     <a alt='CODE_OF_CONDUCT' href='CODE_OF_CONDUCT.md'> 
         <img src='https://img.shields.io/badge/Contributor%20Covenant-v2.1-4baaaa.svg'>
+    </a>
+    <!-- Slack Workspace -->
+    <a alt='Slack Workspace' href='https://join.slack.com/t/pypots-dev/shared_invite/zt-1gq6ufwsi-p0OZdW~e9UW_IA4_f1OfxA'> 
+        <img src='https://img.shields.io/badge/Slack-PyPOTS-grey?logo=slack&labelColor=4A154B&color=62BCE5'>
     </a>
 </p>
 
@@ -85,7 +89,7 @@ or
 ## ❖ Attention 👀
 The documentation and tutorials are under construction. And a short paper introducing PyPOTS is on the way! 🚀 Stay tuned please!
 
-‼️ PyPOTS is currently under developing. If you like it and look forward to its growth, <ins>please give PyPOTS a star and watch it to keep you posted on its progress and to let me know that its development is meaningful</ins>. If you have any feedback, or want to contribute ideas/suggestions or share time-series related algorithms/papers, please join PyPOTS community and <a alt='GitHub Discussions' href='https://github.com/WenjieDu/PyPOTS/discussions'><img align='center' src='https://img.shields.io/badge/Chat-in_Discussions-green?logo=github&color=60A98D'></a>, or create an issue.
+‼️ PyPOTS is currently under developing. If you like it and look forward to its growth, <ins>please give PyPOTS a star and watch it to keep you posted on its progress and to let me know that its development is meaningful</ins>. If you have any feedback, or want to contribute ideas/suggestions or share time-series related algorithms/papers, please join PyPOTS community and chat on <a alt='Slack Workspace' href='https://join.slack.com/t/pypots-dev/shared_invite/zt-1gq6ufwsi-p0OZdW~e9UW_IA4_f1OfxA'><img align='center' src='https://img.shields.io/badge/Slack-PyPOTS-grey?logo=slack&labelColor=4A154B&color=62BCE5'></a>, or create an issue. If you have any additional questions or have interests in collaboration, please take a look at [my GitHub profile](https://github.com/WenjieDu) and feel free to contact me 😃.
 
 Thank you all for your attention! 😃
 

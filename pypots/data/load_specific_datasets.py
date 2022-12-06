@@ -43,7 +43,7 @@ def preprocess_physionet2012(data):
     def apply_func(df_temp):  # pad and truncate to set the max length of samples as 48
         missing = list(set(range(0, 48)).difference(set(df_temp["Time"])))
         missing_part = pd.DataFrame({"Time": missing})
-        df_temp = df_temp.append(missing_part, ignore_index=False, sort=False)  # pad
+        df_temp = pd.concat([df_temp, missing_part], ignore_index=False, sort=False)  # pad
         df_temp = df_temp.set_index("Time").sort_index().reset_index()
         df_temp = df_temp.iloc[:48]  # truncate
         return df_temp
