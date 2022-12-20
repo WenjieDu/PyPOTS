@@ -1,7 +1,6 @@
 name: pypots
 channels:
     - pytorch
-    - pyg
     - conda-forge
     - nodefaults
 dependencies:
@@ -14,8 +13,6 @@ dependencies:
     - conda-forge::tensorboard
     - conda-forge::pip
     - pytorch::pytorch==1.11.0
-    - pyg::pyg==2.0.4
     - pip:
-        - torchdiffeq
         - pycorruptor==0.0.4
         - tsdb==0.0.7

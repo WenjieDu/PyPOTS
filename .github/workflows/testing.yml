@@ -44,9 +44,9 @@ jobs:
               run: |
                   # run tests separately here due to Segmentation Fault in test_clustering when run all in 
                   # one command with `pytest` on MacOS. Bugs not catched, so this is a trade-off to avoid SF.
-                  python -m pytest pypots/tests/test_clustering.py -n auto --cov=pypots 
-                  python -m pytest pypots/tests/test_classification.py -n auto --cov=pypots --cov-append 
-                  python -m pytest pypots/tests/test_imputation.py -n auto --cov=pypots --cov-append  
+                  python -m pytest -rA pypots/tests/test_classification.py -n auto --cov=pypots --cov-append 
+                  python -m pytest -rA pypots/tests/test_imputation.py -n auto --cov=pypots --cov-append  
+                  python -m pytest -rA pypots/tests/test_clustering.py -n auto --cov=pypots 
 
             - name: Generate the LCOV report
               run: |

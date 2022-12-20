@@ -26,12 +26,20 @@ from torch.nn import TransformerEncoderLayer, TransformerEncoder
 from torch.nn import init
 from torch.nn.parameter import Parameter
 from torch.utils.data import DataLoader
-from torch_geometric.nn.conv import MessagePassing
-from torch_geometric.nn.inits import glorot
-from torch_geometric.typing import PairTensor, Adj, OptTensor
-from torch_geometric.utils import softmax
-from torch_scatter import scatter
-from torch_sparse import SparseTensor
+
+try:
+    from torch_geometric.nn.conv import MessagePassing
+    from torch_geometric.nn.inits import glorot
+    from torch_geometric.typing import PairTensor, Adj, OptTensor
+    from torch_geometric.utils import softmax
+    from torch_scatter import scatter
+    from torch_sparse import SparseTensor
+except ImportError as e:
+    print(
+        f"{e}\n"
+        "torch_geometric is missing, "
+        "please install it with 'pip install torch_geometric' or 'conda install -c pyg pyg'"
+    )
 
 from pypots.classification.base import BaseNNClassifier
 from pypots.data.dataset_for_grud import DatasetForGRUD
