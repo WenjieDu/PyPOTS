@@ -33,7 +33,7 @@
         <img src='https://zenodo.org/badge/475477908.svg'>
     </a>
     <!-- Code of Conduct -->
-    <a alt='CODE_OF_CONDUCT' href='CODE_OF_CONDUCT.md'> 
+    <a alt='CODE_OF_CONDUCT' href='https://github.com/WenjieDu/PyPOTS/blob/main/CODE_OF_CONDUCT.md'> 
         <img src='https://img.shields.io/badge/Contributor%20Covenant-v2.1-4baaaa.svg'>
     </a>
     <!-- Slack Workspace -->
@@ -127,7 +127,7 @@ Thank you all for your attention! 😃
 [^5]: Zhang, X., Zeman, M., Tsiligkaridis, T., & Zitnik, M. (2022). Graph-Guided Network for Irregularly Sampled Multivariate Time Series. ICLR 2022.
 [^6]: Ma, Q., Chen, C., Li, S., & Cottrell, G. W. (2021). Learning Representations for Incomplete Time Series Clustering. AAAI 2021.
 [^7]: Jong, J.D., Emon, M.A., Wu, P., Karki, R., Sood, M., Godard, P., Ahmad, A., Vrooman, H.A., Hofmann-Apitius, M., & Fröhlich, H. (2019). Deep learning for clustering of multivariate clinical patient trajectories with missing values. GigaScience, 8.
-[^8]: Sun, L., & Chen, X. (2021). Bayesian Temporal Factorization for Multidimensional Time Series Prediction. IEEE transactions on pattern analysis and machine intelligence, PP.
+[^8]: Chen, X., & Sun, L. (2021). Bayesian Temporal Factorization for Multidimensional Time Series Prediction. IEEE transactions on pattern analysis and machine intelligence, PP.
 
 <details>
 <summary>🏠 Visits</summary>
