@@ -46,7 +46,7 @@ extensions = [
 ]
 
 bibtex_bibfiles = ["references.bib"]
-bibtex_default_style = 'unsrt'
+bibtex_default_style = "unsrt"
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
@@ -70,3 +70,13 @@ html_theme = "furo"
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ["_static"]
+
+html_context = {
+    "last_updated": True,
+}
+
+# https://pradyunsg.me/furo/customisation/#top-of-page-button
+# Controls which button is shown on the top of the page. The only supported values are "edit" (the default) and None.
+html_theme_options = {
+    "top_of_page_button": None,
+}
