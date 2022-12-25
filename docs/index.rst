@@ -4,7 +4,7 @@
    contain the root `toctree` directive.
 
 ===============================
-Welcome to PyPOTS documentation
+Welcome to PyPOTS doc!
 ===============================
 .. image:: https://raw.githubusercontent.com/WenjieDu/PyPOTS/main/docs/figs/PyPOTS%20logo.svg?sanitize=true
    :height: 180
