@@ -10,25 +10,20 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 
-import os
 import sys
-from os.path import dirname, abspath
+from os.path import abspath
 
 sys.path.insert(0, abspath(".."))
-pypots_dir = dirname(dirname(abspath(__file__)))
+from pypots.__version__ import version
 
-version_path = os.path.join(pypots_dir, "pypots", "__version__.py")
-exec(open(version_path).read())
-
+sys.path.insert(0, abspath("../pypots"))
 # -- Project information -----------------------------------------------------
-
 project = "PyPOTS"
-copyright = "2022, Wenjie Du"
+copyright = "2023, Wenjie Du"
 author = "Wenjie Du"
 
 # The full version, including alpha/beta/rc tags
 release = version
-
 
 # -- General configuration ---------------------------------------------------
 
@@ -46,6 +41,7 @@ extensions = [
 ]
 
 bibtex_bibfiles = ["references.bib"]
+bibtex_default_style = "unsrt"
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
@@ -69,3 +65,13 @@ html_theme = "furo"
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ["_static"]
+
+html_context = {
+    "last_updated": True,
+}
+
+# https://pradyunsg.me/furo/customisation/#top-of-page-button
+# Controls which button is shown on the top of the page. The only supported values are "edit" (the default) and None.
+html_theme_options = {
+    "top_of_page_button": None,
+}
