@@ -85,7 +85,7 @@ mae = cal_mae(imputation, X_intact, indicating_mask)  # calculate mean absolute 
 ## ❖ Available Algorithms
 | Task                          | Type           | Algorithm                                                                | Year | Reference |        
 |-------------------------------|----------------|--------------------------------------------------------------------------|------|-----------|
-| Imputation                    | Neural Network | SAITS (Self-Attention-based Imputation for Time Series)                  | 2022 | [^1]      |
+| Imputation                    | Neural Network | SAITS (Self-Attention-based Imputation for Time Series)                  | 2023 | [^1]      |
 | Imputation                    | Neural Network | Transformer                                                              | 2017 | [^2] [^1] |
 | Imputation,<br>Classification | Neural Network | BRITS (Bidirectional Recurrent Imputation for Time Series)               | 2018 | [^3]      |
 | Imputation                    | Naive          | LOCF (Last Observation Carried Forward)                                  | -    | -         |
@@ -120,7 +120,7 @@ The documentation and tutorials are under construction. And a short paper introd
 Thank you all for your attention! 😃
 
 
-[^1]: Du, W., Cote, D., & Liu, Y. (2022). [SAITS: Self-Attention-based Imputation for Time Series](https://arxiv.org/abs/2202.08516). Expert systems with applications.
+[^1]: Du, W., Cote, D., & Liu, Y. (2023). [SAITS: Self-Attention-based Imputation for Time Series](https://doi.org/10.1016/j.eswa.2023.119619). Expert systems with applications.
 [^2]: Vaswani, A., Shazeer, N.M., Parmar, N., Uszkoreit, J., Jones, L., Gomez, A.N., Kaiser, L., & Polosukhin, I. (2017). [Attention is All you Need](https://papers.nips.cc/paper/2017/hash/3f5ee243547dee91fbd053c1c4a845aa-Abstract.html). NeurIPS 2017.
 [^3]: Cao, W., Wang, D., Li, J., Zhou, H., Li, L., & Li, Y. (2018). [BRITS: Bidirectional Recurrent Imputation for Time Series](https://papers.nips.cc/paper/2018/hash/734e6bfcd358e25ac1db0a4241b95651-Abstract.html). NeurIPS 2018.
 [^4]: Che, Z., Purushotham, S., Cho, K., Sontag, D.A., & Liu, Y. (2018). [Recurrent Neural Networks for Multivariate Time Series with Missing Values](https://www.nature.com/articles/s41598-018-24271-9). Scientific Reports, 8.
