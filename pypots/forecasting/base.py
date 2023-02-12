@@ -12,7 +12,7 @@ import numpy as np
 import torch
 
 from pypots.base import BaseModel, BaseNNModel
-
+from pypots.logging import logger
 
 class BaseForecaster(BaseModel):
     """Abstract class for all forecasting models."""
@@ -102,12 +102,12 @@ class BaseNNForecaster(BaseNNModel, BaseForecaster):
 
                     mean_val_loss = np.mean(epoch_val_loss_collector)
                     self.logger["validating_loss"].append(mean_val_loss)
-                    print(
+                    logger.info(
                         f"epoch {epoch}: training loss {mean_train_loss:.4f}, validating loss {mean_val_loss:.4f}"
                     )
                     mean_loss = mean_val_loss
                 else:
-                    print(f"epoch {epoch}: training loss {mean_train_loss:.4f}")
+                    logger.info(f"epoch {epoch}: training loss {mean_train_loss:.4f}")
                     mean_loss = mean_train_loss
 
                 if mean_loss < self.best_loss:
@@ -117,12 +117,12 @@ class BaseNNForecaster(BaseNNModel, BaseForecaster):
                 else:
                     self.patience -= 1
                     if self.patience == 0:
-                        print(
+                        logger.info(
                             "Exceeded the training patience. Terminating the training procedure..."
                         )
                         break
         except Exception as e:
-            print(f"Exception: {e}")
+            logger.info(f"Exception: {e}")
             if self.best_model_dict is None:
                 raise RuntimeError(
                     "Training got interrupted. Model was not get trained. Please try fit() again."
@@ -137,4 +137,4 @@ class BaseNNForecaster(BaseNNModel, BaseForecaster):
         if np.equal(self.best_loss, float("inf")):
             raise ValueError("Something is wrong. best_loss is Nan after training.")
 
-        print("Finished training.")
+        logger.info("Finished training.")

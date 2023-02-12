@@ -10,6 +10,7 @@ import unittest
 import numpy as np
 
 from pypots.forecasting import BTTF
+from pypots.logging import logger
 from pypots.tests.unified_data_for_test import gene_random_walk_data
 from pypots.utils.metrics import cal_mae
 
@@ -22,7 +23,7 @@ class TestBTTF(unittest.TestCase):
         self.test_X = DATA["test_X"]
         self.test_X_intact = DATA["test_X_intact"]
         self.test_X_for_input = self.test_X[:, :100]
-        print("Running test cases for BTTF...")
+        logger.info("Running test cases for BTTF...")
         self.bttf = BTTF(
             100,
             10,
@@ -37,7 +38,7 @@ class TestBTTF(unittest.TestCase):
     def test_forecasting(self):
         predictions = self.bttf.forecast(self.test_X_for_input)
         mae = cal_mae(predictions, self.test_X_intact[:, 100:])
-        print(f"prediction MAE: {mae}")
+        logger.info(f"prediction MAE: {mae}")
 
     if __name__ == "__main__":
         unittest.main()

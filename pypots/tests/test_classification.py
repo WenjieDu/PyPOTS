@@ -10,6 +10,7 @@ import unittest
 from pypots.classification import BRITS, GRUD, Raindrop
 from pypots.tests.unified_data_for_test import DATA
 from pypots.utils.metrics import cal_binary_classification_metrics
+from pypots.logging import logger
 
 EPOCHS = 5
 
@@ -22,7 +23,7 @@ class TestBRITS(unittest.TestCase):
         self.val_y = DATA["val_y"]
         self.test_X = DATA["test_X"]
         self.test_y = DATA["test_y"]
-        print("Running test cases for BRITS...")
+        logger.info("Running test cases for BRITS...")
         self.brits = BRITS(
             DATA["n_steps"],
             DATA["n_features"],
@@ -48,7 +49,7 @@ class TestBRITS(unittest.TestCase):
     def test_classify(self):
         predictions = self.brits.classify(self.test_X)
         metrics = cal_binary_classification_metrics(predictions, self.test_y)
-        print(
+        logger.info(
             f'ROC_AUC: {metrics["roc_auc"]}, \n'
             f'PR_AUC: {metrics["pr_auc"]},\n'
             f'F1: {metrics["f1"]},\n'
@@ -66,7 +67,7 @@ class TestGRUD(unittest.TestCase):
         self.val_y = DATA["val_y"]
         self.test_X = DATA["test_X"]
         self.test_y = DATA["test_y"]
-        print("Running test cases for GRUD...")
+        logger.info("Running test cases for GRUD...")
         self.grud = GRUD(
             DATA["n_steps"],
             DATA["n_features"],
@@ -92,7 +93,7 @@ class TestGRUD(unittest.TestCase):
     def test_classify(self):
         predictions = self.grud.classify(self.test_X)
         metrics = cal_binary_classification_metrics(predictions, self.test_y)
-        print(
+        logger.info(
             f'ROC_AUC: {metrics["roc_auc"]}, \n'
             f'PR_AUC: {metrics["pr_auc"]},\n'
             f'F1: {metrics["f1"]},\n'
@@ -110,7 +111,7 @@ class TestRaindrop(unittest.TestCase):
         self.val_y = DATA["val_y"]
         self.test_X = DATA["test_X"]
         self.test_y = DATA["test_y"]
-        print("Running test cases for Raindrop...")
+        logger.info("Running test cases for Raindrop...")
         self.raindrop = Raindrop(
             DATA["n_features"],
             2,
@@ -146,7 +147,7 @@ class TestRaindrop(unittest.TestCase):
     def test_classify(self):
         predictions = self.raindrop.classify(self.test_X)
         metrics = cal_binary_classification_metrics(predictions, self.test_y)
-        print(
+        logger.info(
             f'ROC_AUC: {metrics["roc_auc"]}, \n'
             f'PR_AUC: {metrics["pr_auc"]},\n'
             f'F1: {metrics["f1"]},\n'
