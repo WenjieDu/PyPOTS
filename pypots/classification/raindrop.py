@@ -27,6 +27,10 @@ from torch.nn import init
 from torch.nn.parameter import Parameter
 from torch.utils.data import DataLoader
 
+from pypots.classification.base import BaseNNClassifier
+from pypots.data.dataset_for_grud import DatasetForGRUD
+from pypots.logging import logger
+
 try:
     from torch_geometric.nn.conv import MessagePassing
     from torch_geometric.nn.inits import glorot
@@ -35,14 +39,11 @@ try:
     from torch_scatter import scatter
     from torch_sparse import SparseTensor
 except ImportError as e:
-    print(
+    logger.error(
         f"{e}\n"
         "torch_geometric is missing, "
         "please install it with 'pip install torch_geometric' or 'conda install -c pyg pyg'"
     )
-
-from pypots.classification.base import BaseNNClassifier
-from pypots.data.dataset_for_grud import DatasetForGRUD
 
 
 class PositionalEncodingTF(nn.Module):
@@ -96,7 +97,7 @@ class ObservationPropagation(MessagePassing):
         edge_dim: Optional[int] = None,
         bias: bool = True,
         root_weight: bool = True,
-        **kwargs
+        **kwargs,
     ):
         kwargs.setdefault("aggr", "add")
         super().__init__(node_dim=0, **kwargs)
