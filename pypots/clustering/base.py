@@ -12,7 +12,7 @@ import numpy as np
 import torch
 
 from pypots.base import BaseModel, BaseNNModel
-from pypots.logging import logger
+from pypots.utils.logging import logger
 
 
 class BaseClusterer(BaseModel):

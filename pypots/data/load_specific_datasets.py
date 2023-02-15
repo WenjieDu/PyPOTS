@@ -7,7 +7,7 @@ Functions to load supported open-source time-series datasets.
 
 import pandas as pd
 import tsdb
-from pypots.logging import logger
+from pypots.utils.logging import logger
 
 SUPPORTED_DATASETS = [
     "physionet_2012",

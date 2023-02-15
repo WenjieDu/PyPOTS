@@ -21,7 +21,7 @@ from torch.utils.data import DataLoader
 
 from pypots.clustering.base import BaseNNClusterer
 from pypots.data.dataset_for_grud import DatasetForGRUD
-from pypots.logging import logger
+from pypots.utils.logging import logger
 from pypots.utils.metrics import cal_mse
 
 

@@ -10,7 +10,7 @@ import unittest
 import numpy as np
 
 from pypots.forecasting import BTTF
-from pypots.logging import logger
+from pypots.utils.logging import logger
 from pypots.tests.unified_data_for_test import gene_random_walk_data
 from pypots.utils.metrics import cal_mae
 

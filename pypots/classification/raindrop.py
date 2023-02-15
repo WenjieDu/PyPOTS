@@ -29,7 +29,7 @@ from torch.utils.data import DataLoader
 
 from pypots.classification.base import BaseNNClassifier
 from pypots.data.dataset_for_grud import DatasetForGRUD
-from pypots.logging import logger
+from pypots.utils.logging import logger
 
 try:
     from torch_geometric.nn.conv import MessagePassing
