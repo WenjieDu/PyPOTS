@@ -12,7 +12,7 @@ import numpy as np
 import torch
 
 from pypots.logging import logger
-from pypots.utils.check import create_dir_if_not_exist
+from pypots.utils.files import create_dir_if_not_exist
 
 
 class BaseModel(ABC):
