@@ -28,7 +28,7 @@ class BaseModel(ABC):
                 if torch.cuda.is_available() and torch.cuda.device_count() > 0
                 else "cpu"
             )
-            logger.info("No given device, using default device:", self.device)
+            logger.info(f"No given device, using default device: {self.device}")
         else:
             self.device = device
 
