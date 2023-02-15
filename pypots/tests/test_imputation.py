@@ -18,7 +18,7 @@ from pypots.imputation import (
 )
 from pypots.tests.unified_data_for_test import DATA
 from pypots.utils.metrics import cal_mae
-from pypots.logging import logger
+from pypots.utils.logging import logger
 
 EPOCH = 5
 

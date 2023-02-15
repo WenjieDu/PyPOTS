@@ -22,7 +22,7 @@ from scipy.stats import invwishart
 from scipy.stats import wishart
 
 from pypots.forecasting.base import BaseForecaster
-from pypots.logging import logger
+from pypots.utils.logging import logger
 
 
 def mvnrnd_pre(mu, Lambda):

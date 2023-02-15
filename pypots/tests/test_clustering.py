@@ -11,7 +11,7 @@ import unittest
 import numpy as np
 
 from pypots.clustering import VaDER, CRLI
-from pypots.logging import logger
+from pypots.utils.logging import logger
 from pypots.tests.unified_data_for_test import DATA
 from pypots.utils.metrics import cal_rand_index, cal_cluster_purity
 

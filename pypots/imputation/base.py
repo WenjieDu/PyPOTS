@@ -13,7 +13,7 @@ import torch
 
 from pypots.base import BaseModel, BaseNNModel
 from pypots.utils.metrics import cal_mae
-from pypots.logging import logger
+from pypots.utils.logging import logger
 
 try:
     import nni

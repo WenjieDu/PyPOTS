@@ -7,7 +7,7 @@ Utilities for checking things.
 
 import os
 
-from pypots.logging import logger
+from pypots.utils.logging import logger
 
 
 def extract_parent_dir(path):
