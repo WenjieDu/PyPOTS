@@ -24,10 +24,10 @@ class Logger:
         self.file_handler = None
 
         self.set_level(logging_level)
-        self.set_printing_format()
+        self.set_logging_format()
         self.logger.propagate = False
 
-    def set_printing_format(self):
+    def set_logging_format(self):
         self.stream_handler.setFormatter(self.formatter)
         self.logger.addHandler(self.stream_handler)
 
