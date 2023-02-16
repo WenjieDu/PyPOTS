@@ -10,8 +10,8 @@ import unittest
 import numpy as np
 
 from pypots.forecasting import BTTF
-from pypots.utils.logging import logger
 from pypots.tests.unified_data_for_test import gene_random_walk_data
+from pypots.utils.logging import logger
 from pypots.utils.metrics import cal_mae
 
 EPOCHS = 5
@@ -40,5 +40,6 @@ class TestBTTF(unittest.TestCase):
         mae = cal_mae(predictions, self.test_X_intact[:, 100:])
         logger.info(f"prediction MAE: {mae}")
 
-    if __name__ == "__main__":
-        unittest.main()
+
+if __name__ == "__main__":
+    unittest.main()
