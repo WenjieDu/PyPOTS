@@ -7,4 +7,6 @@ Expose all time-series forecasting models.
 
 from pypots.forecasting.bttf import BTTF
 
-__all__ = ["BTTF"]
+__all__ = [
+    "BTTF",
+]
