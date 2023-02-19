@@ -5,6 +5,7 @@ Utilities for data manipulation
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: GPL-v3
 
+from abc import abstractmethod
 import h5py
 import torch
 from torch.utils.data import Dataset
@@ -81,6 +82,7 @@ class BaseDataset(Dataset):
     def __len__(self):
         return self.sample_num
 
+    @abstractmethod
     def _fetch_data_from_array(self, idx):
         """Fetch data from self.X if it is given.
 
@@ -134,9 +136,10 @@ class BaseDataset(Dataset):
             raise RuntimeError(e)
         return file_handler
 
+    @abstractmethod
     def _fetch_data_from_file(self, idx):
         """Fetch data with the lazy-loading strategy, i.e. only loading data from the file while requesting for samples.
-        Here the opened file handle does not load the entire dataset into RAM but only load the currently accessed slice
+        Here the opened file handle doesn't load the entire dataset into RAM but only load the currently accessed slice.
 
         Notes
         -----

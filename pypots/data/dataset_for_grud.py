@@ -25,19 +25,21 @@ class DatasetForGRUD(BaseDataset):
         Classification labels of according time-series samples.
     """
 
-    def __init__(self, X, y=None):
-        super().__init__(X, y)
+    def __init__(self, X=None, y=None, file_path=None, file_type="h5py"):
+        super().__init__(X, y, file_path, file_type)
 
         self.locf = LOCF()
-        self.missing_mask = (~torch.isnan(X)).to(torch.float32)
-        self.X = torch.nan_to_num(X)
-        self.deltas = parse_delta(self.missing_mask)
-        self.X_filledLOCF = self.locf.locf_torch(X)
-        self.empirical_mean = torch.sum(
-            self.missing_mask * self.X, dim=[0, 1]
-        ) / torch.sum(self.missing_mask, dim=[0, 1])
 
-    def __getitem__(self, idx):
+        if self.X is not None:
+            self.missing_mask = (~torch.isnan(X)).to(torch.float32)
+            self.X_filledLOCF = self.locf.locf_torch(X)
+            self.X = torch.nan_to_num(X)
+            self.deltas = parse_delta(self.missing_mask)
+            self.empirical_mean = torch.sum(
+                self.missing_mask * self.X, dim=[0, 1]
+            ) / torch.sum(self.missing_mask, dim=[0, 1])
+
+    def _fetch_data_from_array(self, idx):
         """Fetch data according to index.
 
         Parameters
@@ -47,8 +49,8 @@ class DatasetForGRUD(BaseDataset):
 
         Returns
         -------
-        dict,
-            A dict contains
+        sample : list,
+            A list contains
 
             index : int tensor,
                 The index of the sample.
@@ -79,5 +81,48 @@ class DatasetForGRUD(BaseDataset):
 
         if self.y is not None:
             sample.append(self.y[idx].to(torch.long))
+
+        return sample
+
+    def _fetch_data_from_file(self, idx):
+        """Fetch data with the lazy-loading strategy, i.e. only loading data from the file while requesting for samples.
+        Here the opened file handle doesn't load the entire dataset into RAM but only load the currently accessed slice.
+
+        Parameters
+        ----------
+        idx : int,
+            The index of the sample to be return.
+
+        Returns
+        -------
+        sample : list,
+            The collated data sample, a list including all necessary sample info.
+        """
+
+        if self.file_handler is None:
+            self.file_handler = self._open_file_handle()
+
+        X = torch.from_numpy(self.file_handler["X"][idx])
+        missing_mask = (~torch.isnan(X)).to(torch.float32)
+        X_filledLOCF = self.locf.locf_torch(X)
+        X = torch.nan_to_num(X)
+        deltas = parse_delta(missing_mask)
+        empirical_mean = torch.sum(missing_mask * X, dim=[0, 1]) / torch.sum(
+            missing_mask, dim=[0, 1]
+        )
+
+        sample = [
+            torch.tensor(idx),
+            X,
+            X_filledLOCF,
+            missing_mask,
+            deltas,
+            empirical_mean,
+        ]
+
+        if (
+            "y" in self.file_handler.keys()
+        ):  # if the dataset has labels, then fetch it from the file
+            sample.append(self.file_handler["y"][idx].to(torch.long))
 
         return sample
