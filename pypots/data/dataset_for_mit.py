@@ -36,11 +36,11 @@ class DatasetForMIT(BaseDataset):
 
     """
 
-    def __init__(self, X, y=None, rate=0.2):
-        super().__init__(X, y)
+    def __init__(self, X=None, y=None, file_path=None, file_type="h5py", rate=0.2):
+        super().__init__(X, y, file_path, file_type)
         self.rate = rate
 
-    def __getitem__(self, idx):
+    def _fetch_data_from_array(self, idx):
         """Fetch data according to index.
 
         Parameters
@@ -50,8 +50,8 @@ class DatasetForMIT(BaseDataset):
 
         Returns
         -------
-        dict,
-            A dict contains
+        sample : list,
+            A list contains
 
             index : int tensor,
                 The index of the sample.
@@ -81,5 +81,41 @@ class DatasetForMIT(BaseDataset):
 
         if self.y is not None:
             sample.append(self.y[idx].to(torch.long))
+
+        return sample
+
+    def _fetch_data_from_file(self, idx):
+        """Fetch data with the lazy-loading strategy, i.e. only loading data from the file while requesting for samples.
+        Here the opened file handle doesn't load the entire dataset into RAM but only load the currently accessed slice.
+
+        Parameters
+        ----------
+        idx : int,
+            The index of the sample to be return.
+
+        Returns
+        -------
+        sample : list,
+            The collated data sample, a list including all necessary sample info.
+        """
+
+        if self.file_handler is None:
+            self.file_handler = self._open_file_handle()
+
+        X = torch.from_numpy(self.file_handler["X"][idx])
+        X_intact, X, missing_mask, indicating_mask = mcar(X, rate=self.rate)
+
+        sample = [
+            torch.tensor(idx),
+            X_intact.to(torch.float32),
+            X.to(torch.float32),
+            missing_mask.to(torch.float32),
+            indicating_mask.to(torch.float32),
+        ]
+
+        if (
+            "y" in self.file_handler.keys()
+        ):  # if the dataset has labels, then fetch it from the file
+            sample.append(self.file_handler["y"][idx].to(torch.long))
 
         return sample
