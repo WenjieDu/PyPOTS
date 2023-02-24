@@ -22,7 +22,7 @@ def parse_delta(missing_mask):
     -------
     delta, array,
         Delta matrix indicates time gaps of missing values.
-        Its math definition please refer to :cite:`che2018MissingData`.
+        Its math definition please refer to :cite:`che2018GRUD`.
     """
     # missing_mask is from X, and X's shape and type had been checked. So no need to double-check here.
     n_samples, n_steps, n_features = missing_mask.shape
