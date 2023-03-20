@@ -16,6 +16,7 @@ from torch.utils.data import DataLoader
 
 from pypots.clustering.base import BaseNNClusterer
 from pypots.data.dataset_for_grud import DatasetForGRUD
+from pypots.utils.logging import logger
 from pypots.utils.metrics import cal_mse
 
 RNN_CELL = {
@@ -437,7 +438,7 @@ class CRLI(BaseNNClusterer):
                 )  # mean training loss of the current epoch
                 self.logger["training_loss_generator"].append(mean_train_G_loss)
                 self.logger["training_loss_discriminator"].append(mean_train_D_loss)
-                print(
+                logger.info(
                     f"epoch {epoch}: "
                     f"training loss_generator {mean_train_G_loss:.4f}, "
                     f"train loss_discriminator {mean_train_D_loss:.4f}"
@@ -451,12 +452,12 @@ class CRLI(BaseNNClusterer):
                 else:
                     self.patience -= 1
                     if self.patience == 0:
-                        print(
+                        logger.info(
                             "Exceeded the training patience. Terminating the training procedure..."
                         )
                         break
         except Exception as e:
-            print(f"Exception: {e}")
+            logger.info(f"Exception: {e}")
             if self.best_model_dict is None:
                 raise RuntimeError(
                     "Training got interrupted. Model was not get trained. Please try fit() again."
@@ -471,7 +472,7 @@ class CRLI(BaseNNClusterer):
         if np.equal(self.best_loss, float("inf")):
             raise ValueError("Something is wrong. best_loss is Nan after training.")
 
-        print("Finished training.")
+        logger.info("Finished training.")
 
     def cluster(self, X):
         X = self.check_input(self.n_steps, self.n_features, X)

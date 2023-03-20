@@ -22,6 +22,7 @@ from scipy.stats import invwishart
 from scipy.stats import wishart
 
 from pypots.forecasting.base import BaseForecaster
+from pypots.utils.logging import logger
 
 
 def mvnrnd_pre(mu, Lambda):
@@ -259,9 +260,9 @@ def _BTTF(
         temp_hat += tensor_hat[pos_test]
         if (it + 1) % show_iter == 0 and it < burn_iter:
             # temp_hat = temp_hat / show_iter
-            # print('Iter: {}'.format(it + 1))
-            # print('MAPE: {:.6}'.format(compute_mape(dense_test, temp_hat)))
-            # print('RMSE: {:.6}'.format(compute_rmse(dense_test, temp_hat)))
+            # logger.info('Iter: {}'.format(it + 1))
+            # logger.info('MAPE: {:.6}'.format(compute_mape(dense_test, temp_hat)))
+            # logger.info('RMSE: {:.6}'.format(compute_rmse(dense_test, temp_hat)))
             temp_hat = np.zeros(len(pos_test[0]))
         if it + 1 > burn_iter:
             U_plus[:, :, it - burn_iter] = U
@@ -274,8 +275,8 @@ def _BTTF(
             X_plus[:, :, it - burn_iter] = X0
             tensor_new_plus += np.einsum("is, js, ts -> ijt", U, V, X0[-multi_step:, :])
     tensor_hat = tensor_hat_plus / gibbs_iter
-    # print('Imputation MAPE: {:.6}'.format(compute_mape(dense_test, tensor_hat[:, :, : dim3][pos_test])))
-    # print('Imputation RMSE: {:.6}'.format(compute_rmse(dense_test, tensor_hat[:, :, : dim3][pos_test])))
+    # logger.info('Imputation MAPE: {:.6}'.format(compute_mape(dense_test, tensor_hat[:, :, : dim3][pos_test])))
+    # logger.info('Imputation RMSE: {:.6}'.format(compute_rmse(dense_test, tensor_hat[:, :, : dim3][pos_test])))
     tensor_hat = np.append(tensor_hat, tensor_new_plus / gibbs_iter, axis=2)
     tensor_hat[tensor_hat < 0] = 0
 

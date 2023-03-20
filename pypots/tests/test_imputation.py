@@ -18,6 +18,7 @@ from pypots.imputation import (
 )
 from pypots.tests.unified_data_for_test import DATA
 from pypots.utils.metrics import cal_mae
+from pypots.utils.logging import logger
 
 EPOCH = 5
 
@@ -29,7 +30,7 @@ class TestSAITS(unittest.TestCase):
         self.test_X = DATA["test_X"]
         self.test_X_intact = DATA["test_X_intact"]
         self.test_X_indicating_mask = DATA["test_X_indicating_mask"]
-        print("Running test cases for SAITS...")
+        logger.info("Running test cases for SAITS...")
         self.saits = SAITS(
             DATA["n_steps"],
             DATA["n_features"],
@@ -63,7 +64,7 @@ class TestSAITS(unittest.TestCase):
             imputed_X
         ).any(), "Output still has missing values after running impute()."
         test_MAE = cal_mae(imputed_X, self.test_X_intact, self.test_X_indicating_mask)
-        print(f"SAITS test_MAE: {test_MAE}")
+        logger.info(f"SAITS test_MAE: {test_MAE}")
 
 
 class TestTransformer(unittest.TestCase):
@@ -73,7 +74,7 @@ class TestTransformer(unittest.TestCase):
         self.test_X = DATA["test_X"]
         self.test_X_intact = DATA["test_X_intact"]
         self.test_X_indicating_mask = DATA["test_X_indicating_mask"]
-        print("Running test cases for Transformer...")
+        logger.info("Running test cases for Transformer...")
         self.transformer = Transformer(
             DATA["n_steps"],
             DATA["n_features"],
@@ -110,7 +111,7 @@ class TestTransformer(unittest.TestCase):
             imputed_X
         ).any(), "Output still has missing values after running impute()."
         test_MAE = cal_mae(imputed_X, self.test_X_intact, self.test_X_indicating_mask)
-        print(f"Transformer test_MAE: {test_MAE}")
+        logger.info(f"Transformer test_MAE: {test_MAE}")
 
 
 class TestBRITS(unittest.TestCase):
@@ -120,7 +121,7 @@ class TestBRITS(unittest.TestCase):
         self.test_X = DATA["test_X"]
         self.test_X_intact = DATA["test_X_intact"]
         self.test_X_indicating_mask = DATA["test_X_indicating_mask"]
-        print("Running test cases for BRITS...")
+        logger.info("Running test cases for BRITS...")
         self.brits = BRITS(DATA["n_steps"], DATA["n_features"], 256, epochs=EPOCH)
         self.brits.fit(self.train_X, self.val_X)
 
@@ -143,7 +144,7 @@ class TestBRITS(unittest.TestCase):
             imputed_X
         ).any(), "Output still has missing values after running impute()."
         test_MAE = cal_mae(imputed_X, self.test_X_intact, self.test_X_indicating_mask)
-        print(f"BRITS test_MAE: {test_MAE}")
+        logger.info(f"BRITS test_MAE: {test_MAE}")
 
 
 class TestLOCF(unittest.TestCase):
@@ -153,7 +154,7 @@ class TestLOCF(unittest.TestCase):
         self.test_X = DATA["test_X"]
         self.test_X_intact = DATA["test_X_intact"]
         self.test_X_indicating_mask = DATA["test_X_indicating_mask"]
-        print("Running test cases for LOCF...")
+        logger.info("Running test cases for LOCF...")
         self.locf = LOCF(nan=0)
 
     def test_parameters(self):
@@ -167,7 +168,7 @@ class TestLOCF(unittest.TestCase):
         test_MAE = cal_mae(
             test_X_imputed, self.test_X_intact, self.test_X_indicating_mask
         )
-        print(f"LOCF test_MAE: {test_MAE}")
+        logger.info(f"LOCF test_MAE: {test_MAE}")
 
 
 if __name__ == "__main__":

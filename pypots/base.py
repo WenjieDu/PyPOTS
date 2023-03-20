@@ -4,11 +4,15 @@ Base class for main models in PyPOTS.
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: GLP-v3
+
+import os
 from abc import ABC
 
 import numpy as np
 import torch
-from torch.utils.tensorboard import SummaryWriter
+
+from pypots.utils.logging import logger
+from pypots.utils.files import create_dir_if_not_exist
 
 
 class BaseModel(ABC):
@@ -24,7 +28,7 @@ class BaseModel(ABC):
                 if torch.cuda.is_available() and torch.cuda.device_count() > 0
                 else "cpu"
             )
-            print("No given device, using default device:", self.device)
+            logger.info(f"No given device, using default device: {self.device}")
         else:
             self.device = device
 
@@ -136,21 +140,41 @@ class BaseModel(ABC):
         # tb_summary_writer = SummaryWriter(saving_path)
         # tb_summary_writer.add_custom_scalars(self.logger)
         # tb_summary_writer.close()
-        # print(f'Log saved successfully to {saving_path}.')
+        # logger.info(f'Log saved successfully to {saving_path}.')
 
-    def save_model(self, saving_path):
+    def save_model(self, saving_dir, name, overwrite=False):
         """Save the model to a disk file.
+
+        A .pypots extension will be appended to the filename if it does not already have one.
+        Please note that such an extension is not necessary, but to indicate the saved model is from PyPOTS framework so people can distinguish.
 
         Parameters
         ----------
-        saving_path : str,
-            The given path to save the model.
+        saving_dir : str,
+            The given directory to save the model.
+
+        name : str,
+            The file name of the model to be saved.
+
+        overwrite : bool,
+
         """
+        name = name + ".pypots" if name.split(".")[-1] != "pypots" else name
+        saving_path = os.path.join(saving_dir, name)
+        if os.path.exists(saving_path):
+            if overwrite:
+                logger.warning(
+                    f"File {saving_path} exists. Argument `overwrite` is True. Overwriting now..."
+                )
+            else:
+                logger.error(f"File {saving_path} exists. Saving operation aborted.")
+                return
         try:
+            create_dir_if_not_exist(saving_dir)
             torch.save(self.model, saving_path)
+            logger.info(f"Saved successfully to {saving_path}.")
         except Exception as e:
-            print(e)
-        print(f"Saved successfully to {saving_path}.")
+            raise RuntimeError(f'{e} Failed to save the model to "{saving_path}"!')
 
     def load_model(self, model_path):
         """Load the saved model from a disk file.
@@ -174,7 +198,7 @@ class BaseModel(ABC):
                 self.model = loaded_model.model
         except Exception as e:
             raise e
-        print(f"Model loaded successfully from {model_path}.")
+        logger.info(f"Model loaded successfully from {model_path}.")
 
 
 class BaseNNModel(BaseModel):
@@ -202,6 +226,6 @@ class BaseNNModel(BaseModel):
     def _print_model_size(self):
         """Print the number of trainable parameters in the initialized NN model."""
         num_params = sum(p.numel() for p in self.model.parameters() if p.requires_grad)
-        print(
+        logger.info(
             f"Model initialized successfully. Number of the trainable parameters: {num_params}"
         )
