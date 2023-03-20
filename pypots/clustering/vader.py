@@ -21,6 +21,7 @@ from torch.utils.data import DataLoader
 
 from pypots.clustering.base import BaseNNClusterer
 from pypots.data.dataset_for_grud import DatasetForGRUD
+from pypots.utils.logging import logger
 from pypots.utils.metrics import cal_mse
 
 
@@ -478,12 +479,12 @@ class VaDER(BaseNNClusterer):
 
                     mean_val_loss = np.mean(epoch_val_loss_collector)
                     self.logger["validating_loss"].append(mean_val_loss)
-                    print(
+                    logger.info(
                         f"epoch {epoch}: training loss {mean_train_loss:.4f}, validating loss {mean_val_loss:.4f}"
                     )
                     mean_loss = mean_val_loss
                 else:
-                    print(f"epoch {epoch}: training loss {mean_train_loss:.4f}")
+                    logger.info(f"epoch {epoch}: training loss {mean_train_loss:.4f}")
                     mean_loss = mean_train_loss
 
                 if mean_loss < self.best_loss:
@@ -493,12 +494,12 @@ class VaDER(BaseNNClusterer):
                 else:
                     self.patience -= 1
                     if self.patience == 0:
-                        print(
+                        logger.info(
                             "Exceeded the training patience. Terminating the training procedure..."
                         )
                         break
         except Exception as e:
-            print(f"Exception: {e}")
+            logger.info(f"Exception: {e}")
             if self.best_model_dict is None:
                 raise RuntimeError(
                     "Training got interrupted. Model was not get trained. Please try fit() again."
@@ -513,7 +514,7 @@ class VaDER(BaseNNClusterer):
         if np.equal(self.best_loss, float("inf")):
             raise ValueError("Something is wrong. best_loss is Nan after training.")
 
-        print("Finished training.")
+        logger.info("Finished training.")
 
     def cluster(self, X):
         X = self.check_input(self.n_steps, self.n_features, X)

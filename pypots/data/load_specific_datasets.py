@@ -7,6 +7,7 @@ Functions to load supported open-source time-series datasets.
 
 import pandas as pd
 import tsdb
+from pypots.utils.logging import logger
 
 SUPPORTED_DATASETS = [
     "physionet_2012",
@@ -80,7 +81,7 @@ def load_specific_dataset(dataset_name, use_cache=True):
         e.g. standardizing and splitting.
 
     """
-    print(
+    logger.info(
         f"Loading the dataset {dataset_name} with TSDB (https://github.com/WenjieDu/Time_Series_Database)..."
     )
     assert dataset_name in SUPPORTED_DATASETS, (
@@ -89,7 +90,7 @@ def load_specific_dataset(dataset_name, use_cache=True):
         f"please create an issue on GitHub "
         f"https://github.com/WenjieDu/PyPOTS/issues"
     )
-    print(f"Starting preprocessing {dataset_name}...")
+    logger.info(f"Starting preprocessing {dataset_name}...")
     data = tsdb.load_dataset(dataset_name, use_cache)
     data = PREPROCESSING[dataset_name](data)
     return data

@@ -8,4 +8,7 @@ Expose all clustering models for partially-observed time series here.
 from pypots.clustering.crli import CRLI
 from pypots.clustering.vader import VaDER
 
-__all__ = ["CRLI", "VaDER"]
+__all__ = [
+    "CRLI",
+    "VaDER",
+]
