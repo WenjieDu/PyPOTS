@@ -5,20 +5,38 @@
 
 <p align='center'>
     <!-- Python version -->
-    <img src='https://img.shields.io/badge/python-v3-yellow'>
+    <img src='https://img.shields.io/badge/python-v3-yellow?color=a4e2c6'>
     <!-- PyTorch-->
-    <img src='https://img.shields.io/static/v1?label=PyTorch&message=%E2%9D%A4%EF%B8%8F&color=DC583A&logo=pytorch'>
+    <img src='https://img.shields.io/static/v1?label=PyTorch&message=%E2%9D%A4%EF%B8%8F&color=7bcfa6&logo=pytorch'>
     <!-- PyPI version -->
     <a alt='PyPI download number' href='https://pypi.org/project/pypots'>
-        <img alt="PyPI" src="https://img.shields.io/pypi/v/pypots?color=yellowgreen&label=PyPI&logo=pypi&logoColor=white">
+        <img alt="PyPI" src="https://img.shields.io/pypi/v/pypots?color=7fecad&label=PyPI&logo=pypi&logoColor=white">
     </a>
     <!-- on Anaconda -->
     <a alt='on anaconda' href='https://anaconda.org/conda-forge/pypots'>
-        <img alt="on anaconda" src="https://img.shields.io/conda/vn/conda-forge/pypots?color=green&label=Conda&logo=anaconda" />
+        <img alt="on anaconda" src="https://img.shields.io/conda/pn/conda-forge/pypots?color=3de1ad&label=Conda&logo=anaconda" />
     </a>
     <!-- License -->
     <a alt='GPL3 license' href='https://github.com/WenjieDu/PyPOTS/blob/main/LICENSE'>
-        <img src='https://img.shields.io/badge/License-GPL--v3-green?color=79C641'>
+        <img src='https://img.shields.io/badge/License-GPL--v3-00e09e'>
+    </a>
+    <!-- Repo size -->
+    <img src="https://img.shields.io/github/repo-size/WenjieDu/PyPOTS?color=48c0a3">
+    <!-- Code of Conduct -->
+    <a alt='CODE_OF_CONDUCT' href='https://github.com/WenjieDu/PyPOTS/blob/main/CODE_OF_CONDUCT.md'> 
+        <img src='https://img.shields.io/badge/Contributor%20Covenant-v2.1-21a675.svg'>
+    </a>
+    <!-- Slack Workspace -->
+    <a alt='Slack Workspace' href='https://join.slack.com/t/pypots-dev/shared_invite/zt-1gq6ufwsi-p0OZdW~e9UW_IA4_f1OfxA'> 
+        <img src='https://img.shields.io/badge/Slack-PyPOTS-grey?logo=slack&color=549688'>
+    </a>
+    <!-- Zenodo DOI -->
+    <a alt='Zenodo DOI' href='https://doi.org/10.5281/zenodo.6823221'>
+        <img src='https://zenodo.org/badge/DOI/10.5281/zenodo.6823221.svg'>
+    </a>
+    <!-- PyPI download number -->
+    <a alt='PyPI download number' href='https://pepy.tech/project/pypots'>
+        <img src='https://static.pepy.tech/personalized-badge/pypots?period=total&units=international_system&left_color=grey&right_color=navy&left_text=Downloads'>
     </a>
     <!-- GitHub Testing -->
     <a alt='GitHub Testing' href='https://github.com/WenjieDu/PyPOTS/actions/workflows/testing.yml'> 
@@ -26,23 +44,7 @@
     </a>
     <!-- Coveralls report -->
     <a alt='Coveralls report' href='https://coveralls.io/github/WenjieDu/PyPOTS'> 
-        <img src='https://img.shields.io/coverallsCoverage/github/WenjieDu/PyPOTS?branch=main&logo=coveralls&labelColor=3F5767'>
-    </a>
-    <!-- PyPI download number -->
-    <a alt='PyPI download number' href='https://pepy.tech/project/pypots'>
-        <img src='https://static.pepy.tech/personalized-badge/pypots?period=total&units=international_system&left_color=grey&right_color=blue&left_text=Downloads'>
-    </a>
-    <!-- Zenodo DOI -->
-    <a alt='Zenodo DOI' href='https://zenodo.org/badge/latestdoi/475477908'>
-        <img src='https://zenodo.org/badge/475477908.svg'>
-    </a>
-    <!-- Code of Conduct -->
-    <a alt='CODE_OF_CONDUCT' href='https://github.com/WenjieDu/PyPOTS/blob/main/CODE_OF_CONDUCT.md'> 
-        <img src='https://img.shields.io/badge/Contributor%20Covenant-v2.1-4baaaa.svg'>
-    </a>
-    <!-- Slack Workspace -->
-    <a alt='Slack Workspace' href='https://join.slack.com/t/pypots-dev/shared_invite/zt-1gq6ufwsi-p0OZdW~e9UW_IA4_f1OfxA'> 
-        <img src='https://img.shields.io/badge/Slack-PyPOTS-grey?logo=slack&labelColor=4A154B&color=62BCE5'>
+        <img src='https://img.shields.io/coverallsCoverage/github/WenjieDu/PyPOTS?branch=main&logo=coveralls&labelColor=#0aa344'>
     </a>
 </p>
 
@@ -112,13 +114,13 @@ author = {Wenjie Du},
 title = {{PyPOTS: A Python Toolbox for Data Mining on Partially-Observed Time Series}},
 howpublished = {\url{https://github.com/wenjiedu/pypots}},
 year = {2022},
-doi = {10.5281/zenodo.6823222},
+doi = {10.5281/zenodo.6823221},
 }
 ```
 
 or
 
-`Wenjie Du. (2022). PyPOTS: A Python Toolbox for Data Mining on Partially-Observed Time Series. Zenodo. https://doi.org/10.5281/zenodo.6823222`
+`Wenjie Du. (2022). PyPOTS: A Python Toolbox for Data Mining on Partially-Observed Time Series. Zenodo. https://doi.org/10.5281/zenodo.6823221`
 
 ## ❖ Attention 👀
 The documentation and tutorials are under construction. And a short paper introducing PyPOTS is on the way! 🚀 Stay tuned please!
