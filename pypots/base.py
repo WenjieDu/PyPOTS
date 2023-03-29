@@ -11,8 +11,8 @@ from abc import ABC
 import numpy as np
 import torch
 
-from pypots.utils.logging import logger
 from pypots.utils.files import create_dir_if_not_exist
+from pypots.utils.logging import logger
 
 
 class BaseModel(ABC):

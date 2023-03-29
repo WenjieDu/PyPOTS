@@ -219,7 +219,7 @@ class BRITS(BaseNNClassifier):
         self.model.eval()  # set the model as eval status to freeze it.
         return self
 
-    def assemble_input_data(self, data):
+    def assemble_input_for_training(self, data):
         """Assemble the input data into a dictionary.
 
         Parameters
@@ -248,11 +248,79 @@ class BRITS(BaseNNClassifier):
         inputs = {
             "indices": indices,
             "label": label,
-            "forward": {"X": X, "missing_mask": missing_mask, "deltas": deltas},
+            "forward": {
+                "X": X,
+                "missing_mask": missing_mask,
+                "deltas": deltas,
+            },
             "backward": {
                 "X": back_X,
                 "missing_mask": back_missing_mask,
                 "deltas": back_deltas,
+            },
+        }
+        return inputs
+
+    def assemble_input_for_validating(self, data) -> dict:
+        """Assemble the given data into a dictionary for validating input.
+
+        Notes
+        -----
+        The validating data assembling processing is the same as training data assembling.
+
+
+        Parameters
+        ----------
+        data : list,
+            A list containing data fetched from Dataset by Dataloader.
+
+        Returns
+        -------
+        inputs : dict,
+            A python dictionary contains the input data for model validating.
+        """
+        return self.assemble_input_for_training(data)
+
+    def assemble_input_for_testing(self, data) -> dict:
+        """Assemble the given data into a dictionary for testing input.
+
+        Notes
+        -----
+        The testing data assembling processing is the same as training data assembling.
+
+        Parameters
+        ----------
+        data : list,
+            A list containing data fetched from Dataset by Dataloader.
+
+        Returns
+        -------
+        inputs : dict,
+            A python dictionary contains the input data for model testing.
+        """
+        # fetch data
+        (
+            indices,
+            X,
+            missing_mask,
+            deltas,
+            back_X,
+            back_missing_mask,
+            back_deltas,
+        ) = data
+
+        # assemble input data
+        inputs = {
+            "indices": indices,
+            "forward": {
+                "X": X,
+                "missing_mask": missing_mask,
+                "deltas": deltas,
+            },
+            "backward": {
+                "X": back_X,
+                "deltas": back_deltas,
+                "missing_mask": back_missing_mask,
             },
         }
         return inputs
@@ -266,27 +334,7 @@ class BRITS(BaseNNClassifier):
 
         with torch.no_grad():
             for idx, data in enumerate(test_loader):
-                # cannot use input_data_processing, cause here has no label
-                (
-                    indices,
-                    X,
-                    missing_mask,
-                    deltas,
-                    back_X,
-                    back_missing_mask,
-                    back_deltas,
-                ) = data
-                # assemble input data
-                inputs = {
-                    "indices": indices,
-                    "forward": {"X": X, "missing_mask": missing_mask, "deltas": deltas},
-                    "backward": {
-                        "X": back_X,
-                        "missing_mask": back_missing_mask,
-                        "deltas": back_deltas,
-                    },
-                }
-
+                inputs = self.assemble_input_for_testing(data)
                 results, _, _ = self.model.classify(inputs)
                 prediction_collector.append(results["prediction"])
 

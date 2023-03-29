@@ -12,8 +12,8 @@ import numpy as np
 import torch
 
 from pypots.base import BaseModel, BaseNNModel
-from pypots.utils.metrics import cal_mae
 from pypots.utils.logging import logger
+from pypots.utils.metrics import cal_mae
 
 try:
     import nni
@@ -71,7 +71,59 @@ class BaseNNImputer(BaseNNModel, BaseImputer):
         )
 
     @abstractmethod
-    def assemble_input_data(self, data):
+    def assemble_input_for_training(self, data) -> dict:
+        """Assemble the given data into a dictionary for training input.
+
+        Parameters
+        ----------
+        data : list,
+            Input data from dataloader, should be list.
+
+        Returns
+        -------
+        dict,
+            A python dictionary contains the input data for model training.
+        """
+        pass
+
+    @abstractmethod
+    def assemble_input_for_validating(self, data) -> dict:
+        """Assemble the given data into a dictionary for validating input.
+
+        Parameters
+        ----------
+        data : list,
+            Data output from dataloader, should be list.
+
+        Returns
+        -------
+        dict,
+            A python dictionary contains the input data for model validating.
+        """
+        pass
+
+    @abstractmethod
+    def assemble_input_for_testing(self, data) -> dict:
+        """Assemble the given data into a dictionary for testing input.
+
+        Notes
+        -----
+        The processing functions of train/val/test stages are separated for the situation that the input of
+        the three stages are different, and this situation usually happens when the Dataset/Dataloader classes
+        used in the train/val/test stages are not the same, e.g. the training data and validating data in a
+        classification task contains labels, but the testing data (from the production environment) generally
+        doesn't have labels.
+
+        Parameters
+        ----------
+        data : list,
+            Data output from dataloader, should be list.
+
+        Returns
+        -------
+        dict,
+            A python dictionary contains the input data for model testing.
+        """
         pass
 
     def _train_model(
@@ -94,7 +146,7 @@ class BaseNNImputer(BaseNNModel, BaseImputer):
                 self.model.train()
                 epoch_train_loss_collector = []
                 for idx, data in enumerate(training_loader):
-                    inputs = self.assemble_input_data(data)
+                    inputs = self.assemble_input_for_training(data)
                     self.optimizer.zero_grad()
                     results = self.model.forward(inputs)
                     results["loss"].backward()
@@ -111,7 +163,7 @@ class BaseNNImputer(BaseNNModel, BaseImputer):
                     imputation_collector = []
                     with torch.no_grad():
                         for idx, data in enumerate(val_loader):
-                            inputs = self.assemble_input_data(data)
+                            inputs = self.assemble_input_for_validating(data)
                             results = self.model.forward(inputs)
                             imputation_collector.append(results["imputed_data"])
 
