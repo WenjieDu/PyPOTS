@@ -537,25 +537,31 @@ class BRITS(BaseNNImputer):
         self.model.eval()  # set the model as eval status to freeze it.
         return self
 
-    def assemble_input_data(self, data):
-        """Assemble the input data into a dictionary.
+    def assemble_input_for_training(self, data):
+        """Assemble the given data into a dictionary for training input.
 
         Parameters
         ----------
-        data : list
-            A list containing data fetched from Dataset by Dataload.
+        data : list,
+            A list containing data fetched from Dataset by Dataloader.
 
         Returns
         -------
-        inputs : dict
-            A dictionary with data assembled.
+        inputs : dict,
+            A python dictionary contains the input data for model training.
         """
+
         # fetch data
         indices, X, missing_mask, deltas, back_X, back_missing_mask, back_deltas = data
+
         # assemble input data
         inputs = {
             "indices": indices,
-            "forward": {"X": X, "missing_mask": missing_mask, "deltas": deltas},
+            "forward": {
+                "X": X,
+                "missing_mask": missing_mask,
+                "deltas": deltas,
+            },
             "backward": {
                 "X": back_X,
                 "missing_mask": back_missing_mask,
@@ -564,6 +570,45 @@ class BRITS(BaseNNImputer):
         }
 
         return inputs
+
+    def assemble_input_for_validating(self, data) -> dict:
+        """Assemble the given data into a dictionary for validating input.
+
+        Notes
+        -----
+        The validating data assembling processing is the same as training data assembling.
+
+
+        Parameters
+        ----------
+        data : list,
+            A list containing data fetched from Dataset by Dataloader.
+
+        Returns
+        -------
+        inputs : dict,
+            A python dictionary contains the input data for model validating.
+        """
+        return self.assemble_input_for_training(data)
+
+    def assemble_input_for_testing(self, data) -> dict:
+        """Assemble the given data into a dictionary for testing input.
+
+        Notes
+        -----
+        The testing data assembling processing is the same as training data assembling.
+
+        Parameters
+        ----------
+        data : list,
+            A list containing data fetched from Dataset by Dataloader.
+
+        Returns
+        -------
+        inputs : dict,
+            A python dictionary contains the input data for model testing.
+        """
+        return self.assemble_input_for_training(data)
 
     def impute(self, X):
         X = self.check_input(self.n_steps, self.n_features, X)
@@ -574,7 +619,7 @@ class BRITS(BaseNNImputer):
 
         with torch.no_grad():
             for idx, data in enumerate(test_loader):
-                inputs = self.assemble_input_data(data)
+                inputs = self.assemble_input_for_testing(data)
                 imputed_data = self.model.impute(inputs)
                 imputation_collector.append(imputed_data)
 
