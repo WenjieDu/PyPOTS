@@ -702,7 +702,7 @@ class Raindrop(BaseNNClassifier):
         self.model.eval()  # set the model as eval status to freeze it.
         return self
 
-    def assemble_input_data(self, data):
+    def assemble_input_for_training(self, data):
         """Assemble the input data into a dictionary.
 
         Parameters
@@ -736,6 +736,58 @@ class Raindrop(BaseNNClassifier):
         }
         return inputs
 
+    def assemble_input_for_validating(self, data) -> dict:
+        """Assemble the given data into a dictionary for validating input.
+
+        Notes
+        -----
+        The validating data assembling processing is the same as training data assembling.
+
+
+        Parameters
+        ----------
+        data : list,
+            A list containing data fetched from Dataset by Dataloader.
+
+        Returns
+        -------
+        inputs : dict,
+            A python dictionary contains the input data for model validating.
+        """
+        return self.assemble_input_for_training(data)
+
+    def assemble_input_for_testing(self, data) -> dict:
+        """Assemble the given data into a dictionary for testing input.
+
+        Parameters
+        ----------
+        data : list,
+            A list containing data fetched from Dataset by Dataloader.
+
+        Returns
+        -------
+        inputs : dict,
+            A python dictionary contains the input data for model testing.
+        """
+        indices, X, X_filledLOCF, missing_mask, deltas, empirical_mean = data
+        bz, n_steps, n_features = X.shape
+        lengths = torch.tensor([n_steps] * bz, dtype=torch.float)
+        times = torch.tensor(range(n_steps), dtype=torch.float).repeat(bz, 1)
+
+        X = X.permute(1, 0, 2)
+        missing_mask = missing_mask.permute(1, 0, 2)
+        times = times.permute(1, 0)
+
+        inputs = {
+            "X": X,
+            "static": None,
+            "timestamps": times,
+            "lengths": lengths,
+            "missing_mask": missing_mask,
+        }
+
+        return inputs
+
     def classify(self, X):
         X = self.check_input(self.n_steps, self.n_features, X)
         self.model.eval()  # set the model as eval status to freeze it.
@@ -745,26 +797,7 @@ class Raindrop(BaseNNClassifier):
 
         with torch.no_grad():
             for idx, data in enumerate(test_loader):
-                # cannot use input_data_processing, cause here has no label
-                indices, X, X_filledLOCF, missing_mask, deltas, empirical_mean = data
-                # assemble input data
-
-                bz, n_steps, n_features = X.shape
-                lengths = torch.tensor([n_steps] * bz, dtype=torch.float)
-                times = torch.tensor(range(n_steps), dtype=torch.float).repeat(bz, 1)
-
-                X = X.permute(1, 0, 2)
-                missing_mask = missing_mask.permute(1, 0, 2)
-                times = times.permute(1, 0)
-
-                inputs = {
-                    "X": X,
-                    "static": None,
-                    "timestamps": times,
-                    "lengths": lengths,
-                    "missing_mask": missing_mask,
-                }
-
+                inputs = self.assemble_input_for_testing(data)
                 prediction = self.model.classify(inputs)
                 prediction_collector.append(prediction)
 
