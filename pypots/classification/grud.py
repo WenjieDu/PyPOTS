@@ -181,7 +181,7 @@ class GRUD(BaseNNClassifier):
         self.model.eval()  # set the model as eval status to freeze it.
         return self
 
-    def assemble_input_data(self, data):
+    def assemble_input_for_training(self, data):
         """Assemble the input data into a dictionary.
 
         Parameters
@@ -209,6 +209,56 @@ class GRUD(BaseNNClassifier):
         }
         return inputs
 
+    def assemble_input_for_validating(self, data) -> dict:
+        """Assemble the given data into a dictionary for validating input.
+
+        Notes
+        -----
+        The validating data assembling processing is the same as training data assembling.
+
+
+        Parameters
+        ----------
+        data : list,
+            A list containing data fetched from Dataset by Dataloader.
+
+        Returns
+        -------
+        inputs : dict,
+            A python dictionary contains the input data for model validating.
+        """
+        return self.assemble_input_for_training(data)
+
+    def assemble_input_for_testing(self, data) -> dict:
+        """Assemble the given data into a dictionary for testing input.
+
+        Notes
+        -----
+        The testing data assembling processing is the same as training data assembling.
+
+        Parameters
+        ----------
+        data : list,
+            A list containing data fetched from Dataset by Dataloader.
+
+        Returns
+        -------
+        inputs : dict,
+            A python dictionary contains the input data for model testing.
+        """
+        indices, X, X_filledLOCF, missing_mask, deltas, empirical_mean = data
+
+        inputs = {
+            "indices": indices,
+            "X": X,
+            "X_filledLOCF": X_filledLOCF,
+            "missing_mask": missing_mask,
+            "deltas": deltas,
+            "empirical_mean": empirical_mean,
+        }
+
+        return inputs
+
     def classify(self, X):
         X = self.check_input(self.n_steps, self.n_features, X)
         self.model.eval()  # set the model as eval status to freeze it.
@@ -218,18 +268,7 @@ class GRUD(BaseNNClassifier):
 
         with torch.no_grad():
             for idx, data in enumerate(test_loader):
-                # cannot use input_data_processing, cause here has no label
-                indices, X, X_filledLOCF, missing_mask, deltas, empirical_mean = data
-                # assemble input data
-                inputs = {
-                    "indices": indices,
-                    "X": X,
-                    "X_filledLOCF": X_filledLOCF,
-                    "missing_mask": missing_mask,
-                    "deltas": deltas,
-                    "empirical_mean": empirical_mean,
-                }
-
+                inputs = self.assemble_input_for_testing(data)
                 prediction = self.model.classify(inputs)
                 prediction_collector.append(prediction)
 

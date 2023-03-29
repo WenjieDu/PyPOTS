@@ -5,12 +5,16 @@
 
 <p align='center'>
     <!-- Python version -->
-    <img src='https://img.shields.io/badge/python-v3-yellowgreen'>
+    <img src='https://img.shields.io/badge/python-v3-yellow'>
     <!-- PyTorch-->
-    <img src='https://img.shields.io/static/v1?label=%E2%9D%A4%EF%B8%8F&message=PyTorch&color=DC583A'>
+    <img src='https://img.shields.io/static/v1?label=PyTorch&message=%E2%9D%A4%EF%B8%8F&color=DC583A&logo=pytorch'>
     <!-- PyPI version -->
     <a alt='PyPI download number' href='https://pypi.org/project/pypots'>
-        <img alt="PyPI" src="https://img.shields.io/pypi/v/pypots?color=green&label=PyPI">
+        <img alt="PyPI" src="https://img.shields.io/pypi/v/pypots?color=yellowgreen&label=PyPI&logo=pypi&logoColor=white">
+    </a>
+    <!-- on Anaconda -->
+    <a alt='on anaconda' href='https://anaconda.org/conda-forge/pypots'>
+        <img alt="on anaconda" src="https://img.shields.io/conda/vn/conda-forge/pypots?color=green&label=Conda&logo=anaconda" />
     </a>
     <!-- License -->
     <a alt='GPL3 license' href='https://github.com/WenjieDu/PyPOTS/blob/main/LICENSE'>
@@ -26,7 +30,7 @@
     </a>
     <!-- PyPI download number -->
     <a alt='PyPI download number' href='https://pepy.tech/project/pypots'>
-        <img src='https://static.pepy.tech/personalized-badge/pypots?period=total&units=none&left_color=grey&right_color=blue&left_text=Downloads'>
+        <img src='https://static.pepy.tech/personalized-badge/pypots?period=total&units=international_system&left_color=grey&right_color=blue&left_text=Downloads'>
     </a>
     <!-- Zenodo DOI -->
     <a alt='Zenodo DOI' href='https://zenodo.org/badge/latestdoi/475477908'>
@@ -53,6 +57,10 @@ Visit [TSDB](https://github.com/WenjieDu/TSDB) right now to know more about this
 <br clear='left'>
 
 ## ❖ Installation
+PyPOTS now is available on <a alt='Anaconda' href='https://anaconda.org/conda-forge/pypots'><img align='center' src='https://img.shields.io/badge/Anaconda--lightgreen?style=social&logo=anaconda'></a>❗️ 
+
+Install it with `conda install pypots`, you may need to specify the channel with option `-c conda-forge`
+
 Install the latest release from PyPI:
 > pip install pypots
 
@@ -121,16 +129,16 @@ Thank you all for your attention! 😃
 
 
 [^1]: Du, W., Cote, D., & Liu, Y. (2023). [SAITS: Self-Attention-based Imputation for Time Series](https://doi.org/10.1016/j.eswa.2023.119619). *Expert systems with applications*.
-[^2]: Vaswani, A., Shazeer, N.M., Parmar, N., Uszkoreit, J., Jones, L., Gomez, A.N., Kaiser, L., & Polosukhin, I. (2017). [Attention is All you Need](https://papers.nips.cc/paper/2017/hash/3f5ee243547dee91fbd053c1c4a845aa-Abstract.html). *NeurIPS* 2017.
-[^3]: Cao, W., Wang, D., Li, J., Zhou, H., Li, L., & Li, Y. (2018). [BRITS: Bidirectional Recurrent Imputation for Time Series](https://papers.nips.cc/paper/2018/hash/734e6bfcd358e25ac1db0a4241b95651-Abstract.html). *NeurIPS* 2018.
+[^2]: Vaswani, A., Shazeer, N.M., Parmar, N., Uszkoreit, J., Jones, L., Gomez, A.N., Kaiser, L., & Polosukhin, I. (2017). [Attention is All you Need](https://papers.nips.cc/paper/2017/hash/3f5ee243547dee91fbd053c1c4a845aa-Abstract.html). *NeurIPS 2017*.
+[^3]: Cao, W., Wang, D., Li, J., Zhou, H., Li, L., & Li, Y. (2018). [BRITS: Bidirectional Recurrent Imputation for Time Series](https://papers.nips.cc/paper/2018/hash/734e6bfcd358e25ac1db0a4241b95651-Abstract.html). *NeurIPS 2018*.
 [^4]: Che, Z., Purushotham, S., Cho, K., Sontag, D.A., & Liu, Y. (2018). [Recurrent Neural Networks for Multivariate Time Series with Missing Values](https://www.nature.com/articles/s41598-018-24271-9). *Scientific Reports*.
-[^5]: Zhang, X., Zeman, M., Tsiligkaridis, T., & Zitnik, M. (2022). [Graph-Guided Network for Irregularly Sampled Multivariate Time Series](https://arxiv.org/abs/2110.05357). *ICLR* 2022.
-[^6]: Ma, Q., Chen, C., Li, S., & Cottrell, G. W. (2021). [Learning Representations for Incomplete Time Series Clustering](https://ojs.aaai.org/index.php/AAAI/article/view/17070). *AAAI* 2021.
+[^5]: Zhang, X., Zeman, M., Tsiligkaridis, T., & Zitnik, M. (2022). [Graph-Guided Network for Irregularly Sampled Multivariate Time Series](https://arxiv.org/abs/2110.05357). *ICLR 2022*.
+[^6]: Ma, Q., Chen, C., Li, S., & Cottrell, G. W. (2021). [Learning Representations for Incomplete Time Series Clustering](https://ojs.aaai.org/index.php/AAAI/article/view/17070). *AAAI 2021*.
 [^7]: Jong, J.D., Emon, M.A., Wu, P., Karki, R., Sood, M., Godard, P., Ahmad, A., Vrooman, H.A., Hofmann-Apitius, M., & Fröhlich, H. (2019). [Deep learning for clustering of multivariate clinical patient trajectories with missing values](https://academic.oup.com/gigascience/article/8/11/giz134/5626377). *GigaScience*.
 [^8]: Chen, X., & Sun, L. (2021). [Bayesian Temporal Factorization for Multidimensional Time Series Prediction](https://arxiv.org/abs/1910.06366). *IEEE transactions on pattern analysis and machine intelligence*.
 
 <details>
 <summary>🏠 Visits</summary>
-<img align='left' src='https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2FPyPOTS%2FPyPOTS&count_bg=%23009A0A&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=Visits+since+April+2022&edge_flat=false'>
+<img align='left' src='https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2FPyPOTS%2FPyPOTS&count_bg=%23009A0A&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=Hits&edge_flat=false'>
 </details>
 

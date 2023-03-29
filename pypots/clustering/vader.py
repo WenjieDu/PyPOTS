@@ -389,19 +389,20 @@ class VaDER(BaseNNClusterer):
         self.model.eval()  # set the model as eval status to freeze it.
         return self
 
-    def assemble_input_data(self, data):
-        """Assemble the input data into a dictionary.
+    def assemble_input_for_training(self, data):
+        """Assemble the given data into a dictionary for training input.
 
         Parameters
         ----------
-        data : list
-            A list containing data fetched from Dataset by Dataload.
+        data : list,
+            A list containing data fetched from Dataset by Dataloader.
 
         Returns
         -------
-        inputs : dict
-            A dictionary with data assembled.
+        inputs : dict,
+            A python dictionary contains the input data for model training.
         """
+
         # fetch data
         indices, X, _, missing_mask, _, _ = data
 
@@ -409,7 +410,47 @@ class VaDER(BaseNNClusterer):
             "X": X,
             "missing_mask": missing_mask,
         }
+
         return inputs
+
+    def assemble_input_for_validating(self, data) -> dict:
+        """Assemble the given data into a dictionary for validating input.
+
+        Notes
+        -----
+        The validating data assembling processing is the same as training data assembling.
+
+
+        Parameters
+        ----------
+        data : list,
+            A list containing data fetched from Dataset by Dataloader.
+
+        Returns
+        -------
+        inputs : dict,
+            A python dictionary contains the input data for model validating.
+        """
+        return self.assemble_input_for_training(data)
+
+    def assemble_input_for_testing(self, data) -> dict:
+        """Assemble the given data into a dictionary for testing input.
+
+        Notes
+        -----
+        The testing data assembling processing is the same as training data assembling.
+
+        Parameters
+        ----------
+        data : list,
+            A list containing data fetched from Dataset by Dataloader.
+
+        Returns
+        -------
+        inputs : dict,
+            A python dictionary contains the input data for model testing.
+        """
+        return self.assemble_input_for_training(data)
 
     def _train_model(self, training_loader, val_loader=None):
         self.optimizer = torch.optim.Adam(
@@ -424,7 +465,7 @@ class VaDER(BaseNNClusterer):
         for epoch in range(self.pretrain_epochs):
             self.model.train()
             for idx, data in enumerate(training_loader):
-                inputs = self.assemble_input_data(data)
+                inputs = self.assemble_input_for_training(data)
                 self.optimizer.zero_grad()
                 results = self.model.forward(inputs, pretrain=True)
                 results["loss"].backward()
@@ -433,7 +474,7 @@ class VaDER(BaseNNClusterer):
             sample_collector = []
             for _ in range(10):  # sampling 10 times
                 for idx, data in enumerate(training_loader):
-                    inputs = self.assemble_input_data(data)
+                    inputs = self.assemble_input_for_validating(data)
                     results = self.model.forward(inputs, pretrain=True)
                     sample_collector.append(results["z"])
             samples = torch.cat(sample_collector).cpu().detach().numpy()
@@ -456,7 +497,7 @@ class VaDER(BaseNNClusterer):
                 self.model.train()
                 epoch_train_loss_collector = []
                 for idx, data in enumerate(training_loader):
-                    inputs = self.assemble_input_data(data)
+                    inputs = self.assemble_input_for_training(data)
                     self.optimizer.zero_grad()
                     results = self.model.forward(inputs)
                     results["loss"].backward()
@@ -473,7 +514,7 @@ class VaDER(BaseNNClusterer):
                     epoch_val_loss_collector = []
                     with torch.no_grad():
                         for idx, data in enumerate(val_loader):
-                            inputs = self.assemble_input_data(data)
+                            inputs = self.assemble_input_for_validating(data)
                             results = self.model.forward(inputs)
                             epoch_val_loss_collector.append(results["loss"].item())
 
@@ -525,7 +566,7 @@ class VaDER(BaseNNClusterer):
 
         with torch.no_grad():
             for idx, data in enumerate(test_loader):
-                inputs = self.assemble_input_data(data)
+                inputs = self.assemble_input_for_testing(data)
                 results = self.model.cluster(inputs)
                 clustering_results_collector.append(results)
 

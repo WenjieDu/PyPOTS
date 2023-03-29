@@ -330,18 +330,18 @@ class Transformer(BaseNNImputer):
         self.model.eval()  # set the model as eval status to freeze it.
         return self
 
-    def assemble_input_data(self, data):
-        """Assemble the input data into a dictionary.
+    def assemble_input_for_training(self, data):
+        """Assemble the given data into a dictionary for training input.
 
         Parameters
         ----------
-        data : list
-            A list containing data fetched from Dataset by Dataload.
+        data : list,
+            A list containing data fetched from Dataset by Dataloader.
 
         Returns
         -------
-        inputs : dict
-            A dictionary with data assembled.
+        inputs : dict,
+            A python dictionary contains the input data for model training.
         """
 
         indices, X_intact, X, missing_mask, indicating_mask = data
@@ -354,6 +354,45 @@ class Transformer(BaseNNImputer):
         }
 
         return inputs
+
+    def assemble_input_for_validating(self, data) -> dict:
+        """Assemble the given data into a dictionary for validating input.
+
+        Notes
+        -----
+        The validating data assembling processing is the same as training data assembling.
+
+
+        Parameters
+        ----------
+        data : list,
+            A list containing data fetched from Dataset by Dataloader.
+
+        Returns
+        -------
+        inputs : dict,
+            A python dictionary contains the input data for model validating.
+        """
+        return self.assemble_input_for_training(data)
+
+    def assemble_input_for_testing(self, data) -> dict:
+        """Assemble the given data into a dictionary for testing input.
+
+        Notes
+        -----
+        The testing data assembling processing is the same as training data assembling.
+
+        Parameters
+        ----------
+        data : list,
+            A list containing data fetched from Dataset by Dataloader.
+
+        Returns
+        -------
+        inputs : dict,
+            A python dictionary contains the input data for model testing.
+        """
+        return self.assemble_input_for_training(data)
 
     def impute(self, X):
         X = self.check_input(self.n_steps, self.n_features, X)

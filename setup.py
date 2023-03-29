@@ -31,9 +31,8 @@ setup(
     packages=find_packages(exclude=["tests"]),
     include_package_data=True,
     install_requires=[
-        "matplotlib",
-        "numpy",
-        "scikit_learn",
+        "numpy>=1.23.3",
+        "scikit-learn>=0.24.1",
         "scipy",
         "torch>=1.10",  # torch_sparse v0.6.12 requires 1.9<=torch<1.10, v0.6.13 needs torch>=1.10
         # "torch_sparse==0.6.13",

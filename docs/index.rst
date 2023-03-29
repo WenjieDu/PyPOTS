@@ -97,8 +97,8 @@ Below is an example applying SAITS in PyPOTS to impute missing values in the dat
 ============================== ================ =========================================================================  ====== =========
 Task                           Type             Algorithm                                                                  Year   Reference
 ============================== ================ =========================================================================  ====== =========
-Imputation                     Neural Network   SAITS (Self-Attention-based Imputation for Time Series)                    2022   :cite:`du2022SAITS`
-Imputation                     Neural Network   Transformer                                                                2017   :cite:`vaswani2017Transformer`, :cite:`du2022SAITS`
+Imputation                     Neural Network   SAITS (Self-Attention-based Imputation for Time Series)                    2022   :cite:`du2023SAITS`
+Imputation                     Neural Network   Transformer                                                                2017   :cite:`vaswani2017Transformer`, :cite:`du2023SAITS`
 Imputation, Classification     Neural Network   BRITS (Bidirectional Recurrent Imputation for Time Series)                 2018   :cite:`cao2018BRITS`
 Imputation                     Naive            LOCF (Last Observation Carried Forward)                                    /      /
 Classification                 Neural Network   GRU-D                                                                      2018   :cite:`che2018GRUD`

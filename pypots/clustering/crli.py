@@ -363,19 +363,20 @@ class CRLI(BaseNNClusterer):
         self.model.eval()  # set the model as eval status to freeze it.
         return self
 
-    def assemble_input_data(self, data):
-        """Assemble the input data into a dictionary.
+    def assemble_input_for_training(self, data):
+        """Assemble the given data into a dictionary for training input.
 
         Parameters
         ----------
-        data : list
-            A list containing data fetched from Dataset by Dataload.
+        data : list,
+            A list containing data fetched from Dataset by Dataloader.
 
         Returns
         -------
-        inputs : dict
-            A dictionary with data assembled.
+        inputs : dict,
+            A python dictionary contains the input data for model training.
         """
+
         # fetch data
         indices, X, _, missing_mask, _, _ = data
 
@@ -383,7 +384,47 @@ class CRLI(BaseNNClusterer):
             "X": X,
             "missing_mask": missing_mask,
         }
+
         return inputs
+
+    def assemble_input_for_validating(self, data) -> dict:
+        """Assemble the given data into a dictionary for validating input.
+
+        Notes
+        -----
+        The validating data assembling processing is the same as training data assembling.
+
+
+        Parameters
+        ----------
+        data : list,
+            A list containing data fetched from Dataset by Dataloader.
+
+        Returns
+        -------
+        inputs : dict,
+            A python dictionary contains the input data for model validating.
+        """
+        return self.assemble_input_for_training(data)
+
+    def assemble_input_for_testing(self, data) -> dict:
+        """Assemble the given data into a dictionary for testing input.
+
+        Notes
+        -----
+        The testing data assembling processing is the same as training data assembling.
+
+        Parameters
+        ----------
+        data : list,
+            A list containing data fetched from Dataset by Dataloader.
+
+        Returns
+        -------
+        inputs : dict,
+            A python dictionary contains the input data for model testing.
+        """
+        return self.assemble_input_for_training(data)
 
     def _train_model(self, training_loader, val_loader=None):
         self.G_optimizer = torch.optim.Adam(
@@ -410,7 +451,7 @@ class CRLI(BaseNNClusterer):
                 epoch_train_loss_G_collector = []
                 epoch_train_loss_D_collector = []
                 for idx, data in enumerate(training_loader):
-                    inputs = self.assemble_input_data(data)
+                    inputs = self.assemble_input_for_training(data)
 
                     for _ in range(self.D_steps):
                         self.D_optimizer.zero_grad()
@@ -483,7 +524,7 @@ class CRLI(BaseNNClusterer):
 
         with torch.no_grad():
             for idx, data in enumerate(test_loader):
-                inputs = self.assemble_input_data(data)
+                inputs = self.assemble_input_for_testing(data)
                 inputs = self.model.cluster(inputs)
                 latent_collector.append(inputs["fcn_latent"])
 

@@ -77,7 +77,59 @@ class BaseNNClassifier(BaseNNModel, BaseClassifier):
         self.n_classes = n_classes
 
     @abstractmethod
-    def assemble_input_data(self, data):
+    def assemble_input_for_training(self, data) -> dict:
+        """Assemble the given data into a dictionary for training input.
+
+        Parameters
+        ----------
+        data : list,
+            Input data from dataloader, should be list.
+
+        Returns
+        -------
+        dict,
+            A python dictionary contains the input data for model training.
+        """
+        pass
+
+    @abstractmethod
+    def assemble_input_for_validating(self, data) -> dict:
+        """Assemble the given data into a dictionary for validating input.
+
+        Parameters
+        ----------
+        data : list,
+            Data output from dataloader, should be list.
+
+        Returns
+        -------
+        dict,
+            A python dictionary contains the input data for model validating.
+        """
+        pass
+
+    @abstractmethod
+    def assemble_input_for_testing(self, data) -> dict:
+        """Assemble the given data into a dictionary for testing input.
+
+        Notes
+        -----
+        The processing functions of train/val/test stages are separated for the situation that the input of
+        the three stages are different, and this situation usually happens when the Dataset/Dataloader classes
+        used in the train/val/test stages are not the same, e.g. the training data and validating data in a
+        classification task contains labels, but the testing data (from the production environment) generally
+        doesn't have labels.
+
+        Parameters
+        ----------
+        data : list,
+            Data output from dataloader, should be list.
+
+        Returns
+        -------
+        dict,
+            A python dictionary contains the input data for model testing.
+        """
         pass
 
     def _train_model(self, training_loader, val_loader=None):
@@ -94,7 +146,7 @@ class BaseNNClassifier(BaseNNModel, BaseClassifier):
                 self.model.train()
                 epoch_train_loss_collector = []
                 for idx, data in enumerate(training_loader):
-                    inputs = self.assemble_input_data(data)
+                    inputs = self.assemble_input_for_training(data)
                     self.optimizer.zero_grad()
                     results = self.model.forward(inputs)
                     results["loss"].backward()
@@ -111,7 +163,7 @@ class BaseNNClassifier(BaseNNModel, BaseClassifier):
                     epoch_val_loss_collector = []
                     with torch.no_grad():
                         for idx, data in enumerate(val_loader):
-                            inputs = self.assemble_input_data(data)
+                            inputs = self.assemble_input_for_validating(data)
                             results = self.model.forward(inputs)
                             epoch_val_loss_collector.append(results["loss"].item())
 
