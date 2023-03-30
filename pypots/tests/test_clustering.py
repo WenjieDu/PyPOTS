@@ -17,11 +17,13 @@ from pypots.utils.metrics import cal_rand_index, cal_cluster_purity
 
 EPOCHS = 5
 
+TRAIN_SET = {"X": DATA["train_X"]}
+VAL_SET = {"X": DATA["val_X"]}
+TEST_SET = {"X": DATA["test_X"]}
+
 
 class TestCRLI(unittest.TestCase):
     def setUp(self) -> None:
-        self.train_X = DATA["train_X"]
-        self.train_y = DATA["train_y"]
         logger.info("Running test cases for CRLI...")
         self.crli = CRLI(
             n_steps=DATA["n_steps"],
@@ -31,7 +33,7 @@ class TestCRLI(unittest.TestCase):
             rnn_hidden_size=128,
             epochs=EPOCHS,
         )
-        self.crli.fit(self.train_X)
+        self.crli.fit(TRAIN_SET)
 
     def test_parameters(self):
         assert hasattr(self.crli, "model") and self.crli.model is not None
@@ -48,16 +50,14 @@ class TestCRLI(unittest.TestCase):
         )
 
     def test_cluster(self):
-        clustering = self.crli.cluster(self.train_X)
-        RI = cal_rand_index(clustering, self.train_y)
-        CP = cal_cluster_purity(clustering, self.train_y)
+        clustering = self.crli.cluster(TEST_SET)
+        RI = cal_rand_index(clustering, DATA["test_y"])
+        CP = cal_cluster_purity(clustering, DATA["test_y"])
         logger.info(f"RI: {RI}\nCP: {CP}")
 
 
 class TestVaDER(unittest.TestCase):
     def setUp(self) -> None:
-        self.train_X = DATA["train_X"]
-        self.train_y = DATA["train_y"]
         logger.info("Running test cases for VaDER...")
         self.vader = VaDER(
             n_steps=DATA["n_steps"],
@@ -68,7 +68,7 @@ class TestVaDER(unittest.TestCase):
             pretrain_epochs=20,
             epochs=EPOCHS,
         )
-        self.vader.fit(self.train_X)
+        self.vader.fit(TRAIN_SET)
 
     def test_parameters(self):
         assert hasattr(self.vader, "model") and self.vader.model is not None
@@ -85,9 +85,9 @@ class TestVaDER(unittest.TestCase):
 
     def test_cluster(self):
         try:
-            clustering = self.vader.cluster(self.train_X)
-            RI = cal_rand_index(clustering, self.train_y)
-            CP = cal_cluster_purity(clustering, self.train_y)
+            clustering = self.vader.cluster(TEST_SET)
+            RI = cal_rand_index(clustering, DATA["test_y"])
+            CP = cal_cluster_purity(clustering, DATA["test_y"])
             logger.info(f"RI: {RI}\nCP: {CP}")
         except np.linalg.LinAlgError as e:
             logger.info(

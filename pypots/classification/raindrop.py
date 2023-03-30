@@ -666,15 +666,31 @@ class Raindrop(BaseNNClassifier):
         self.model = self.model.to(self.device)
         self._print_model_size()
 
-    def fit(self, train_X, train_y, val_X=None, val_y=None):
+    def fit(self, train_set, val_set=None, file_type="h5py"):
         """Fit the model on the given training data.
 
         Parameters
         ----------
-        train_X : array, shape [n_samples, sequence length (time steps), n_features],
-            Time-series vectors.
-        train_y : array,
-            Classification labels.
+        train_set : dict or str,
+            The dataset for model training, should be a dictionary including keys as 'X' and 'y',
+            or a path string locating a data file.
+            If it is a dict, X should be array-like of shape [n_samples, sequence length (time steps), n_features],
+            which is time-series data for training, can contain missing values, and y should be array-like of shape
+            [n_samples], which is classification labels of X.
+            If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
+            key-value pairs like a dict, and it has to include keys as 'X' and 'y'.
+
+        val_set : dict or str,
+            The dataset for model validating, should be a dictionary including keys as 'X' and 'y',
+            or a path string locating a data file.
+            If it is a dict, X should be array-like of shape [n_samples, sequence length (time steps), n_features],
+            which is time-series data for validating, can contain missing values, and y should be array-like of shape
+            [n_samples], which is classification labels of X.
+            If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
+            key-value pairs like a dict, and it has to include keys as 'X' and 'y'.
+
+        file_type : str, default = "h5py"
+            The type of the given file if train_set and val_set are path strings.
 
         Returns
         -------
@@ -682,15 +698,15 @@ class Raindrop(BaseNNClassifier):
             Trained model.
         """
 
-        training_set = DatasetForGRUD(train_X, train_y)
+        training_set = DatasetForGRUD(train_set)
         training_loader = DataLoader(
             training_set, batch_size=self.batch_size, shuffle=True
         )
 
-        if val_X is None:
+        if val_set is None:
             self._train_model(training_loader)
         else:
-            val_set = DatasetForGRUD(val_X, val_y)
+            val_set = DatasetForGRUD(val_set)
             val_loader = DataLoader(val_set, batch_size=self.batch_size, shuffle=False)
             self._train_model(training_loader, val_loader)
 
@@ -784,9 +800,25 @@ class Raindrop(BaseNNClassifier):
 
         return inputs
 
-    def classify(self, X):
+    def classify(self, X, file_type="h5py"):
+        """Classify the input data with the trained model.
+
+        Parameters
+        ----------
+        X : array-like or str,
+            The data samples for testing, should be array-like of shape [n_samples, sequence length (time steps),
+            n_features], or a path string locating a data file, e.g. h5 file.
+
+        file_type : str, default = "h5py",
+            The type of the given file if X is a path string.
+
+        Returns
+        -------
+        array-like, shape [n_samples],
+            Classification results of the given samples.
+        """
         self.model.eval()  # set the model as eval status to freeze it.
-        test_set = DatasetForGRUD(X)
+        test_set = DatasetForGRUD(X, file_type)
         test_loader = DataLoader(test_set, batch_size=self.batch_size, shuffle=False)
         prediction_collector = []
 
