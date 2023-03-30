@@ -63,8 +63,8 @@ class DatasetForBRITS(BaseDataset):
         if self.X is not None:
             # calculate all delta here.
             # Training will take too much time if we put delta calculation in __getitem__().
-            forward_missing_mask = (~torch.isnan(X)).type(torch.float32)
-            forward_X = torch.nan_to_num(X)
+            forward_missing_mask = (~torch.isnan(self.X)).type(torch.float32)
+            forward_X = torch.nan_to_num(self.X)
             forward_delta = parse_delta(forward_missing_mask)
             backward_X = torch.flip(forward_X, dims=[1])
             backward_missing_mask = torch.flip(forward_missing_mask, dims=[1])

@@ -38,10 +38,14 @@ class BaseDataset(Dataset):
         # types and shapes had been checked after X and y input into the model
         # So they are safe to use here. No need to check again.
 
-        assert X is None and file_path is None, f"X and file_path cannot both be None."
-        assert (
-            X is not None and file_path is not None
+        assert (X is None) ^ (
+            file_path is None
+        ), f"X and file_path cannot both be None."
+
+        assert (X is not None) ^ (
+            file_path is not None
         ), f"X and file_path cannot both be given. Either of them should be given."
+
         assert (
             file_type in SUPPORTED_DATASET_FILE_TYPE
         ), f"file_type should be one of {SUPPORTED_DATASET_FILE_TYPE}, but got {file_type}"
@@ -90,7 +94,8 @@ class BaseDataset(Dataset):
     def __len__(self):
         return self.sample_num
 
-    def check_input(self, X, y=None, out_dtype="tensor"):
+    @staticmethod
+    def check_input(X, y=None, out_dtype="tensor"):
         """Check value type and shape of input X and y
 
         Parameters
@@ -126,9 +131,9 @@ class BaseDataset(Dataset):
         # convert the data type if in need
         if out_dtype == "tensor":
             if is_list:
-                X = torch.tensor(X).to()
+                X = torch.tensor(X)
             elif is_array:
-                X = torch.from_numpy(X).to()
+                X = torch.from_numpy(X)
             else:  # is tensor
                 pass
         else:  # out_dtype is ndarray
