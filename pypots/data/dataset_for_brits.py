@@ -5,6 +5,7 @@ Dataset class for model BRITS.
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: GLP-v3
 
+import numpy as np
 import torch
 
 from pypots.data.base import BaseDataset
@@ -56,43 +57,44 @@ class DatasetForBRITS(BaseDataset):
         Classification labels of according time-series samples.
     """
 
-    def __init__(self, X, y=None):
-        super().__init__(X, y)
+    def __init__(self, X=None, y=None, file_path=None, file_type="h5py"):
+        super().__init__(X, y, file_path, file_type)
 
-        # calculate all delta here.
-        # Training will take too much time if we put delta calculation in __getitem__().
-        forward_missing_mask = (~torch.isnan(X)).type(torch.float32)
-        forward_X = torch.nan_to_num(X)
-        forward_delta = parse_delta(forward_missing_mask)
-        backward_X = torch.flip(forward_X, dims=[1])
-        backward_missing_mask = torch.flip(forward_missing_mask, dims=[1])
-        backward_delta = parse_delta(backward_missing_mask)
+        if self.X is not None:
+            # calculate all delta here.
+            # Training will take too much time if we put delta calculation in __getitem__().
+            forward_missing_mask = (~torch.isnan(X)).type(torch.float32)
+            forward_X = torch.nan_to_num(X)
+            forward_delta = parse_delta(forward_missing_mask)
+            backward_X = torch.flip(forward_X, dims=[1])
+            backward_missing_mask = torch.flip(forward_missing_mask, dims=[1])
+            backward_delta = parse_delta(backward_missing_mask)
 
-        self.data = {
-            "forward": {
-                "X": forward_X,
-                "missing_mask": forward_missing_mask,
-                "delta": forward_delta,
-            },
-            "backward": {
-                "X": backward_X,
-                "missing_mask": backward_missing_mask,
-                "delta": backward_delta,
-            },
-        }
+            self.processed_data = {
+                "forward": {
+                    "X": forward_X,
+                    "missing_mask": forward_missing_mask,
+                    "delta": forward_delta,
+                },
+                "backward": {
+                    "X": backward_X,
+                    "missing_mask": backward_missing_mask,
+                    "delta": backward_delta,
+                },
+            }
 
-    def __getitem__(self, idx):
-        """Fetch data according to index.
+    def _fetch_data_from_array(self, idx):
+        """Fetch data from self.X if it is given.
 
         Parameters
         ----------
         idx : int,
-            The index to fetch the specified sample.
+            The index of the sample to be return.
 
         Returns
         -------
-        dict,
-            A dict contains
+        sample : list,
+            A list contains
 
             index : int tensor,
                 The index of the sample.
@@ -112,16 +114,69 @@ class DatasetForBRITS(BaseDataset):
         sample = [
             torch.tensor(idx),
             # for forward
-            self.data["forward"]["X"][idx].to(torch.float32),
-            self.data["forward"]["missing_mask"][idx].to(torch.float32),
-            self.data["forward"]["delta"][idx].to(torch.float32),
+            self.processed_data["forward"]["X"][idx].to(torch.float32),
+            self.processed_data["forward"]["missing_mask"][idx].to(torch.float32),
+            self.processed_data["forward"]["delta"][idx].to(torch.float32),
             # for backward
-            self.data["backward"]["X"][idx].to(torch.float32),
-            self.data["backward"]["missing_mask"][idx].to(torch.float32),
-            self.data["backward"]["delta"][idx].to(torch.float32),
+            self.processed_data["backward"]["X"][idx].to(torch.float32),
+            self.processed_data["backward"]["missing_mask"][idx].to(torch.float32),
+            self.processed_data["backward"]["delta"][idx].to(torch.float32),
         ]
 
         if self.y is not None:
             sample.append(self.y[idx].to(torch.long))
+
+        return sample
+
+    def _fetch_data_from_file(self, idx):
+        """Fetch data with the lazy-loading strategy, i.e. only loading data from the file while requesting for samples.
+        Here the opened file handle doesn't load the entire dataset into RAM but only load the currently accessed slice.
+
+        Parameters
+        ----------
+        idx : int,
+            The index of the sample to be return.
+
+        Returns
+        -------
+        sample : list,
+            The collated data sample, a list including all necessary sample info.
+        """
+
+        if self.file_handler is None:
+            self.file_handler = self._open_file_handle()
+
+        X = self.file_handler["X"][idx]
+        missing_mask = (~np.isnan(X)).astype("float32")
+        X = np.nan_to_num(X)
+
+        forward = {
+            "X": X,
+            "missing_mask": missing_mask,
+            "deltas": parse_delta(missing_mask),
+        }
+
+        backward = {
+            "X": np.flip(forward["X"], axis=0).copy(),
+            "missing_mask": np.flip(forward["missing_mask"], axis=0).copy(),
+        }
+        backward["deltas"] = parse_delta(backward["missing_mask"])
+
+        sample = [
+            torch.tensor(idx),
+            # for forward
+            torch.from_numpy(forward["X"].astype("float32")),
+            torch.from_numpy(forward["missing_mask"].astype("float32")),
+            torch.from_numpy(forward["deltas"].astype("float32")),
+            # for backward
+            torch.from_numpy(backward["X"].astype("float32")),
+            torch.from_numpy(backward["missing_mask"].astype("float32")),
+            torch.from_numpy(backward["deltas"].astype("float32")),
+        ]
+
+        if (
+            "y" in self.file_handler.keys()
+        ):  # if the dataset has labels, then fetch it from the file
+            sample.append(self.file_handler["y"][idx].to(torch.long))
 
         return sample
