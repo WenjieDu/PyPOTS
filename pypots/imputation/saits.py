@@ -230,7 +230,7 @@ class SAITS(BaseNNImputer):
                 val_X, 0.2
             )
             val_X = masked_fill(val_X, 1 - val_X_missing_mask, torch.nan)
-            val_set = DatasetForMIT(val_X)
+            val_set = BaseDataset(val_X)
             val_loader = DataLoader(val_set, batch_size=self.batch_size, shuffle=False)
             self._train_model(
                 training_loader, val_loader, val_X_intact, val_X_indicating_mask
@@ -282,7 +282,13 @@ class SAITS(BaseNNImputer):
         inputs : dict,
             A python dictionary contains the input data for model validating.
         """
-        return self.assemble_input_for_training(data)
+        indices, X, missing_mask = data
+
+        inputs = {
+            "X": X,
+            "missing_mask": missing_mask,
+        }
+        return inputs
 
     def assemble_input_for_testing(self, data) -> dict:
         """Assemble the given data into a dictionary for testing input.
@@ -301,7 +307,7 @@ class SAITS(BaseNNImputer):
         inputs : dict,
             A python dictionary contains the input data for model testing.
         """
-        return self.assemble_input_for_training(data)
+        return self.assemble_input_for_validating(data)
 
     def impute(self, X):
         X = self.check_input(self.n_steps, self.n_features, X)
