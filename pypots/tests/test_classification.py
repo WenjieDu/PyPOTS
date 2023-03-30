@@ -14,15 +14,13 @@ from pypots.utils.logging import logger
 
 EPOCHS = 5
 
+TRAIN_SET = {"X": DATA["train_X"], "y": DATA["train_y"]}
+VAL_SET = {"X": DATA["val_X"], "y": DATA["val_y"]}
+TEST_SET = {"X": DATA["test_X"]}
+
 
 class TestBRITS(unittest.TestCase):
     def setUp(self) -> None:
-        self.train_X = DATA["train_X"]
-        self.train_y = DATA["train_y"]
-        self.val_X = DATA["val_X"]
-        self.val_y = DATA["val_y"]
-        self.test_X = DATA["test_X"]
-        self.test_y = DATA["test_y"]
         logger.info("Running test cases for BRITS...")
         self.brits = BRITS(
             DATA["n_steps"],
@@ -31,7 +29,7 @@ class TestBRITS(unittest.TestCase):
             n_classes=DATA["n_classes"],
             epochs=EPOCHS,
         )
-        self.brits.fit(self.train_X, self.train_y, self.val_X, self.val_y)
+        self.brits.fit(TRAIN_SET, VAL_SET)
 
     def test_parameters(self):
         assert hasattr(self.brits, "model") and self.brits.model is not None
@@ -47,8 +45,8 @@ class TestBRITS(unittest.TestCase):
         )
 
     def test_classify(self):
-        predictions = self.brits.classify(self.test_X)
-        metrics = cal_binary_classification_metrics(predictions, self.test_y)
+        predictions = self.brits.classify(TEST_SET)
+        metrics = cal_binary_classification_metrics(predictions, DATA["test_y"])
         logger.info(
             f'ROC_AUC: {metrics["roc_auc"]}, \n'
             f'PR_AUC: {metrics["pr_auc"]},\n'
@@ -61,12 +59,6 @@ class TestBRITS(unittest.TestCase):
 
 class TestGRUD(unittest.TestCase):
     def setUp(self) -> None:
-        self.train_X = DATA["train_X"]
-        self.train_y = DATA["train_y"]
-        self.val_X = DATA["val_X"]
-        self.val_y = DATA["val_y"]
-        self.test_X = DATA["test_X"]
-        self.test_y = DATA["test_y"]
         logger.info("Running test cases for GRUD...")
         self.grud = GRUD(
             DATA["n_steps"],
@@ -75,7 +67,7 @@ class TestGRUD(unittest.TestCase):
             n_classes=DATA["n_classes"],
             epochs=EPOCHS,
         )
-        self.grud.fit(self.train_X, self.train_y, self.val_X, self.val_y)
+        self.grud.fit(TRAIN_SET, VAL_SET)
 
     def test_parameters(self):
         assert hasattr(self.grud, "model") and self.grud.model is not None
@@ -91,8 +83,8 @@ class TestGRUD(unittest.TestCase):
         )
 
     def test_classify(self):
-        predictions = self.grud.classify(self.test_X)
-        metrics = cal_binary_classification_metrics(predictions, self.test_y)
+        predictions = self.grud.classify(TEST_SET)
+        metrics = cal_binary_classification_metrics(predictions, DATA["test_y"])
         logger.info(
             f'ROC_AUC: {metrics["roc_auc"]}, \n'
             f'PR_AUC: {metrics["pr_auc"]},\n'
@@ -105,12 +97,6 @@ class TestGRUD(unittest.TestCase):
 
 class TestRaindrop(unittest.TestCase):
     def setUp(self) -> None:
-        self.train_X = DATA["train_X"]
-        self.train_y = DATA["train_y"]
-        self.val_X = DATA["val_X"]
-        self.val_y = DATA["val_y"]
-        self.test_X = DATA["test_X"]
-        self.test_y = DATA["test_y"]
         logger.info("Running test cases for Raindrop...")
         self.raindrop = Raindrop(
             DATA["n_features"],
@@ -127,7 +113,7 @@ class TestRaindrop(unittest.TestCase):
             False,
             epochs=EPOCHS,
         )
-        self.raindrop.fit(self.train_X, self.train_y, self.val_X, self.val_y)
+        self.raindrop.fit(TRAIN_SET, VAL_SET)
 
     def test_parameters(self):
         assert hasattr(self.raindrop, "model") and self.raindrop.model is not None
@@ -145,8 +131,8 @@ class TestRaindrop(unittest.TestCase):
         )
 
     def test_classify(self):
-        predictions = self.raindrop.classify(self.test_X)
-        metrics = cal_binary_classification_metrics(predictions, self.test_y)
+        predictions = self.raindrop.classify(TEST_SET)
+        metrics = cal_binary_classification_metrics(predictions, DATA["test_y"])
         logger.info(
             f'ROC_AUC: {metrics["roc_auc"]}, \n'
             f'PR_AUC: {metrics["pr_auc"]},\n'

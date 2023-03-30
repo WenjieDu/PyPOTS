@@ -18,15 +18,21 @@ class DatasetForGRUD(BaseDataset):
 
     Parameters
     ----------
-    X : tensor, shape of [n_samples, seq_len, n_features]
-        Time-series feature vector.
+    data : dict or str,
+        The dataset for model input, should be a dictionary including keys as 'X' and 'y',
+        or a path string locating a data file.
+        If it is a dict, X should be array-like of shape [n_samples, sequence length (time steps), n_features],
+        which is time-series data for input, can contain missing values, and y should be array-like of shape
+        [n_samples], which is classification labels of X.
+        If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
+        key-value pairs like a dict, and it has to include keys as 'X' and 'y'.
 
-    y : tensor, shape of [n_samples], optional, default=None,
-        Classification labels of according time-series samples.
+    file_type : str, default = "h5py"
+        The type of the given file if train_set and val_set are path strings.
     """
 
-    def __init__(self, X=None, y=None, file_path=None, file_type="h5py"):
-        super().__init__(X, y, file_path, file_type)
+    def __init__(self, data, file_type="h5py"):
+        super().__init__(data, file_type)
 
         self.locf = LOCF()
 
@@ -99,10 +105,10 @@ class DatasetForGRUD(BaseDataset):
             The collated data sample, a list including all necessary sample info.
         """
 
-        if self.file_handler is None:
-            self.file_handler = self._open_file_handle()
+        if self.file_handle is None:
+            self.file_handle = self._open_file_handle()
 
-        X = torch.from_numpy(self.file_handler["X"][idx])
+        X = torch.from_numpy(self.file_handle["X"][idx])
         missing_mask = (~torch.isnan(X)).to(torch.float32)
         X_filledLOCF = self.locf.locf_torch(X)
         X = torch.nan_to_num(X)
@@ -121,8 +127,8 @@ class DatasetForGRUD(BaseDataset):
         ]
 
         if (
-            "y" in self.file_handler.keys()
+            "y" in self.file_handle.keys()
         ):  # if the dataset has labels, then fetch it from the file
-            sample.append(self.file_handler["y"][idx].to(torch.long))
+            sample.append(self.file_handle["y"][idx].to(torch.long))
 
         return sample

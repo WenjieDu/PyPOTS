@@ -50,19 +50,24 @@ class DatasetForBRITS(BaseDataset):
 
     Parameters
     ----------
-    X : tensor, shape of [n_samples, n_steps, n_features]
-        Time-series data.
+    data : dict or str,
+        The dataset for model input, should be a dictionary including keys as 'X' and 'y',
+        or a path string locating a data file.
+        If it is a dict, X should be array-like of shape [n_samples, sequence length (time steps), n_features],
+        which is time-series data for input, can contain missing values, and y should be array-like of shape
+        [n_samples], which is classification labels of X.
+        If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
+        key-value pairs like a dict, and it has to include keys as 'X' and 'y'.
 
-    y : tensor, shape of [n_samples], optional, default=None,
-        Classification labels of according time-series samples.
+    file_type : str, default = "h5py"
+        The type of the given file if train_set and val_set are path strings.
     """
 
-    def __init__(self, X=None, y=None, file_path=None, file_type="h5py"):
-        super().__init__(X, y, file_path, file_type)
+    def __init__(self, data, file_type="h5py"):
+        super().__init__(data, file_type)
 
-        if self.X is not None:
+        if not isinstance(self.data, str):
             # calculate all delta here.
-            # Training will take too much time if we put delta calculation in __getitem__().
             forward_missing_mask = (~torch.isnan(self.X)).type(torch.float32)
             forward_X = torch.nan_to_num(self.X)
             forward_delta = parse_delta(forward_missing_mask)
@@ -143,10 +148,10 @@ class DatasetForBRITS(BaseDataset):
             The collated data sample, a list including all necessary sample info.
         """
 
-        if self.file_handler is None:
-            self.file_handler = self._open_file_handle()
+        if self.file_handle is None:
+            self.file_handle = self._open_file_handle()
 
-        X = self.file_handler["X"][idx]
+        X = self.file_handle["X"][idx]
         missing_mask = (~np.isnan(X)).astype("float32")
         X = np.nan_to_num(X)
 
@@ -175,8 +180,8 @@ class DatasetForBRITS(BaseDataset):
         ]
 
         if (
-            "y" in self.file_handler.keys()
+            "y" in self.file_handle.keys()
         ):  # if the dataset has labels, then fetch it from the file
-            sample.append(self.file_handler["y"][idx].to(torch.long))
+            sample.append(self.file_handle["y"][idx].to(torch.long))
 
         return sample

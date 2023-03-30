@@ -18,51 +18,44 @@ SUPPORTED_DATASET_FILE_TYPE = ["h5py"]
 class BaseDataset(Dataset):
     """Base dataset class in PyPOTS.
 
-    Parameters
-    ----------
-    X : tensor, shape of [n_samples, n_steps, n_features]
-        Time-series feature vector.
+    data : dict or str,
+        The dataset for model input, should be a dictionary including keys as 'X' and 'y',
+        or a path string locating a data file.
+        If it is a dict, X should be array-like of shape [n_samples, sequence length (time steps), n_features],
+        which is time-series data for input, can contain missing values, and y should be array-like of shape
+        [n_samples], which is classification labels of X.
+        If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
+        key-value pairs like a dict, and it has to include keys as 'X' and 'y'.
 
-    y : tensor, shape of [n_samples], optional, default=None,
-        Classification labels of according time-series samples.
-
-    file_path : str,
-        The path to the dataset file.
-
-    file_type : str,
-        The type of the given file, should be one of `numpy`, `h5py`, `pickle`.
+    file_type : str, default = "h5py"
+        The type of the given file if train_set and val_set are path strings.
     """
 
-    def __init__(self, X=None, y=None, file_path=None, file_type="h5py"):
+    def __init__(self, data, file_type="h5py"):
         super().__init__()
         # types and shapes had been checked after X and y input into the model
         # So they are safe to use here. No need to check again.
 
-        assert (X is None) ^ (
-            file_path is None
-        ), f"X and file_path cannot both be None."
+        self.data = data
+        if isinstance(data, str):
+            self.file_type = file_type
 
-        assert (X is not None) ^ (
-            file_path is not None
-        ), f"X and file_path cannot both be given. Either of them should be given."
-
-        assert (
-            file_type in SUPPORTED_DATASET_FILE_TYPE
-        ), f"file_type should be one of {SUPPORTED_DATASET_FILE_TYPE}, but got {file_type}"
-
-        if X is not None:
-            X, y = self.check_input(X, y)
-
-        self.X = X
-        self.y = y
-        self.file_path = file_path
-        self.file_type = file_type
-
-        if self.file_path is not None:
-            self.file_handler = self._open_file_handle()
+            # check if the given file type is supported
             assert (
-                "X" in self.file_handler.keys()
+                file_type in SUPPORTED_DATASET_FILE_TYPE
+            ), f"file_type should be one of {SUPPORTED_DATASET_FILE_TYPE}, but got {file_type}"
+
+            # open the file handle
+            self.file_handle = self._open_file_handle()
+            # check if X exists in the file
+            assert (
+                "X" in self.file_handle.keys()
             ), "The given dataset file doesn't contains X. Please double check."
+
+        else:
+            X = data["X"]
+            y = None if "y" not in data.keys() else data["y"]
+            self.X, self.y = self.check_input(X, y)
 
         self.sample_num = self._get_sample_num()
 
@@ -80,14 +73,12 @@ class BaseDataset(Dataset):
         sample_num : int
             The number of the samples in the given dataset.
         """
-        if self.X is not None:
-            sample_num = len(self.X)
-        elif self.file_path is not None and self.file_type == "h5py":
-            if self.file_handler is None:
-                self.file_handler = self._open_file_handle()
-            sample_num = len(self.file_handler["X"])
+        if isinstance(self.data, str):
+            if self.file_handle is None:
+                self.file_handle = self._open_file_handle()
+            sample_num = len(self.file_handle["X"])
         else:
-            raise TypeError(f"So far only h5py is supported.")
+            sample_num = len(self.X)
 
         return sample_num
 
@@ -208,14 +199,15 @@ class BaseDataset(Dataset):
 
         Returns
         -------
-        file_handle : file.
+        file_handle : file
 
         """
+        data_file_path = self.data
         try:
             import h5py
 
             file_handler = h5py.File(
-                self.file_path, "r"
+                data_file_path, "r"
             )  # set swmr=True if the h5 file need to be written into new content during reading
         except ImportError:
             raise ImportError(
@@ -224,7 +216,7 @@ class BaseDataset(Dataset):
         except OSError as e:
             raise TypeError(
                 f"{e} This probably is caused by file type error. "
-                f"Please confirm that the given file {self.file_path} is an h5 file."
+                f"Please confirm that the given file {data_file_path} is an h5 file."
             )
         except Exception as e:
             raise RuntimeError(e)
@@ -257,10 +249,10 @@ class BaseDataset(Dataset):
             The collated data sample, a list including all necessary sample info.
         """
 
-        if self.file_handler is None:
-            self.file_handler = self._open_file_handle()
+        if self.file_handle is None:
+            self.file_handle = self._open_file_handle()
 
-        X = self.file_handler["X"][idx]
+        X = self.file_handle["X"][idx]
         missing_mask = ~torch.isnan(X)
         X = torch.nan_to_num(X)
         sample = [
@@ -270,9 +262,9 @@ class BaseDataset(Dataset):
         ]
 
         if (
-            "y" in self.file_handler.keys()
+            "y" in self.file_handle.keys()
         ):  # if the dataset has labels, then fetch it from the file
-            sample.append(self.file_handler["y"][idx].to(torch.long))
+            sample.append(self.file_handle["y"][idx].to(torch.long))
 
         return sample
 

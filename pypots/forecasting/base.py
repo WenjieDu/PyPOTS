@@ -22,13 +22,29 @@ class BaseForecaster(BaseModel):
         super().__init__(device)
 
     @abstractmethod
-    def fit(self, train_X):
-        """Train the cluster.
+    def fit(self, train_set, val_set=None, file_type="h5py"):
+        """Train the classifier on the given data.
 
         Parameters
         ----------
-        train_X : array-like of shape [n_samples, sequence length (time steps), n_features],
-            Time-series data for training, can contain missing values.
+        train_set : dict or str,
+            The dataset for model training, should be a dictionary including the key 'X',
+            or a path string locating a data file.
+            If it is a dict, X should be array-like of shape [n_samples, sequence length (time steps), n_features],
+            which is time-series data for training, can contain missing values.
+            If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
+            key-value pairs like a dict, and it has to include the key 'X'.
+
+        val_set : dict or str,
+            The dataset for model validating, should be a dictionary including the key 'X',
+            or a path string locating a data file.
+            If it is a dict, X should be array-like of shape [n_samples, sequence length (time steps), n_features],
+            which is time-series data for validation, can contain missing values.
+            If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
+            key-value pairs like a dict, and it has to include the key 'X'.
+
+        file_type : str, default = "h5py",
+            The type of the given file if train_set and val_set are path strings.
 
         Returns
         -------
@@ -38,13 +54,16 @@ class BaseForecaster(BaseModel):
         return self
 
     @abstractmethod
-    def forecast(self, X):
+    def forecast(self, X, file_type="h5py"):
         """Forecast the future the input with the trained model.
 
         Parameters
         ----------
         X : array-like of shape [n_samples, sequence length (time steps), n_features],
             Time-series data containing missing values.
+
+        file_type : str, default = "h5py"
+            The type of the given file if X is a path string.
 
         Returns
         -------

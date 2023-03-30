@@ -18,26 +18,29 @@ class DatasetForMIT(BaseDataset):
 
     Parameters
     ----------
-    X : tensor, shape of [n_samples, n_steps, n_features]
-        Time-series feature vector.
+    data : dict or str,
+        The dataset for model input, should be a dictionary including keys as 'X' and 'y',
+        or a path string locating a data file.
+        If it is a dict, X should be array-like of shape [n_samples, sequence length (time steps), n_features],
+        which is time-series data for input, can contain missing values, and y should be array-like of shape
+        [n_samples], which is classification labels of X.
+        If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
+        key-value pairs like a dict, and it has to include keys as 'X' and 'y'.
 
-    y : tensor, shape of [n_samples], optional, default=None,
-        Classification labels of according time-series samples.
+    file_type : str, default = "h5py"
+        The type of the given file if train_set and val_set are path strings.
 
     rate : float, in (0,1),
         Artificially missing rate, rate of the observed values which will be artificially masked as missing.
-
-        Note that,
-        `rate` = (number of artificially missing values) / np.sum(~np.isnan(self.data)),
+        Note that, `rate` = (number of artificially missing values) / np.sum(~np.isnan(self.data)),
         not (number of artificially missing values) / np.product(self.data.shape),
         considering that the given data may already contain missing values,
         the latter way may be confusing because if the original missing rate >= `rate`,
         the function will do nothing, i.e. it won't play the role it has to be.
-
     """
 
-    def __init__(self, X=None, y=None, file_path=None, file_type="h5py", rate=0.2):
-        super().__init__(X, y, file_path, file_type)
+    def __init__(self, data, file_type="h5py", rate=0.2):
+        super().__init__(data, file_type)
         self.rate = rate
 
     def _fetch_data_from_array(self, idx):
@@ -99,10 +102,10 @@ class DatasetForMIT(BaseDataset):
             The collated data sample, a list including all necessary sample info.
         """
 
-        if self.file_handler is None:
-            self.file_handler = self._open_file_handle()
+        if self.file_handle is None:
+            self.file_handle = self._open_file_handle()
 
-        X = torch.from_numpy(self.file_handler["X"][idx])
+        X = torch.from_numpy(self.file_handle["X"][idx])
         X_intact, X, missing_mask, indicating_mask = mcar(X, rate=self.rate)
 
         sample = [
@@ -114,8 +117,8 @@ class DatasetForMIT(BaseDataset):
         ]
 
         if (
-            "y" in self.file_handler.keys()
+            "y" in self.file_handle.keys()
         ):  # if the dataset has labels, then fetch it from the file
-            sample.append(self.file_handler["y"][idx].to(torch.long))
+            sample.append(self.file_handle["y"][idx].to(torch.long))
 
         return sample

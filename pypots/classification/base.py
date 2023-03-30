@@ -22,19 +22,31 @@ class BaseClassifier(BaseModel):
         super().__init__(device)
 
     @abstractmethod
-    def fit(self, train_X, train_y, val_X=None, val_y=None):
-        """Train the classifier.
+    def fit(self, train_set, val_set=None, file_type="h5py"):
+        """Train the classifier on the given data.
 
         Parameters
         ----------
-        train_X : array-like of shape [n_samples, sequence length (time steps), n_features],
-            Time-series data for training, can contain missing values.
-        train_y : array,
-            Classification labels for training.
-        val_X : array-like of shape [n_samples, sequence length (time steps), n_features],
-            Time-series data for validation, can contain missing values.
-        val_y : array,
-            Classification labels for validation.
+        train_set : dict or str,
+            The dataset for model training, should be a dictionary including keys as 'X' and 'y',
+            or a path string locating a data file.
+            If it is a dict, X should be array-like of shape [n_samples, sequence length (time steps), n_features],
+            which is time-series data for training, can contain missing values, and y should be array-like of shape
+            [n_samples], which is classification labels of X.
+            If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
+            key-value pairs like a dict, and it has to include keys as 'X' and 'y'.
+
+        val_set : dict or str,
+            The dataset for model validating, should be a dictionary including keys as 'X' and 'y',
+            or a path string locating a data file.
+            If it is a dict, X should be array-like of shape [n_samples, sequence length (time steps), n_features],
+            which is time-series data for validating, can contain missing values, and y should be array-like of shape
+            [n_samples], which is classification labels of X.
+            If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
+            key-value pairs like a dict, and it has to include keys as 'X' and 'y'.
+
+        file_type : str, default = "h5py",
+            The type of the given file if train_set and val_set are path strings.
 
         Returns
         -------
@@ -44,18 +56,22 @@ class BaseClassifier(BaseModel):
         return self
 
     @abstractmethod
-    def classify(self, X):
-        """Classify the input with the trained model.
+    def classify(self, X, file_type="h5py"):
+        """Classify the input data with the trained model.
 
         Parameters
         ----------
-        X : array-like of shape [n_samples, sequence length (time steps), n_features],
-            Time-series data contains missing values.
+        X : array-like or str,
+            The data samples for testing, should be array-like of shape [n_samples, sequence length (time steps),
+            n_features], or a path string locating a data file, e.g. h5 file.
+
+        file_type : str, default = "h5py",
+            The type of the given file if X is a path string.
 
         Returns
         -------
-        array-like, shape [n_samples, sequence length (time steps), n_features],
-            Classification results.
+        array-like, shape [n_samples],
+            Classification results of the given samples.
         """
         pass
 
