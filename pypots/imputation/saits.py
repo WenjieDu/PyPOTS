@@ -215,10 +215,6 @@ class SAITS(BaseNNImputer):
         self._print_model_size()
 
     def fit(self, train_X, val_X=None):
-        train_X = self.check_input(self.n_steps, self.n_features, train_X)
-        if val_X is not None:
-            val_X = self.check_input(self.n_steps, self.n_features, val_X)
-
         training_set = DatasetForMIT(train_X)
         training_loader = DataLoader(
             training_set, batch_size=self.batch_size, shuffle=True

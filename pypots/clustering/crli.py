@@ -353,7 +353,6 @@ class CRLI(BaseNNClusterer):
         self.logger = {"training_loss_generator": [], "training_loss_discriminator": []}
 
     def fit(self, train_X):
-        train_X = self.check_input(self.n_steps, self.n_features, train_X)
         training_set = DatasetForGRUD(train_X)
         training_loader = DataLoader(
             training_set, batch_size=self.batch_size, shuffle=True
@@ -516,7 +515,6 @@ class CRLI(BaseNNClusterer):
         logger.info("Finished training.")
 
     def cluster(self, X):
-        X = self.check_input(self.n_steps, self.n_features, X)
         self.model.eval()  # set the model as eval status to freeze it.
         test_set = DatasetForGRUD(X)
         test_loader = DataLoader(test_set, batch_size=self.batch_size, shuffle=False)

@@ -305,9 +305,6 @@ class Transformer(BaseNNImputer):
         self._print_model_size()
 
     def fit(self, train_X, val_X=None):
-        train_X = self.check_input(self.n_steps, self.n_features, train_X)
-        if val_X is not None:
-            val_X = self.check_input(self.n_steps, self.n_features, val_X)
 
         training_set = DatasetForMIT(train_X)
         training_loader = DataLoader(
@@ -402,7 +399,6 @@ class Transformer(BaseNNImputer):
         return self.assemble_input_for_validating(data)
 
     def impute(self, X):
-        X = self.check_input(self.n_steps, self.n_features, X)
         self.model.eval()  # set the model as eval status to freeze it.
         test_set = BaseDataset(X)
         test_loader = DataLoader(test_set, batch_size=self.batch_size, shuffle=False)

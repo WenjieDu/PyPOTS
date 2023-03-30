@@ -511,10 +511,6 @@ class BRITS(BaseNNImputer):
         self : object,
             Trained model.
         """
-        train_X = self.check_input(self.n_steps, self.n_features, train_X)
-        if val_X is not None:
-            val_X = self.check_input(self.n_steps, self.n_features, val_X)
-
         training_set = DatasetForBRITS(train_X)  # time_gaps is necessary for BRITS
         training_loader = DataLoader(
             training_set, batch_size=self.batch_size, shuffle=True
@@ -611,7 +607,6 @@ class BRITS(BaseNNImputer):
         return self.assemble_input_for_training(data)
 
     def impute(self, X):
-        X = self.check_input(self.n_steps, self.n_features, X)
         self.model.eval()  # set the model as eval status to freeze it.
         test_set = DatasetForBRITS(X)
         test_loader = DataLoader(test_set, batch_size=self.batch_size, shuffle=False)

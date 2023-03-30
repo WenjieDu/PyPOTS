@@ -196,10 +196,6 @@ class BRITS(BaseNNClassifier):
         self : object,
             Trained model.
         """
-        train_X, train_y = self.check_input(
-            self.n_steps, self.n_features, train_X, train_y
-        )
-        val_X, val_y = self.check_input(self.n_steps, self.n_features, val_X, val_y)
 
         training_set = DatasetForBRITS(
             train_X, train_y
@@ -326,7 +322,6 @@ class BRITS(BaseNNClassifier):
         return inputs
 
     def classify(self, X):
-        X = self.check_input(self.n_steps, self.n_features, X)
         self.model.eval()  # set the model as eval status to freeze it.
         test_set = DatasetForBRITS(X)
         test_loader = DataLoader(test_set, batch_size=self.batch_size, shuffle=False)
