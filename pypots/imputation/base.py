@@ -168,7 +168,7 @@ class BaseNNImputer(BaseNNModel, BaseImputer):
                             imputation_collector.append(imputed_data)
 
                     imputation_collector = torch.cat(imputation_collector)
-                    imputation_collector = imputation_collector
+                    imputation_collector = imputation_collector.numpy()
 
                     mean_val_loss = cal_mae(
                         imputation_collector, val_X_intact, val_indicating_mask
