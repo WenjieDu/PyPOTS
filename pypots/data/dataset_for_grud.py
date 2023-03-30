@@ -31,9 +31,9 @@ class DatasetForGRUD(BaseDataset):
         self.locf = LOCF()
 
         if self.X is not None:
-            self.missing_mask = (~torch.isnan(X)).to(torch.float32)
-            self.X_filledLOCF = self.locf.locf_torch(X)
-            self.X = torch.nan_to_num(X)
+            self.missing_mask = (~torch.isnan(self.X)).to(torch.float32)
+            self.X_filledLOCF = self.locf.locf_torch(self.X)
+            self.X = torch.nan_to_num(self.X)
             self.deltas = parse_delta(self.missing_mask)
             self.empirical_mean = torch.sum(
                 self.missing_mask * self.X, dim=[0, 1]
