@@ -306,7 +306,6 @@ class SAITS(BaseNNImputer):
         return self.assemble_input_for_validating(data)
 
     def impute(self, X):
-        X = self.check_input(self.n_steps, self.n_features, X)
         self.model.eval()  # set the model as eval status to freeze it.
         test_set = BaseDataset(X)
         test_loader = DataLoader(test_set, batch_size=self.batch_size, shuffle=False)
