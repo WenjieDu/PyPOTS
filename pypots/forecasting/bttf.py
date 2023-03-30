@@ -462,7 +462,6 @@ class BTTF(BaseForecaster):
         warnings.warn("Please run func forecast(X) directly.")
 
     def forecast(self, X):
-        self.check_input(self.n_steps, self.n_features, X, out_dtype="ndarray")
         X = X.transpose((0, 2, 1))
 
         pred = BTTF_forecast(

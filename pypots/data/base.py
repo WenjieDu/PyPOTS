@@ -6,6 +6,8 @@ Utilities for data manipulation
 # License: GPL-v3
 
 from abc import abstractmethod
+
+import numpy as np
 import torch
 from torch.utils.data import Dataset
 
@@ -44,17 +46,23 @@ class BaseDataset(Dataset):
             file_type in SUPPORTED_DATASET_FILE_TYPE
         ), f"file_type should be one of {SUPPORTED_DATASET_FILE_TYPE}, but got {file_type}"
 
+        if X is not None:
+            X, y = self.check_input(X, y)
+
         self.X = X
         self.y = y
         self.file_path = file_path
         self.file_type = file_type
+
         if self.file_path is not None:
             self.file_handler = self._open_file_handle()
             assert (
                 "X" in self.file_handler.keys()
             ), "The given dataset file doesn't contains X. Please double check."
+
         self.sample_num = self._get_sample_num()
 
+        # set up function fetch_data()
         if self.X is not None:
             self.fetch_data = self._fetch_data_from_array
         else:
@@ -81,6 +89,81 @@ class BaseDataset(Dataset):
 
     def __len__(self):
         return self.sample_num
+
+    def check_input(self, X, y=None, out_dtype="tensor"):
+        """Check value type and shape of input X and y
+
+        Parameters
+        ----------
+        X : array-like,
+            Time-series data that must have a shape like [n_samples, expected_n_steps, expected_n_features].
+
+        y : array-like, default=None
+            Labels of time-series samples (X) that must have a shape like [n_samples] or [n_samples, n_classes].
+
+        out_dtype : str, in ['tensor', 'ndarray'], default='tensor'
+            Data type of the output, should be np.ndarray or torch.Tensor
+
+        Returns
+        -------
+        X : array-like
+
+        y : array-like
+        """
+        assert out_dtype in [
+            "tensor",
+            "ndarray",
+        ], f'out_dtype should be "tensor" or "ndarray", but got {out_dtype}'
+
+        is_list = isinstance(X, list)
+        is_array = isinstance(X, np.ndarray)
+        is_tensor = isinstance(X, torch.Tensor)
+        assert is_tensor or is_array or is_list, TypeError(
+            "X should be an instance of list/np.ndarray/torch.Tensor, "
+            f"but got {type(X)}"
+        )
+
+        # convert the data type if in need
+        if out_dtype == "tensor":
+            if is_list:
+                X = torch.tensor(X).to()
+            elif is_array:
+                X = torch.from_numpy(X).to()
+            else:  # is tensor
+                pass
+        else:  # out_dtype is ndarray
+            # convert to np.ndarray first for shape check
+            if is_list:
+                X = np.asarray(X)
+            elif is_tensor:
+                X = X.numpy()
+            else:  # is ndarray
+                pass
+
+        # check the shape of X here
+        X_shape = X.shape
+        assert len(X_shape) == 3, (
+            f"input should have 3 dimensions [n_samples, seq_len, n_features],"
+            f"but got shape={X_shape}"
+        )
+
+        if y is not None:
+            assert len(X) == len(y), (
+                f"lengths of X and y must match, " f"but got f{len(X)} and {len(y)}"
+            )
+            if isinstance(y, torch.Tensor):
+                y = y if out_dtype == "tensor" else y.numpy()
+            elif isinstance(y, list):
+                y = torch.tensor(y) if out_dtype == "tensor" else np.asarray(y)
+            elif isinstance(y, np.ndarray):
+                y = torch.from_numpy(y) if out_dtype == "tensor" else y
+            else:
+                raise TypeError(
+                    "y should be an instance of list/np.ndarray/torch.Tensor, "
+                    f"but got {type(y)}"
+                )
+
+        return X, y
 
     @abstractmethod
     def _fetch_data_from_array(self, idx):

@@ -8,7 +8,6 @@ Base class for main models in PyPOTS.
 import os
 from abc import ABC
 
-import numpy as np
 import torch
 
 from pypots.utils.files import create_dir_if_not_exist
@@ -31,101 +30,6 @@ class BaseModel(ABC):
             logger.info(f"No given device, using default device: {self.device}")
         else:
             self.device = device
-
-    def check_input(
-        self, expected_n_steps, expected_n_features, X, y=None, out_dtype="tensor"
-    ):
-        """Check value type and shape of input X and y
-
-        Parameters
-        ----------
-        expected_n_steps : int
-            Number of time steps of input time series (X) that the model expects.
-            This value is the same with the argument `n_steps` used to initialize the model.
-
-        expected_n_features : int
-            Number of feature dimensions of input time series (X) that the model expects.
-            This value is the same with the argument `n_features` used to initialize the model.
-
-        X : array-like,
-            Time-series data that must have a shape like [n_samples, expected_n_steps, expected_n_features].
-
-        y : array-like, default=None
-            Labels of time-series samples (X) that must have a shape like [n_samples] or [n_samples, n_classes].
-
-        out_dtype : str, in ['tensor', 'ndarray'], default='tensor'
-            Data type of the output, should be np.ndarray or torch.Tensor
-
-        Returns
-        -------
-        X : tensor
-
-        y : tensor
-        """
-        assert out_dtype in [
-            "tensor",
-            "ndarray",
-        ], f'out_dtype should be "tensor" or "ndarray", but got {out_dtype}'
-        is_list = isinstance(X, list)
-        is_array = isinstance(X, np.ndarray)
-        is_tensor = isinstance(X, torch.Tensor)
-        assert is_tensor or is_array or is_list, TypeError(
-            "X should be an instance of list/np.ndarray/torch.Tensor, "
-            f"but got {type(X)}"
-        )
-
-        # convert the data type if in need
-        if out_dtype == "tensor":
-            if is_list:
-                X = torch.tensor(X).to(self.device)
-            elif is_array:
-                X = torch.from_numpy(X).to(self.device)
-            else:  # is tensor
-                X = X.to(self.device)
-        else:  # out_dtype is ndarray
-            # convert to np.ndarray first for shape check
-            if is_list:
-                X = np.asarray(X)
-            elif is_tensor:
-                X = X.numpy()
-            else:  # is ndarray
-                pass
-
-        # check the shape of X here
-        X_shape = X.shape
-        assert len(X_shape) == 3, (
-            f"input should have 3 dimensions [n_samples, seq_len, n_features],"
-            f"but got shape={X.shape}"
-        )
-        assert (
-            X_shape[1] == expected_n_steps
-        ), f"expect X.shape[1] to be {expected_n_steps}, but got {X_shape[1]}"
-        assert (
-            X_shape[2] == expected_n_features
-        ), f"expect X.shape[2] to be {expected_n_features}, but got {X_shape[2]}"
-
-        if y is not None:
-            assert len(X) == len(y), (
-                f"lengths of X and y must match, " f"but got f{len(X)} and {len(y)}"
-            )
-            if isinstance(y, torch.Tensor):
-                y = y.to(self.device) if out_dtype == "tensor" else y.numpy()
-            elif isinstance(y, list):
-                y = (
-                    torch.tensor(y).to(self.device)
-                    if out_dtype == "tensor"
-                    else np.asarray(y)
-                )
-            elif isinstance(y, np.ndarray):
-                y = torch.from_numpy(y).to(self.device) if out_dtype == "tensor" else y
-            else:
-                raise TypeError(
-                    "y should be an instance of list/np.ndarray/torch.Tensor, "
-                    f"but got {type(y)}"
-                )
-            return X, y
-        else:
-            return X
 
     def save_logs_to_tensorboard(self, saving_path):
         """Save logs (self.logger) into a tensorboard file.
