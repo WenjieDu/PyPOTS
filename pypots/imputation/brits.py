@@ -336,7 +336,7 @@ class _BRITS(nn.Module):
         imputed_data_b = {"imputed_data_b": imputed_data_b}
         imputed_data_b = self.reverse(imputed_data_b)["imputed_data_b"]
         imputed_data = (imputed_data_f + imputed_data_b) / 2
-        return imputed_data
+        return imputed_data, None
 
     @staticmethod
     def get_consistency_loss(pred_f, pred_b):
@@ -620,7 +620,7 @@ class BRITS(BaseNNImputer):
         with torch.no_grad():
             for idx, data in enumerate(test_loader):
                 inputs = self.assemble_input_for_testing(data)
-                imputed_data = self.model.impute(inputs)
+                imputed_data, _ = self.model.impute(inputs)
                 imputation_collector.append(imputed_data)
 
         imputation_collector = torch.cat(imputation_collector)
