@@ -6,7 +6,6 @@ Utilities for data manipulation
 # License: GPL-v3
 
 from abc import abstractmethod
-import h5py
 import torch
 from torch.utils.data import Dataset
 
@@ -71,9 +70,10 @@ class BaseDataset(Dataset):
         """
         if self.X is not None:
             sample_num = len(self.X)
-        elif self.file_type == "h5py":
-            with h5py.File(self.file_path, "r") as hf:
-                sample_num = len(hf["X"])
+        elif self.file_path is not None and self.file_type == "h5py":
+            if self.file_handler is None:
+                self.file_handler = self._open_file_handle()
+            sample_num = len(self.file_handler["X"])
         else:
             raise TypeError(f"So far only h5py is supported.")
 
@@ -124,9 +124,15 @@ class BaseDataset(Dataset):
 
         """
         try:
+            import h5py
+
             file_handler = h5py.File(
                 self.file_path, "r"
             )  # set swmr=True if the h5 file need to be written into new content during reading
+        except ImportError:
+            raise ImportError(
+                "h5py is missing and cannot be imported. Please install it first."
+            )
         except OSError as e:
             raise TypeError(
                 f"{e} This probably is caused by file type error. "
