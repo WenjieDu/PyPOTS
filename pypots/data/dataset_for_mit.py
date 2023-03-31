@@ -119,6 +119,6 @@ class DatasetForMIT(BaseDataset):
         if (
             "y" in self.file_handle.keys()
         ):  # if the dataset has labels, then fetch it from the file
-            sample.append(self.file_handle["y"][idx].to(torch.long))
+            sample.append(torch.tensor(self.file_handle["y"][idx], dtype=torch.long))
 
         return sample

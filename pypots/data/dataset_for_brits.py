@@ -16,7 +16,7 @@ def parse_delta(missing_mask):
 
     Parameters
     ----------
-    missing_mask : tensor, shape of [n_samples, n_steps, n_features]
+    missing_mask : tensor, shape of [n_steps, n_features] or [n_samples, n_steps, n_features]
         Binary masks indicate missing values.
 
     Returns
@@ -25,23 +25,70 @@ def parse_delta(missing_mask):
         Delta matrix indicates time gaps of missing values.
         Its math definition please refer to :cite:`che2018GRUD`.
     """
-    # missing_mask is from X, and X's shape and type had been checked. So no need to double-check here.
-    n_samples, n_steps, n_features = missing_mask.shape
-    device = missing_mask.device
-    delta_collector = []
-    for m_mask in missing_mask:
-        delta = []
+
+    def cal_delta_for_single_sample(mask):
+        d = []  # single sample's delta
         for step in range(n_steps):
             if step == 0:
-                delta.append(torch.zeros(1, n_features, device=device))
+                d.append(torch.zeros(1, n_features, device=device))
             else:
-                delta.append(
-                    torch.ones(1, n_features, device=device)
-                    + (1 - m_mask[step]) * delta[-1]
+                d.append(
+                    torch.ones(1, n_features, device=device) + (1 - mask[step]) * d[-1]
                 )
-        delta = torch.concat(delta, dim=0)
-        delta_collector.append(delta.unsqueeze(0))
-    delta = torch.concat(delta_collector, dim=0)
+        d = torch.concat(d, dim=0)
+        return d
+
+    # missing_mask is from X, and X's shape and type had been checked. So no need to double-check here.
+    device = missing_mask.device
+    if len(missing_mask.shape) == 2:
+        n_steps, n_features = missing_mask.shape
+        delta = cal_delta_for_single_sample(missing_mask)
+    else:
+        n_samples, n_steps, n_features = missing_mask.shape
+        delta_collector = []
+        for m_mask in missing_mask:
+            delta = cal_delta_for_single_sample(m_mask)
+            delta_collector.append(delta.unsqueeze(0))
+        delta = torch.concat(delta_collector, dim=0)
+
+    return delta
+
+
+def parse_delta_np(missing_mask):
+    """Generate time-gap (delta) matrix from missing masks.
+
+    Parameters
+    ----------
+    missing_mask : array, shape of [seq_len, n_features]
+        Binary masks indicate missing values.
+
+    Returns
+    -------
+    delta, array,
+        Delta matrix indicates time gaps of missing values.
+        Its math definition please refer to :cite:`che2018MissingData`.
+    """
+
+    def cal_delta_for_single_sample(mask):
+        d = []
+        for step in range(seq_len):
+            if step == 0:
+                d.append(np.zeros(n_features))
+            else:
+                d.append(np.ones(n_features) + (1 - mask[step]) * d[-1])
+        d = np.asarray(d)
+        return d
+
+    if len(missing_mask.shape) == 2:
+        seq_len, n_features = missing_mask.shape
+        delta = cal_delta_for_single_sample(missing_mask)
+    else:
+        n_samples, seq_len, n_features = missing_mask.shape
+        delta_collector = []
+        for m_mask in missing_mask:
+            delta = cal_delta_for_single_sample(m_mask)
+            delta_collector.append(delta)
+        delta = np.asarray(delta_collector)
     return delta
 
 
@@ -151,9 +198,9 @@ class DatasetForBRITS(BaseDataset):
         if self.file_handle is None:
             self.file_handle = self._open_file_handle()
 
-        X = self.file_handle["X"][idx]
-        missing_mask = (~np.isnan(X)).astype("float32")
-        X = np.nan_to_num(X)
+        X = torch.from_numpy(self.file_handle["X"][idx])
+        missing_mask = (~torch.isnan(X)).to(torch.float32)
+        X = torch.nan_to_num(X)
 
         forward = {
             "X": X,
@@ -162,26 +209,26 @@ class DatasetForBRITS(BaseDataset):
         }
 
         backward = {
-            "X": np.flip(forward["X"], axis=0).copy(),
-            "missing_mask": np.flip(forward["missing_mask"], axis=0).copy(),
+            "X": torch.flip(forward["X"], dims=[0]),
+            "missing_mask": torch.flip(forward["missing_mask"], dims=[0]),
         }
         backward["deltas"] = parse_delta(backward["missing_mask"])
 
         sample = [
             torch.tensor(idx),
             # for forward
-            torch.from_numpy(forward["X"].astype("float32")),
-            torch.from_numpy(forward["missing_mask"].astype("float32")),
-            torch.from_numpy(forward["deltas"].astype("float32")),
+            forward["X"],
+            forward["missing_mask"],
+            forward["deltas"],
             # for backward
-            torch.from_numpy(backward["X"].astype("float32")),
-            torch.from_numpy(backward["missing_mask"].astype("float32")),
-            torch.from_numpy(backward["deltas"].astype("float32")),
+            backward["X"],
+            backward["missing_mask"],
+            backward["deltas"],
         ]
 
         if (
             "y" in self.file_handle.keys()
         ):  # if the dataset has labels, then fetch it from the file
-            sample.append(self.file_handle["y"][idx].to(torch.long))
+            sample.append(torch.tensor(self.file_handle["y"][idx], dtype=torch.long))
 
         return sample

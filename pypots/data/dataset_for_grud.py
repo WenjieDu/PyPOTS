@@ -36,7 +36,7 @@ class DatasetForGRUD(BaseDataset):
 
         self.locf = LOCF()
 
-        if self.X is not None:
+        if not isinstance(self.data, str):  # data from array
             self.missing_mask = (~torch.isnan(self.X)).to(torch.float32)
             self.X_filledLOCF = self.locf.locf_torch(self.X)
             self.X = torch.nan_to_num(self.X)
@@ -110,11 +110,11 @@ class DatasetForGRUD(BaseDataset):
 
         X = torch.from_numpy(self.file_handle["X"][idx])
         missing_mask = (~torch.isnan(X)).to(torch.float32)
-        X_filledLOCF = self.locf.locf_torch(X)
+        X_filledLOCF = self.locf.locf_torch(X.unsqueeze(dim=0)).squeeze()
         X = torch.nan_to_num(X)
         deltas = parse_delta(missing_mask)
-        empirical_mean = torch.sum(missing_mask * X, dim=[0, 1]) / torch.sum(
-            missing_mask, dim=[0, 1]
+        empirical_mean = torch.sum(missing_mask * X, dim=[0]) / torch.sum(
+            missing_mask, dim=[0]
         )
 
         sample = [
@@ -129,6 +129,6 @@ class DatasetForGRUD(BaseDataset):
         if (
             "y" in self.file_handle.keys()
         ):  # if the dataset has labels, then fetch it from the file
-            sample.append(self.file_handle["y"][idx].to(torch.long))
+            sample.append(torch.tensor(self.file_handle["y"][idx], dtype=torch.long))
 
         return sample

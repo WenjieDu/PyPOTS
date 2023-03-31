@@ -37,7 +37,7 @@ class BaseDataset(Dataset):
         # So they are safe to use here. No need to check again.
 
         self.data = data
-        if isinstance(data, str):
+        if isinstance(self.data, str):  # data from file
             self.file_type = file_type
 
             # check if the given file type is supported
@@ -52,7 +52,7 @@ class BaseDataset(Dataset):
                 "X" in self.file_handle.keys()
             ), "The given dataset file doesn't contains X. Please double check."
 
-        else:
+        else:  # data from array
             X = data["X"]
             y = None if "y" not in data.keys() else data["y"]
             self.X, self.y = self.check_input(X, y)
@@ -60,10 +60,10 @@ class BaseDataset(Dataset):
         self.sample_num = self._get_sample_num()
 
         # set up function fetch_data()
-        if self.X is not None:
-            self.fetch_data = self._fetch_data_from_array
-        else:
+        if isinstance(self.data, str):
             self.fetch_data = self._fetch_data_from_file
+        else:
+            self.fetch_data = self._fetch_data_from_array
 
     def _get_sample_num(self):
         """Determine the number of samples in the dataset and return the number.
@@ -207,8 +207,8 @@ class BaseDataset(Dataset):
             import h5py
 
             file_handler = h5py.File(
-                data_file_path, "r"
-            )  # set swmr=True if the h5 file need to be written into new content during reading
+                data_file_path, "r", swmr=True
+            )  # set  if the h5 file need to be written into new content during reading
         except ImportError:
             raise ImportError(
                 "h5py is missing and cannot be imported. Please install it first."
@@ -252,7 +252,7 @@ class BaseDataset(Dataset):
         if self.file_handle is None:
             self.file_handle = self._open_file_handle()
 
-        X = self.file_handle["X"][idx]
+        X = torch.from_numpy(self.file_handle["X"][idx])
         missing_mask = ~torch.isnan(X)
         X = torch.nan_to_num(X)
         sample = [
