@@ -20,20 +20,21 @@ TEST_SET = {"X": DATA["test_X"][:, :100]}
 
 
 class TestBTTF(unittest.TestCase):
-    def setUp(self) -> None:
-        logger.info("Running test cases for BTTF...")
-        self.bttf = BTTF(
-            100,
-            10,
-            20,
-            2,
-            10,
-            np.asarray([1, 2, 3, 10, 10 + 1, 10 + 2, 20, 20 + 1, 20 + 2]),
-            5,
-            5,
-        )
+    logger.info("Running tests for a forecasting model BTTF...")
 
-    def test_forecasting(self):
+    # initialize a BTTF model
+    bttf = BTTF(
+        100,
+        10,
+        20,
+        2,
+        10,
+        np.asarray([1, 2, 3, 10, 10 + 1, 10 + 2, 20, 20 + 1, 20 + 2]),
+        5,
+        5,
+    )
+
+    def test_0_forecasting(self):
         predictions = self.bttf.forecast(TEST_SET)
         mae = cal_mae(predictions, DATA["test_X_intact"][:, 100:])
         logger.info(f"prediction MAE: {mae}")
