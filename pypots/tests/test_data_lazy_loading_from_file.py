@@ -8,22 +8,45 @@ Test cases for data classes with the lazy-loading strategy of reading from files
 import os
 import unittest
 
+import h5py
+import numpy as np
+
 from pypots.classification import BRITS, GRUD
 from pypots.imputation import SAITS
-from pypots.tests.unified_data_for_test import (
-    DATA,
-    TRAIN_SET,
-    VAL_SET,
-    TEST_SET,
-    IMPUTATION_TRAIN_SET,
-    IMPUTATION_VAL_SET,
-)
+from pypots.tests.unified_data_for_test import DATA
+
+TRAIN_SET = "./train_set.h5"
+VAL_SET = "./val_set.h5"
+TEST_SET = "./test_set.h5"
+
+IMPUTATION_TRAIN_SET = "./imputation_train_set.h5"
+IMPUTATION_VAL_SET = "./imputation_val_set.h5"
+
+
+def save_data_set_into_h5(data, path):
+    with h5py.File(path, "w") as hf:
+        for i in data.keys():
+            hf.create_dataset(i, data=data[i].astype(np.float32))
+
 
 EPOCHS = 1
 
 
 class TestLazyLoadingClasses(unittest.TestCase):
     def setUp(self) -> None:
+        save_data_set_into_h5({"X": DATA["train_X"], "y": DATA["train_y"]}, TRAIN_SET)
+        save_data_set_into_h5({"X": DATA["val_X"], "y": DATA["val_y"]}, VAL_SET)
+        save_data_set_into_h5({"X": DATA["train_X"]}, IMPUTATION_TRAIN_SET)
+        save_data_set_into_h5({"X": DATA["val_X"]}, IMPUTATION_VAL_SET)
+
+        save_data_set_into_h5(
+            {
+                "X": DATA["test_X"],
+                "X_intact": DATA["test_X_intact"],
+                "X_indicating_mask": DATA["test_X_indicating_mask"],
+            },
+            TEST_SET,
+        )
 
         assert os.path.exists(TRAIN_SET)
         assert os.path.exists(VAL_SET)
