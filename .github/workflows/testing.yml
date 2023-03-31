@@ -49,6 +49,7 @@ jobs:
                   python -m pytest -rA pypots/tests/test_clustering.py -n auto --cov=pypots --cov-append
                   python -m pytest -rA pypots/tests/test_forecasting.py -n auto --cov=pypots --cov-append
                   python -m pytest -rA pypots/tests/test_data_lazy_loading_from_file.py -n auto --cov=pypots --cov-append
+                  python -m pytest -rA pypots/tests/test_logging.py -n auto --cov=pypots --cov-append
 
             - name: Generate the LCOV report
               run: |
