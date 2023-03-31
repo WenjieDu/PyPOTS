@@ -5,12 +5,20 @@ Generate the unified test data.
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: GLP-v3
 
+import h5py
+import numpy as np
 import torch
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 
 from pypots.data import generate_random_walk_for_classification, mcar, masked_fill
 from pypots.data import load_specific_dataset
+
+
+def save_data_set_into_h5(data, path):
+    with h5py.File(path, "w") as hf:
+        for i in data.keys():
+            hf.create_dataset(i, data=data[i].astype(np.float32))
 
 
 def gene_random_walk_data(
@@ -128,3 +136,24 @@ def gene_physionet2012():
 # generate and cache data first.
 # Otherwise, file lock will cause bug if running test parallely with pytest-xdist.
 DATA = gene_random_walk_data()
+
+TRAIN_SET = "./train_set.h5"
+VAL_SET = "./val_set.h5"
+TEST_SET = "./test_set.h5"
+
+IMPUTATION_TRAIN_SET = "./imputation_train_set.h5"
+IMPUTATION_VAL_SET = "./imputation_val_set.h5"
+
+save_data_set_into_h5({"X": DATA["train_X"], "y": DATA["train_y"]}, TRAIN_SET)
+save_data_set_into_h5({"X": DATA["val_X"], "y": DATA["val_y"]}, VAL_SET)
+save_data_set_into_h5(
+    {
+        "X": DATA["test_X"],
+        "X_intact": DATA["test_X_intact"],
+        "X_indicating_mask": DATA["test_X_indicating_mask"],
+    },
+    TEST_SET,
+)
+
+save_data_set_into_h5({"X": DATA["train_X"]}, IMPUTATION_TRAIN_SET)
+save_data_set_into_h5({"X": DATA["val_X"]}, IMPUTATION_VAL_SET)
