@@ -20,18 +20,33 @@ TEST_SET = {"X": DATA["test_X"]}
 
 
 class TestBRITS(unittest.TestCase):
-    def setUp(self) -> None:
-        logger.info("Running test cases for BRITS...")
-        self.brits = BRITS(
-            DATA["n_steps"],
-            DATA["n_features"],
-            256,
-            n_classes=DATA["n_classes"],
-            epochs=EPOCHS,
-        )
+    logger.info("Running tests for a classification model BRITS...")
+
+    # initialize a BRITS model
+    brits = BRITS(
+        DATA["n_steps"],
+        DATA["n_features"],
+        256,
+        n_classes=DATA["n_classes"],
+        epochs=EPOCHS,
+    )
+
+    def test_0_fit(self):
         self.brits.fit(TRAIN_SET, VAL_SET)
 
-    def test_parameters(self):
+    def test_1_classify(self):
+        predictions = self.brits.classify(TEST_SET)
+        metrics = cal_binary_classification_metrics(predictions, DATA["test_y"])
+        logger.info(
+            f'ROC_AUC: {metrics["roc_auc"]}, \n'
+            f'PR_AUC: {metrics["pr_auc"]},\n'
+            f'F1: {metrics["f1"]},\n'
+            f'Precision: {metrics["precision"]},\n'
+            f'Recall: {metrics["recall"]},\n'
+        )
+        assert metrics["roc_auc"] >= 0.5, "ROC-AUC < 0.5"
+
+    def test_2_parameters(self):
         assert hasattr(self.brits, "model") and self.brits.model is not None
 
         assert hasattr(self.brits, "optimizer") and self.brits.optimizer is not None
@@ -44,8 +59,24 @@ class TestBRITS(unittest.TestCase):
             and self.brits.best_model_dict is not None
         )
 
-    def test_classify(self):
-        predictions = self.brits.classify(TEST_SET)
+
+class TestGRUD(unittest.TestCase):
+    logger.info("Running tests for a classification model GRUD...")
+
+    # initialize a GRUD model
+    grud = GRUD(
+        DATA["n_steps"],
+        DATA["n_features"],
+        256,
+        n_classes=DATA["n_classes"],
+        epochs=EPOCHS,
+    )
+
+    def test_0_fit(self):
+        self.grud.fit(TRAIN_SET, VAL_SET)
+
+    def test_1_classify(self):
+        predictions = self.grud.classify(TEST_SET)
         metrics = cal_binary_classification_metrics(predictions, DATA["test_y"])
         logger.info(
             f'ROC_AUC: {metrics["roc_auc"]}, \n'
@@ -56,20 +87,7 @@ class TestBRITS(unittest.TestCase):
         )
         assert metrics["roc_auc"] >= 0.5, "ROC-AUC < 0.5"
 
-
-class TestGRUD(unittest.TestCase):
-    def setUp(self) -> None:
-        logger.info("Running test cases for GRUD...")
-        self.grud = GRUD(
-            DATA["n_steps"],
-            DATA["n_features"],
-            256,
-            n_classes=DATA["n_classes"],
-            epochs=EPOCHS,
-        )
-        self.grud.fit(TRAIN_SET, VAL_SET)
-
-    def test_parameters(self):
+    def test_2_parameters(self):
         assert hasattr(self.grud, "model") and self.grud.model is not None
 
         assert hasattr(self.grud, "optimizer") and self.grud.optimizer is not None
@@ -82,8 +100,32 @@ class TestGRUD(unittest.TestCase):
             and self.grud.best_model_dict is not None
         )
 
-    def test_classify(self):
-        predictions = self.grud.classify(TEST_SET)
+
+class TestRaindrop(unittest.TestCase):
+    logger.info("Running tests for a classification model Raindrop...")
+
+    # initialize a Raindrop model
+    raindrop = Raindrop(
+        DATA["n_features"],
+        2,
+        DATA["n_features"] * 4,
+        256,
+        2,
+        DATA["n_classes"],
+        0.3,
+        DATA["n_steps"],
+        0,
+        "mean",
+        False,
+        False,
+        epochs=EPOCHS,
+    )
+
+    def test_0_fit(self):
+        self.raindrop.fit(TRAIN_SET, VAL_SET)
+
+    def test_1_classify(self):
+        predictions = self.raindrop.classify(TEST_SET)
         metrics = cal_binary_classification_metrics(predictions, DATA["test_y"])
         logger.info(
             f'ROC_AUC: {metrics["roc_auc"]}, \n'
@@ -94,28 +136,7 @@ class TestGRUD(unittest.TestCase):
         )
         assert metrics["roc_auc"] >= 0.5, "ROC-AUC < 0.5"
 
-
-class TestRaindrop(unittest.TestCase):
-    def setUp(self) -> None:
-        logger.info("Running test cases for Raindrop...")
-        self.raindrop = Raindrop(
-            DATA["n_features"],
-            2,
-            DATA["n_features"] * 4,
-            256,
-            2,
-            DATA["n_classes"],
-            0.3,
-            DATA["n_steps"],
-            0,
-            "mean",
-            False,
-            False,
-            epochs=EPOCHS,
-        )
-        self.raindrop.fit(TRAIN_SET, VAL_SET)
-
-    def test_parameters(self):
+    def test_2_parameters(self):
         assert hasattr(self.raindrop, "model") and self.raindrop.model is not None
 
         assert (
@@ -129,18 +150,6 @@ class TestRaindrop(unittest.TestCase):
             hasattr(self.raindrop, "best_model_dict")
             and self.raindrop.best_model_dict is not None
         )
-
-    def test_classify(self):
-        predictions = self.raindrop.classify(TEST_SET)
-        metrics = cal_binary_classification_metrics(predictions, DATA["test_y"])
-        logger.info(
-            f'ROC_AUC: {metrics["roc_auc"]}, \n'
-            f'PR_AUC: {metrics["pr_auc"]},\n'
-            f'F1: {metrics["f1"]},\n'
-            f'Precision: {metrics["precision"]},\n'
-            f'Recall: {metrics["recall"]},\n'
-        )
-        assert metrics["roc_auc"] >= 0.5, "ROC-AUC < 0.5"
 
 
 if __name__ == "__main__":
