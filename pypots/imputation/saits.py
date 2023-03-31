@@ -255,7 +255,7 @@ class SAITS(BaseNNImputer):
                 import h5py
 
                 with h5py.File(val_set, "r") as hf:
-                    val_X = hf["X"]
+                    val_X = hf["X"][:]
                 val_set = {"X": val_X}
 
             val_X_intact, val_X, val_X_missing_mask, val_X_indicating_mask = mcar(
