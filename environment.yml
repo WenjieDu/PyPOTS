@@ -9,10 +9,9 @@ dependencies:
     - conda-forge::scipy
     - conda-forge::pandas
     - conda-forge::scikit-learn
-    - conda-forge::matplotlib
     - conda-forge::tensorboard
     - conda-forge::pip
+    - conda-forge::pycorruptor
+    - conda-forge::tsdb
+    - conda-forge::h5py
     - pytorch::pytorch==1.11.0
-    - pip:
-        - pycorruptor==0.0.4
-        - tsdb==0.0.7
