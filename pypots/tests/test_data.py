@@ -9,6 +9,7 @@ import os
 import unittest
 
 import h5py
+import pytest
 
 from pypots.classification import BRITS, GRUD
 from pypots.imputation import SAITS
@@ -92,15 +93,21 @@ class TestLazyLoadingClasses(unittest.TestCase):
         assert os.path.exists(IMPUTATION_TRAIN_SET)
         assert os.path.exists(IMPUTATION_VAL_SET)
 
-    def test_DatasetForMIT(self):
+    @pytest.mark.xdist_group(name="data-lazy-loading")
+    def test_0_DatasetForMIT(self):
         self.saits.fit(train_set=IMPUTATION_TRAIN_SET, val_set=IMPUTATION_VAL_SET)
+
+    @pytest.mark.xdist_group(name="data-lazy-loading")
+    def test_1_BaseDataset(self):
         _ = self.saits.impute(X=TEST_SET)
 
-    def test_DatasetForBRITS(self):
+    @pytest.mark.xdist_group(name="data-lazy-loading")
+    def test_2_DatasetForBRITS(self):
         self.brits.fit(train_set=TRAIN_SET, val_set=VAL_SET)
         _ = self.brits.classify(X=TEST_SET)
 
-    def test_DatasetForGRUD(self):
+    @pytest.mark.xdist_group(name="data-lazy-loading")
+    def test_3_DatasetForGRUD(self):
         self.grud.fit(train_set=TRAIN_SET, val_set=VAL_SET)
         _ = self.grud.classify(X=TEST_SET)
 

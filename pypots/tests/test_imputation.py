@@ -9,6 +9,7 @@ Test cases for imputation models.
 import unittest
 
 import numpy as np
+import pytest
 
 from pypots.imputation import (
     SAITS,
@@ -17,8 +18,8 @@ from pypots.imputation import (
     LOCF,
 )
 from pypots.tests.unified_data_for_test import DATA
-from pypots.utils.metrics import cal_mae
 from pypots.utils.logging import logger
+from pypots.utils.metrics import cal_mae
 
 EPOCH = 5
 
@@ -44,9 +45,11 @@ class TestSAITS(unittest.TestCase):
         epochs=EPOCH,
     )
 
+    @pytest.mark.xdist_group(name="imputation-saits")
     def test_0_fit(self):
         self.saits.fit(TRAIN_SET, VAL_SET)
 
+    @pytest.mark.xdist_group(name="imputation-saits")
     def test_1_impute(self):
         imputed_X = self.saits.impute(TEST_SET)
         assert not np.isnan(
@@ -57,6 +60,7 @@ class TestSAITS(unittest.TestCase):
         )
         logger.info(f"SAITS test_MAE: {test_MAE}")
 
+    @pytest.mark.xdist_group(name="imputation-saits")
     def test_2_parameters(self):
         assert hasattr(self.saits, "model") and self.saits.model is not None
 
@@ -88,9 +92,11 @@ class TestTransformer(unittest.TestCase):
         epochs=EPOCH,
     )
 
+    @pytest.mark.xdist_group(name="imputation-transformer")
     def test_0_fit(self):
         self.transformer.fit(TRAIN_SET, VAL_SET)
 
+    @pytest.mark.xdist_group(name="imputation-transformer")
     def test_1_impute(self):
         imputed_X = self.transformer.impute(TEST_SET)
         assert not np.isnan(
@@ -101,6 +107,7 @@ class TestTransformer(unittest.TestCase):
         )
         logger.info(f"Transformer test_MAE: {test_MAE}")
 
+    @pytest.mark.xdist_group(name="imputation-transformer")
     def test_2_parameters(self):
         assert hasattr(self.transformer, "model") and self.transformer.model is not None
 
@@ -124,9 +131,11 @@ class TestBRITS(unittest.TestCase):
     # initialize a BRITS model
     brits = BRITS(DATA["n_steps"], DATA["n_features"], 256, epochs=EPOCH)
 
+    @pytest.mark.xdist_group(name="imputation-brits")
     def test_0_fit(self):
         self.brits.fit(TRAIN_SET, VAL_SET)
 
+    @pytest.mark.xdist_group(name="imputation-brits")
     def test_1_impute(self):
         imputed_X = self.brits.impute(TEST_SET)
         assert not np.isnan(
@@ -137,6 +146,7 @@ class TestBRITS(unittest.TestCase):
         )
         logger.info(f"BRITS test_MAE: {test_MAE}")
 
+    @pytest.mark.xdist_group(name="imputation-brits")
     def test_2_parameters(self):
         assert hasattr(self.brits, "model") and self.brits.model is not None
 
@@ -155,6 +165,7 @@ class TestLOCF(unittest.TestCase):
     logger.info("Running tests for an imputation model LOCF...")
     locf = LOCF(nan=0)
 
+    @pytest.mark.xdist_group(name="imputation-locf")
     def test_0_impute(self):
         test_X_imputed = self.locf.impute(TEST_SET)
         assert not np.isnan(
@@ -165,6 +176,7 @@ class TestLOCF(unittest.TestCase):
         )
         logger.info(f"LOCF test_MAE: {test_MAE}")
 
+    @pytest.mark.xdist_group(name="imputation-locf")
     def test_1_parameters(self):
         assert hasattr(self.locf, "nan") and self.locf.nan is not None
 

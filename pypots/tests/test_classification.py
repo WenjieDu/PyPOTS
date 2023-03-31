@@ -7,10 +7,12 @@ Test cases for classification models.
 
 import unittest
 
+import pytest
+
 from pypots.classification import BRITS, GRUD, Raindrop
 from pypots.tests.unified_data_for_test import DATA
-from pypots.utils.metrics import cal_binary_classification_metrics
 from pypots.utils.logging import logger
+from pypots.utils.metrics import cal_binary_classification_metrics
 
 EPOCHS = 5
 
@@ -31,9 +33,11 @@ class TestBRITS(unittest.TestCase):
         epochs=EPOCHS,
     )
 
+    @pytest.mark.xdist_group(name="classification-brits")
     def test_0_fit(self):
         self.brits.fit(TRAIN_SET, VAL_SET)
 
+    @pytest.mark.xdist_group(name="classification-brits")
     def test_1_classify(self):
         predictions = self.brits.classify(TEST_SET)
         metrics = cal_binary_classification_metrics(predictions, DATA["test_y"])
@@ -46,6 +50,7 @@ class TestBRITS(unittest.TestCase):
         )
         assert metrics["roc_auc"] >= 0.5, "ROC-AUC < 0.5"
 
+    @pytest.mark.xdist_group(name="classification-brits")
     def test_2_parameters(self):
         assert hasattr(self.brits, "model") and self.brits.model is not None
 
@@ -72,9 +77,11 @@ class TestGRUD(unittest.TestCase):
         epochs=EPOCHS,
     )
 
+    @pytest.mark.xdist_group(name="classification-grud")
     def test_0_fit(self):
         self.grud.fit(TRAIN_SET, VAL_SET)
 
+    @pytest.mark.xdist_group(name="classification-grud")
     def test_1_classify(self):
         predictions = self.grud.classify(TEST_SET)
         metrics = cal_binary_classification_metrics(predictions, DATA["test_y"])
@@ -87,6 +94,7 @@ class TestGRUD(unittest.TestCase):
         )
         assert metrics["roc_auc"] >= 0.5, "ROC-AUC < 0.5"
 
+    @pytest.mark.xdist_group(name="classification-grud")
     def test_2_parameters(self):
         assert hasattr(self.grud, "model") and self.grud.model is not None
 
@@ -121,9 +129,11 @@ class TestRaindrop(unittest.TestCase):
         epochs=EPOCHS,
     )
 
+    @pytest.mark.xdist_group(name="classification-raindrop")
     def test_0_fit(self):
         self.raindrop.fit(TRAIN_SET, VAL_SET)
 
+    @pytest.mark.xdist_group(name="classification-raindrop")
     def test_1_classify(self):
         predictions = self.raindrop.classify(TEST_SET)
         metrics = cal_binary_classification_metrics(predictions, DATA["test_y"])
@@ -136,6 +146,7 @@ class TestRaindrop(unittest.TestCase):
         )
         assert metrics["roc_auc"] >= 0.5, "ROC-AUC < 0.5"
 
+    @pytest.mark.xdist_group(name="classification-raindrop")
     def test_2_parameters(self):
         assert hasattr(self.raindrop, "model") and self.raindrop.model is not None
 

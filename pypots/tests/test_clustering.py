@@ -9,10 +9,11 @@ Test cases for clustering models.
 import unittest
 
 import numpy as np
+import pytest
 
 from pypots.clustering import VaDER, CRLI
-from pypots.utils.logging import logger
 from pypots.tests.unified_data_for_test import DATA
+from pypots.utils.logging import logger
 from pypots.utils.metrics import cal_rand_index, cal_cluster_purity
 
 EPOCHS = 5
@@ -35,9 +36,11 @@ class TestCRLI(unittest.TestCase):
         epochs=EPOCHS,
     )
 
+    @pytest.mark.xdist_group(name="clustering-crli")
     def test_0_fit(self):
         self.crli.fit(TRAIN_SET)
 
+    @pytest.mark.xdist_group(name="clustering-crli")
     def test_1_parameters(self):
         assert hasattr(self.crli, "model") and self.crli.model is not None
 
@@ -52,6 +55,7 @@ class TestCRLI(unittest.TestCase):
             and self.crli.best_model_dict is not None
         )
 
+    @pytest.mark.xdist_group(name="clustering-crli")
     def test_2_cluster(self):
         clustering = self.crli.cluster(TEST_SET)
         RI = cal_rand_index(clustering, DATA["test_y"])
@@ -73,9 +77,11 @@ class TestVaDER(unittest.TestCase):
         epochs=EPOCHS,
     )
 
+    @pytest.mark.xdist_group(name="clustering-vader")
     def test_0_fit(self):
         self.vader.fit(TRAIN_SET)
 
+    @pytest.mark.xdist_group(name="clustering-vader")
     def test_1_cluster(self):
         try:
             clustering = self.vader.cluster(TEST_SET)
@@ -88,6 +94,7 @@ class TestVaDER(unittest.TestCase):
                 "Got singular matrix, please try to retrain the model to fix this"
             )
 
+    @pytest.mark.xdist_group(name="clustering-vader")
     def test_2_parameters(self):
         assert hasattr(self.vader, "model") and self.vader.model is not None
 

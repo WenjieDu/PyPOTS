@@ -8,6 +8,7 @@ Test cases for forecasting models.
 import unittest
 
 import numpy as np
+import pytest
 
 from pypots.forecasting import BTTF
 from pypots.tests.unified_data_for_test import gene_random_walk_data
@@ -34,6 +35,7 @@ class TestBTTF(unittest.TestCase):
         5,
     )
 
+    @pytest.mark.xdist_group(name="forecasting-bttf")
     def test_0_forecasting(self):
         predictions = self.bttf.forecast(TEST_SET)
         mae = cal_mae(predictions, DATA["test_X_intact"][:, 100:])
