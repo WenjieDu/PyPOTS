@@ -1,20 +1,19 @@
 """
 Test cases for data classes with the lazy-loading strategy of reading from files.
 """
-import os
-import sys
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: GLP-v3
 
+import os
 import unittest
 
-from pypots.tests.unified_data_for_test import DATA
 import h5py
-from pypots.imputation import SAITS
-from pypots.classification import BRITS, GRUD
-from pypots.data import DatasetForBRITS, DatasetForMIT, DatasetForGRUD
 import numpy as np
+
+from pypots.classification import BRITS, GRUD
+from pypots.imputation import SAITS
+from pypots.tests.unified_data_for_test import DATA
 
 EPOCHS = 1
 
