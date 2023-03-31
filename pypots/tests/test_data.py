@@ -33,22 +33,6 @@ def save_data_set_into_h5(data, path):
 
 EPOCHS = 1
 
-save_data_set_into_h5(
-    {"X": DATA["train_X"], "y": DATA["train_y"].astype(int)}, TRAIN_SET
-)
-save_data_set_into_h5({"X": DATA["val_X"], "y": DATA["val_y"].astype(int)}, VAL_SET)
-save_data_set_into_h5({"X": DATA["train_X"]}, IMPUTATION_TRAIN_SET)
-save_data_set_into_h5({"X": DATA["val_X"]}, IMPUTATION_VAL_SET)
-
-save_data_set_into_h5(
-    {
-        "X": DATA["test_X"],
-        "X_intact": DATA["test_X_intact"],
-        "X_indicating_mask": DATA["test_X_indicating_mask"],
-    },
-    TEST_SET,
-)
-
 
 class TestLazyLoadingClasses(unittest.TestCase):
     logger.info("Running tests for Dataset classes with lazy-loading strategy...")
@@ -85,20 +69,29 @@ class TestLazyLoadingClasses(unittest.TestCase):
         epochs=EPOCHS,
     )
 
-    def setUp(self) -> None:
-        assert os.path.exists(TRAIN_SET)
-        assert os.path.exists(VAL_SET)
-        assert os.path.exists(TEST_SET)
+    @pytest.mark.xdist_group(name="data-lazy-loading")
+    def test_0_save_datasets_into_files(self):
+        save_data_set_into_h5(
+            {"X": DATA["train_X"], "y": DATA["train_y"].astype(int)}, TRAIN_SET
+        )
+        save_data_set_into_h5(
+            {"X": DATA["val_X"], "y": DATA["val_y"].astype(int)}, VAL_SET
+        )
+        save_data_set_into_h5({"X": DATA["train_X"]}, IMPUTATION_TRAIN_SET)
+        save_data_set_into_h5({"X": DATA["val_X"]}, IMPUTATION_VAL_SET)
 
-        assert os.path.exists(IMPUTATION_TRAIN_SET)
-        assert os.path.exists(IMPUTATION_VAL_SET)
+        save_data_set_into_h5(
+            {
+                "X": DATA["test_X"],
+                "X_intact": DATA["test_X_intact"],
+                "X_indicating_mask": DATA["test_X_indicating_mask"],
+            },
+            TEST_SET,
+        )
 
     @pytest.mark.xdist_group(name="data-lazy-loading")
-    def test_0_DatasetForMIT(self):
+    def test_1_DatasetForMIT_BaseDataset(self):
         self.saits.fit(train_set=IMPUTATION_TRAIN_SET, val_set=IMPUTATION_VAL_SET)
-
-    @pytest.mark.xdist_group(name="data-lazy-loading")
-    def test_1_BaseDataset(self):
         _ = self.saits.impute(X=TEST_SET)
 
     @pytest.mark.xdist_group(name="data-lazy-loading")
