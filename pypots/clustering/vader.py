@@ -103,7 +103,7 @@ class GMMLayer(nn.Module):
         assert phi.shape == self.phi_c_unscaled.shape
         self.mu_c_unscaled = torch.nn.Parameter(mu)
         self.var_c_unscaled = torch.nn.Parameter(var)
-        self.phi_c_unscaled = torch.tensor(phi)
+        self.phi_c_unscaled = phi
 
     def forward(self):
         mu_c = self.mu_c_unscaled
@@ -293,6 +293,7 @@ class _VaDER(nn.Module):
         ii, jj = torch.meshgrid(
             torch.arange(self.n_clusters, dtype=torch.int64, device=device),
             torch.arange(batch_size, dtype=torch.int64, device=device),
+            indexing="ij",
         )
         ii = ii.flatten()
         jj = jj.flatten()
@@ -378,9 +379,28 @@ class VaDER(BaseNNClusterer):
         self.model = self.model.to(self.device)
         self._print_model_size()
 
-    def fit(self, train_X):
-        train_X = self.check_input(self.n_steps, self.n_features, train_X)
-        training_set = DatasetForGRUD(train_X)
+    def fit(self, train_set, file_type="h5py"):
+        """Train the cluster.
+
+        Parameters
+        ----------
+        train_set : dict or str,
+            The dataset for model training, should be a dictionary including the key 'X',
+            or a path string locating a data file.
+            If it is a dict, X should be array-like of shape [n_samples, sequence length (time steps), n_features],
+            which is time-series data for training, can contain missing values.
+            If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
+            key-value pairs like a dict, and it has to include the key 'X'.
+
+        file_type : str, default = "h5py"
+            The type of the given file if train_set is a path string.
+
+        Returns
+        -------
+        self : object,
+            Trained classifier.
+        """
+        training_set = DatasetForGRUD(train_set, file_type)
         training_loader = DataLoader(
             training_set, batch_size=self.batch_size, shuffle=True
         )
@@ -557,10 +577,25 @@ class VaDER(BaseNNClusterer):
 
         logger.info("Finished training.")
 
-    def cluster(self, X):
-        X = self.check_input(self.n_steps, self.n_features, X)
+    def cluster(self, X, file_type="h5py"):
+        """Cluster the input with the trained model.
+
+        Parameters
+        ----------
+        X : array-like or str,
+            The data samples for testing, should be array-like of shape [n_samples, sequence length (time steps),
+            n_features], or a path string locating a data file, e.g. h5 file.
+
+        file_type : str, default = "h5py"
+            The type of the given file if X is a path string.
+
+        Returns
+        -------
+        array-like, shape [n_samples],
+            Clustering results.
+        """
         self.model.eval()  # set the model as eval status to freeze it.
-        test_set = DatasetForGRUD(X)
+        test_set = DatasetForGRUD(X, file_type)
         test_loader = DataLoader(test_set, batch_size=self.batch_size, shuffle=False)
         clustering_results_collector = []
 

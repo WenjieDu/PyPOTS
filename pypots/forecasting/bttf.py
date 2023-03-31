@@ -458,11 +458,31 @@ class BTTF(BaseForecaster):
         self.burn_iter = burn_iter
         self.gibbs_iter = gibbs_iter
 
-    def fit(self, train_X):
+    def fit(self, train_set, val_set=None, file_type="h5py"):
         warnings.warn("Please run func forecast(X) directly.")
 
-    def forecast(self, X):
-        self.check_input(self.n_steps, self.n_features, X, out_dtype="ndarray")
+    def forecast(self, X, file_type="h5py"):
+        """Forecast the future the input with the trained model.
+
+        Parameters
+        ----------
+        X : array-like or str,
+            The data samples for testing, should be array-like of shape [n_samples, sequence length (time steps),
+            n_features], or a path string locating a data file, e.g. h5 file.
+
+        file_type : str, default = "h5py"
+            The type of the given file if X is a path string.
+
+        Returns
+        -------
+        array-like, shape [n_samples, prediction_horizon, n_features],
+            Forecasting results.
+        """
+        assert not isinstance(
+            X, str
+        ), "BTTF so far does not accept file input. It needs a specified Dataset class."
+
+        X = X["X"]
         X = X.transpose((0, 2, 1))
 
         pred = BTTF_forecast(

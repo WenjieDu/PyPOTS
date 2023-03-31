@@ -6,3 +6,4 @@ tensorboard
 pandas
 pycorruptor
 tsdb
+h5py
