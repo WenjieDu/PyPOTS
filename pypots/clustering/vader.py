@@ -103,7 +103,7 @@ class GMMLayer(nn.Module):
         assert phi.shape == self.phi_c_unscaled.shape
         self.mu_c_unscaled = torch.nn.Parameter(mu)
         self.var_c_unscaled = torch.nn.Parameter(var)
-        self.phi_c_unscaled = torch.tensor(phi)
+        self.phi_c_unscaled = phi
 
     def forward(self):
         mu_c = self.mu_c_unscaled
@@ -293,6 +293,7 @@ class _VaDER(nn.Module):
         ii, jj = torch.meshgrid(
             torch.arange(self.n_clusters, dtype=torch.int64, device=device),
             torch.arange(batch_size, dtype=torch.int64, device=device),
+            indexing="ij",
         )
         ii = ii.flatten()
         jj = jj.flatten()
