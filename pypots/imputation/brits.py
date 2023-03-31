@@ -6,6 +6,7 @@ Some part of the code is from https://github.com/caow13/BRITS.
 # License: GPL-v3
 
 import math
+import numpy as np
 
 import torch
 import torch.nn as nn
@@ -336,7 +337,7 @@ class _BRITS(nn.Module):
         imputed_data_b = {"imputed_data_b": imputed_data_b}
         imputed_data_b = self.reverse(imputed_data_b)["imputed_data_b"]
         imputed_data = (imputed_data_f + imputed_data_b) / 2
-        return imputed_data
+        return imputed_data, None
 
     @staticmethod
     def get_consistency_loss(pred_f, pred_b):
@@ -495,40 +496,58 @@ class BRITS(BaseNNImputer):
         self.model = self.model.to(self.device)
         self._print_model_size()
 
-    def fit(self, train_X, val_X=None):
-        """Fit the model on the given training data.
+    def fit(self, train_set, val_set=None, file_type="h5py"):
+        """Train the imputer on the given data.
 
         Parameters
         ----------
-        train_X : array-like, shape of [n_samples, n_steps, n_features],
-            Data for training.
+        train_set : dict or str,
+            The dataset for model training, should be a dictionary including the key 'X',
+            or a path string locating a data file.
+            If it is a dict, X should be array-like of shape [n_samples, sequence length (time steps), n_features],
+            which is time-series data for training, can contain missing values.
+            If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
+            key-value pairs like a dict, and it has to include the key 'X'.
 
-        val_X : array-like, optional, shape of [n_samples, n_steps, n_features],
-            Data for validating.
+        val_set : dict or str,
+            The dataset for model validating, should be a dictionary including the key 'X',
+            or a path string locating a data file.
+            If it is a dict, X should be array-like of shape [n_samples, sequence length (time steps), n_features],
+            which is time-series data for validating, can contain missing values.
+            If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
+            key-value pairs like a dict, and it has to include the key 'X'.
+
+        file_type : str, default = "h5py",
+            The type of the given file if train_set and val_set are path strings.
 
         Returns
         -------
         self : object,
-            Trained model.
+            The trained imputer.
         """
-        train_X = self.check_input(self.n_steps, self.n_features, train_X)
-        if val_X is not None:
-            val_X = self.check_input(self.n_steps, self.n_features, val_X)
-
-        training_set = DatasetForBRITS(train_X)  # time_gaps is necessary for BRITS
+        training_set = DatasetForBRITS(train_set, file_type)
         training_loader = DataLoader(
             training_set, batch_size=self.batch_size, shuffle=True
         )
 
-        if val_X is None:
+        if val_set is None:
             self._train_model(training_loader)
         else:
+            if isinstance(val_set, str):
+                import h5py
+
+                with h5py.File(val_set, "r") as hf:
+                    val_X = hf["X"]
+                val_set = {"X": val_X}
+
             val_X_intact, val_X, val_X_missing_mask, val_X_indicating_mask = mcar(
-                val_X, 0.2
+                val_set["X"], 0.2
             )
-            val_X = masked_fill(val_X, 1 - val_X_missing_mask, torch.nan)
-            val_set = DatasetForBRITS(val_X)
+            val_X = masked_fill(val_X, 1 - val_X_missing_mask, np.nan)
+            val_set["X"] = val_X
+            val_set = DatasetForBRITS(val_set)
             val_loader = DataLoader(val_set, batch_size=self.batch_size, shuffle=False)
+
             self._train_model(
                 training_loader, val_loader, val_X_intact, val_X_indicating_mask
             )
@@ -610,8 +629,23 @@ class BRITS(BaseNNImputer):
         """
         return self.assemble_input_for_training(data)
 
-    def impute(self, X):
-        X = self.check_input(self.n_steps, self.n_features, X)
+    def impute(self, X, file_type="h5py"):
+        """Impute missing values in the given data with the trained model.
+
+        Parameters
+        ----------
+        X : array-like or str,
+            The data samples for testing, should be array-like of shape [n_samples, sequence length (time steps),
+            n_features], or a path string locating a data file, e.g. h5 file.
+
+        file_type : str, default = "h5py",
+            The type of the given file if X is a path string.
+
+        Returns
+        -------
+        array-like, shape [n_samples, sequence length (time steps), n_features],
+            Imputed data.
+        """
         self.model.eval()  # set the model as eval status to freeze it.
         test_set = DatasetForBRITS(X)
         test_loader = DataLoader(test_set, batch_size=self.batch_size, shuffle=False)
@@ -620,7 +654,7 @@ class BRITS(BaseNNImputer):
         with torch.no_grad():
             for idx, data in enumerate(test_loader):
                 inputs = self.assemble_input_for_testing(data)
-                imputed_data = self.model.impute(inputs)
+                imputed_data, _ = self.model.impute(inputs)
                 imputation_collector.append(imputed_data)
 
         imputation_collector = torch.cat(imputation_collector)

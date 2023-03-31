@@ -42,6 +42,7 @@ setup(
         "pandas",
         "pycorruptor",
         "tsdb",
+        "h5py",
     ],
     setup_requires=["setuptools>=38.6.0"],
 )
