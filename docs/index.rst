@@ -14,34 +14,40 @@ Welcome to PyPOTS doc!
 
 .. centered:: A Python Toolbox for Data Mining on Partially-Observed Time Series
 
-.. image:: https://img.shields.io/badge/python-v3-yellowgreen
+.. image:: https://img.shields.io/badge/python-v3-yellow?color=a4e2c6
    :alt: Python version
-.. image:: https://img.shields.io/static/v1?label=%E2%9D%A4%EF%B8%8F&message=PyTorch&color=DC583A
+.. image:: https://img.shields.io/static/v1?label=PyTorch&message=%E2%9D%A4%EF%B8%8F&color=7bcfa6&logo=pytorch
    :alt: PyTorch as backend
-.. image:: https://img.shields.io/pypi/v/pypots?color=green&label=PyPI
+.. image:: https://img.shields.io/pypi/v/pypots?color=7fecad&label=PyPI&logo=pypi&logoColor=white
    :alt: PyPI version
    :target: https://pypi.org/project/pypots
-.. image:: https://img.shields.io/badge/License-GPL--v3-green?color=79C641
+.. image:: https://img.shields.io/conda/pn/conda-forge/pypots?color=3de1ad&label=Conda&logo=anaconda
+   :alt: on Anaconda
+   :target: https://anaconda.org/conda-forge/pypots
+.. image:: https://img.shields.io/badge/License-GPL--v3-00e09e
    :alt: License
    :target: https://github.com/WenjieDu/PyPOTS/blob/main/LICENSE
+.. image:: https://img.shields.io/github/repo-size/WenjieDu/PyPOTS?color=48c0a3
+   :alt: Repo size
+   :target: https://github.com/WenjieDu/PyPOTS
+.. image:: https://img.shields.io/badge/Contributor%20Covenant-v2.1-21a675.svg
+   :alt: Code of Conduct
+   :target: https://github.com/WenjieDu/PyPOTS/blob/main/CODE_OF_CONDUCT.md
+.. image:: https://img.shields.io/badge/Slack-PyPOTS-grey?logo=slack&color=549688
+   :alt: Slack workspace
+   :target: https://join.slack.com/t/pypots-dev/shared_invite/zt-1gq6ufwsi-p0OZdW~e9UW_IA4_f1OfxA
+.. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.6823221.svg
+   :alt: Zenodo DOI
+   :target: https://doi.org/10.5281/zenodo.6823221
+.. image:: https://static.pepy.tech/personalized-badge/pypots?period=total&units=international_system&left_color=grey&right_color=navy&left_text=Downloads
+   :alt: PyPI download number
+   :target: https://pepy.tech/project/pypots
 .. image:: https://github.com/WenjieDu/PyPOTS/actions/workflows/testing.yml/badge.svg
    :alt: GitHub Testing
    :target: https://github.com/WenjieDu/PyPOTS/actions/workflows/testing.yml
-.. image:: https://img.shields.io/coverallsCoverage/github/WenjieDu/PyPOTS?branch=main&logo=coveralls&labelColor=3F5767
+.. image:: https://img.shields.io/coverallsCoverage/github/WenjieDu/PyPOTS?branch=main&logo=coveralls&labelColor=#0aa344
    :alt: Coveralls report
    :target: https://coveralls.io/github/WenjieDu/PyPOTS
-.. image:: https://static.pepy.tech/personalized-badge/pypots?period=total&units=international_system&left_color=grey&right_color=blue&left_text=Downloads
-   :alt: PyPI download number
-   :target: https://pepy.tech/project/pypots
-.. image:: https://zenodo.org/badge/475477908.svg
-   :alt: Zenodo DOI
-   :target: https://zenodo.org/badge/latestdoi/475477908
-.. image:: https://img.shields.io/badge/Contributor%20Covenant-v2.1-4baaaa.svg
-   :alt: Code of Conduct
-   :target: https://github.com/WenjieDu/PyPOTS/blob/main/CODE_OF_CONDUCT.md
-.. image:: https://img.shields.io/badge/Slack-PyPOTS-grey?logo=slack&labelColor=4A154B&color=62BCE5
-   :alt: Slack workspace
-   :target: https://join.slack.com/t/pypots-dev/shared_invite/zt-1gq6ufwsi-p0OZdW~e9UW_IA4_f1OfxA
 .. image:: https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2FPyPOTS%2FPyPOTS&count_bg=%23009A0A&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=Visits&edge_flat=false
    :alt: Visiting number
 
@@ -129,12 +135,12 @@ If you find PyPOTS is helpful to your research, please cite it as below and ⭐�
    title = {{PyPOTS: A Python Toolbox for Data Mining on Partially-Observed Time Series}},
    howpublished = {\url{https://github.com/wenjiedu/pypots}},
    year = {2022},
-   doi = {10.5281/zenodo.6823222},
+   doi = {10.5281/zenodo.6823221},
    }
 
 or
 
-   Wenjie Du. (2022). PyPOTS: A Python Toolbox for Data Mining on Partially-Observed Time Series. Zenodo. https://doi.org/10.5281/zenodo.6823222
+   Wenjie Du. (2022). PyPOTS: A Python Toolbox for Data Mining on Partially-Observed Time Series. Zenodo. https://doi.org/10.5281/zenodo.6823221
 
 ❖ Attention 👀
 ^^^^^^^^^^^^^^^
