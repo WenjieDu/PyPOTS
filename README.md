@@ -21,7 +21,9 @@
         <img src='https://img.shields.io/badge/License-GPL--v3-00e09e'>
     </a>
     <!-- Repo size -->
-    <img src="https://img.shields.io/github/repo-size/WenjieDu/PyPOTS?color=48c0a3">
+    <a alt='Repo size' href='https://github.com/WenjieDu/PyPOTS'>
+        <img src="https://img.shields.io/github/repo-size/WenjieDu/PyPOTS?color=48c0a3">
+    </a>
     <!-- Code of Conduct -->
     <a alt='CODE_OF_CONDUCT' href='https://github.com/WenjieDu/PyPOTS/blob/main/CODE_OF_CONDUCT.md'> 
         <img src='https://img.shields.io/badge/Contributor%20Covenant-v2.1-21a675.svg'>
@@ -110,6 +112,7 @@ mae = cal_mae(imputation, X_intact, indicating_mask)  # calculate mean absolute 
 | Forecasting                   | Probabilistic  | BTTF (Bayesian Temporal Tensor Factorization)                            | 2021 | [^8]      |
 
 ## ❖ Reference
+## ❖ Cite PyPOTS
 If you find PyPOTS is helpful to your research, please cite it as below and ⭐️star this repository to make others notice this work. 🤗
 
 ```bibtex
