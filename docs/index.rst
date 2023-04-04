@@ -63,9 +63,17 @@ Visit `TSDB <https://github.com/WenjieDu/TSDB>`_ right now to know more about th
 
 ❖ Installation
 ^^^^^^^^^^^^^^^^
+PyPOTS now is available on `Anaconda <https://anaconda.org/conda-forge/pypots>`_ ❗️
+
+Install it with ``conda install pypots``, you may need to specify the channel with option ``-c conda-forge``
+
 Install the latest release from PyPI:
 
    pip install pypots
+
+or install from the source code with the latest features not officially released in a version:
+
+   pip install https://github.com/WenjieDu/PyPOTS/archive/main.zip
 
 Below is an example applying SAITS in PyPOTS to impute missing values in the dataset PhysioNet2012:
 
@@ -86,10 +94,11 @@ Below is an example applying SAITS in PyPOTS to impute missing values in the dat
    X = X.reshape(num_samples, 48, -1)
    X_intact, X, missing_mask, indicating_mask = mcar(X, 0.1) # hold out 10% observed values as ground truth
    X = masked_fill(X, 1 - missing_mask, np.nan)
+   dataset = {"X": X}
    # Model training. This is PyPOTS showtime. 💪
    saits = SAITS(n_steps=48, n_features=37, n_layers=2, d_model=256, d_inner=128, n_head=4, d_k=64, d_v=64, dropout=0.1, epochs=10)
-   saits.fit(X)  # train the model. Here I use the whole dataset as the training set, because ground truth is not visible to the model.
-   imputation = saits.impute(X)  # impute the originally-missing values and artificially-missing values
+   saits.fit(dataset)  # train the model. Here I use the whole dataset as the training set, because ground truth is not visible to the model.
+   imputation = saits.impute(dataset)  # impute the originally-missing values and artificially-missing values
    mae = cal_mae(imputation, X_intact, indicating_mask)  # calculate mean absolute error on the ground truth (artificially-missing values)
 
 ❖ Available Algorithms
@@ -108,8 +117,8 @@ Clustering                     Neural Network   VaDER (Variational Deep Embeddin
 Forecasting                    Probabilistic    BTTF (Bayesian Temporal Tensor Factorization)                              2021   :cite:`chen2021BTMF`
 ============================== ================ =========================================================================  ====== =========
 
-❖ Citing PyPOTS
-^^^^^^^^^^^^^^^^
+❖ Cite PyPOTS
+^^^^^^^^^^^^^^
 If you find PyPOTS is helpful to your research, please cite it as below and ⭐️star this repository to make others notice this work. 🤗
 
 .. code-block:: bibtex

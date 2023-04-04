@@ -110,6 +110,7 @@ mae = cal_mae(imputation, X_intact, indicating_mask)  # calculate mean absolute 
 | Forecasting                   | Probabilistic  | BTTF (Bayesian Temporal Tensor Factorization)                            | 2021 | [^8]      |
 
 ## ❖ Reference
+## ❖ Cite PyPOTS
 If you find PyPOTS is helpful to your research, please cite it as below and ⭐️star this repository to make others notice this work. 🤗
 
 ```bibtex
