@@ -9,7 +9,7 @@ Dataset class for model BRITS.
 import torch
 
 from pypots.data.base import BaseDataset
-from pypots.data.dataset_for_grud import torch_parse_delta
+from pypots.data.utils import torch_parse_delta
 
 
 class DatasetForBRITS(BaseDataset):
