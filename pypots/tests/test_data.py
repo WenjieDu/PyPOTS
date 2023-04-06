@@ -16,12 +16,15 @@ from pypots.imputation import SAITS
 from pypots.tests.unified_data_for_test import DATA
 from pypots.utils.logging import logger
 
-TRAIN_SET = "./train_set.h5"
-VAL_SET = "./val_set.h5"
-TEST_SET = "./test_set.h5"
+DATA_FOR_TESTS = "h5data_for_tests"
 
-IMPUTATION_TRAIN_SET = "./imputation_train_set.h5"
-IMPUTATION_VAL_SET = "./imputation_val_set.h5"
+TRAIN_SET = "h5data_for_tests/train_set.h5"
+VAL_SET = "h5data_for_tests/val_set.h5"
+
+IMPUTATION_TRAIN_SET = "h5data_for_tests/imputation_train_set.h5"
+IMPUTATION_VAL_SET = "h5data_for_tests/imputation_val_set.h5"
+
+TEST_SET = "h5data_for_tests/test_set.h5"
 
 
 def save_data_set_into_h5(data, path):
@@ -71,23 +74,34 @@ class TestLazyLoadingClasses(unittest.TestCase):
 
     @pytest.mark.xdist_group(name="data-lazy-loading")
     def test_0_save_datasets_into_files(self):
-        save_data_set_into_h5(
-            {"X": DATA["train_X"], "y": DATA["train_y"].astype(int)}, TRAIN_SET
-        )
-        save_data_set_into_h5(
-            {"X": DATA["val_X"], "y": DATA["val_y"].astype(int)}, VAL_SET
-        )
-        save_data_set_into_h5({"X": DATA["train_X"]}, IMPUTATION_TRAIN_SET)
-        save_data_set_into_h5({"X": DATA["val_X"]}, IMPUTATION_VAL_SET)
+        # create the dir for saving files
+        os.makedirs(DATA_FOR_TESTS, exist_ok=True)
 
-        save_data_set_into_h5(
-            {
-                "X": DATA["test_X"],
-                "X_intact": DATA["test_X_intact"],
-                "X_indicating_mask": DATA["test_X_indicating_mask"],
-            },
-            TEST_SET,
-        )
+        if not os.path.exists(TRAIN_SET):
+            save_data_set_into_h5(
+                {"X": DATA["train_X"], "y": DATA["train_y"].astype(int)}, TRAIN_SET
+            )
+
+        if not os.path.exists(VAL_SET):
+            save_data_set_into_h5(
+                {"X": DATA["val_X"], "y": DATA["val_y"].astype(int)}, VAL_SET
+            )
+
+        if not os.path.exists(IMPUTATION_TRAIN_SET):
+            save_data_set_into_h5({"X": DATA["train_X"]}, IMPUTATION_TRAIN_SET)
+
+        if not os.path.exists(IMPUTATION_VAL_SET):
+            save_data_set_into_h5({"X": DATA["val_X"]}, IMPUTATION_VAL_SET)
+
+        if not os.path.exists(TEST_SET):
+            save_data_set_into_h5(
+                {
+                    "X": DATA["test_X"],
+                    "X_intact": DATA["test_X_intact"],
+                    "X_indicating_mask": DATA["test_X_indicating_mask"],
+                },
+                TEST_SET,
+            )
 
     @pytest.mark.xdist_group(name="data-lazy-loading")
     def test_1_DatasetForMIT_BaseDataset(self):
