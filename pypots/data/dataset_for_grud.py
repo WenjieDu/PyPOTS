@@ -1,16 +1,96 @@
 """
-Dataset class for model GRUD.
+Dataset class for model GRU-D.
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: GLP-v3
 
 
+import numpy as np
 import torch
 
 from pypots.data.base import BaseDataset
-from pypots.data.dataset_for_brits import parse_delta
 from pypots.imputation.locf import LOCF
+
+
+def torch_parse_delta(missing_mask):
+    """Generate time-gap (delta) matrix from missing masks. Please refer to :cite:`che2018GRUD` for its math definition.
+
+    Parameters
+    ----------
+    missing_mask : torch.tensor, shape of [n_steps, n_features] or [n_samples, n_steps, n_features]
+        Binary masks indicate missing values.
+
+    Returns
+    -------
+    delta, torch.tensor,
+        Delta matrix indicates time gaps of missing values.
+    """
+
+    def cal_delta_for_single_sample(mask):
+        """calculate single sample's delta. The sample's shape is [n_steps, n_features]."""
+        d = []
+        for step in range(n_steps):
+            if step == 0:
+                d.append(torch.zeros(1, n_features, device=device))
+            else:
+                d.append(
+                    torch.ones(1, n_features, device=device) + (1 - mask[step]) * d[-1]
+                )
+        d = torch.concat(d, dim=0)
+        return d
+
+    device = missing_mask.device
+    if len(missing_mask.shape) == 2:
+        n_steps, n_features = missing_mask.shape
+        delta = cal_delta_for_single_sample(missing_mask)
+    else:
+        n_samples, n_steps, n_features = missing_mask.shape
+        delta_collector = []
+        for m_mask in missing_mask:
+            delta = cal_delta_for_single_sample(m_mask)
+            delta_collector.append(delta.unsqueeze(0))
+        delta = torch.concat(delta_collector, dim=0)
+
+    return delta
+
+
+def numpy_parse_delta(missing_mask):
+    """Generate time-gap (delta) matrix from missing masks. Please refer to :cite:`che2018GRUD` for its math definition.
+
+    Parameters
+    ----------
+    missing_mask : np.ndarray, shape of [n_steps, n_features] or [n_samples, n_steps, n_features]
+        Binary masks indicate missing values.
+
+    Returns
+    -------
+    delta, np.ndarray,
+        Delta matrix indicates time gaps of missing values.
+    """
+
+    def cal_delta_for_single_sample(mask):
+        """calculate single sample's delta. The sample's shape is [n_steps, n_features]."""
+        d = []
+        for step in range(seq_len):
+            if step == 0:
+                d.append(np.zeros(n_features))
+            else:
+                d.append(np.ones(n_features) + (1 - mask[step]) * d[-1])
+        d = np.asarray(d)
+        return d
+
+    if len(missing_mask.shape) == 2:
+        seq_len, n_features = missing_mask.shape
+        delta = cal_delta_for_single_sample(missing_mask)
+    else:
+        n_samples, seq_len, n_features = missing_mask.shape
+        delta_collector = []
+        for m_mask in missing_mask:
+            delta = cal_delta_for_single_sample(m_mask)
+            delta_collector.append(delta)
+        delta = np.asarray(delta_collector)
+    return delta
 
 
 class DatasetForGRUD(BaseDataset):
@@ -40,7 +120,7 @@ class DatasetForGRUD(BaseDataset):
             self.missing_mask = (~torch.isnan(self.X)).to(torch.float32)
             self.X_filledLOCF = self.locf.locf_torch(self.X)
             self.X = torch.nan_to_num(self.X)
-            self.deltas = parse_delta(self.missing_mask)
+            self.deltas = torch_parse_delta(self.missing_mask)
             self.empirical_mean = torch.sum(
                 self.missing_mask * self.X, dim=[0, 1]
             ) / torch.sum(self.missing_mask, dim=[0, 1])
@@ -112,7 +192,7 @@ class DatasetForGRUD(BaseDataset):
         missing_mask = (~torch.isnan(X)).to(torch.float32)
         X_filledLOCF = self.locf.locf_torch(X.unsqueeze(dim=0)).squeeze()
         X = torch.nan_to_num(X)
-        deltas = parse_delta(missing_mask)
+        deltas = torch_parse_delta(missing_mask)
         empirical_mean = torch.sum(missing_mask * X, dim=[0]) / torch.sum(
             missing_mask, dim=[0]
         )
@@ -126,9 +206,8 @@ class DatasetForGRUD(BaseDataset):
             empirical_mean,
         ]
 
-        if (
-            "y" in self.file_handle.keys()
-        ):  # if the dataset has labels, then fetch it from the file
+        # if the dataset has labels, then fetch it from the file
+        if "y" in self.file_handle.keys():
             sample.append(torch.tensor(self.file_handle["y"][idx], dtype=torch.long))
 
         return sample
