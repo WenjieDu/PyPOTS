@@ -5,91 +5,11 @@ Dataset class for model BRITS.
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: GLP-v3
 
-import numpy as np
+
 import torch
 
 from pypots.data.base import BaseDataset
-
-
-def parse_delta(missing_mask):
-    """Generate time-gap (delta) matrix from missing masks.
-
-    Parameters
-    ----------
-    missing_mask : tensor, shape of [n_steps, n_features] or [n_samples, n_steps, n_features]
-        Binary masks indicate missing values.
-
-    Returns
-    -------
-    delta, array,
-        Delta matrix indicates time gaps of missing values.
-        Its math definition please refer to :cite:`che2018GRUD`.
-    """
-
-    def cal_delta_for_single_sample(mask):
-        d = []  # single sample's delta
-        for step in range(n_steps):
-            if step == 0:
-                d.append(torch.zeros(1, n_features, device=device))
-            else:
-                d.append(
-                    torch.ones(1, n_features, device=device) + (1 - mask[step]) * d[-1]
-                )
-        d = torch.concat(d, dim=0)
-        return d
-
-    # missing_mask is from X, and X's shape and type had been checked. So no need to double-check here.
-    device = missing_mask.device
-    if len(missing_mask.shape) == 2:
-        n_steps, n_features = missing_mask.shape
-        delta = cal_delta_for_single_sample(missing_mask)
-    else:
-        n_samples, n_steps, n_features = missing_mask.shape
-        delta_collector = []
-        for m_mask in missing_mask:
-            delta = cal_delta_for_single_sample(m_mask)
-            delta_collector.append(delta.unsqueeze(0))
-        delta = torch.concat(delta_collector, dim=0)
-
-    return delta
-
-
-def parse_delta_np(missing_mask):
-    """Generate time-gap (delta) matrix from missing masks.
-
-    Parameters
-    ----------
-    missing_mask : array, shape of [seq_len, n_features]
-        Binary masks indicate missing values.
-
-    Returns
-    -------
-    delta, array,
-        Delta matrix indicates time gaps of missing values.
-        Its math definition please refer to :cite:`che2018MissingData`.
-    """
-
-    def cal_delta_for_single_sample(mask):
-        d = []
-        for step in range(seq_len):
-            if step == 0:
-                d.append(np.zeros(n_features))
-            else:
-                d.append(np.ones(n_features) + (1 - mask[step]) * d[-1])
-        d = np.asarray(d)
-        return d
-
-    if len(missing_mask.shape) == 2:
-        seq_len, n_features = missing_mask.shape
-        delta = cal_delta_for_single_sample(missing_mask)
-    else:
-        n_samples, seq_len, n_features = missing_mask.shape
-        delta_collector = []
-        for m_mask in missing_mask:
-            delta = cal_delta_for_single_sample(m_mask)
-            delta_collector.append(delta)
-        delta = np.asarray(delta_collector)
-    return delta
+from pypots.data.utils import torch_parse_delta
 
 
 class DatasetForBRITS(BaseDataset):
@@ -117,10 +37,10 @@ class DatasetForBRITS(BaseDataset):
             # calculate all delta here.
             forward_missing_mask = (~torch.isnan(self.X)).type(torch.float32)
             forward_X = torch.nan_to_num(self.X)
-            forward_delta = parse_delta(forward_missing_mask)
+            forward_delta = torch_parse_delta(forward_missing_mask)
             backward_X = torch.flip(forward_X, dims=[1])
             backward_missing_mask = torch.flip(forward_missing_mask, dims=[1])
-            backward_delta = parse_delta(backward_missing_mask)
+            backward_delta = torch_parse_delta(backward_missing_mask)
 
             self.processed_data = {
                 "forward": {
@@ -205,14 +125,14 @@ class DatasetForBRITS(BaseDataset):
         forward = {
             "X": X,
             "missing_mask": missing_mask,
-            "deltas": parse_delta(missing_mask),
+            "deltas": torch_parse_delta(missing_mask),
         }
 
         backward = {
             "X": torch.flip(forward["X"], dims=[0]),
             "missing_mask": torch.flip(forward["missing_mask"], dims=[0]),
         }
-        backward["deltas"] = parse_delta(backward["missing_mask"])
+        backward["deltas"] = torch_parse_delta(backward["missing_mask"])
 
         sample = [
             torch.tensor(idx),
@@ -226,9 +146,8 @@ class DatasetForBRITS(BaseDataset):
             backward["deltas"],
         ]
 
-        if (
-            "y" in self.file_handle.keys()
-        ):  # if the dataset has labels, then fetch it from the file
+        # if the dataset has labels, then fetch it from the file
+        if "y" in self.file_handle.keys():
             sample.append(torch.tensor(self.file_handle["y"][idx], dtype=torch.long))
 
         return sample
