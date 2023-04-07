@@ -5,58 +5,32 @@ Functions to load supported open-source time-series datasets.
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: GLP-v3
 
-import pandas as pd
+
 import tsdb
 from pypots.utils.logging import logger
+from pypots.data.load_preprocessing import preprocess_physionet2012
 
+# currently supported datasets
 SUPPORTED_DATASETS = [
     "physionet_2012",
 ]
 
+# preprocessing functions of the supported datasets
+PREPROCESSING_FUNC = {
+    "physionet_2012": preprocess_physionet2012,
+}
+
 
 def list_supported_datasets():
-    """
+    """Return the datasets natively supported by PyPOTS so far.
 
     Returns
     -------
-    SUPPORTED_DATASETS : list
+    SUPPORTED_DATASETS : list,
         A list including all supported datasets.
 
     """
     return SUPPORTED_DATASETS
-
-
-def preprocess_physionet2012(data):
-    """
-    Parameters
-    ----------
-    data : dict,
-        A data dict from tsdb.load_dataset().
-
-    Returns
-    -------
-    dict :
-        A dict containing processed data.
-
-    """
-    X = data["X"].drop(data["static_features"], axis=1)
-
-    def apply_func(df_temp):  # pad and truncate to set the max length of samples as 48
-        missing = list(set(range(0, 48)).difference(set(df_temp["Time"])))
-        missing_part = pd.DataFrame({"Time": missing})
-        df_temp = pd.concat([df_temp, missing_part], ignore_index=False, sort=False)  # pad
-        df_temp = df_temp.set_index("Time").sort_index().reset_index()
-        df_temp = df_temp.iloc[:48]  # truncate
-        return df_temp
-
-    X = X.groupby("RecordID").apply(apply_func)
-    X = X.drop("RecordID", axis=1)  #
-    X = X.reset_index()
-    X = X.drop(["level_1", "Time"], axis=1)
-    return {"X": X, "y": data["y"]}
-
-
-PREPROCESSING = {"physionet_2012": preprocess_physionet2012}
 
 
 def load_specific_dataset(dataset_name, use_cache=True):
@@ -92,5 +66,5 @@ def load_specific_dataset(dataset_name, use_cache=True):
     )
     logger.info(f"Starting preprocessing {dataset_name}...")
     data = tsdb.load_dataset(dataset_name, use_cache)
-    data = PREPROCESSING[dataset_name](data)
+    data = PREPROCESSING_FUNC[dataset_name](data)
     return data

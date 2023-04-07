@@ -1,6 +1,9 @@
 """
 PyTorch Transformer model for the time-series imputation task.
-Some part of the code is from https://github.com/WenjieDu/SAITS.
+
+Notes
+-----
+Partial implementation uses code from https://github.com/WenjieDu/SAITS.
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
@@ -14,7 +17,7 @@ from torch.utils.data import DataLoader
 
 from pypots.data.base import BaseDataset
 from pypots.data.dataset_for_mit import DatasetForMIT
-from pypots.data.integration import mcar, masked_fill
+from pypots.data.utils import mcar, masked_fill
 from pypots.imputation.base import BaseNNImputer
 from pypots.utils.metrics import cal_mae
 

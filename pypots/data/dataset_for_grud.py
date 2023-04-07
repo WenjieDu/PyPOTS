@@ -1,5 +1,5 @@
 """
-Dataset class for model GRUD.
+Dataset class for model GRU-D.
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
@@ -9,12 +9,12 @@ Dataset class for model GRUD.
 import torch
 
 from pypots.data.base import BaseDataset
-from pypots.data.dataset_for_brits import parse_delta
+from pypots.data.utils import torch_parse_delta
 from pypots.imputation.locf import LOCF
 
 
 class DatasetForGRUD(BaseDataset):
-    """Dataset class for model GRUD.
+    """Dataset class for model GRU-D.
 
     Parameters
     ----------
@@ -33,14 +33,13 @@ class DatasetForGRUD(BaseDataset):
 
     def __init__(self, data, file_type="h5py"):
         super().__init__(data, file_type)
-
         self.locf = LOCF()
 
         if not isinstance(self.data, str):  # data from array
             self.missing_mask = (~torch.isnan(self.X)).to(torch.float32)
             self.X_filledLOCF = self.locf.locf_torch(self.X)
             self.X = torch.nan_to_num(self.X)
-            self.deltas = parse_delta(self.missing_mask)
+            self.deltas = torch_parse_delta(self.missing_mask)
             self.empirical_mean = torch.sum(
                 self.missing_mask * self.X, dim=[0, 1]
             ) / torch.sum(self.missing_mask, dim=[0, 1])
@@ -112,7 +111,7 @@ class DatasetForGRUD(BaseDataset):
         missing_mask = (~torch.isnan(X)).to(torch.float32)
         X_filledLOCF = self.locf.locf_torch(X.unsqueeze(dim=0)).squeeze()
         X = torch.nan_to_num(X)
-        deltas = parse_delta(missing_mask)
+        deltas = torch_parse_delta(missing_mask)
         empirical_mean = torch.sum(missing_mask * X, dim=[0]) / torch.sum(
             missing_mask, dim=[0]
         )
@@ -126,9 +125,8 @@ class DatasetForGRUD(BaseDataset):
             empirical_mean,
         ]
 
-        if (
-            "y" in self.file_handle.keys()
-        ):  # if the dataset has labels, then fetch it from the file
+        # if the dataset has labels, then fetch it from the file
+        if "y" in self.file_handle.keys():
             sample.append(torch.tensor(self.file_handle["y"][idx], dtype=torch.long))
 
         return sample

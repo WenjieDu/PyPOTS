@@ -1,7 +1,11 @@
 """
 PyTorch BRITS model for the time-series imputation task.
-Some part of the code is from https://github.com/caow13/BRITS.
+
+Notes
+-----
+Partial implementation uses code from https://github.com/caow13/BRITS.
 """
+
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: GPL-v3
 
@@ -16,7 +20,7 @@ from torch.nn.parameter import Parameter
 from torch.utils.data import DataLoader
 
 from pypots.data.dataset_for_brits import DatasetForBRITS
-from pypots.data.integration import mcar, masked_fill
+from pypots.data.utils import mcar, masked_fill
 from pypots.imputation.base import BaseNNImputer
 from pypots.utils.metrics import cal_mae
 
