@@ -29,7 +29,14 @@ class BaseModel(ABC):
             )
             logger.info(f"No given device, using default device: {self.device}")
         else:
-            self.device = device
+            if isinstance(device, str):
+                self.device = torch.device(device)
+            elif isinstance(device, torch.device):
+                self.device = device
+            else:
+                raise TypeError(
+                    f"device should be str or torch.device, but got {type(device)}"
+                )
 
     def save_logs_to_tensorboard(self, saving_path):
         """Save logs (self.logger) into a tensorboard file.
