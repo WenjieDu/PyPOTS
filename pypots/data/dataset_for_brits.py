@@ -5,7 +5,6 @@ Dataset class for model BRITS.
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: GLP-v3
 
-
 from typing import Union, Iterable
 
 import torch
