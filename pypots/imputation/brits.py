@@ -10,8 +10,9 @@ Partial implementation uses code from https://github.com/caow13/BRITS.
 # License: GPL-v3
 
 import math
-import numpy as np
+from typing import Tuple, Any, Union, Optional
 
+import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -32,8 +33,10 @@ class FeatureRegression(nn.Module):
     ----------
     W : tensor
         The weights (parameters) of the module.
+
     b : tensor
         The bias of the module.
+
     m (buffer) : tensor
         The mask matrix, a squire matrix with diagonal entries all zeroes while left parts all ones.
         It is applied to the weight matrix to mask out the estimation contributions from features themselves.
@@ -44,7 +47,7 @@ class FeatureRegression(nn.Module):
     input_size : the feature dimension of the input
     """
 
-    def __init__(self, input_size):
+    def __init__(self, input_size: int):
         super().__init__()
         self.W = Parameter(torch.Tensor(input_size, input_size))
         self.b = Parameter(torch.Tensor(input_size))
@@ -54,13 +57,13 @@ class FeatureRegression(nn.Module):
 
         self.reset_parameters()
 
-    def reset_parameters(self):
+    def reset_parameters(self) -> None:
         stdv = 1.0 / math.sqrt(self.W.size(0))
         self.W.data.uniform_(-stdv, stdv)
         if self.b is not None:
             self.b.data.uniform_(-stdv, stdv)
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         """Forward processing of the NN module.
 
         Parameters
@@ -92,13 +95,15 @@ class TemporalDecay(nn.Module):
     ----------
     input_size : int,
         the feature dimension of the input
+
     output_size : int,
         the feature dimension of the output
+
     diag : bool,
         whether to product the weight with an identity matrix before forward processing
     """
 
-    def __init__(self, input_size, output_size, diag=False):
+    def __init__(self, input_size: int, output_size: int, diag: bool = False):
         super().__init__()
         self.diag = diag
         self.W = Parameter(torch.Tensor(output_size, input_size))
@@ -111,13 +116,13 @@ class TemporalDecay(nn.Module):
 
         self.reset_parameters()
 
-    def reset_parameters(self):
+    def reset_parameters(self) -> None:
         stdv = 1.0 / math.sqrt(self.W.size(0))
         self.W.data.uniform_(-stdv, stdv)
         if self.b is not None:
             self.b.data.uniform_(-stdv, stdv)
 
-    def forward(self, delta):
+    def forward(self, delta: torch.Tensor) -> torch.Tensor:
         """Forward processing of the NN module.
 
         Parameters
@@ -145,22 +150,31 @@ class RITS(nn.Module):
     ----------
     n_steps : int,
         sequence length (number of time steps)
+
     n_features : int,
         number of features (input dimensions)
+
     rnn_hidden_size : int,
         the hidden size of the RNN cell
+
     device : str, default=None,
         specify running the model on which device, CPU/GPU
+
     rnn_cell : torch.nn.module object
         the LSTM cell to model temporal data
+
     temp_decay_h : torch.nn.module object
         the temporal decay module to decay RNN hidden state
+
     temp_decay_x : torch.nn.module object
         the temporal decay module to decay data in the raw feature space
+
     hist_reg : torch.nn.module object
         the temporal-regression module to project RNN hidden state into the raw feature space
+
     feat_reg : torch.nn.module object
         the feature-regression module
+
     combining_weight : torch.nn.module object
         the module used to generate the weight to combine history regression and feature regression
 
@@ -168,15 +182,25 @@ class RITS(nn.Module):
     ----------
     n_steps : int,
         sequence length (number of time steps)
+
     n_features : int,
         number of features (input dimensions)
+
     rnn_hidden_size : int,
         the hidden size of the RNN cell
+
     device : str,
         specify running the model on which device, CPU/GPU
+
     """
 
-    def __init__(self, n_steps, n_features, rnn_hidden_size, device=None):
+    def __init__(
+        self,
+        n_steps: int,
+        n_features: int,
+        rnn_hidden_size: int,
+        device: Union[str, torch.device],
+    ):
         super().__init__()
         self.n_steps = n_steps
         self.n_features = n_features
@@ -194,12 +218,15 @@ class RITS(nn.Module):
         self.feat_reg = FeatureRegression(self.n_features)
         self.combining_weight = nn.Linear(self.n_features * 2, self.n_features)
 
-    def impute(self, inputs, direction):
+    def impute(
+        self, inputs: dict, direction: str
+    ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         """The imputation function.
         Parameters
         ----------
         inputs : dict,
             Input data, a dictionary includes feature values, missing masks, and time-gap values.
+
         direction : str, 'forward'/'backward'
             A keyword to extract data from parameter `data`.
 
@@ -207,10 +234,13 @@ class RITS(nn.Module):
         -------
         imputed_data : tensor,
             [batch size, sequence length, feature number]
+
         hidden_states: tensor,
             [batch size, RNN hidden size]
+
         reconstruction_loss : float tensor,
             reconstruction loss
+
         """
         values = inputs[direction]["X"]  # feature values
         masks = inputs[direction]["missing_mask"]  # missing masks
@@ -225,7 +255,7 @@ class RITS(nn.Module):
         )
 
         estimations = []
-        reconstruction_loss = 0.0
+        reconstruction_loss = torch.tensor(0.0).to(self.device)
 
         # imputation period
         for t in range(self.n_steps):
@@ -263,7 +293,7 @@ class RITS(nn.Module):
         imputed_data = masks * values + (1 - masks) * estimations
         return imputed_data, hidden_states, reconstruction_loss
 
-    def forward(self, inputs, direction="forward"):
+    def forward(self, inputs: dict, direction: str = "forward") -> dict:
         """Forward processing of the NN module.
         Parameters
         ----------
@@ -277,6 +307,7 @@ class RITS(nn.Module):
         -------
         dict,
             A dictionary includes all results.
+
         """
         imputed_data, hidden_state, reconstruction_loss = self.impute(inputs, direction)
         # for each iteration, reconstruction_loss increases its value for 3 times
@@ -301,17 +332,28 @@ class _BRITS(nn.Module):
     ----------
     n_steps : int,
         sequence length (number of time steps)
+
     n_features : int,
         number of features (input dimensions)
+
     rnn_hidden_size : int,
         the hidden size of the RNN cell
+
     rits_f: RITS object
         the forward RITS model
+
     rits_b: RITS object
         the backward RITS model
+
     """
 
-    def __init__(self, n_steps, n_features, rnn_hidden_size, device=None):
+    def __init__(
+        self,
+        n_steps: int,
+        n_features: int,
+        rnn_hidden_size: int,
+        device: Union[str, torch.device],
+    ):
         super().__init__()
         # data settings
         self.n_steps = n_steps
@@ -322,7 +364,7 @@ class _BRITS(nn.Module):
         self.rits_f = RITS(n_steps, n_features, rnn_hidden_size, device)
         self.rits_b = RITS(n_steps, n_features, rnn_hidden_size, device)
 
-    def impute(self, inputs):
+    def impute(self, inputs: dict) -> Tuple[torch.Tensor, Any]:
         """Impute the missing data. Only impute, this is for test stage.
 
         Parameters
@@ -344,26 +386,30 @@ class _BRITS(nn.Module):
         return imputed_data, None
 
     @staticmethod
-    def get_consistency_loss(pred_f, pred_b):
+    def get_consistency_loss(
+        pred_f: torch.Tensor, pred_b: torch.Tensor
+    ) -> torch.Tensor:
         """Calculate the consistency loss between the imputation from two RITS models.
 
         Parameters
         ----------
-        pred_f : array-like,
+        pred_f : tensor,
             The imputation from the forward RITS.
-        pred_b : array-like,
+
+        pred_b : tensor,
             The imputation from the backward RITS (already gets reverted).
 
         Returns
         -------
         float tensor,
             The consistency loss.
+
         """
         loss = torch.abs(pred_f - pred_b).mean() * 1e-1
         return loss
 
     @staticmethod
-    def reverse(ret):
+    def reverse(ret: dict) -> dict:
         """Reverse the array values on the time dimension in the given dictionary.
 
         Parameters
@@ -374,6 +420,7 @@ class _BRITS(nn.Module):
         -------
         dict,
             A dictionary contains values reversed on the time dimension from the given dict.
+
         """
 
         def reverse_tensor(tensor_):
@@ -390,13 +437,14 @@ class _BRITS(nn.Module):
 
         return ret
 
-    def merge_ret(self, ret_f, ret_b):
+    def merge_ret(self, ret_f: dict, ret_b: dict) -> dict:
         """Merge (average) results from two RITS models into one.
 
         Parameters
         ----------
         ret_f : dict,
             Results from the forward RITS.
+
         ret_b : dict,
             Results from the backward RITS.
 
@@ -404,6 +452,7 @@ class _BRITS(nn.Module):
         -------
         dict,
             Merged results in a dictionary.
+
         """
         consistency_loss = self.get_consistency_loss(
             ret_f["imputed_data"], ret_b["imputed_data"]
@@ -418,7 +467,7 @@ class _BRITS(nn.Module):
 
         return ret_f
 
-    def forward(self, inputs):
+    def forward(self, inputs: dict) -> dict:
         """Forward processing of BRITS.
 
         Parameters
@@ -476,18 +525,27 @@ class BRITS(BaseNNImputer):
 
     def __init__(
         self,
-        n_steps,
-        n_features,
-        rnn_hidden_size,
-        learning_rate=1e-3,
-        epochs=100,
-        patience=10,
-        batch_size=32,
-        weight_decay=1e-5,
-        device=None,
+        n_steps: int,
+        n_features: int,
+        rnn_hidden_size: int,
+        batch_size: int = 32,
+        epochs: int = 100,
+        patience: int = 10,
+        learning_rate: float = 1e-3,
+        weight_decay: float = 1e-5,
+        num_workers: int = 0,
+        device: Optional[Union[str, torch.device]] = None,
+        tb_file_saving_path: str = None,
     ):
         super().__init__(
-            learning_rate, epochs, patience, batch_size, weight_decay, device
+            batch_size,
+            epochs,
+            patience,
+            learning_rate,
+            weight_decay,
+            num_workers,
+            device,
+            tb_file_saving_path,
         )
 
         self.n_steps = n_steps
@@ -500,67 +558,7 @@ class BRITS(BaseNNImputer):
         self.model = self.model.to(self.device)
         self._print_model_size()
 
-    def fit(self, train_set, val_set=None, file_type="h5py"):
-        """Train the imputer on the given data.
-
-        Parameters
-        ----------
-        train_set : dict or str,
-            The dataset for model training, should be a dictionary including the key 'X',
-            or a path string locating a data file.
-            If it is a dict, X should be array-like of shape [n_samples, sequence length (time steps), n_features],
-            which is time-series data for training, can contain missing values.
-            If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
-            key-value pairs like a dict, and it has to include the key 'X'.
-
-        val_set : dict or str,
-            The dataset for model validating, should be a dictionary including the key 'X',
-            or a path string locating a data file.
-            If it is a dict, X should be array-like of shape [n_samples, sequence length (time steps), n_features],
-            which is time-series data for validating, can contain missing values.
-            If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
-            key-value pairs like a dict, and it has to include the key 'X'.
-
-        file_type : str, default = "h5py",
-            The type of the given file if train_set and val_set are path strings.
-
-        Returns
-        -------
-        self : object,
-            The trained imputer.
-        """
-        training_set = DatasetForBRITS(train_set, file_type)
-        training_loader = DataLoader(
-            training_set, batch_size=self.batch_size, shuffle=True
-        )
-
-        if val_set is None:
-            self._train_model(training_loader)
-        else:
-            if isinstance(val_set, str):
-                import h5py
-
-                with h5py.File(val_set, "r") as hf:
-                    val_X = hf["X"]
-                val_set = {"X": val_X}
-
-            val_X_intact, val_X, val_X_missing_mask, val_X_indicating_mask = mcar(
-                val_set["X"], 0.2
-            )
-            val_X = masked_fill(val_X, 1 - val_X_missing_mask, np.nan)
-            val_set["X"] = val_X
-            val_set = DatasetForBRITS(val_set)
-            val_loader = DataLoader(val_set, batch_size=self.batch_size, shuffle=False)
-
-            self._train_model(
-                training_loader, val_loader, val_X_intact, val_X_indicating_mask
-            )
-
-        self.model.load_state_dict(self.best_model_dict)
-        self.model.eval()  # set the model as eval status to freeze it.
-        return self
-
-    def assemble_input_for_training(self, data):
+    def _assemble_input_for_training(self, data: list) -> dict:
         """Assemble the given data into a dictionary for training input.
 
         Parameters
@@ -594,7 +592,7 @@ class BRITS(BaseNNImputer):
 
         return inputs
 
-    def assemble_input_for_validating(self, data) -> dict:
+    def _assemble_input_for_validating(self, data: list) -> dict:
         """Assemble the given data into a dictionary for validating input.
 
         Notes
@@ -612,9 +610,9 @@ class BRITS(BaseNNImputer):
         inputs : dict,
             A python dictionary contains the input data for model validating.
         """
-        return self.assemble_input_for_training(data)
+        return self._assemble_input_for_training(data)
 
-    def assemble_input_for_testing(self, data) -> dict:
+    def _assemble_input_for_testing(self, data: list) -> dict:
         """Assemble the given data into a dictionary for testing input.
 
         Notes
@@ -631,9 +629,81 @@ class BRITS(BaseNNImputer):
         inputs : dict,
             A python dictionary contains the input data for model testing.
         """
-        return self.assemble_input_for_training(data)
+        return self._assemble_input_for_validating(data)
 
-    def impute(self, X, file_type="h5py"):
+    def fit(
+        self,
+        train_set: Union[dict, str],
+        val_set: Optional[Union[dict, str]] = None,
+        file_type: str = "h5py",
+    ) -> None:
+        """Train the imputer on the given data.
+
+        Parameters
+        ----------
+        train_set : dict or str,
+            The dataset for model training, should be a dictionary including the key 'X',
+            or a path string locating a data file.
+            If it is a dict, X should be array-like of shape [n_samples, sequence length (time steps), n_features],
+            which is time-series data for training, can contain missing values.
+            If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
+            key-value pairs like a dict, and it has to include the key 'X'.
+
+        val_set : dict or str,
+            The dataset for model validating, should be a dictionary including the key 'X',
+            or a path string locating a data file.
+            If it is a dict, X should be array-like of shape [n_samples, sequence length (time steps), n_features],
+            which is time-series data for validating, can contain missing values.
+            If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
+            key-value pairs like a dict, and it has to include the key 'X'.
+
+        file_type : str, default = "h5py",
+            The type of the given file if train_set and val_set are path strings.
+
+        """
+        training_set = DatasetForBRITS(train_set, file_type)
+        training_loader = DataLoader(
+            training_set,
+            batch_size=self.batch_size,
+            shuffle=True,
+            num_workers=self.num_workers,
+        )
+
+        if val_set is None:
+            self._train_model(training_loader)
+        else:
+            if isinstance(val_set, str):
+                import h5py
+
+                with h5py.File(val_set, "r") as hf:
+                    val_X = hf["X"]
+                val_set = {"X": val_X}
+
+            val_X_intact, val_X, val_X_missing_mask, val_X_indicating_mask = mcar(
+                val_set["X"], 0.2
+            )
+            val_X = masked_fill(val_X, 1 - val_X_missing_mask, np.nan)
+            val_set["X"] = val_X
+            val_set = DatasetForBRITS(val_set)
+            val_loader = DataLoader(
+                val_set,
+                batch_size=self.batch_size,
+                shuffle=False,
+                num_workers=self.num_workers,
+            )
+
+            self._train_model(
+                training_loader, val_loader, val_X_intact, val_X_indicating_mask
+            )
+
+        self.model.load_state_dict(self.best_model_dict)
+        self.model.eval()  # set the model as eval status to freeze it.
+
+    def impute(
+        self,
+        X: Union[dict, str],
+        file_type="h5py",
+    ) -> np.ndarray:
         """Impute missing values in the given data with the trained model.
 
         Parameters
@@ -652,12 +722,17 @@ class BRITS(BaseNNImputer):
         """
         self.model.eval()  # set the model as eval status to freeze it.
         test_set = DatasetForBRITS(X)
-        test_loader = DataLoader(test_set, batch_size=self.batch_size, shuffle=False)
+        test_loader = DataLoader(
+            test_set,
+            batch_size=self.batch_size,
+            shuffle=False,
+            num_workers=self.num_workers,
+        )
         imputation_collector = []
 
         with torch.no_grad():
             for idx, data in enumerate(test_loader):
-                inputs = self.assemble_input_for_testing(data)
+                inputs = self._assemble_input_for_testing(data)
                 imputed_data, _ = self.model.impute(inputs)
                 imputation_collector.append(imputed_data)
 

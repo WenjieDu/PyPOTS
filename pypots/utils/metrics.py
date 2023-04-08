@@ -5,12 +5,18 @@ Utilities for evaluation metrics
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: GPL-v3
 
+from typing import Union, Optional, Tuple
+
 import numpy as np
 import torch
 from sklearn import metrics
 
 
-def cal_mae(inputs, target, mask=None):
+def cal_mae(
+    inputs: Union[np.ndarray, torch.Tensor, list],
+    target: Union[np.ndarray, torch.Tensor, list],
+    mask: Optional[Union[np.ndarray, torch.Tensor, list]] = None,
+) -> Union[float, torch.Tensor]:
     """calculate Mean Absolute Error"""
     assert type(inputs) == type(target), (
         f"types of inputs and target must match, but got"
@@ -23,7 +29,11 @@ def cal_mae(inputs, target, mask=None):
         return lib.mean(lib.abs(inputs - target))
 
 
-def cal_mse(inputs, target, mask=None):
+def cal_mse(
+    inputs: Union[np.ndarray, torch.Tensor, list],
+    target: Union[np.ndarray, torch.Tensor, list],
+    mask: Optional[Union[np.ndarray, torch.Tensor, list]] = None,
+) -> Union[float, torch.Tensor]:
     """calculate Mean Square Error"""
     assert type(inputs) == type(target), (
         f"types of inputs and target must match, but got"
@@ -36,7 +46,11 @@ def cal_mse(inputs, target, mask=None):
         return lib.mean(lib.square(inputs - target))
 
 
-def cal_rmse(inputs, target, mask=None):
+def cal_rmse(
+    inputs: Union[np.ndarray, torch.Tensor, list],
+    target: Union[np.ndarray, torch.Tensor, list],
+    mask: Optional[Union[np.ndarray, torch.Tensor, list]] = None,
+) -> Union[float, torch.Tensor]:
     """calculate Root Mean Square Error"""
     assert type(inputs) == type(target), (
         f"types of inputs and target must match, but got"
@@ -46,7 +60,11 @@ def cal_rmse(inputs, target, mask=None):
     return lib.sqrt(cal_mse(inputs, target, mask))
 
 
-def cal_mre(inputs, target, mask=None):
+def cal_mre(
+    inputs: Union[np.ndarray, torch.Tensor, list],
+    target: Union[np.ndarray, torch.Tensor, list],
+    mask: Optional[Union[np.ndarray, torch.Tensor, list]] = None,
+) -> Union[float, torch.Tensor]:
     """calculate Mean Relative Error"""
     assert type(inputs) == type(target), (
         f"types of inputs and target must match, but got"
@@ -61,7 +79,11 @@ def cal_mre(inputs, target, mask=None):
         return lib.mean(lib.abs(inputs - target)) / (lib.sum(lib.abs(target)) + 1e-9)
 
 
-def cal_binary_classification_metrics(prob_predictions, targets, pos_label=1):
+def cal_binary_classification_metrics(
+    prob_predictions: np.ndarray,
+    targets: np.ndarray,
+    pos_label: int = 1,
+) -> dict:
     """Calculate the evaluation metrics for the binary classification task,
         including accuracy, precision, recall, f1 score, area under ROC curve, and area under Precision-Recall curve.
         If targets contains multiple categories, please set the positive category as `pos_label`.
@@ -150,7 +172,11 @@ def cal_binary_classification_metrics(prob_predictions, targets, pos_label=1):
     return classification_metrics
 
 
-def cal_precision_recall_f1(prob_predictions, targets, pos_label=1):
+def cal_precision_recall_f1(
+    prob_predictions: np.ndarray,
+    targets: np.ndarray,
+    pos_label: int = 1,
+) -> Tuple[float, float, float]:
     """Calculate precision, recall, and F1-score of model predictions.
 
     Parameters
@@ -179,7 +205,11 @@ def cal_precision_recall_f1(prob_predictions, targets, pos_label=1):
     return precision, recall, f1
 
 
-def cal_pr_auc(prob_predictions, targets, pos_label=1):
+def cal_pr_auc(
+    prob_predictions: np.ndarray,
+    targets: np.ndarray,
+    pos_label: int = 1,
+) -> Tuple[float, np.ndarray, np.ndarray, np.ndarray]:
     """Calculate precisions, recalls, and area under PR curve of model predictions.
 
     Parameters
@@ -211,7 +241,11 @@ def cal_pr_auc(prob_predictions, targets, pos_label=1):
     return pr_auc, precisions, recalls, thresholds
 
 
-def cal_roc_auc(prob_predictions, targets, pos_label=1):
+def cal_roc_auc(
+    prob_predictions: np.ndarray,
+    targets: np.ndarray,
+    pos_label: int = 1,
+) -> Tuple[float, np.ndarray, np.ndarray, np.ndarray]:
     """Calculate false positive rates, true positive rates, and area under AUC curve of model predictions.
 
     Parameters
@@ -242,7 +276,7 @@ def cal_roc_auc(prob_predictions, targets, pos_label=1):
     return roc_auc, fprs, tprs, thresholds
 
 
-def cal_acc(class_predictions, targets):
+def cal_acc(class_predictions: np.ndarray, targets: np.ndarray) -> float:
     """Calculate accuracy score of model predictions.
 
     Parameters
@@ -262,7 +296,10 @@ def cal_acc(class_predictions, targets):
     return acc_score
 
 
-def cal_rand_index(class_predictions, targets):
+def cal_rand_index(
+    class_predictions: np.ndarray,
+    targets: np.ndarray,
+) -> float:
     """Calculate Rand Index, a measure of the similarity between two data clusterings.
         Refer to :cite:`rand1971RandIndex`.
 
@@ -299,7 +336,10 @@ def cal_rand_index(class_predictions, targets):
     return RI
 
 
-def cal_adjusted_rand_index(class_predictions, targets):
+def cal_adjusted_rand_index(
+    class_predictions: np.ndarray,
+    targets: np.ndarray,
+) -> float:
     """Calculate adjusted Rand Index.
     Refer to :cite:`hubert1985AdjustedRI`.
 
@@ -319,7 +359,10 @@ def cal_adjusted_rand_index(class_predictions, targets):
     return aRI
 
 
-def cal_cluster_purity(class_predictions, targets):
+def cal_cluster_purity(
+    class_predictions: np.ndarray,
+    targets: np.ndarray,
+) -> float:
     """Calculate cluster purity.
 
     Parameters

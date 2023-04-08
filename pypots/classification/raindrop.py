@@ -14,7 +14,7 @@ https://github.com/WenjieDu/PyPOTS/blob/c381ad1853b465ebb918134d8bf6f6cf2996c9d3
 
 
 import math
-from typing import Union, Tuple, Optional
+from typing import Tuple, Any, Union, Optional
 
 import numpy as np
 import torch
@@ -46,10 +46,10 @@ except ImportError as e:
     )
 
 
-class PositionalEncodingTF(nn.Module):
+class PositionalEncoding(nn.Module):
     """Generate positional encoding according to time information."""
 
-    def __init__(self, d_pe, max_len=500):
+    def __init__(self, d_pe: int, max_len: int = 500):
         super().__init__()
         assert (
             d_pe % 2 == 0
@@ -57,7 +57,7 @@ class PositionalEncodingTF(nn.Module):
         self.max_len = max_len
         self._num_timescales = d_pe // 2
 
-    def forward(self, time_vectors):
+    def forward(self, time_vectors: torch.Tensor) -> torch.Tensor:
         """Generate positional encoding.
 
         Parameters
@@ -75,7 +75,7 @@ class PositionalEncodingTF(nn.Module):
         times = time_vectors.unsqueeze(2)
         scaled_time = times / torch.Tensor(timescales[None, None, :])
         pe = torch.cat(
-            [torch.sin(scaled_time), torch.cos(scaled_time)], axis=-1
+            [torch.sin(scaled_time), torch.cos(scaled_time)], dim=-1
         )  # T x B x d_model
         pe = pe.type(torch.FloatTensor)
         return pe
@@ -151,7 +151,7 @@ class ObservationPropagation(MessagePassing):
 
         self.reset_parameters()
 
-    def reset_parameters(self):
+    def reset_parameters(self) -> None:
         self.lin_key.reset_parameters()
         self.lin_query.reset_parameters()
         self.lin_value.reset_parameters()
@@ -178,7 +178,7 @@ class ObservationPropagation(MessagePassing):
         use_beta=False,
         edge_attr: OptTensor = None,
         return_attention_weights=None,
-    ):
+    ) -> Tuple[torch.Tensor, Any]:
 
         r"""
         Args:
@@ -392,7 +392,7 @@ class _Raindrop(nn.Module):
         self.d_ob = int(d_model / n_features)
         self.encoder = nn.Linear(n_features * self.d_ob, n_features * self.d_ob)
         d_pe = 16
-        self.pos_encoder = PositionalEncodingTF(d_pe, max_len)
+        self.pos_encoder = PositionalEncoding(d_pe, max_len)
         if self.sensor_wise_mask:
             dim_check = n_features * (self.d_ob + d_pe)
             assert dim_check % n_heads == 0, "dim_check must be divisible by n_heads"
@@ -635,15 +635,25 @@ class Raindrop(BaseNNClassifier):
         aggregation,
         sensor_wise_mask,
         static,
-        learning_rate=1e-3,
+        batch_size=32,
         epochs=100,
         patience=10,
-        batch_size=32,
+        learning_rate=1e-3,
         weight_decay=1e-5,
-        device=None,
+        num_workers: int = 0,
+        device: Optional[Union[str, torch.device]] = None,
+        tb_file_saving_path: str = None,
     ):
         super().__init__(
-            n_classes, learning_rate, epochs, patience, batch_size, weight_decay, device
+            n_classes,
+            batch_size,
+            epochs,
+            patience,
+            learning_rate,
+            weight_decay,
+            num_workers,
+            device,
+            tb_file_saving_path,
         )
 
         self.n_features = n_features
@@ -666,55 +676,7 @@ class Raindrop(BaseNNClassifier):
         self.model = self.model.to(self.device)
         self._print_model_size()
 
-    def fit(self, train_set, val_set=None, file_type="h5py"):
-        """Fit the model on the given training data.
-
-        Parameters
-        ----------
-        train_set : dict or str,
-            The dataset for model training, should be a dictionary including keys as 'X' and 'y',
-            or a path string locating a data file.
-            If it is a dict, X should be array-like of shape [n_samples, sequence length (time steps), n_features],
-            which is time-series data for training, can contain missing values, and y should be array-like of shape
-            [n_samples], which is classification labels of X.
-            If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
-            key-value pairs like a dict, and it has to include keys as 'X' and 'y'.
-
-        val_set : dict or str,
-            The dataset for model validating, should be a dictionary including keys as 'X' and 'y',
-            or a path string locating a data file.
-            If it is a dict, X should be array-like of shape [n_samples, sequence length (time steps), n_features],
-            which is time-series data for validating, can contain missing values, and y should be array-like of shape
-            [n_samples], which is classification labels of X.
-            If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
-            key-value pairs like a dict, and it has to include keys as 'X' and 'y'.
-
-        file_type : str, default = "h5py"
-            The type of the given file if train_set and val_set are path strings.
-
-        Returns
-        -------
-        self : object,
-            Trained model.
-        """
-
-        training_set = DatasetForGRUD(train_set)
-        training_loader = DataLoader(
-            training_set, batch_size=self.batch_size, shuffle=True
-        )
-
-        if val_set is None:
-            self._train_model(training_loader)
-        else:
-            val_set = DatasetForGRUD(val_set)
-            val_loader = DataLoader(val_set, batch_size=self.batch_size, shuffle=False)
-            self._train_model(training_loader, val_loader)
-
-        self.model.load_state_dict(self.best_model_dict)
-        self.model.eval()  # set the model as eval status to freeze it.
-        return self
-
-    def assemble_input_for_training(self, data):
+    def _assemble_input_for_training(self, data: dict) -> dict:
         """Assemble the input data into a dictionary.
 
         Parameters
@@ -748,7 +710,7 @@ class Raindrop(BaseNNClassifier):
         }
         return inputs
 
-    def assemble_input_for_validating(self, data) -> dict:
+    def _assemble_input_for_validating(self, data: dict) -> dict:
         """Assemble the given data into a dictionary for validating input.
 
         Notes
@@ -766,9 +728,9 @@ class Raindrop(BaseNNClassifier):
         inputs : dict,
             A python dictionary contains the input data for model validating.
         """
-        return self.assemble_input_for_training(data)
+        return self._assemble_input_for_training(data)
 
-    def assemble_input_for_testing(self, data) -> dict:
+    def _assemble_input_for_testing(self, data: dict) -> dict:
         """Assemble the given data into a dictionary for testing input.
 
         Parameters
@@ -800,7 +762,67 @@ class Raindrop(BaseNNClassifier):
 
         return inputs
 
-    def classify(self, X, file_type="h5py"):
+    def fit(
+        self,
+        train_set: Union[dict, str],
+        val_set: Optional[Union[dict, str]] = None,
+        file_type="h5py",
+    ) -> None:
+        """Fit the model on the given training data.
+
+        Parameters
+        ----------
+        train_set : dict or str,
+            The dataset for model training, should be a dictionary including keys as 'X' and 'y',
+            or a path string locating a data file.
+            If it is a dict, X should be array-like of shape [n_samples, sequence length (time steps), n_features],
+            which is time-series data for training, can contain missing values, and y should be array-like of shape
+            [n_samples], which is classification labels of X.
+            If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
+            key-value pairs like a dict, and it has to include keys as 'X' and 'y'.
+
+        val_set : dict or str,
+            The dataset for model validating, should be a dictionary including keys as 'X' and 'y',
+            or a path string locating a data file.
+            If it is a dict, X should be array-like of shape [n_samples, sequence length (time steps), n_features],
+            which is time-series data for validating, can contain missing values, and y should be array-like of shape
+            [n_samples], which is classification labels of X.
+            If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
+            key-value pairs like a dict, and it has to include keys as 'X' and 'y'.
+
+        file_type : str, default = "h5py"
+            The type of the given file if train_set and val_set are path strings.
+
+        Returns
+        -------
+        self : object,
+            Trained model.
+        """
+
+        training_set = DatasetForGRUD(train_set)
+        training_loader = DataLoader(
+            training_set,
+            batch_size=self.batch_size,
+            shuffle=True,
+            num_workers=self.num_workers,
+        )
+
+        if val_set is None:
+            self._train_model(training_loader)
+        else:
+            val_set = DatasetForGRUD(val_set)
+            val_loader = DataLoader(
+                val_set,
+                batch_size=self.batch_size,
+                shuffle=False,
+                num_workers=self.num_workers,
+            )
+            self._train_model(training_loader, val_loader)
+
+        self.model.load_state_dict(self.best_model_dict)
+        self.model.eval()  # set the model as eval status to freeze it.
+
+    def classify(self, X: Union[dict, str], file_type: str = "h5py") -> np.ndarray:
         """Classify the input data with the trained model.
 
         Parameters
@@ -819,12 +841,17 @@ class Raindrop(BaseNNClassifier):
         """
         self.model.eval()  # set the model as eval status to freeze it.
         test_set = DatasetForGRUD(X, file_type)
-        test_loader = DataLoader(test_set, batch_size=self.batch_size, shuffle=False)
+        test_loader = DataLoader(
+            test_set,
+            batch_size=self.batch_size,
+            shuffle=False,
+            num_workers=self.num_workers,
+        )
         prediction_collector = []
 
         with torch.no_grad():
             for idx, data in enumerate(test_loader):
-                inputs = self.assemble_input_for_testing(data)
+                inputs = self._assemble_input_for_testing(data)
                 prediction = self.model.classify(inputs)
                 prediction_collector.append(prediction)
 

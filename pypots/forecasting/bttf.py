@@ -8,8 +8,10 @@ Refer to :cite:`chen2021BTMF`.
 # License: GLP-v3
 
 import warnings
+from typing import Union, Optional
 
 import numpy as np
+import torch
 from numpy.linalg import cholesky as cholesky_lower
 from numpy.linalg import inv as inv
 from numpy.linalg import solve as solve
@@ -22,7 +24,6 @@ from scipy.stats import invwishart
 from scipy.stats import wishart
 
 from pypots.forecasting.base import BaseForecaster
-from pypots.utils.logging import logger
 
 
 def mvnrnd_pre(mu, Lambda):
@@ -438,15 +439,15 @@ def BTTF_forecast(
 class BTTF(BaseForecaster):
     def __init__(
         self,
-        n_steps,
-        n_features,
-        pred_step,
-        multi_step,
-        rank,
-        time_lags,
-        burn_iter,
-        gibbs_iter,
-        device=None,
+        n_steps: int,
+        n_features: int,
+        pred_step: int,
+        multi_step: int,
+        rank: int,
+        time_lags: int,
+        burn_iter: int,
+        gibbs_iter: int,
+        device: Optional[Union[str, torch.device]] = None,
     ):
         super().__init__(device)
         self.n_steps = n_steps
@@ -458,10 +459,19 @@ class BTTF(BaseForecaster):
         self.burn_iter = burn_iter
         self.gibbs_iter = gibbs_iter
 
-    def fit(self, train_set, val_set=None, file_type="h5py"):
+    def fit(
+        self,
+        train_set: Union[dict, str],
+        val_set: Optional[Union[dict, str]] = None,
+        file_type="h5py",
+    ) -> None:
         warnings.warn("Please run func forecast(X) directly.")
 
-    def forecast(self, X, file_type="h5py"):
+    def forecast(
+        self,
+        X: Union[dict, str],
+        file_type: str = "h5py",
+    ) -> np.ndarray:
         """Forecast the future the input with the trained model.
 
         Parameters
@@ -472,6 +482,10 @@ class BTTF(BaseForecaster):
 
         file_type : str, default = "h5py"
             The type of the given file if X is a path string.
+
+        num_workers : int, default = 0,
+            The number of subprocesses to use for data loading.
+            `0` means data loading will be in the main process, i.e. there won't be subprocesses.
 
         Returns
         -------

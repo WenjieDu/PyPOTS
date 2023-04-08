@@ -6,6 +6,7 @@ Implementation of the imputation method LOCF (Last Observed Carried Forward).
 # License: GLP-v3
 
 import warnings
+from typing import Union, Optional
 
 import numpy as np
 import torch
@@ -22,11 +23,16 @@ class LOCF(BaseImputer):
         Value used to impute data missing at the beginning of the sequence.
     """
 
-    def __init__(self, nan=0):
+    def __init__(self, nan: Optional[Union[float, int]] = 0):
         super().__init__("cpu")
         self.nan = nan
 
-    def fit(self, train_set, val_set=None, file_type="h5py"):
+    def fit(
+        self,
+        train_set: Union[dict, str],
+        val_set: Optional[Union[dict, str]] = None,
+        file_type: str = "h5py",
+    ) -> None:
         """Train the imputer on the given data.
 
         Parameters
@@ -50,17 +56,13 @@ class LOCF(BaseImputer):
         file_type : str, default = "h5py",
             The type of the given file if train_set and val_set are path strings.
 
-        Returns
-        -------
-        self : object,
-            The trained imputer.
         """
         warnings.warn(
             "LOCF (Last Observed Carried Forward) imputation class has no parameter to train. "
             "Please run func impute(X) directly."
         )
 
-    def locf_numpy(self, X):
+    def locf_numpy(self, X: np.ndarray) -> np.ndarray:
         """Numpy implementation of LOCF.
 
         Parameters
@@ -98,7 +100,7 @@ class LOCF(BaseImputer):
 
         return X_imputed
 
-    def locf_torch(self, X):
+    def locf_torch(self, X: torch.Tensor) -> torch.Tensor:
         """Torch implementation of LOCF.
 
         Parameters
@@ -131,7 +133,12 @@ class LOCF(BaseImputer):
 
         return X_imputed
 
-    def impute(self, X, file_type="h5py"):
+    def impute(
+        self,
+        X: Union[dict, str],
+        file_type: str = "h5py",
+        num_workers: int = 0,
+    ) -> np.ndarray:
         """Impute missing values in the given data with the trained model.
 
         Parameters
@@ -142,6 +149,10 @@ class LOCF(BaseImputer):
 
         file_type : str, default = "h5py",
             The type of the given file if X is a path string.
+
+        num_workers : int, default = 0,
+            The number of subprocesses to use for data loading.
+            `0` means data loading will be in the main process, i.e. there won't be subprocesses.
 
         Returns
         -------
