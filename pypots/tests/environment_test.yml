@@ -20,3 +20,4 @@ dependencies:
     - conda-forge::tsdb
     - pytorch::pytorch
     - pyg::pyg
+    - pyg::pytorch-scatter
