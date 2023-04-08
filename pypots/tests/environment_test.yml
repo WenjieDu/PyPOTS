@@ -14,9 +14,9 @@ dependencies:
     - conda-forge::tensorboard
     - conda-forge::pip
     - conda-forge::pytest-cov
-    - conda-forge::pytest-xdist>=2.5.0
+    - conda-forge::pytest-xdist
     - conda-forge::coverage
     - conda-forge::pycorruptor
     - conda-forge::tsdb
-    - pytorch::pytorch==1.11.0
-    - pyg::pyg==2.0.4
+    - pytorch::pytorch
+    - pyg::pyg
