@@ -5,6 +5,8 @@ PyTorch BRITS model for both the time-series imputation task and the classificat
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: GPL-v3
 
+from typing import Tuple, Optional, Union
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -16,12 +18,19 @@ from pypots.imputation.brits import RITS as imputation_RITS, _BRITS as imputatio
 
 
 class RITS(imputation_RITS):
-    def __init__(self, n_steps, n_features, rnn_hidden_size, n_classes, device=None):
+    def __init__(
+        self,
+        n_steps: int,
+        n_features: int,
+        rnn_hidden_size: int,
+        n_classes: int,
+        device: Union[str, torch.device],
+    ):
         super().__init__(n_steps, n_features, rnn_hidden_size, device)
         self.dropout = nn.Dropout(p=0.25)
         self.classifier = nn.Linear(self.rnn_hidden_size, n_classes)
 
-    def forward(self, inputs, direction="forward"):
+    def forward(self, inputs: dict, direction: str = "forward") -> dict:
         ret_dict = super().forward(inputs, direction)
         logits = self.classifier(ret_dict["final_hidden_state"])
         ret_dict["prediction"] = torch.softmax(logits, dim=1)
@@ -31,26 +40,27 @@ class RITS(imputation_RITS):
 class _BRITS(imputation_BRITS, nn.Module):
     def __init__(
         self,
-        n_steps,
-        n_features,
-        rnn_hidden_size,
-        n_classes,
-        classification_weight,
-        reconstruction_weight,
-        device=None,
+        n_steps: int,
+        n_features: int,
+        rnn_hidden_size: int,
+        n_classes: int,
+        classification_weight: float,
+        reconstruction_weight: float,
+        device: Union[str, torch.device],
     ):
-        super().__init__(n_steps, n_features, rnn_hidden_size)
+        super().__init__(n_steps, n_features, rnn_hidden_size, device)
         self.n_steps = n_steps
         self.n_features = n_features
         self.rnn_hidden_size = rnn_hidden_size
         self.n_classes = n_classes
+
         # create models
         self.rits_f = RITS(n_steps, n_features, rnn_hidden_size, n_classes, device)
         self.rits_b = RITS(n_steps, n_features, rnn_hidden_size, n_classes, device)
         self.classification_weight = classification_weight
         self.reconstruction_weight = reconstruction_weight
 
-    def merge_ret(self, ret_f, ret_b):
+    def merge_ret(self, ret_f: dict, ret_b: dict) -> dict:
         """Merge (average) results from two RITS models into one.
 
         Parameters
@@ -71,13 +81,13 @@ class _BRITS(imputation_BRITS, nn.Module):
         }
         return results
 
-    def classify(self, inputs):
+    def classify(self, inputs: dict) -> Tuple[dict, dict, dict]:
         ret_f = self.rits_f(inputs, "forward")
         ret_b = self.reverse(self.rits_b(inputs, "backward"))
         merged_ret = self.merge_ret(ret_f, ret_b)
         return merged_ret, ret_f, ret_b
 
-    def forward(self, inputs):
+    def forward(self, inputs: dict) -> dict:
         """Forward processing of BRITS.
 
         Parameters
@@ -144,21 +154,31 @@ class BRITS(BaseNNClassifier):
 
     def __init__(
         self,
-        n_steps,
-        n_features,
-        rnn_hidden_size,
-        n_classes,
-        classification_weight=1,
-        reconstruction_weight=1,
-        learning_rate=1e-3,
-        epochs=100,
-        patience=10,
-        batch_size=32,
-        weight_decay=1e-5,
-        device=None,
+        n_steps: int,
+        n_features: int,
+        rnn_hidden_size: int,
+        n_classes: int,
+        classification_weight: float = 1,
+        reconstruction_weight: float = 1,
+        batch_size: int = 32,
+        epochs: int = 100,
+        patience: int = 10,
+        learning_rate: float = 1e-3,
+        weight_decay: float = 1e-5,
+        num_workers: int = 0,
+        device: Optional[Union[str, torch.device]] = None,
+        tb_file_saving_path: str = None,
     ):
         super().__init__(
-            n_classes, learning_rate, epochs, patience, batch_size, weight_decay, device
+            n_classes,
+            batch_size,
+            epochs,
+            patience,
+            learning_rate,
+            weight_decay,
+            num_workers,
+            device,
+            tb_file_saving_path,
         )
 
         self.n_steps = n_steps
@@ -179,55 +199,7 @@ class BRITS(BaseNNClassifier):
         self.model = self.model.to(self.device)
         self._print_model_size()
 
-    def fit(self, train_set, val_set=None, file_type="h5py"):
-        """Train the classifier on the given data.
-
-        Parameters
-        ----------
-        train_set : dict or str,
-            The dataset for model training, should be a dictionary including keys as 'X' and 'y',
-            or a path string locating a data file.
-            If it is a dict, X should be array-like of shape [n_samples, sequence length (time steps), n_features],
-            which is time-series data for training, can contain missing values, and y should be array-like of shape
-            [n_samples], which is classification labels of X.
-            If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
-            key-value pairs like a dict, and it has to include keys as 'X' and 'y'.
-
-        val_set : dict or str,
-            The dataset for model validating, should be a dictionary including keys as 'X' and 'y',
-            or a path string locating a data file.
-            If it is a dict, X should be array-like of shape [n_samples, sequence length (time steps), n_features],
-            which is time-series data for validating, can contain missing values, and y should be array-like of shape
-            [n_samples], which is classification labels of X.
-            If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
-            key-value pairs like a dict, and it has to include keys as 'X' and 'y'.
-
-        file_type : str, default = "h5py"
-            The type of the given file if train_set and val_set are path strings.
-
-        Returns
-        -------
-        self : object,
-            Trained classifier.
-        """
-
-        training_set = DatasetForBRITS(train_set)
-        training_loader = DataLoader(
-            training_set, batch_size=self.batch_size, shuffle=True
-        )
-
-        if val_set is None:
-            self._train_model(training_loader)
-        else:
-            val_set = DatasetForBRITS(val_set)
-            val_loader = DataLoader(val_set, batch_size=self.batch_size, shuffle=False)
-            self._train_model(training_loader, val_loader)
-
-        self.model.load_state_dict(self.best_model_dict)
-        self.model.eval()  # set the model as eval status to freeze it.
-        return self
-
-    def assemble_input_for_training(self, data):
+    def _assemble_input_for_training(self, data: dict) -> dict:
         """Assemble the input data into a dictionary.
 
         Parameters
@@ -269,7 +241,7 @@ class BRITS(BaseNNClassifier):
         }
         return inputs
 
-    def assemble_input_for_validating(self, data) -> dict:
+    def _assemble_input_for_validating(self, data: dict) -> dict:
         """Assemble the given data into a dictionary for validating input.
 
         Notes
@@ -287,9 +259,9 @@ class BRITS(BaseNNClassifier):
         inputs : dict,
             A python dictionary contains the input data for model validating.
         """
-        return self.assemble_input_for_training(data)
+        return self._assemble_input_for_training(data)
 
-    def assemble_input_for_testing(self, data) -> dict:
+    def _assemble_input_for_testing(self, data: dict) -> dict:
         """Assemble the given data into a dictionary for testing input.
 
         Notes
@@ -333,7 +305,67 @@ class BRITS(BaseNNClassifier):
         }
         return inputs
 
-    def classify(self, X, file_type="h5py"):
+    def fit(
+        self,
+        train_set: Union[dict, str],
+        val_set: Optional[Union[dict, str]] = None,
+        file_type: str = "h5py",
+    ) -> None:
+        """Train the classifier on the given data.
+
+        Parameters
+        ----------
+        train_set : dict or str,
+            The dataset for model training, should be a dictionary including keys as 'X' and 'y',
+            or a path string locating a data file.
+            If it is a dict, X should be array-like of shape [n_samples, sequence length (time steps), n_features],
+            which is time-series data for training, can contain missing values, and y should be array-like of shape
+            [n_samples], which is classification labels of X.
+            If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
+            key-value pairs like a dict, and it has to include keys as 'X' and 'y'.
+
+        val_set : dict or str or None,
+            The dataset for model validating, should be a dictionary including keys as 'X' and 'y',
+            or a path string locating a data file.
+            If it is a dict, X should be array-like of shape [n_samples, sequence length (time steps), n_features],
+            which is time-series data for validating, can contain missing values, and y should be array-like of shape
+            [n_samples], which is classification labels of X.
+            If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
+            key-value pairs like a dict, and it has to include keys as 'X' and 'y'.
+
+        file_type : str, default = "h5py"
+            The type of the given file if train_set and val_set are path strings.
+
+        Returns
+        -------
+        self : object,
+            Trained classifier.
+        """
+
+        training_set = DatasetForBRITS(train_set)
+        training_loader = DataLoader(
+            training_set,
+            batch_size=self.batch_size,
+            shuffle=True,
+            num_workers=self.num_workers,
+        )
+
+        if val_set is None:
+            self._train_model(training_loader)
+        else:
+            val_set = DatasetForBRITS(val_set)
+            val_loader = DataLoader(
+                val_set,
+                batch_size=self.batch_size,
+                shuffle=False,
+                num_workers=self.num_workers,
+            )
+            self._train_model(training_loader, val_loader)
+
+        self.model.load_state_dict(self.best_model_dict)
+        self.model.eval()  # set the model as eval status to freeze it.
+
+    def classify(self, X: Union[dict, str], file_type: str = "h5py"):
         """Classify the input data with the trained model.
 
         Parameters
@@ -352,12 +384,17 @@ class BRITS(BaseNNClassifier):
         """
         self.model.eval()  # set the model as eval status to freeze it.
         test_set = DatasetForBRITS(X, file_type)
-        test_loader = DataLoader(test_set, batch_size=self.batch_size, shuffle=False)
+        test_loader = DataLoader(
+            test_set,
+            batch_size=self.batch_size,
+            shuffle=False,
+            num_workers=self.num_workers,
+        )
         prediction_collector = []
 
         with torch.no_grad():
             for idx, data in enumerate(test_loader):
-                inputs = self.assemble_input_for_testing(data)
+                inputs = self._assemble_input_for_testing(data)
                 results, _, _ = self.model.classify(inputs)
                 prediction_collector.append(results["prediction"])
 

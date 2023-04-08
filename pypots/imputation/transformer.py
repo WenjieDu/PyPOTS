@@ -9,6 +9,8 @@ Partial implementation uses code from https://github.com/WenjieDu/SAITS.
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: GPL-v3
 
+from typing import Tuple, Union, Optional
+
 import numpy as np
 import torch
 import torch.nn as nn
@@ -25,12 +27,18 @@ from pypots.utils.metrics import cal_mae
 class ScaledDotProductAttention(nn.Module):
     """Scaled dot-product attention"""
 
-    def __init__(self, temperature, attn_dropout=0.1):
+    def __init__(self, temperature: float, attn_dropout: float = 0.1):
         super().__init__()
         self.temperature = temperature
         self.dropout = nn.Dropout(attn_dropout)
 
-    def forward(self, q, k, v, attn_mask=None):
+    def forward(
+        self,
+        q: torch.Tensor,
+        k: torch.Tensor,
+        v: torch.Tensor,
+        attn_mask: torch.Tensor = None,
+    ) -> Tuple[torch.Tensor, torch.Tensor]:
         attn = torch.matmul(q / self.temperature, k.transpose(2, 3))
         if attn_mask is not None:
             attn = attn.masked_fill(attn_mask == 1, -1e9)
@@ -42,7 +50,14 @@ class ScaledDotProductAttention(nn.Module):
 class MultiHeadAttention(nn.Module):
     """original Transformer multi-head attention"""
 
-    def __init__(self, n_head, d_model, d_k, d_v, attn_dropout):
+    def __init__(
+        self,
+        n_head: int,
+        d_model: int,
+        d_k: int,
+        d_v: int,
+        attn_dropout: float,
+    ):
         super().__init__()
 
         self.n_head = n_head
@@ -56,7 +71,13 @@ class MultiHeadAttention(nn.Module):
         self.attention = ScaledDotProductAttention(d_k**0.5, attn_dropout)
         self.fc = nn.Linear(n_head * d_v, d_model, bias=False)
 
-    def forward(self, q, k, v, attn_mask=None):
+    def forward(
+        self,
+        q: torch.Tensor,
+        k: torch.Tensor,
+        v: torch.Tensor,
+        attn_mask: torch.Tensor = None,
+    ) -> Tuple[torch.Tensor, torch.Tensor]:
         d_k, d_v, n_head = self.d_k, self.d_v, self.n_head
         sz_b, len_q, len_k, len_v = q.size(0), q.size(1), k.size(1), v.size(1)
 
@@ -85,14 +106,14 @@ class MultiHeadAttention(nn.Module):
 
 
 class PositionWiseFeedForward(nn.Module):
-    def __init__(self, d_in, d_hid, dropout=0.1):
+    def __init__(self, d_in: int, d_hid: int, dropout: float = 0.1):
         super().__init__()
         self.w_1 = nn.Linear(d_in, d_hid)
         self.w_2 = nn.Linear(d_hid, d_in)
         self.layer_norm = nn.LayerNorm(d_in, eps=1e-6)
         self.dropout = nn.Dropout(dropout)
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         residual = x
         x = self.layer_norm(x)
         x = self.w_2(F.relu(self.w_1(x)))
@@ -104,16 +125,16 @@ class PositionWiseFeedForward(nn.Module):
 class EncoderLayer(nn.Module):
     def __init__(
         self,
-        d_time,
-        d_feature,
-        d_model,
-        d_inner,
-        n_head,
-        d_k,
-        d_v,
-        dropout=0.1,
-        attn_dropout=0.1,
-        diagonal_attention_mask=False,
+        d_time: int,
+        d_feature: int,
+        d_model: int,
+        d_inner: int,
+        n_head: int,
+        d_k: int,
+        d_v: int,
+        dropout: float = 0.1,
+        attn_dropout: float = 0.1,
+        diagonal_attention_mask: bool = False,
     ):
         super().__init__()
 
@@ -126,7 +147,7 @@ class EncoderLayer(nn.Module):
         self.dropout = nn.Dropout(dropout)
         self.pos_ffn = PositionWiseFeedForward(d_model, d_inner, dropout)
 
-    def forward(self, enc_input):
+    def forward(self, enc_input: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
         if self.diagonal_attention_mask:
             mask_time = torch.eye(self.d_time).to(enc_input.device)
         else:
@@ -146,7 +167,7 @@ class EncoderLayer(nn.Module):
 
 
 class PositionalEncoding(nn.Module):
-    def __init__(self, d_hid, n_position=200):
+    def __init__(self, d_hid: int, n_position: int = 200):
         super().__init__()
         # Not a parameter
         self.register_buffer(
@@ -154,7 +175,7 @@ class PositionalEncoding(nn.Module):
         )
 
     @staticmethod
-    def _get_sinusoid_encoding_table(n_position, d_hid):
+    def _get_sinusoid_encoding_table(n_position: int, d_hid: int) -> torch.Tensor:
         """Sinusoid position encoding table"""
 
         def get_position_angle_vec(position):
@@ -177,17 +198,17 @@ class PositionalEncoding(nn.Module):
 class _TransformerEncoder(nn.Module):
     def __init__(
         self,
-        n_layers,
-        d_time,
-        d_feature,
-        d_model,
-        d_inner,
-        n_head,
-        d_k,
-        d_v,
-        dropout,
-        ORT_weight=1,
-        MIT_weight=1,
+        n_layers: int,
+        d_time: int,
+        d_feature: int,
+        d_model: int,
+        d_inner: int,
+        n_head: int,
+        d_k: int,
+        d_v: int,
+        dropout: float,
+        ORT_weight: float = 1,
+        MIT_weight: float = 1,
     ):
         super().__init__()
         self.n_layers = n_layers
@@ -218,7 +239,7 @@ class _TransformerEncoder(nn.Module):
         self.dropout = nn.Dropout(p=dropout)
         self.reduce_dim = nn.Linear(d_model, d_feature)
 
-    def impute(self, inputs):
+    def impute(self, inputs: dict) -> Tuple[torch.Tensor, torch.Tensor]:
         X, masks = inputs["X"], inputs["missing_mask"]
         input_X = torch.cat([X, masks], dim=2)
         input_X = self.embedding(input_X)
@@ -233,7 +254,7 @@ class _TransformerEncoder(nn.Module):
         )  # replace non-missing part with original data
         return imputed_data, learned_presentation
 
-    def forward(self, inputs):
+    def forward(self, inputs: dict) -> dict:
         X, masks = inputs["X"], inputs["missing_mask"]
         imputed_data, learned_presentation = self.impute(inputs)
         reconstruction_loss = cal_mae(learned_presentation, X, masks)
@@ -256,26 +277,35 @@ class _TransformerEncoder(nn.Module):
 class Transformer(BaseNNImputer):
     def __init__(
         self,
-        n_steps,
-        n_features,
-        n_layers,
-        d_model,
-        d_inner,
-        n_head,
-        d_k,
-        d_v,
-        dropout,
-        ORT_weight=1,
-        MIT_weight=1,
-        learning_rate=1e-3,
-        epochs=100,
-        patience=10,
-        batch_size=32,
-        weight_decay=1e-5,
-        device=None,
+        n_steps: int,
+        n_features: int,
+        n_layers: int,
+        d_model: int,
+        d_inner: int,
+        n_head: int,
+        d_k: int,
+        d_v: int,
+        dropout: float,
+        ORT_weight: int = 1,
+        MIT_weight: int = 1,
+        batch_size: int = 32,
+        epochs: int = 100,
+        patience: int = 10,
+        learning_rate: float = 1e-3,
+        weight_decay: float = 1e-5,
+        num_workers: int = 0,
+        device: Optional[Union[str, torch.device]] = None,
+        tb_file_saving_path: str = None,
     ):
         super().__init__(
-            learning_rate, epochs, patience, batch_size, weight_decay, device
+            batch_size,
+            epochs,
+            patience,
+            learning_rate,
+            weight_decay,
+            num_workers,
+            device,
+            tb_file_saving_path,
         )
 
         self.n_steps = n_steps
@@ -307,66 +337,7 @@ class Transformer(BaseNNImputer):
         self.model = self.model.to(self.device)
         self._print_model_size()
 
-    def fit(self, train_set, val_set=None, file_type="h5py"):
-        """Train the imputer on the given data.
-
-        Parameters
-        ----------
-        train_set : dict or str,
-            The dataset for model training, should be a dictionary including the key 'X',
-            or a path string locating a data file.
-            If it is a dict, X should be array-like of shape [n_samples, sequence length (time steps), n_features],
-            which is time-series data for training, can contain missing values.
-            If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
-            key-value pairs like a dict, and it has to include the key 'X'.
-
-        val_set : dict or str,
-            The dataset for model validating, should be a dictionary including the key 'X',
-            or a path string locating a data file.
-            If it is a dict, X should be array-like of shape [n_samples, sequence length (time steps), n_features],
-            which is time-series data for validating, can contain missing values.
-            If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
-            key-value pairs like a dict, and it has to include the key 'X'.
-
-        file_type : str, default = "h5py",
-            The type of the given file if train_set and val_set are path strings.
-
-        Returns
-        -------
-        self : object,
-            The trained imputer.
-        """
-
-        training_set = DatasetForMIT(train_set, file_type)
-        training_loader = DataLoader(
-            training_set, batch_size=self.batch_size, shuffle=True
-        )
-        if val_set is None:
-            self._train_model(training_loader)
-        else:
-            if isinstance(val_set, str):
-                import h5py
-
-                with h5py.File(val_set, "r") as hf:
-                    val_X = hf["X"]
-                val_set = {"X": val_X}
-
-            val_X_intact, val_X, val_X_missing_mask, val_X_indicating_mask = mcar(
-                val_set["X"], 0.2
-            )
-            val_X = masked_fill(val_X, 1 - val_X_missing_mask, np.nan)
-            val_set["X"] = val_X
-            val_set = BaseDataset(val_set)
-            val_loader = DataLoader(val_set, batch_size=self.batch_size, shuffle=False)
-            self._train_model(
-                training_loader, val_loader, val_X_intact, val_X_indicating_mask
-            )
-
-        self.model.load_state_dict(self.best_model_dict)
-        self.model.eval()  # set the model as eval status to freeze it.
-        return self
-
-    def assemble_input_for_training(self, data):
+    def _assemble_input_for_training(self, data: dict) -> dict:
         """Assemble the given data into a dictionary for training input.
 
         Parameters
@@ -391,7 +362,7 @@ class Transformer(BaseNNImputer):
 
         return inputs
 
-    def assemble_input_for_validating(self, data) -> dict:
+    def _assemble_input_for_validating(self, data: list) -> dict:
         """Assemble the given data into a dictionary for validating input.
 
         Notes
@@ -418,7 +389,7 @@ class Transformer(BaseNNImputer):
 
         return inputs
 
-    def assemble_input_for_testing(self, data) -> dict:
+    def _assemble_input_for_testing(self, data: list) -> dict:
         """Assemble the given data into a dictionary for testing input.
 
         Notes
@@ -435,9 +406,76 @@ class Transformer(BaseNNImputer):
         inputs : dict,
             A python dictionary contains the input data for model testing.
         """
-        return self.assemble_input_for_validating(data)
+        return self._assemble_input_for_validating(data)
 
-    def impute(self, X, file_type="h5py"):
+    def fit(
+        self,
+        train_set: Union[dict, str],
+        val_set: Optional[Union[dict, str]] = None,
+        file_type: str = "h5py",
+    ) -> None:
+        """Train the imputer on the given data.
+
+        Parameters
+        ----------
+        train_set : dict or str,
+            The dataset for model training, should be a dictionary including the key 'X',
+            or a path string locating a data file.
+            If it is a dict, X should be array-like of shape [n_samples, sequence length (time steps), n_features],
+            which is time-series data for training, can contain missing values.
+            If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
+            key-value pairs like a dict, and it has to include the key 'X'.
+
+        val_set : dict or str,
+            The dataset for model validating, should be a dictionary including the key 'X',
+            or a path string locating a data file.
+            If it is a dict, X should be array-like of shape [n_samples, sequence length (time steps), n_features],
+            which is time-series data for validating, can contain missing values.
+            If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
+            key-value pairs like a dict, and it has to include the key 'X'.
+
+        file_type : str, default = "h5py",
+            The type of the given file if train_set and val_set are path strings.
+
+        """
+
+        training_set = DatasetForMIT(train_set, file_type)
+        training_loader = DataLoader(
+            training_set,
+            batch_size=self.batch_size,
+            shuffle=True,
+            num_workers=self.num_workers,
+        )
+        if val_set is None:
+            self._train_model(training_loader)
+        else:
+            if isinstance(val_set, str):
+                import h5py
+
+                with h5py.File(val_set, "r") as hf:
+                    val_X = hf["X"]
+                val_set = {"X": val_X}
+
+            val_X_intact, val_X, val_X_missing_mask, val_X_indicating_mask = mcar(
+                val_set["X"], 0.2
+            )
+            val_X = masked_fill(val_X, 1 - val_X_missing_mask, np.nan)
+            val_set["X"] = val_X
+            val_set = BaseDataset(val_set)
+            val_loader = DataLoader(
+                val_set,
+                batch_size=self.batch_size,
+                shuffle=False,
+                num_workers=self.num_workers,
+            )
+            self._train_model(
+                training_loader, val_loader, val_X_intact, val_X_indicating_mask
+            )
+
+        self.model.load_state_dict(self.best_model_dict)
+        self.model.eval()  # set the model as eval status to freeze it.
+
+    def impute(self, X: Union[dict, str], file_type: str = "h5py") -> np.ndarray:
         """Impute missing values in the given data with the trained model.
 
         Parameters
@@ -456,7 +494,12 @@ class Transformer(BaseNNImputer):
         """
         self.model.eval()  # set the model as eval status to freeze it.
         test_set = BaseDataset(X, file_type)
-        test_loader = DataLoader(test_set, batch_size=self.batch_size, shuffle=False)
+        test_loader = DataLoader(
+            test_set,
+            batch_size=self.batch_size,
+            shuffle=False,
+            num_workers=self.num_workers,
+        )
         imputation_collector = []
 
         with torch.no_grad():

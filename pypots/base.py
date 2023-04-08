@@ -7,6 +7,7 @@ Base class for main models in PyPOTS.
 
 import os
 from abc import ABC
+from typing import Optional, Union
 
 import torch
 from torch.utils.tensorboard import SummaryWriter
@@ -31,7 +32,7 @@ class BaseModel(ABC):
 
     def __init__(
         self,
-        device: str or torch.device = None,
+        device: Optional[Union[str, torch.device]] = None,
         tb_file_saving_path: str = None,
     ):
         self.model = None
@@ -74,7 +75,7 @@ class BaseModel(ABC):
             # don't save the log if tb_file_saving_path isn't given, set summary_writer as None
             self.summary_writer = None
 
-    def save_into_tb_file(self, step: int, stage: str, loss_dict: dict):
+    def save_into_tb_file(self, step: int, stage: str, loss_dict: dict) -> None:
         """Saving training logs into the tensorboard file.
 
         Parameters
@@ -93,7 +94,12 @@ class BaseModel(ABC):
             (item_name, loss) = loss_dict.popitem()
             self.summary_writer.add_scalar(f"{item_name}/{stage}", loss, step)
 
-    def save_model(self, saving_dir: str, file_name: str, overwrite: bool = False):
+    def save_model(
+        self,
+        saving_dir: str,
+        file_name: str,
+        overwrite: bool = False,
+    ) -> None:
         """Save the model to a disk file.
 
         A .pypots extension will be appended to the filename if it does not already have one.
@@ -111,11 +117,6 @@ class BaseModel(ABC):
         overwrite : bool, default = False,
             Whether to overwrite the model file if the path already exists.
 
-        Returns
-        -------
-        bool,
-            Whether successfully saved the model into a file.
-
         """
         file_name = (
             file_name + ".pypots" if file_name.split(".")[-1] != "pypots" else file_name
@@ -129,7 +130,6 @@ class BaseModel(ABC):
                 )
             else:
                 logger.error(f"File {saving_path} exists. Saving operation aborted.")
-                return False
         try:
             create_dir_if_not_exist(saving_dir)
             torch.save(self.model, saving_path)
@@ -137,9 +137,7 @@ class BaseModel(ABC):
         except Exception as e:
             raise RuntimeError(f'{e} Failed to save the model to "{saving_path}"!')
 
-        return True
-
-    def load_model(self, model_path: str):
+    def load_model(self, model_path: str) -> None:
         """Load the saved model from a disk file.
 
         Parameters
@@ -169,7 +167,7 @@ class BaseNNModel(BaseModel):
 
     Parameters
     ----------
-    batch_size :
+    batch_size : int,
         Size of the batch input into the model for one step.
 
     epochs : int,
@@ -184,6 +182,10 @@ class BaseNNModel(BaseModel):
 
     weight_decay : float,
         The weight decay of the optimizer.
+
+    num_workers : int, default = 0,
+            The number of subprocesses to use for data loading.
+            `0` means data loading will be in the main process, i.e. there won't be subprocesses.
 
     device : str or `torch.device`, default = None,
         The device for the model to run on.
@@ -201,7 +203,8 @@ class BaseNNModel(BaseModel):
         patience: int,
         learning_rate: float,
         weight_decay: float,
-        device: str or torch.device = None,
+        num_workers: int = 0,
+        device: Optional[Union[str, torch.device]] = None,
         tb_file_saving_path: str = None,
     ):
         super().__init__(device, tb_file_saving_path)
@@ -213,6 +216,7 @@ class BaseNNModel(BaseModel):
         self.original_patience = patience
         self.lr = learning_rate
         self.weight_decay = weight_decay
+        self.num_workers = num_workers
 
         self.model = None
         self.optimizer = None
@@ -220,7 +224,7 @@ class BaseNNModel(BaseModel):
         self.best_loss = float("inf")
         self.logger = {"training_loss": [], "validating_loss": []}
 
-    def _print_model_size(self):
+    def _print_model_size(self) -> None:
         """Print the number of trainable parameters in the initialized NN model."""
         num_params = sum(p.numel() for p in self.model.parameters() if p.requires_grad)
         logger.info(

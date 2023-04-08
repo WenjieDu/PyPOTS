@@ -7,6 +7,8 @@ Please refer to :cite:``ma2021CRLI``.
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: GLP-v3
 
+from typing import Tuple, Union, Optional
+
 import numpy as np
 import torch
 import torch.nn as nn
@@ -25,7 +27,7 @@ RNN_CELL = {
 }
 
 
-def reverse_tensor(tensor_):
+def reverse_tensor(tensor_: torch.Tensor) -> torch.Tensor:
     if tensor_.dim() <= 1:
         return tensor_
     indices = range(tensor_.size()[1])[::-1]
@@ -36,8 +38,15 @@ def reverse_tensor(tensor_):
 
 
 class MultiRNNCell(nn.Module):
-    def __init__(self, cell_type, n_layer, d_input, d_hidden, device):
-        super(MultiRNNCell, self).__init__()
+    def __init__(
+        self,
+        cell_type: str,
+        n_layer: int,
+        d_input: int,
+        d_hidden: int,
+        device: Union[str, torch.device],
+    ):
+        super().__init__()
         self.cell_type = cell_type
         self.n_layer = n_layer
         self.d_input = d_input
@@ -54,7 +63,7 @@ class MultiRNNCell(nn.Module):
 
         self.output_layer = nn.Linear(d_hidden, d_input)
 
-    def forward(self, inputs):
+    def forward(self, inputs: dict) -> Tuple[torch.Tensor, torch.Tensor]:
         X, missing_mask = inputs["X"], inputs["missing_mask"]
         bz, n_steps, _ = X.shape
         hidden_state = torch.zeros((bz, self.d_hidden), device=self.device)
@@ -106,12 +115,19 @@ class MultiRNNCell(nn.Module):
 
 
 class Generator(nn.Module):
-    def __init__(self, n_layers, n_features, d_hidden, cell_type, device):
+    def __init__(
+        self,
+        n_layers: int,
+        n_features: int,
+        d_hidden: int,
+        cell_type: str,
+        device: Union[str, torch.device],
+    ):
         super().__init__()
         self.f_rnn = MultiRNNCell(cell_type, n_layers, n_features, d_hidden, device)
         self.b_rnn = MultiRNNCell(cell_type, n_layers, n_features, d_hidden, device)
 
-    def forward(self, inputs):
+    def forward(self, inputs: dict) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         f_outputs, f_final_hidden_state = self.f_rnn(inputs)
         b_outputs, b_final_hidden_state = self.b_rnn(inputs)
         b_outputs = reverse_tensor(b_outputs)  # reverse the output of the backward rnn
@@ -126,7 +142,12 @@ class Generator(nn.Module):
 
 
 class Discriminator(nn.Module):
-    def __init__(self, cell_type, d_input, device="cpu"):
+    def __init__(
+        self,
+        cell_type: str,
+        d_input: int,
+        device: Union[str, torch.device],
+    ):
         super().__init__()
         self.cell_type = cell_type
         self.device = device
@@ -142,7 +163,7 @@ class Discriminator(nn.Module):
         )
         self.output_layer = nn.Linear(32, d_input)
 
-    def forward(self, inputs):
+    def forward(self, inputs: dict) -> torch.Tensor:
         imputed_X = inputs["imputed_X"]
         bz, n_steps, _ = imputed_X.shape
         hidden_states = [
@@ -186,7 +207,12 @@ class Discriminator(nn.Module):
 
 class Decoder(nn.Module):
     def __init__(
-        self, n_steps, d_input, d_output, fcn_output_dims: list = None, device="cpu"
+        self,
+        n_steps: int,
+        d_input: int,
+        d_output: int,
+        fcn_output_dims: list = None,
+        device: Union[str, torch.device] = "cpu",
     ):
         super().__init__()
         self.n_steps = n_steps
@@ -205,7 +231,7 @@ class Decoder(nn.Module):
         self.rnn_cell = nn.GRUCell(fcn_output_dims[-1], fcn_output_dims[-1])
         self.output_layer = nn.Linear(fcn_output_dims[-1], d_output)
 
-    def forward(self, inputs):
+    def forward(self, inputs: dict) -> Tuple[torch.Tensor, torch.Tensor]:
         generator_fb_hidden_states = inputs["generator_fb_hidden_states"]
         bz, _ = generator_fb_hidden_states.shape
         fcn_latent = generator_fb_hidden_states
@@ -225,15 +251,15 @@ class Decoder(nn.Module):
 class _CRLI(nn.Module):
     def __init__(
         self,
-        n_steps,
-        n_features,
-        n_clusters,
-        n_generator_layers,
-        rnn_hidden_size,
-        decoder_fcn_output_dims,
-        lambda_kmeans,
-        rnn_cell_type="GRU",
-        device="cpu",
+        n_steps: int,
+        n_features: int,
+        n_clusters: int,
+        n_generator_layers: int,
+        rnn_hidden_size: int,
+        decoder_fcn_output_dims: list,
+        lambda_kmeans: float,
+        rnn_cell_type: str = "GRU",
+        device: Union[str, torch.device] = "cpu",
     ):
         super().__init__()
         self.generator = Generator(
@@ -251,7 +277,7 @@ class _CRLI(nn.Module):
         self.lambda_kmeans = lambda_kmeans
         self.device = device
 
-    def cluster(self, inputs, training_object="generator"):
+    def cluster(self, inputs: dict, training_object: str = "generator") -> dict:
         # concat final states from generator and input it as the initial state of decoder
         imputation, imputed_X, generator_fb_hidden_states = self.generator(inputs)
         inputs["imputation"] = imputation
@@ -267,7 +293,7 @@ class _CRLI(nn.Module):
         inputs["fcn_latent"] = fcn_latent
         return inputs
 
-    def forward(self, inputs, training_object="generator"):
+    def forward(self, inputs: dict, training_object: str = "generator") -> dict:
         assert training_object in [
             "generator",
             "discriminator",
@@ -304,31 +330,35 @@ class _CRLI(nn.Module):
 class CRLI(BaseNNClusterer):
     def __init__(
         self,
-        n_steps,
-        n_features,
-        n_clusters,
-        n_generator_layers,
-        rnn_hidden_size,
-        decoder_fcn_output_dims=None,
-        lambda_kmeans=1,
-        rnn_cell_type="GRU",
-        G_steps=1,
-        D_steps=1,
-        learning_rate=1e-3,
-        epochs=100,
-        patience=10,
-        batch_size=32,
-        weight_decay=1e-5,
-        device=None,
+        n_steps: int,
+        n_features: int,
+        n_clusters: int,
+        n_generator_layers: int,
+        rnn_hidden_size: int,
+        decoder_fcn_output_dims: list = None,
+        lambda_kmeans: float = 1,
+        rnn_cell_type: str = "GRU",
+        G_steps: int = 1,
+        D_steps: int = 1,
+        batch_size: int = 32,
+        epochs: int = 100,
+        patience: int = 10,
+        learning_rate: float = 1e-3,
+        weight_decay: float = 1e-5,
+        num_workers: int = 0,
+        device: Optional[Union[str, torch.device]] = None,
+        tb_file_saving_path: str = None,
     ):
         super().__init__(
             n_clusters,
-            learning_rate,
+            batch_size,
             epochs,
             patience,
-            batch_size,
+            learning_rate,
             weight_decay,
+            num_workers,
             device,
+            tb_file_saving_path,
         )
         assert G_steps > 0 and D_steps > 0, "G_steps and D_steps should both >0"
 
@@ -352,37 +382,7 @@ class CRLI(BaseNNClusterer):
         self._print_model_size()
         self.logger = {"training_loss_generator": [], "training_loss_discriminator": []}
 
-    def fit(self, train_set, file_type="h5py"):
-        """Train the cluster.
-
-        Parameters
-        ----------
-        train_set : dict or str,
-            The dataset for model training, should be a dictionary including the key 'X',
-            or a path string locating a data file.
-            If it is a dict, X should be array-like of shape [n_samples, sequence length (time steps), n_features],
-            which is time-series data for training, can contain missing values.
-            If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
-            key-value pairs like a dict, and it has to include the key 'X'.
-
-        file_type : str, default = "h5py"
-            The type of the given file if train_set is a path string.
-
-        Returns
-        -------
-        self : object,
-            Trained classifier.
-        """
-        training_set = DatasetForGRUD(train_set, file_type)
-        training_loader = DataLoader(
-            training_set, batch_size=self.batch_size, shuffle=True
-        )
-        self._train_model(training_loader)
-        self.model.load_state_dict(self.best_model_dict)
-        self.model.eval()  # set the model as eval status to freeze it.
-        return self
-
-    def assemble_input_for_training(self, data):
+    def _assemble_input_for_training(self, data: list) -> dict:
         """Assemble the given data into a dictionary for training input.
 
         Parameters
@@ -406,7 +406,7 @@ class CRLI(BaseNNClusterer):
 
         return inputs
 
-    def assemble_input_for_validating(self, data) -> dict:
+    def _assemble_input_for_validating(self, data: list) -> dict:
         """Assemble the given data into a dictionary for validating input.
 
         Notes
@@ -424,9 +424,9 @@ class CRLI(BaseNNClusterer):
         inputs : dict,
             A python dictionary contains the input data for model validating.
         """
-        return self.assemble_input_for_training(data)
+        return self._assemble_input_for_training(data)
 
-    def assemble_input_for_testing(self, data) -> dict:
+    def _assemble_input_for_testing(self, data: list) -> dict:
         """Assemble the given data into a dictionary for testing input.
 
         Notes
@@ -443,9 +443,13 @@ class CRLI(BaseNNClusterer):
         inputs : dict,
             A python dictionary contains the input data for model testing.
         """
-        return self.assemble_input_for_training(data)
+        return self._assemble_input_for_validating(data)
 
-    def _train_model(self, training_loader, val_loader=None):
+    def _train_model(
+        self,
+        training_loader: DataLoader,
+        val_loader: DataLoader = None,
+    ) -> None:
         self.G_optimizer = torch.optim.Adam(
             [
                 {"params": self.model.generator.parameters()},
@@ -470,7 +474,7 @@ class CRLI(BaseNNClusterer):
                 epoch_train_loss_G_collector = []
                 epoch_train_loss_D_collector = []
                 for idx, data in enumerate(training_loader):
-                    inputs = self.assemble_input_for_training(data)
+                    inputs = self._assemble_input_for_training(data)
 
                     for _ in range(self.D_steps):
                         self.D_optimizer.zero_grad()
@@ -534,7 +538,43 @@ class CRLI(BaseNNClusterer):
 
         logger.info("Finished training.")
 
-    def cluster(self, X, file_type="h5py"):
+    def fit(
+        self,
+        train_set: Union[dict, str],
+        file_type: str = "h5py",
+    ) -> None:
+        """Train the cluster.
+
+        Parameters
+        ----------
+        train_set : dict or str,
+            The dataset for model training, should be a dictionary including the key 'X',
+            or a path string locating a data file.
+            If it is a dict, X should be array-like of shape [n_samples, sequence length (time steps), n_features],
+            which is time-series data for training, can contain missing values.
+            If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
+            key-value pairs like a dict, and it has to include the key 'X'.
+
+        file_type : str, default = "h5py"
+            The type of the given file if train_set is a path string.
+
+        """
+        training_set = DatasetForGRUD(train_set, file_type)
+        training_loader = DataLoader(
+            training_set,
+            batch_size=self.batch_size,
+            shuffle=True,
+            num_workers=self.num_workers,
+        )
+        self._train_model(training_loader)
+        self.model.load_state_dict(self.best_model_dict)
+        self.model.eval()  # set the model as eval status to freeze it.
+
+    def cluster(
+        self,
+        X: Union[dict, str],
+        file_type: str = "h5py",
+    ) -> np.ndarray:
         """Cluster the input with the trained model.
 
         Parameters
@@ -553,12 +593,17 @@ class CRLI(BaseNNClusterer):
         """
         self.model.eval()  # set the model as eval status to freeze it.
         test_set = DatasetForGRUD(X, file_type)
-        test_loader = DataLoader(test_set, batch_size=self.batch_size, shuffle=False)
+        test_loader = DataLoader(
+            test_set,
+            batch_size=self.batch_size,
+            shuffle=False,
+            num_workers=self.num_workers,
+        )
         latent_collector = []
 
         with torch.no_grad():
             for idx, data in enumerate(test_loader):
-                inputs = self.assemble_input_for_testing(data)
+                inputs = self._assemble_input_for_testing(data)
                 inputs = self.model.cluster(inputs)
                 latent_collector.append(inputs["fcn_latent"])
 
