@@ -16,7 +16,7 @@ def cal_mae(
     inputs: Union[np.ndarray, torch.Tensor, list],
     target: Union[np.ndarray, torch.Tensor, list],
     mask: Optional[Union[np.ndarray, torch.Tensor, list]] = None,
-) -> Union[np.float, torch.Tensor]:
+) -> Union[float, torch.Tensor]:
     """calculate Mean Absolute Error"""
     assert type(inputs) == type(target), (
         f"types of inputs and target must match, but got"
@@ -33,7 +33,7 @@ def cal_mse(
     inputs: Union[np.ndarray, torch.Tensor, list],
     target: Union[np.ndarray, torch.Tensor, list],
     mask: Optional[Union[np.ndarray, torch.Tensor, list]] = None,
-) -> Union[np.float, torch.Tensor]:
+) -> Union[float, torch.Tensor]:
     """calculate Mean Square Error"""
     assert type(inputs) == type(target), (
         f"types of inputs and target must match, but got"
@@ -50,7 +50,7 @@ def cal_rmse(
     inputs: Union[np.ndarray, torch.Tensor, list],
     target: Union[np.ndarray, torch.Tensor, list],
     mask: Optional[Union[np.ndarray, torch.Tensor, list]] = None,
-) -> Union[np.float, torch.Tensor]:
+) -> Union[float, torch.Tensor]:
     """calculate Root Mean Square Error"""
     assert type(inputs) == type(target), (
         f"types of inputs and target must match, but got"
@@ -64,7 +64,7 @@ def cal_mre(
     inputs: Union[np.ndarray, torch.Tensor, list],
     target: Union[np.ndarray, torch.Tensor, list],
     mask: Optional[Union[np.ndarray, torch.Tensor, list]] = None,
-) -> Union[np.float, torch.Tensor]:
+) -> Union[float, torch.Tensor]:
     """calculate Mean Relative Error"""
     assert type(inputs) == type(target), (
         f"types of inputs and target must match, but got"
