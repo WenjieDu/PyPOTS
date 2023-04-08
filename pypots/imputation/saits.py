@@ -9,6 +9,8 @@ Partial implementation uses code from https://github.com/WenjieDu/SAITS.
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: GPL-v3
 
+from typing import Tuple, Union, Optional
+
 import numpy as np
 import torch
 import torch.nn as nn
@@ -26,18 +28,18 @@ from pypots.utils.metrics import cal_mae
 class _SAITS(nn.Module):
     def __init__(
         self,
-        n_layers,
-        d_time,
-        d_feature,
-        d_model,
-        d_inner,
-        n_head,
-        d_k,
-        d_v,
-        dropout,
-        diagonal_attention_mask=True,
-        ORT_weight=1,
-        MIT_weight=1,
+        n_layers: int,
+        d_time: int,
+        d_feature: int,
+        d_model: int,
+        d_inner: int,
+        n_head: int,
+        d_k: int,
+        d_v: int,
+        dropout: float,
+        diagonal_attention_mask: bool = True,
+        ORT_weight: float = 1,
+        MIT_weight: float = 1,
     ):
         super().__init__()
         self.n_layers = n_layers
@@ -92,7 +94,7 @@ class _SAITS(nn.Module):
         # for delta decay factor
         self.weight_combine = nn.Linear(d_feature + d_time, d_feature)
 
-    def impute(self, inputs):
+    def impute(self, inputs: dict) -> Tuple[torch.Tensor, list]:
         X, masks = inputs["X"], inputs["missing_mask"]
         # first DMSA block
         input_X_for_first = torch.cat([X, masks], dim=2)
@@ -125,17 +127,18 @@ class _SAITS(nn.Module):
             attn_weights = attn_weights.mean(dim=3)
             attn_weights = torch.transpose(attn_weights, 1, 2)
 
+        # namely term eta
         combining_weights = torch.sigmoid(
             self.weight_combine(torch.cat([masks, attn_weights], dim=2))
-        )  # namely term eta
+        )
         # combine X_tilde_1 and X_tilde_2
         X_tilde_3 = (1 - combining_weights) * X_tilde_2 + combining_weights * X_tilde_1
-        X_c = (
-            masks * X + (1 - masks) * X_tilde_3
-        )  # replace non-missing part with original data
+        # replace non-missing part with original data
+        X_c = masks * X + (1 - masks) * X_tilde_3
+
         return X_c, [X_tilde_1, X_tilde_2, X_tilde_3]
 
-    def forward(self, inputs):
+    def forward(self, inputs: dict) -> dict:
         X, masks = inputs["X"], inputs["missing_mask"]
         reconstruction_loss = 0
         imputed_data, [X_tilde_1, X_tilde_2, X_tilde_3] = self.impute(inputs)
@@ -164,27 +167,36 @@ class _SAITS(nn.Module):
 class SAITS(BaseNNImputer):
     def __init__(
         self,
-        n_steps,
-        n_features,
-        n_layers,
-        d_model,
-        d_inner,
-        n_head,
-        d_k,
-        d_v,
-        dropout,
-        diagonal_attention_mask=True,
-        ORT_weight=1,
-        MIT_weight=1,
-        learning_rate=1e-3,
-        epochs=100,
-        patience=10,
-        batch_size=32,
-        weight_decay=1e-5,
-        device=None,
+        n_steps: int,
+        n_features: int,
+        n_layers: int,
+        d_model: int,
+        d_inner: int,
+        n_head: int,
+        d_k: int,
+        d_v: int,
+        dropout: int or float,
+        diagonal_attention_mask: bool = True,
+        ORT_weight: int = 1,
+        MIT_weight: int = 1,
+        batch_size: int = 32,
+        epochs: int = 100,
+        patience: int = 10,
+        learning_rate: float = 1e-3,
+        weight_decay: float = 1e-5,
+        num_workers: int = 0,
+        device: Optional[Union[str, torch.device]] = None,
+        tb_file_saving_path: str = None,
     ):
         super().__init__(
-            learning_rate, epochs, patience, batch_size, weight_decay, device
+            batch_size,
+            epochs,
+            patience,
+            learning_rate,
+            weight_decay,
+            num_workers,
+            device,
+            tb_file_saving_path,
         )
 
         self.n_steps = n_steps
@@ -218,64 +230,7 @@ class SAITS(BaseNNImputer):
         self.model = self.model.to(self.device)
         self._print_model_size()
 
-    def fit(self, train_set, val_set=None, file_type="h5py"):
-        """Train the imputer on the given data.
-
-        Parameters
-        ----------
-        train_set : dict or str,
-            The dataset for model training, should be a dictionary including the key 'X',
-            or a path string locating a data file.
-            If it is a dict, X should be array-like of shape [n_samples, sequence length (time steps), n_features],
-            which is time-series data for training, can contain missing values.
-            If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
-            key-value pairs like a dict, and it has to include the key 'X'.
-
-        val_set : dict or str,
-            The dataset for model validating, should be a dictionary including the key 'X',
-            or a path string locating a data file.
-            If it is a dict, X should be array-like of shape [n_samples, sequence length (time steps), n_features],
-            which is time-series data for validating, can contain missing values.
-            If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
-            key-value pairs like a dict, and it has to include the key 'X'.
-
-        file_type : str, default = "h5py",
-            The type of the given file if train_set and val_set are path strings.
-
-        Returns
-        -------
-        self : object,
-            The trained imputer.
-        """
-        training_set = DatasetForMIT(train_set, file_type)
-        training_loader = DataLoader(
-            training_set, batch_size=self.batch_size, shuffle=True
-        )
-        if val_set is None:
-            self._train_model(training_loader)
-        else:
-            if isinstance(val_set, str):
-                import h5py
-
-                with h5py.File(val_set, "r") as hf:
-                    val_X = hf["X"][:]
-                val_set = {"X": val_X}
-
-            val_X_intact, val_X, val_X_missing_mask, val_X_indicating_mask = mcar(
-                val_set["X"], 0.2
-            )
-            val_X = masked_fill(val_X, 1 - val_X_missing_mask, np.nan)
-            val_set["X"] = val_X
-            val_set = BaseDataset(val_set)
-            val_loader = DataLoader(val_set, batch_size=self.batch_size, shuffle=False)
-            self._train_model(
-                training_loader, val_loader, val_X_intact, val_X_indicating_mask
-            )
-
-        self.model.load_state_dict(self.best_model_dict)
-        self.model.eval()  # set the model as eval status to freeze it.
-
-    def assemble_input_for_training(self, data):
+    def _assemble_input_for_training(self, data: list) -> dict:
         """Assemble the given data into a dictionary for training input.
 
         Parameters
@@ -300,7 +255,7 @@ class SAITS(BaseNNImputer):
 
         return inputs
 
-    def assemble_input_for_validating(self, data) -> dict:
+    def _assemble_input_for_validating(self, data) -> dict:
         """Assemble the given data into a dictionary for validating input.
 
         Notes
@@ -326,7 +281,7 @@ class SAITS(BaseNNImputer):
         }
         return inputs
 
-    def assemble_input_for_testing(self, data) -> dict:
+    def _assemble_input_for_testing(self, data) -> dict:
         """Assemble the given data into a dictionary for testing input.
 
         Notes
@@ -343,9 +298,84 @@ class SAITS(BaseNNImputer):
         inputs : dict,
             A python dictionary contains the input data for model testing.
         """
-        return self.assemble_input_for_validating(data)
+        return self._assemble_input_for_validating(data)
 
-    def impute(self, X, file_type="h5py"):
+    def fit(
+        self,
+        train_set: Union[dict, str],
+        val_set: Optional[Union[dict, str]] = None,
+        file_type: str = "h5py",
+    ) -> None:
+        """Train the imputer on the given data.
+
+        Parameters
+        ----------
+        train_set : dict or str,
+            The dataset for model training, should be a dictionary including the key 'X',
+            or a path string locating a data file.
+            If it is a dict, X should be array-like of shape [n_samples, sequence length (time steps), n_features],
+            which is time-series data for training, can contain missing values.
+            If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
+            key-value pairs like a dict, and it has to include the key 'X'.
+
+        val_set : dict or str,
+            The dataset for model validating, should be a dictionary including the key 'X',
+            or a path string locating a data file.
+            If it is a dict, X should be array-like of shape [n_samples, sequence length (time steps), n_features],
+            which is time-series data for validating, can contain missing values.
+            If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
+            key-value pairs like a dict, and it has to include the key 'X'.
+
+        file_type : str, default = "h5py",
+            The type of the given file if train_set and val_set are path strings.
+
+        """
+        training_set = DatasetForMIT(train_set, file_type)
+        training_loader = DataLoader(
+            training_set,
+            batch_size=self.batch_size,
+            shuffle=True,
+            num_workers=self.num_workers,
+        )
+        if val_set is None:
+            self._train_model(training_loader)
+        else:
+            if isinstance(val_set, str):
+                import h5py
+
+                with h5py.File(val_set, "r") as hf:
+                    # Here we read the whole validation set from the file to mask a portion for validation.
+                    # In PyPOTS, using a file usually because the data is too big.
+                    val_X = hf["X"][:]
+                val_set = {"X": val_X}
+
+            val_X_intact, val_X, val_X_missing_mask, val_X_indicating_mask = mcar(
+                val_set["X"], 0.2
+            )
+            val_X = masked_fill(val_X, 1 - val_X_missing_mask, np.nan)
+            val_set["X"] = val_X
+            val_set = BaseDataset(val_set)
+            val_loader = DataLoader(
+                val_set,
+                batch_size=self.batch_size,
+                shuffle=False,
+                num_workers=self.num_workers,
+            )
+            self._train_model(
+                training_loader,
+                val_loader,
+                val_X_intact,
+                val_X_indicating_mask,
+            )
+
+        self.model.load_state_dict(self.best_model_dict)
+        self.model.eval()  # set the model as eval status to freeze it.
+
+    def impute(
+        self,
+        X: Union[dict, str],
+        file_type="h5py",
+    ) -> np.ndarray:
         """Impute missing values in the given data with the trained model.
 
         Parameters
@@ -364,7 +394,12 @@ class SAITS(BaseNNImputer):
         """
         self.model.eval()  # set the model as eval status to freeze it.
         test_set = BaseDataset(X, file_type)
-        test_loader = DataLoader(test_set, batch_size=self.batch_size, shuffle=False)
+        test_loader = DataLoader(
+            test_set,
+            batch_size=self.batch_size,
+            shuffle=False,
+            num_workers=self.num_workers,
+        )
         imputation_collector = []
 
         with torch.no_grad():

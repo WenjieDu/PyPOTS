@@ -7,9 +7,11 @@ The base class for forecasting models.
 
 
 from abc import abstractmethod
+from typing import Optional, Union
 
 import numpy as np
 import torch
+from torch.utils.data import DataLoader
 
 from pypots.base import BaseModel, BaseNNModel
 from pypots.utils.logging import logger
@@ -18,11 +20,23 @@ from pypots.utils.logging import logger
 class BaseForecaster(BaseModel):
     """Abstract class for all forecasting models."""
 
-    def __init__(self, device):
-        super().__init__(device)
+    def __init__(
+        self,
+        device: Optional[Union[str, torch.device]] = None,
+        tb_file_saving_path: str = None,
+    ):
+        super().__init__(
+            device,
+            tb_file_saving_path,
+        )
 
     @abstractmethod
-    def fit(self, train_set, val_set=None, file_type="h5py"):
+    def fit(
+        self,
+        train_set: Union[dict, str],
+        val_set: Optional[Union[dict, str]] = None,
+        file_type: str = "h5py",
+    ) -> None:
         """Train the classifier on the given data.
 
         Parameters
@@ -46,15 +60,15 @@ class BaseForecaster(BaseModel):
         file_type : str, default = "h5py",
             The type of the given file if train_set and val_set are path strings.
 
-        Returns
-        -------
-        self : object,
-            Trained classifier.
         """
-        return self
+        pass
 
     @abstractmethod
-    def forecast(self, X, file_type="h5py"):
+    def forecast(
+        self,
+        X: dict or str,
+        file_type: str = "h5py",
+    ) -> np.ndarray:
         """Forecast the future the input with the trained model.
 
         Parameters
@@ -75,14 +89,30 @@ class BaseForecaster(BaseModel):
 
 class BaseNNForecaster(BaseNNModel, BaseForecaster):
     def __init__(
-        self, learning_rate, epochs, patience, batch_size, weight_decay, device
+        self,
+        # n_forecasting_steps: int,
+        batch_size: int,
+        epochs: int,
+        patience: int,
+        learning_rate: float,
+        weight_decay: float,
+        num_workers: int = 0,
+        device: Optional[Union[str, torch.device]] = None,
+        tb_file_saving_path: str = None,
     ):
         super().__init__(
-            learning_rate, epochs, patience, batch_size, weight_decay, device
+            batch_size,
+            epochs,
+            patience,
+            learning_rate,
+            weight_decay,
+            num_workers,
+            device,
+            tb_file_saving_path,
         )
 
     @abstractmethod
-    def assemble_input_for_training(self, data) -> dict:
+    def _assemble_input_for_training(self, data) -> dict:
         """Assemble the given data into a dictionary for training input.
 
         Parameters
@@ -98,7 +128,7 @@ class BaseNNForecaster(BaseNNModel, BaseForecaster):
         pass
 
     @abstractmethod
-    def assemble_input_for_validating(self, data) -> dict:
+    def _assemble_input_for_validating(self, data) -> dict:
         """Assemble the given data into a dictionary for validating input.
 
         Parameters
@@ -114,7 +144,7 @@ class BaseNNForecaster(BaseNNModel, BaseForecaster):
         pass
 
     @abstractmethod
-    def assemble_input_for_testing(self, data) -> dict:
+    def _assemble_input_for_testing(self, data) -> dict:
         """Assemble the given data into a dictionary for testing input.
 
         Notes
@@ -137,7 +167,11 @@ class BaseNNForecaster(BaseNNModel, BaseForecaster):
         """
         pass
 
-    def _train_model(self, training_loader, val_loader=None):
+    def _train_model(
+        self,
+        training_loader: DataLoader,
+        val_loader: DataLoader = None,
+    ) -> None:
         self.optimizer = torch.optim.Adam(
             self.model.parameters(), lr=self.lr, weight_decay=self.weight_decay
         )
@@ -151,7 +185,7 @@ class BaseNNForecaster(BaseNNModel, BaseForecaster):
                 self.model.train()
                 epoch_train_loss_collector = []
                 for idx, data in enumerate(training_loader):
-                    inputs = self.assemble_input_for_training(data)
+                    inputs = self._assemble_input_for_training(data)
                     self.optimizer.zero_grad()
                     results = self.model.forward(inputs)
                     results["loss"].backward()
@@ -168,7 +202,7 @@ class BaseNNForecaster(BaseNNModel, BaseForecaster):
                     epoch_val_loss_collector = []
                     with torch.no_grad():
                         for idx, data in enumerate(val_loader):
-                            inputs = self.assemble_input_for_validating(data)
+                            inputs = self._assemble_input_for_validating(data)
                             results = self.model.forward(inputs)
                             epoch_val_loss_collector.append(results["loss"].item())
 
