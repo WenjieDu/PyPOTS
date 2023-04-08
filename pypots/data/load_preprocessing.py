@@ -8,7 +8,7 @@ Preprocessing functions to load supported open-source time-series datasets.
 import pandas as pd
 
 
-def preprocess_physionet2012(data):
+def preprocess_physionet2012(data: dict) -> dict:
     """The preprocessing function for dataset PhysioNet-2012.
 
     Parameters

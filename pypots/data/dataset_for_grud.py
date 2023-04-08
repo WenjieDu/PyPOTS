@@ -6,6 +6,8 @@ Dataset class for model GRU-D.
 # License: GLP-v3
 
 
+from typing import Union, Iterable
+
 import torch
 
 from pypots.data.base import BaseDataset
@@ -31,7 +33,7 @@ class DatasetForGRUD(BaseDataset):
         The type of the given file if train_set and val_set are path strings.
     """
 
-    def __init__(self, data, file_type="h5py"):
+    def __init__(self, data: Union[dict, str], file_type: str = "h5py"):
         super().__init__(data, file_type)
         self.locf = LOCF()
 
@@ -44,7 +46,7 @@ class DatasetForGRUD(BaseDataset):
                 self.missing_mask * self.X, dim=[0, 1]
             ) / torch.sum(self.missing_mask, dim=[0, 1])
 
-    def _fetch_data_from_array(self, idx):
+    def _fetch_data_from_array(self, idx: int) -> Iterable:
         """Fetch data according to index.
 
         Parameters
@@ -89,7 +91,7 @@ class DatasetForGRUD(BaseDataset):
 
         return sample
 
-    def _fetch_data_from_file(self, idx):
+    def _fetch_data_from_file(self, idx: int) -> Iterable:
         """Fetch data with the lazy-loading strategy, i.e. only loading data from the file while requesting for samples.
         Here the opened file handle doesn't load the entire dataset into RAM but only load the currently accessed slice.
 
