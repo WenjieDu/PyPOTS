@@ -10,7 +10,7 @@ import os
 from pypots.utils.logging import logger
 
 
-def extract_parent_dir(path):
+def extract_parent_dir(path: str) -> str:
     """Extract the given path's parent directory.
 
     Parameters
@@ -28,7 +28,7 @@ def extract_parent_dir(path):
     return parent_dir
 
 
-def create_dir_if_not_exist(path, is_dir=True):
+def create_dir_if_not_exist(path: str, is_dir: bool = True) -> None:
     """Create the given directory if it doesn't exist.
 
     Parameters

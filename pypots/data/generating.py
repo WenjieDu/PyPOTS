@@ -6,14 +6,20 @@ Utilities for random data generating.
 # License: GLP-v3
 
 import math
+from typing import Optional, Tuple
 
 import numpy as np
 from sklearn.utils import check_random_state
 
 
 def generate_random_walk(
-    n_samples=1000, n_steps=24, n_features=10, mu=0.0, std=1.0, random_state=None
-):
+    n_samples: int = 1000,
+    n_steps: int = 24,
+    n_features: int = 10,
+    mu: float = 0.0,
+    std: float = 1.0,
+    random_state: Optional[int] = None,
+) -> np.ndarray:
     """Generate random walk time-series data.
 
     Parameters
@@ -47,13 +53,13 @@ def generate_random_walk(
 
 
 def generate_random_walk_for_classification(
-    n_classes=2,
-    n_samples_each_class=500,
-    n_steps=24,
-    n_features=10,
-    shuffle=True,
-    random_state=None,
-):
+    n_classes: int = 2,
+    n_samples_each_class: int = 500,
+    n_steps: int = 24,
+    n_features: int = 10,
+    shuffle: bool = True,
+    random_state: Optional[int] = None,
+) -> Tuple[np.ndarray, np.ndarray]:
     """Generate random walk time-series data for the classification task.
 
     Parameters
@@ -112,16 +118,16 @@ def generate_random_walk_for_classification(
 
 
 def generate_random_walk_for_anomaly_detection(
-    n_samples=1000,
-    n_steps=24,
-    n_features=10,
-    mu=0.0,
-    std=1.0,
-    anomaly_proportion=0.1,
-    anomaly_fraction=0.02,
-    anomaly_scale_factor=2.0,
-    random_state=None,
-):
+    n_samples: int = 1000,
+    n_steps: int = 24,
+    n_features: int = 10,
+    mu: float = 0.0,
+    std: float = 1.0,
+    anomaly_proportion: float = 0.1,
+    anomaly_fraction: float = 0.02,
+    anomaly_scale_factor: float = 2.0,
+    random_state: Optional[int] = None,
+) -> Tuple[np.ndarray, np.ndarray]:
     """Generate random walk time-series data for the anomaly-detection task.
 
     Parameters
