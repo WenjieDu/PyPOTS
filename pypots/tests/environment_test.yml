@@ -19,3 +19,6 @@ dependencies:
     - conda-forge::pycorruptor
     - conda-forge::tsdb
     - pytorch::pytorch
+    - pyg::pyg
+    - pyg::pytorch-scatter
+    - pyg::pytorch-sparse
