@@ -1,8 +1,8 @@
 name: pypots-test
 channels:
+    - conda-forge
     - pytorch
     - pyg
-    - conda-forge
     - nodefaults
 dependencies:
     - conda-forge::python
@@ -21,3 +21,4 @@ dependencies:
     - pytorch::pytorch
     - pyg::pyg
     - pyg::pytorch-scatter
+    - pyg::pytorch-sparse
