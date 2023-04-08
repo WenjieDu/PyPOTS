@@ -7,8 +7,9 @@ Functions to load supported open-source time-series datasets.
 
 
 import tsdb
-from pypots.utils.logging import logger
+
 from pypots.data.load_preprocessing import preprocess_physionet2012
+from pypots.utils.logging import logger
 
 # currently supported datasets
 SUPPORTED_DATASETS = [
@@ -21,7 +22,7 @@ PREPROCESSING_FUNC = {
 }
 
 
-def list_supported_datasets():
+def list_supported_datasets() -> list:
     """Return the datasets natively supported by PyPOTS so far.
 
     Returns
@@ -33,7 +34,7 @@ def list_supported_datasets():
     return SUPPORTED_DATASETS
 
 
-def load_specific_dataset(dataset_name, use_cache=True):
+def load_specific_dataset(dataset_name: str, use_cache: bool = True) -> dict:
     """Load specific datasets supported by PyPOTS.
     Different from tsdb.load_dataset(), which only produces merely raw data,
     load_specific_dataset here does some preprocessing operations,

@@ -1,15 +1,18 @@
 """
 The base class for imputation models.
 """
+
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: GPL-v3
 
 
 import os
 from abc import abstractmethod
+from typing import Union, Optional
 
 import numpy as np
 import torch
+from torch.utils.data import DataLoader
 
 from pypots.base import BaseModel, BaseNNModel
 from pypots.utils.logging import logger
@@ -22,13 +25,36 @@ except ImportError:
 
 
 class BaseImputer(BaseModel):
-    """Abstract class for all imputation models."""
+    """Abstract class for all imputation models.
 
-    def __init__(self, device):
-        super().__init__(device)
+    Parameters
+    ----------
+    device : str or `torch.device`, default = None,
+        The device for the model to run on.
+        If not given, will try to use CUDA devices first, then CPUs. CUDA and CPU are so far the main devices for people
+        to train ML models. Other devices like Google TPU and Apple Silicon accelerator MPS may be added in the future.
+
+    tb_file_saving_path : str, default = None,
+        The path to save the tensorboard file, which contains the loss values recorded during training.
+    """
+
+    def __init__(
+        self,
+        device: Optional[Union[str, torch.device]] = None,
+        tb_file_saving_path: str = None,
+    ):
+        super().__init__(
+            device,
+            tb_file_saving_path,
+        )
 
     @abstractmethod
-    def fit(self, train_set, val_set=None, file_type="h5py"):
+    def fit(
+        self,
+        train_set: Union[dict, str],
+        val_set: Optional[Union[dict, str]] = None,
+        file_type: str = "h5py",
+    ) -> None:
         """Train the imputer on the given data.
 
         Parameters
@@ -52,15 +78,15 @@ class BaseImputer(BaseModel):
         file_type : str, default = "h5py",
             The type of the given file if train_set and val_set are path strings.
 
-        Returns
-        -------
-        self : object,
-            The trained imputer.
         """
-        return self
+        pass
 
     @abstractmethod
-    def impute(self, X, file_type="h5py"):
+    def impute(
+        self,
+        X: Union[dict, str],
+        file_type: str = "h5py",
+    ) -> np.ndarray:
         """Impute missing values in the given data with the trained model.
 
         Parameters
@@ -81,15 +107,59 @@ class BaseImputer(BaseModel):
 
 
 class BaseNNImputer(BaseNNModel, BaseImputer):
+    """Abstract class for all neural-network imputation models.
+
+    Parameters
+    ----------
+    batch_size : int,
+        Size of the batch input into the model for one step.
+
+    epochs : int,
+        Training epochs, i.e. the maximum rounds of the model to be trained with.
+
+    patience : int,
+        Number of epochs the training procedure will keep if loss doesn't decrease.
+        Once exceeding the number, the training will stop.
+
+    learning_rate : float,
+        The learning rate of the optimizer.
+
+    weight_decay : float,
+        The weight decay of the optimizer.
+
+    device : str or `torch.device`, default = None,
+        The device for the model to run on.
+        If not given, will try to use CUDA devices first, then CPUs. CUDA and CPU are so far the main devices for people
+        to train ML models. Other devices like Google TPU and Apple Silicon accelerator MPS may be added in the future.
+
+    tb_file_saving_path : str, default = None,
+        The path to save the tensorboard file, which contains the loss values recorded during training.
+    """
+
     def __init__(
-        self, learning_rate, epochs, patience, batch_size, weight_decay, device
+        self,
+        batch_size: int,
+        epochs: int,
+        patience: int,
+        learning_rate: float,
+        weight_decay: float,
+        num_workers: int = 0,
+        device: Optional[Union[str, torch.device]] = None,
+        tb_file_saving_path: str = None,
     ):
         super().__init__(
-            learning_rate, epochs, patience, batch_size, weight_decay, device
+            batch_size,
+            epochs,
+            patience,
+            learning_rate,
+            weight_decay,
+            num_workers,
+            device,
+            tb_file_saving_path,
         )
 
     @abstractmethod
-    def assemble_input_for_training(self, data) -> dict:
+    def _assemble_input_for_training(self, data: list) -> dict:
         """Assemble the given data into a dictionary for training input.
 
         Parameters
@@ -105,7 +175,7 @@ class BaseNNImputer(BaseNNModel, BaseImputer):
         pass
 
     @abstractmethod
-    def assemble_input_for_validating(self, data) -> dict:
+    def _assemble_input_for_validating(self, data: list) -> dict:
         """Assemble the given data into a dictionary for validating input.
 
         Parameters
@@ -121,7 +191,7 @@ class BaseNNImputer(BaseNNModel, BaseImputer):
         pass
 
     @abstractmethod
-    def assemble_input_for_testing(self, data) -> dict:
+    def _assemble_input_for_testing(self, data: list) -> dict:
         """Assemble the given data into a dictionary for testing input.
 
         Notes
@@ -146,11 +216,11 @@ class BaseNNImputer(BaseNNModel, BaseImputer):
 
     def _train_model(
         self,
-        training_loader,
-        val_loader=None,
-        val_X_intact=None,
-        val_indicating_mask=None,
-    ):
+        training_loader: DataLoader,
+        val_loader: DataLoader = None,
+        val_X_intact: np.ndarray = None,  # TODO: move val_X_intact and val_indicating_mask into val_loader
+        val_indicating_mask: np.ndarray = None,
+    ) -> None:
         self.optimizer = torch.optim.Adam(
             self.model.parameters(), lr=self.lr, weight_decay=self.weight_decay
         )
@@ -164,7 +234,7 @@ class BaseNNImputer(BaseNNModel, BaseImputer):
                 self.model.train()
                 epoch_train_loss_collector = []
                 for idx, data in enumerate(training_loader):
-                    inputs = self.assemble_input_for_training(data)
+                    inputs = self._assemble_input_for_training(data)
                     self.optimizer.zero_grad()
                     results = self.model.forward(inputs)
                     results["loss"].backward()
@@ -181,7 +251,7 @@ class BaseNNImputer(BaseNNModel, BaseImputer):
                     imputation_collector = []
                     with torch.no_grad():
                         for idx, data in enumerate(val_loader):
-                            inputs = self.assemble_input_for_validating(data)
+                            inputs = self._assemble_input_for_validating(data)
                             imputed_data, _ = self.model.impute(inputs)
                             imputation_collector.append(imputed_data)
 

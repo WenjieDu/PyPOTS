@@ -5,6 +5,8 @@ Dataset class for self-attention models trained with MIT (masked imputation task
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: GLP-v3
 
+from typing import Union, Iterable
+
 import torch
 from pycorruptor import mcar
 
@@ -39,11 +41,16 @@ class DatasetForMIT(BaseDataset):
         the function will do nothing, i.e. it won't play the role it has to be.
     """
 
-    def __init__(self, data, file_type="h5py", rate=0.2):
+    def __init__(
+            self,
+            data: Union[dict, str],
+            file_type: str = "h5py",
+            rate: float = 0.2,
+    ):
         super().__init__(data, file_type)
         self.rate = rate
 
-    def _fetch_data_from_array(self, idx):
+    def _fetch_data_from_array(self, idx: int) -> Iterable:
         """Fetch data according to index.
 
         Parameters
@@ -87,7 +94,7 @@ class DatasetForMIT(BaseDataset):
 
         return sample
 
-    def _fetch_data_from_file(self, idx):
+    def _fetch_data_from_file(self, idx: int) -> Iterable:
         """Fetch data with the lazy-loading strategy, i.e. only loading data from the file while requesting for samples.
         Here the opened file handle doesn't load the entire dataset into RAM but only load the currently accessed slice.
 
@@ -117,7 +124,7 @@ class DatasetForMIT(BaseDataset):
         ]
 
         if (
-            "y" in self.file_handle.keys()
+                "y" in self.file_handle.keys()
         ):  # if the dataset has labels, then fetch it from the file
             sample.append(torch.tensor(self.file_handle["y"][idx], dtype=torch.long))
 

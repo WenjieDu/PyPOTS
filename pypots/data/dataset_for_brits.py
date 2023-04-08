@@ -5,6 +5,7 @@ Dataset class for model BRITS.
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: GLP-v3
 
+from typing import Union, Iterable
 
 import torch
 
@@ -30,7 +31,7 @@ class DatasetForBRITS(BaseDataset):
         The type of the given file if train_set and val_set are path strings.
     """
 
-    def __init__(self, data, file_type="h5py"):
+    def __init__(self, data: Union[dict, str], file_type: str = "h5py"):
         super().__init__(data, file_type)
 
         if not isinstance(self.data, str):
@@ -55,7 +56,7 @@ class DatasetForBRITS(BaseDataset):
                 },
             }
 
-    def _fetch_data_from_array(self, idx):
+    def _fetch_data_from_array(self, idx: int) -> Iterable:
         """Fetch data from self.X if it is given.
 
         Parameters
@@ -100,7 +101,7 @@ class DatasetForBRITS(BaseDataset):
 
         return sample
 
-    def _fetch_data_from_file(self, idx):
+    def _fetch_data_from_file(self, idx: int) -> Iterable:
         """Fetch data with the lazy-loading strategy, i.e. only loading data from the file while requesting for samples.
         Here the opened file handle doesn't load the entire dataset into RAM but only load the currently accessed slice.
 

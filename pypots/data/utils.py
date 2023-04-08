@@ -5,11 +5,12 @@ Data utils.
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: GLP-v3
 
+
+from typing import Union
+
 import numpy as np
-import torch
-
-
 import pycorruptor as corruptor
+import torch
 from tsdb import (
     pickle_load as _pickle_load,
     pickle_dump as _pickle_dump,
@@ -19,19 +20,27 @@ pickle_load = _pickle_load
 pickle_dump = _pickle_dump
 
 
-def cal_missing_rate(X):
+def cal_missing_rate(X: Union[np.ndarray, torch.Tensor, list]) -> float:
     return corruptor.cal_missing_rate(X)
 
 
-def masked_fill(X, mask, val):
+def masked_fill(
+    X: Union[np.ndarray, torch.Tensor, list],
+    mask: Union[np.ndarray, torch.Tensor, list],
+    val: Union[float, int],
+) -> Union[np.ndarray, torch.Tensor, list]:
     return corruptor.masked_fill(X, mask, val)
 
 
-def mcar(X, rate, nan=0):
+def mcar(
+    X: Union[np.ndarray, torch.Tensor, list],
+    rate: float,
+    nan: Union[int, float] = 0,
+):
     return corruptor.mcar(X, rate, nan)
 
 
-def torch_parse_delta(missing_mask):
+def torch_parse_delta(missing_mask: torch.Tensor) -> torch.Tensor:
     """Generate time-gap (delta) matrix from missing masks. Please refer to :cite:`che2018GRUD` for its math definition.
 
     Parameters
@@ -45,7 +54,7 @@ def torch_parse_delta(missing_mask):
         Delta matrix indicates time gaps of missing values.
     """
 
-    def cal_delta_for_single_sample(mask):
+    def cal_delta_for_single_sample(mask: torch.Tensor) -> torch.Tensor:
         """calculate single sample's delta. The sample's shape is [n_steps, n_features]."""
         d = []
         for step in range(n_steps):
@@ -73,7 +82,7 @@ def torch_parse_delta(missing_mask):
     return delta
 
 
-def numpy_parse_delta(missing_mask):
+def numpy_parse_delta(missing_mask: np.ndarray) -> np.ndarray:
     """Generate time-gap (delta) matrix from missing masks. Please refer to :cite:`che2018GRUD` for its math definition.
 
     Parameters
@@ -87,7 +96,7 @@ def numpy_parse_delta(missing_mask):
         Delta matrix indicates time gaps of missing values.
     """
 
-    def cal_delta_for_single_sample(mask):
+    def cal_delta_for_single_sample(mask: np.ndarray) -> np.ndarray:
         """calculate single sample's delta. The sample's shape is [n_steps, n_features]."""
         d = []
         for step in range(seq_len):

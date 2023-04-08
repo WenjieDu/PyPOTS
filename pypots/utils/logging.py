@@ -20,10 +20,10 @@ class Logger:
     """Logging class for PyPOTS logger initialization and control."""
 
     def __init__(
-            self,
-            name="PyPOTS running log",
-            logging_level="debug",
-            logging_format="%(asctime)s [%(levelname)s]: %(message)s",
+        self,
+        name: str = "PyPOTS running log",
+        logging_level: str = "debug",
+        logging_format: str = "%(asctime)s [%(levelname)s]: %(message)s",
     ):
         """
         Parameters
@@ -39,7 +39,7 @@ class Logger:
         """
 
         assert (
-                logging_level in LEVELS.keys()
+            logging_level in LEVELS.keys()
         ), f"logging_level should be {list(LEVELS.keys())}, but got {logging_level}"
 
         self.logger = logging.getLogger(name)
@@ -53,7 +53,7 @@ class Logger:
         self.set_logging_format(logging_format)
         self.logger.propagate = False
 
-    def set_logging_format(self, logging_format):
+    def set_logging_format(self, logging_format: str) -> None:
         self.formatter = logging.Formatter(logging_format, datefmt="%Y-%m-%d %H:%M:%S")
         self.stream_handler.setFormatter(self.formatter)
         self.logger.addHandler(self.stream_handler)
@@ -61,7 +61,7 @@ class Logger:
             self.file_handler.setFormatter(self.formatter)
             self.logger.addHandler(self.file_handler)
 
-    def set_saving_path(self, saving_dir, name, mode="a"):
+    def set_saving_path(self, saving_dir: str, name: str, mode: str = "a") -> None:
         """Set the logger's saving path. This function will enable saving logs to the specified path.
 
         Parameters
@@ -77,7 +77,7 @@ class Logger:
 
         """
         if not os.path.exists(saving_dir):
-            self.logger.warning(f'{saving_dir} does not exist. Creating it now...')
+            self.logger.warning(f"{saving_dir} does not exist. Creating it now...")
             os.makedirs(saving_dir)
         path = os.path.join(saving_dir, name)
         self.file_handler = logging.FileHandler(path, mode=mode)
@@ -86,7 +86,7 @@ class Logger:
         self.logger.addHandler(self.file_handler)
         self.logger.info(f"Log will be saved to {path}")
 
-    def set_level(self, level):
+    def set_level(self, level: str) -> None:
         """Set the logger's logging level.
 
         Parameters

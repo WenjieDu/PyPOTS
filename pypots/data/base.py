@@ -6,7 +6,9 @@ Utilities for data manipulation
 # License: GPL-v3
 
 from abc import abstractmethod
+from typing import Union, Optional, Tuple, Iterable
 
+import h5py
 import numpy as np
 import torch
 from torch.utils.data import Dataset
@@ -31,19 +33,19 @@ class BaseDataset(Dataset):
         The type of the given file if train_set and val_set are path strings.
     """
 
-    def __init__(self, data, file_type="h5py"):
+    def __init__(self, data: Union[dict, str], file_type: str = "h5py"):
         super().__init__()
         # types and shapes had been checked after X and y input into the model
         # So they are safe to use here. No need to check again.
 
         self.data = data
         if isinstance(self.data, str):  # data from file
-            self.file_type = file_type
-
             # check if the given file type is supported
             assert (
                 file_type in SUPPORTED_DATASET_FILE_TYPE
             ), f"file_type should be one of {SUPPORTED_DATASET_FILE_TYPE}, but got {file_type}"
+
+            self.file_type = file_type
 
             # open the file handle
             self.file_handle = self._open_file_handle()
@@ -65,7 +67,7 @@ class BaseDataset(Dataset):
         else:
             self.fetch_data = self._fetch_data_from_array
 
-    def _get_sample_num(self):
+    def _get_sample_num(self) -> int:
         """Determine the number of samples in the dataset and return the number.
 
         Returns
@@ -82,11 +84,18 @@ class BaseDataset(Dataset):
 
         return sample_num
 
-    def __len__(self):
+    def __len__(self) -> int:
         return self.sample_num
 
     @staticmethod
-    def check_input(X, y=None, out_dtype="tensor"):
+    def check_input(
+        X: Union[np.ndarray, torch.Tensor, list],
+        y: Optional[Union[np.ndarray, torch.Tensor, list]] = None,
+        out_dtype: str = "tensor",
+    ) -> Tuple[
+        Union[np.ndarray, torch.Tensor, list],
+        Optional[Union[np.ndarray, torch.Tensor, list]],
+    ]:
         """Check value type and shape of input X and y
 
         Parameters
@@ -162,7 +171,7 @@ class BaseDataset(Dataset):
         return X, y
 
     @abstractmethod
-    def _fetch_data_from_array(self, idx):
+    def _fetch_data_from_array(self, idx: int) -> Iterable:
         """Fetch data from self.X if it is given.
 
         Parameters
@@ -190,7 +199,7 @@ class BaseDataset(Dataset):
 
         return sample
 
-    def _open_file_handle(self):
+    def _open_file_handle(self) -> h5py.File:
         """Open the file handle for reading data from the file.
 
         Notes
@@ -204,11 +213,10 @@ class BaseDataset(Dataset):
         """
         data_file_path = self.data
         try:
-            import h5py
-
             file_handler = h5py.File(
-                data_file_path, "r", swmr=True
-            )  # set  if the h5 file need to be written into new content during reading
+                data_file_path,
+                "r",
+            )  # set swmr=True if the h5 file need to be written into new content during reading
         except ImportError:
             raise ImportError(
                 "h5py is missing and cannot be imported. Please install it first."
@@ -223,7 +231,7 @@ class BaseDataset(Dataset):
         return file_handler
 
     @abstractmethod
-    def _fetch_data_from_file(self, idx):
+    def _fetch_data_from_file(self, idx: int) -> Iterable:
         """Fetch data with the lazy-loading strategy, i.e. only loading data from the file while requesting for samples.
         Here the opened file handle doesn't load the entire dataset into RAM but only load the currently accessed slice.
 
@@ -268,7 +276,7 @@ class BaseDataset(Dataset):
 
         return sample
 
-    def __getitem__(self, idx):
+    def __getitem__(self, idx: int) -> Iterable:
         """Fetch data according to index.
 
         Parameters
