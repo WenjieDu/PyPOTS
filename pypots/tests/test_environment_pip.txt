@@ -1,0 +1,15 @@
+scipy
+numpy
+scikit-learn
+pandas
+h5py
+tensorboard
+pytest
+coveralls
+coverage
+pycorruptor
+tsdb
+torch
+torch_sparse
+torch_scatter
+torch_geometric

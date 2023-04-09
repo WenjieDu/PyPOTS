@@ -6,13 +6,13 @@ channels:
     - nodefaults
 dependencies:
     - conda-forge::python
-    - conda-forge::numpy
+    - conda-forge::pip
     - conda-forge::scipy
+    - conda-forge::numpy    # numpy should >= 1.23.3, otherwise may encounter "number not available" when torch>1.11
+    - conda-forge::scikit-learn # sklearn should >= 0.24.1
     - conda-forge::pandas
-    - conda-forge::scikit-learn
     - conda-forge::h5py
     - conda-forge::tensorboard
-    - conda-forge::pip
     - conda-forge::pytest-cov
     - conda-forge::pytest-xdist
     - conda-forge::coverage
