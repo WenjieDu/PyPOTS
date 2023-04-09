@@ -46,7 +46,7 @@
     </a>
     <!-- Coveralls report -->
     <a alt='Coveralls report' href='https://coveralls.io/github/WenjieDu/PyPOTS'> 
-        <img src='https://img.shields.io/coverallsCoverage/github/WenjieDu/PyPOTS?branch=main&logo=coveralls&labelColor=#0aa344'>
+        <img src='https://img.shields.io/coverallsCoverage/github/WenjieDu/PyPOTS?branch=main&logo=coveralls'>
     </a>
 </p>
 
@@ -69,7 +69,7 @@ Install the latest release from PyPI:
 > pip install pypots
 
 or install from the source code with the latest features not officially released in a version:
-> pip install `https://github.com/WenjieDu/PyPOTS/archive/main.zip`
+> pip install https://github.com/WenjieDu/PyPOTS/archive/main.zip
 
 <details open>
 <summary><b>Below is an example applying SAITS in PyPOTS to impute missing values in the dataset PhysioNet2012:</b></summary>
@@ -99,19 +99,34 @@ mae = cal_mae(imputation, X_intact, indicating_mask)  # calculate mean absolute 
 </details>
 
 ## ❖ Available Algorithms
-| Task                          | Type           | Algorithm                                                                | Year | Reference |        
-|-------------------------------|----------------|--------------------------------------------------------------------------|------|-----------|
-| Imputation                    | Neural Network | SAITS (Self-Attention-based Imputation for Time Series)                  | 2023 | [^1]      |
-| Imputation                    | Neural Network | Transformer                                                              | 2017 | [^1] [^2] |
-| Imputation,<br>Classification | Neural Network | BRITS (Bidirectional Recurrent Imputation for Time Series)               | 2018 | [^3]      |
-| Imputation                    | Naive          | LOCF (Last Observation Carried Forward)                                  | -    | -         |
-| Classification                | Neural Network | GRU-D                                                                    | 2018 | [^4]      |
-| Classification                | Neural Network | Raindrop                                                                 | 2022 | [^5]      |
-| Clustering                    | Neural Network | CRLI (Clustering Representation Learning on Incomplete time-series data) | 2021 | [^6]      |
-| Clustering                    | Neural Network | VaDER (Variational Deep Embedding with Recurrence)                       | 2019 | [^7]      |
-| Forecasting                   | Probabilistic  | BTTF (Bayesian Temporal Tensor Factorization)                            | 2021 | [^8]      |
+PyPOTS supports imputation, classification, clustering, and forecasting tasks on multivariate time series with missing values. The currently available algorithms are cataloged in the following tables for each task. The paper references are all listed at the bottom of this readme file. Please refer to them if you want more details.
 
-## ❖ Reference
+### ◆ Imputation
+| Type           | Abbr.       | Algorithm / Model / Full paper name                                                                                                                                                          | Year |        
+|----------------|-------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------|
+| Neural Network | SAITS       | Self-Attention-based Imputation for Time Series [^1]                                                                                                                                         | 2023 |
+| Neural Network | Transformer | Attention is All you Need [^2]; Self-Attention-based Imputation for Time Series [^1]<br><sub>Note: Transformer is proposed in [^2], and re-implemented as an imputation model in [^1].</sub> | 2017 |
+| Neural Network | BRITS       | Bidirectional Recurrent Imputation for Time Series [^3]                                                                                                                                      | 2018 |
+| Naive          | LOCF        | Last Observation Carried Forward                                                                                                                                                             | -    |
+
+### ◆ Classification
+| Type           | Abbr.    | Algorithm / Model / Full paper name                                             | Year |        
+|----------------|----------|---------------------------------------------------------------------------------|------|
+| Neural Network | BRITS    | Bidirectional Recurrent Imputation for Time Series [^3]                         | 2018 |
+| Neural Network | GRU-D    | Recurrent Neural Networks for Multivariate Time Series with Missing Values [^4] | 2018 |
+| Neural Network | Raindrop | Graph-Guided Network for Irregularly Sampled Multivariate Time Series [^5]      | 2022 |
+
+### ◆ Clustering
+| Type           | Abbr.  | Algorithm / Model / Full paper name                                    | Year |        
+|----------------|--------|------------------------------------------------------------------------|------|
+| Neural Network | CRLI   | Clustering Representation Learning on Incomplete time-series data [^6] | 2021 |
+| Neural Network | VaDER  | Variational Deep Embedding with Recurrence [^7]                        | 2019 |
+
+### ◆ Forecasting
+| Type           | Abbr.  | Algorithm / Model / Full paper name         | Year |        
+|----------------|--------|---------------------------------------------|------|
+| Probabilistic  | BTTF   | Bayesian Temporal Tensor Factorization [^8] | 2021 |
+
 ## ❖ Cite PyPOTS
 If you find PyPOTS is helpful to your research, please cite it as below and ⭐️star this repository to make others notice this work. 🤗
 
