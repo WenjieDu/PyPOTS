@@ -91,14 +91,21 @@ class TestLazyLoadingClasses(unittest.TestCase):
             save_data_set_into_h5({"X": DATA["train_X"]}, IMPUTATION_TRAIN_SET)
 
         if not os.path.exists(IMPUTATION_VAL_SET):
-            save_data_set_into_h5({"X": DATA["val_X"]}, IMPUTATION_VAL_SET)
+            save_data_set_into_h5(
+                {
+                    "X": DATA["val_X"],
+                    "X_intact": DATA["val_X_intact"],
+                    "indicating_mask": DATA["val_X_indicating_mask"],
+                },
+                IMPUTATION_VAL_SET,
+            )
 
         if not os.path.exists(TEST_SET):
             save_data_set_into_h5(
                 {
                     "X": DATA["test_X"],
                     "X_intact": DATA["test_X_intact"],
-                    "X_indicating_mask": DATA["test_X_indicating_mask"],
+                    "indicating_mask": DATA["test_X_indicating_mask"],
                 },
                 TEST_SET,
             )

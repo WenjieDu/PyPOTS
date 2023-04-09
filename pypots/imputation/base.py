@@ -218,8 +218,6 @@ class BaseNNImputer(BaseNNModel, BaseImputer):
         self,
         training_loader: DataLoader,
         val_loader: DataLoader = None,
-        val_X_intact: np.ndarray = None,  # TODO: move val_X_intact and val_indicating_mask into val_loader
-        val_indicating_mask: np.ndarray = None,
     ) -> None:
         self.optimizer = torch.optim.Adam(
             self.model.parameters(), lr=self.lr, weight_decay=self.weight_decay
@@ -259,7 +257,10 @@ class BaseNNImputer(BaseNNModel, BaseImputer):
                     imputation_collector = imputation_collector.numpy()
 
                     mean_val_loss = cal_mae(
-                        imputation_collector, val_X_intact, val_indicating_mask
+                        imputation_collector,
+                        val_loader.dataset.data["X_intact"],
+                        val_loader.dataset.data["indicating_mask"],
+                        # the above val_loader.dataset.data is a dict containing the validation dataset
                     )
                     self.logger["validating_loss"].append(mean_val_loss)
                     logger.info(
