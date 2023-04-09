@@ -11,6 +11,7 @@ Partial implementation uses code from https://github.com/WenjieDu/SAITS.
 
 from typing import Tuple, Union, Optional
 
+import h5py
 import numpy as np
 import torch
 import torch.nn as nn
@@ -19,7 +20,6 @@ from torch.utils.data import DataLoader
 
 from pypots.data.base import BaseDataset
 from pypots.data.dataset_for_mit import DatasetForMIT
-from pypots.data.utils import mcar, masked_fill
 from pypots.imputation.base import BaseNNImputer
 from pypots.imputation.transformer import EncoderLayer, PositionalEncoding
 from pypots.utils.metrics import cal_mae
@@ -341,19 +341,19 @@ class SAITS(BaseNNImputer):
             self._train_model(training_loader)
         else:
             if isinstance(val_set, str):
-                import h5py
-
                 with h5py.File(val_set, "r") as hf:
                     # Here we read the whole validation set from the file to mask a portion for validation.
-                    # In PyPOTS, using a file usually because the data is too big.
-                    val_X = hf["X"][:]
-                val_set = {"X": val_X}
+                    # In PyPOTS, using a file usually because the data is too big. However, the validation set is
+                    # generally shouldn't be too large. For example, we have 1 billion samples for model training.
+                    # We won't take 20% of them as the validation set because we want as much as possible data for the
+                    # training stage to enhance the model's generalization ability. Therefore, 100,000 representative
+                    # samples will be enough to validate the model.
+                    val_set = {
+                        "X": hf["X"][:],
+                        "X_intact": hf["X_intact"][:],
+                        "indicating_mask": hf["indicating_mask"][:],
+                    }
 
-            val_X_intact, val_X, val_X_missing_mask, val_X_indicating_mask = mcar(
-                val_set["X"], 0.2
-            )
-            val_X = masked_fill(val_X, 1 - val_X_missing_mask, np.nan)
-            val_set["X"] = val_X
             val_set = BaseDataset(val_set)
             val_loader = DataLoader(
                 val_set,
@@ -361,12 +361,7 @@ class SAITS(BaseNNImputer):
                 shuffle=False,
                 num_workers=self.num_workers,
             )
-            self._train_model(
-                training_loader,
-                val_loader,
-                val_X_intact,
-                val_X_indicating_mask,
-            )
+            self._train_model(training_loader, val_loader)
 
         self.model.load_state_dict(self.best_model_dict)
         self.model.eval()  # set the model as eval status to freeze it.
