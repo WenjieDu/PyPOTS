@@ -47,6 +47,10 @@ def gene_random_walk_data(
     val_X = val_X.reshape(-1, n_steps, n_features)
     test_X = test_X.reshape(-1, n_steps, n_features)
 
+    # mask values in the validation set as ground truth
+    val_X_intact, val_X, val_X_missing_mask, val_X_indicating_mask = mcar(val_X, 0.3)
+    val_X = masked_fill(val_X, 1 - val_X_missing_mask, torch.nan)
+
     # mask values in the test set as ground truth
     test_X_intact, test_X, test_X_missing_mask, test_X_indicating_mask = mcar(
         test_X, 0.3
@@ -61,6 +65,8 @@ def gene_random_walk_data(
         "train_y": train_y,
         "val_X": val_X,
         "val_y": val_y,
+        "val_X_intact": val_X_intact,
+        "val_X_indicating_mask": val_X_indicating_mask,
         "test_X": test_X,
         "test_y": test_y,
         "test_X_intact": test_X_intact,
@@ -104,6 +110,11 @@ def gene_physionet2012():
     test_y = y[y.index.isin(test_set_ids)]
     train_y, val_y, test_y = train_y.to_numpy(), val_y.to_numpy(), test_y.to_numpy()
 
+    # mask values in the validation set as ground truth
+    val_X_intact, val_X, val_X_missing_mask, val_X_indicating_mask = mcar(val_X, 0.1)
+    val_X = masked_fill(val_X, 1 - val_X_missing_mask, torch.nan)
+
+    # mask values in the test set as ground truth
     test_X_intact, test_X, test_X_missing_mask, test_X_indicating_mask = mcar(
         test_X, 0.1
     )
@@ -117,6 +128,8 @@ def gene_physionet2012():
         "train_y": train_y.flatten(),
         "val_X": val_X,
         "val_y": val_y.flatten(),
+        "val_X_intact": val_X_intact,
+        "val_X_indicating_mask": val_X_indicating_mask,
         "test_X": test_X,
         "test_y": test_y.flatten(),
         "test_X_intact": test_X_intact,

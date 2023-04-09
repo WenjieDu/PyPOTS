@@ -1,0 +1,42 @@
+name: Daily Testing
+
+on:
+    schedule:
+        # see https://crontab.guru
+        # Run "At 03:00 on Sunday, Tuesday, Thursday, and Saturday."
+        - cron: '0 3 * * 0,2,4,6'
+
+jobs:
+    test:
+        runs-on: ${{ matrix.os }}
+        defaults:
+            run:
+                shell: bash -l {0}
+        strategy:
+            fail-fast: false
+            matrix:
+                os: [ubuntu-latest, windows-latest, macOS-latest]
+                python-version: ["3.7", "3.9", "3.10"]
+
+        steps:
+            - uses: actions/checkout@v3
+
+            - name: Install dependencies
+              run: |
+                  python -m pip install --upgrade pip
+                  pip install -r pypots/test_environment_pip.txt
+
+            - name: Fetch the test environment details
+              run: |
+                  which python
+                  pip list
+
+            - name: Test with pytest
+              run: |
+                  coverage run --source=pypots -m pytest
+
+            - name: Submit the report
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              run: |
+                  coveralls --service=github
