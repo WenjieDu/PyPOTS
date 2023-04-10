@@ -11,12 +11,12 @@ import numpy as np
 import pytest
 
 from pypots.forecasting import BTTF
-from pypots.tests.unified_data_for_test import gene_random_walk_data
+from pypots.data.generating import gene_incomplete_random_walk_dataset
 from pypots.utils.logging import logger
 from pypots.utils.metrics import cal_mae
 
 EPOCHS = 5
-DATA = gene_random_walk_data(n_steps=120, n_features=10)
+DATA = gene_incomplete_random_walk_dataset(n_steps=120, n_features=10)
 TEST_SET = {"X": DATA["test_X"][:, :100]}
 
 

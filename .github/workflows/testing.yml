@@ -1,4 +1,4 @@
-name: Tests
+name: CI
 
 on:
     push:
@@ -6,10 +6,10 @@ on:
             - main
             - dev
             - temp_test_branch  # if in need, create such a temporary branch to test some functions
-    pull_request:
-        branches:
-            - main
-            - dev
+#    pull_request:
+#        branches:
+#            - main
+#            - dev
 
 jobs:
     test:
@@ -31,7 +31,7 @@ jobs:
               with:
                   activate-environment: pypots-test
                   python-version: ${{ matrix.python-version }}
-                  environment-file: pypots/tests/test_environment_conda.yml
+                  environment-file: pypots/tests/environment_for_conda_test.yml
                   auto-activate-base: false
 
             - name: Fetch the test environment details
@@ -49,7 +49,7 @@ jobs:
                   python -m pytest -rA pypots/tests/test_clustering.py -n auto --cov=pypots --cov-append --dist=loadgroup
                   python -m pytest -rA pypots/tests/test_forecasting.py -n auto --cov=pypots --cov-append --dist=loadgroup
                   python -m pytest -rA pypots/tests/test_data.py -n auto --cov=pypots --cov-append --dist=loadgroup
-                  python -m pytest -rA pypots/tests/test_logging.py -n auto --cov=pypots --cov-append --dist=loadgroup
+                  python -m pytest -rA pypots/tests/test_utils.py -n auto --cov=pypots --cov-append --dist=loadgroup
 
             - name: Generate the LCOV report
               run: |

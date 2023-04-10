@@ -444,7 +444,7 @@ class BTTF(BaseForecaster):
         pred_step: int,
         multi_step: int,
         rank: int,
-        time_lags: int,
+        time_lags: np.ndarray,
         burn_iter: int,
         gibbs_iter: int,
         device: Optional[Union[str, torch.device]] = None,
@@ -482,10 +482,6 @@ class BTTF(BaseForecaster):
 
         file_type : str, default = "h5py"
             The type of the given file if X is a path string.
-
-        num_workers : int, default = 0,
-            The number of subprocesses to use for data loading.
-            `0` means data loading will be in the main process, i.e. there won't be subprocesses.
 
         Returns
         -------

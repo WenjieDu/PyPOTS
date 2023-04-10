@@ -12,7 +12,7 @@ from pypots.utils.logging import Logger
 # License: GPL-v3
 
 
-class TestLogger(unittest.TestCase):
+class TestLogging(unittest.TestCase):
     logger_creator = Logger(name="PyPOTS testing log", logging_level="debug")
     logger = logger_creator.logger
 
