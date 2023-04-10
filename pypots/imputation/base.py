@@ -256,7 +256,7 @@ class BaseNNImputer(BaseNNModel, BaseImputer):
                     with torch.no_grad():
                         for idx, data in enumerate(val_loader):
                             inputs = self._assemble_input_for_validating(data)
-                            imputed_data, _ = self.model.impute(inputs)
+                            imputed_data = self.model.impute(inputs)
                             imputation_collector.append(imputed_data)
 
                     imputation_collector = torch.cat(imputation_collector)

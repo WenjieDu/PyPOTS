@@ -55,9 +55,9 @@ class FeatureRegression(nn.Module):
         m = torch.ones(input_size, input_size) - torch.eye(input_size, input_size)
         self.register_buffer("m", m)
 
-        self.reset_parameters()
+        self._reset_parameters()
 
-    def reset_parameters(self) -> None:
+    def _reset_parameters(self) -> None:
         std_dev = 1.0 / math.sqrt(self.W.size(0))
         self.W.data.uniform_(-std_dev, std_dev)
         if self.b is not None:
@@ -114,9 +114,9 @@ class TemporalDecay(nn.Module):
             m = torch.eye(input_size, input_size)
             self.register_buffer("m", m)
 
-        self.reset_parameters()
+        self._reset_parameters()
 
-    def reset_parameters(self) -> None:
+    def _reset_parameters(self) -> None:
         std_dev = 1.0 / math.sqrt(self.W.size(0))
         self.W.data.uniform_(-std_dev, std_dev)
         if self.b is not None:
@@ -364,29 +364,8 @@ class _BRITS(nn.Module):
         self.rits_f = RITS(n_steps, n_features, rnn_hidden_size, device)
         self.rits_b = RITS(n_steps, n_features, rnn_hidden_size, device)
 
-    def impute(self, inputs: dict) -> Tuple[torch.Tensor, Any]:
-        """Impute the missing data. Only impute, this is for test stage.
-
-        Parameters
-        ----------
-        inputs : dict,
-            A dictionary includes all input data.
-
-        Returns
-        -------
-        array-like, the same shape with the input feature vectors.
-            The feature vectors with missing part imputed.
-
-        """
-        imputed_data_f, _, _ = self.rits_f.impute(inputs, "forward")
-        imputed_data_b, _, _ = self.rits_b.impute(inputs, "backward")
-        imputed_data_b = {"imputed_data_b": imputed_data_b}
-        imputed_data_b = self.reverse(imputed_data_b)["imputed_data_b"]
-        imputed_data = (imputed_data_f + imputed_data_b) / 2
-        return imputed_data, None
-
     @staticmethod
-    def get_consistency_loss(
+    def _get_consistency_loss(
         pred_f: torch.Tensor, pred_b: torch.Tensor
     ) -> torch.Tensor:
         """Calculate the consistency loss between the imputation from two RITS models.
@@ -409,7 +388,7 @@ class _BRITS(nn.Module):
         return loss
 
     @staticmethod
-    def reverse(ret: dict) -> dict:
+    def _reverse(ret: dict) -> dict:
         """Reverse the array values on the time dimension in the given dictionary.
 
         Parameters
@@ -437,6 +416,27 @@ class _BRITS(nn.Module):
 
         return ret
 
+    def impute(self, inputs: dict) -> torch.Tensor:
+        """Impute the missing data. Only impute, this is for test stage.
+
+        Parameters
+        ----------
+        inputs : dict,
+            A dictionary includes all input data.
+
+        Returns
+        -------
+        array-like, the same shape with the input feature vectors.
+            The feature vectors with missing part imputed.
+
+        """
+        imputed_data_f, _, _ = self.rits_f.impute(inputs, "forward")
+        imputed_data_b, _, _ = self.rits_b.impute(inputs, "backward")
+        imputed_data_b = {"imputed_data_b": imputed_data_b}
+        imputed_data_b = self._reverse(imputed_data_b)["imputed_data_b"]
+        imputed_data = (imputed_data_f + imputed_data_b) / 2
+        return imputed_data
+
     def forward(self, inputs: dict) -> dict:
         """Forward processing of BRITS.
 
@@ -452,9 +452,9 @@ class _BRITS(nn.Module):
         # Results from the forward RITS.
         ret_f = self.rits_f(inputs, "forward")
         # Results from the backward RITS.
-        ret_b = self.reverse(self.rits_b(inputs, "backward"))
+        ret_b = self._reverse(self.rits_b(inputs, "backward"))
 
-        consistency_loss = self.get_consistency_loss(
+        consistency_loss = self._get_consistency_loss(
             ret_f["imputed_data"], ret_b["imputed_data"]
         )
         imputed_data = (ret_f["imputed_data"] + ret_b["imputed_data"]) / 2
@@ -720,7 +720,7 @@ class BRITS(BaseNNImputer):
         with torch.no_grad():
             for idx, data in enumerate(test_loader):
                 inputs = self._assemble_input_for_testing(data)
-                imputed_data, _ = self.model.impute(inputs)
+                imputed_data = self.model.impute(inputs)
                 imputation_collector.append(imputed_data)
 
         imputation_collector = torch.cat(imputation_collector)
