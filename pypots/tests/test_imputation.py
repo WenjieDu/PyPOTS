@@ -17,7 +17,7 @@ from pypots.imputation import (
     BRITS,
     LOCF,
 )
-from pypots.tests.unified_data_for_test import DATA
+from pypots.tests.test_data import DATA
 from pypots.utils.logging import logger
 from pypots.utils.metrics import cal_mae
 
