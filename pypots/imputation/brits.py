@@ -58,10 +58,10 @@ class FeatureRegression(nn.Module):
         self.reset_parameters()
 
     def reset_parameters(self) -> None:
-        stdv = 1.0 / math.sqrt(self.W.size(0))
-        self.W.data.uniform_(-stdv, stdv)
+        std_dev = 1.0 / math.sqrt(self.W.size(0))
+        self.W.data.uniform_(-std_dev, std_dev)
         if self.b is not None:
-            self.b.data.uniform_(-stdv, stdv)
+            self.b.data.uniform_(-std_dev, std_dev)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """Forward processing of the NN module.
@@ -117,10 +117,10 @@ class TemporalDecay(nn.Module):
         self.reset_parameters()
 
     def reset_parameters(self) -> None:
-        stdv = 1.0 / math.sqrt(self.W.size(0))
-        self.W.data.uniform_(-stdv, stdv)
+        std_dev = 1.0 / math.sqrt(self.W.size(0))
+        self.W.data.uniform_(-std_dev, std_dev)
         if self.b is not None:
-            self.b.data.uniform_(-stdv, stdv)
+            self.b.data.uniform_(-std_dev, std_dev)
 
     def forward(self, delta: torch.Tensor) -> torch.Tensor:
         """Forward processing of the NN module.
@@ -437,36 +437,6 @@ class _BRITS(nn.Module):
 
         return ret
 
-    def merge_ret(self, ret_f: dict, ret_b: dict) -> dict:
-        """Merge (average) results from two RITS models into one.
-
-        Parameters
-        ----------
-        ret_f : dict,
-            Results from the forward RITS.
-
-        ret_b : dict,
-            Results from the backward RITS.
-
-        Returns
-        -------
-        dict,
-            Merged results in a dictionary.
-
-        """
-        consistency_loss = self.get_consistency_loss(
-            ret_f["imputed_data"], ret_b["imputed_data"]
-        )
-        ret_f["imputed_data"] = (ret_f["imputed_data"] + ret_b["imputed_data"]) / 2
-        ret_f["consistency_loss"] = consistency_loss
-        ret_f["loss"] = (
-            consistency_loss
-            + ret_f["reconstruction_loss"]
-            + ret_b["reconstruction_loss"]
-        )
-
-        return ret_f
-
     def forward(self, inputs: dict) -> dict:
         """Forward processing of BRITS.
 
@@ -479,10 +449,30 @@ class _BRITS(nn.Module):
         -------
         dict, A dictionary includes all results.
         """
+        # Results from the forward RITS.
         ret_f = self.rits_f(inputs, "forward")
+        # Results from the backward RITS.
         ret_b = self.reverse(self.rits_b(inputs, "backward"))
-        ret = self.merge_ret(ret_f, ret_b)
-        return ret
+
+        consistency_loss = self.get_consistency_loss(
+            ret_f["imputed_data"], ret_b["imputed_data"]
+        )
+        imputed_data = (ret_f["imputed_data"] + ret_b["imputed_data"]) / 2
+
+        # `loss` is always the item for backward propagating to update the model
+        loss = (
+            consistency_loss
+            + ret_f["reconstruction_loss"]
+            + ret_b["reconstruction_loss"]
+        )
+
+        results = {
+            "imputed_data": imputed_data,
+            "consistency_loss": consistency_loss,
+            "loss": loss,  # will be used for backward propagating to update the model
+        }
+
+        return results
 
 
 class BRITS(BaseNNImputer):
@@ -495,9 +485,6 @@ class BRITS(BaseNNImputer):
 
     optimizer : object,
         The optimizer for model training.
-
-    data_loader : object,
-        The data loader for dataset loading.
 
     Parameters
     ----------

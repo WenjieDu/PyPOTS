@@ -69,13 +69,15 @@ class BaseModel(ABC):
             actual_tb_file_saving_path = os.path.join(
                 tb_file_saving_path, actual_tb_saving_dir_name
             )
-            os.makedirs(actual_tb_saving_dir_name)  # create the dir for file saving
-            self.summary_writer = SummaryWriter(actual_tb_file_saving_path)
+            # os.makedirs(actual_tb_file_saving_path)  # create the dir for file saving
+            self.summary_writer = SummaryWriter(
+                actual_tb_file_saving_path, filename_suffix=".pypots"
+            )
         else:
             # don't save the log if tb_file_saving_path isn't given, set summary_writer as None
             self.summary_writer = None
 
-    def save_into_tb_file(self, step: int, stage: str, loss_dict: dict) -> None:
+    def save_log_into_tb_file(self, step: int, stage: str, loss_dict: dict) -> None:
         """Saving training logs into the tensorboard file.
 
         Parameters
@@ -92,7 +94,8 @@ class BaseModel(ABC):
         """
         while len(loss_dict) > 0:
             (item_name, loss) = loss_dict.popitem()
-            self.summary_writer.add_scalar(f"{item_name}/{stage}", loss, step)
+            if "loss" in item_name:  # save all items containing word "loss" in the name
+                self.summary_writer.add_scalar(f"{stage}/{item_name}", loss, step)
 
     def save_model(
         self,
