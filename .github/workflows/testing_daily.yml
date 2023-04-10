@@ -24,7 +24,7 @@ jobs:
             - name: Install dependencies
               run: |
                   python -m pip install --upgrade pip
-                  pip install -r pypots/test_environment_pip.txt
+                  pip install -r pypots/tests/environment_for_pip_test.txt
 
             - name: Fetch the test environment details
               run: |
