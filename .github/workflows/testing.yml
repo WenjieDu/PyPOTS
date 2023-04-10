@@ -31,7 +31,7 @@ jobs:
               with:
                   activate-environment: pypots-test
                   python-version: ${{ matrix.python-version }}
-                  environment-file: pypots/tests/test_environment_conda.yml
+                  environment-file: pypots/tests/environment_for_conda_test.yml
                   auto-activate-base: false
 
             - name: Fetch the test environment details

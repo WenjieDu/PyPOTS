@@ -11,8 +11,8 @@ from pypots.data.dataset_for_grud import DatasetForGRUD
 from pypots.data.dataset_for_mit import DatasetForMIT
 
 from pypots.data.generating import (
-    generate_random_walk,
-    generate_random_walk_for_classification,
+    gene_complete_random_walk,
+    gene_random_walk_for_classification,
 )
 
 from pypots.data.utils import (

@@ -12,19 +12,23 @@ import h5py
 import pytest
 
 from pypots.classification import BRITS, GRUD
+from pypots.data.generating import gene_incomplete_random_walk_dataset
 from pypots.imputation import SAITS
-from pypots.tests.unified_data_for_test import DATA
 from pypots.utils.logging import logger
 
-DATA_FOR_TESTS = "h5data_for_tests"
 
+# Generate the unified data for testing and cache it first, DATA here is a singleton
+# Otherwise, file lock will cause bug if running test parallely with pytest-xdist.
+DATA = gene_incomplete_random_walk_dataset()
+
+DATA_FOR_TESTS = "h5data_for_tests"
 TRAIN_SET = "h5data_for_tests/train_set.h5"
 VAL_SET = "h5data_for_tests/val_set.h5"
-
 IMPUTATION_TRAIN_SET = "h5data_for_tests/imputation_train_set.h5"
 IMPUTATION_VAL_SET = "h5data_for_tests/imputation_val_set.h5"
-
 TEST_SET = "h5data_for_tests/test_set.h5"
+
+EPOCHS = 1
 
 
 def save_data_set_into_h5(data, path):
@@ -32,9 +36,6 @@ def save_data_set_into_h5(data, path):
         for i in data.keys():
             tp = int if i == "y" else "float32"
             hf.create_dataset(i, data=data[i].astype(tp))
-
-
-EPOCHS = 1
 
 
 class TestLazyLoadingClasses(unittest.TestCase):
