@@ -94,7 +94,7 @@ class _SAITS(nn.Module):
         # for delta decay factor
         self.weight_combine = nn.Linear(d_feature + d_time, d_feature)
 
-    def impute(self, inputs: dict) -> Tuple[torch.Tensor, list]:
+    def _process(self, inputs: dict) -> Tuple[torch.Tensor, list]:
         X, masks = inputs["X"], inputs["missing_mask"]
         # first DMSA block
         input_X_for_first = torch.cat([X, masks], dim=2)
@@ -138,10 +138,14 @@ class _SAITS(nn.Module):
 
         return X_c, [X_tilde_1, X_tilde_2, X_tilde_3]
 
+    def impute(self, inputs: dict) -> torch.Tensor:
+        imputed_data, _ = self._process(inputs)
+        return imputed_data
+
     def forward(self, inputs: dict) -> dict:
         X, masks = inputs["X"], inputs["missing_mask"]
         ORT_loss = 0
-        imputed_data, [X_tilde_1, X_tilde_2, X_tilde_3] = self.impute(inputs)
+        imputed_data, [X_tilde_1, X_tilde_2, X_tilde_3] = self._process(inputs)
 
         ORT_loss += cal_mae(X_tilde_1, X, masks)
         ORT_loss += cal_mae(X_tilde_2, X, masks)
@@ -398,7 +402,7 @@ class SAITS(BaseNNImputer):
         with torch.no_grad():
             for idx, data in enumerate(test_loader):
                 inputs = {"X": data[1], "missing_mask": data[2]}
-                imputed_data, _ = self.model.impute(inputs)
+                imputed_data = self.model.impute(inputs)
                 imputation_collector.append(imputed_data)
 
         imputation_collector = torch.cat(imputation_collector)
