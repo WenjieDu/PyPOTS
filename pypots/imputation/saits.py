@@ -140,28 +140,26 @@ class _SAITS(nn.Module):
 
     def forward(self, inputs: dict) -> dict:
         X, masks = inputs["X"], inputs["missing_mask"]
-        reconstruction_loss = 0
+        ORT_loss = 0
         imputed_data, [X_tilde_1, X_tilde_2, X_tilde_3] = self.impute(inputs)
 
-        reconstruction_loss += cal_mae(X_tilde_1, X, masks)
-        reconstruction_loss += cal_mae(X_tilde_2, X, masks)
-        final_reconstruction_MAE = cal_mae(X_tilde_3, X, masks)
-        reconstruction_loss += final_reconstruction_MAE
-        reconstruction_loss /= 3
+        ORT_loss += cal_mae(X_tilde_1, X, masks)
+        ORT_loss += cal_mae(X_tilde_2, X, masks)
+        ORT_loss += cal_mae(X_tilde_3, X, masks)
+        ORT_loss /= 3
 
-        # have to cal imputation loss in the val stage; no need to cal imputation loss here in the tests stage
-        imputation_loss = cal_mae(
-            X_tilde_3, inputs["X_intact"], inputs["indicating_mask"]
-        )
+        MIT_loss = cal_mae(X_tilde_3, inputs["X_intact"], inputs["indicating_mask"])
 
-        loss = self.ORT_weight * reconstruction_loss + self.MIT_weight * imputation_loss
+        # `loss` is always the item for backward propagating to update the model
+        loss = self.ORT_weight * ORT_loss + self.MIT_weight * MIT_loss
 
-        return {
+        results = {
             "imputed_data": imputed_data,
-            "reconstruction_loss": reconstruction_loss,
-            "imputation_loss": imputation_loss,
-            "loss": loss,
+            "ORT_loss": ORT_loss,
+            "MIT_loss": MIT_loss,
+            "loss": loss,  # will be used for backward propagating to update the model
         }
+        return results
 
 
 class SAITS(BaseNNImputer):

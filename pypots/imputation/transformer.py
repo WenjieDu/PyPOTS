@@ -257,21 +257,22 @@ class _TransformerEncoder(nn.Module):
     def forward(self, inputs: dict) -> dict:
         X, masks = inputs["X"], inputs["missing_mask"]
         imputed_data, learned_presentation = self.impute(inputs)
-        reconstruction_loss = cal_mae(learned_presentation, X, masks)
+        ORT_loss = cal_mae(learned_presentation, X, masks)
 
-        # have to cal imputation loss in the val stage; no need to cal imputation loss here in the tests stage
-        imputation_loss = cal_mae(
+        MIT_loss = cal_mae(
             learned_presentation, inputs["X_intact"], inputs["indicating_mask"]
         )
 
-        loss = self.ORT_weight * reconstruction_loss + self.MIT_weight * imputation_loss
+        # `loss` is always the item for backward propagating to update the model
+        loss = self.ORT_weight * ORT_loss + self.MIT_weight * MIT_loss
 
-        return {
+        results = {
             "imputed_data": imputed_data,
-            "reconstruction_loss": reconstruction_loss,
-            "imputation_loss": imputation_loss,
+            "ORT_loss": ORT_loss,
+            "MIT_loss": MIT_loss,
             "loss": loss,
         }
+        return results
 
 
 class Transformer(BaseNNImputer):
