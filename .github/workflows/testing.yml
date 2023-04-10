@@ -6,10 +6,10 @@ on:
             - main
             - dev
             - temp_test_branch  # if in need, create such a temporary branch to test some functions
-    pull_request:
-        branches:
-            - main
-            - dev
+#    pull_request:
+#        branches:
+#            - main
+#            - dev
 
 jobs:
     test:
