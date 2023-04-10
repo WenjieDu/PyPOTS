@@ -10,7 +10,7 @@ import unittest
 import pytest
 
 from pypots.classification import BRITS, GRUD, Raindrop
-from pypots.tests.test_data import DATA
+from pypots.tests.global_test_config import DATA, RESULT_SAVING_DIR
 from pypots.utils.logging import logger
 from pypots.utils.metrics import cal_binary_classification_metrics
 
