@@ -12,21 +12,16 @@ import h5py
 import pytest
 
 from pypots.classification import BRITS, GRUD
-from pypots.data.generating import gene_incomplete_random_walk_dataset
 from pypots.imputation import SAITS
+from pypots.tests.global_test_config import DATA, DATA_SAVING_DIR
 from pypots.utils.logging import logger
 
 
-# Generate the unified data for testing and cache it first, DATA here is a singleton
-# Otherwise, file lock will cause bug if running test parallely with pytest-xdist.
-DATA = gene_incomplete_random_walk_dataset()
-
-DATA_FOR_TESTS = "h5data_for_tests"
-TRAIN_SET = "h5data_for_tests/train_set.h5"
-VAL_SET = "h5data_for_tests/val_set.h5"
-IMPUTATION_TRAIN_SET = "h5data_for_tests/imputation_train_set.h5"
-IMPUTATION_VAL_SET = "h5data_for_tests/imputation_val_set.h5"
-TEST_SET = "h5data_for_tests/test_set.h5"
+TRAIN_SET = f"{DATA_SAVING_DIR}/train_set.h5"
+VAL_SET = f"{DATA_SAVING_DIR}/val_set.h5"
+TEST_SET = f"{DATA_SAVING_DIR}/test_set.h5"
+IMPUTATION_TRAIN_SET = f"{DATA_SAVING_DIR}/imputation_train_set.h5"
+IMPUTATION_VAL_SET = f"{DATA_SAVING_DIR}/imputation_val_set.h5"
 
 EPOCHS = 1
 
@@ -76,7 +71,7 @@ class TestLazyLoadingClasses(unittest.TestCase):
     @pytest.mark.xdist_group(name="data-lazy-loading")
     def test_0_save_datasets_into_files(self):
         # create the dir for saving files
-        os.makedirs(DATA_FOR_TESTS, exist_ok=True)
+        os.makedirs(DATA_SAVING_DIR, exist_ok=True)
 
         if not os.path.exists(TRAIN_SET):
             save_data_set_into_h5(

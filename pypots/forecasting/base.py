@@ -181,10 +181,12 @@ class BaseNNForecaster(BaseNNModel, BaseForecaster):
         self.best_model_dict = None
 
         try:
+            training_step = 0
             for epoch in range(self.epochs):
                 self.model.train()
                 epoch_train_loss_collector = []
                 for idx, data in enumerate(training_loader):
+                    training_step += 1
                     inputs = self._assemble_input_for_training(data)
                     self.optimizer.zero_grad()
                     results = self.model.forward(inputs)
@@ -192,10 +194,12 @@ class BaseNNForecaster(BaseNNModel, BaseForecaster):
                     self.optimizer.step()
                     epoch_train_loss_collector.append(results["loss"].item())
 
-                mean_train_loss = np.mean(
-                    epoch_train_loss_collector
-                )  # mean training loss of the current epoch
-                self.logger["training_loss"].append(mean_train_loss)
+                    # save training loss logs into the tensorboard file for every step if in need
+                    if self.summary_writer is not None:
+                        self.save_log_into_tb_file(training_step, "training", results)
+
+                # mean training loss of the current epoch
+                mean_train_loss = np.mean(epoch_train_loss_collector)
 
                 if val_loader is not None:
                     self.model.eval()
@@ -207,9 +211,18 @@ class BaseNNForecaster(BaseNNModel, BaseForecaster):
                             epoch_val_loss_collector.append(results["loss"].item())
 
                     mean_val_loss = np.mean(epoch_val_loss_collector)
-                    self.logger["validating_loss"].append(mean_val_loss)
+
+                    # save validating loss logs into the tensorboard file for every epoch if in need
+                    if self.summary_writer is not None:
+                        val_loss_dict = {
+                            "imputation_loss": mean_val_loss,
+                        }
+                        self.save_log_into_tb_file(epoch, "validating", val_loss_dict)
+
                     logger.info(
-                        f"epoch {epoch}: training loss {mean_train_loss:.4f}, validating loss {mean_val_loss:.4f}"
+                        f"epoch {epoch}: "
+                        f"training loss {mean_train_loss:.4f}, "
+                        f"validating loss {mean_val_loss:.4f}"
                     )
                     mean_loss = mean_val_loss
                 else:

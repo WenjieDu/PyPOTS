@@ -156,10 +156,10 @@ class ObservationPropagation(MessagePassing):
         self.lin_query.reset_parameters()
         self.lin_value.reset_parameters()
         if self.edge_dim:
-            self.lin_edge.reset_parameters()
+            self.lin_edge._reset_parameters()
         self.lin_skip.reset_parameters()
         if self.beta:
-            self.lin_beta.reset_parameters()
+            self.lin_beta._reset_parameters()
         glorot(self.weight)
         if self.bias is not None:
             fan_in, _ = init._calculate_fan_in_and_fan_out(self.weight)
@@ -446,7 +446,7 @@ class _Raindrop(nn.Module):
             self.emb.weight.data.uniform_(-init_range, init_range)
         glorot(self.R_u)
 
-    def classify(self, inputs):
+    def classify(self, inputs: dict) -> torch.Tensor:
         """Forward processing of BRITS.
 
         Parameters
@@ -847,8 +847,8 @@ class Raindrop(BaseNNClassifier):
             shuffle=False,
             num_workers=self.num_workers,
         )
-        prediction_collector = []
 
+        prediction_collector = []
         with torch.no_grad():
             for idx, data in enumerate(test_loader):
                 inputs = self._assemble_input_for_testing(data)
