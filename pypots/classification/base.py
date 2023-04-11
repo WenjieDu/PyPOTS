@@ -203,10 +203,8 @@ class BaseNNClassifier(BaseNNModel, BaseClassifier):
                     if self.summary_writer is not None:
                         self.save_log_into_tb_file(training_step, "training", results)
 
-                mean_train_loss = np.mean(
-                    epoch_train_loss_collector
-                )  # mean training loss of the current epoch
-                self.logger["training_loss"].append(mean_train_loss)
+                # mean training loss of the current epoch
+                mean_train_loss = np.mean(epoch_train_loss_collector)
 
                 if val_loader is not None:
                     self.model.eval()
@@ -226,9 +224,10 @@ class BaseNNClassifier(BaseNNModel, BaseClassifier):
                         }
                         self.save_log_into_tb_file(epoch, "validating", val_loss_dict)
 
-                    self.logger["validating_loss"].append(mean_val_loss)
                     logger.info(
-                        f"epoch {epoch}: training loss {mean_train_loss:.4f}, validating loss {mean_val_loss:.4f}"
+                        f"epoch {epoch}: "
+                        f"training loss {mean_train_loss:.4f}, "
+                        f"validating loss {mean_val_loss:.4f}"
                     )
                     mean_loss = mean_val_loss
                 else:

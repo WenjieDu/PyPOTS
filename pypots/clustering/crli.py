@@ -380,7 +380,6 @@ class CRLI(BaseNNClusterer):
         )
         self.model = self.model.to(self.device)
         self._print_model_size()
-        self.logger = {"training_loss_generator": [], "training_loss_discriminator": []}
 
     def _assemble_input_for_training(self, data: list) -> dict:
         """Assemble the given data into a dictionary for training input.
