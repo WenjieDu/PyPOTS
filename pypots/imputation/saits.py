@@ -94,7 +94,7 @@ class _SAITS(nn.Module):
         # for delta decay factor
         self.weight_combine = nn.Linear(d_feature + d_time, d_feature)
 
-    def impute(self, inputs: dict) -> Tuple[torch.Tensor, list]:
+    def _process(self, inputs: dict) -> Tuple[torch.Tensor, list]:
         X, masks = inputs["X"], inputs["missing_mask"]
         # first DMSA block
         input_X_for_first = torch.cat([X, masks], dim=2)
@@ -138,30 +138,32 @@ class _SAITS(nn.Module):
 
         return X_c, [X_tilde_1, X_tilde_2, X_tilde_3]
 
+    def impute(self, inputs: dict) -> torch.Tensor:
+        imputed_data, _ = self._process(inputs)
+        return imputed_data
+
     def forward(self, inputs: dict) -> dict:
         X, masks = inputs["X"], inputs["missing_mask"]
-        reconstruction_loss = 0
-        imputed_data, [X_tilde_1, X_tilde_2, X_tilde_3] = self.impute(inputs)
+        ORT_loss = 0
+        imputed_data, [X_tilde_1, X_tilde_2, X_tilde_3] = self._process(inputs)
 
-        reconstruction_loss += cal_mae(X_tilde_1, X, masks)
-        reconstruction_loss += cal_mae(X_tilde_2, X, masks)
-        final_reconstruction_MAE = cal_mae(X_tilde_3, X, masks)
-        reconstruction_loss += final_reconstruction_MAE
-        reconstruction_loss /= 3
+        ORT_loss += cal_mae(X_tilde_1, X, masks)
+        ORT_loss += cal_mae(X_tilde_2, X, masks)
+        ORT_loss += cal_mae(X_tilde_3, X, masks)
+        ORT_loss /= 3
 
-        # have to cal imputation loss in the val stage; no need to cal imputation loss here in the tests stage
-        imputation_loss = cal_mae(
-            X_tilde_3, inputs["X_intact"], inputs["indicating_mask"]
-        )
+        MIT_loss = cal_mae(X_tilde_3, inputs["X_intact"], inputs["indicating_mask"])
 
-        loss = self.ORT_weight * reconstruction_loss + self.MIT_weight * imputation_loss
+        # `loss` is always the item for backward propagating to update the model
+        loss = self.ORT_weight * ORT_loss + self.MIT_weight * MIT_loss
 
-        return {
+        results = {
             "imputed_data": imputed_data,
-            "reconstruction_loss": reconstruction_loss,
-            "imputation_loss": imputation_loss,
-            "loss": loss,
+            "ORT_loss": ORT_loss,
+            "MIT_loss": MIT_loss,
+            "loss": loss,  # will be used for backward propagating to update the model
         }
+        return results
 
 
 class SAITS(BaseNNImputer):
@@ -400,7 +402,7 @@ class SAITS(BaseNNImputer):
         with torch.no_grad():
             for idx, data in enumerate(test_loader):
                 inputs = {"X": data[1], "missing_mask": data[2]}
-                imputed_data, _ = self.model.impute(inputs)
+                imputed_data = self.model.impute(inputs)
                 imputation_collector.append(imputed_data)
 
         imputation_collector = torch.cat(imputation_collector)

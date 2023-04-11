@@ -9,7 +9,7 @@ coveralls
 coverage
 pycorruptor
 tsdb
-torch
+# torch # torch already installed in advance, refer to workflow testing_daily.yml lines 27-29
+torch_geometric
 torch_sparse
 torch_scatter
-torch_geometric
