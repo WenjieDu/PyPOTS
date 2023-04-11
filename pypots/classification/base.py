@@ -21,9 +21,9 @@ class BaseClassifier(BaseModel):
     """Abstract class for all classification models."""
 
     def __init__(
-            self,
-            device: Optional[Union[str, torch.device]] = None,
-            tb_file_saving_path: str = None,
+        self,
+        device: Optional[Union[str, torch.device]] = None,
+        tb_file_saving_path: str = None,
     ):
         super().__init__(
             device,
@@ -32,10 +32,10 @@ class BaseClassifier(BaseModel):
 
     @abstractmethod
     def fit(
-            self,
-            train_set: Union[dict, str],
-            val_set: Optional[Union[dict, str]] = None,
-            file_type: str = "h5py",
+        self,
+        train_set: Union[dict, str],
+        val_set: Optional[Union[dict, str]] = None,
+        file_type: str = "h5py",
     ) -> None:
         """Train the classifier on the given data.
 
@@ -67,9 +67,9 @@ class BaseClassifier(BaseModel):
 
     @abstractmethod
     def classify(
-            self,
-            X: Union[dict, str],
-            file_type: str = "h5py",
+        self,
+        X: Union[dict, str],
+        file_type: str = "h5py",
     ) -> np.ndarray:
         """Classify the input data with the trained model.
 
@@ -92,16 +92,16 @@ class BaseClassifier(BaseModel):
 
 class BaseNNClassifier(BaseNNModel, BaseClassifier):
     def __init__(
-            self,
-            n_classes: int,
-            batch_size: int,
-            epochs: int,
-            patience: int,
-            learning_rate: float,
-            weight_decay: float,
-            num_workers: int = 0,
-            device: Optional[Union[str, torch.device]] = None,
-            tb_file_saving_path: str = None,
+        self,
+        n_classes: int,
+        batch_size: int,
+        epochs: int,
+        patience: int,
+        learning_rate: float,
+        weight_decay: float,
+        num_workers: int = 0,
+        device: Optional[Union[str, torch.device]] = None,
+        tb_file_saving_path: str = None,
     ):
         super().__init__(
             batch_size,
@@ -172,9 +172,9 @@ class BaseNNClassifier(BaseNNModel, BaseClassifier):
         pass
 
     def _train_model(
-            self,
-            training_loader: DataLoader,
-            val_loader: DataLoader = None,
+        self,
+        training_loader: DataLoader,
+        val_loader: DataLoader = None,
     ) -> None:
 
         self.optimizer = torch.optim.Adam(
@@ -186,10 +186,12 @@ class BaseNNClassifier(BaseNNModel, BaseClassifier):
         self.best_model_dict = None
 
         try:
+            training_step = 0
             for epoch in range(self.epochs):
                 self.model.train()
                 epoch_train_loss_collector = []
                 for idx, data in enumerate(training_loader):
+                    training_step += 1
                     inputs = self._assemble_input_for_training(data)
                     self.optimizer.zero_grad()
                     results = self.model.forward(inputs)
@@ -197,10 +199,12 @@ class BaseNNClassifier(BaseNNModel, BaseClassifier):
                     self.optimizer.step()
                     epoch_train_loss_collector.append(results["loss"].item())
 
-                mean_train_loss = np.mean(
-                    epoch_train_loss_collector
-                )  # mean training loss of the current epoch
-                self.logger["training_loss"].append(mean_train_loss)
+                    # save training loss logs into the tensorboard file for every step if in need
+                    if self.summary_writer is not None:
+                        self.save_log_into_tb_file(training_step, "training", results)
+
+                # mean training loss of the current epoch
+                mean_train_loss = np.mean(epoch_train_loss_collector)
 
                 if val_loader is not None:
                     self.model.eval()
@@ -212,9 +216,18 @@ class BaseNNClassifier(BaseNNModel, BaseClassifier):
                             epoch_val_loss_collector.append(results["loss"].item())
 
                     mean_val_loss = np.mean(epoch_val_loss_collector)
-                    self.logger["validating_loss"].append(mean_val_loss)
+
+                    # save validating loss logs into the tensorboard file for every epoch if in need
+                    if self.summary_writer is not None:
+                        val_loss_dict = {
+                            "classification_loss": mean_val_loss,
+                        }
+                        self.save_log_into_tb_file(epoch, "validating", val_loss_dict)
+
                     logger.info(
-                        f"epoch {epoch}: training loss {mean_train_loss:.4f}, validating loss {mean_val_loss:.4f}"
+                        f"epoch {epoch}: "
+                        f"training loss {mean_train_loss:.4f}, "
+                        f"validating loss {mean_val_loss:.4f}"
                     )
                     mean_loss = mean_val_loss
                 else:

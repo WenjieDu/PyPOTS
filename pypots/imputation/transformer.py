@@ -239,7 +239,7 @@ class _TransformerEncoder(nn.Module):
         self.dropout = nn.Dropout(p=dropout)
         self.reduce_dim = nn.Linear(d_model, d_feature)
 
-    def impute(self, inputs: dict) -> Tuple[torch.Tensor, torch.Tensor]:
+    def _process(self, inputs: dict) -> Tuple[torch.Tensor, torch.Tensor]:
         X, masks = inputs["X"], inputs["missing_mask"]
         input_X = torch.cat([X, masks], dim=2)
         input_X = self.embedding(input_X)
@@ -254,24 +254,29 @@ class _TransformerEncoder(nn.Module):
         )  # replace non-missing part with original data
         return imputed_data, learned_presentation
 
+    def impute(self, inputs: dict) -> torch.Tensor:
+        imputed_data, _ = self._process(inputs)
+        return imputed_data
+
     def forward(self, inputs: dict) -> dict:
         X, masks = inputs["X"], inputs["missing_mask"]
-        imputed_data, learned_presentation = self.impute(inputs)
-        reconstruction_loss = cal_mae(learned_presentation, X, masks)
+        imputed_data, learned_presentation = self._process(inputs)
+        ORT_loss = cal_mae(learned_presentation, X, masks)
 
-        # have to cal imputation loss in the val stage; no need to cal imputation loss here in the tests stage
-        imputation_loss = cal_mae(
+        MIT_loss = cal_mae(
             learned_presentation, inputs["X_intact"], inputs["indicating_mask"]
         )
 
-        loss = self.ORT_weight * reconstruction_loss + self.MIT_weight * imputation_loss
+        # `loss` is always the item for backward propagating to update the model
+        loss = self.ORT_weight * ORT_loss + self.MIT_weight * MIT_loss
 
-        return {
+        results = {
             "imputed_data": imputed_data,
-            "reconstruction_loss": reconstruction_loss,
-            "imputation_loss": imputation_loss,
+            "ORT_loss": ORT_loss,
+            "MIT_loss": MIT_loss,
             "loss": loss,
         }
+        return results
 
 
 class Transformer(BaseNNImputer):
@@ -505,7 +510,7 @@ class Transformer(BaseNNImputer):
         with torch.no_grad():
             for idx, data in enumerate(test_loader):
                 inputs = {"X": data[1], "missing_mask": data[2]}
-                imputed_data, _ = self.model.impute(inputs)
+                imputed_data = self.model.impute(inputs)
                 imputation_collector.append(imputed_data)
 
         imputation_collector = torch.cat(imputation_collector)
