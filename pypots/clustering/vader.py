@@ -569,7 +569,9 @@ class VaDER(BaseNNClusterer):
                         self.save_log_into_tb_file(epoch, "validating", val_loss_dict)
 
                     logger.info(
-                        f"epoch {epoch}: training loss {mean_train_loss:.4f}, validating loss {mean_val_loss:.4f}"
+                        f"epoch {epoch}: "
+                        f"training loss {mean_train_loss:.4f}, "
+                        f"validating loss {mean_val_loss:.4f}"
                     )
                     mean_loss = mean_val_loss
                 else:

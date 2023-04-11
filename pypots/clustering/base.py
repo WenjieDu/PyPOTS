@@ -204,10 +204,8 @@ class BaseNNClusterer(BaseNNModel, BaseClusterer):
                     self.optimizer.step()
                     epoch_train_loss_collector.append(results["loss"].item())
 
-                mean_train_loss = np.mean(
-                    epoch_train_loss_collector
-                )  # mean training loss of the current epoch
-                self.logger["training_loss"].append(mean_train_loss)
+                # mean training loss of the current epoch
+                mean_train_loss = np.mean(epoch_train_loss_collector)
 
                 if val_loader is not None:
                     self.model.eval()
@@ -219,9 +217,10 @@ class BaseNNClusterer(BaseNNModel, BaseClusterer):
                             epoch_val_loss_collector.append(results["loss"].item())
 
                     mean_val_loss = np.mean(epoch_val_loss_collector)
-                    self.logger["validating_loss"].append(mean_val_loss)
                     logger.info(
-                        f"epoch {epoch}: training loss {mean_train_loss:.4f}, validating loss {mean_val_loss:.4f}"
+                        f"epoch {epoch}: "
+                        f"training loss {mean_train_loss:.4f}, "
+                        f"validating loss {mean_val_loss:.4f}"
                     )
                     mean_loss = mean_val_loss
                 else:

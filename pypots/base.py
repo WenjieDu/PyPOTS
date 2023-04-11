@@ -225,7 +225,6 @@ class BaseNNModel(BaseModel):
         self.optimizer = None
         self.best_model_dict = None
         self.best_loss = float("inf")
-        self.logger = {"training_loss": [], "validating_loss": []}
 
     def _print_model_size(self) -> None:
         """Print the number of trainable parameters in the initialized NN model."""
