@@ -63,7 +63,7 @@ class BaseModel(ABC):
 
             # get the current time to append to the dir name,
             # so you can use the same tb_file_saving_path for multiple running
-            time_now = datetime.now().__format__("%Y-%m-%d_T%H:%M:%S")
+            time_now = datetime.now().__format__("%Y%m%d_T%H%M%S")
             # the actual directory name to save the tensorboard file
             actual_tb_saving_dir_name = "tensorboard_" + time_now
             actual_tb_file_saving_path = os.path.join(
