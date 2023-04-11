@@ -308,7 +308,7 @@ class _CRLI(nn.Module):
             l_D = F.binary_cross_entropy_with_logits(
                 inputs["discrimination"], missing_mask
             )
-            losses["l_disc"] = l_D
+            losses["discrimination_loss"] = l_D
         else:
             inputs["discrimination"] = inputs["discrimination"].detach()
             l_G = F.binary_cross_entropy_with_logits(
@@ -323,7 +323,7 @@ class _CRLI(nn.Module):
             FTHTHF = torch.matmul(torch.matmul(term_F.permute(1, 0), HTH), term_F)
             l_kmeans = torch.trace(HTH) - torch.trace(FTHTHF)  # k-means loss
             loss_gene = l_G + l_pre + l_rec + l_kmeans * self.lambda_kmeans
-            losses["l_gene"] = loss_gene
+            losses["generation_loss"] = loss_gene
         return losses
 
 
@@ -469,45 +469,64 @@ class CRLI(BaseNNClusterer):
         self.best_model_dict = None
 
         try:
+            training_step = 0
+            epoch_train_loss_G_collector = []
+            epoch_train_loss_D_collector = []
             for epoch in range(self.epochs):
                 self.model.train()
-                epoch_train_loss_G_collector = []
-                epoch_train_loss_D_collector = []
                 for idx, data in enumerate(training_loader):
+                    training_step += 1
                     inputs = self._assemble_input_for_training(data)
 
+                    step_train_loss_G_collector = []
+                    step_train_loss_D_collector = []
                     for _ in range(self.D_steps):
                         self.D_optimizer.zero_grad()
                         results = self.model.forward(
                             inputs, training_object="discriminator"
                         )
-                        results["l_disc"].backward(retain_graph=True)
+                        results["discrimination_loss"].backward(retain_graph=True)
                         self.D_optimizer.step()
-                        epoch_train_loss_D_collector.append(results["l_disc"].item())
+                        step_train_loss_D_collector.append(
+                            results["discrimination_loss"].item()
+                        )
 
                     for _ in range(self.G_steps):
                         self.G_optimizer.zero_grad()
                         results = self.model.forward(
                             inputs, training_object="generator"
                         )
-                        results["l_gene"].backward()
+                        results["generation_loss"].backward()
                         self.G_optimizer.step()
-                        epoch_train_loss_G_collector.append(results["l_gene"].item())
+                        step_train_loss_G_collector.append(
+                            results["generation_loss"].item()
+                        )
 
-                mean_train_G_loss = np.mean(
-                    epoch_train_loss_G_collector
-                )  # mean training loss of the current epoch
-                mean_train_D_loss = np.mean(
-                    epoch_train_loss_D_collector
-                )  # mean training loss of the current epoch
-                self.logger["training_loss_generator"].append(mean_train_G_loss)
-                self.logger["training_loss_discriminator"].append(mean_train_D_loss)
+                    mean_step_train_D_loss = np.mean(step_train_loss_D_collector)
+                    mean_step_train_G_loss = np.mean(step_train_loss_G_collector)
+
+                    epoch_train_loss_D_collector.append(mean_step_train_D_loss)
+                    epoch_train_loss_G_collector.append(mean_step_train_G_loss)
+
+                    # save training loss logs into the tensorboard file for every step if in need
+                    # Note: the `training_step` is not the actual number of steps that Discriminator and Generator get
+                    # trained, the actual number should be D_steps*training_step and G_steps*training_step accordingly
+                    if self.summary_writer is not None:
+                        loss_results = {
+                            "generation_loss": mean_step_train_G_loss,
+                            "discrimination_loss": mean_step_train_D_loss,
+                        }
+                        self.save_log_into_tb_file(
+                            training_step, "training", loss_results
+                        )
+                mean_epoch_train_D_loss = np.mean(epoch_train_loss_D_collector)
+                mean_epoch_train_G_loss = np.mean(epoch_train_loss_G_collector)
                 logger.info(
                     f"epoch {epoch}: "
-                    f"training loss_generator {mean_train_G_loss:.4f}, "
-                    f"train loss_discriminator {mean_train_D_loss:.4f}"
+                    f"training loss_generator {mean_epoch_train_G_loss:.4f}, "
+                    f"train loss_discriminator {mean_epoch_train_D_loss:.4f}"
                 )
-                mean_loss = mean_train_G_loss
+                mean_loss = mean_epoch_train_G_loss
 
                 if mean_loss < self.best_loss:
                     self.best_loss = mean_loss

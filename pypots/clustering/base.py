@@ -169,6 +169,21 @@ class BaseNNClusterer(BaseNNModel, BaseClusterer):
         val_loader: DataLoader = None,
     ) -> None:
 
+        """
+
+        Parameters
+        ----------
+        training_loader
+        val_loader
+
+        Notes
+        -----
+        The training procedures of NN clustering models are very different from each other. For example, VaDER needs
+        pretraining while CRLI doesn't, VaDER only needs one optimizer while CRLI needs two for its generator and
+        discriminator separately. So far, I'd suggest to implement function _train_model() for each model individually.
+
+        """
+
         self.optimizer = torch.optim.Adam(
             self.model.parameters(), lr=self.lr, weight_decay=self.weight_decay
         )

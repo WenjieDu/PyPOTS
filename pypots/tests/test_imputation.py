@@ -205,7 +205,7 @@ class TestBRITS(unittest.TestCase):
         DATA["n_features"],
         256,
         epochs=EPOCH,
-        tb_file_saving_path=f"{RESULT_SAVING_DIR_FOR_IMPUTATION}/Transformer",
+        tb_file_saving_path=f"{RESULT_SAVING_DIR_FOR_IMPUTATION}/BRITS",
     )
 
     @pytest.mark.xdist_group(name="imputation-brits")

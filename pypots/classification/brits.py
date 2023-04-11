@@ -60,32 +60,14 @@ class _BRITS(imputation_BRITS, nn.Module):
         self.classification_weight = classification_weight
         self.reconstruction_weight = reconstruction_weight
 
-    def merge_ret(self, ret_f: dict, ret_b: dict) -> dict:
-        """Merge (average) results from two RITS models into one.
+    def impute(self, inputs: dict) -> torch.Tensor:
+        return super().impute(inputs)
 
-        Parameters
-        ----------
-        ret_f : dict,
-            Results from the forward RITS.
-        ret_b : dict,
-            Results from the backward RITS.
-
-        Returns
-        -------
-        dict,
-            Merged results in a dictionary.
-        """
-        results = {
-            "imputed_data": (ret_f["imputed_data"] + ret_b["imputed_data"]) / 2,
-            "prediction": (ret_f["prediction"] + ret_b["prediction"]) / 2,
-        }
-        return results
-
-    def classify(self, inputs: dict) -> Tuple[dict, dict, dict]:
+    def classify(self, inputs: dict) -> torch.Tensor:
         ret_f = self.rits_f(inputs, "forward")
-        ret_b = self.reverse(self.rits_b(inputs, "backward"))
-        merged_ret = self.merge_ret(ret_f, ret_b)
-        return merged_ret, ret_f, ret_b
+        ret_b = self._reverse(self.rits_b(inputs, "backward"))
+        classification_pred = (ret_f["prediction"] + ret_b["prediction"]) / 2
+        return classification_pred
 
     def forward(self, inputs: dict) -> dict:
         """Forward processing of BRITS.
@@ -99,29 +81,38 @@ class _BRITS(imputation_BRITS, nn.Module):
         -------
         dict, A dictionary includes all results.
         """
-        merged_ret, ret_f, ret_b = self.classify(inputs)
+        ret_f = self.rits_f(inputs, "forward")
+        ret_b = self._reverse(self.rits_b(inputs, "backward"))
+
         ret_f["classification_loss"] = F.nll_loss(
             torch.log(ret_f["prediction"]), inputs["label"]
         )
         ret_b["classification_loss"] = F.nll_loss(
             torch.log(ret_b["prediction"]), inputs["label"]
         )
-        consistency_loss = self.get_consistency_loss(
+        consistency_loss = self._get_consistency_loss(
             ret_f["imputed_data"], ret_b["imputed_data"]
         )
         classification_loss = (
             ret_f["classification_loss"] + ret_b["classification_loss"]
         ) / 2
-        merged_ret["consistency_loss"] = consistency_loss
-        merged_ret["classification_loss"] = classification_loss
-        merged_ret["loss"] = (
+        reconstruction_loss = (
+            ret_f["reconstruction_loss"] + ret_b["reconstruction_loss"]
+        ) / 2
+
+        loss = (
             consistency_loss
-            + (ret_f["reconstruction_loss"] + ret_b["reconstruction_loss"])
-            * self.reconstruction_weight
-            + (ret_f["classification_loss"] + ret_b["classification_loss"])
-            * self.classification_weight
+            + reconstruction_loss * self.reconstruction_weight
+            + classification_loss * self.classification_weight
         )
-        return merged_ret
+
+        results = {
+            "consistency_loss": consistency_loss,
+            "classification_loss": classification_loss,
+            "reconstruction_loss": reconstruction_loss,
+            "loss": loss,
+        }
+        return results
 
 
 class BRITS(BaseNNClassifier):
@@ -395,8 +386,8 @@ class BRITS(BaseNNClassifier):
         with torch.no_grad():
             for idx, data in enumerate(test_loader):
                 inputs = self._assemble_input_for_testing(data)
-                results, _, _ = self.model.classify(inputs)
-                prediction_collector.append(results["prediction"])
+                classification_pred = self.model.classify(inputs)
+                prediction_collector.append(classification_pred)
 
         predictions = torch.cat(prediction_collector)
         return predictions.cpu().detach().numpy()
