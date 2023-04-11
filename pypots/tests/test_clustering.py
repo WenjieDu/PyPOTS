@@ -23,14 +23,14 @@ TRAIN_SET = {"X": DATA["train_X"]}
 VAL_SET = {"X": DATA["val_X"]}
 TEST_SET = {"X": DATA["test_X"]}
 
-RESULT_SAVING_DIR_FOR_CLUSTERING = f"{RESULT_SAVING_DIR}/clustering"
+RESULT_SAVING_DIR_FOR_CLUSTERING = os.path.join(RESULT_SAVING_DIR, "clustering")
 
 
 class TestCRLI(unittest.TestCase):
     logger.info("Running tests for a clustering model CRLI...")
 
     # set the log and model saving path
-    saving_path = f"{RESULT_SAVING_DIR_FOR_CLUSTERING}/CRLI"
+    saving_path = os.path.join(RESULT_SAVING_DIR_FOR_CLUSTERING, "CRLI")
     model_save_name = "saved_CRLI_model.pypots"
 
     # initialize a CRLI model
@@ -100,7 +100,7 @@ class TestVaDER(unittest.TestCase):
     logger.info("Running tests for a clustering model Transformer...")
 
     # set the log and model saving path
-    saving_path = f"{RESULT_SAVING_DIR_FOR_CLUSTERING}/VaDER"
+    saving_path = os.path.join(RESULT_SAVING_DIR_FOR_CLUSTERING, "VaDER")
     model_save_name = "saved_VaDER_model.pypots"
 
     # initialize a VaDER model

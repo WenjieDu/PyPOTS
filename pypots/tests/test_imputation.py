@@ -32,14 +32,14 @@ VAL_SET = {
 }
 TEST_SET = {"X": DATA["test_X"]}
 
-RESULT_SAVING_DIR_FOR_IMPUTATION = f"{RESULT_SAVING_DIR}/imputation"
+RESULT_SAVING_DIR_FOR_IMPUTATION = os.path.join(RESULT_SAVING_DIR, "imputation")
 
 
 class TestSAITS(unittest.TestCase):
     logger.info("Running tests for an imputation model SAITS...")
 
     # set the log and model saving path
-    saving_path = f"{RESULT_SAVING_DIR_FOR_IMPUTATION}/SAITS"
+    saving_path = os.path.join(RESULT_SAVING_DIR_FOR_IMPUTATION, "SAITS")
     model_save_name = "saved_saits_model.pypots"
 
     # initialize a SAITS model
@@ -116,7 +116,7 @@ class TestTransformer(unittest.TestCase):
     logger.info("Running tests for an imputation model Transformer...")
 
     # set the log and model saving path
-    saving_path = f"{RESULT_SAVING_DIR_FOR_IMPUTATION}/Transformer"
+    saving_path = os.path.join(RESULT_SAVING_DIR_FOR_IMPUTATION, "Transformer")
     model_save_name = "saved_transformer_model.pypots"
 
     # initialize a Transformer model
@@ -196,7 +196,7 @@ class TestBRITS(unittest.TestCase):
     logger.info("Running tests for an imputation model BRITS...")
 
     # set the log and model saving path
-    saving_path = f"{RESULT_SAVING_DIR_FOR_IMPUTATION}/BRITS"
+    saving_path = os.path.join(RESULT_SAVING_DIR_FOR_IMPUTATION, "BRITS")
     model_save_name = "saved_BRITS_model.pypots"
 
     # initialize a BRITS model
