@@ -1,15 +1,15 @@
 """
 Test cases of logging.
 """
+
+# Created by Wenjie Du <wenjay.du@gmail.com>
+# License: GPL-v3
+
 import os
 import shutil
 import unittest
 
 from pypots.utils.logging import Logger
-
-
-# Created by Wenjie Du <wenjay.du@gmail.com>
-# License: GPL-v3
 
 
 class TestLogging(unittest.TestCase):
