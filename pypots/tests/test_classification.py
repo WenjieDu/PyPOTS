@@ -21,14 +21,14 @@ TRAIN_SET = {"X": DATA["train_X"], "y": DATA["train_y"]}
 VAL_SET = {"X": DATA["val_X"], "y": DATA["val_y"]}
 TEST_SET = {"X": DATA["test_X"]}
 
-RESULT_SAVING_DIR_FOR_CLASSIFICATION = f"{RESULT_SAVING_DIR}/classification"
+RESULT_SAVING_DIR_FOR_CLASSIFICATION = os.path.join(RESULT_SAVING_DIR, "classification")
 
 
 class TestBRITS(unittest.TestCase):
     logger.info("Running tests for a classification model BRITS...")
 
     # set the log and model saving path
-    saving_path = f"{RESULT_SAVING_DIR_FOR_CLASSIFICATION}/BRITS"
+    saving_path = os.path.join(RESULT_SAVING_DIR_FOR_CLASSIFICATION, "BRITS")
     model_save_name = "saved_BRITS_model.pypots"
 
     # initialize a BRITS model
@@ -102,7 +102,7 @@ class TestGRUD(unittest.TestCase):
     logger.info("Running tests for a classification model GRUD...")
 
     # set the log and model saving path
-    saving_path = f"{RESULT_SAVING_DIR_FOR_CLASSIFICATION}/GRUD"
+    saving_path = os.path.join(RESULT_SAVING_DIR_FOR_CLASSIFICATION, "GRUD")
     model_save_name = "saved_GRUD_model.pypots"
 
     # initialize a GRUD model
@@ -176,7 +176,7 @@ class TestRaindrop(unittest.TestCase):
     logger.info("Running tests for a classification model Raindrop...")
 
     # set the log and model saving path
-    saving_path = f"{RESULT_SAVING_DIR_FOR_CLASSIFICATION}/Raindrop"
+    saving_path = os.path.join(RESULT_SAVING_DIR_FOR_CLASSIFICATION, "Raindrop")
     model_save_name = "saved_Raindrop_model.pypots"
 
     # initialize a Raindrop model
