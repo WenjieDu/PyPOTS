@@ -44,5 +44,22 @@ setup(
         "tsdb",
         "h5py",
     ],
+    python_requires=">=3.7.0",
     setup_requires=["setuptools>=38.6.0"],
+    entry_points={
+        "console_scripts": ["pypots-cli=pypots.utils.commands.pypots_cli:main"]
+    },
+    classifiers=[
+        "Intended Audience :: Developers",
+        "Intended Audience :: Education",
+        "Intended Audience :: Science/Research",
+        "License :: OSI Approved :: Apache Software License",
+        "Operating System :: OS Independent",
+        "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
+        "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    ],
 )
