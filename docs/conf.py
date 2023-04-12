@@ -10,13 +10,8 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 
-import sys
-from os.path import abspath
-
-sys.path.insert(0, abspath(".."))
 from pypots.__version__ import version
 
-sys.path.insert(0, abspath("../pypots"))
 # -- Project information -----------------------------------------------------
 project = "PyPOTS"
 copyright = "2023, Wenjie Du"
