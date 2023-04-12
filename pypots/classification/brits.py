@@ -5,7 +5,7 @@ PyTorch BRITS model for both the time-series imputation task and the classificat
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: GPL-v3
 
-from typing import Tuple, Optional, Union
+from typing import Optional, Union
 
 import torch
 import torch.nn as nn
