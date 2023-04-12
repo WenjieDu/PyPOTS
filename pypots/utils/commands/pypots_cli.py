@@ -20,14 +20,14 @@ def main():
     # Register commands here
     DevCommand.register_subcommand(commands_parser)
 
-    # Let's go
+    # parse all arguments
     args = parser.parse_args()
 
     if not hasattr(args, "func"):
         parser.print_help()
         exit(1)
 
-    # Run
+    # then run
     service = args.func(args)
     service.run()
 
