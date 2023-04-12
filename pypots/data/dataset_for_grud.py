@@ -1,43 +1,52 @@
 """
-Dataset class for model GRUD.
+Dataset class for model GRU-D.
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: GLP-v3
 
 
+from typing import Union, Iterable
+
 import torch
 
 from pypots.data.base import BaseDataset
-from pypots.data.dataset_for_brits import parse_delta
+from pypots.data.utils import torch_parse_delta
 from pypots.imputation.locf import LOCF
 
 
 class DatasetForGRUD(BaseDataset):
-    """Dataset class for model GRUD.
+    """Dataset class for model GRU-D.
 
     Parameters
     ----------
-    X : tensor, shape of [n_samples, seq_len, n_features]
-        Time-series feature vector.
+    data : dict or str,
+        The dataset for model input, should be a dictionary including keys as 'X' and 'y',
+        or a path string locating a data file.
+        If it is a dict, X should be array-like of shape [n_samples, sequence length (time steps), n_features],
+        which is time-series data for input, can contain missing values, and y should be array-like of shape
+        [n_samples], which is classification labels of X.
+        If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
+        key-value pairs like a dict, and it has to include keys as 'X' and 'y'.
 
-    y : tensor, shape of [n_samples], optional, default=None,
-        Classification labels of according time-series samples.
+    file_type : str, default = "h5py"
+        The type of the given file if train_set and val_set are path strings.
     """
 
-    def __init__(self, X, y=None):
-        super().__init__(X, y)
-
+    def __init__(self, data: Union[dict, str], file_type: str = "h5py"):
+        super().__init__(data, file_type)
         self.locf = LOCF()
-        self.missing_mask = (~torch.isnan(X)).to(torch.float32)
-        self.X = torch.nan_to_num(X)
-        self.deltas = parse_delta(self.missing_mask)
-        self.X_filledLOCF = self.locf.locf_torch(X)
-        self.empirical_mean = torch.sum(
-            self.missing_mask * self.X, dim=[0, 1]
-        ) / torch.sum(self.missing_mask, dim=[0, 1])
 
-    def __getitem__(self, idx):
+        if not isinstance(self.data, str):  # data from array
+            self.missing_mask = (~torch.isnan(self.X)).to(torch.float32)
+            self.X_filledLOCF = self.locf.locf_torch(self.X)
+            self.X = torch.nan_to_num(self.X)
+            self.deltas = torch_parse_delta(self.missing_mask)
+            self.empirical_mean = torch.sum(
+                self.missing_mask * self.X, dim=[0, 1]
+            ) / torch.sum(self.missing_mask, dim=[0, 1])
+
+    def _fetch_data_from_array(self, idx: int) -> Iterable:
         """Fetch data according to index.
 
         Parameters
@@ -47,8 +56,8 @@ class DatasetForGRUD(BaseDataset):
 
         Returns
         -------
-        dict,
-            A dict contains
+        sample : list,
+            A list contains
 
             index : int tensor,
                 The index of the sample.
@@ -79,5 +88,47 @@ class DatasetForGRUD(BaseDataset):
 
         if self.y is not None:
             sample.append(self.y[idx].to(torch.long))
+
+        return sample
+
+    def _fetch_data_from_file(self, idx: int) -> Iterable:
+        """Fetch data with the lazy-loading strategy, i.e. only loading data from the file while requesting for samples.
+        Here the opened file handle doesn't load the entire dataset into RAM but only load the currently accessed slice.
+
+        Parameters
+        ----------
+        idx : int,
+            The index of the sample to be return.
+
+        Returns
+        -------
+        sample : list,
+            The collated data sample, a list including all necessary sample info.
+        """
+
+        if self.file_handle is None:
+            self.file_handle = self._open_file_handle()
+
+        X = torch.from_numpy(self.file_handle["X"][idx])
+        missing_mask = (~torch.isnan(X)).to(torch.float32)
+        X_filledLOCF = self.locf.locf_torch(X.unsqueeze(dim=0)).squeeze()
+        X = torch.nan_to_num(X)
+        deltas = torch_parse_delta(missing_mask)
+        empirical_mean = torch.sum(missing_mask * X, dim=[0]) / torch.sum(
+            missing_mask, dim=[0]
+        )
+
+        sample = [
+            torch.tensor(idx),
+            X,
+            X_filledLOCF,
+            missing_mask,
+            deltas,
+            empirical_mean,
+        ]
+
+        # if the dataset has labels, then fetch it from the file
+        if "y" in self.file_handle.keys():
+            sample.append(torch.tensor(self.file_handle["y"][idx], dtype=torch.long))
 
         return sample

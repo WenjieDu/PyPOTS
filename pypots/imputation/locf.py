@@ -6,6 +6,7 @@ Implementation of the imputation method LOCF (Last Observed Carried Forward).
 # License: GLP-v3
 
 import warnings
+from typing import Union, Optional
 
 import numpy as np
 import torch
@@ -22,17 +23,46 @@ class LOCF(BaseImputer):
         Value used to impute data missing at the beginning of the sequence.
     """
 
-    def __init__(self, nan=0):
+    def __init__(self, nan: Optional[Union[float, int]] = 0):
         super().__init__("cpu")
         self.nan = nan
 
-    def fit(self, train_X, val_X=None):
+    def fit(
+        self,
+        train_set: Union[dict, str],
+        val_set: Optional[Union[dict, str]] = None,
+        file_type: str = "h5py",
+    ) -> None:
+        """Train the imputer on the given data.
+
+        Parameters
+        ----------
+        train_set : dict or str,
+            The dataset for model training, should be a dictionary including the key 'X',
+            or a path string locating a data file.
+            If it is a dict, X should be array-like of shape [n_samples, sequence length (time steps), n_features],
+            which is time-series data for training, can contain missing values.
+            If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
+            key-value pairs like a dict, and it has to include the key 'X'.
+
+        val_set : dict or str,
+            The dataset for model validating, should be a dictionary including the key 'X',
+            or a path string locating a data file.
+            If it is a dict, X should be array-like of shape [n_samples, sequence length (time steps), n_features],
+            which is time-series data for validating, can contain missing values.
+            If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
+            key-value pairs like a dict, and it has to include the key 'X'.
+
+        file_type : str, default = "h5py",
+            The type of the given file if train_set and val_set are path strings.
+
+        """
         warnings.warn(
             "LOCF (Last Observed Carried Forward) imputation class has no parameter to train. "
             "Please run func impute(X) directly."
         )
 
-    def locf_numpy(self, X):
+    def locf_numpy(self, X: np.ndarray) -> np.ndarray:
         """Numpy implementation of LOCF.
 
         Parameters
@@ -70,7 +100,7 @@ class LOCF(BaseImputer):
 
         return X_imputed
 
-    def locf_torch(self, X):
+    def locf_torch(self, X: torch.Tensor) -> torch.Tensor:
         """Torch implementation of LOCF.
 
         Parameters
@@ -103,19 +133,36 @@ class LOCF(BaseImputer):
 
         return X_imputed
 
-    def impute(self, X):
-        """Impute missing values
+    def impute(
+        self,
+        X: Union[dict, str],
+        file_type: str = "h5py",
+        num_workers: int = 0,
+    ) -> np.ndarray:
+        """Impute missing values in the given data with the trained model.
 
         Parameters
         ----------
-        X : array-like,
-            Time-series vectors containing missing values (NaN).
+        X : array-like or str,
+            The data samples for testing, should be array-like of shape [n_samples, sequence length (time steps),
+            n_features], or a path string locating a data file, e.g. h5 file.
+
+        file_type : str, default = "h5py",
+            The type of the given file if X is a path string.
+
+        num_workers : int, default = 0,
+            The number of subprocesses to use for data loading.
+            `0` means data loading will be in the main process, i.e. there won't be subprocesses.
 
         Returns
         -------
-        array-like,
-            Imputed time series.
+        array-like, shape [n_samples, sequence length (time steps), n_features],
+            Imputed data.
         """
+
+        assert not isinstance(X, str)
+        X = X["X"]
+
         assert len(X.shape) == 3, (
             f"Input X should have 3 dimensions [n_samples, n_steps, n_features], "
             f"but the actual shape of X: {X.shape}"
