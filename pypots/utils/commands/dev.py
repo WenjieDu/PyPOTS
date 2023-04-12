@@ -11,11 +11,11 @@ from argparse import ArgumentParser, Namespace
 from pypots.utils.commands import BaseCommand
 from pypots.utils.logging import logger
 
-IMPORT_ERROR_MESSAGE = """
-`pypots-cli dev` command is for PyPOTS developers to run tests easily. Therefore, you need a complete PyPOTS 
-development environment. However, you are missing some dependencies. 
-Please refer to https://github.com/WenjieDu/PyPOTS/blob/main/environment-dev.yml for dependency details. 
-"""
+IMPORT_ERROR_MESSAGE = (
+    " `pypots-cli dev` command is for PyPOTS developers to run tests easily. "
+    "Therefore, you need a complete PyPOTS development environment. However, you are missing some dependencies. "
+    "Please refer to https://github.com/WenjieDu/PyPOTS/blob/main/environment-dev.yml for dependency details. "
+)
 
 
 def dev_command_factory(args: Namespace):

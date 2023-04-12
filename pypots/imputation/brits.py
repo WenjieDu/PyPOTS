@@ -10,7 +10,7 @@ Partial implementation uses code from https://github.com/caow13/BRITS.
 # License: GPL-v3
 
 import math
-from typing import Tuple, Any, Union, Optional
+from typing import Tuple, Union, Optional
 
 import h5py
 import numpy as np
