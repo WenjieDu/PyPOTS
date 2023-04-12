@@ -46,5 +46,11 @@ class TestLogging(unittest.TestCase):
         shutil.rmtree("test_log", ignore_errors=True)
 
 
+class TestPyPOTSCLI(unittest.TestCase):
+    def test_pypots_cli(self):
+        # TODO: need more test cases here
+        os.system("python pypots/utils/commands/pypots_cli.py")
+
+
 if __name__ == "__main__":
     unittest.main()

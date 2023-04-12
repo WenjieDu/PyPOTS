@@ -9,6 +9,13 @@ import os
 from argparse import ArgumentParser, Namespace
 
 from pypots.utils.commands import BaseCommand
+from pypots.utils.logging import logger
+
+IMPORT_ERROR_MESSAGE = """
+`pypots-cli dev` command is for PyPOTS developers to run tests easily. Therefore, you need a complete PyPOTS 
+development environment. However, you are missing some dependencies. 
+Please refer to https://github.com/WenjieDu/PyPOTS/blob/main/environment-dev.yml for dependency details. 
+"""
 
 
 def dev_command_factory(args: Namespace):
@@ -72,8 +79,6 @@ class DevCommand(BaseCommand):
         self._lint_code = lint_code
 
     def run(self):
-        print(f"current dir: {os.getcwd()}")
-
         if self._run_tests:
             try:
                 pytest_command = f"pytest -k {self._k}" if self._k else "pytest"
@@ -82,22 +87,29 @@ class DevCommand(BaseCommand):
                     if self._show_coverage
                     else pytest_command
                 )
+                logger.info(f"Executing '{command_to_run_test}'...")
 
                 os.system(command_to_run_test)
                 if self._show_coverage:
                     os.system("coverage report -m")
                     os.system("rm -rf .coverage")
                 else:
-                    print(
+                    logger.info(
                         "Omit the code coverage report. Enable it by using --show_coverage if in need."
                     )
                 os.system("rm -rf .pytest_cache")
 
+            except ImportError:
+                raise ImportError(IMPORT_ERROR_MESSAGE)
             except Exception as e:
                 raise RuntimeError(e)
         elif self._lint_code:
             try:
+                logger.info("Reformatting with Black...")
                 os.system("black .")
+                logger.info("Linting with Flake8...")
                 os.system("flake8 .")
+            except ImportError:
+                raise ImportError(IMPORT_ERROR_MESSAGE)
             except Exception as e:
                 raise RuntimeError(e)
