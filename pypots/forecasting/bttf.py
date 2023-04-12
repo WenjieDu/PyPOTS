@@ -8,8 +8,10 @@ Refer to :cite:`chen2021BTMF`.
 # License: GLP-v3
 
 import warnings
+from typing import Union, Optional
 
 import numpy as np
+import torch
 from numpy.linalg import cholesky as cholesky_lower
 from numpy.linalg import inv as inv
 from numpy.linalg import solve as solve
@@ -259,9 +261,9 @@ def _BTTF(
         temp_hat += tensor_hat[pos_test]
         if (it + 1) % show_iter == 0 and it < burn_iter:
             # temp_hat = temp_hat / show_iter
-            # print('Iter: {}'.format(it + 1))
-            # print('MAPE: {:.6}'.format(compute_mape(dense_test, temp_hat)))
-            # print('RMSE: {:.6}'.format(compute_rmse(dense_test, temp_hat)))
+            # logger.info('Iter: {}'.format(it + 1))
+            # logger.info('MAPE: {:.6}'.format(compute_mape(dense_test, temp_hat)))
+            # logger.info('RMSE: {:.6}'.format(compute_rmse(dense_test, temp_hat)))
             temp_hat = np.zeros(len(pos_test[0]))
         if it + 1 > burn_iter:
             U_plus[:, :, it - burn_iter] = U
@@ -274,8 +276,8 @@ def _BTTF(
             X_plus[:, :, it - burn_iter] = X0
             tensor_new_plus += np.einsum("is, js, ts -> ijt", U, V, X0[-multi_step:, :])
     tensor_hat = tensor_hat_plus / gibbs_iter
-    # print('Imputation MAPE: {:.6}'.format(compute_mape(dense_test, tensor_hat[:, :, : dim3][pos_test])))
-    # print('Imputation RMSE: {:.6}'.format(compute_rmse(dense_test, tensor_hat[:, :, : dim3][pos_test])))
+    # logger.info('Imputation MAPE: {:.6}'.format(compute_mape(dense_test, tensor_hat[:, :, : dim3][pos_test])))
+    # logger.info('Imputation RMSE: {:.6}'.format(compute_rmse(dense_test, tensor_hat[:, :, : dim3][pos_test])))
     tensor_hat = np.append(tensor_hat, tensor_new_plus / gibbs_iter, axis=2)
     tensor_hat[tensor_hat < 0] = 0
 
@@ -437,15 +439,15 @@ def BTTF_forecast(
 class BTTF(BaseForecaster):
     def __init__(
         self,
-        n_steps,
-        n_features,
-        pred_step,
-        multi_step,
-        rank,
-        time_lags,
-        burn_iter,
-        gibbs_iter,
-        device=None,
+        n_steps: int,
+        n_features: int,
+        pred_step: int,
+        multi_step: int,
+        rank: int,
+        time_lags: np.ndarray,
+        burn_iter: int,
+        gibbs_iter: int,
+        device: Optional[Union[str, torch.device]] = None,
     ):
         super().__init__(device)
         self.n_steps = n_steps
@@ -457,11 +459,40 @@ class BTTF(BaseForecaster):
         self.burn_iter = burn_iter
         self.gibbs_iter = gibbs_iter
 
-    def fit(self, train_X):
+    def fit(
+        self,
+        train_set: Union[dict, str],
+        val_set: Optional[Union[dict, str]] = None,
+        file_type="h5py",
+    ) -> None:
         warnings.warn("Please run func forecast(X) directly.")
 
-    def forecast(self, X):
-        self.check_input(self.n_steps, self.n_features, X, out_dtype="ndarray")
+    def forecast(
+        self,
+        X: Union[dict, str],
+        file_type: str = "h5py",
+    ) -> np.ndarray:
+        """Forecast the future the input with the trained model.
+
+        Parameters
+        ----------
+        X : array-like or str,
+            The data samples for testing, should be array-like of shape [n_samples, sequence length (time steps),
+            n_features], or a path string locating a data file, e.g. h5 file.
+
+        file_type : str, default = "h5py"
+            The type of the given file if X is a path string.
+
+        Returns
+        -------
+        array-like, shape [n_samples, prediction_horizon, n_features],
+            Forecasting results.
+        """
+        assert not isinstance(
+            X, str
+        ), "BTTF so far does not accept file input. It needs a specified Dataset class."
+
+        X = X["X"]
         X = X.transpose((0, 2, 1))
 
         pred = BTTF_forecast(

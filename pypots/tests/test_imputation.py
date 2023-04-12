@@ -1,6 +1,7 @@
 """
 Test cases for imputation models.
 """
+import os.path
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: GPL-v3
@@ -9,6 +10,7 @@ Test cases for imputation models.
 import unittest
 
 import numpy as np
+import pytest
 
 from pypots.imputation import (
     SAITS,
@@ -16,35 +18,62 @@ from pypots.imputation import (
     BRITS,
     LOCF,
 )
-from pypots.tests.unified_data_for_test import DATA
+from pypots.tests.global_test_config import DATA, RESULT_SAVING_DIR
+from pypots.utils.logging import logger
 from pypots.utils.metrics import cal_mae
 
 EPOCH = 5
 
+TRAIN_SET = {"X": DATA["train_X"]}
+VAL_SET = {
+    "X": DATA["val_X"],
+    "X_intact": DATA["val_X_intact"],
+    "indicating_mask": DATA["val_X_indicating_mask"],
+}
+TEST_SET = {"X": DATA["test_X"]}
+
+RESULT_SAVING_DIR_FOR_IMPUTATION = os.path.join(RESULT_SAVING_DIR, "imputation")
+
 
 class TestSAITS(unittest.TestCase):
-    def setUp(self) -> None:
-        self.train_X = DATA["train_X"]
-        self.val_X = DATA["val_X"]
-        self.test_X = DATA["test_X"]
-        self.test_X_intact = DATA["test_X_intact"]
-        self.test_X_indicating_mask = DATA["test_X_indicating_mask"]
-        print("Running test cases for SAITS...")
-        self.saits = SAITS(
-            DATA["n_steps"],
-            DATA["n_features"],
-            n_layers=2,
-            d_model=256,
-            d_inner=128,
-            n_head=4,
-            d_k=64,
-            d_v=64,
-            dropout=0.1,
-            epochs=EPOCH,
-        )
-        self.saits.fit(self.train_X, self.val_X)
+    logger.info("Running tests for an imputation model SAITS...")
 
-    def test_parameters(self):
+    # set the log and model saving path
+    saving_path = os.path.join(RESULT_SAVING_DIR_FOR_IMPUTATION, "SAITS")
+    model_save_name = "saved_saits_model.pypots"
+
+    # initialize a SAITS model
+    saits = SAITS(
+        DATA["n_steps"],
+        DATA["n_features"],
+        n_layers=2,
+        d_model=256,
+        d_inner=128,
+        n_head=4,
+        d_k=64,
+        d_v=64,
+        dropout=0.1,
+        epochs=EPOCH,
+        tb_file_saving_path=saving_path,
+    )
+
+    @pytest.mark.xdist_group(name="imputation-saits")
+    def test_0_fit(self):
+        self.saits.fit(TRAIN_SET, VAL_SET)
+
+    @pytest.mark.xdist_group(name="imputation-saits")
+    def test_1_impute(self):
+        imputed_X = self.saits.impute(TEST_SET)
+        assert not np.isnan(
+            imputed_X
+        ).any(), "Output still has missing values after running impute()."
+        test_MAE = cal_mae(
+            imputed_X, DATA["test_X_intact"], DATA["test_X_indicating_mask"]
+        )
+        logger.info(f"SAITS test_MAE: {test_MAE}")
+
+    @pytest.mark.xdist_group(name="imputation-saits")
+    def test_2_parameters(self):
         assert hasattr(self.saits, "model") and self.saits.model is not None
 
         assert hasattr(self.saits, "optimizer") and self.saits.optimizer is not None
@@ -57,38 +86,71 @@ class TestSAITS(unittest.TestCase):
             and self.saits.best_model_dict is not None
         )
 
-    def test_impute(self):
-        imputed_X = self.saits.impute(self.test_X)
-        assert not np.isnan(
-            imputed_X
-        ).any(), "Output still has missing values after running impute()."
-        test_MAE = cal_mae(imputed_X, self.test_X_intact, self.test_X_indicating_mask)
-        print(f"SAITS test_MAE: {test_MAE}")
+    @pytest.mark.xdist_group(name="imputation-saits")
+    def test_3_saving_path(self):
+        # whether the root saving dir exists, which should be created by save_log_into_tb_file
+        assert os.path.exists(
+            self.saving_path
+        ), f"file {self.saving_path} does not exist"
+        # whether the tensorboard file exists
+        files = os.listdir(self.saving_path)
+        assert len(files) > 0, "tensorboard dir does not exist"
+        tensorboard_dir_name = files[0]
+        tensorboard_dir_path = os.path.join(self.saving_path, tensorboard_dir_name)
+        assert (
+            tensorboard_dir_name.startswith("tensorboard")
+            and len(os.listdir(tensorboard_dir_path)) > 0
+        ), "tensorboard file does not exist"
+
+        # save the trained model into file, and check if the path exists
+        self.saits.save_model(
+            saving_dir=self.saving_path, file_name=self.model_save_name
+        )
+        saved_model_path = os.path.join(self.saving_path, self.model_save_name)
+        assert os.path.exists(
+            saved_model_path
+        ), f"file {self.saving_path} does not exist, model not saved"
 
 
 class TestTransformer(unittest.TestCase):
-    def setUp(self) -> None:
-        self.train_X = DATA["train_X"]
-        self.val_X = DATA["val_X"]
-        self.test_X = DATA["test_X"]
-        self.test_X_intact = DATA["test_X_intact"]
-        self.test_X_indicating_mask = DATA["test_X_indicating_mask"]
-        print("Running test cases for Transformer...")
-        self.transformer = Transformer(
-            DATA["n_steps"],
-            DATA["n_features"],
-            n_layers=2,
-            d_model=256,
-            d_inner=128,
-            n_head=4,
-            d_k=64,
-            d_v=64,
-            dropout=0.1,
-            epochs=EPOCH,
-        )
-        self.transformer.fit(self.train_X, self.val_X)
+    logger.info("Running tests for an imputation model Transformer...")
 
-    def test_parameters(self):
+    # set the log and model saving path
+    saving_path = os.path.join(RESULT_SAVING_DIR_FOR_IMPUTATION, "Transformer")
+    model_save_name = "saved_transformer_model.pypots"
+
+    # initialize a Transformer model
+    transformer = Transformer(
+        DATA["n_steps"],
+        DATA["n_features"],
+        n_layers=2,
+        d_model=256,
+        d_inner=128,
+        n_head=4,
+        d_k=64,
+        d_v=64,
+        dropout=0.1,
+        epochs=EPOCH,
+        tb_file_saving_path=saving_path,
+    )
+
+    @pytest.mark.xdist_group(name="imputation-transformer")
+    def test_0_fit(self):
+        self.transformer.fit(TRAIN_SET, VAL_SET)
+
+    @pytest.mark.xdist_group(name="imputation-transformer")
+    def test_1_impute(self):
+        imputed_X = self.transformer.impute(TEST_SET)
+        assert not np.isnan(
+            imputed_X
+        ).any(), "Output still has missing values after running impute()."
+        test_MAE = cal_mae(
+            imputed_X, DATA["test_X_intact"], DATA["test_X_indicating_mask"]
+        )
+        logger.info(f"Transformer test_MAE: {test_MAE}")
+
+    @pytest.mark.xdist_group(name="imputation-transformer")
+    def test_2_parameters(self):
         assert hasattr(self.transformer, "model") and self.transformer.model is not None
 
         assert (
@@ -104,27 +166,65 @@ class TestTransformer(unittest.TestCase):
             and self.transformer.best_model_dict is not None
         )
 
-    def test_impute(self):
-        imputed_X = self.transformer.impute(self.test_X)
-        assert not np.isnan(
-            imputed_X
-        ).any(), "Output still has missing values after running impute()."
-        test_MAE = cal_mae(imputed_X, self.test_X_intact, self.test_X_indicating_mask)
-        print(f"Transformer test_MAE: {test_MAE}")
+    @pytest.mark.xdist_group(name="imputation-transformer")
+    def test_3_saving_path(self):
+        # whether the root saving dir exists, which should be created by save_log_into_tb_file
+        assert os.path.exists(
+            self.saving_path
+        ), f"file {self.saving_path} does not exist"
+        # whether the tensorboard file exists
+        files = os.listdir(self.saving_path)
+        assert len(files) > 0, "tensorboard dir does not exist"
+        tensorboard_dir_name = files[0]
+        tensorboard_dir_path = os.path.join(self.saving_path, tensorboard_dir_name)
+        assert (
+            tensorboard_dir_name.startswith("tensorboard")
+            and len(os.listdir(tensorboard_dir_path)) > 0
+        ), "tensorboard file does not exist"
+
+        # save the trained model into file, and check if the path exists
+        self.transformer.save_model(
+            saving_dir=self.saving_path, file_name=self.model_save_name
+        )
+        saved_model_path = os.path.join(self.saving_path, self.model_save_name)
+        assert os.path.exists(
+            saved_model_path
+        ), f"file {self.saving_path} does not exist, model not saved"
 
 
 class TestBRITS(unittest.TestCase):
-    def setUp(self) -> None:
-        self.train_X = DATA["train_X"]
-        self.val_X = DATA["val_X"]
-        self.test_X = DATA["test_X"]
-        self.test_X_intact = DATA["test_X_intact"]
-        self.test_X_indicating_mask = DATA["test_X_indicating_mask"]
-        print("Running test cases for BRITS...")
-        self.brits = BRITS(DATA["n_steps"], DATA["n_features"], 256, epochs=EPOCH)
-        self.brits.fit(self.train_X, self.val_X)
+    logger.info("Running tests for an imputation model BRITS...")
 
-    def test_parameters(self):
+    # set the log and model saving path
+    saving_path = os.path.join(RESULT_SAVING_DIR_FOR_IMPUTATION, "BRITS")
+    model_save_name = "saved_BRITS_model.pypots"
+
+    # initialize a BRITS model
+    brits = BRITS(
+        DATA["n_steps"],
+        DATA["n_features"],
+        256,
+        epochs=EPOCH,
+        tb_file_saving_path=f"{RESULT_SAVING_DIR_FOR_IMPUTATION}/BRITS",
+    )
+
+    @pytest.mark.xdist_group(name="imputation-brits")
+    def test_0_fit(self):
+        self.brits.fit(TRAIN_SET, VAL_SET)
+
+    @pytest.mark.xdist_group(name="imputation-brits")
+    def test_1_impute(self):
+        imputed_X = self.brits.impute(TEST_SET)
+        assert not np.isnan(
+            imputed_X
+        ).any(), "Output still has missing values after running impute()."
+        test_MAE = cal_mae(
+            imputed_X, DATA["test_X_intact"], DATA["test_X_indicating_mask"]
+        )
+        logger.info(f"BRITS test_MAE: {test_MAE}")
+
+    @pytest.mark.xdist_group(name="imputation-brits")
+    def test_2_parameters(self):
         assert hasattr(self.brits, "model") and self.brits.model is not None
 
         assert hasattr(self.brits, "optimizer") and self.brits.optimizer is not None
@@ -137,37 +237,50 @@ class TestBRITS(unittest.TestCase):
             and self.brits.best_model_dict is not None
         )
 
-    def test_impute(self):
-        imputed_X = self.brits.impute(self.test_X)
-        assert not np.isnan(
-            imputed_X
-        ).any(), "Output still has missing values after running impute()."
-        test_MAE = cal_mae(imputed_X, self.test_X_intact, self.test_X_indicating_mask)
-        print(f"BRITS test_MAE: {test_MAE}")
+    @pytest.mark.xdist_group(name="imputation-brits")
+    def test_3_saving_path(self):
+        # whether the root saving dir exists, which should be created by save_log_into_tb_file
+        assert os.path.exists(
+            self.saving_path
+        ), f"file {self.saving_path} does not exist"
+        # whether the tensorboard file exists
+        files = os.listdir(self.saving_path)
+        assert len(files) > 0, "tensorboard dir does not exist"
+        tensorboard_dir_name = files[0]
+        tensorboard_dir_path = os.path.join(self.saving_path, tensorboard_dir_name)
+        assert (
+            tensorboard_dir_name.startswith("tensorboard")
+            and len(os.listdir(tensorboard_dir_path)) > 0
+        ), "tensorboard file does not exist"
+
+        # save the trained model into file, and check if the path exists
+        self.brits.save_model(
+            saving_dir=self.saving_path, file_name=self.model_save_name
+        )
+        saved_model_path = os.path.join(self.saving_path, self.model_save_name)
+        assert os.path.exists(
+            saved_model_path
+        ), f"file {self.saving_path} does not exist, model not saved"
 
 
 class TestLOCF(unittest.TestCase):
-    def setUp(self) -> None:
-        self.train_X = DATA["train_X"]
-        self.val_X = DATA["val_X"]
-        self.test_X = DATA["test_X"]
-        self.test_X_intact = DATA["test_X_intact"]
-        self.test_X_indicating_mask = DATA["test_X_indicating_mask"]
-        print("Running test cases for LOCF...")
-        self.locf = LOCF(nan=0)
+    logger.info("Running tests for an imputation model LOCF...")
+    locf = LOCF(nan=0)
 
-    def test_parameters(self):
-        assert hasattr(self.locf, "nan") and self.locf.nan is not None
-
-    def test_impute(self):
-        test_X_imputed = self.locf.impute(self.test_X)
+    @pytest.mark.xdist_group(name="imputation-locf")
+    def test_0_impute(self):
+        test_X_imputed = self.locf.impute(TEST_SET)
         assert not np.isnan(
             test_X_imputed
         ).any(), "Output still has missing values after running impute()."
         test_MAE = cal_mae(
-            test_X_imputed, self.test_X_intact, self.test_X_indicating_mask
+            test_X_imputed, DATA["test_X_intact"], DATA["test_X_indicating_mask"]
         )
-        print(f"LOCF test_MAE: {test_MAE}")
+        logger.info(f"LOCF test_MAE: {test_MAE}")
+
+    @pytest.mark.xdist_group(name="imputation-locf")
+    def test_1_parameters(self):
+        assert hasattr(self.locf, "nan") and self.locf.nan is not None
 
 
 if __name__ == "__main__":

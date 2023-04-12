@@ -9,6 +9,8 @@ Refer to paper :cite:`dejong2019VaDER`.
 # License: GLP-v3
 
 
+from typing import Tuple, Union, Optional
+
 import numpy as np
 import torch
 import torch.nn as nn
@@ -21,15 +23,16 @@ from torch.utils.data import DataLoader
 
 from pypots.clustering.base import BaseNNClusterer
 from pypots.data.dataset_for_grud import DatasetForGRUD
+from pypots.utils.logging import logger
 from pypots.utils.metrics import cal_mse
 
 
 class ImplicitImputation(nn.Module):
-    def __init__(self, d_input):
+    def __init__(self, d_input: int):
         super().__init__()
         self.projection_layer = nn.Linear(d_input, d_input, bias=False)
 
-    def forward(self, X, missing_mask):
+    def forward(self, X: torch.Tensor, missing_mask: torch.Tensor) -> torch.Tensor:
         imputation = self.projection_layer(X)
         imputed_X = X * missing_mask + imputation * (1 - X)
         return imputed_X
@@ -43,7 +46,7 @@ class PeepholeLSTMCell(nn.LSTMCell):
 
     """
 
-    def __init__(self, input_size, hidden_size, bias=True):
+    def __init__(self, input_size: int, hidden_size: int, bias: bool = True):
         super().__init__(input_size, hidden_size, bias)
         self.weight_ch = Parameter(torch.Tensor(3 * hidden_size, hidden_size))
         if bias:
@@ -53,16 +56,20 @@ class PeepholeLSTMCell(nn.LSTMCell):
         self.register_buffer("wc_blank", torch.zeros(hidden_size))
         self.reset_parameters()
 
-    def forward(self, input, hx=None):
+    def forward(
+        self,
+        X: torch.Tensor,
+        hx: Optional[torch.Tensor] = None,
+    ) -> Tuple[torch.Tensor, torch.Tensor]:
         if hx is None:
             zeros = torch.zeros(
-                input.size(0), self.hidden_size, dtype=input.dtype, device=input.device
+                X.size(0), self.hidden_size, dtype=X.dtype, device=X.device
             )
             hx = (zeros, zeros)
 
         h, c = hx
 
-        wx = F.linear(input, self.weight_ih, self.bias_ih)
+        wx = F.linear(X, self.weight_ih, self.bias_ih)
         wh = F.linear(h, self.weight_hh, self.bias_hh)
         wc = F.linear(c, self.weight_ch, self.bias_ch)
 
@@ -90,21 +97,26 @@ class PeepholeLSTMCell(nn.LSTMCell):
 
 
 class GMMLayer(nn.Module):
-    def __init__(self, d_hidden, n_clusters):
+    def __init__(self, d_hidden: int, n_clusters: int):
         super().__init__()
         self.mu_c_unscaled = Parameter(torch.Tensor(n_clusters, d_hidden))
         self.var_c_unscaled = Parameter(torch.Tensor(n_clusters, d_hidden))
         self.phi_c_unscaled = torch.Tensor(n_clusters)
 
-    def set_values(self, mu, var, phi):
+    def set_values(
+        self,
+        mu: torch.Tensor,
+        var: torch.Tensor,
+        phi: torch.Tensor,
+    ) -> None:
         assert mu.shape == self.mu_c_unscaled.shape
         assert var.shape == self.var_c_unscaled.shape
         assert phi.shape == self.phi_c_unscaled.shape
         self.mu_c_unscaled = torch.nn.Parameter(mu)
         self.var_c_unscaled = torch.nn.Parameter(var)
-        self.phi_c_unscaled = torch.tensor(phi)
+        self.phi_c_unscaled = phi
 
-    def forward(self):
+    def forward(self) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         mu_c = self.mu_c_unscaled
         var_c = F.softplus(self.var_c_unscaled)
         phi_c = torch.softmax(self.phi_c_unscaled, dim=0)
@@ -134,13 +146,13 @@ class _VaDER(nn.Module):
 
     def __init__(
         self,
-        n_steps,
-        d_input,
-        n_clusters,
-        d_rnn_hidden,
-        d_mu_stddev,
-        eps=1e-9,
-        alpha=1.0,
+        n_steps: int,
+        d_input: int,
+        n_clusters: int,
+        d_rnn_hidden: int,
+        d_mu_stddev: int,
+        eps: float = 1e-9,
+        alpha: float = 1.0,
     ):
         super().__init__()
         self.n_steps = n_steps
@@ -168,12 +180,20 @@ class _VaDER(nn.Module):
         self.rnn_transform_layer = nn.Linear(d_rnn_hidden, d_input)
         self.gmm_layer = GMMLayer(d_mu_stddev, n_clusters)
 
-    def z_sampling(self, mu_tilde, stddev_tilde):
+    @staticmethod
+    def z_sampling(
+        mu_tilde: torch.Tensor,
+        stddev_tilde: torch.Tensor,
+    ) -> torch.Tensor:
         noise = mu_tilde.data.new(mu_tilde.size()).normal_()
         z = torch.add(mu_tilde, torch.exp(0.5 * stddev_tilde) * noise)
         return z
 
-    def encode(self, X, missing_mask):
+    def encode(
+        self,
+        X: torch.Tensor,
+        missing_mask: torch.Tensor,
+    ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         batch_size = X.size(0)
 
         X_imputed = self.implicit_imputation_layer(X, missing_mask)
@@ -197,7 +217,7 @@ class _VaDER(nn.Module):
         z = self.z_sampling(mu_tilde, stddev_tilde)
         return z, mu_tilde, stddev_tilde
 
-    def decode(self, z):
+    def decode(self, z: torch.Tensor) -> torch.Tensor:
         hidden_state = z
         hidden_state = self.ae_decode_layers(hidden_state)
 
@@ -217,13 +237,23 @@ class _VaDER(nn.Module):
         reconstruction = self.rnn_transform_layer(hidden_state_collector)
         return reconstruction
 
-    def get_results(self, X, missing_mask):
+    def get_results(
+        self, X: torch.Tensor, missing_mask: torch.Tensor
+    ) -> Tuple[
+        torch.Tensor,
+        torch.Tensor,
+        torch.Tensor,
+        torch.Tensor,
+        torch.Tensor,
+        torch.Tensor,
+        torch.Tensor,
+    ]:
         z, mu_tilde, stddev_tilde = self.encode(X, missing_mask)
         X_reconstructed = self.decode(z)
         mu_c, var_c, phi_c = self.gmm_layer()
         return X_reconstructed, mu_c, var_c, phi_c, z, mu_tilde, stddev_tilde
 
-    def cluster(self, inputs):
+    def cluster(self, inputs: dict) -> np.ndarray:
         X, missing_mask = inputs["X"], inputs["missing_mask"]
         (
             X_reconstructed,
@@ -235,7 +265,9 @@ class _VaDER(nn.Module):
             stddev_tilde,
         ) = self.get_results(X, missing_mask)
 
-        def func_to_apply(mu_t_, mu_, stddev_, phi_):
+        def func_to_apply(
+            mu_t_: np.ndarray, mu_: np.ndarray, stddev_: np.ndarray, phi_: np.ndarray
+        ) -> np.ndarray:
             # the covariance matrix is diagonal, so we can just take the product
             return np.log(self.eps + phi_) + np.log(
                 self.eps
@@ -255,7 +287,7 @@ class _VaDER(nn.Module):
         clustering_results = np.argmax(p, axis=0)
         return clustering_results
 
-    def forward(self, inputs, pretrain=False):
+    def forward(self, inputs: dict, pretrain: bool = False) -> dict:
         X, missing_mask = inputs["X"], inputs["missing_mask"]
         (
             X_reconstructed,
@@ -292,6 +324,7 @@ class _VaDER(nn.Module):
         ii, jj = torch.meshgrid(
             torch.arange(self.n_clusters, dtype=torch.int64, device=device),
             torch.arange(batch_size, dtype=torch.int64, device=device),
+            indexing="ij",
         )
         ii = ii.flatten()
         jj = jj.flatten()
@@ -337,7 +370,7 @@ class _VaDER(nn.Module):
         return results
 
 
-def inverse_softplus(x):
+def inverse_softplus(x: np.ndarray) -> np.ndarray:
     b = x < 1e2
     x[b] = np.log(np.exp(x[b]) - 1.0 + 1e-9)
     return x
@@ -346,27 +379,31 @@ def inverse_softplus(x):
 class VaDER(BaseNNClusterer):
     def __init__(
         self,
-        n_steps,
-        n_features,
-        n_clusters,
-        rnn_hidden_size,
-        d_mu_stddev,
-        learning_rate=1e-3,
-        pretrain_epochs=10,
-        epochs=100,
-        patience=10,
-        batch_size=32,
-        weight_decay=1e-5,
-        device=None,
+        n_steps: int,
+        n_features: int,
+        n_clusters: int,
+        rnn_hidden_size: int,
+        d_mu_stddev: int,
+        batch_size: int = 32,
+        epochs: int = 100,
+        pretrain_epochs: int = 10,
+        patience: int = 10,
+        learning_rate: float = 1e-3,
+        weight_decay: float = 1e-5,
+        num_workers: int = 0,
+        device: Optional[Union[str, torch.device]] = None,
+        tb_file_saving_path: str = None,
     ):
         super().__init__(
             n_clusters,
-            learning_rate,
+            batch_size,
             epochs,
             patience,
-            batch_size,
+            learning_rate,
             weight_decay,
+            num_workers,
             device,
+            tb_file_saving_path,
         )
         self.n_steps = n_steps
         self.n_features = n_features
@@ -377,30 +414,20 @@ class VaDER(BaseNNClusterer):
         self.model = self.model.to(self.device)
         self._print_model_size()
 
-    def fit(self, train_X):
-        train_X = self.check_input(self.n_steps, self.n_features, train_X)
-        training_set = DatasetForGRUD(train_X)
-        training_loader = DataLoader(
-            training_set, batch_size=self.batch_size, shuffle=True
-        )
-        self._train_model(training_loader)
-        self.model.load_state_dict(self.best_model_dict)
-        self.model.eval()  # set the model as eval status to freeze it.
-        return self
-
-    def assemble_input_data(self, data):
-        """Assemble the input data into a dictionary.
+    def _assemble_input_for_training(self, data: list) -> dict:
+        """Assemble the given data into a dictionary for training input.
 
         Parameters
         ----------
-        data : list
-            A list containing data fetched from Dataset by Dataload.
+        data : list,
+            A list containing data fetched from Dataset by Dataloader.
 
         Returns
         -------
-        inputs : dict
-            A dictionary with data assembled.
+        inputs : dict,
+            A python dictionary contains the input data for model training.
         """
+
         # fetch data
         indices, X, _, missing_mask, _, _ = data
 
@@ -408,9 +435,53 @@ class VaDER(BaseNNClusterer):
             "X": X,
             "missing_mask": missing_mask,
         }
+
         return inputs
 
-    def _train_model(self, training_loader, val_loader=None):
+    def _assemble_input_for_validating(self, data: list) -> dict:
+        """Assemble the given data into a dictionary for validating input.
+
+        Notes
+        -----
+        The validating data assembling processing is the same as training data assembling.
+
+
+        Parameters
+        ----------
+        data : list,
+            A list containing data fetched from Dataset by Dataloader.
+
+        Returns
+        -------
+        inputs : dict,
+            A python dictionary contains the input data for model validating.
+        """
+        return self._assemble_input_for_training(data)
+
+    def _assemble_input_for_testing(self, data: list) -> dict:
+        """Assemble the given data into a dictionary for testing input.
+
+        Notes
+        -----
+        The testing data assembling processing is the same as training data assembling.
+
+        Parameters
+        ----------
+        data : list,
+            A list containing data fetched from Dataset by Dataloader.
+
+        Returns
+        -------
+        inputs : dict,
+            A python dictionary contains the input data for model testing.
+        """
+        return self._assemble_input_for_validating(data)
+
+    def _train_model(
+        self,
+        training_loader: DataLoader,
+        val_loader: DataLoader = None,
+    ) -> None:
         self.optimizer = torch.optim.Adam(
             self.model.parameters(), lr=self.lr, weight_decay=self.weight_decay
         )
@@ -420,19 +491,26 @@ class VaDER(BaseNNClusterer):
         self.best_model_dict = None
 
         # pretrain to initialize parameters of GMM layer
+        pretraining_step = 0
         for epoch in range(self.pretrain_epochs):
             self.model.train()
             for idx, data in enumerate(training_loader):
-                inputs = self.assemble_input_data(data)
+                pretraining_step += 1
+                inputs = self._assemble_input_for_training(data)
                 self.optimizer.zero_grad()
                 results = self.model.forward(inputs, pretrain=True)
                 results["loss"].backward()
                 self.optimizer.step()
+
+                # save pre-training loss logs into the tensorboard file for every step if in need
+                if self.summary_writer is not None:
+                    self.save_log_into_tb_file(pretraining_step, "pretraining", results)
+
         with torch.no_grad():
             sample_collector = []
             for _ in range(10):  # sampling 10 times
                 for idx, data in enumerate(training_loader):
-                    inputs = self.assemble_input_data(data)
+                    inputs = self._assemble_input_for_validating(data)
                     results = self.model.forward(inputs, pretrain=True)
                     sample_collector.append(results["z"])
             samples = torch.cat(sample_collector).cpu().detach().numpy()
@@ -450,40 +528,54 @@ class VaDER(BaseNNClusterer):
                 torch.from_numpy(var).to(self.device),
                 torch.from_numpy(phi).to(self.device),
             )
+
         try:
+            training_step = 0
             for epoch in range(self.epochs):
                 self.model.train()
                 epoch_train_loss_collector = []
                 for idx, data in enumerate(training_loader):
-                    inputs = self.assemble_input_data(data)
+                    training_step += 1
+                    inputs = self._assemble_input_for_training(data)
                     self.optimizer.zero_grad()
                     results = self.model.forward(inputs)
                     results["loss"].backward()
                     self.optimizer.step()
                     epoch_train_loss_collector.append(results["loss"].item())
 
-                mean_train_loss = np.mean(
-                    epoch_train_loss_collector
-                )  # mean training loss of the current epoch
-                self.logger["training_loss"].append(mean_train_loss)
+                    # save training loss logs into the tensorboard file for every step if in need
+                    if self.summary_writer is not None:
+                        self.save_log_into_tb_file(training_step, "training", results)
+
+                # mean training loss of the current epoch
+                mean_train_loss = np.mean(epoch_train_loss_collector)
 
                 if val_loader is not None:
                     self.model.eval()
                     epoch_val_loss_collector = []
                     with torch.no_grad():
                         for idx, data in enumerate(val_loader):
-                            inputs = self.assemble_input_data(data)
+                            inputs = self._assemble_input_for_validating(data)
                             results = self.model.forward(inputs)
                             epoch_val_loss_collector.append(results["loss"].item())
 
                     mean_val_loss = np.mean(epoch_val_loss_collector)
-                    self.logger["validating_loss"].append(mean_val_loss)
-                    print(
-                        f"epoch {epoch}: training loss {mean_train_loss:.4f}, validating loss {mean_val_loss:.4f}"
+
+                    # save validating loss logs into the tensorboard file for every epoch if in need
+                    if self.summary_writer is not None:
+                        val_loss_dict = {
+                            "loss": mean_val_loss,
+                        }
+                        self.save_log_into_tb_file(epoch, "validating", val_loss_dict)
+
+                    logger.info(
+                        f"epoch {epoch}: "
+                        f"training loss {mean_train_loss:.4f}, "
+                        f"validating loss {mean_val_loss:.4f}"
                     )
                     mean_loss = mean_val_loss
                 else:
-                    print(f"epoch {epoch}: training loss {mean_train_loss:.4f}")
+                    logger.info(f"epoch {epoch}: training loss {mean_train_loss:.4f}")
                     mean_loss = mean_train_loss
 
                 if mean_loss < self.best_loss:
@@ -493,12 +585,12 @@ class VaDER(BaseNNClusterer):
                 else:
                     self.patience -= 1
                     if self.patience == 0:
-                        print(
+                        logger.info(
                             "Exceeded the training patience. Terminating the training procedure..."
                         )
                         break
         except Exception as e:
-            print(f"Exception: {e}")
+            logger.info(f"Exception: {e}")
             if self.best_model_dict is None:
                 raise RuntimeError(
                     "Training got interrupted. Model was not get trained. Please try fit() again."
@@ -513,18 +605,74 @@ class VaDER(BaseNNClusterer):
         if np.equal(self.best_loss, float("inf")):
             raise ValueError("Something is wrong. best_loss is Nan after training.")
 
-        print("Finished training.")
+        logger.info("Finished training.")
 
-    def cluster(self, X):
-        X = self.check_input(self.n_steps, self.n_features, X)
+    def fit(
+        self,
+        train_set: Union[dict, str],
+        file_type: str = "h5py",
+    ) -> None:
+        """Train the cluster.
+
+        Parameters
+        ----------
+        train_set : dict or str,
+            The dataset for model training, should be a dictionary including the key 'X',
+            or a path string locating a data file.
+            If it is a dict, X should be array-like of shape [n_samples, sequence length (time steps), n_features],
+            which is time-series data for training, can contain missing values.
+            If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
+            key-value pairs like a dict, and it has to include the key 'X'.
+
+        file_type : str, default = "h5py"
+            The type of the given file if train_set is a path string.
+
+        Returns
+        -------
+        self : object,
+            Trained classifier.
+        """
+        training_set = DatasetForGRUD(train_set, file_type)
+        training_loader = DataLoader(
+            training_set,
+            batch_size=self.batch_size,
+            shuffle=True,
+            num_workers=self.num_workers,
+        )
+        self._train_model(training_loader)
+        self.model.load_state_dict(self.best_model_dict)
         self.model.eval()  # set the model as eval status to freeze it.
-        test_set = DatasetForGRUD(X)
-        test_loader = DataLoader(test_set, batch_size=self.batch_size, shuffle=False)
+
+    def cluster(self, X: Union[dict, str], file_type: str = "h5py") -> np.ndarray:
+        """Cluster the input with the trained model.
+
+        Parameters
+        ----------
+        X : array-like or str,
+            The data samples for testing, should be array-like of shape [n_samples, sequence length (time steps),
+            n_features], or a path string locating a data file, e.g. h5 file.
+
+        file_type : str, default = "h5py"
+            The type of the given file if X is a path string.
+
+        Returns
+        -------
+        array-like, shape [n_samples],
+            Clustering results.
+        """
+        self.model.eval()  # set the model as eval status to freeze it.
+        test_set = DatasetForGRUD(X, file_type)
+        test_loader = DataLoader(
+            test_set,
+            batch_size=self.batch_size,
+            shuffle=False,
+            num_workers=self.num_workers,
+        )
         clustering_results_collector = []
 
         with torch.no_grad():
             for idx, data in enumerate(test_loader):
-                inputs = self.assemble_input_data(data)
+                inputs = self._assemble_input_for_testing(data)
                 results = self.model.cluster(inputs)
                 clustering_results_collector.append(results)
 

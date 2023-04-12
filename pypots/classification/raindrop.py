@@ -14,7 +14,7 @@ https://github.com/WenjieDu/PyPOTS/blob/c381ad1853b465ebb918134d8bf6f6cf2996c9d3
 
 
 import math
-from typing import Union, Tuple, Optional
+from typing import Tuple, Any, Union, Optional
 
 import numpy as np
 import torch
@@ -26,21 +26,30 @@ from torch.nn import TransformerEncoderLayer, TransformerEncoder
 from torch.nn import init
 from torch.nn.parameter import Parameter
 from torch.utils.data import DataLoader
-from torch_geometric.nn.conv import MessagePassing
-from torch_geometric.nn.inits import glorot
-from torch_geometric.typing import PairTensor, Adj, OptTensor
-from torch_geometric.utils import softmax
-from torch_scatter import scatter
-from torch_sparse import SparseTensor
 
 from pypots.classification.base import BaseNNClassifier
 from pypots.data.dataset_for_grud import DatasetForGRUD
+from pypots.utils.logging import logger
+
+try:
+    from torch_geometric.nn.conv import MessagePassing
+    from torch_geometric.nn.inits import glorot
+    from torch_geometric.typing import PairTensor, Adj, OptTensor
+    from torch_geometric.utils import softmax
+    from torch_scatter import scatter
+    from torch_sparse import SparseTensor
+except ImportError as e:
+    logger.error(
+        f"{e}\n"
+        "torch_geometric is missing, "
+        "please install it with 'pip install torch_geometric' or 'conda install -c pyg pyg'"
+    )
 
 
-class PositionalEncodingTF(nn.Module):
+class PositionalEncoding(nn.Module):
     """Generate positional encoding according to time information."""
 
-    def __init__(self, d_pe, max_len=500):
+    def __init__(self, d_pe: int, max_len: int = 500):
         super().__init__()
         assert (
             d_pe % 2 == 0
@@ -48,7 +57,7 @@ class PositionalEncodingTF(nn.Module):
         self.max_len = max_len
         self._num_timescales = d_pe // 2
 
-    def forward(self, time_vectors):
+    def forward(self, time_vectors: torch.Tensor) -> torch.Tensor:
         """Generate positional encoding.
 
         Parameters
@@ -66,7 +75,7 @@ class PositionalEncodingTF(nn.Module):
         times = time_vectors.unsqueeze(2)
         scaled_time = times / torch.Tensor(timescales[None, None, :])
         pe = torch.cat(
-            [torch.sin(scaled_time), torch.cos(scaled_time)], axis=-1
+            [torch.sin(scaled_time), torch.cos(scaled_time)], dim=-1
         )  # T x B x d_model
         pe = pe.type(torch.FloatTensor)
         return pe
@@ -88,7 +97,7 @@ class ObservationPropagation(MessagePassing):
         edge_dim: Optional[int] = None,
         bias: bool = True,
         root_weight: bool = True,
-        **kwargs
+        **kwargs,
     ):
         kwargs.setdefault("aggr", "add")
         super().__init__(node_dim=0, **kwargs)
@@ -142,15 +151,15 @@ class ObservationPropagation(MessagePassing):
 
         self.reset_parameters()
 
-    def reset_parameters(self):
+    def reset_parameters(self) -> None:
         self.lin_key.reset_parameters()
         self.lin_query.reset_parameters()
         self.lin_value.reset_parameters()
         if self.edge_dim:
-            self.lin_edge.reset_parameters()
+            self.lin_edge._reset_parameters()
         self.lin_skip.reset_parameters()
         if self.beta:
-            self.lin_beta.reset_parameters()
+            self.lin_beta._reset_parameters()
         glorot(self.weight)
         if self.bias is not None:
             fan_in, _ = init._calculate_fan_in_and_fan_out(self.weight)
@@ -169,7 +178,7 @@ class ObservationPropagation(MessagePassing):
         use_beta=False,
         edge_attr: OptTensor = None,
         return_attention_weights=None,
-    ):
+    ) -> Tuple[torch.Tensor, Any]:
 
         r"""
         Args:
@@ -383,7 +392,7 @@ class _Raindrop(nn.Module):
         self.d_ob = int(d_model / n_features)
         self.encoder = nn.Linear(n_features * self.d_ob, n_features * self.d_ob)
         d_pe = 16
-        self.pos_encoder = PositionalEncodingTF(d_pe, max_len)
+        self.pos_encoder = PositionalEncoding(d_pe, max_len)
         if self.sensor_wise_mask:
             dim_check = n_features * (self.d_ob + d_pe)
             assert dim_check % n_heads == 0, "dim_check must be divisible by n_heads"
@@ -437,7 +446,7 @@ class _Raindrop(nn.Module):
             self.emb.weight.data.uniform_(-init_range, init_range)
         glorot(self.R_u)
 
-    def classify(self, inputs):
+    def classify(self, inputs: dict) -> torch.Tensor:
         """Forward processing of BRITS.
 
         Parameters
@@ -626,15 +635,25 @@ class Raindrop(BaseNNClassifier):
         aggregation,
         sensor_wise_mask,
         static,
-        learning_rate=1e-3,
+        batch_size=32,
         epochs=100,
         patience=10,
-        batch_size=32,
+        learning_rate=1e-3,
         weight_decay=1e-5,
-        device=None,
+        num_workers: int = 0,
+        device: Optional[Union[str, torch.device]] = None,
+        tb_file_saving_path: str = None,
     ):
         super().__init__(
-            n_classes, learning_rate, epochs, patience, batch_size, weight_decay, device
+            n_classes,
+            batch_size,
+            epochs,
+            patience,
+            learning_rate,
+            weight_decay,
+            num_workers,
+            device,
+            tb_file_saving_path,
         )
 
         self.n_features = n_features
@@ -657,43 +676,7 @@ class Raindrop(BaseNNClassifier):
         self.model = self.model.to(self.device)
         self._print_model_size()
 
-    def fit(self, train_X, train_y, val_X=None, val_y=None):
-        """Fit the model on the given training data.
-
-        Parameters
-        ----------
-        train_X : array, shape [n_samples, sequence length (time steps), n_features],
-            Time-series vectors.
-        train_y : array,
-            Classification labels.
-
-        Returns
-        -------
-        self : object,
-            Trained model.
-        """
-        train_X, train_y = self.check_input(
-            self.n_steps, self.n_features, train_X, train_y
-        )
-        val_X, val_y = self.check_input(self.n_steps, self.n_features, val_X, val_y)
-
-        training_set = DatasetForGRUD(train_X, train_y)
-        training_loader = DataLoader(
-            training_set, batch_size=self.batch_size, shuffle=True
-        )
-
-        if val_X is None:
-            self._train_model(training_loader)
-        else:
-            val_set = DatasetForGRUD(val_X, val_y)
-            val_loader = DataLoader(val_set, batch_size=self.batch_size, shuffle=False)
-            self._train_model(training_loader, val_loader)
-
-        self.model.load_state_dict(self.best_model_dict)
-        self.model.eval()  # set the model as eval status to freeze it.
-        return self
-
-    def assemble_input_data(self, data):
+    def _assemble_input_for_training(self, data: dict) -> dict:
         """Assemble the input data into a dictionary.
 
         Parameters
@@ -727,35 +710,148 @@ class Raindrop(BaseNNClassifier):
         }
         return inputs
 
-    def classify(self, X):
-        X = self.check_input(self.n_steps, self.n_features, X)
-        self.model.eval()  # set the model as eval status to freeze it.
-        test_set = DatasetForGRUD(X)
-        test_loader = DataLoader(test_set, batch_size=self.batch_size, shuffle=False)
-        prediction_collector = []
+    def _assemble_input_for_validating(self, data: dict) -> dict:
+        """Assemble the given data into a dictionary for validating input.
 
+        Notes
+        -----
+        The validating data assembling processing is the same as training data assembling.
+
+
+        Parameters
+        ----------
+        data : list,
+            A list containing data fetched from Dataset by Dataloader.
+
+        Returns
+        -------
+        inputs : dict,
+            A python dictionary contains the input data for model validating.
+        """
+        return self._assemble_input_for_training(data)
+
+    def _assemble_input_for_testing(self, data: dict) -> dict:
+        """Assemble the given data into a dictionary for testing input.
+
+        Parameters
+        ----------
+        data : list,
+            A list containing data fetched from Dataset by Dataloader.
+
+        Returns
+        -------
+        inputs : dict,
+            A python dictionary contains the input data for model testing.
+        """
+        indices, X, X_filledLOCF, missing_mask, deltas, empirical_mean = data
+        bz, n_steps, n_features = X.shape
+        lengths = torch.tensor([n_steps] * bz, dtype=torch.float)
+        times = torch.tensor(range(n_steps), dtype=torch.float).repeat(bz, 1)
+
+        X = X.permute(1, 0, 2)
+        missing_mask = missing_mask.permute(1, 0, 2)
+        times = times.permute(1, 0)
+
+        inputs = {
+            "X": X,
+            "static": None,
+            "timestamps": times,
+            "lengths": lengths,
+            "missing_mask": missing_mask,
+        }
+
+        return inputs
+
+    def fit(
+        self,
+        train_set: Union[dict, str],
+        val_set: Optional[Union[dict, str]] = None,
+        file_type="h5py",
+    ) -> None:
+        """Fit the model on the given training data.
+
+        Parameters
+        ----------
+        train_set : dict or str,
+            The dataset for model training, should be a dictionary including keys as 'X' and 'y',
+            or a path string locating a data file.
+            If it is a dict, X should be array-like of shape [n_samples, sequence length (time steps), n_features],
+            which is time-series data for training, can contain missing values, and y should be array-like of shape
+            [n_samples], which is classification labels of X.
+            If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
+            key-value pairs like a dict, and it has to include keys as 'X' and 'y'.
+
+        val_set : dict or str,
+            The dataset for model validating, should be a dictionary including keys as 'X' and 'y',
+            or a path string locating a data file.
+            If it is a dict, X should be array-like of shape [n_samples, sequence length (time steps), n_features],
+            which is time-series data for validating, can contain missing values, and y should be array-like of shape
+            [n_samples], which is classification labels of X.
+            If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
+            key-value pairs like a dict, and it has to include keys as 'X' and 'y'.
+
+        file_type : str, default = "h5py"
+            The type of the given file if train_set and val_set are path strings.
+
+        Returns
+        -------
+        self : object,
+            Trained model.
+        """
+
+        training_set = DatasetForGRUD(train_set)
+        training_loader = DataLoader(
+            training_set,
+            batch_size=self.batch_size,
+            shuffle=True,
+            num_workers=self.num_workers,
+        )
+
+        if val_set is None:
+            self._train_model(training_loader)
+        else:
+            val_set = DatasetForGRUD(val_set)
+            val_loader = DataLoader(
+                val_set,
+                batch_size=self.batch_size,
+                shuffle=False,
+                num_workers=self.num_workers,
+            )
+            self._train_model(training_loader, val_loader)
+
+        self.model.load_state_dict(self.best_model_dict)
+        self.model.eval()  # set the model as eval status to freeze it.
+
+    def classify(self, X: Union[dict, str], file_type: str = "h5py") -> np.ndarray:
+        """Classify the input data with the trained model.
+
+        Parameters
+        ----------
+        X : array-like or str,
+            The data samples for testing, should be array-like of shape [n_samples, sequence length (time steps),
+            n_features], or a path string locating a data file, e.g. h5 file.
+
+        file_type : str, default = "h5py",
+            The type of the given file if X is a path string.
+
+        Returns
+        -------
+        array-like, shape [n_samples],
+            Classification results of the given samples.
+        """
+        self.model.eval()  # set the model as eval status to freeze it.
+        test_set = DatasetForGRUD(X, file_type)
+        test_loader = DataLoader(
+            test_set,
+            batch_size=self.batch_size,
+            shuffle=False,
+            num_workers=self.num_workers,
+        )
+
+        prediction_collector = []
         with torch.no_grad():
             for idx, data in enumerate(test_loader):
-                # cannot use input_data_processing, cause here has no label
-                indices, X, X_filledLOCF, missing_mask, deltas, empirical_mean = data
-                # assemble input data
-
-                bz, n_steps, n_features = X.shape
-                lengths = torch.tensor([n_steps] * bz, dtype=torch.float)
-                times = torch.tensor(range(n_steps), dtype=torch.float).repeat(bz, 1)
-
-                X = X.permute(1, 0, 2)
-                missing_mask = missing_mask.permute(1, 0, 2)
-                times = times.permute(1, 0)
-
-                inputs = {
-                    "X": X,
-                    "static": None,
-                    "timestamps": times,
-                    "lengths": lengths,
-                    "missing_mask": missing_mask,
-                }
-
+                inputs = self._assemble_input_for_testing(data)
                 prediction = self.model.classify(inputs)
                 prediction_collector.append(prediction)
 

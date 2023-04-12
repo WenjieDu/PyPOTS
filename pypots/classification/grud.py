@@ -4,6 +4,11 @@ PyTorch GRU-D model.
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: GLP-v3
+
+
+from typing import Union, Optional
+
+import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -15,7 +20,14 @@ from pypots.imputation.brits import TemporalDecay
 
 
 class _GRUD(nn.Module):
-    def __init__(self, n_steps, n_features, rnn_hidden_size, n_classes, device=None):
+    def __init__(
+        self,
+        n_steps: int,
+        n_features: int,
+        rnn_hidden_size: int,
+        n_classes: int,
+        device: Union[str, torch.device],
+    ):
         super().__init__()
         self.n_steps = n_steps
         self.n_features = n_features
@@ -35,7 +47,7 @@ class _GRUD(nn.Module):
         )
         self.classifier = nn.Linear(self.rnn_hidden_size, self.n_classes)
 
-    def classify(self, inputs):
+    def classify(self, inputs: dict) -> torch.Tensor:
         values = inputs["X"]
         masks = inputs["missing_mask"]
         deltas = inputs["deltas"]
@@ -66,7 +78,7 @@ class _GRUD(nn.Module):
         prediction = torch.softmax(logits, dim=1)
         return prediction
 
-    def forward(self, inputs):
+    def forward(self, inputs: dict) -> dict:
         """Forward processing of GRU-D.
 
         Parameters
@@ -117,19 +129,29 @@ class GRUD(BaseNNClassifier):
 
     def __init__(
         self,
-        n_steps,
-        n_features,
-        rnn_hidden_size,
-        n_classes,
-        learning_rate=1e-3,
-        epochs=100,
-        patience=10,
-        batch_size=32,
-        weight_decay=1e-5,
-        device=None,
+        n_steps: int,
+        n_features: int,
+        rnn_hidden_size: int,
+        n_classes: int,
+        batch_size: int = 32,
+        epochs: int = 100,
+        patience: int = 10,
+        learning_rate: float = 1e-3,
+        weight_decay: float = 1e-5,
+        num_workers: int = 0,
+        device: Optional[Union[str, torch.device]] = None,
+        tb_file_saving_path: str = None,
     ):
         super().__init__(
-            n_classes, learning_rate, epochs, patience, batch_size, weight_decay, device
+            n_classes,
+            batch_size,
+            epochs,
+            patience,
+            learning_rate,
+            weight_decay,
+            num_workers,
+            device,
+            tb_file_saving_path,
         )
 
         self.n_steps = n_steps
@@ -145,43 +167,7 @@ class GRUD(BaseNNClassifier):
         self.model = self.model.to(self.device)
         self._print_model_size()
 
-    def fit(self, train_X, train_y, val_X=None, val_y=None):
-        """Fit the model on the given training data.
-
-        Parameters
-        ----------
-        train_X : array, shape [n_samples, sequence length (time steps), n_features],
-            Time-series vectors.
-        train_y : array,
-            Classification labels.
-
-        Returns
-        -------
-        self : object,
-            Trained model.
-        """
-        train_X, train_y = self.check_input(
-            self.n_steps, self.n_features, train_X, train_y
-        )
-        val_X, val_y = self.check_input(self.n_steps, self.n_features, val_X, val_y)
-
-        training_set = DatasetForGRUD(train_X, train_y)
-        training_loader = DataLoader(
-            training_set, batch_size=self.batch_size, shuffle=True
-        )
-
-        if val_X is None:
-            self._train_model(training_loader)
-        else:
-            val_set = DatasetForGRUD(val_X, val_y)
-            val_loader = DataLoader(val_set, batch_size=self.batch_size, shuffle=False)
-            self._train_model(training_loader, val_loader)
-
-        self.model.load_state_dict(self.best_model_dict)
-        self.model.eval()  # set the model as eval status to freeze it.
-        return self
-
-    def assemble_input_data(self, data):
+    def _assemble_input_for_training(self, data: dict) -> dict:
         """Assemble the input data into a dictionary.
 
         Parameters
@@ -209,27 +195,146 @@ class GRUD(BaseNNClassifier):
         }
         return inputs
 
-    def classify(self, X):
-        X = self.check_input(self.n_steps, self.n_features, X)
+    def _assemble_input_for_validating(self, data: dict) -> dict:
+        """Assemble the given data into a dictionary for validating input.
+
+        Notes
+        -----
+        The validating data assembling processing is the same as training data assembling.
+
+
+        Parameters
+        ----------
+        data : list,
+            A list containing data fetched from Dataset by Dataloader.
+
+        Returns
+        -------
+        inputs : dict,
+            A python dictionary contains the input data for model validating.
+        """
+        return self._assemble_input_for_training(data)
+
+    def _assemble_input_for_testing(self, data: dict) -> dict:
+        """Assemble the given data into a dictionary for testing input.
+
+        Notes
+        -----
+        The testing data assembling processing is the same as training data assembling.
+
+        Parameters
+        ----------
+        data : list,
+            A list containing data fetched from Dataset by Dataloader.
+
+        Returns
+        -------
+        inputs : dict,
+            A python dictionary contains the input data for model testing.
+        """
+        indices, X, X_filledLOCF, missing_mask, deltas, empirical_mean = data
+
+        inputs = {
+            "indices": indices,
+            "X": X,
+            "X_filledLOCF": X_filledLOCF,
+            "missing_mask": missing_mask,
+            "deltas": deltas,
+            "empirical_mean": empirical_mean,
+        }
+
+        return inputs
+
+    def fit(
+        self,
+        train_set: Union[dict, str],
+        val_set: Optional[Union[dict, str]] = None,
+        file_type: str = "h5py",
+    ) -> None:
+        """Train the classifier on the given data.
+
+        Parameters
+        ----------
+        train_set : dict or str,
+            The dataset for model training, should be a dictionary including keys as 'X' and 'y',
+            or a path string locating a data file.
+            If it is a dict, X should be array-like of shape [n_samples, sequence length (time steps), n_features],
+            which is time-series data for training, can contain missing values, and y should be array-like of shape
+            [n_samples], which is classification labels of X.
+            If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
+            key-value pairs like a dict, and it has to include keys as 'X' and 'y'.
+
+        val_set : dict or str,
+            The dataset for model validating, should be a dictionary including keys as 'X' and 'y',
+            or a path string locating a data file.
+            If it is a dict, X should be array-like of shape [n_samples, sequence length (time steps), n_features],
+            which is time-series data for validating, can contain missing values, and y should be array-like of shape
+            [n_samples], which is classification labels of X.
+            If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
+            key-value pairs like a dict, and it has to include keys as 'X' and 'y'.
+
+        file_type : str, default = "h5py"
+            The type of the given file if train_set and val_set are path strings.
+
+        Returns
+        -------
+        self : object,
+            Trained classifier.
+        """
+
+        training_set = DatasetForGRUD(train_set, file_type)
+        training_loader = DataLoader(
+            training_set,
+            batch_size=self.batch_size,
+            shuffle=True,
+            num_workers=self.num_workers,
+        )
+
+        if val_set is None:
+            self._train_model(training_loader)
+        else:
+            val_set = DatasetForGRUD(val_set)
+            val_loader = DataLoader(
+                val_set,
+                batch_size=self.batch_size,
+                shuffle=False,
+                num_workers=self.num_workers,
+            )
+            self._train_model(training_loader, val_loader)
+
+        self.model.load_state_dict(self.best_model_dict)
         self.model.eval()  # set the model as eval status to freeze it.
-        test_set = DatasetForGRUD(X)
-        test_loader = DataLoader(test_set, batch_size=self.batch_size, shuffle=False)
+
+    def classify(self, X: Union[dict, str], file_type: str = "h5py") -> np.ndarray:
+        """Classify the input data with the trained model.
+
+        Parameters
+        ----------
+        X : array-like or str,
+            The data samples for testing, should be array-like of shape [n_samples, sequence length (time steps),
+            n_features], or a path string locating a data file, e.g. h5 file.
+
+        file_type : str, default = "h5py",
+            The type of the given file if X is a path string.
+
+        Returns
+        -------
+        array-like, shape [n_samples],
+            Classification results of the given samples.
+        """
+        self.model.eval()  # set the model as eval status to freeze it.
+        test_set = DatasetForGRUD(X, file_type)
+        test_loader = DataLoader(
+            test_set,
+            batch_size=self.batch_size,
+            shuffle=False,
+            num_workers=self.num_workers,
+        )
         prediction_collector = []
 
         with torch.no_grad():
             for idx, data in enumerate(test_loader):
-                # cannot use input_data_processing, cause here has no label
-                indices, X, X_filledLOCF, missing_mask, deltas, empirical_mean = data
-                # assemble input data
-                inputs = {
-                    "indices": indices,
-                    "X": X,
-                    "X_filledLOCF": X_filledLOCF,
-                    "missing_mask": missing_mask,
-                    "deltas": deltas,
-                    "empirical_mean": empirical_mean,
-                }
-
+                inputs = self._assemble_input_for_testing(data)
                 prediction = self.model.classify(inputs)
                 prediction_collector.append(prediction)
 

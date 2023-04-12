@@ -1,0 +1,24 @@
+name: pypots-test
+channels:
+    - conda-forge
+    - pytorch
+    - pyg
+    - nodefaults
+dependencies:
+    - conda-forge::python
+    - conda-forge::pip
+    - conda-forge::scipy
+    - conda-forge::numpy    # numpy should >= 1.23.3, otherwise may encounter "number not available" when torch>1.11
+    - conda-forge::scikit-learn # sklearn should >= 0.24.1
+    - conda-forge::pandas
+    - conda-forge::h5py
+    - conda-forge::tensorboard
+    - conda-forge::pytest-cov
+    - conda-forge::pytest-xdist
+    - conda-forge::coverage
+    - conda-forge::pycorruptor
+    - conda-forge::tsdb
+    - pytorch::pytorch
+    - pyg::pyg
+    - pyg::pytorch-scatter
+    - pyg::pytorch-sparse
