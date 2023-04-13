@@ -1,6 +1,6 @@
 numpy >= 1.23.3
 scikit-learn >= 0.24.1
-torch == 1.11.0
+torch == 1.13.1
 scipy
 tensorboard
 pandas
