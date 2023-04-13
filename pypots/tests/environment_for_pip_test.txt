@@ -1,6 +1,6 @@
 scipy
-numpy >=1.23.3
-scikit-learn >=0.24.1
+numpy
+scikit-learn
 pandas <2.0.0
 h5py
 tensorboard
