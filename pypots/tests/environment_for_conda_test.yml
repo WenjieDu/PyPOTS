@@ -8,9 +8,9 @@ dependencies:
     - conda-forge::python
     - conda-forge::pip
     - conda-forge::scipy
-    - conda-forge::numpy    # numpy should >= 1.23.3, otherwise may encounter "number not available" when torch>1.11
-    - conda-forge::scikit-learn # sklearn should >= 0.24.1
-    - conda-forge::pandas
+    - conda-forge::numpy >=1.23.3 # numpy must >=1.23.3, otherwise may encounter "number not available" when torch>1.11
+    - conda-forge::scikit-learn >=0.24.1
+    - conda-forge::pandas <2.0.0
     - conda-forge::h5py
     - conda-forge::tensorboard
     - conda-forge::pytest-cov
@@ -18,7 +18,7 @@ dependencies:
     - conda-forge::coverage
     - conda-forge::pycorruptor
     - conda-forge::tsdb
-    - pytorch::pytorch
+    - pytorch::pytorch >1.10.0
     - pyg::pyg
     - pyg::pytorch-scatter
     - pyg::pytorch-sparse
