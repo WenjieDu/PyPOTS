@@ -8,7 +8,7 @@ dependencies:
     - conda-forge::numpy >=1.23.3  # numpy should , otherwise may encounter "number not available" when torch>1.11
     - conda-forge::scipy
     - conda-forge::pandas <2.0.0
-    - conda-forge::scikit-learn
+    - conda-forge::scikit-learn >=0.24.1
     - conda-forge::tensorboard
     - conda-forge::pip
     - conda-forge::pycorruptor
