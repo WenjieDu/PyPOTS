@@ -5,48 +5,56 @@
 
 <p align='center'>
     <!-- Python version -->
-    <img src='https://img.shields.io/badge/python-v3-yellow?color=a4e2c6'>
+    <img alt="Python version" src='https://img.shields.io/badge/Python->v3.6-yellow?color=88ada6'>
     <!-- PyTorch-->
-    <img src='https://img.shields.io/static/v1?label=PyTorch&message=%E2%9D%A4%EF%B8%8F&color=7bcfa6&logo=pytorch'>
-    <!-- PyPI version -->
-    <a alt='PyPI download number' href='https://pypi.org/project/pypots'>
-        <img alt="PyPI" src="https://img.shields.io/pypi/v/pypots?color=7fecad&label=PyPI&logo=pypi&logoColor=white">
-    </a>
-    <!-- on Anaconda -->
-    <a alt='on anaconda' href='https://anaconda.org/conda-forge/pypots'>
-        <img alt="on anaconda" src="https://img.shields.io/conda/pn/conda-forge/pypots?color=3de1ad&label=Conda&logo=anaconda" />
+    <img alt="powered by Pytorch" src='https://img.shields.io/static/v1?label=PyTorch&message=%E2%9D%A4%EF%B8%8F&color=bbcdc5&logo=pytorch'>
+    <!-- the latest version -->
+    <a href='https://pypi.org/project/'>
+        <img alt="GitHub release " src="https://img.shields.io/github/v/release/wenjiedu/pypots?color=e0eee8&include_prereleases&label=Release">
     </a>
     <!-- License -->
-    <a alt='GPL3 license' href='https://github.com/WenjieDu/PyPOTS/blob/main/LICENSE'>
-        <img src='https://img.shields.io/badge/License-GPL--v3-00e09e'>
-    </a>
-    <!-- Repo size -->
-    <a alt='Repo size' href='https://github.com/WenjieDu/PyPOTS'>
-        <img src="https://img.shields.io/github/repo-size/WenjieDu/PyPOTS?color=48c0a3">
+    <a href='https://github.com/WenjieDu/PyPOTS/blob/main/LICENSE'>
+        <img alt='GPL3 license' src='https://img.shields.io/badge/License-GPL--v3-c0ebd7'>
     </a>
     <!-- Code of Conduct -->
-    <a alt='CODE_OF_CONDUCT' href='https://github.com/WenjieDu/PyPOTS/blob/main/CODE_OF_CONDUCT.md'> 
-        <img src='https://img.shields.io/badge/Contributor%20Covenant-v2.1-21a675.svg'>
+    <a href='https://github.com/WenjieDu/PyPOTS/blob/main/CODE_OF_CONDUCT.md'> 
+        <img alt='CODE_OF_CONDUCT' src='https://img.shields.io/badge/Contributor%20Covenant-v2.1-a4e2c6.svg'>
     </a>
     <!-- Slack Workspace -->
-    <a alt='Slack Workspace' href='https://join.slack.com/t/pypots-dev/shared_invite/zt-1gq6ufwsi-p0OZdW~e9UW_IA4_f1OfxA'> 
-        <img src='https://img.shields.io/badge/Slack-PyPOTS-grey?logo=slack&color=549688'>
+    <a href='https://join.slack.com/t/pypots-dev/shared_invite/zt-1gq6ufwsi-p0OZdW~e9UW_IA4_f1OfxA'> 
+        <img alt='Slack Workspace' src='https://img.shields.io/badge/Slack-PyPOTS-grey?logo=slack&color=7bcfa6'>
     </a>
-    <!-- Zenodo DOI -->
-    <a alt='Zenodo DOI' href='https://doi.org/10.5281/zenodo.6823221'>
-        <img src='https://zenodo.org/badge/DOI/10.5281/zenodo.6823221.svg'>
+    <!-- Repo Stars -->
+    <a href='https://github.com/WenjieDu/PyPOTS/stargazers'>
+        <img alt="GitHub Repo stars" src="https://img.shields.io/github/stars/wenjiedu/pypots?logo=Github&color=7fecad&label=Stars">
     </a>
-    <!-- PyPI download number -->
-    <a alt='PyPI download number' href='https://pepy.tech/project/pypots'>
-        <img src='https://static.pepy.tech/personalized-badge/pypots?period=total&units=international_system&left_color=grey&right_color=navy&left_text=Downloads'>
+    <!-- Repo Forks -->
+    <a href='https://github.com/WenjieDu/PyPOTS/forks'>
+        <img alt="GitHub Repo forks" src="https://img.shields.io/github/forks/wenjiedu/pypots?logo=Github&color=2edfa3&label=Forks">
+    </a>
+    <!-- Repo size -->
+    <a href='https://github.com/WenjieDu/PyPOTS'>
+        <img alt='Repo size' src="https://img.shields.io/github/repo-size/WenjieDu/PyPOTS?color=25f8cb&label=Repo%20Size&logo=Github">
+    </a>
+    <!-- Coveralls coverage -->
+    <a href='https://coveralls.io/github/WenjieDu/PyPOTS'> 
+        <img alt='Coveralls report' src='https://img.shields.io/coverallsCoverage/github/WenjieDu/PyPOTS?branch=main&logo=coveralls&color=00e09e'>
+    </a>
+    <!-- Anaconda downloads -->
+    <a href='https://anaconda.org/conda-forge/pypots'>
+        <img alt="Conda downloads" src="https://img.shields.io/conda/dn/conda-forge/pypots?label=Conda%20Downloads&color=48c0a3">
+    </a>
+    <!-- PyPI downloads -->
+    <a href='https://pypi.org/project/pypots'>
+        <img alt='PyPI downloads' src="https://static.pepy.tech/personalized-badge/pypots?period=total&units=international_system&left_color=grey&right_color=brightgreen&left_text=PyPI%20Downloads">
     </a>
     <!-- GitHub Testing -->
-    <a alt='GitHub Testing' href='https://github.com/WenjieDu/PyPOTS/actions/workflows/testing.yml'> 
-        <img src='https://github.com/WenjieDu/PyPOTS/actions/workflows/testing.yml/badge.svg'>
+    <a href='https://github.com/WenjieDu/PyPOTS/actions/workflows/testing.yml'> 
+        <img alt='GitHub Testing' src='https://github.com/WenjieDu/PyPOTS/actions/workflows/testing.yml/badge.svg'>
     </a>
-    <!-- Coveralls report -->
-    <a alt='Coveralls report' href='https://coveralls.io/github/WenjieDu/PyPOTS'> 
-        <img src='https://img.shields.io/coverallsCoverage/github/WenjieDu/PyPOTS?branch=main&logo=coveralls'>
+    <!-- Zenodo DOI -->
+    <a href='https://doi.org/10.5281/zenodo.6823221'>
+        <img alt='Zenodo DOI' src='https://zenodo.org/badge/DOI/10.5281/zenodo.6823221.svg'>
     </a>
 </p>
 
@@ -61,7 +69,8 @@ Visit [TSDB](https://github.com/WenjieDu/TSDB) right now to know more about this
 <br clear='left'>
 
 ## ❖ Installation
-PyPOTS now is available on <a alt='Anaconda' href='https://anaconda.org/conda-forge/pypots'><img align='center' src='https://img.shields.io/badge/Anaconda--lightgreen?style=social&logo=anaconda'></a>❗️ 
+PyPOTS now is available on <a href='https://anaconda.org/conda-forge/pypots'><img alt='on Anaconda' align='center' 
+src='https://img.shields.io/badge/Anaconda--lightgreen?style=social&logo=anaconda'></a>❗️ 
 
 Install it with `conda install pypots`, you may need to specify the channel with option `-c conda-forge`
 
@@ -101,35 +110,37 @@ mae = cal_mae(imputation, X_intact, indicating_mask)  # calculate mean absolute 
 ## ❖ Available Algorithms
 PyPOTS supports imputation, classification, clustering, and forecasting tasks on multivariate time series with missing values. The currently available algorithms of four tasks are cataloged in the following table with four partitions. The paper references are all listed at the bottom of this readme file. Please refer to them if you want more details.
 
-|   ***`Imputation`***   |      🚥      |                                                                                     🚥                                                                                      |    🚥    |
-|:----------------------:|:------------:|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------:|:--------:|
-|        **Type**        |  **Abbr.**   |                                                                 **Full name of the algorithm/model/paper**                                                                  | **Year** |        
-|       Neural Net       |    SAITS     |                                                            Self-Attention-based Imputation for Time Series [^1]                                                             |   2023   |
-|       Neural Net       | Transformer  | Attention is All you Need [^2]; Self-Attention-based Imputation for Time Series [^1]; <sup>Note: proposed in [^2], and re-implemented as an imputation model in [^1].</sup> |   2017   |
-|       Neural Net       |    BRITS     |                                                           Bidirectional Recurrent Imputation for Time Series [^3]                                                           |   2018   |
-|         Naive          |     LOCF     |                                                                      Last Observation Carried Forward                                                                       |    -     |
-| ***`Classification`*** |      🚥      |                                                                                     🚥                                                                                      |    🚥    |
-|        **Type**        |  **Abbr.**   |                                                                 **Full name of the algorithm/model/paper**                                                                  | **Year** |
-|       Neural Net       |    BRITS     |                                                           Bidirectional Recurrent Imputation for Time Series [^3]                                                           |   2018   |
-|       Neural Net       |    GRU-D     |                                               Recurrent Neural Networks for Multivariate Time Series with Missing Values [^4]                                               |   2018   |
-|       Neural Net       |   Raindrop   |                                                 Graph-Guided Network for Irregularly Sampled Multivariate Time Series [^5]                                                  |   2022   |
-|   ***`Clustering`***   |      🚥      |                                                                                     🚥                                                                                      |    🚥    |
-|        **Type**        |  **Abbr.**   |                                                                 **Full name of the algorithm/model/paper**                                                                  | **Year** |
-|       Neural Net       |     CRLI     |                                                   Clustering Representation Learning on Incomplete time-series data [^6]                                                    |   2021   |
-|       Neural Net       |    VaDER     |                                                               Variational Deep Embedding with Recurrence [^7]                                                               |   2019   |
-|  ***`Forecasting`***   |      🚥      |                                                                                     🚥                                                                                      |    🚥    |
-|        **Type**        |  **Abbr.**   |                                                                 **Full name of the algorithm/model/paper**                                                                  | **Year** |
-|     Probabilistic      |     BTTF     |                                                                 Bayesian Temporal Tensor Factorization [^8]                                                                 |   2021   |
+|   ***`Imputation`***   |      🚥      |                                                                                        🚥                                                                                         |    🚥    |
+|:----------------------:|:------------:|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------:|:--------:|
+|        **Type**        |  **Abbr.**   |                                                                    **Full name of the algorithm/model/paper**                                                                     | **Year** |        
+|       Neural Net       |    SAITS     |                                                               Self-Attention-based Imputation for Time Series [^1]                                                                |   2023   |
+|       Neural Net       | Transformer  | Attention is All you Need [^2];<br>Self-Attention-based Imputation for Time Series [^1];<br><sub>Note: proposed in [^2], and re-implemented as an imputation model in [^1].</sub> |   2017   |
+|       Neural Net       |    BRITS     |                                                              Bidirectional Recurrent Imputation for Time Series [^3]                                                              |   2018   |
+|         Naive          |     LOCF     |                                                                         Last Observation Carried Forward                                                                          |    -     |
+| ***`Classification`*** |      🚥      |                                                                                        🚥                                                                                         |    🚥    |
+|        **Type**        |  **Abbr.**   |                                                                    **Full name of the algorithm/model/paper**                                                                     | **Year** |
+|       Neural Net       |    BRITS     |                                                              Bidirectional Recurrent Imputation for Time Series [^3]                                                              |   2018   |
+|       Neural Net       |    GRU-D     |                                                  Recurrent Neural Networks for Multivariate Time Series with Missing Values [^4]                                                  |   2018   |
+|       Neural Net       |   Raindrop   |                                                    Graph-Guided Network for Irregularly Sampled Multivariate Time Series [^5]                                                     |   2022   |
+|   ***`Clustering`***   |      🚥      |                                                                                        🚥                                                                                         |    🚥    |
+|        **Type**        |  **Abbr.**   |                                                                    **Full name of the algorithm/model/paper**                                                                     | **Year** |
+|       Neural Net       |     CRLI     |                                                      Clustering Representation Learning on Incomplete time-series data [^6]                                                       |   2021   |
+|       Neural Net       |    VaDER     |                                                                  Variational Deep Embedding with Recurrence [^7]                                                                  |   2019   |
+|  ***`Forecasting`***   |      🚥      |                                                                                        🚥                                                                                         |    🚥    |
+|        **Type**        |  **Abbr.**   |                                                                    **Full name of the algorithm/model/paper**                                                                     | **Year** |
+|     Probabilistic      |     BTTF     |                                                                    Bayesian Temporal Tensor Factorization [^8]                                                                    |   2021   |
+
 
 ## ❖ Cite PyPOTS
-If you find PyPOTS is helpful to your research, please cite it as below and ⭐️star this repository to make others notice this work. 🤗
+You are very welcome to contribute to this exciting project! And we are pursuing to publish a short paper introducing PyPOTS in prestigious academic venues, e.g. JMLR (track for [Machine Learning Open Source Software](https://www.jmlr.org/mloss/)). Before that, PyPOTS is using its DOI from Zenodo for reference. If you use PyPOTS in your research, please cite it as below and ⭐️star this repository to make others notice this work. 🤗
 
 ```bibtex
 @misc{du2022PyPOTS,
 author = {Wenjie Du},
 title = {{PyPOTS: A Python Toolbox for Data Mining on Partially-Observed Time Series}},
-howpublished = {\url{https://github.com/wenjiedu/pypots}},
 year = {2022},
+howpublished = {\url{https://github.com/wenjiedu/pypots}},
+url = {\url{https://github.com/wenjiedu/pypots}}
 doi = {10.5281/zenodo.6823221},
 }
 ```
@@ -139,9 +150,9 @@ or
 `Wenjie Du. (2022). PyPOTS: A Python Toolbox for Data Mining on Partially-Observed Time Series. Zenodo. https://doi.org/10.5281/zenodo.6823221`
 
 ## ❖ Attention 👀
-The documentation and tutorials are under construction. And a short paper introducing PyPOTS is on the way! 🚀 Stay tuned please!
+The documentation and tutorials are under construction. 
 
-‼️ PyPOTS is currently under developing. If you like it and look forward to its growth, <ins>please give PyPOTS a star and watch it to keep you posted on its progress and to let me know that its development is meaningful</ins>. If you have any feedback, or want to contribute ideas/suggestions or share time-series related algorithms/papers, please join PyPOTS community and chat on <a alt='Slack Workspace' href='https://join.slack.com/t/pypots-dev/shared_invite/zt-1gq6ufwsi-p0OZdW~e9UW_IA4_f1OfxA'><img align='center' src='https://img.shields.io/badge/Slack-PyPOTS-grey?logo=slack&labelColor=4A154B&color=62BCE5'></a>, or create an issue. If you have any additional questions or have interests in collaboration, please take a look at [my GitHub profile](https://github.com/WenjieDu) and feel free to contact me 🤝.
+‼️ PyPOTS is currently under developing. If you like it and look forward to its growth, <ins>please give PyPOTS a star and watch it to keep you posted on its progress and to let me know that its development is meaningful</ins>. If you have any feedback, or want to contribute ideas/suggestions or share time-series related algorithms/papers, please join PyPOTS community and chat on <a href='https://join.slack.com/t/pypots-dev/shared_invite/zt-1gq6ufwsi-p0OZdW~e9UW_IA4_f1OfxA'><img alt='Slack Workspace'align='center' src='https://img.shields.io/badge/Slack-PyPOTS-grey?logo=slack&labelColor=4A154B&color=62BCE5'></a>, or create an issue. If you have any additional questions or have interests in collaboration, please take a look at [my GitHub profile](https://github.com/WenjieDu) and feel free to contact me 🤝.
 
 Thank you all for your attention! 😃
 
