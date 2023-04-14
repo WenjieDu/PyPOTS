@@ -1,0 +1,13 @@
+name: "🤔 Other Questions"
+description:
+labels: [ "question" ]
+
+body:
+  - type: textarea
+    id: question-description-requested
+    validations:
+      required: true
+    attributes:
+      label: Question description
+      description: |
+        A clear and concise description of the question. Please provide a link to related information and code if they exist.
