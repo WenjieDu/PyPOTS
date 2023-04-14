@@ -38,7 +38,7 @@
     </a>
     <!-- Coveralls coverage -->
     <a href='https://coveralls.io/github/WenjieDu/PyPOTS'> 
-        <img alt='Coveralls report' src='https://img.shields.io/coverallsCoverage/github/WenjieDu/PyPOTS?branch=main&logo=coveralls&color=00e09e'>
+        <img alt='Coveralls report' src='https://img.shields.io/coverallsCoverage/github/WenjieDu/PyPOTS?branch=main&logo=coveralls&color=00e09e&label=Coverage'>
     </a>
     <!-- Anaconda downloads -->
     <a href='https://anaconda.org/conda-forge/pypots'>
@@ -131,8 +131,8 @@ PyPOTS supports imputation, classification, clustering, and forecasting tasks on
 |     Probabilistic      |     BTTF     |                                                                    Bayesian Temporal Tensor Factorization [^8]                                                                    |   2021   |
 
 
-## ❖ Cite PyPOTS
-You are very welcome to contribute to this exciting project! And we are pursuing to publish a short paper introducing PyPOTS in prestigious academic venues, e.g. JMLR (track for [Machine Learning Open Source Software](https://www.jmlr.org/mloss/)). Before that, PyPOTS is using its DOI from Zenodo for reference. If you use PyPOTS in your research, please cite it as below and ⭐️star this repository to make others notice this work. 🤗
+## ❖ Citing PyPOTS
+You are very welcome to contribute to this exciting project! And we are pursuing to publish a short paper introducing PyPOTS in prestigious academic venues, e.g. JMLR (track for [Machine Learning Open Source Software](https://www.jmlr.org/mloss/)). Before that, PyPOTS is using its DOI from Zenodo for reference. If you use PyPOTS in your research, please cite it as below and 🌟star this repository to make others notice this work. 🤗
 
 ```bibtex
 @misc{du2022PyPOTS,
@@ -140,7 +140,7 @@ author = {Wenjie Du},
 title = {{PyPOTS: A Python Toolbox for Data Mining on Partially-Observed Time Series}},
 year = {2022},
 howpublished = {\url{https://github.com/wenjiedu/pypots}},
-url = {\url{https://github.com/wenjiedu/pypots}}
+url = {\url{https://github.com/wenjiedu/pypots}},
 doi = {10.5281/zenodo.6823221},
 }
 ```
@@ -170,4 +170,3 @@ Thank you all for your attention! 😃
 <summary>🏠 Visits</summary>
 <img align='left' src='https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2FPyPOTS%2FPyPOTS&count_bg=%23009A0A&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=Hits&edge_flat=false'>
 </details>
-
