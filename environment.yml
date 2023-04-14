@@ -7,11 +7,11 @@ dependencies:
     - conda-forge::python
     - conda-forge::numpy
     - conda-forge::scipy
-    - conda-forge::pandas
+    - conda-forge::pandas <2.0.0
     - conda-forge::scikit-learn
     - conda-forge::tensorboard
     - conda-forge::pip
     - conda-forge::pycorruptor
     - conda-forge::tsdb
     - conda-forge::h5py
-    - pytorch::pytorch==1.11.0
+    - pytorch::pytorch >=1.10.0

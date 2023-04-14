@@ -26,7 +26,7 @@ jobs:
                   python -m pip install --upgrade pip
                   # we have to install torch in advance because of torch_sparse,  
                   # refer to https://github.com/rusty1s/pytorch_sparse/issues/156#issuecomment-1304869772 for details  
-                  pip install torch>=1.10
+                  pip install torch>=1.10.0
                   pip install -r pypots/tests/environment_for_pip_test.txt
 
             - name: Fetch the test environment details
