@@ -21,9 +21,16 @@ setup(
         "neural networks",
         "machine learning",
         "deep learning",
+        "artificial intelligence",
         "time-series analysis",
+        "time series"
+        "imputation",
+        "classification",
+        "clustering",
+        "forecasting",
         "partially observed",
         "irregular sampled",
+        "partially-observed time series",
         "incomplete time series",
         "missing data",
         "missing values",
@@ -47,6 +54,7 @@ setup(
         "console_scripts": ["pypots-cli=pypots.utils.commands.pypots_cli:main"]
     },
     classifiers=[
+        "Development Status :: 4 - Beta",
         "Intended Audience :: Developers",
         "Intended Audience :: Education",
         "Intended Audience :: Science/Research",
