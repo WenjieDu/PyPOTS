@@ -1,5 +1,7 @@
 name: "🐞 Bug Report"
-description: Submit a bug report to help us improve PyPOTS
+description: Submit a bug report to help us improve PyPOTS.
+labels: ["bug"]
+
 body:
   - type: textarea
     id: system-info
@@ -14,10 +16,10 @@ body:
     id: information-scripts-examples
     attributes:
       label: Information
-      description: 'The problem arises when running:'
+      description: 'The problem happens when running:'
       options:
         - label: "The official example scripts"
-        - label: "My own modified scripts"
+        - label: "My own created scripts"
 
   - type: textarea
     id: reproduction
@@ -37,3 +39,13 @@ body:
           1.
           2.
           3.
+        
+        
+  - type: textarea
+    id: expected-behavior
+    validations:
+      required: true
+    attributes:
+      label: Expected behavior
+      description: "A clear and concise description of what error you would expect to happen."
+
