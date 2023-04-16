@@ -34,6 +34,7 @@ jobs:
                   pip install torch>=1.10.0
 
             - name: Install other dependencies
+              run: |
                   pip install -r pypots/tests/environment_for_pip_test.txt
 
             - name: Fetch the test environment details
