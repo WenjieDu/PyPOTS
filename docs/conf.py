@@ -32,6 +32,7 @@ extensions = [
     "sphinx.ext.coverage",
     "sphinx.ext.imgmath",
     "sphinx.ext.viewcode",
+    'sphinx.ext.napoleon',  # enables Sphinx to parse both NumPy and Google style docstrings, otherwise no Param/Returns
     "sphinxcontrib.bibtex",
 ]
 
