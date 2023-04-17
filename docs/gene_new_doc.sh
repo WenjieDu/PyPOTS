@@ -3,10 +3,11 @@
 
 # This shell script is created to help generate PyPOTS documentation.
 
-git clone https://github.com/WenjieDu/PyPOTS pypots_latest && rm -rf pypots_latest/pypots/tests
+
+git clone --depth=1 https://github.com/WenjieDu/PyPOTS pypots_latest && rm -rf pypots_latest/pypots/tests
 
 # Generate the docs according to the latest code on branch main
-SPHINX_APIDOC_OPTIONS=members,undoc-members,show-inheritance sphinx-apidoc pypots_latest -o pypots_latest/rst
+SPHINX_APIDOC_OPTIONS=members,undoc-members,show-inheritance,inherited-members sphinx-apidoc pypots_latest -o pypots_latest/rst
 
 # Only save the files we need.
 cp pypots_latest/rst/pypots.classification.rst \
