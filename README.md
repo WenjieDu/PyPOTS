@@ -1,60 +1,46 @@
-<a href='https://github.com/WenjieDu/PyPOTS'><img src='https://raw.githubusercontent.com/WenjieDu/PyPOTS/main/docs/figs/PyPOTS%20logo.svg?sanitize=true' width='200' align='right' /></a>
+<a href="https://github.com/WenjieDu/PyPOTS"><img src="https://raw.githubusercontent.com/WenjieDu/PyPOTS/main/docs/figs/PyPOTS%20logo.svg?sanitize=true" width="200" align="right"></a>
 
-## <p align='center'>Welcome to PyPOTS</p>
-**<p align='center'>A Python Toolbox for Data Mining on Partially-Observed Time Series</p>**
+## <p align="center">Welcome to PyPOTS</p>
+**<p align="center">A Python Toolbox for Data Mining on Partially-Observed Time Series</p>**
 
-<p align='center'>
-    <!-- Python version -->
-    <img alt="Python version" src='https://img.shields.io/badge/Python->v3.6-yellow?color=88ada6'>
-    <!-- PyTorch-->
-    <img alt="powered by Pytorch" src='https://img.shields.io/static/v1?label=PyTorch&message=%E2%9D%A4%EF%B8%8F&color=bbcdc5&logo=pytorch'>
-    <!-- the latest version -->
-    <a href='https://pypi.org/project/'>
-        <img alt="GitHub release " src="https://img.shields.io/github/v/release/wenjiedu/pypots?color=e0eee8&include_prereleases&label=Release">
+<p align="center">
+    <img alt="Python version" src="https://img.shields.io/badge/Python->v3.6-yellow?color=88ada6">
+    <img alt="powered by Pytorch" src="https://img.shields.io/static/v1?label=PyTorch&message=%E2%9D%A4%EF%B8%8F&color=bbcdc5&logo=pytorch">
+    <a href="https://pypi.org/project/">
+        <img alt="the latest release version" src="https://img.shields.io/github/v/release/wenjiedu/pypots?color=e0eee8&include_prereleases&label=Release">
     </a>
-    <!-- License -->
-    <a href='https://github.com/WenjieDu/PyPOTS/blob/main/LICENSE'>
-        <img alt='GPL3 license' src='https://img.shields.io/badge/License-GPL--v3-c0ebd7'>
+    <a href="https://github.com/WenjieDu/PyPOTS/blob/main/LICENSE">
+        <img alt="GPL3 license" src="https://img.shields.io/badge/License-GPL--v3-c0ebd7">
     </a>
-    <!-- Code of Conduct -->
-    <a href='https://github.com/WenjieDu/PyPOTS/blob/main/CODE_OF_CONDUCT.md'> 
-        <img alt='CODE_OF_CONDUCT' src='https://img.shields.io/badge/Contributor%20Covenant-v2.1-a4e2c6.svg'>
+    <a href="https://join.slack.com/t/pypots-dev/shared_invite/zt-1gq6ufwsi-p0OZdW~e9UW_IA4_f1OfxA"> 
+        <img alt="Slack Workspace" src="https://img.shields.io/badge/Slack-PyPOTS-grey?logo=slack&color=7bcfa6">
     </a>
-    <!-- Slack Workspace -->
-    <a href='https://join.slack.com/t/pypots-dev/shared_invite/zt-1gq6ufwsi-p0OZdW~e9UW_IA4_f1OfxA'> 
-        <img alt='Slack Workspace' src='https://img.shields.io/badge/Slack-PyPOTS-grey?logo=slack&color=7bcfa6'>
+    <a href="https://github.com/sponsors/WenjieDu">
+        <img alt="GitHub Sponsors" src="https://img.shields.io/github/sponsors/wenjiedu?label=Sponsors&color=7fecad&logo=githubsponsors">
     </a>
-    <!-- Repo Stars -->
-    <a href='https://github.com/WenjieDu/PyPOTS/stargazers'>
-        <img alt="GitHub Repo stars" src="https://img.shields.io/github/stars/wenjiedu/pypots?logo=Github&color=7fecad&label=Stars">
+    <a href="https://github.com/WenjieDu/PyPOTS/stargazers">
+        <img alt="GitHub Repo stars" src="https://img.shields.io/github/stars/wenjiedu/pypots?logo=Github&color=7bcfa6&label=Stars">
     </a>
-    <!-- Repo Forks -->
-    <a href='https://github.com/WenjieDu/PyPOTS/forks'>
+    <a href="https://github.com/WenjieDu/PyPOTS/forks">
         <img alt="GitHub Repo forks" src="https://img.shields.io/github/forks/wenjiedu/pypots?logo=Github&color=2edfa3&label=Forks">
     </a>
-    <!-- Repo size -->
-    <a href='https://github.com/WenjieDu/PyPOTS'>
-        <img alt='Repo size' src="https://img.shields.io/github/repo-size/WenjieDu/PyPOTS?color=25f8cb&label=Repo%20Size&logo=Github">
+    <a href="https://github.com/WenjieDu/PyPOTS">
+        <img alt="Repo size" src="https://img.shields.io/github/repo-size/WenjieDu/PyPOTS?color=25f8cb&label=Repo%20Size&logo=Github">
     </a>
-    <!-- Coveralls coverage -->
-    <a href='https://coveralls.io/github/WenjieDu/PyPOTS'> 
-        <img alt='Coveralls report' src='https://img.shields.io/coverallsCoverage/github/WenjieDu/PyPOTS?branch=main&logo=coveralls&color=00e09e&label=Coverage'>
+    <a href="https://coveralls.io/github/WenjieDu/PyPOTS"> 
+        <img alt="Coveralls coverage" src="https://img.shields.io/coverallsCoverage/github/WenjieDu/PyPOTS?branch=main&logo=coveralls&color=00e09e&label=Coverage">
     </a>
-    <!-- Anaconda downloads -->
-    <a href='https://anaconda.org/conda-forge/pypots'>
+    <a href="https://anaconda.org/conda-forge/pypots">
         <img alt="Conda downloads" src="https://img.shields.io/conda/dn/conda-forge/pypots?label=Conda%20Downloads&color=48c0a3">
     </a>
-    <!-- PyPI downloads -->
-    <a href='https://pypi.org/project/pypots'>
-        <img alt='PyPI downloads' src="https://static.pepy.tech/personalized-badge/pypots?period=total&units=international_system&left_color=grey&right_color=brightgreen&left_text=PyPI%20Downloads">
+    <a href="https://pypi.org/project/pypots">
+        <img alt="PyPI downloads" src="https://static.pepy.tech/personalized-badge/pypots?period=total&units=international_system&left_color=grey&right_color=teal&left_text=PyPI%20Downloads">
     </a>
-    <!-- GitHub Testing -->
-    <a href='https://github.com/WenjieDu/PyPOTS/actions/workflows/testing.yml'> 
-        <img alt='GitHub Testing' src='https://github.com/WenjieDu/PyPOTS/actions/workflows/testing.yml/badge.svg'>
+    <a href="https://github.com/WenjieDu/PyPOTS/actions/workflows/testing.yml"> 
+        <img alt="GitHub Testing" src="https://github.com/WenjieDu/PyPOTS/actions/workflows/testing.yml/badge.svg">
     </a>
-    <!-- Zenodo DOI -->
-    <a href='https://doi.org/10.5281/zenodo.6823221'>
-        <img alt='Zenodo DOI' src='https://zenodo.org/badge/DOI/10.5281/zenodo.6823221.svg'>
+    <a href="https://doi.org/10.5281/zenodo.6823221">
+        <img alt="Zenodo DOI" src="https://zenodo.org/badge/DOI/10.5281/zenodo.6823221.svg">
     </a>
 </p>
 
@@ -62,15 +48,15 @@
 
 ⦿ `Mission`: PyPOTS is born to become a handy toolbox that is going to make data mining on POTS easy rather than tedious, to help engineers and researchers focus more on the core problems in their hands rather than on how to deal with the missing parts in their data. PyPOTS will keep integrating classical and the latest state-of-the-art data mining algorithms for partially-observed multivariate time series. For sure, besides various algorithms, PyPOTS is going to have unified APIs together with detailed documentation and interactive examples across algorithms as tutorials.
 
-<a href='https://github.com/WenjieDu/TSDB'><img src="https://raw.githubusercontent.com/WenjieDu/TSDB/main/docs/figs/TSDB%20logo.svg?sanitize=true" align='left' width='160'/></a>
+<a href="https://github.com/WenjieDu/TSDB"><img src="https://raw.githubusercontent.com/WenjieDu/TSDB/main/docs/figs/TSDB%20logo.svg?sanitize=true" align="left" width="160"/></a>
 To make various open-source time-series datasets readily available to our users, PyPOTS gets supported by project [TSDB (Time-Series DataBase)](https://github.com/WenjieDu/TSDB), a toolbox making loading time-series datasets super easy! 
 
 Visit [TSDB](https://github.com/WenjieDu/TSDB) right now to know more about this handy tool 🛠! It now supports a total of 119 open-source datasets.
-<br clear='left'>
+<br clear="left">
 
 ## ❖ Installation
-PyPOTS now is available on <a href='https://anaconda.org/conda-forge/pypots'><img alt='on Anaconda' align='center' 
-src='https://img.shields.io/badge/Anaconda--lightgreen?style=social&logo=anaconda'></a>❗️ 
+PyPOTS now is available on <a href="https://anaconda.org/conda-forge/pypots"><img alt="on Anaconda" align="center" 
+src="https://img.shields.io/badge/Anaconda--lightgreen?style=social&logo=anaconda"></a>❗️ 
 
 Install it with `conda install pypots`, you may need to specify the channel with option `-c conda-forge`
 
@@ -132,7 +118,10 @@ PyPOTS supports imputation, classification, clustering, and forecasting tasks on
 
 
 ## ❖ Citing PyPOTS
-You are very welcome to contribute to this exciting project! And we are pursuing to publish a short paper introducing PyPOTS in prestigious academic venues, e.g. JMLR (track for [Machine Learning Open Source Software](https://www.jmlr.org/mloss/)). Before that, PyPOTS is using its DOI from Zenodo for reference. If you use PyPOTS in your research, please cite it as below and 🌟star this repository to make others notice this work. 🤗
+We are pursuing to publish a short paper introducing PyPOTS in prestigious academic venues, e.g. JMLR (track for 
+[Machine Learning Open Source Software](https://www.jmlr.org/mloss/)). Before that, PyPOTS is using its DOI from Zenodo 
+for reference. If you use PyPOTS in your research, please cite it as below and 🌟star this repository to make others 
+notice this work. 🤗
 
 ```bibtex
 @misc{du2022PyPOTS,
@@ -147,12 +136,36 @@ doi = {10.5281/zenodo.6823221},
 
 or
 
-`Wenjie Du. (2022). PyPOTS: A Python Toolbox for Data Mining on Partially-Observed Time Series. Zenodo. https://doi.org/10.5281/zenodo.6823221`
+`Wenjie Du. (2022). PyPOTS: A Python Toolbox for Data Mining on Partially-Observed Time Series. Zenodo. 
+https://doi.org/10.5281/zenodo.6823221`
+
+
+## ❖ Contribution
+You're very welcome to contribute to this exciting project! 
+
+By committing your code, you'll
+- be listed as one of [PyPOTS contributors](https://github.com/WenjieDu/PyPOTS/graphs/contributors): <a href="https://github.com/wenjiedu/pypots/graphs/contributors"><img align="center" src="https://contrib.rocks/image?repo=wenjiedu/pypots"></a>;
+- get mentioned in our [release notes](https://github.com/WenjieDu/PyPOTS/releases);
+
+Besides, you can also contribute to PyPOTS by simply staring🌟 this repo to help more people notice it. 
+Your star is your recognition to PyPOTS, and it matters! 
+
+<details>
+<summary><b><i>👏 Click here to view PyPOTS stargazers and forkers.<br>We're so proud to have more and more awesome users, as well as more bright ✨stars: </i></b></summary>
+<a href="https://github.com/WenjieDu/PyPOTS/stargazers"><img alt="PyPOTS stargazers" src="https://reporoster.com/stars/dark/WenjieDu/PyPOTS"></a>
+<a href="https://github.com/WenjieDu/PyPOTS/network/members"><img alt="PyPOTS forkers" src="https://reporoster.com/forks/dark/WenjieDu/PyPOTS"></a>
+</details>
+
 
 ## ❖ Attention 👀
 The documentation and tutorials are under construction. 
 
-‼️ PyPOTS is currently under developing. If you like it and look forward to its growth, <ins>please give PyPOTS a star and watch it to keep you posted on its progress and to let me know that its development is meaningful</ins>. If you have any feedback, or want to contribute ideas/suggestions or share time-series related algorithms/papers, please join PyPOTS community and chat on <a href='https://join.slack.com/t/pypots-dev/shared_invite/zt-1gq6ufwsi-p0OZdW~e9UW_IA4_f1OfxA'><img alt='Slack Workspace'align='center' src='https://img.shields.io/badge/Slack-PyPOTS-grey?logo=slack&labelColor=4A154B&color=62BCE5'></a>, or create an issue. If you have any additional questions or have interests in collaboration, please take a look at [my GitHub profile](https://github.com/WenjieDu) and feel free to contact me 🤝.
+‼️ PyPOTS is currently under developing. If you like it and look forward to its growth, <ins>please give PyPOTS a star 
+and watch it to keep you posted on its progress and to let me know that its development is meaningful</ins>. If you have 
+any feedback, or want to contribute ideas/suggestions or share time-series related algorithms/papers, please join PyPOTS 
+community and chat on <a href="https://join.slack.com/t/pypots-dev/shared_invite/zt-1gq6ufwsi-p0OZdW~e9UW_IA4_f1OfxA"><img alt="Slack Workspace" align="center" src="https://img.shields.io/badge/Slack-join_us!-grey?logo=slack&color=teal"></a>, 
+or create an issue. If you have any additional questions or have interests in collaboration, please take a look at 
+[my GitHub profile](https://github.com/WenjieDu) and feel free to contact me 🤝.
 
 Thank you all for your attention! 😃
 
@@ -168,5 +181,7 @@ Thank you all for your attention! 😃
 
 <details>
 <summary>🏠 Visits</summary>
-<img align='left' src='https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2FPyPOTS%2FPyPOTS&count_bg=%23009A0A&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=Hits&edge_flat=false'>
+<a href="https://github.com/WenjieDu/PyPOTS">
+    <img alt="PyPOTS visits" align="left" src="https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2FPyPOTS%2FPyPOTS&count_bg=%23009A0A&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=Hits&edge_flat=false">
+</a>
 </details>
