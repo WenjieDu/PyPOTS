@@ -152,7 +152,7 @@ class DevCommand(BaseCommand):
                 shutil.rmtree("dist", ignore_errors=True)
                 shutil.rmtree("pypots.egg-info", ignore_errors=True)
             elif self._build:
-                os.system("python setup.py sdist bdist bdist_wheel")
+                self.execute_command("python setup.py sdist bdist bdist_wheel")
             elif self._run_tests:
                 pytest_command = f"pytest -k {self._k}" if self._k else "pytest"
                 command_to_run_test = (
@@ -162,21 +162,18 @@ class DevCommand(BaseCommand):
                 )
                 logger.info(f"Executing '{command_to_run_test}'...")
 
-                os.system(command_to_run_test)
+                self.execute_command(command_to_run_test)
                 if self._show_coverage:
-                    os.system("coverage report -m")
-                    os.system("rm -rf .coverage")
-                else:
-                    logger.info(
-                        "Omit the code coverage report. Enable it by using --show_coverage if in need."
-                    )
-                os.system("rm -rf .pytest_cache")
+                    self.execute_command("coverage report -m")
+                    self.execute_command("rm -rf .coverage")
+
+                self.execute_command("rm -rf .pytest_cache")
 
             elif self._lint_code:
                 logger.info("Reformatting with Black...")
-                os.system("black .")
+                self.execute_command("black .")
                 logger.info("Linting with Flake8...")
-                os.system("flake8 .")
+                self.execute_command("flake8 .")
 
         except ImportError:
             raise ImportError(IMPORT_ERROR_MESSAGE)

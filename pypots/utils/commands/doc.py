@@ -150,18 +150,6 @@ class DocCommand(BaseCommand):
             f"but you're running it under the path {os.getcwd()}. Please make a check."
         )
 
-        if self._port is not None:
-            assert self._view_doc, (
-                "Argument `--port` should combine the use of `--view_doc`. "
-                "Try `pypots-cli doc --view_doc --port your_port`"
-            )
-
-        if self._branch is not None:
-            assert self._gene_rst, (
-                "Argument `--branch` should combine the use of `--gene_rst`. "
-                "Try `pypots-cli doc --gene_rst --branch your_branch`"
-            )
-
         if self._cleanup:
             assert not self._gene_rst and not self._gene_html and not self._view_doc, (
                 "Argument `--cleanup` should be used alone. "
@@ -207,7 +195,7 @@ class DocCommand(BaseCommand):
 
                 # Generate the docs according to the cloned code
                 logger.info("Generating rst files...")
-                os.system(
+                self.execute_command(
                     "SPHINX_APIDOC_OPTIONS=members,undoc-members,show-inheritance,inherited-members "
                     f"sphinx-apidoc {CLONED_LATEST_PYPOTS} -o {CLONED_LATEST_PYPOTS}/rst"
                 )
@@ -224,14 +212,14 @@ class DocCommand(BaseCommand):
             if self._gene_html:
                 logger.info("Generating static HTML files...")
                 purge_statics()
-                os.system("make html")
+                self.execute_command("make html")
 
             if self._view_doc:
                 assert os.path.exists(
                     "_build/html"
                 ), "_build/html does not exists, please run `pypots-cli doc --gene_html` first"
-                logger.info("Deploying HTML...")
-                os.system(
+                logger.info(f"Deploying HTML to http://127.0.0.1:{self._port}...")
+                self.execute_command(
                     f"python -m http.server {self._port} -d _build/html -b 127.0.0.1"
                 )
 
