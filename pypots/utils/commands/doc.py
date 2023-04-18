@@ -45,8 +45,11 @@ def doc_command_factory(args: Namespace):
 
 
 def purge_statics():
-    logger.info("Directories _build, _static, and _templates will be deleted if exist")
+    logger.info(
+        f"Directories _build, _static, and _templates, and {CLONED_LATEST_PYPOTS} will be deleted if exist"
+    )
     shutil.rmtree("_build", ignore_errors=True)
+    shutil.rmtree(CLONED_LATEST_PYPOTS, ignore_errors=True)
     shutil.rmtree("_static", ignore_errors=True)
     shutil.rmtree("_templates", ignore_errors=True)
 
@@ -133,21 +136,51 @@ class DocCommand(BaseCommand):
         self._port = port
         self._cleanup = cleanup
 
-    def run(self):
+    def check_arguments(self):
+        """Run some checks on the arguments to avoid error usages"""
         parent_dir = os.path.join(".", "..")
         containing_figs = "figs" in os.listdir(".")
         pypots_in_the_parent_dir = "pypots" in os.listdir(parent_dir)
         # if currently under dir 'docs', it should have sub-dir 'figs', and 'pypots' should be in the parent dir
         whether_under_dir_docs = containing_figs and pypots_in_the_parent_dir
-
         # `pypots-cli dev` should only be run under dir 'docs'
         # because we probably will compile the doc and generate HTMLs with command `make`
-        assert (
-            whether_under_dir_docs
-        ), "Command `pypots-cli dev` can only be run under the directory 'docs' in project PyPOTS"
+        assert whether_under_dir_docs, (
+            "Command `pypots-cli doc` can only be run under the directory 'docs' in project PyPOTS, "
+            f"but you're running it under the path {os.getcwd()}. Please make a check."
+        )
 
-        if self._gene_rst:
-            try:
+        if self._port is not None:
+            assert self._view_doc, (
+                "Argument `--port` should combine the use of `--view_doc`. "
+                "Try `pypots-cli doc --view_doc --port your_port`"
+            )
+
+        if self._branch is not None:
+            assert self._gene_rst, (
+                "Argument `--branch` should combine the use of `--gene_rst`. "
+                "Try `pypots-cli doc --gene_rst --branch your_branch`"
+            )
+
+        if self._cleanup:
+            assert not self._gene_rst and not self._gene_html and not self._view_doc, (
+                "Argument `--cleanup` should be used alone. "
+                "Try `pypots-cli doc --cleanup`"
+            )
+
+    def run(self):
+        """Execute the given command."""
+
+        # check arguments first
+        self.check_arguments()
+
+        try:
+            if self._cleanup:
+                logger.info("Purging static files...")
+                purge_statics()
+                logger.info("Purging finished successfully.")
+
+            if self._gene_rst:
                 if os.path.exists(CLONED_LATEST_PYPOTS):
                     logger.info(
                         f"Directory {CLONED_LATEST_PYPOTS} exists, deleting it..."
@@ -188,21 +221,12 @@ class DocCommand(BaseCommand):
                 # Delete the useless files.
                 shutil.rmtree(f"{CLONED_LATEST_PYPOTS}", ignore_errors=True)
 
-            except ImportError:
-                raise ImportError(IMPORT_ERROR_MESSAGE)
-            except Exception as e:
-                raise RuntimeError(e)
-
-        if self._gene_html:
-            try:
+            if self._gene_html:
                 logger.info("Generating static HTML files...")
                 purge_statics()
                 os.system("make html")
-            except Exception as e:
-                raise RuntimeError(e)
 
-        if self._view_doc:
-            try:
+            if self._view_doc:
                 assert os.path.exists(
                     "_build/html"
                 ), "_build/html does not exists, please run `pypots-cli doc --gene_html` first"
@@ -210,14 +234,8 @@ class DocCommand(BaseCommand):
                 os.system(
                     f"python -m http.server {self._port} -d _build/html -b 127.0.0.1"
                 )
-            except Exception as e:
-                raise RuntimeError(e)
 
-        if self._cleanup:
-            try:
-                logger.info("Purging static files...")
-                purge_statics()
-                logger.info("Purging finished successfully.")
-
-            except Exception as e:
-                raise RuntimeError(e)
+        except ImportError:
+            raise ImportError(IMPORT_ERROR_MESSAGE)
+        except Exception as e:
+            raise RuntimeError(e)
