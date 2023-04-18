@@ -12,7 +12,7 @@ from pypots.utils.commands import BaseCommand
 from pypots.utils.logging import logger
 
 IMPORT_ERROR_MESSAGE = (
-    " `pypots-cli dev` command is for PyPOTS developers to run tests easily. "
+    "`pypots-cli dev` command is for PyPOTS developers to run tests easily. "
     "Therefore, you need a complete PyPOTS development environment. However, you are missing some dependencies. "
     "Please refer to https://github.com/WenjieDu/PyPOTS/blob/main/environment-dev.yml for dependency details. "
 )
@@ -28,27 +28,39 @@ def dev_command_factory(args: Namespace):
 
 
 class DevCommand(BaseCommand):
+    """CLI tools helping develop PyPOTS. Easy the running of tests and code linting with Black and Flake8.
+
+    Examples
+    --------
+    $ pypots-cli dev --run_tests
+    $ pypots-cli dev --run_tests --show_coverage  # show code coverage
+    $ pypots-cli dev --run_tests -k imputation  # only run tests cases of imputation models
+    $ pypots-cli dev --lint_code  # use Black to reformat the code and apply Flake8 to lint code
+
+    """
+
     @staticmethod
     def register_subcommand(parser: ArgumentParser):
-        train_parser = parser.add_parser("dev", help="CLI tool to help development ")
-        train_parser.add_argument(
+        sub_parser = parser.add_parser(
+            "dev", help="CLI tools helping develop PyPOTS code"
+        )
+        sub_parser.add_argument(
             "--run_tests",
             dest="run_tests",
             action="store_true",
-            help="run all test cases",
+            help="Run all test cases",
         )
-        train_parser.add_argument(
+        sub_parser.add_argument(
             "--show_coverage",
             dest="show_coverage",
             action="store_true",
-            help="show the code coverage report after running tests",
+            help="Show the code coverage report after running tests",
         )
-        train_parser.add_argument(
+        sub_parser.add_argument(
             "-k",
             type=str,
             default="",
-            required=False,
-            help="the -k option of pytest. Description of -k option in pytest: "
+            help="The -k option of pytest. Description of -k option in pytest: "
             "only run tests which match the given substring expression. An expression is a python evaluatable "
             "expression where all names are substring-matched against test names and their parent classes. "
             "Example: -k 'test_method or test_other' matches all test functions and classes whose name contains "
@@ -58,13 +70,13 @@ class DevCommand(BaseCommand):
             "'extra_keyword_matches' set, as well as functions which have names assigned directly to them. The "
             "matching is case-insensitive.",
         )
-        train_parser.add_argument(
+        sub_parser.add_argument(
             "--lint_code",
             dest="lint_code",
             action="store_true",
-            help="run Black and Flake8 to lint code",
+            help="Run Black and Flake8 to lint code",
         )
-        train_parser.set_defaults(func=dev_command_factory)
+        sub_parser.set_defaults(func=dev_command_factory)
 
     def __init__(
         self,
