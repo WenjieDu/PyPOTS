@@ -11,7 +11,7 @@ on:
             - dev
 
 jobs:
-    test:
+    CI-testing:
         runs-on: ${{ matrix.os }}
         defaults:
             run:

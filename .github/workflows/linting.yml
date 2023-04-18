@@ -11,7 +11,7 @@ on:
             - dev
 
 jobs:
-    flake8:
+    flake8-linting:
         runs-on: ubuntu-latest
 
         steps:
