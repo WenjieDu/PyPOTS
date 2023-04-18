@@ -6,6 +6,7 @@ CLI tools to help the development team build PyPOTS.
 # License: GLP-v3
 
 import os
+import shutil
 from argparse import ArgumentParser, Namespace
 
 from pypots.utils.commands import BaseCommand
@@ -20,6 +21,8 @@ IMPORT_ERROR_MESSAGE = (
 
 def dev_command_factory(args: Namespace):
     return DevCommand(
+        args.build,
+        args.cleanup,
         args.run_tests,
         args.k,
         args.show_coverage,
@@ -45,6 +48,18 @@ class DevCommand(BaseCommand):
             "dev", help="CLI tools helping develop PyPOTS code"
         )
         sub_parser.add_argument(
+            "--build",
+            dest="build",
+            action="store_true",
+            help="Build PyPOTS into a wheel and package the source code into a .tar.gz file for distribution",
+        )
+        sub_parser.add_argument(
+            "--cleanup",
+            dest="cleanup",
+            action="store_true",
+            help="Delete all caches and building files",
+        )
+        sub_parser.add_argument(
             "--run_tests",
             dest="run_tests",
             action="store_true",
@@ -59,7 +74,7 @@ class DevCommand(BaseCommand):
         sub_parser.add_argument(
             "-k",
             type=str,
-            default="",
+            default=None,
             help="The -k option of pytest. Description of -k option in pytest: "
             "only run tests which match the given substring expression. An expression is a python evaluatable "
             "expression where all names are substring-matched against test names and their parent classes. "
@@ -80,19 +95,65 @@ class DevCommand(BaseCommand):
 
     def __init__(
         self,
+        build: bool,
+        cleanup: bool,
         run_tests: bool,
         k: str,
         show_coverage: bool,
         lint_code: bool,
     ):
+        self._build = build
+        self._cleanup = cleanup
         self._run_tests = run_tests
         self._k = k
         self._show_coverage = show_coverage
         self._lint_code = lint_code
 
+    def check_arguments(self):
+        """Run some checks on the arguments to avoid error usages"""
+        containing_docs = "docs" in os.listdir(".")
+        containing_pypots = "pypots" in os.listdir(".")
+        # if currently under dir 'docs', it should have sub-dir 'figs', and 'pypots' should be in the parent dir
+        whether_under_dir_docs = containing_docs and containing_pypots
+        # `pypots-cli dev` should only be run under dir 'docs'
+        # because we probably will compile the doc and generate HTMLs with command `make`
+        assert whether_under_dir_docs, (
+            "Command `pypots-cli dev` can only be run under the root directory of project PyPOTS, "
+            f"but you're running it under the path {os.getcwd()}. Please make a check."
+        )
+
+        if self._k is not None:
+            assert self._run_tests, (
+                "Argument `-k` should combine the use of `--run_tests`. "
+                "Try `pypots-cli dev --run_tests -k your_pattern`"
+            )
+
+        if self._show_coverage:
+            assert self._run_tests, (
+                "Argument `--show_coverage` should combine the use of `--run_tests`. "
+                "Try `pypots-cli dev --run_tests --show_coverage`"
+            )
+
+        if self._cleanup:
+            assert not self._run_tests and not self._lint_code, (
+                "Argument `--cleanup` should be used alone. "
+                "Try `pypots-cli dev --cleanup`"
+            )
+
     def run(self):
-        if self._run_tests:
-            try:
+        """Execute the given command."""
+
+        # check arguments first
+        self.check_arguments()
+
+        try:
+            if self._cleanup:
+                shutil.rmtree("build", ignore_errors=True)
+                shutil.rmtree("dist", ignore_errors=True)
+                shutil.rmtree("pypots.egg-info", ignore_errors=True)
+            elif self._build:
+                os.system("python setup.py sdist bdist bdist_wheel")
+            elif self._run_tests:
                 pytest_command = f"pytest -k {self._k}" if self._k else "pytest"
                 command_to_run_test = (
                     f"coverage run -m {pytest_command}"
@@ -111,17 +172,13 @@ class DevCommand(BaseCommand):
                     )
                 os.system("rm -rf .pytest_cache")
 
-            except ImportError:
-                raise ImportError(IMPORT_ERROR_MESSAGE)
-            except Exception as e:
-                raise RuntimeError(e)
-        elif self._lint_code:
-            try:
+            elif self._lint_code:
                 logger.info("Reformatting with Black...")
                 os.system("black .")
                 logger.info("Linting with Flake8...")
                 os.system("flake8 .")
-            except ImportError:
-                raise ImportError(IMPORT_ERROR_MESSAGE)
-            except Exception as e:
-                raise RuntimeError(e)
+
+        except ImportError:
+            raise ImportError(IMPORT_ERROR_MESSAGE)
+        except Exception as e:
+            raise RuntimeError(e)
