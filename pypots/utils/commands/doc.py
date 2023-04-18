@@ -197,7 +197,7 @@ class DocCommand(BaseCommand):
             try:
                 logger.info("Generating static HTML files...")
                 purge_statics()
-                os.system(f"make html")
+                os.system("make html")
             except Exception as e:
                 raise RuntimeError(e)
 

@@ -23,7 +23,7 @@ setup(
         "deep learning",
         "artificial intelligence",
         "time-series analysis",
-        "time series"
+        "time series",
         "imputation",
         "classification",
         "clustering",
