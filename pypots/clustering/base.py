@@ -1,5 +1,5 @@
 """
-The base class for clustering models.
+The base classes for PyPOTS clustering models.
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>

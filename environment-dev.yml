@@ -7,18 +7,21 @@ channels:
     - nodefaults
 
 dependencies:
-    # basic
-    - conda-forge::python
-    - conda-forge::pip
-    - conda-forge::scipy
-    - conda-forge::numpy >=1.23.3  # numpy should , otherwise may encounter "number not available" when torch>1.11
-    - conda-forge::scikit-learn >=0.24.1
-    - conda-forge::pandas <2.0.0
-    - conda-forge::h5py
-    - conda-forge::tensorboard
-    - conda-forge::pycorruptor
-    - conda-forge::tsdb
-    - pytorch::pytorch >=1.10.0
+    ## basic
+    #- conda-forge::python
+    #- conda-forge::pip
+    #- conda-forge::scipy
+    #- conda-forge::numpy >=1.23.3  # numpy should , otherwise may encounter "number not available" when torch>1.11
+    #- conda-forge::scikit-learn >=0.24.1
+    #- conda-forge::pandas <2.0.0
+    #- conda-forge::h5py
+    #- conda-forge::tensorboard
+    #- conda-forge::pycorruptor
+    #- conda-forge::tsdb
+    #- pytorch::pytorch >=1.10.0
+    ## Below we install the latest pypots because we need pypots-cli in it for development.
+    ## PyPOTS itself already includes all basic dependencies.
+    - conda-forge::pypots
 
     # optional
     - pyg::pyg

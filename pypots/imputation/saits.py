@@ -246,7 +246,9 @@ class SAITS(BaseNNImputer):
             A python dictionary contains the input data for model training.
         """
 
-        indices, X_intact, X, missing_mask, indicating_mask = data
+        indices, X_intact, X, missing_mask, indicating_mask = map(
+            lambda x: x.to(self.device), data
+        )
 
         inputs = {
             "X": X,
@@ -275,7 +277,7 @@ class SAITS(BaseNNImputer):
         inputs : dict,
             A python dictionary contains the input data for model validating.
         """
-        indices, X, missing_mask = data
+        indices, X, missing_mask = map(lambda x: x.to(self.device), data)
 
         inputs = {
             "X": X,
@@ -401,7 +403,7 @@ class SAITS(BaseNNImputer):
 
         with torch.no_grad():
             for idx, data in enumerate(test_loader):
-                inputs = {"X": data[1], "missing_mask": data[2]}
+                inputs = self._assemble_input_for_testing(data)
                 imputed_data = self.model.impute(inputs)
                 imputation_collector.append(imputed_data)
 
