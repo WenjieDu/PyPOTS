@@ -18,7 +18,6 @@ pypots.forecasting.bttf module
 
 .. automodule:: pypots.forecasting.bttf
    :members:
-   :exclude-members: normrnd
    :undoc-members:
    :show-inheritance:
    :inherited-members:
