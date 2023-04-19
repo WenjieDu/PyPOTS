@@ -14,4 +14,5 @@ __all__ = [
     "clustering",
     "forecasting",
     "utils",
+    "__version__",
 ]
