@@ -1,5 +1,5 @@
 """
-The base class for forecasting models.
+The base classes for PyPOTS forecasting models.
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>

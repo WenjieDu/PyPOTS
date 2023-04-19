@@ -560,7 +560,9 @@ class BRITS(BaseNNImputer):
         """
 
         # fetch data
-        indices, X, missing_mask, deltas, back_X, back_missing_mask, back_deltas = data
+        indices, X, missing_mask, deltas, back_X, back_missing_mask, back_deltas = map(
+            lambda x: x.to(self.device), data
+        )
 
         # assemble input data
         inputs = {

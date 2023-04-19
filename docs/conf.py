@@ -10,15 +10,24 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 
-from pypots.__version__ import version
+import datetime
+import os
+import sys
+
+try:
+    sys.path.insert(0, os.path.abspath(".."))
+except IndexError:
+    pass
+
+import pypots
 
 # -- Project information -----------------------------------------------------
 project = "PyPOTS"
-copyright = "2023, Wenjie Du"
 author = "Wenjie Du"
+copyright = f"{datetime.datetime.now().year}, {author}"
 
 # The full version, including alpha/beta/rc tags
-release = version
+release = pypots.__version__
 
 # -- General configuration ---------------------------------------------------
 
@@ -32,7 +41,7 @@ extensions = [
     "sphinx.ext.coverage",
     "sphinx.ext.imgmath",
     "sphinx.ext.viewcode",
-    'sphinx.ext.napoleon',  # enables Sphinx to parse both NumPy and Google style docstrings, otherwise no Param/Returns
+    "sphinx.ext.napoleon",  # enables Sphinx to parse both NumPy and Google style docstrings, otherwise no Param/Returns
     "sphinxcontrib.bibtex",
 ]
 

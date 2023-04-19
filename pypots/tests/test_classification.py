@@ -78,14 +78,11 @@ class TestBRITS(unittest.TestCase):
         assert os.path.exists(
             self.saving_path
         ), f"file {self.saving_path} does not exist"
+
         # whether the tensorboard file exists
-        files = os.listdir(self.saving_path)
-        assert len(files) > 0, "tensorboard dir does not exist"
-        tensorboard_dir_name = files[0]
-        tensorboard_dir_path = os.path.join(self.saving_path, tensorboard_dir_name)
         assert (
-            tensorboard_dir_name.startswith("tensorboard")
-            and len(os.listdir(tensorboard_dir_path)) > 0
+                self.brits.tb_file_saving_path is not None
+                and len(os.listdir(self.brits.tb_file_saving_path)) > 0
         ), "tensorboard file does not exist"
 
         # save the trained model into file, and check if the path exists
@@ -152,14 +149,11 @@ class TestGRUD(unittest.TestCase):
         assert os.path.exists(
             self.saving_path
         ), f"file {self.saving_path} does not exist"
+
         # whether the tensorboard file exists
-        files = os.listdir(self.saving_path)
-        assert len(files) > 0, "tensorboard dir does not exist"
-        tensorboard_dir_name = files[0]
-        tensorboard_dir_path = os.path.join(self.saving_path, tensorboard_dir_name)
         assert (
-            tensorboard_dir_name.startswith("tensorboard")
-            and len(os.listdir(tensorboard_dir_path)) > 0
+                self.grud.tb_file_saving_path is not None
+                and len(os.listdir(self.grud.tb_file_saving_path)) > 0
         ), "tensorboard file does not exist"
 
         # save the trained model into file, and check if the path exists
@@ -236,14 +230,11 @@ class TestRaindrop(unittest.TestCase):
         assert os.path.exists(
             self.saving_path
         ), f"file {self.saving_path} does not exist"
+
         # whether the tensorboard file exists
-        files = os.listdir(self.saving_path)
-        assert len(files) > 0, "tensorboard dir does not exist"
-        tensorboard_dir_name = files[0]
-        tensorboard_dir_path = os.path.join(self.saving_path, tensorboard_dir_name)
         assert (
-            tensorboard_dir_name.startswith("tensorboard")
-            and len(os.listdir(tensorboard_dir_path)) > 0
+                self.raindrop.tb_file_saving_path is not None
+                and len(os.listdir(self.raindrop.tb_file_saving_path)) > 0
         ), "tensorboard file does not exist"
 
         # save the trained model into file, and check if the path exists
