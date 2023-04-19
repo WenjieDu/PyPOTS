@@ -511,7 +511,7 @@ class Transformer(BaseNNImputer):
 
         with torch.no_grad():
             for idx, data in enumerate(test_loader):
-                inputs = {"X": data[1], "missing_mask": data[2]}
+                inputs = self._assemble_input_for_testing(data)
                 imputed_data = self.model.impute(inputs)
                 imputation_collector.append(imputed_data)
 
