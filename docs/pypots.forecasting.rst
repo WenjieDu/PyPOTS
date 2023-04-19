@@ -11,14 +11,17 @@ pypots.forecasting.base module
    :members:
    :undoc-members:
    :show-inheritance:
+   :inherited-members:
 
 pypots.forecasting.bttf module
 ------------------------------
 
 .. automodule:: pypots.forecasting.bttf
    :members:
+   :exclude-members: normrnd
    :undoc-members:
    :show-inheritance:
+   :inherited-members:
 
 Module contents
 ---------------
@@ -27,3 +30,4 @@ Module contents
    :members:
    :undoc-members:
    :show-inheritance:
+   :inherited-members:
