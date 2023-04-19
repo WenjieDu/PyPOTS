@@ -11,6 +11,13 @@
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 
 import datetime
+import os
+import sys
+
+try:
+    sys.path.insert(0, os.path.abspath(".."))
+except IndexError:
+    pass
 
 import pypots
 
