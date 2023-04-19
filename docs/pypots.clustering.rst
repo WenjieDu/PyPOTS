@@ -11,7 +11,6 @@ pypots.clustering.base module
    :members:
    :undoc-members:
    :show-inheritance:
-   :inherited-members:
 
 pypots.clustering.crli module
 -----------------------------
@@ -20,7 +19,6 @@ pypots.clustering.crli module
    :members:
    :undoc-members:
    :show-inheritance:
-   :inherited-members:
 
 pypots.clustering.vader module
 ------------------------------
@@ -29,7 +27,6 @@ pypots.clustering.vader module
    :members:
    :undoc-members:
    :show-inheritance:
-   :inherited-members:
 
 Module contents
 ---------------
@@ -38,4 +35,3 @@ Module contents
    :members:
    :undoc-members:
    :show-inheritance:
-   :inherited-members:

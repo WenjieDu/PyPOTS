@@ -11,7 +11,6 @@ pypots.classification.base module
    :members:
    :undoc-members:
    :show-inheritance:
-   :inherited-members:
 
 pypots.classification.brits module
 ----------------------------------
@@ -20,7 +19,6 @@ pypots.classification.brits module
    :members:
    :undoc-members:
    :show-inheritance:
-   :inherited-members:
 
 pypots.classification.grud module
 ---------------------------------
@@ -29,7 +27,6 @@ pypots.classification.grud module
    :members:
    :undoc-members:
    :show-inheritance:
-   :inherited-members:
 
 pypots.classification.raindrop module
 -------------------------------------
@@ -38,7 +35,6 @@ pypots.classification.raindrop module
    :members:
    :undoc-members:
    :show-inheritance:
-   :inherited-members:
 
 Module contents
 ---------------
@@ -47,4 +43,3 @@ Module contents
    :members:
    :undoc-members:
    :show-inheritance:
-   :inherited-members:

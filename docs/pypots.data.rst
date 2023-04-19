@@ -11,7 +11,6 @@ pypots.data.base module
    :members:
    :undoc-members:
    :show-inheritance:
-   :inherited-members:
 
 pypots.data.dataset\_for\_brits module
 --------------------------------------
@@ -20,7 +19,6 @@ pypots.data.dataset\_for\_brits module
    :members:
    :undoc-members:
    :show-inheritance:
-   :inherited-members:
 
 pypots.data.dataset\_for\_grud module
 -------------------------------------
@@ -29,7 +27,6 @@ pypots.data.dataset\_for\_grud module
    :members:
    :undoc-members:
    :show-inheritance:
-   :inherited-members:
 
 pypots.data.dataset\_for\_mit module
 ------------------------------------
@@ -38,7 +35,6 @@ pypots.data.dataset\_for\_mit module
    :members:
    :undoc-members:
    :show-inheritance:
-   :inherited-members:
 
 pypots.data.generating module
 -----------------------------
@@ -47,7 +43,6 @@ pypots.data.generating module
    :members:
    :undoc-members:
    :show-inheritance:
-   :inherited-members:
 
 pypots.data.load\_preprocessing module
 --------------------------------------
@@ -56,7 +51,6 @@ pypots.data.load\_preprocessing module
    :members:
    :undoc-members:
    :show-inheritance:
-   :inherited-members:
 
 pypots.data.load\_specific\_datasets module
 -------------------------------------------
@@ -65,7 +59,6 @@ pypots.data.load\_specific\_datasets module
    :members:
    :undoc-members:
    :show-inheritance:
-   :inherited-members:
 
 pypots.data.utils module
 ------------------------
@@ -74,7 +67,6 @@ pypots.data.utils module
    :members:
    :undoc-members:
    :show-inheritance:
-   :inherited-members:
 
 Module contents
 ---------------
@@ -83,4 +75,3 @@ Module contents
    :members:
    :undoc-members:
    :show-inheritance:
-   :inherited-members:

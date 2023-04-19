@@ -19,7 +19,6 @@ pypots.utils.files module
    :members:
    :undoc-members:
    :show-inheritance:
-   :inherited-members:
 
 pypots.utils.logging module
 ---------------------------
@@ -28,7 +27,6 @@ pypots.utils.logging module
    :members:
    :undoc-members:
    :show-inheritance:
-   :inherited-members:
 
 pypots.utils.metrics module
 ---------------------------
@@ -37,7 +35,6 @@ pypots.utils.metrics module
    :members:
    :undoc-members:
    :show-inheritance:
-   :inherited-members:
 
 Module contents
 ---------------
@@ -46,4 +43,3 @@ Module contents
    :members:
    :undoc-members:
    :show-inheritance:
-   :inherited-members:
