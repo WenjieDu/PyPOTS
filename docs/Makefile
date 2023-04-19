@@ -3,8 +3,9 @@
 
 # You can set these variables from the command line, and also
 # from the environment for the first two.
-SPHINXOPTS    = pypots
-SPHINXBUILD   = sphinx-build
+SPHINXOPTS    ?=
+SPHINXBUILD   ?= sphinx-build
+SPHINXPROJ    = pypots
 SOURCEDIR     = .
 BUILDDIR      = _build
 
