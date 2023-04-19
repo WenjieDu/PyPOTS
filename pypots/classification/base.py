@@ -1,5 +1,5 @@
 """
-The base class for classification models.
+The base classes for PyPOTS classification models.
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
@@ -18,7 +18,13 @@ from pypots.utils.logging import logger
 
 
 class BaseClassifier(BaseModel):
-    """Abstract class for all classification models."""
+    """The abstract class for all PyPOTS classification models.
+    Parameters
+    ---
+    device
+    tb_file_saving_path
+
+    """
 
     def __init__(
         self,

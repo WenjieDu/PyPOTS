@@ -213,7 +213,7 @@ class BRITS(BaseNNClassifier):
             back_missing_mask,
             back_deltas,
             label,
-        ) = data
+        ) = map(lambda x: x.to(self.device), data)
 
         # assemble input data
         inputs = {
@@ -278,7 +278,7 @@ class BRITS(BaseNNClassifier):
             back_X,
             back_missing_mask,
             back_deltas,
-        ) = data
+        ) = map(lambda x: x.to(self.device), data)
 
         # assemble input data
         inputs = {

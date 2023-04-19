@@ -1,5 +1,5 @@
 """
-The base class for imputation models.
+The base class for PyPOTS imputation models.
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
@@ -258,7 +258,7 @@ class BaseNNImputer(BaseNNModel, BaseImputer):
                             imputation_collector.append(imputed_data)
 
                     imputation_collector = torch.cat(imputation_collector)
-                    imputation_collector = imputation_collector.numpy()
+                    imputation_collector = imputation_collector.cpu().detach().numpy()
 
                     mean_val_loss = cal_mae(
                         imputation_collector,

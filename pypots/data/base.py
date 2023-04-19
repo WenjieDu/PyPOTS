@@ -1,5 +1,5 @@
 """
-Utilities for data manipulation
+The base class for PyPOTS datasets.
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>

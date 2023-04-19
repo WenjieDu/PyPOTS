@@ -396,7 +396,7 @@ class CRLI(BaseNNClusterer):
         """
 
         # fetch data
-        indices, X, _, missing_mask, _, _ = data
+        indices, X, _, missing_mask, _, _ = map(lambda x: x.to(self.device), data)
 
         inputs = {
             "X": X,

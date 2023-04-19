@@ -246,7 +246,9 @@ class SAITS(BaseNNImputer):
             A python dictionary contains the input data for model training.
         """
 
-        indices, X_intact, X, missing_mask, indicating_mask = data
+        indices, X_intact, X, missing_mask, indicating_mask = map(
+            lambda x: x.to(self.device), data
+        )
 
         inputs = {
             "X": X,
@@ -275,7 +277,7 @@ class SAITS(BaseNNImputer):
         inputs : dict,
             A python dictionary contains the input data for model validating.
         """
-        indices, X, missing_mask = data
+        indices, X, missing_mask = map(lambda x: x.to(self.device), data)
 
         inputs = {
             "X": X,

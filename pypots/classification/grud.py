@@ -181,7 +181,9 @@ class GRUD(BaseNNClassifier):
             A dictionary with data assembled.
         """
         # fetch data
-        indices, X, X_filledLOCF, missing_mask, deltas, empirical_mean, label = data
+        indices, X, X_filledLOCF, missing_mask, deltas, empirical_mean, label = map(
+            lambda x: x.to(self.device), data
+        )
 
         # assemble input data
         inputs = {
@@ -232,7 +234,9 @@ class GRUD(BaseNNClassifier):
         inputs : dict,
             A python dictionary contains the input data for model testing.
         """
-        indices, X, X_filledLOCF, missing_mask, deltas, empirical_mean = data
+        indices, X, X_filledLOCF, missing_mask, deltas, empirical_mean = map(
+            lambda x: x.to(self.device), data
+        )
 
         inputs = {
             "indices": indices,

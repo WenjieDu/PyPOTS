@@ -1,5 +1,5 @@
 """
-Base class for main models in PyPOTS.
+The base (abstract) classes for models in PyPOTS.
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
@@ -17,17 +17,34 @@ from pypots.utils.logging import logger
 
 
 class BaseModel(ABC):
-    """Base model class for all model implementations.
+    """The base model class for all model implementations.
 
     Parameters
     ----------
     device : str or `torch.device`, default = None,
         The device for the model to run on.
-        If not given, will try to use CUDA devices first, then CPUs. CUDA and CPU are so far the main devices for people
-        to train ML models. Other devices like Google TPU and Apple Silicon accelerator MPS may be added in the future.
+        If not given, will try to use CUDA devices first (will use the GPU with device number 0 only by default),
+        then CPUs, considering CUDA and CPU are so far the main devices for people to train ML models.
+        Other devices like Google TPU and Apple Silicon accelerator MPS may be added in the future.
 
     tb_file_saving_path : str, default = None,
-        The path to save the tensorboard file, which contains the loss values recorded during training.
+        The path to save the training logs (i.e. loss values recorded during training) into a tensorboard file.
+        Will not save if not given.
+
+    Attributes
+    ----------
+    model : object, default = None,
+        The underlying model or algorithm to finish the task.
+
+    summary_writer : None or torch.utils.tensorboard.SummaryWriter,  default = None,
+        The event writer to save training logs. Default as None. It only works when parameter `tb_file_saving_path` is
+        given, otherwise the training events won't be saved.
+
+        It is designed as being set up while initializing the model because it's created to
+        1). help visualize the model's training procedure (during training not after) and
+        2). assist users to tune the model's hype-parameters.
+        If only setting it up after training with a function like setter(), it cannot achieve the 1st purpose.
+
     """
 
     def __init__(
@@ -36,6 +53,8 @@ class BaseModel(ABC):
         tb_file_saving_path: str = None,
     ):
         self.model = None
+        self.summary_writer = None
+        self.device = None
 
         # set up the device for model running below
         if device is None:
@@ -57,6 +76,7 @@ class BaseModel(ABC):
                 )
 
         # set up the summary writer for training log saving below
+        # initialize self.summary_writer if tb_file_saving_path is given and not None, otherwise don't save the log
         if isinstance(tb_file_saving_path, str):
 
             from datetime import datetime
@@ -73,28 +93,29 @@ class BaseModel(ABC):
             self.summary_writer = SummaryWriter(
                 actual_tb_file_saving_path, filename_suffix=".pypots"
             )
-        else:
-            # don't save the log if tb_file_saving_path isn't given, set summary_writer as None
-            self.summary_writer = None
 
     def save_log_into_tb_file(self, step: int, stage: str, loss_dict: dict) -> None:
-        """Saving training logs into the tensorboard file.
+        """Saving training logs into the tensorboard file specified by the given path `tb_file_saving_path`.
 
         Parameters
         ----------
         step : int,
             The current training step number.
+            One step for one batch processing, so the number of steps means how many batches the model has processed.
 
         stage : str,
-            The stage of the current operation, 'training' or 'validating'.
+            The stage of the current operation, e.g. 'pretraining', 'training', 'validating'.
 
         loss_dict : dict,
-            A dictionary containing items to log, should have at least one item, e.g. {'imputation loss': 0.05}
+            A dictionary containing items to log, should have at least one item, and only items having its name
+            including "loss" or "error" will be logged, e.g. {'imputation_loss': 0.05, "classification_error": 0.32}.
 
         """
         while len(loss_dict) > 0:
             (item_name, loss) = loss_dict.popitem()
-            if "loss" in item_name:  # save all items containing word "loss" in the name
+            # save all items containing "loss" or "error" in the name
+            # WDU: may enable customization keywords in the future
+            if ("loss" in item_name) or ("error" in item_name):
                 self.summary_writer.add_scalar(f"{stage}/{item_name}", loss, step)
 
     def save_model(
@@ -103,7 +124,7 @@ class BaseModel(ABC):
         file_name: str,
         overwrite: bool = False,
     ) -> None:
-        """Save the model to a disk file.
+        """Save the model with current parameters to a disk file.
 
         A .pypots extension will be appended to the filename if it does not already have one.
         Please note that such an extension is not necessary, but to indicate the saved model is from PyPOTS framework
@@ -138,7 +159,9 @@ class BaseModel(ABC):
             torch.save(self.model, saving_path)
             logger.info(f"Saved successfully to {saving_path}.")
         except Exception as e:
-            raise RuntimeError(f'{e} Failed to save the model to "{saving_path}"!')
+            raise RuntimeError(
+                f'Failed to save the model to "{saving_path}" because of the below error! \n{e}'
+            )
 
     def load_model(self, model_path: str) -> None:
         """Load the saved model from a disk file.
@@ -166,7 +189,7 @@ class BaseModel(ABC):
 
 
 class BaseNNModel(BaseModel):
-    """Abstract class for all neural-network models.
+    """The abstract class for all neural-network models.
 
     Parameters
     ----------
@@ -197,6 +220,22 @@ class BaseNNModel(BaseModel):
 
     tb_file_saving_path : str, default = None,
         The path to save the tensorboard file, which contains the loss values recorded during training.
+
+
+    Attributes
+    ---------
+    optimizer : torch.optim.Optimizer, default = None,
+        The optimizer to back propagate losses for model optimization. Default as None, will be implemented
+        when the concreate implementation model gets initialized.
+
+    best_model_dict : dict, default = None,
+        A dictionary contains the trained model that achieves the best performance according to the loss defined,
+        i.e. the lowest loss.
+
+    best_loss : float, default = inf,
+        The criteria to judge whether the model's performance is the best so far.
+        Usually the lower, the better.
+
     """
 
     def __init__(
@@ -224,6 +263,7 @@ class BaseNNModel(BaseModel):
         self.model = None
         self.optimizer = None
         self.best_model_dict = None
+        # WDU: may enable users to customize the criteria in the future
         self.best_loss = float("inf")
 
     def _print_model_size(self) -> None:
