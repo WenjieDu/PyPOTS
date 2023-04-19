@@ -11,6 +11,7 @@ pypots.imputation.base module
    :members:
    :undoc-members:
    :show-inheritance:
+   :inherited-members:
 
 pypots.imputation.brits module
 ------------------------------
@@ -19,6 +20,7 @@ pypots.imputation.brits module
    :members:
    :undoc-members:
    :show-inheritance:
+   :inherited-members:
 
 pypots.imputation.locf module
 -----------------------------
@@ -27,6 +29,7 @@ pypots.imputation.locf module
    :members:
    :undoc-members:
    :show-inheritance:
+   :inherited-members:
 
 pypots.imputation.saits module
 ------------------------------
@@ -35,6 +38,7 @@ pypots.imputation.saits module
    :members:
    :undoc-members:
    :show-inheritance:
+   :inherited-members:
 
 pypots.imputation.transformer module
 ------------------------------------
@@ -43,6 +47,7 @@ pypots.imputation.transformer module
    :members:
    :undoc-members:
    :show-inheritance:
+   :inherited-members:
 
 Module contents
 ---------------
@@ -51,3 +56,4 @@ Module contents
    :members:
    :undoc-members:
    :show-inheritance:
+   :inherited-members:
