@@ -77,6 +77,7 @@ class BaseModel(ABC):
 
         # set up the summary writer for training log saving below
         # initialize self.summary_writer if tb_file_saving_path is given and not None, otherwise don't save the log
+        self.tb_file_saving_path = None
         if isinstance(tb_file_saving_path, str):
 
             from datetime import datetime
@@ -86,12 +87,12 @@ class BaseModel(ABC):
             time_now = datetime.now().__format__("%Y%m%d_T%H%M%S")
             # the actual directory name to save the tensorboard file
             actual_tb_saving_dir_name = "tensorboard_" + time_now
-            actual_tb_file_saving_path = os.path.join(
+            self.tb_file_saving_path = os.path.join(
                 tb_file_saving_path, actual_tb_saving_dir_name
             )
             # os.makedirs(actual_tb_file_saving_path)  # create the dir for file saving
             self.summary_writer = SummaryWriter(
-                actual_tb_file_saving_path, filename_suffix=".pypots"
+                self.tb_file_saving_path, filename_suffix=".pypots"
             )
 
     def save_log_into_tb_file(self, step: int, stage: str, loss_dict: dict) -> None:
