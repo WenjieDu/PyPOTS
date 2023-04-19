@@ -1,3 +1,5 @@
+# This is file is used to help customize PyPOTS documentation building process on ReadTheDocs.
+
 version: 2
 
 sphinx:
@@ -14,8 +16,8 @@ build:
       pre_install:
          - python -m pip install --upgrade pip
          - pip install torch==1.13.1 --extra-index-url https://download.pytorch.org/whl/cpu
-         - pip install -e ".[optional]" -f "https://data.pyg.org/whl/torch-${{ matrix.torch-version }}+cpu.html"
-         - pip install -e ".[basic, doc]"
+         - pip install -e ".[optional]" -f "https://data.pyg.org/whl/torch-1.13.1+cpu.html"
+         - pip install -e ".[basic,doc]"
 
 
 
