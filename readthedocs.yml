@@ -3,7 +3,6 @@
 version: 2
 
 formats:
-  - html
   - htmlzip
   - pdf
   - epub
