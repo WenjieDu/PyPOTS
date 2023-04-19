@@ -2,6 +2,12 @@
 
 version: 2
 
+formats:
+  - html
+  - htmlzip
+  - pdf
+  - epub
+
 sphinx:
    configuration: docs/conf.py
    fail_on_warning: true
@@ -15,7 +21,7 @@ build:
    jobs:
       pre_install:
          - python -m pip install --upgrade pip
-         - pip install torch==1.13.1 --extra-index-url https://download.pytorch.org/whl/cpu
+         - pip install torch==1.13.1 -f https://download.pytorch.org/whl/cpu
          - pip install -e ".[optional]" -f "https://data.pyg.org/whl/torch-1.13.1+cpu.html"
          - pip install -e ".[basic,doc]"
 
