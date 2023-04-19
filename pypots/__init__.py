@@ -5,7 +5,7 @@ PyPOTS package.
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: GPL-v3
 
-from pypots.__version__ import version as __version__
+from pypots.version import __version__
 
 __all__ = [
     "data",
@@ -14,5 +14,4 @@ __all__ = [
     "clustering",
     "forecasting",
     "utils",
-    "__version__",
 ]

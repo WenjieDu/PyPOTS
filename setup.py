@@ -1,13 +1,13 @@
 from setuptools import setup, find_packages
 
-from pypots.__version__ import version
+from pypots.version import __version__
 
 with open("./README.md", encoding="utf-8") as f:
     README = f.read()
 
 setup(
     name="pypots",
-    version=version,
+    version=__version__,
     description="A Python Toolbox for Data Mining on Partially-Observed Time Series",
     long_description=README,
     long_description_content_type="text/markdown",
