@@ -42,10 +42,10 @@ class DatasetForMIT(BaseDataset):
     """
 
     def __init__(
-            self,
-            data: Union[dict, str],
-            file_type: str = "h5py",
-            rate: float = 0.2,
+        self,
+        data: Union[dict, str],
+        file_type: str = "h5py",
+        rate: float = 0.2,
     ):
         super().__init__(data, file_type)
         self.rate = rate
@@ -124,7 +124,7 @@ class DatasetForMIT(BaseDataset):
         ]
 
         if (
-                "y" in self.file_handle.keys()
+            "y" in self.file_handle.keys()
         ):  # if the dataset has labels, then fetch it from the file
             sample.append(torch.tensor(self.file_handle["y"][idx], dtype=torch.long))
 

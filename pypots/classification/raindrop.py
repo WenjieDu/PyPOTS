@@ -690,7 +690,9 @@ class Raindrop(BaseNNClassifier):
             A dictionary with data assembled.
         """
         # fetch data
-        indices, X, X_filledLOCF, missing_mask, deltas, empirical_mean, label = data
+        indices, X, X_filledLOCF, missing_mask, deltas, empirical_mean, label = map(
+            lambda x: x.to(self.device), data
+        )
 
         bz, n_steps, n_features = X.shape
         lengths = torch.tensor([n_steps] * bz, dtype=torch.float)
@@ -743,7 +745,9 @@ class Raindrop(BaseNNClassifier):
         inputs : dict,
             A python dictionary contains the input data for model testing.
         """
-        indices, X, X_filledLOCF, missing_mask, deltas, empirical_mean = data
+        indices, X, X_filledLOCF, missing_mask, deltas, empirical_mean = map(
+            lambda x: x.to(self.device), data
+        )
         bz, n_steps, n_features = X.shape
         lengths = torch.tensor([n_steps] * bz, dtype=torch.float)
         times = torch.tensor(range(n_steps), dtype=torch.float).repeat(bz, 1)
