@@ -1,11 +1,11 @@
-matplotlib
-numpy
-scikit_learn
+numpy >=1.23.3
+scikit-learn >=0.24.1
+pandas <2.0.0
+torch >=1.10.0
 scipy
-torch
 tensorboard
-pandas
 pycorruptor
 tsdb
+h5py
 sphinxcontrib-bibtex
 furo
