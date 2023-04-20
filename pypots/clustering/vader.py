@@ -514,10 +514,27 @@ class VaDER(BaseNNClusterer):
                     results = self.model.forward(inputs, pretrain=True)
                     sample_collector.append(results["z"])
             samples = torch.cat(sample_collector).cpu().detach().numpy()
-            gmm = GaussianMixture(
-                n_components=self.n_clusters, covariance_type="diag", reg_covar=1e-04
-            )
-            gmm.fit(samples)
+
+            # leverage the below loop to automatically fix the exception ValueError raised by gmm.fit()
+            flag = 0
+            reg_covar = 1e-04
+            while flag == 0:
+                gmm = GaussianMixture(
+                    n_components=self.n_clusters,
+                    covariance_type="diag",
+                    reg_covar=reg_covar,
+                    # reg_covar is set as 1e-04 in the official implementation, but may cause
+                    # ValueError: Fitting the mixture model failed because some components have ill-defined empirical
+                    # covariance (for instance caused by singleton or collapsed samples). Try to decrease the number
+                    # of components, or increase reg_covar.
+                )
+                try:
+                    gmm.fit(samples)
+                    flag = 1
+                except ValueError:
+                    reg_covar *= 2
+                    continue
+
             # get GMM parameters
             phi = np.log(gmm.weights_ + 1e-9)  # inverse softmax
             mu = gmm.means_
