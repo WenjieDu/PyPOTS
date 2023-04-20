@@ -531,7 +531,9 @@ class VaDER(BaseNNClusterer):
                 try:
                     gmm.fit(samples)
                     flag = 1
-                except ValueError:
+                except ValueError as e:
+                    logger.error(e)
+                    logger.warning(f"Met with ValueError, double `reg_covar` to re-train the GMM model.")
                     reg_covar *= 2
                     continue
 
