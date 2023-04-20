@@ -1,4 +1,4 @@
-<a href="https://github.com/WenjieDu/PyPOTS"><img src="https://raw.githubusercontent.com/WenjieDu/PyPOTS/main/docs/figs/PyPOTS%20logo.svg?sanitize=true" width="200" align="right"></a>
+<a href="https://github.com/WenjieDu/PyPOTS"><img src="https://raw.githubusercontent.com/WenjieDu/PyPOTS/main/docs/figs/PyPOTS_logo.svg?sanitize=true" width="200" align="right"></a>
 
 ## <p align="center">Welcome to PyPOTS</p>
 **<p align="center">A Python Toolbox for Data Mining on Partially-Observed Time Series</p>**
@@ -136,8 +136,9 @@ doi = {10.5281/zenodo.6823221},
 
 or
 
-`Wenjie Du. (2022). PyPOTS: A Python Toolbox for Data Mining on Partially-Observed Time Series. Zenodo. 
-https://doi.org/10.5281/zenodo.6823221`
+`Wenjie Du. (2022). 
+PyPOTS: A Python Toolbox for Data Mining on Partially-Observed Time Series. 
+Zenodo. https://doi.org/10.5281/zenodo.6823221`
 
 
 ## ❖ Contribution
@@ -146,13 +147,14 @@ You're very welcome to contribute to this exciting project!
 By committing your code, you'll
 - be listed as one of [PyPOTS contributors](https://github.com/WenjieDu/PyPOTS/graphs/contributors): <a href="https://github.com/wenjiedu/pypots/graphs/contributors"><img align="center" src="https://contrib.rocks/image?repo=wenjiedu/pypots"></a>;
 - get mentioned in our [release notes](https://github.com/WenjieDu/PyPOTS/releases);
-
-Besides, you can also contribute to PyPOTS by simply staring🌟 this repo to help more people notice it. 
+- make your well-established model out-of-the-box for PyPOTS users to run;
+  
+You can also contribute to PyPOTS by simply staring🌟 this repo to help more people notice it. 
 Your star is your recognition to PyPOTS, and it matters! 
 
-<details>
+<details open>
 <summary><b><i>👏 Click here to view PyPOTS stargazers and forkers.<br>We're so proud to have more and more awesome users, as well as more bright ✨stars: </i></b></summary>
-<a href="https://github.com/WenjieDu/PyPOTS/stargazers"><img alt="PyPOTS stargazers" src="https://reporoster.com/stars/dark/WenjieDu/PyPOTS"></a>
+<a href="https://github.com/WenjieDu/PyPOTS/stargazers"><img alt="PyPOTS stargazers" src="https://reporoster.com/stars/dark/WenjieDu/PyPOTS"></a> <br>
 <a href="https://github.com/WenjieDu/PyPOTS/network/members"><img alt="PyPOTS forkers" src="https://reporoster.com/forks/dark/WenjieDu/PyPOTS"></a>
 </details>
 
