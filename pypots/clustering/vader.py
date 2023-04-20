@@ -534,7 +534,7 @@ class VaDER(BaseNNClusterer):
                 except ValueError as e:
                     logger.error(e)
                     logger.warning(
-                        f"Met with ValueError, double `reg_covar` to re-train the GMM model."
+                        "Met with ValueError, double `reg_covar` to re-train the GMM model."
                     )
 
                     flag -= 1
