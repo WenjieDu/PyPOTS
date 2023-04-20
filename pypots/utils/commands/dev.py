@@ -9,7 +9,7 @@ import os
 import shutil
 from argparse import ArgumentParser, Namespace
 
-from pypots.utils.commands import BaseCommand
+from pypots.utils.commands.base import BaseCommand
 from pypots.utils.logging import logger
 
 IMPORT_ERROR_MESSAGE = (
@@ -111,16 +111,7 @@ class DevCommand(BaseCommand):
 
     def check_arguments(self):
         """Run some checks on the arguments to avoid error usages"""
-        containing_docs = "docs" in os.listdir(".")
-        containing_pypots = "pypots" in os.listdir(".")
-        # if currently under dir 'docs', it should have sub-dir 'figs', and 'pypots' should be in the parent dir
-        whether_under_dir_docs = containing_docs and containing_pypots
-        # `pypots-cli dev` should only be run under dir 'docs'
-        # because we probably will compile the doc and generate HTMLs with command `make`
-        assert whether_under_dir_docs, (
-            "Command `pypots-cli dev` can only be run under the root directory of project PyPOTS, "
-            f"but you're running it under the path {os.getcwd()}. Please make a check."
-        )
+        self.check_if_under_root_dir()
 
         if self._k is not None:
             assert self._run_tests, (
