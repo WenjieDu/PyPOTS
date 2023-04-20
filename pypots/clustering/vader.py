@@ -518,23 +518,36 @@ class VaDER(BaseNNClusterer):
             # leverage the below loop to automatically fix the exception ValueError raised by gmm.fit()
             flag = 0
             reg_covar = 1e-04
-            while flag == 0:
-                gmm = GaussianMixture(
-                    n_components=self.n_clusters,
-                    covariance_type="diag",
-                    reg_covar=reg_covar,
-                    # reg_covar is set as 1e-04 in the official implementation, but may cause
-                    # ValueError: Fitting the mixture model failed because some components have ill-defined empirical
-                    # covariance (for instance caused by singleton or collapsed samples). Try to decrease the number
-                    # of components, or increase reg_covar.
-                )
+            while flag <= 0:
                 try:
+                    gmm = GaussianMixture(
+                        n_components=self.n_clusters,
+                        covariance_type="diag",
+                        reg_covar=reg_covar,
+                        # reg_covar is set as 1e-04 in the official implementation, but may cause ValueError: Fitting
+                        # the mixture model failed because some components have ill-defined empirical covariance
+                        # (for instance caused by singleton or collapsed samples). Try to decrease the number
+                        # of components, or increase reg_covar.
+                    )
                     gmm.fit(samples)
                     flag = 1
                 except ValueError as e:
                     logger.error(e)
-                    logger.warning(f"Met with ValueError, double `reg_covar` to re-train the GMM model.")
-                    reg_covar *= 2
+                    logger.warning(
+                        f"Met with ValueError, double `reg_covar` to re-train the GMM model."
+                    )
+
+                    flag -= 1
+                    if flag == -5:
+                        logger.error(
+                            f"Doubled `reg_covar` for 4 times, whose current value is {reg_covar}, but still failed.\n"
+                            "Now quit to let you check your model training.\n"
+                            "Please raise an issue https://github.com/WenjieDu/PyPOTS/issues if you have questions."
+                        )
+                        exit()
+                    else:
+                        reg_covar *= 2
+
                     continue
 
             # get GMM parameters
