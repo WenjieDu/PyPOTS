@@ -9,7 +9,7 @@ import os
 import shutil
 from argparse import ArgumentParser, Namespace
 
-from pypots.utils.commands import BaseCommand
+from pypots.utils.commands.base import BaseCommand
 from pypots.utils.logging import logger
 from tsdb.data_processing import _download_and_extract
 
@@ -44,14 +44,12 @@ def doc_command_factory(args: Namespace):
     )
 
 
-def purge_statics():
+def purge_temp_files():
     logger.info(
-        f"Directories _build, _static, and _templates, and {CLONED_LATEST_PYPOTS} will be deleted if exist"
+        f"Directories _build and {CLONED_LATEST_PYPOTS} will be deleted if exist"
     )
-    shutil.rmtree("_build", ignore_errors=True)
+    shutil.rmtree("docs/_build", ignore_errors=True)
     shutil.rmtree(CLONED_LATEST_PYPOTS, ignore_errors=True)
-    shutil.rmtree("_static", ignore_errors=True)
-    shutil.rmtree("_templates", ignore_errors=True)
 
 
 class DocCommand(BaseCommand):
@@ -138,17 +136,7 @@ class DocCommand(BaseCommand):
 
     def check_arguments(self):
         """Run some checks on the arguments to avoid error usages"""
-        parent_dir = os.path.join(".", "..")
-        containing_figs = "figs" in os.listdir(".")
-        pypots_in_the_parent_dir = "pypots" in os.listdir(parent_dir)
-        # if currently under dir 'docs', it should have sub-dir 'figs', and 'pypots' should be in the parent dir
-        whether_under_dir_docs = containing_figs and pypots_in_the_parent_dir
-        # `pypots-cli dev` should only be run under dir 'docs'
-        # because we probably will compile the doc and generate HTMLs with command `make`
-        assert whether_under_dir_docs, (
-            "Command `pypots-cli doc` can only be run under the directory 'docs' in project PyPOTS, "
-            f"but you're running it under the path {os.getcwd()}. Please make a check."
-        )
+        self.check_if_under_root_dir()
 
         if self._cleanup:
             assert not self._gene_rst and not self._gene_html and not self._view_doc, (
@@ -165,7 +153,7 @@ class DocCommand(BaseCommand):
         try:
             if self._cleanup:
                 logger.info("Purging static files...")
-                purge_statics()
+                purge_temp_files()
                 logger.info("Purging finished successfully.")
 
             if self._gene_rst:
@@ -204,23 +192,23 @@ class DocCommand(BaseCommand):
                 logger.info("Updating the old documentation...")
                 for f_ in DOC_RST_FILES:
                     file_to_copy = f"{CLONED_LATEST_PYPOTS}/rst/{f_}"
-                    shutil.copy(file_to_copy, ".")
+                    shutil.copy(file_to_copy, "docs")
 
                 # Delete the useless files.
                 shutil.rmtree(f"{CLONED_LATEST_PYPOTS}", ignore_errors=True)
 
             if self._gene_html:
                 logger.info("Generating static HTML files...")
-                purge_statics()
-                self.execute_command("make html")
+                purge_temp_files()
+                self.execute_command("cd docs && make html")
 
             if self._view_doc:
                 assert os.path.exists(
-                    "_build/html"
-                ), "_build/html does not exists, please run `pypots-cli doc --gene_html` first"
+                    "docs/_build/html"
+                ), "docs/_build/html does not exists, please run `pypots-cli doc --gene_html` first"
                 logger.info(f"Deploying HTML to http://127.0.0.1:{self._port}...")
                 self.execute_command(
-                    f"python -m http.server {self._port} -d _build/html -b 127.0.0.1"
+                    f"python -m http.server {self._port} -d docs/_build/html -b 127.0.0.1"
                 )
 
         except ImportError:

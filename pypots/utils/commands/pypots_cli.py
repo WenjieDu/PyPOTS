@@ -5,7 +5,7 @@ PyPOTS CLI (Command Line Interface) tool
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: GLP-v3
 
-
+import os
 from argparse import ArgumentParser
 
 from pypots.utils.commands.dev import DevCommand
