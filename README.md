@@ -1,4 +1,4 @@
-<a href="https://github.com/WenjieDu/PyPOTS"><img src="https://raw.githubusercontent.com/WenjieDu/PyPOTS/main/docs/figs/PyPOTS_logo.svg?sanitize=true" width="200" align="right"></a>
+<a href="https://github.com/WenjieDu/PyPOTS"><img src="https://raw.githubusercontent.com/WenjieDu/PyPOTS/main/docs/_static/figs/PyPOTS_logo.svg?sanitize=true" width="200" align="right"></a>
 
 ## <p align="center">Welcome to PyPOTS</p>
 **<p align="center">A Python Toolbox for Data Mining on Partially-Observed Time Series</p>**
@@ -48,8 +48,8 @@
 
 ⦿ `Mission`: PyPOTS is born to become a handy toolbox that is going to make data mining on POTS easy rather than tedious, to help engineers and researchers focus more on the core problems in their hands rather than on how to deal with the missing parts in their data. PyPOTS will keep integrating classical and the latest state-of-the-art data mining algorithms for partially-observed multivariate time series. For sure, besides various algorithms, PyPOTS is going to have unified APIs together with detailed documentation and interactive examples across algorithms as tutorials.
 
-<a href="https://github.com/WenjieDu/TSDB"><img src="https://raw.githubusercontent.com/WenjieDu/TSDB/main/docs/figs/TSDB%20logo.svg?sanitize=true" align="left" width="160"/></a>
-To make various open-source time-series datasets readily available to our users, PyPOTS gets supported by project [TSDB (Time-Series DataBase)](https://github.com/WenjieDu/TSDB), a toolbox making loading time-series datasets super easy! 
+<a href="https://github.com/WenjieDu/TSDB"><img src="https://raw.githubusercontent.com/WenjieDu/TSDB/main/docs/_static/figs/TSDB_logo.svg?sanitize=true" align="left" width="160"/></a>
+To make various open-source time-series datasets readily available to our users, PyPOTS gets supported by project [TSDB (Time-Series Data Base)](https://github.com/WenjieDu/TSDB), a toolbox making loading time-series datasets super easy! 
 
 Visit [TSDB](https://github.com/WenjieDu/TSDB) right now to know more about this handy tool 🛠! It now supports a total of 119 open-source datasets.
 <br clear="left">
@@ -145,9 +145,9 @@ Zenodo. https://doi.org/10.5281/zenodo.6823221`
 You're very welcome to contribute to this exciting project! 
 
 By committing your code, you'll
+- make your well-established model out-of-the-box for PyPOTS users to run;
 - be listed as one of [PyPOTS contributors](https://github.com/WenjieDu/PyPOTS/graphs/contributors): <a href="https://github.com/wenjiedu/pypots/graphs/contributors"><img align="center" src="https://contrib.rocks/image?repo=wenjiedu/pypots"></a>;
 - get mentioned in our [release notes](https://github.com/WenjieDu/PyPOTS/releases);
-- make your well-established model out-of-the-box for PyPOTS users to run;
   
 You can also contribute to PyPOTS by simply staring🌟 this repo to help more people notice it. 
 Your star is your recognition to PyPOTS, and it matters! 
