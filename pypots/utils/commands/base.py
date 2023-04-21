@@ -23,6 +23,7 @@ class BaseCommand(ABC):
 
     @staticmethod
     def execute_command(command: str, verbose: bool = True):
+        logger.info(f"Executing '{command}'...")
         if verbose:
             exec_result = subprocess.Popen(
                 command,
@@ -43,17 +44,14 @@ class BaseCommand(ABC):
                 stderr=subprocess.PIPE,
                 shell=True,
             )
-            if exec_result.returncode != 0:
-                if len(exec_result.stderr) > 0:
-                    logger.error(exec_result.stderr)
-                if len(exec_result.stdout) > 0:
-                    logger.error(exec_result.stdout)
-                raise RuntimeError()
-        return exec_result.returncode
+
+        if exec_result.returncode != 0:
+            raise RuntimeError(exec_result.stdout, exec_result.stderr)
+        return exec_result
 
     @staticmethod
     def check_if_under_root_dir(strict: bool = True):
-        """ Check if under the root dir of PyPOTS project.
+        """Check if under the root dir of PyPOTS project.
 
         Parameters
         ----------
@@ -84,6 +82,10 @@ class BaseCommand(ABC):
             )
 
         return check_result
+
+    @abstractmethod
+    def checkup(self):
+        raise NotImplementedError()
 
     @abstractmethod
     def run(self):
