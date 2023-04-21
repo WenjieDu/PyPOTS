@@ -4,8 +4,8 @@
 **<p align="center">A Python Toolbox for Data Mining on Partially-Observed Time Series</p>**
 
 <p align="center">
-    <img alt="Python version" src="https://img.shields.io/badge/Python->v3.6-yellow?color=88ada6">
-    <img alt="powered by Pytorch" src="https://img.shields.io/static/v1?label=PyTorch&message=%E2%9D%A4%EF%B8%8F&color=bbcdc5&logo=pytorch">
+    <img alt="Python version" src="https://img.shields.io/badge/Python-v3.7--3.10-88ada6?logo=python&logoColor=white">
+    <img alt="powered by Pytorch" src="https://img.shields.io/badge/PyTorch-%E2%9D%A4%EF%B8%8F-bbcdc5?logo=pytorch&logoColor=white">
     <a href="https://pypi.org/project/">
         <img alt="the latest release version" src="https://img.shields.io/github/v/release/wenjiedu/pypots?color=e0eee8&include_prereleases&label=Release">
     </a>
@@ -13,7 +13,7 @@
         <img alt="GPL3 license" src="https://img.shields.io/badge/License-GPL--v3-c0ebd7">
     </a>
     <a href="https://join.slack.com/t/pypots-dev/shared_invite/zt-1gq6ufwsi-p0OZdW~e9UW_IA4_f1OfxA"> 
-        <img alt="Slack Workspace" src="https://img.shields.io/badge/Slack-PyPOTS-grey?logo=slack&color=7bcfa6">
+        <img alt="Slack Workspace" src="https://img.shields.io/badge/Slack-PyPOTS-7bcfa6?logo=slack">
     </a>
     <a href="https://github.com/sponsors/WenjieDu">
         <img alt="GitHub Sponsors" src="https://img.shields.io/github/sponsors/wenjiedu?label=Sponsors&color=7fecad&logo=githubsponsors">
@@ -54,6 +54,7 @@ To make various open-source time-series datasets readily available to our users,
 Visit [TSDB](https://github.com/WenjieDu/TSDB) right now to know more about this handy tool 🛠! It now supports a total of 119 open-source datasets.
 <br clear="left">
 
+
 ## ❖ Installation
 PyPOTS now is available on <a href="https://anaconda.org/conda-forge/pypots"><img alt="on Anaconda" align="center" 
 src="https://img.shields.io/badge/Anaconda--lightgreen?style=social&logo=anaconda"></a>❗️ 
@@ -66,8 +67,17 @@ Install the latest release from PyPI:
 or install from the source code with the latest features not officially released in a version:
 > pip install https://github.com/WenjieDu/PyPOTS/archive/main.zip
 
-<details open>
-<summary><b>Below is an example applying SAITS in PyPOTS to impute missing values in the dataset PhysioNet2012:</b></summary>
+
+## ❖ Usage
+PyPOTS tutorials have been released. You can find them [here](https://github.com/WenjieDu/PyPOTS/tree/main/tutorials).
+If you have further questions, please refer to PyPOTS documentation [📑http://pypots.readthedocs.io](http://pypots.readthedocs.io).
+Besides, you can also 
+[raise an issue](https://github.com/WenjieDu/PyPOTS/issues) or
+[ask in our community](https://join.slack.com/t/pypots-dev/shared_invite/zt-1gq6ufwsi-p0OZdW~e9UW_IA4_f1OfxA).
+And please allow us to present you a usage example of imputing missing values in time series with PyPOTS below.
+
+<details>
+<summary><b>Click here to see an example applying SAITS on PhysioNet2012 for imputation:</b></summary>
 
 ``` python
 import numpy as np
@@ -92,6 +102,7 @@ imputation = saits.impute(dataset)  # impute the originally-missing values and a
 mae = cal_mae(imputation, X_intact, indicating_mask)  # calculate mean absolute error on the ground truth (artificially-missing values)
 ```
 </details>
+
 
 ## ❖ Available Algorithms
 PyPOTS supports imputation, classification, clustering, and forecasting tasks on multivariate time series with missing values. The currently available algorithms of four tasks are cataloged in the following table with four partitions. The paper references are all listed at the bottom of this readme file. Please refer to them if you want more details.
@@ -160,8 +171,6 @@ Your star is your recognition to PyPOTS, and it matters!
 
 
 ## ❖ Attention 👀
-The documentation and tutorials are under construction. 
-
 ‼️ PyPOTS is currently under developing. If you like it and look forward to its growth, <ins>please give PyPOTS a star 
 and watch it to keep you posted on its progress and to let me know that its development is meaningful</ins>. If you have 
 any feedback, or want to contribute ideas/suggestions or share time-series related algorithms/papers, please join PyPOTS 
