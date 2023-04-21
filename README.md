@@ -30,18 +30,19 @@
     <a href="https://coveralls.io/github/WenjieDu/PyPOTS"> 
         <img alt="Coveralls coverage" src="https://img.shields.io/coverallsCoverage/github/WenjieDu/PyPOTS?branch=main&logo=coveralls&color=00e09e&label=Coverage">
     </a>
-    <a href="https://anaconda.org/conda-forge/pypots">
-        <img alt="Conda downloads" src="https://img.shields.io/conda/dn/conda-forge/pypots?label=Conda%20Downloads&color=48c0a3">
-    </a>
-    <a href="https://pypi.org/project/pypots">
-        <img alt="PyPI downloads" src="https://static.pepy.tech/personalized-badge/pypots?period=total&units=international_system&left_color=grey&right_color=teal&left_text=PyPI%20Downloads">
-    </a>
     <a href="https://github.com/WenjieDu/PyPOTS/actions/workflows/testing.yml"> 
-        <img alt="GitHub Testing" src="https://github.com/WenjieDu/PyPOTS/actions/workflows/testing.yml/badge.svg">
+        <img alt="GitHub Testing" src="https://img.shields.io/github/actions/workflow/status/wenjiedu/pypots/testing.yml?logo=github&color=48c0a3&label=CI">
     </a>
     <a href="https://doi.org/10.5281/zenodo.6823221">
-        <img alt="Zenodo DOI" src="https://zenodo.org/badge/DOI/10.5281/zenodo.6823221.svg">
+        <img alt="Zenodo DOI" src="https://img.shields.io/badge/DOI-10.5281/zenodo.6823221-21a675">
     </a>
+    <a href="https://anaconda.org/conda-forge/pypots">
+        <img alt="Conda downloads" src="https://img.shields.io/conda/dn/conda-forge/pypots?label=Conda%20Downloads&color=057748&logo=anaconda&logoColor=white">
+    </a>
+    <a href="https://pypi.org/project/pypots">
+        <img alt="PyPI downloads" src="https://static.pepy.tech/personalized-badge/pypots?period=total&units=international_system&left_color=grey&right_color=teal&left_text=PyPI%20Downloads&logo=github">
+    </a>
+    
 </p>
 
 ⦿ `Motivation`: Due to all kinds of reasons like failure of collection sensors, communication error, and unexpected malfunction, missing values are common to see in time series from the real-world environment. This makes partially-observed time series (POTS) a pervasive problem in open-world modeling and prevents advanced data analysis. Although this problem is important, the area of data mining on POTS still lacks a dedicated toolkit. PyPOTS is created to fill in this blank.
