@@ -1,0 +1,14 @@
+name: "🤔 Other Kinds of Issues"
+description: "Didn't find a proper issue template above? Start here!"
+labels: ["question"]
+
+body:
+  - type: textarea
+    id: issue-description-requested
+    validations:
+      required: true
+    attributes:
+      label: Issue description
+      description: |
+        A clear and concise description of the issue. Please provide a link to related information and code if they exist.
+        Besides, please add according labels to the issue on the right side of the page.

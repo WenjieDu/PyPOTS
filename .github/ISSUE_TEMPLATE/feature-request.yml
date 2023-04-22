@@ -1,6 +1,6 @@
 name: "🙌 Feature Request"
 description: Submit a request to add a new feature.
-labels: ["new feature"]
+labels: ["new feature", "enhancement"]
 
 body:
   - type: textarea
@@ -8,7 +8,7 @@ body:
     validations:
       required: true
     attributes:
-      label: Feature description
+      label: 1. Feature description
       description: |
         A clear and concise description of the feature proposal. Please provide a link to the paper and code if they exist.
 
@@ -17,7 +17,7 @@ body:
     validations:
       required: true
     attributes:
-      label: Motivation
+      label: 2. Motivation
       description: |
         Please outline the motivation of your proposal. Is your feature request related to a problem? If this is related to another GitHub issue, please link here.
 
@@ -26,6 +26,6 @@ body:
     validations:
       required: true
     attributes:
-      label: Your contribution
+      label: 3. Your contribution
       description: |
         Is there any way that you could help, for example, by submitting a PR?
