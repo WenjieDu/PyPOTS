@@ -9,6 +9,7 @@ import os
 import unittest
 from argparse import Namespace
 from copy import copy
+import signal
 
 import pytest
 
@@ -18,6 +19,19 @@ from pypots.cli.env import env_command_factory
 from pypots.utils.logging import logger
 
 PROJECT_ROOT_DIR = os.path.abspath(os.path.join(os.path.abspath(__file__), "../../.."))
+
+
+# class TestCaseWithTimeout(unittest.TestCase):
+#     def setUp(self):
+#         signal.signal(signal.SIGALRM, self.timeout)
+#         signal.alarm(5)  # 5s timeout
+#
+#     def tearDown(self):
+#         signal.alarm(0)
+
+
+def timeout_handle(signum, frame):
+    raise TimeoutError("Test case timed out")
 
 
 class TestPyPOTSCLIDev(unittest.TestCase):
@@ -95,7 +109,7 @@ class TestPyPOTSCLIDoc(unittest.TestCase):
         "gene_rst": False,
         "branch": "main",
         "gene_html": False,
-        "view_doc": True,
+        "view_doc": False,
         "port": 9075,
         "cleanup": False,
     }
@@ -106,7 +120,6 @@ class TestPyPOTSCLIDoc(unittest.TestCase):
     def test_0_gene_rst(self):
         arguments = copy(self.default_arguments)
         arguments["gene_rst"] = True
-        arguments["branch"] = "dev"
         args = Namespace(**arguments)
         doc_command_factory(args).run()
 
@@ -133,7 +146,16 @@ class TestPyPOTSCLIDoc(unittest.TestCase):
         arguments = copy(self.default_arguments)
         arguments["view_doc"] = True
         args = Namespace(**arguments)
-        doc_command_factory(args).run()
+        signal.signal(signal.SIGALRM, timeout_handle)
+        signal.alarm(2)  # 5s timeout
+        try:
+            doc_command_factory(args).run()
+        except TimeoutError:
+            pass
+        except Exception as e:  # other exceptions will cause an error and result in failed testing
+            raise e
+        finally:
+            signal.alarm(0)  # 5s timeout
 
     @pytest.mark.xdist_group(name="cli-doc")
     def test_3_cleanup(self):
