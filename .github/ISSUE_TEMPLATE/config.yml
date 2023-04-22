@@ -1,5 +1,6 @@
 blank_issues_enabled: true
+version: 2.1
 contact_links:
   - name: PyPOTS Community on Slack
     url: pypots-dev.slack.com
-    about: General usage questions and community discussions
+    about: General usage questions, community discussions, and the development team are here.
