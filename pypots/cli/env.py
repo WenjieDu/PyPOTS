@@ -90,7 +90,7 @@ class EnvCommand(BaseCommand):
 
     def checkup(self):
         """Run some checks on the arguments to avoid error usages"""
-        self.check_if_under_root_dir()
+        self.check_if_under_root_dir(strict=True)
 
     def run(self):
         """Execute the given command."""

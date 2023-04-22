@@ -145,7 +145,7 @@ class DocCommand(BaseCommand):
 
     def checkup(self):
         """Run some checks on the arguments to avoid error usages"""
-        self.check_if_under_root_dir()
+        self.check_if_under_root_dir(strict=True)
 
         if self._cleanup:
             assert not self._gene_rst and not self._gene_html and not self._view_doc, (

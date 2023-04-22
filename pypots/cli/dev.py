@@ -116,7 +116,7 @@ class DevCommand(BaseCommand):
 
     def checkup(self):
         """Run some checks on the arguments to avoid error usages"""
-        self.check_if_under_root_dir()
+        self.check_if_under_root_dir(strict=True)
 
         if self._k is not None:
             assert self._run_tests, (
