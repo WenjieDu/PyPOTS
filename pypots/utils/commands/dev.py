@@ -7,7 +7,7 @@ CLI tools to help the development team build PyPOTS.
 
 import os
 import shutil
-from argparse import ArgumentParser, Namespace
+from argparse import Namespace
 
 from pypots.utils.commands.base import BaseCommand
 from pypots.utils.logging import logger
@@ -43,9 +43,10 @@ class DevCommand(BaseCommand):
     """
 
     @staticmethod
-    def register_subcommand(parser: ArgumentParser):
+    def register_subcommand(parser):
         sub_parser = parser.add_parser(
-            "dev", help="CLI tools helping develop PyPOTS code"
+            "dev",
+            help="CLI tools helping develop PyPOTS code",
         )
         sub_parser.add_argument(
             "--build",
@@ -54,6 +55,7 @@ class DevCommand(BaseCommand):
             help="Build PyPOTS into a wheel and package the source code into a .tar.gz file for distribution",
         )
         sub_parser.add_argument(
+            "-c",
             "--cleanup",
             dest="cleanup",
             action="store_true",
@@ -61,11 +63,13 @@ class DevCommand(BaseCommand):
         )
         sub_parser.add_argument(
             "--run_tests",
+            "--run-tests",
             dest="run_tests",
             action="store_true",
             help="Run all test cases",
         )
         sub_parser.add_argument(
+            "--show-coverage",
             "--show_coverage",
             dest="show_coverage",
             action="store_true",
@@ -86,6 +90,7 @@ class DevCommand(BaseCommand):
             "matching is case-insensitive.",
         )
         sub_parser.add_argument(
+            "--lint-code",
             "--lint_code",
             dest="lint_code",
             action="store_true",
@@ -109,7 +114,7 @@ class DevCommand(BaseCommand):
         self._show_coverage = show_coverage
         self._lint_code = lint_code
 
-    def check_arguments(self):
+    def checkup(self):
         """Run some checks on the arguments to avoid error usages"""
         self.check_if_under_root_dir()
 
@@ -133,9 +138,8 @@ class DevCommand(BaseCommand):
 
     def run(self):
         """Execute the given command."""
-
-        # check arguments first
-        self.check_arguments()
+        # run checks first
+        self.checkup()
 
         try:
             if self._cleanup:
@@ -151,7 +155,6 @@ class DevCommand(BaseCommand):
                     if self._show_coverage
                     else pytest_command
                 )
-                logger.info(f"Executing '{command_to_run_test}'...")
                 self.execute_command(command_to_run_test)
                 if self._show_coverage:
                     self.execute_command("coverage report -m")

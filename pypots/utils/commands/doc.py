@@ -7,11 +7,12 @@ CLI tools to help the development team build PyPOTS.
 
 import os
 import shutil
-from argparse import ArgumentParser, Namespace
+from argparse import Namespace
+
+from tsdb.data_processing import _download_and_extract
 
 from pypots.utils.commands.base import BaseCommand
 from pypots.utils.logging import logger
-from tsdb.data_processing import _download_and_extract
 
 CLONED_LATEST_PYPOTS = "temp_pypots_latest"
 
@@ -73,18 +74,22 @@ class DocCommand(BaseCommand):
     """
 
     @staticmethod
-    def register_subcommand(parser: ArgumentParser):
+    def register_subcommand(parser):
         sub_parser = parser.add_parser(
-            "doc", help="CLI tools helping build PyPOTS documentation"
+            "doc",
+            help="CLI tools helping build PyPOTS documentation",
+            allow_abbrev=True,
         )
 
         sub_parser.add_argument(
+            "--gene-rst",
             "--gene_rst",
             dest="gene_rst",
             action="store_true",
             help="Generate rst (reStructuredText) documentation according to the latest code on Github",
         )
         sub_parser.add_argument(
+            "-b",
             "--branch",
             type=str,
             default="main",
@@ -92,24 +97,28 @@ class DocCommand(BaseCommand):
             help="Code on which branch will be used for documentation generating",
         )
         sub_parser.add_argument(
+            "--gene-html",
             "--gene_html",
             dest="gene_html",
             action="store_true",
             help="Generate the sphinx documentation into static HTML files",
         )
         sub_parser.add_argument(
+            "--view-doc",
             "--view_doc",
             dest="view_doc",
             action="store_true",
             help="Deploy the generated HTML documentation locally for view",
         )
         sub_parser.add_argument(
+            "-p",
             "--port",
             type=int,
             default=9075,
             help="Use which port to deploy the web server for doc view",  # 9075 looks like "POTS", so use it as default
         )
         sub_parser.add_argument(
+            "-c",
             "--cleanup",
             dest="cleanup",
             action="store_true",
@@ -134,7 +143,7 @@ class DocCommand(BaseCommand):
         self._port = port
         self._cleanup = cleanup
 
-    def check_arguments(self):
+    def checkup(self):
         """Run some checks on the arguments to avoid error usages"""
         self.check_if_under_root_dir()
 
@@ -146,9 +155,8 @@ class DocCommand(BaseCommand):
 
     def run(self):
         """Execute the given command."""
-
-        # check arguments first
-        self.check_arguments()
+        # run checks first
+        self.checkup()
 
         try:
             if self._cleanup:
