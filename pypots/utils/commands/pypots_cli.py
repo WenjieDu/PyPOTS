@@ -9,6 +9,7 @@ from argparse import ArgumentParser
 
 from pypots.utils.commands.dev import DevCommand
 from pypots.utils.commands.doc import DocCommand
+from pypots.utils.commands.env import EnvCommand
 
 
 def main():
@@ -20,6 +21,7 @@ def main():
     # Register commands here
     DevCommand.register_subcommand(commands_parser)
     DocCommand.register_subcommand(commands_parser)
+    EnvCommand.register_subcommand(commands_parser)
 
     # parse all arguments
     args = parser.parse_args()
