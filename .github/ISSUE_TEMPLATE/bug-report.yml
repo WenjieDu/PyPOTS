@@ -6,7 +6,7 @@ body:
   - type: textarea
     id: system-info
     attributes:
-      label: System Info
+      label: 1. System Info
       description: Please share information about your operating environment with us.
       placeholder: PyPOTS version, Python version, platform and your OS version, and versions of other libraries existing in the error message...
     validations:
@@ -15,7 +15,7 @@ body:
   - type: checkboxes
     id: information-scripts-examples
     attributes:
-      label: Information
+      label: 2. Information
       description: 'The problem happens when running:'
       options:
         - label: "The official example scripts"
@@ -26,7 +26,7 @@ body:
     validations:
       required: true
     attributes:
-      label: Reproduction
+      label: 3. Reproduction
       description: |
         Please provide a code sample that reproduces the problem you ran into. It can be a Colab link or just a code snippet.
         If you have code snippets, error messages, stack traces please provide them here as well.
@@ -35,17 +35,18 @@ body:
 
       placeholder: |
         Steps to reproduce the behavior:
-          
+
           1.
           2.
           3.
-        
-        
+
+          ……
+
+
   - type: textarea
     id: expected-behavior
     validations:
       required: true
     attributes:
-      label: Expected behavior
+      label: 4. Expected behavior
       description: "A clear and concise description of what error you would expect to happen."
-
