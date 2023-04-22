@@ -10,6 +10,8 @@ import unittest
 from argparse import Namespace
 from copy import copy
 
+import pytest
+
 from pypots.cli.dev import dev_command_factory
 from pypots.cli.doc import doc_command_factory
 from pypots.cli.env import env_command_factory
@@ -31,6 +33,7 @@ class TestPyPOTSCLIDev(unittest.TestCase):
     # `pypots-cli dev` must run under the project root dir
     os.chdir(PROJECT_ROOT_DIR)
 
+    @pytest.mark.xdist_group(name="cli-dev")
     def test_0_build(self):
         arguments = copy(self.default_arguments)
         arguments["build"] = True
@@ -48,6 +51,7 @@ class TestPyPOTSCLIDev(unittest.TestCase):
         finally:
             os.chdir(PROJECT_ROOT_DIR)
 
+    @pytest.mark.xdist_group(name="cli-dev")
     def test_1_run_tests(self):
         arguments = copy(self.default_arguments)
         arguments["run_tests"] = True
@@ -70,12 +74,14 @@ class TestPyPOTSCLIDev(unittest.TestCase):
         except Exception as e:  # other exceptions will cause an error and result in failed testing
             raise e
 
+    @pytest.mark.xdist_group(name="cli-dev")
     def test_2_lint_code(self):
         arguments = copy(self.default_arguments)
         arguments["lint_code"] = True
         args = Namespace(**arguments)
         dev_command_factory(args).run()
 
+    @pytest.mark.xdist_group(name="cli-dev")
     def test_3_cleanup(self):
         arguments = copy(self.default_arguments)
         arguments["cleanup"] = True
@@ -96,6 +102,7 @@ class TestPyPOTSCLIDoc(unittest.TestCase):
     # `pypots-cli doc` must run under the project root dir
     os.chdir(PROJECT_ROOT_DIR)
 
+    @pytest.mark.xdist_group(name="cli-doc")
     def test_0_gene_rst(self):
         arguments = copy(self.default_arguments)
         arguments["gene_rst"] = True
@@ -114,18 +121,21 @@ class TestPyPOTSCLIDoc(unittest.TestCase):
         finally:
             os.chdir(PROJECT_ROOT_DIR)
 
+    @pytest.mark.xdist_group(name="cli-doc")
     def test_1_gene_html(self):
         arguments = copy(self.default_arguments)
         arguments["gene_html"] = True
         args = Namespace(**arguments)
         doc_command_factory(args).run()
 
+    @pytest.mark.xdist_group(name="cli-doc")
     def test_2_view_doc(self):
         arguments = copy(self.default_arguments)
         arguments["view_doc"] = True
         args = Namespace(**arguments)
         doc_command_factory(args).run()
 
+    @pytest.mark.xdist_group(name="cli-doc")
     def test_3_cleanup(self):
         arguments = copy(self.default_arguments)
         arguments["cleanup"] = True
@@ -143,12 +153,14 @@ class TestPyPOTSCLIEnv(unittest.TestCase):
     # `pypots-cli env` must run under the project root dir
     os.chdir(PROJECT_ROOT_DIR)
 
+    @pytest.mark.xdist_group(name="cli-env")
     def test_0_install_with_conda(self):
         arguments = copy(self.default_arguments)
         arguments["tool"] = "conda"
         args = Namespace(**arguments)
         env_command_factory(args).run()
 
+    @pytest.mark.xdist_group(name="cli-env")
     def test_1_install_with_pip(self):
         arguments = copy(self.default_arguments)
         arguments["tool"] = "pip"
