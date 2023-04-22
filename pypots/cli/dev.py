@@ -9,7 +9,7 @@ import os
 import shutil
 from argparse import Namespace
 
-from pypots.utils.commands.base import BaseCommand
+from pypots.cli.base import BaseCommand
 from pypots.utils.logging import logger
 
 IMPORT_ERROR_MESSAGE = (
