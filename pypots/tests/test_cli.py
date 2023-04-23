@@ -6,10 +6,10 @@ Test cases for the functions and classes in package `pypots.cli`.
 # License: GLP-v3
 
 import os
+import threading
 import unittest
 from argparse import Namespace
 from copy import copy
-import signal
 
 import pytest
 
@@ -19,6 +19,27 @@ from pypots.cli.env import env_command_factory
 from pypots.utils.logging import logger
 
 PROJECT_ROOT_DIR = os.path.abspath(os.path.join(os.path.abspath(__file__), "../../.."))
+
+
+def callback_func():
+    raise TimeoutError("Time out.")
+
+
+def time_out(interval, callback):
+    def decorator(func):
+        def wrapper(*args, **kwargs):
+            t = threading.Thread(target=func, args=args, kwargs=kwargs)
+            t.setDaemon(True)
+            t.start()
+            t.join(interval)  # wait for interval seconds
+            if t.is_alive():
+                return threading.Timer(0, callback).start()  # invoke callback()
+            else:
+                raise RuntimeError
+
+        return wrapper
+
+    return decorator
 
 
 class TestPyPOTSCLIDev(unittest.TestCase):
@@ -129,23 +150,12 @@ class TestPyPOTSCLIDoc(unittest.TestCase):
         doc_command_factory(args).run()
 
     @pytest.mark.xdist_group(name="cli-doc")
+    @time_out(2, callback_func)  # wait for two seconds
     def test_2_view_doc(self):
-        def timeout_handle(signum, frame):
-            raise TimeoutError("Test case timed out")
-
         arguments = copy(self.default_arguments)
         arguments["view_doc"] = True
         args = Namespace(**arguments)
-        signal.signal(signal.SIGALRM, timeout_handle)
-        signal.alarm(2)  # 5s timeout
-        try:
-            doc_command_factory(args).run()
-        except RuntimeError:
-            pass
-        except Exception as e:  # other exceptions will cause an error and result in failed testing
-            raise e
-        finally:
-            signal.alarm(0)  # 5s timeout
+        doc_command_factory(args).run()
 
     @pytest.mark.xdist_group(name="cli-doc")
     def test_3_cleanup(self):
