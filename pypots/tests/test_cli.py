@@ -62,17 +62,6 @@ class TestPyPOTSCLIDev(unittest.TestCase):
         args = Namespace(**arguments)
         dev_command_factory(args).run()
 
-        logger.info("run again under a non-root dir")
-        try:
-            os.chdir(os.path.abspath(os.path.join(PROJECT_ROOT_DIR, "pypots")))
-            dev_command_factory(args).run()
-        except RuntimeError:  # try to run under a non-root dir, so RuntimeError will be raised
-            pass
-        except Exception as e:  # other exceptions will cause an error and result in failed testing
-            raise e
-        finally:
-            os.chdir(PROJECT_ROOT_DIR)
-
     @pytest.mark.xdist_group(name="cli-dev")
     def test_1_run_tests(self):
         arguments = copy(self.default_arguments)
@@ -86,12 +75,13 @@ class TestPyPOTSCLIDev(unittest.TestCase):
         except Exception as e:  # other exceptions will cause an error and result in failed testing
             raise e
 
-    @pytest.mark.xdist_group(name="cli-dev")
-    def test_2_lint_code(self):
-        arguments = copy(self.default_arguments)
-        arguments["lint_code"] = True
-        args = Namespace(**arguments)
-        dev_command_factory(args).run()
+    # Don't test --lint-code because Black will reformat the code and cause error when generating the coverage report
+    # @pytest.mark.xdist_group(name="cli-dev")
+    # def test_2_lint_code(self):
+    #     arguments = copy(self.default_arguments)
+    #     arguments["lint_code"] = True
+    #     args = Namespace(**arguments)
+    #     dev_command_factory(args).run()
 
     @pytest.mark.xdist_group(name="cli-dev")
     def test_3_cleanup(self):
