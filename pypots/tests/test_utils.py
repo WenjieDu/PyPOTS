@@ -1,5 +1,5 @@
 """
-Test cases of logging.
+Test cases for the functions and classes in package `pypots.utils`.
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
@@ -44,12 +44,6 @@ class TestLogging(unittest.TestCase):
         self.logger_creator.set_saving_path("test_log", "testing.log")
         assert os.path.exists("test_log/testing.log")
         shutil.rmtree("test_log", ignore_errors=True)
-
-
-class TestPyPOTSCLI(unittest.TestCase):
-    def test_pypots_cli(self):
-        # TODO: need more test cases here
-        os.system("python pypots/utils/commands/pypots_cli.py")
 
 
 if __name__ == "__main__":

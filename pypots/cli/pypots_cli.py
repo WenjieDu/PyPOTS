@@ -7,9 +7,9 @@ PyPOTS CLI (Command Line Interface) tool
 
 from argparse import ArgumentParser
 
-from pypots.utils.commands.dev import DevCommand
-from pypots.utils.commands.doc import DocCommand
-from pypots.utils.commands.env import EnvCommand
+from pypots.cli.dev import DevCommand
+from pypots.cli.doc import DocCommand
+from pypots.cli.env import EnvCommand
 
 
 def main():

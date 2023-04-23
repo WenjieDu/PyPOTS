@@ -27,7 +27,7 @@ from argparse import ArgumentParser, Namespace
 
 from setuptools.config import read_configuration
 
-from pypots.utils.commands.base import BaseCommand
+from pypots.cli.base import BaseCommand
 from pypots.utils.logging import logger
 
 
@@ -90,7 +90,7 @@ class EnvCommand(BaseCommand):
 
     def checkup(self):
         """Run some checks on the arguments to avoid error usages"""
-        self.check_if_under_root_dir()
+        self.check_if_under_root_dir(strict=True)
 
     def run(self):
         """Execute the given command."""
@@ -112,23 +112,28 @@ class EnvCommand(BaseCommand):
                 "conda install pyg pytorch-scatter pytorch-sparse -c pyg"
             )
 
-            dependencies = ""
-            for i in setup_cfg["options"]["extras_require"][self._install]:
-                dependencies += f"'{i}' "
+            if self._install != "optional":
+                dependencies = ""
+                for i in setup_cfg["options"]["extras_require"][self._install]:
+                    dependencies += f"'{i}' "
 
-            if "torch-geometric" in dependencies:
-                dependencies = dependencies.replace("'torch-geometric'", "")
-                dependencies = dependencies.replace("'torch-scatter'", "")
-                dependencies = dependencies.replace("'torch-sparse'", "")
+                if "torch-geometric" in dependencies:
+                    dependencies = dependencies.replace("'torch-geometric'", "")
+                    dependencies = dependencies.replace("'torch-scatter'", "")
+                    dependencies = dependencies.replace("'torch-sparse'", "")
 
-            conda_comm = f"conda install {dependencies} -c conda-forge"
-            self.execute_command(conda_comm)
+                conda_comm = f"conda install {dependencies} -c conda-forge"
+                self.execute_command(conda_comm)
 
         else:  # self._tool == "pip"
             torch_version = torch.__version__
 
+            if not (torch.cuda.is_available() and torch.cuda.device_count() > 0):
+                if "cpu" not in torch_version:
+                    torch_version = torch_version + "+cpu"
+
             self.execute_command(
-                f"pip install -e '.[optional]' -f 'https://data.pyg.org/whl/torch-{torch_version}.html'"
+                f"python -m pip install -e '.[optional]' -f https://data.pyg.org/whl/torch-{torch_version}.html"
             )
 
             if self._install != "optional":
