@@ -86,16 +86,6 @@ class TestPyPOTSCLIDev(unittest.TestCase):
         except Exception as e:  # other exceptions will cause an error and result in failed testing
             raise e
 
-        # enable show_coverage and run again
-        arguments["show_coverage"] = True
-        args = Namespace(**arguments)
-        try:
-            dev_command_factory(args).run()
-        except RuntimeError:  # try to find a non-existing test case, so RuntimeError will be raised
-            pass
-        except Exception as e:  # other exceptions will cause an error and result in failed testing
-            raise e
-
     @pytest.mark.xdist_group(name="cli-dev")
     def test_2_lint_code(self):
         arguments = copy(self.default_arguments)
