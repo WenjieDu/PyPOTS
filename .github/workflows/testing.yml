@@ -37,6 +37,7 @@ jobs:
               run: |
                   which python
                   conda info
+                  conda remove pypots --force  # remove installed pypots but keep dependencies
                   conda list
 
             - name: Test with pytest
