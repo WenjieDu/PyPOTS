@@ -49,7 +49,7 @@ jobs:
                   python -m pytest -rA pypots/tests/test_forecasting.py -n auto --cov=pypots --cov-append --dist=loadgroup
                   python -m pytest -rA pypots/tests/test_data.py -n auto --cov=pypots --cov-append --dist=loadgroup
                   python -m pytest -rA pypots/tests/test_utils.py -n auto --cov=pypots --cov-append --dist=loadgroup
-                  # python -m pytest -rA pypots/tests/test_cli.py -n auto --cov=pypots --cov-append --dist=loadgroup
+                  python -m pytest -rA pypots/tests/test_cli.py -n auto --cov=pypots --cov-append --dist=loadgroup
 
             - name: Generate the LCOV report
               run: |
