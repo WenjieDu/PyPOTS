@@ -9,7 +9,7 @@ import os
 import shutil
 from argparse import Namespace
 
-from pypots.utils.commands.base import BaseCommand
+from pypots.cli.base import BaseCommand
 from pypots.utils.logging import logger
 
 IMPORT_ERROR_MESSAGE = (
@@ -116,7 +116,7 @@ class DevCommand(BaseCommand):
 
     def checkup(self):
         """Run some checks on the arguments to avoid error usages"""
-        self.check_if_under_root_dir()
+        self.check_if_under_root_dir(strict=True)
 
         if self._k is not None:
             assert self._run_tests, (
@@ -149,14 +149,16 @@ class DevCommand(BaseCommand):
             elif self._build:
                 self.execute_command("python setup.py sdist bdist bdist_wheel")
             elif self._run_tests:
-                pytest_command = f"pytest -k {self._k}" if self._k else "pytest"
+                pytest_command = (
+                    f"pytest -k {self._k}" if self._k is not None else "pytest"
+                )
                 command_to_run_test = (
                     f"coverage run -m {pytest_command}"
                     if self._show_coverage
                     else pytest_command
                 )
                 self.execute_command(command_to_run_test)
-                if self._show_coverage:
+                if self._show_coverage and os.path.exists(".coverage"):
                     self.execute_command("coverage report -m")
             elif self._lint_code:
                 logger.info("Reformatting with Black...")
@@ -166,7 +168,7 @@ class DevCommand(BaseCommand):
         except ImportError:
             raise ImportError(IMPORT_ERROR_MESSAGE)
         except Exception as e:
-            raise RuntimeError(e)
+            raise e
         finally:
             shutil.rmtree(".pytest_cache", ignore_errors=True)
             if os.path.exists(".coverage"):

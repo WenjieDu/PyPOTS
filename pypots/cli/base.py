@@ -76,10 +76,11 @@ class BaseCommand(ABC):
         )
 
         if strict:
-            assert check_result, RuntimeError(
-                "Command `pypots-cli dev` can only be run under the root directory of project PyPOTS, "
-                f"but you're running it under the path {os.getcwd()}. Please make a check."
-            )
+            if not check_result:
+                raise RuntimeError(
+                    "Command `pypots-cli dev` can only be run under the root directory of project PyPOTS, "
+                    f"but you're running it under the path {os.getcwd()}. Please make a check."
+                )
 
         return check_result
 
