@@ -171,5 +171,3 @@ class DevCommand(BaseCommand):
             raise e
         finally:
             shutil.rmtree(".pytest_cache", ignore_errors=True)
-            if os.path.exists(".coverage"):
-                os.remove(".coverage")
