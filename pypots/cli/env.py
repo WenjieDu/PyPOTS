@@ -128,6 +128,10 @@ class EnvCommand(BaseCommand):
         else:  # self._tool == "pip"
             torch_version = torch.__version__
 
+            if not (torch.cuda.is_available() and torch.cuda.device_count() > 0):
+                if "cpu" not in torch_version:
+                    torch_version = torch_version + "+cpu"
+
             self.execute_command(
                 f"pip install -e '.[optional]' -f 'https://data.pyg.org/whl/torch-{torch_version}.html'"
             )
