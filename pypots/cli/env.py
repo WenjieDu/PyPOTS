@@ -112,17 +112,18 @@ class EnvCommand(BaseCommand):
                 "conda install pyg pytorch-scatter pytorch-sparse -c pyg"
             )
 
-            dependencies = ""
-            for i in setup_cfg["options"]["extras_require"][self._install]:
-                dependencies += f"'{i}' "
+            if self._install != "optional":
+                dependencies = ""
+                for i in setup_cfg["options"]["extras_require"][self._install]:
+                    dependencies += f"'{i}' "
 
-            if "torch-geometric" in dependencies:
-                dependencies = dependencies.replace("'torch-geometric'", "")
-                dependencies = dependencies.replace("'torch-scatter'", "")
-                dependencies = dependencies.replace("'torch-sparse'", "")
+                if "torch-geometric" in dependencies:
+                    dependencies = dependencies.replace("'torch-geometric'", "")
+                    dependencies = dependencies.replace("'torch-scatter'", "")
+                    dependencies = dependencies.replace("'torch-sparse'", "")
 
-            conda_comm = f"conda install {dependencies} -c conda-forge"
-            self.execute_command(conda_comm)
+                conda_comm = f"conda install {dependencies} -c conda-forge"
+                self.execute_command(conda_comm)
 
         else:  # self._tool == "pip"
             torch_version = torch.__version__
