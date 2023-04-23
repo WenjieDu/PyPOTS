@@ -30,14 +30,13 @@ jobs:
               with:
                   activate-environment: pypots-test
                   python-version: ${{ matrix.python-version }}
-                  environment-file: environment-dev.yml
+                  environment-file: pypots/tests/environment_for_conda_test.yml
                   auto-activate-base: false
 
             - name: Fetch the test environment details
               run: |
                   which python
                   conda info
-                  conda remove pypots --force  # remove installed pypots but keep dependencies
                   conda list
 
             - name: Test with pytest

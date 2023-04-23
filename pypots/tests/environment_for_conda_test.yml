@@ -1,10 +1,13 @@
 name: pypots-test
+
 channels:
     - conda-forge
     - pytorch
     - pyg
     - nodefaults
+
 dependencies:
+    # basic
     - conda-forge::python
     - conda-forge::pip
     - conda-forge::scipy
@@ -19,6 +22,22 @@ dependencies:
     - conda-forge::pycorruptor
     - conda-forge::tsdb
     - pytorch::pytorch >=1.10.0
+
+    # optional
     - pyg::pyg
     - pyg::pytorch-scatter
     - pyg::pytorch-sparse
+
+    # test
+    - conda-forge::pytest-cov
+    - conda-forge::pytest-xdist
+
+    # doc
+    - conda-forge::sphinx
+    - conda-forge::sphinxcontrib-bibtex
+    - conda-forge::furo
+
+    # dev
+    - conda-forge::black
+    - conda-forge::flake8
+    - conda-forge::pre-commit
