@@ -191,8 +191,10 @@ class DocCommand(BaseCommand):
 
                 # Generate the docs according to the cloned code
                 logger.info("Generating rst files...")
+                os.environ[
+                    "SPHINX_APIDOC_OPTIONS"
+                ] = "members,undoc-members,show-inheritance,inherited-members"
                 self.execute_command(
-                    "SPHINX_APIDOC_OPTIONS=members,undoc-members,show-inheritance,inherited-members "
                     f"sphinx-apidoc {CLONED_LATEST_PYPOTS} -o {CLONED_LATEST_PYPOTS}/rst"
                 )
 
