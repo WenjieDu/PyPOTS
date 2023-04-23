@@ -21,19 +21,6 @@ from pypots.utils.logging import logger
 PROJECT_ROOT_DIR = os.path.abspath(os.path.join(os.path.abspath(__file__), "../../.."))
 
 
-# class TestCaseWithTimeout(unittest.TestCase):
-#     def setUp(self):
-#         signal.signal(signal.SIGALRM, self.timeout)
-#         signal.alarm(5)  # 5s timeout
-#
-#     def tearDown(self):
-#         signal.alarm(0)
-
-
-def timeout_handle(signum, frame):
-    raise TimeoutError("Test case timed out")
-
-
 class TestPyPOTSCLIDev(unittest.TestCase):
     # set up the default arguments
     default_arguments = {
@@ -143,6 +130,9 @@ class TestPyPOTSCLIDoc(unittest.TestCase):
 
     @pytest.mark.xdist_group(name="cli-doc")
     def test_2_view_doc(self):
+        def timeout_handle(signum, frame):
+            raise TimeoutError("Test case timed out")
+
         arguments = copy(self.default_arguments)
         arguments["view_doc"] = True
         args = Namespace(**arguments)
@@ -150,7 +140,7 @@ class TestPyPOTSCLIDoc(unittest.TestCase):
         signal.alarm(2)  # 5s timeout
         try:
             doc_command_factory(args).run()
-        except TimeoutError:
+        except RuntimeError:
             pass
         except Exception as e:  # other exceptions will cause an error and result in failed testing
             raise e
