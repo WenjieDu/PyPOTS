@@ -133,7 +133,7 @@ class EnvCommand(BaseCommand):
                     torch_version = torch_version + "+cpu"
 
             self.execute_command(
-                f"pip install -e '.[optional]' -f 'https://data.pyg.org/whl/torch-{torch_version}.html'"
+                f"python -m pip install -e '.[optional]' -f https://data.pyg.org/whl/torch-{torch_version}.html"
             )
 
             if self._install != "optional":
