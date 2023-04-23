@@ -35,7 +35,7 @@ def time_out(interval, callback):
             if t.is_alive():
                 return threading.Timer(0, callback).start()  # invoke callback()
             else:
-                raise RuntimeError
+                return
 
         return wrapper
 
