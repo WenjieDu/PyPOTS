@@ -334,7 +334,7 @@ class SAITS(BaseNNImputer):
             The type of the given file if train_set and val_set are path strings.
 
         """
-        training_set = DatasetForMIT(train_set, file_type)
+        training_set = DatasetForMIT(train_set, file_type=file_type)
         training_loader = DataLoader(
             training_set,
             batch_size=self.batch_size,
@@ -358,7 +358,7 @@ class SAITS(BaseNNImputer):
                         "indicating_mask": hf["indicating_mask"][:],
                     }
 
-            val_set = BaseDataset(val_set)
+            val_set = BaseDataset(val_set, file_type=file_type)
             val_loader = DataLoader(
                 val_set,
                 batch_size=self.batch_size,
@@ -392,7 +392,7 @@ class SAITS(BaseNNImputer):
             Imputed data.
         """
         self.model.eval()  # set the model as eval status to freeze it.
-        test_set = BaseDataset(X, file_type)
+        test_set = BaseDataset(X, return_labels=False, file_type=file_type)
         test_loader = DataLoader(
             test_set,
             batch_size=self.batch_size,
