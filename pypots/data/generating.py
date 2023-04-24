@@ -336,6 +336,8 @@ def gene_physionet2012(artificially_missing: bool = True):
         )
         test_X = masked_fill(test_X, 1 - test_X_missing_mask, torch.nan)
 
+        data["val_X"] = val_X
+        data["test_X"] = test_X
         data["test_X_intact"] = test_X_intact
         data["test_X_indicating_mask"] = test_X_indicating_mask
         data["val_X_intact"] = val_X_intact
