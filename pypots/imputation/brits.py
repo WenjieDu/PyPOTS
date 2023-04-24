@@ -650,7 +650,7 @@ class BRITS(BaseNNImputer):
             The type of the given file if train_set and val_set are path strings.
 
         """
-        training_set = DatasetForBRITS(train_set, file_type)
+        training_set = DatasetForBRITS(train_set, file_type=file_type)
         training_loader = DataLoader(
             training_set,
             batch_size=self.batch_size,
@@ -675,7 +675,7 @@ class BRITS(BaseNNImputer):
                         "indicating_mask": hf["indicating_mask"][:],
                     }
 
-            val_set = DatasetForBRITS(val_set)
+            val_set = DatasetForBRITS(val_set, file_type=file_type)
             val_loader = DataLoader(
                 val_set,
                 batch_size=self.batch_size,
@@ -710,7 +710,7 @@ class BRITS(BaseNNImputer):
             Imputed data.
         """
         self.model.eval()  # set the model as eval status to freeze it.
-        test_set = DatasetForBRITS(X)
+        test_set = DatasetForBRITS(X, return_labels=False, file_type=file_type)
         test_loader = DataLoader(
             test_set,
             batch_size=self.batch_size,

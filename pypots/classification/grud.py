@@ -286,7 +286,7 @@ class GRUD(BaseNNClassifier):
             Trained classifier.
         """
 
-        training_set = DatasetForGRUD(train_set, file_type)
+        training_set = DatasetForGRUD(train_set, file_type=file_type)
         training_loader = DataLoader(
             training_set,
             batch_size=self.batch_size,
@@ -297,7 +297,7 @@ class GRUD(BaseNNClassifier):
         if val_set is None:
             self._train_model(training_loader)
         else:
-            val_set = DatasetForGRUD(val_set)
+            val_set = DatasetForGRUD(val_set, file_type=file_type)
             val_loader = DataLoader(
                 val_set,
                 batch_size=self.batch_size,
@@ -327,7 +327,7 @@ class GRUD(BaseNNClassifier):
             Classification results of the given samples.
         """
         self.model.eval()  # set the model as eval status to freeze it.
-        test_set = DatasetForGRUD(X, file_type)
+        test_set = DatasetForGRUD(X, return_labels=False, file_type=file_type)
         test_loader = DataLoader(
             test_set,
             batch_size=self.batch_size,

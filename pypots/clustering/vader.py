@@ -664,7 +664,7 @@ class VaDER(BaseNNClusterer):
         self : object,
             Trained classifier.
         """
-        training_set = DatasetForGRUD(train_set, file_type)
+        training_set = DatasetForGRUD(train_set, file_type=file_type)
         training_loader = DataLoader(
             training_set,
             batch_size=self.batch_size,
@@ -693,7 +693,7 @@ class VaDER(BaseNNClusterer):
             Clustering results.
         """
         self.model.eval()  # set the model as eval status to freeze it.
-        test_set = DatasetForGRUD(X, file_type)
+        test_set = DatasetForGRUD(X, return_labels=False, file_type=file_type)
         test_loader = DataLoader(
             test_set,
             batch_size=self.batch_size,

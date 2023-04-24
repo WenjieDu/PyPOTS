@@ -333,7 +333,7 @@ class BRITS(BaseNNClassifier):
             Trained classifier.
         """
 
-        training_set = DatasetForBRITS(train_set)
+        training_set = DatasetForBRITS(train_set, file_type=file_type)
         training_loader = DataLoader(
             training_set,
             batch_size=self.batch_size,
@@ -344,7 +344,7 @@ class BRITS(BaseNNClassifier):
         if val_set is None:
             self._train_model(training_loader)
         else:
-            val_set = DatasetForBRITS(val_set)
+            val_set = DatasetForBRITS(val_set, file_type=file_type)
             val_loader = DataLoader(
                 val_set,
                 batch_size=self.batch_size,
@@ -374,7 +374,7 @@ class BRITS(BaseNNClassifier):
             Classification results of the given samples.
         """
         self.model.eval()  # set the model as eval status to freeze it.
-        test_set = DatasetForBRITS(X, file_type)
+        test_set = DatasetForBRITS(X, return_labels=False, file_type=file_type)
         test_loader = DataLoader(
             test_set,
             batch_size=self.batch_size,
