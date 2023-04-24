@@ -268,8 +268,14 @@ def gene_incomplete_random_walk_dataset(
     return data
 
 
-def gene_physionet2012():
-    """Generate PhysioNet2012."""
+def gene_physionet2012(artificially_missing: bool = True):
+    """Generate a full-prepared PhysioNet-2012 dataset for model testing.
+
+    Parameters
+    ----------
+    artificially_missing : bool, default = True,
+        Whether to artificially mask out 10% observed values and hold out for imputation performance evaluation.
+    """
     # generate samples
     df = load_specific_dataset("physionet_2012")
     X = df["X"]
@@ -288,11 +294,13 @@ def gene_physionet2012():
         val_set.to_numpy(),
         test_set.to_numpy(),
     )
+
     # normalization
     scaler = StandardScaler()
     train_X = scaler.fit_transform(train_X)
     val_X = scaler.transform(val_X)
     test_X = scaler.transform(test_X)
+
     # reshape into time series samples
     train_X = train_X.reshape(len(train_set_ids), 48, -1)
     val_X = val_X.reshape(len(val_set_ids), 48, -1)
@@ -303,16 +311,6 @@ def gene_physionet2012():
     test_y = y[y.index.isin(test_set_ids)]
     train_y, val_y, test_y = train_y.to_numpy(), val_y.to_numpy(), test_y.to_numpy()
 
-    # mask values in the validation set as ground truth
-    val_X_intact, val_X, val_X_missing_mask, val_X_indicating_mask = mcar(val_X, 0.1)
-    val_X = masked_fill(val_X, 1 - val_X_missing_mask, torch.nan)
-
-    # mask values in the test set as ground truth
-    test_X_intact, test_X, test_X_missing_mask, test_X_indicating_mask = mcar(
-        test_X, 0.1
-    )
-    test_X = masked_fill(test_X, 1 - test_X_missing_mask, torch.nan)
-
     data = {
         "n_classes": 2,
         "n_steps": 48,
@@ -321,11 +319,26 @@ def gene_physionet2012():
         "train_y": train_y.flatten(),
         "val_X": val_X,
         "val_y": val_y.flatten(),
-        "val_X_intact": val_X_intact,
-        "val_X_indicating_mask": val_X_indicating_mask,
         "test_X": test_X,
         "test_y": test_y.flatten(),
-        "test_X_intact": test_X_intact,
-        "test_X_indicating_mask": test_X_indicating_mask,
     }
+
+    if artificially_missing:
+        # mask values in the validation set as ground truth
+        val_X_intact, val_X, val_X_missing_mask, val_X_indicating_mask = mcar(
+            val_X, 0.1
+        )
+        val_X = masked_fill(val_X, 1 - val_X_missing_mask, torch.nan)
+
+        # mask values in the test set as ground truth
+        test_X_intact, test_X, test_X_missing_mask, test_X_indicating_mask = mcar(
+            test_X, 0.1
+        )
+        test_X = masked_fill(test_X, 1 - test_X_missing_mask, torch.nan)
+
+        data["test_X_intact"] = test_X_intact
+        data["test_X_indicating_mask"] = test_X_indicating_mask
+        data["val_X_intact"] = val_X_intact
+        data["val_X_indicating_mask"] = val_X_indicating_mask
+
     return data

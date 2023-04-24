@@ -203,6 +203,7 @@ class BaseNNModel(BaseModel):
     patience : int,
         Number of epochs the training procedure will keep if loss doesn't decrease.
         Once exceeding the number, the training will stop.
+        Must be smaller than or equal to the value of `epoches`.
 
     learning_rate : float,
         The learning rate of the optimizer.
@@ -251,6 +252,13 @@ class BaseNNModel(BaseModel):
         tb_file_saving_path: str = None,
     ):
         super().__init__(device, tb_file_saving_path)
+
+        if patience is None:
+            patience = -1  # early stopping on patience won't work if it is set as < 0
+        else:
+            assert (
+                patience <= epochs
+            ), f"patience must be smaller than epoches which is {epochs}, but got patience={patience}"
 
         # training hype-parameters
         self.batch_size = batch_size

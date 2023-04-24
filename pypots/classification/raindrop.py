@@ -637,7 +637,7 @@ class Raindrop(BaseNNClassifier):
         static,
         batch_size=32,
         epochs=100,
-        patience=10,
+        patience: int = None,
         learning_rate=1e-3,
         weight_decay=1e-5,
         num_workers: int = 0,

@@ -517,7 +517,7 @@ class BRITS(BaseNNImputer):
         rnn_hidden_size: int,
         batch_size: int = 32,
         epochs: int = 100,
-        patience: int = 10,
+        patience: int = None,
         learning_rate: float = 1e-3,
         weight_decay: float = 1e-5,
         num_workers: int = 0,
