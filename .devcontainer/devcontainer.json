@@ -1,0 +1,14 @@
+{
+    "name": "PyPOTS developing environment",
+
+    "image": "mcr.microsoft.com/devcontainers/python:1-3.10-bullseye",
+
+    "features": {
+        "ghcr.io/devcontainers/features/nvidia-cuda:1": {
+            "installCudnn": true
+        },
+        "ghcr.io/devcontainers/features/conda:1": {},
+    },
+
+    "postCreateCommand": "conda env create -f environment-dev.yml",
+}
