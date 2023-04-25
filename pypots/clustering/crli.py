@@ -533,7 +533,8 @@ class CRLI(BaseNNClusterer):
                     self.patience = self.original_patience
                     # save the model if necessary
                     self.auto_save_model_if_necessary(
-                        saving_name=f"{self.__class__.__name__}_epoch{epoch}_loss{mean_loss}"
+                        training_finished=False,
+                        saving_name=f"{self.__class__.__name__}_epoch{epoch}_loss{mean_loss}",
                     )
                 else:
                     self.patience -= 1
@@ -596,7 +597,7 @@ class CRLI(BaseNNClusterer):
         self.model.eval()  # set the model as eval status to freeze it.
 
         # Step 3: save the model if necessary
-        self.auto_save_model_if_necessary()
+        self.auto_save_model_if_necessary(training_finished=True)
 
     def cluster(
         self,

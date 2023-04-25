@@ -483,7 +483,7 @@ class Transformer(BaseNNImputer):
         self.model.eval()  # set the model as eval status to freeze it.
 
         # Step 3: save the model if necessary
-        self.auto_save_model_if_necessary()
+        self.auto_save_model_if_necessary(training_finished=True)
 
     def impute(self, X: Union[dict, str], file_type: str = "h5py") -> np.ndarray:
         """Impute missing values in the given data with the trained model.
