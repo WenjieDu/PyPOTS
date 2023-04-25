@@ -195,25 +195,31 @@ class BaseModel(ABC):
                 f'Failed to save the model to "{saving_path}" because of the below error! \n{e}'
             )
 
-    def auto_save_model_if_necessary(self, saving_name: str = None):
+    def auto_save_model_if_necessary(
+        self,
+        training_finished: bool = True,
+        saving_name: str = None,
+    ):
         """Automatically save the current model into a file if in need.
 
         Parameters
         ----------
+        training_finished : bool, default = False,
+            Whether the training is already finished when invoke this function.
+            The saving_strategy "better" only works when training_finished is False.
+            The saving_strategy "best" only works when training_finished is True.
+
         saving_name : str, default = None,
             The file name of the saved model.
 
         """
         if self.saving_path is not None and self.auto_save_model:
             name = self.__class__.__name__ if saving_name is None else saving_name
-            if self.saving_strategy == "best":
+            if not training_finished and self.saving_strategy == "better":
                 self.save_model(self.saving_path, name)
-            else:  # self.saving_strategy == "better"
+            elif training_finished and self.saving_strategy == "best":
                 self.save_model(self.saving_path, name)
 
-            logger.info(
-                f"Successfully saved the model to {os.path.join(self.saving_path, name)}"
-            )
         else:
             return
 
