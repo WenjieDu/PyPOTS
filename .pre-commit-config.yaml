@@ -7,16 +7,6 @@ repos:
             -   id: end-of-file-fixer
             -   id: check-yaml
 
-    # hooks for optimizing imports
-    -   repo: https://github.com/PyCQA/autoflake
-        rev: v2.1.1
-        hooks:
-            -   id: autoflake
-                args: [
-                    --check,
-                    --remove-all-unused-imports,
-                ]
-
     # hooks for linting code
     -   repo: https://github.com/psf/black
         rev: 22.10.0
