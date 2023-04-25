@@ -41,7 +41,7 @@ class TestCRLI(unittest.TestCase):
         n_generator_layers=2,
         rnn_hidden_size=128,
         epochs=EPOCHS,
-        tb_file_saving_path=saving_path,
+        saving_path=saving_path,
     )
 
     @pytest.mark.xdist_group(name="clustering-crli")
@@ -79,8 +79,8 @@ class TestCRLI(unittest.TestCase):
 
         # whether the tensorboard file exists
         assert (
-                self.crli.tb_file_saving_path is not None
-                and len(os.listdir(self.crli.tb_file_saving_path)) > 0
+            self.crli.saving_path is not None
+            and len(os.listdir(self.crli.saving_path)) > 0
         ), "tensorboard file does not exist"
 
         # save the trained model into file, and check if the path exists
@@ -109,7 +109,7 @@ class TestVaDER(unittest.TestCase):
         d_mu_stddev=5,
         pretrain_epochs=20,
         epochs=EPOCHS,
-        tb_file_saving_path=saving_path,
+        saving_path=saving_path,
     )
 
     @pytest.mark.xdist_group(name="clustering-vader")
@@ -152,8 +152,8 @@ class TestVaDER(unittest.TestCase):
 
         # whether the tensorboard file exists
         assert (
-                self.vader.tb_file_saving_path is not None
-                and len(os.listdir(self.vader.tb_file_saving_path)) > 0
+            self.vader.saving_path is not None
+            and len(os.listdir(self.vader.saving_path)) > 0
         ), "tensorboard file does not exist"
 
         # save the trained model into file, and check if the path exists

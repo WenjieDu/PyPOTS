@@ -392,7 +392,7 @@ class VaDER(BaseNNClusterer):
         weight_decay: float = 1e-5,
         num_workers: int = 0,
         device: Optional[Union[str, torch.device]] = None,
-        tb_file_saving_path: str = None,
+        saving_path: str = None,
     ):
         super().__init__(
             n_clusters,
@@ -403,7 +403,7 @@ class VaDER(BaseNNClusterer):
             weight_decay,
             num_workers,
             device,
-            tb_file_saving_path,
+            saving_path,
         )
         self.n_steps = n_steps
         self.n_features = n_features
@@ -614,6 +614,10 @@ class VaDER(BaseNNClusterer):
                     self.best_loss = mean_loss
                     self.best_model_dict = self.model.state_dict()
                     self.patience = self.original_patience
+                    # save the model if necessary
+                    self.auto_save_model_if_necessary(
+                        saving_name=f"{self.__class__.__name__}_epoch{epoch}_loss{mean_loss}"
+                    )
                 else:
                     self.patience -= 1
                     if self.patience == 0:
@@ -664,6 +668,7 @@ class VaDER(BaseNNClusterer):
         self : object,
             Trained classifier.
         """
+        # Step 1: wrap the input data with classes Dataset and DataLoader
         training_set = DatasetForGRUD(train_set, file_type=file_type)
         training_loader = DataLoader(
             training_set,
@@ -671,9 +676,14 @@ class VaDER(BaseNNClusterer):
             shuffle=True,
             num_workers=self.num_workers,
         )
+
+        # Step 2: train the model and freeze it
         self._train_model(training_loader)
         self.model.load_state_dict(self.best_model_dict)
         self.model.eval()  # set the model as eval status to freeze it.
+
+        # Step 3: save the model if necessary
+        self.auto_save_model_if_necessary()
 
     def cluster(self, X: Union[dict, str], file_type: str = "h5py") -> np.ndarray:
         """Cluster the input with the trained model.

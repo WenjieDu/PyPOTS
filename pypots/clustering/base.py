@@ -23,11 +23,11 @@ class BaseClusterer(BaseModel):
     def __init__(
         self,
         device: Optional[Union[str, torch.device]] = None,
-        tb_file_saving_path: str = None,
+        saving_path: str = None,
     ):
         super().__init__(
             device,
-            tb_file_saving_path,
+            saving_path,
         )
 
     @abstractmethod
@@ -93,7 +93,7 @@ class BaseNNClusterer(BaseNNModel, BaseClusterer):
         weight_decay: float,
         num_workers: int = 0,
         device: Optional[Union[str, torch.device]] = None,
-        tb_file_saving_path: str = None,
+        saving_path: str = None,
     ):
         super().__init__(
             batch_size,
@@ -103,7 +103,7 @@ class BaseNNClusterer(BaseNNModel, BaseClusterer):
             weight_decay,
             num_workers,
             device,
-            tb_file_saving_path,
+            saving_path,
         )
         self.n_clusters = n_clusters
 
