@@ -7,7 +7,7 @@ The base (abstract) classes for models in PyPOTS.
 
 import os
 from abc import ABC
-from typing import Optional, Union, Literal
+from typing import Optional, Union
 
 import torch
 from torch.utils.tensorboard import SummaryWriter
@@ -59,14 +59,15 @@ class BaseModel(ABC):
     """
 
     # leverage typing to show type hints in IDEs
-    SAVING_STRATEGY = Literal["best", "better"]
+    # SAVING_STRATEGY = Literal["best", "better"]
+    SAVING_STRATEGY = ["best", "better"]
 
     def __init__(
         self,
         device: Optional[Union[str, torch.device]] = None,
         saving_path: str = None,
         auto_save_model: bool = True,
-        saving_strategy: SAVING_STRATEGY = "best",
+        saving_strategy: str = "best",
     ):
 
         assert saving_strategy in [
