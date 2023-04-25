@@ -158,7 +158,7 @@ class BRITS(BaseNNClassifier):
         weight_decay: float = 1e-5,
         num_workers: int = 0,
         device: Optional[Union[str, torch.device]] = None,
-        tb_file_saving_path: str = None,
+        saving_path: str = None,
     ):
         super().__init__(
             n_classes,
@@ -169,7 +169,7 @@ class BRITS(BaseNNClassifier):
             weight_decay,
             num_workers,
             device,
-            tb_file_saving_path,
+            saving_path,
         )
 
         self.n_steps = n_steps
@@ -332,7 +332,7 @@ class BRITS(BaseNNClassifier):
         self : object,
             Trained classifier.
         """
-
+        # Step 1: wrap the input data with classes Dataset and DataLoader
         training_set = DatasetForBRITS(train_set, file_type=file_type)
         training_loader = DataLoader(
             training_set,
@@ -340,10 +340,8 @@ class BRITS(BaseNNClassifier):
             shuffle=True,
             num_workers=self.num_workers,
         )
-
-        if val_set is None:
-            self._train_model(training_loader)
-        else:
+        val_loader = None
+        if val_set is not None:
             val_set = DatasetForBRITS(val_set, file_type=file_type)
             val_loader = DataLoader(
                 val_set,
@@ -351,10 +349,14 @@ class BRITS(BaseNNClassifier):
                 shuffle=False,
                 num_workers=self.num_workers,
             )
-            self._train_model(training_loader, val_loader)
 
+        # Step 2: train the model and freeze it
+        self._train_model(training_loader, val_loader)
         self.model.load_state_dict(self.best_model_dict)
         self.model.eval()  # set the model as eval status to freeze it.
+
+        # Step 3: save the model if necessary
+        self.auto_save_model_if_necessary()
 
     def classify(self, X: Union[dict, str], file_type: str = "h5py"):
         """Classify the input data with the trained model.

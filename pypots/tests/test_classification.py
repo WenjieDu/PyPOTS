@@ -38,7 +38,7 @@ class TestBRITS(unittest.TestCase):
         256,
         n_classes=DATA["n_classes"],
         epochs=EPOCHS,
-        tb_file_saving_path=saving_path,
+        saving_path=saving_path,
     )
 
     @pytest.mark.xdist_group(name="classification-brits")
@@ -81,8 +81,8 @@ class TestBRITS(unittest.TestCase):
 
         # whether the tensorboard file exists
         assert (
-                self.brits.tb_file_saving_path is not None
-                and len(os.listdir(self.brits.tb_file_saving_path)) > 0
+            self.brits.saving_path is not None
+            and len(os.listdir(self.brits.saving_path)) > 0
         ), "tensorboard file does not exist"
 
         # save the trained model into file, and check if the path exists
@@ -109,7 +109,7 @@ class TestGRUD(unittest.TestCase):
         256,
         n_classes=DATA["n_classes"],
         epochs=EPOCHS,
-        tb_file_saving_path=saving_path,
+        saving_path=saving_path,
     )
 
     @pytest.mark.xdist_group(name="classification-grud")
@@ -152,8 +152,8 @@ class TestGRUD(unittest.TestCase):
 
         # whether the tensorboard file exists
         assert (
-                self.grud.tb_file_saving_path is not None
-                and len(os.listdir(self.grud.tb_file_saving_path)) > 0
+            self.grud.saving_path is not None
+            and len(os.listdir(self.grud.saving_path)) > 0
         ), "tensorboard file does not exist"
 
         # save the trained model into file, and check if the path exists
@@ -188,7 +188,7 @@ class TestRaindrop(unittest.TestCase):
         False,
         False,
         epochs=EPOCHS,
-        tb_file_saving_path=saving_path,
+        saving_path=saving_path,
     )
 
     @pytest.mark.xdist_group(name="classification-raindrop")
@@ -233,8 +233,8 @@ class TestRaindrop(unittest.TestCase):
 
         # whether the tensorboard file exists
         assert (
-                self.raindrop.tb_file_saving_path is not None
-                and len(os.listdir(self.raindrop.tb_file_saving_path)) > 0
+            self.raindrop.saving_path is not None
+            and len(os.listdir(self.raindrop.saving_path)) > 0
         ), "tensorboard file does not exist"
 
         # save the trained model into file, and check if the path exists

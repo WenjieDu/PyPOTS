@@ -522,7 +522,7 @@ class BRITS(BaseNNImputer):
         weight_decay: float = 1e-5,
         num_workers: int = 0,
         device: Optional[Union[str, torch.device]] = None,
-        tb_file_saving_path: str = None,
+        saving_path: str = None,
     ):
         super().__init__(
             batch_size,
@@ -532,7 +532,7 @@ class BRITS(BaseNNImputer):
             weight_decay,
             num_workers,
             device,
-            tb_file_saving_path,
+            saving_path,
         )
 
         self.n_steps = n_steps
@@ -650,6 +650,7 @@ class BRITS(BaseNNImputer):
             The type of the given file if train_set and val_set are path strings.
 
         """
+        # Step 1: wrap the input data with classes Dataset and DataLoader
         training_set = DatasetForBRITS(train_set, file_type=file_type)
         training_loader = DataLoader(
             training_set,
@@ -657,10 +658,8 @@ class BRITS(BaseNNImputer):
             shuffle=True,
             num_workers=self.num_workers,
         )
-
-        if val_set is None:
-            self._train_model(training_loader)
-        else:
+        val_loader = None
+        if val_set is not None:
             if isinstance(val_set, str):
                 with h5py.File(val_set, "r") as hf:
                     # Here we read the whole validation set from the file to mask a portion for validation.
@@ -674,7 +673,6 @@ class BRITS(BaseNNImputer):
                         "X_intact": hf["X_intact"][:],
                         "indicating_mask": hf["indicating_mask"][:],
                     }
-
             val_set = DatasetForBRITS(val_set, file_type=file_type)
             val_loader = DataLoader(
                 val_set,
@@ -683,10 +681,13 @@ class BRITS(BaseNNImputer):
                 num_workers=self.num_workers,
             )
 
-            self._train_model(training_loader, val_loader)
-
+        # Step 2: train the model and freeze it
+        self._train_model(training_loader, val_loader)
         self.model.load_state_dict(self.best_model_dict)
         self.model.eval()  # set the model as eval status to freeze it.
+
+        # Step 3: save the model if necessary
+        self.auto_save_model_if_necessary()
 
     def impute(
         self,

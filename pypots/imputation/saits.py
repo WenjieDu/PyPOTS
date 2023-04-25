@@ -167,6 +167,33 @@ class _SAITS(nn.Module):
 
 
 class SAITS(BaseNNImputer):
+    """
+    Parameters
+    ----------
+    n_steps
+    n_features
+    n_layers
+    d_model
+    d_inner
+    n_head
+    d_k
+    d_v
+    dropout
+    diagonal_attention_mask
+    ORT_weight
+    MIT_weight
+    batch_size
+    epochs
+    patience : int, default = None,
+        Leaving it default as None will disable the early-stopping.
+
+    learning_rate
+    weight_decay
+    num_workers
+    device
+    saving_path
+    """
+
     def __init__(
         self,
         n_steps: int,
@@ -188,7 +215,7 @@ class SAITS(BaseNNImputer):
         weight_decay: float = 1e-5,
         num_workers: int = 0,
         device: Optional[Union[str, torch.device]] = None,
-        tb_file_saving_path: str = None,
+        saving_path: str = None,
     ):
         super().__init__(
             batch_size,
@@ -198,7 +225,7 @@ class SAITS(BaseNNImputer):
             weight_decay,
             num_workers,
             device,
-            tb_file_saving_path,
+            saving_path,
         )
 
         self.n_steps = n_steps
@@ -334,6 +361,7 @@ class SAITS(BaseNNImputer):
             The type of the given file if train_set and val_set are path strings.
 
         """
+        # Step 1: wrap the input data with classes Dataset and DataLoader
         training_set = DatasetForMIT(train_set, file_type=file_type)
         training_loader = DataLoader(
             training_set,
@@ -341,9 +369,8 @@ class SAITS(BaseNNImputer):
             shuffle=True,
             num_workers=self.num_workers,
         )
-        if val_set is None:
-            self._train_model(training_loader)
-        else:
+        val_loader = None
+        if val_set is not None:
             if isinstance(val_set, str):
                 with h5py.File(val_set, "r") as hf:
                     # Here we read the whole validation set from the file to mask a portion for validation.
@@ -365,10 +392,14 @@ class SAITS(BaseNNImputer):
                 shuffle=False,
                 num_workers=self.num_workers,
             )
-            self._train_model(training_loader, val_loader)
 
+        # Step 2: train the model and freeze it
+        self._train_model(training_loader, val_loader)
         self.model.load_state_dict(self.best_model_dict)
         self.model.eval()  # set the model as eval status to freeze it.
+
+        # Step 3: save the model if necessary
+        self.auto_save_model_if_necessary()
 
     def impute(
         self,
@@ -391,6 +422,7 @@ class SAITS(BaseNNImputer):
         array-like, shape [n_samples, sequence length (time steps), n_features],
             Imputed data.
         """
+        # Step 1: wrap the input data with classes Dataset and DataLoader
         self.model.eval()  # set the model as eval status to freeze it.
         test_set = BaseDataset(X, return_labels=False, file_type=file_type)
         test_loader = DataLoader(
@@ -401,11 +433,13 @@ class SAITS(BaseNNImputer):
         )
         imputation_collector = []
 
+        # Step 2: process the data with the model
         with torch.no_grad():
             for idx, data in enumerate(test_loader):
                 inputs = self._assemble_input_for_testing(data)
                 imputed_data = self.model.impute(inputs)
                 imputation_collector.append(imputed_data)
 
+        # Step 3: output collection and return
         imputation_collector = torch.cat(imputation_collector)
         return imputation_collector.cpu().detach().numpy()

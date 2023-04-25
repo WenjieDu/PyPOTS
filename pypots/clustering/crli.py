@@ -347,7 +347,7 @@ class CRLI(BaseNNClusterer):
         weight_decay: float = 1e-5,
         num_workers: int = 0,
         device: Optional[Union[str, torch.device]] = None,
-        tb_file_saving_path: str = None,
+        saving_path: str = None,
     ):
         super().__init__(
             n_clusters,
@@ -358,7 +358,7 @@ class CRLI(BaseNNClusterer):
             weight_decay,
             num_workers,
             device,
-            tb_file_saving_path,
+            saving_path,
         )
         assert G_steps > 0 and D_steps > 0, "G_steps and D_steps should both >0"
 
@@ -531,6 +531,10 @@ class CRLI(BaseNNClusterer):
                     self.best_loss = mean_loss
                     self.best_model_dict = self.model.state_dict()
                     self.patience = self.original_patience
+                    # save the model if necessary
+                    self.auto_save_model_if_necessary(
+                        saving_name=f"{self.__class__.__name__}_epoch{epoch}_loss{mean_loss}"
+                    )
                 else:
                     self.patience -= 1
                     if self.patience == 0:
@@ -577,6 +581,7 @@ class CRLI(BaseNNClusterer):
             The type of the given file if train_set is a path string.
 
         """
+        # Step 1: wrap the input data with classes Dataset and DataLoader
         training_set = DatasetForGRUD(train_set, file_type=file_type)
         training_loader = DataLoader(
             training_set,
@@ -584,9 +589,14 @@ class CRLI(BaseNNClusterer):
             shuffle=True,
             num_workers=self.num_workers,
         )
+
+        # Step 2: train the model and freeze it
         self._train_model(training_loader)
         self.model.load_state_dict(self.best_model_dict)
         self.model.eval()  # set the model as eval status to freeze it.
+
+        # Step 3: save the model if necessary
+        self.auto_save_model_if_necessary()
 
     def cluster(
         self,
