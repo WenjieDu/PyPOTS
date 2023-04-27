@@ -69,7 +69,6 @@ class BaseCommand(ABC):
                 ".github",
                 "docs",
                 "pypots",
-                "tutorials",
                 "setup.cfg",
                 "setup.py",
             }
