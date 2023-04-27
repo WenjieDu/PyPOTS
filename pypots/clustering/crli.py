@@ -583,7 +583,9 @@ class CRLI(BaseNNClusterer):
 
         """
         # Step 1: wrap the input data with classes Dataset and DataLoader
-        training_set = DatasetForGRUD(train_set, file_type=file_type)
+        training_set = DatasetForGRUD(
+            train_set, return_labels=False, file_type=file_type
+        )
         training_loader = DataLoader(
             training_set,
             batch_size=self.batch_size,
