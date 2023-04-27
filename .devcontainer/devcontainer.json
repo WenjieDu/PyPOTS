@@ -11,5 +11,7 @@
         "ghcr.io/devcontainers/features/conda:1": {},
     },
 
+    // Please select the machine type with 4GB memory, otherwise the conda command below will exit with code 137,
+    // which is out of memory.
     "postCreateCommand": "conda env create -f environment-dev.yml",
 }
