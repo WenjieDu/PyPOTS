@@ -41,3 +41,4 @@ dependencies:
     - conda-forge::black
     - conda-forge::flake8
     - conda-forge::pre-commit
+    - conda-forge::jupyterlab

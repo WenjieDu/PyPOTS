@@ -121,7 +121,6 @@ class BaseModel(ABC):
             )
 
             logger.info(
-                f"saving_path is set as {saving_path}, "
                 f"the trained model will be saved to {self.saving_path}, "
                 f"the tensorboard file will be saved to {tb_saving_path}"
             )
