@@ -34,18 +34,18 @@ class BaseImputer(BaseModel):
         If not given, will try to use CUDA devices first, then CPUs. CUDA and CPU are so far the main devices for people
         to train ML models. Other devices like Google TPU and Apple Silicon accelerator MPS may be added in the future.
 
-    tb_file_saving_path : str, default = None,
+    saving_path : str, default = None,
         The path to save the tensorboard file, which contains the loss values recorded during training.
     """
 
     def __init__(
         self,
         device: Optional[Union[str, torch.device]] = None,
-        tb_file_saving_path: str = None,
+        saving_path: str = None,
     ):
         super().__init__(
             device,
-            tb_file_saving_path,
+            saving_path,
         )
 
     @abstractmethod
@@ -132,7 +132,7 @@ class BaseNNImputer(BaseNNModel, BaseImputer):
         If not given, will try to use CUDA devices first, then CPUs. CUDA and CPU are so far the main devices for people
         to train ML models. Other devices like Google TPU and Apple Silicon accelerator MPS may be added in the future.
 
-    tb_file_saving_path : str, default = None,
+    saving_path : str, default = None,
         The path to save the tensorboard file, which contains the loss values recorded during training.
     """
 
@@ -145,7 +145,7 @@ class BaseNNImputer(BaseNNModel, BaseImputer):
         weight_decay: float,
         num_workers: int = 0,
         device: Optional[Union[str, torch.device]] = None,
-        tb_file_saving_path: str = None,
+        saving_path: str = None,
     ):
         super().__init__(
             batch_size,
@@ -155,7 +155,7 @@ class BaseNNImputer(BaseNNModel, BaseImputer):
             weight_decay,
             num_workers,
             device,
-            tb_file_saving_path,
+            saving_path,
         )
 
     @abstractmethod
@@ -288,6 +288,11 @@ class BaseNNImputer(BaseNNModel, BaseImputer):
                     self.best_loss = mean_loss
                     self.best_model_dict = self.model.state_dict()
                     self.patience = self.original_patience
+                    # save the model if necessary
+                    self.auto_save_model_if_necessary(
+                        training_finished=False,
+                        saving_name=f"{self.__class__.__name__}_epoch{epoch}_loss{mean_loss}",
+                    )
                 else:
                     self.patience -= 1
 

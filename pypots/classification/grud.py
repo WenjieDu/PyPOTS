@@ -135,12 +135,12 @@ class GRUD(BaseNNClassifier):
         n_classes: int,
         batch_size: int = 32,
         epochs: int = 100,
-        patience: int = 10,
+        patience: int = None,
         learning_rate: float = 1e-3,
         weight_decay: float = 1e-5,
         num_workers: int = 0,
         device: Optional[Union[str, torch.device]] = None,
-        tb_file_saving_path: str = None,
+        saving_path: str = None,
     ):
         super().__init__(
             n_classes,
@@ -151,7 +151,7 @@ class GRUD(BaseNNClassifier):
             weight_decay,
             num_workers,
             device,
-            tb_file_saving_path,
+            saving_path,
         )
 
         self.n_steps = n_steps
@@ -285,29 +285,31 @@ class GRUD(BaseNNClassifier):
         self : object,
             Trained classifier.
         """
-
-        training_set = DatasetForGRUD(train_set, file_type)
+        # Step 1: wrap the input data with classes Dataset and DataLoader
+        training_set = DatasetForGRUD(train_set, file_type=file_type)
         training_loader = DataLoader(
             training_set,
             batch_size=self.batch_size,
             shuffle=True,
             num_workers=self.num_workers,
         )
-
-        if val_set is None:
-            self._train_model(training_loader)
-        else:
-            val_set = DatasetForGRUD(val_set)
+        val_loader = None
+        if val_set is not None:
+            val_set = DatasetForGRUD(val_set, file_type=file_type)
             val_loader = DataLoader(
                 val_set,
                 batch_size=self.batch_size,
                 shuffle=False,
                 num_workers=self.num_workers,
             )
-            self._train_model(training_loader, val_loader)
 
+        # Step 2: train the model and freeze it
+        self._train_model(training_loader, val_loader)
         self.model.load_state_dict(self.best_model_dict)
         self.model.eval()  # set the model as eval status to freeze it.
+
+        # Step 3: save the model if necessary
+        self.auto_save_model_if_necessary(training_finished=True)
 
     def classify(self, X: Union[dict, str], file_type: str = "h5py") -> np.ndarray:
         """Classify the input data with the trained model.
@@ -327,7 +329,7 @@ class GRUD(BaseNNClassifier):
             Classification results of the given samples.
         """
         self.model.eval()  # set the model as eval status to freeze it.
-        test_set = DatasetForGRUD(X, file_type)
+        test_set = DatasetForGRUD(X, return_labels=False, file_type=file_type)
         test_loader = DataLoader(
             test_set,
             batch_size=self.batch_size,

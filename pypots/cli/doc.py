@@ -11,7 +11,7 @@ from argparse import Namespace
 
 from tsdb.data_processing import _download_and_extract
 
-from pypots.utils.commands.base import BaseCommand
+from pypots.cli.base import BaseCommand
 from pypots.utils.logging import logger
 
 CLONED_LATEST_PYPOTS = "temp_pypots_latest"
@@ -145,7 +145,7 @@ class DocCommand(BaseCommand):
 
     def checkup(self):
         """Run some checks on the arguments to avoid error usages"""
-        self.check_if_under_root_dir()
+        self.check_if_under_root_dir(strict=True)
 
         if self._cleanup:
             assert not self._gene_rst and not self._gene_html and not self._view_doc, (
@@ -191,8 +191,10 @@ class DocCommand(BaseCommand):
 
                 # Generate the docs according to the cloned code
                 logger.info("Generating rst files...")
+                os.environ[
+                    "SPHINX_APIDOC_OPTIONS"
+                ] = "members,undoc-members,show-inheritance,inherited-members"
                 self.execute_command(
-                    "SPHINX_APIDOC_OPTIONS=members,undoc-members,show-inheritance,inherited-members "
                     f"sphinx-apidoc {CLONED_LATEST_PYPOTS} -o {CLONED_LATEST_PYPOTS}/rst"
                 )
 

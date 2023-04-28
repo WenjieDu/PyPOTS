@@ -27,9 +27,20 @@ class BaseModel(ABC):
         then CPUs, considering CUDA and CPU are so far the main devices for people to train ML models.
         Other devices like Google TPU and Apple Silicon accelerator MPS may be added in the future.
 
-    tb_file_saving_path : str, default = None,
-        The path to save the training logs (i.e. loss values recorded during training) into a tensorboard file.
-        Will not save if not given.
+    saving_path : str, default = None,
+        The path for automatically saving the trained model and training logs (i.e. loss values recorded during
+        training into a tensorboard file). Will not save if not given.
+
+    auto_save_model : bool, default = True,
+        Whether to automatically save the trained model if `saving_path` is given and not None.
+        Default as True, i.e. the trained model will be automatically saved to `self.saving_path`
+        and users don't have to explicitly invoke function `self.save_model()`.
+
+    saving_strategy : str, "best" or "better" , default = "best",
+        The strategy to save the trained model. It has to be "best" or "better".
+        The "best" strategy will only automatically save the best model after the training finished.
+        The "better" strategy will automatically save the model during training whenever the model performs
+        better than in previous epochs.
 
     Attributes
     ----------
@@ -47,14 +58,29 @@ class BaseModel(ABC):
 
     """
 
+    # leverage typing to show type hints in IDEs
+    # SAVING_STRATEGY = Literal["best", "better"]
+    SAVING_STRATEGY = ["best", "better"]
+
     def __init__(
         self,
         device: Optional[Union[str, torch.device]] = None,
-        tb_file_saving_path: str = None,
+        saving_path: str = None,
+        auto_save_model: bool = True,
+        saving_strategy: str = "best",
     ):
+
+        assert saving_strategy in [
+            "best",
+            "better",
+        ], f"saving_strategy must be one of {self.SAVING_STRATEGY}, but got f{saving_strategy}."
+
+        self.device = None
+        self.saving_path = saving_path
+        self.auto_save_model = auto_save_model
+        self.saving_strategy = saving_strategy
         self.model = None
         self.summary_writer = None
-        self.device = None
 
         # set up the device for model running below
         if device is None:
@@ -75,24 +101,28 @@ class BaseModel(ABC):
                     f"device should be str or torch.device, but got {type(device)}"
                 )
 
-        # set up the summary writer for training log saving below
-        # initialize self.summary_writer if tb_file_saving_path is given and not None, otherwise don't save the log
-        self.tb_file_saving_path = None
-        if isinstance(tb_file_saving_path, str):
-
+        # set up saving_path to save the trained model and training logs
+        if isinstance(saving_path, str):
             from datetime import datetime
 
-            # get the current time to append to the dir name,
-            # so you can use the same tb_file_saving_path for multiple running
+            # get the current time to append to saving_path,
+            # so you can use the same saving_path to run multiple times
+            # and also be aware of when they were run
             time_now = datetime.now().__format__("%Y%m%d_T%H%M%S")
-            # the actual directory name to save the tensorboard file
-            actual_tb_saving_dir_name = "tensorboard_" + time_now
-            self.tb_file_saving_path = os.path.join(
-                tb_file_saving_path, actual_tb_saving_dir_name
-            )
-            # os.makedirs(actual_tb_file_saving_path)  # create the dir for file saving
+            # the actual saving_path for saving both the best model and the tensorboard file
+            self.saving_path = os.path.join(saving_path, time_now)
+
+            # initialize self.summary_writer only if saving_path is given and not None
+            # otherwise self.summary_writer will be None and the training log won't be saved
+            tb_saving_path = os.path.join(self.saving_path, "tensorboard")
             self.summary_writer = SummaryWriter(
-                self.tb_file_saving_path, filename_suffix=".pypots"
+                tb_saving_path,
+                filename_suffix=".pypots",
+            )
+
+            logger.info(
+                f"the trained model will be saved to {self.saving_path}, "
+                f"the tensorboard file will be saved to {tb_saving_path}"
             )
 
     def save_log_into_tb_file(self, step: int, stage: str, loss_dict: dict) -> None:
@@ -164,6 +194,34 @@ class BaseModel(ABC):
                 f'Failed to save the model to "{saving_path}" because of the below error! \n{e}'
             )
 
+    def auto_save_model_if_necessary(
+        self,
+        training_finished: bool = True,
+        saving_name: str = None,
+    ):
+        """Automatically save the current model into a file if in need.
+
+        Parameters
+        ----------
+        training_finished : bool, default = False,
+            Whether the training is already finished when invoke this function.
+            The saving_strategy "better" only works when training_finished is False.
+            The saving_strategy "best" only works when training_finished is True.
+
+        saving_name : str, default = None,
+            The file name of the saved model.
+
+        """
+        if self.saving_path is not None and self.auto_save_model:
+            name = self.__class__.__name__ if saving_name is None else saving_name
+            if not training_finished and self.saving_strategy == "better":
+                self.save_model(self.saving_path, name)
+            elif training_finished and self.saving_strategy == "best":
+                self.save_model(self.saving_path, name)
+
+        else:
+            return
+
     def load_model(self, model_path: str) -> None:
         """Load the saved model from a disk file.
 
@@ -203,6 +261,7 @@ class BaseNNModel(BaseModel):
     patience : int,
         Number of epochs the training procedure will keep if loss doesn't decrease.
         Once exceeding the number, the training will stop.
+        Must be smaller than or equal to the value of `epoches`.
 
     learning_rate : float,
         The learning rate of the optimizer.
@@ -219,7 +278,7 @@ class BaseNNModel(BaseModel):
         If not given, will try to use CUDA devices first, then CPUs. CUDA and CPU are so far the main devices for people
         to train ML models. Other devices like Google TPU and Apple Silicon accelerator MPS may be added in the future.
 
-    tb_file_saving_path : str, default = None,
+    saving_path : str, default = None,
         The path to save the tensorboard file, which contains the loss values recorded during training.
 
 
@@ -248,9 +307,16 @@ class BaseNNModel(BaseModel):
         weight_decay: float,
         num_workers: int = 0,
         device: Optional[Union[str, torch.device]] = None,
-        tb_file_saving_path: str = None,
+        saving_path: str = None,
     ):
-        super().__init__(device, tb_file_saving_path)
+        super().__init__(device, saving_path)
+
+        if patience is None:
+            patience = -1  # early stopping on patience won't work if it is set as < 0
+        else:
+            assert (
+                patience <= epochs
+            ), f"patience must be smaller than epoches which is {epochs}, but got patience={patience}"
 
         # training hype-parameters
         self.batch_size = batch_size

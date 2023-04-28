@@ -41,7 +41,7 @@ def preprocess_physionet2012(data: dict) -> dict:
     X = X.groupby("RecordID").apply(apply_func)
     X = X.drop("RecordID", axis=1)
     X = X.reset_index()
-    X = X.drop(["level_1", "Time"], axis=1)
+    X = X.drop(["level_1"], axis=1)
 
     dataset = {
         "X": X,
