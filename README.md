@@ -12,7 +12,7 @@
     <a href="https://github.com/WenjieDu/PyPOTS/blob/main/LICENSE">
         <img alt="GPL3 license" src="https://img.shields.io/badge/License-GPL--v3-c0ebd7">
     </a>
-    <a href="https://github.com/WenjieDu/PyPOTS/tree/main#-community">
+    <a href="https://github.com/WenjieDu/PyPOTS/blob/main/README.md#-community">
         <img alt="Community" src="https://img.shields.io/badge/join_us-community!-7fecad">
     </a>
     <a href="https://github.com/sponsors/WenjieDu">
@@ -49,7 +49,7 @@
 
 ⦿ `Mission`: PyPOTS is born to become a handy toolbox that is going to make data mining on POTS easy rather than tedious, to help engineers and researchers focus more on the core problems in their hands rather than on how to deal with the missing parts in their data. PyPOTS will keep integrating classical and the latest state-of-the-art data mining algorithms for partially-observed multivariate time series. For sure, besides various algorithms, PyPOTS is going to have unified APIs together with detailed documentation and interactive examples across algorithms as tutorials.
 
-<a href="https://github.com/WenjieDu/TSDB"><img src="https://raw.githubusercontent.com/WenjieDu/TSDB/main/docs/_static/figs/TSDB_logo.svg?sanitize=true" align="left" width="160"/></a>
+<a href="https://github.com/WenjieDu/TSDB"><img src="https://raw.githubusercontent.com/WenjieDu/TSDB/main/docs/_static/figs/TSDB_logo.svg?sanitize=true" align="left" width="160" alt="TSDB logo"/></a>
 To make various open-source time-series datasets readily available to our users, PyPOTS gets supported by project [TSDB (Time-Series Data Base)](https://github.com/WenjieDu/TSDB), a toolbox making loading time-series datasets super easy!
 
 Visit [TSDB](https://github.com/WenjieDu/TSDB) right now to know more about this handy tool 🛠! It now supports a total of 119 open-source datasets.
@@ -70,13 +70,16 @@ or install from the source code with the latest features not officially released
 
 
 ## ❖ Usage
+<a href="https://github.com/WenjieDu/BrewedPOTS"><img src="https://raw.githubusercontent.com/WenjieDu/BrewedPOTS/main/figs/BrewedPOTS_logo.jpg" align="left" width="160" alt="BrewedPOTS logo"/></a>
 PyPOTS tutorials have been released. Considering the future workload on it, I separate the tutorials into a single repo,
-and you can find them in [WenjieDu/PyPOTS_Tutorials](https://github.com/WenjieDu/PyPOTS_Tutorials).
+and you can find them in [BrewedPOTS](https://github.com/WenjieDu/BrewedPOTS).
+
 If you have further questions, please refer to PyPOTS documentation [📑http://pypots.readthedocs.io](http://pypots.readthedocs.io).
 Besides, you can also
 [raise an issue](https://github.com/WenjieDu/PyPOTS/issues) or
-[ask in our community](#community).
-And please allow us to present you a usage example of imputing missing values in time series with PyPOTS below.
+[ask in our community](#-community).
+
+We present you a usage example of imputing missing values in time series with PyPOTS below, you can click it to view.
 
 <details>
 <summary><b>Click here to see an example applying SAITS on PhysioNet2012 for imputation:</b></summary>
