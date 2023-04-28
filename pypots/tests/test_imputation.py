@@ -54,7 +54,7 @@ class TestSAITS(unittest.TestCase):
         d_v=64,
         dropout=0.1,
         epochs=EPOCH,
-        tb_file_saving_path=saving_path,
+        saving_path=saving_path,
     )
 
     @pytest.mark.xdist_group(name="imputation-saits")
@@ -95,8 +95,8 @@ class TestSAITS(unittest.TestCase):
 
         # whether the tensorboard file exists
         assert (
-            self.saits.tb_file_saving_path is not None
-            and len(os.listdir(self.saits.tb_file_saving_path)) > 0
+            self.saits.saving_path is not None
+            and len(os.listdir(self.saits.saving_path)) > 0
         ), "tensorboard file does not exist"
 
         # save the trained model into file, and check if the path exists
@@ -128,7 +128,7 @@ class TestTransformer(unittest.TestCase):
         d_v=64,
         dropout=0.1,
         epochs=EPOCH,
-        tb_file_saving_path=saving_path,
+        saving_path=saving_path,
     )
 
     @pytest.mark.xdist_group(name="imputation-transformer")
@@ -172,8 +172,8 @@ class TestTransformer(unittest.TestCase):
 
         # whether the tensorboard file exists
         assert (
-                self.transformer.tb_file_saving_path is not None
-                and len(os.listdir(self.transformer.tb_file_saving_path)) > 0
+            self.transformer.saving_path is not None
+            and len(os.listdir(self.transformer.saving_path)) > 0
         ), "tensorboard file does not exist"
 
         # save the trained model into file, and check if the path exists
@@ -199,7 +199,7 @@ class TestBRITS(unittest.TestCase):
         DATA["n_features"],
         256,
         epochs=EPOCH,
-        tb_file_saving_path=f"{RESULT_SAVING_DIR_FOR_IMPUTATION}/BRITS",
+        saving_path=f"{RESULT_SAVING_DIR_FOR_IMPUTATION}/BRITS",
     )
 
     @pytest.mark.xdist_group(name="imputation-brits")
@@ -240,8 +240,8 @@ class TestBRITS(unittest.TestCase):
 
         # whether the tensorboard file exists
         assert (
-                self.brits.tb_file_saving_path is not None
-                and len(os.listdir(self.brits.tb_file_saving_path)) > 0
+            self.brits.saving_path is not None
+            and len(os.listdir(self.brits.saving_path)) > 0
         ), "tensorboard file does not exist"
 
         # save the trained model into file, and check if the path exists
