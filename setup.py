@@ -16,7 +16,7 @@ setup(
     author="Wenjie Du",
     author_email="wenjay.du@gmail.com",
     url="https://github.com/WenjieDu/PyPOTS",
-    download_url="https://github.com/WenjieDu/PyPOTS/archive/master.zip",
+    download_url="https://github.com/WenjieDu/PyPOTS/archive/main.zip",
     keywords=[
         "data mining",
         "neural networks",
@@ -39,8 +39,8 @@ setup(
     packages=find_packages(exclude=["tests"]),
     include_package_data=True,
     install_requires=[
-        "numpy",
-        "scikit-learn",
+        "numpy>=1.23.3",
+        "scikit-learn>=0.24.1",
         "scipy",
         "torch>=1.10.0",
         "tensorboard",
