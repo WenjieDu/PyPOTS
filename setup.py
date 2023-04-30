@@ -16,7 +16,7 @@ setup(
     author="Wenjie Du",
     author_email="wenjay.du@gmail.com",
     url="https://github.com/WenjieDu/PyPOTS",
-    download_url="https://github.com/WenjieDu/PyPOTS/archive/master.zip",
+    download_url="https://github.com/WenjieDu/PyPOTS/archive/main.zip",
     keywords=[
         "data mining",
         "neural networks",
