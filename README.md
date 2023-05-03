@@ -62,6 +62,7 @@ have unified APIs together with detailed documentation and interactive examples 
 <a href="https://github.com/WenjieDu/TSDB">
     <img src="https://raw.githubusercontent.com/WenjieDu/TSDB/main/docs/_static/figs/TSDB_logo.svg?sanitize=true" align="left" width="160" alt="TSDB logo"/>
 </a>
+
 To make various open-source time-series datasets readily available to our users,
 PyPOTS gets supported by project [TSDB (Time-Series Data Base)](https://github.com/WenjieDu/TSDB),
 a toolbox making loading time-series datasets super easy!
@@ -71,12 +72,12 @@ It now supports a total of 119 open-source datasets.
 <br clear="left">
 
 The rest of this readme file is organized as follows:
-[Installation](#-installation),
-[Usage](#-usage),
-[Available Algorithms](#-available-algorithms),
-[Citing PyPOTS](#-citing-pypots),
-[Community](#-community),
-[Contribution](#-contribution).
+[**Installation**](#-installation),
+[**Usage**](#-usage),
+[**Available Algorithms**](#-available-algorithms),
+[**Citing PyPOTS**](#-citing-pypots),
+[**Community**](#-community),
+[**Contribution**](#-contribution).
 
 
 ## ❖ Installation
@@ -96,6 +97,7 @@ or install from the source code with the latest features not officially released
 <a href="https://github.com/WenjieDu/BrewedPOTS">
     <img src="https://raw.githubusercontent.com/WenjieDu/BrewedPOTS/main/figs/BrewedPOTS_logo.jpg" align="left" width="160" alt="BrewedPOTS logo"/>
 </a>
+
 PyPOTS tutorials have been released. Considering the future workload, I separate the tutorials into a single repo,
 and you can find them in [BrewedPOTS](https://github.com/WenjieDu/BrewedPOTS).
 Take a look at it now, and brew your POTS dataset into a cup of coffee! 🤓
@@ -184,7 +186,7 @@ Zenodo. https://doi.org/10.5281/zenodo.6823221`
 ## ❖ Community
 We care about the feedback from our users, so we're building PyPOTS community on
 
-- [Slack](https://pypots-dev.slack.com). General discussion, Q&A, and development team are here;
+- [Slack](https://pypots-dev.slack.com). General discussion, Q&A, and our development team are here;
 - [LinkedIn](https://www.linkedin.com/company/pypots). Official announcements and news are here;
 - [WeChat (微信公众号)](https://mp.weixin.qq.com/s/m6j83SJNgz-xySSZd-DTBw). We also run a group chat on WeChat,
   and you can get the QR code from the official account after following it;
@@ -200,7 +202,7 @@ By committing your code, you'll
 
 1. make your well-established model out-of-the-box for PyPOTS users to run (Similar to
    [**Scikit-learn**](https://scikit-learn.org/stable/faq.html#what-are-the-inclusion-criteria-for-new-algorithms),
-   we set current inclusion criteria as: the paper should be published for at least 1 year, have 10+ citations,
+   we set current inclusion criteria as: the paper should be published for at least 1 year, have 20+ citations,
    and the usefulness to our users can be claimed);
 2. be listed as one of [PyPOTS contributors](https://github.com/WenjieDu/PyPOTS/graphs/contributors):
    <a href="https://github.com/wenjiedu/pypots/graphs/contributors">
