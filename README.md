@@ -1,4 +1,6 @@
-<a href="https://github.com/WenjieDu/PyPOTS"><img src="https://raw.githubusercontent.com/WenjieDu/PyPOTS/main/docs/_static/figs/PyPOTS_logo.svg?sanitize=true" width="200" align="right"></a>
+<a href="https://github.com/WenjieDu/PyPOTS">
+    <img src="https://raw.githubusercontent.com/WenjieDu/PyPOTS/main/docs/_static/figs/PyPOTS_logo.svg?sanitize=true" width="200" align="right">
+</a>
 
 ## <p align="center">Welcome to PyPOTS</p>
 **<p align="center">A Python Toolbox for Data Mining on Partially-Observed Time Series</p>**
@@ -45,15 +47,37 @@
 
 </p>
 
-⦿ `Motivation`: Due to all kinds of reasons like failure of collection sensors, communication error, and unexpected malfunction, missing values are common to see in time series from the real-world environment. This makes partially-observed time series (POTS) a pervasive problem in open-world modeling and prevents advanced data analysis. Although this problem is important, the area of data mining on POTS still lacks a dedicated toolkit. PyPOTS is created to fill in this blank.
+⦿ `Motivation`: Due to all kinds of reasons like failure of collection sensors, communication error,
+and unexpected malfunction, missing values are common to see in time series from the real-world environment.
+This makes partially-observed time series (POTS) a pervasive problem in open-world modeling and prevents advanced
+data analysis. Although this problem is important, the area of data mining on POTS still lacks a dedicated toolkit.
+PyPOTS is created to fill in this blank.
 
-⦿ `Mission`: PyPOTS is born to become a handy toolbox that is going to make data mining on POTS easy rather than tedious, to help engineers and researchers focus more on the core problems in their hands rather than on how to deal with the missing parts in their data. PyPOTS will keep integrating classical and the latest state-of-the-art data mining algorithms for partially-observed multivariate time series. For sure, besides various algorithms, PyPOTS is going to have unified APIs together with detailed documentation and interactive examples across algorithms as tutorials.
+⦿ `Mission`: PyPOTS is born to become a handy toolbox that is going to make data mining on POTS easy rather than
+tedious, to help engineers and researchers focus more on the core problems in their hands rather than on how to deal
+with the missing parts in their data. PyPOTS will keep integrating classical and the latest state-of-the-art data mining
+algorithms for partially-observed multivariate time series. For sure, besides various algorithms, PyPOTS is going to
+have unified APIs together with detailed documentation and interactive examples across algorithms as tutorials.
 
-<a href="https://github.com/WenjieDu/TSDB"><img src="https://raw.githubusercontent.com/WenjieDu/TSDB/main/docs/_static/figs/TSDB_logo.svg?sanitize=true" align="left" width="160" alt="TSDB logo"/></a>
-To make various open-source time-series datasets readily available to our users, PyPOTS gets supported by project [TSDB (Time-Series Data Base)](https://github.com/WenjieDu/TSDB), a toolbox making loading time-series datasets super easy!
+<a href="https://github.com/WenjieDu/TSDB">
+    <img src="https://raw.githubusercontent.com/WenjieDu/TSDB/main/docs/_static/figs/TSDB_logo.svg?sanitize=true" align="left" width="160" alt="TSDB logo"/>
+</a>
 
-Visit [TSDB](https://github.com/WenjieDu/TSDB) right now to know more about this handy tool 🛠! It now supports a total of 119 open-source datasets.
+To make various open-source time-series datasets readily available to our users,
+PyPOTS gets supported by project [TSDB (Time-Series Data Base)](https://github.com/WenjieDu/TSDB),
+a toolbox making loading time-series datasets super easy!
+
+Visit [TSDB](https://github.com/WenjieDu/TSDB) right now to know more about this handy tool 🛠!
+It now supports a total of 119 open-source datasets.
 <br clear="left">
+
+The rest of this readme file is organized as follows:
+[**Installation**](#-installation),
+[**Usage**](#-usage),
+[**Available Algorithms**](#-available-algorithms),
+[**Citing PyPOTS**](#-citing-pypots),
+[**Community**](#-community),
+[**Contribution**](#-contribution).
 
 
 ## ❖ Installation
@@ -70,14 +94,16 @@ or install from the source code with the latest features not officially released
 
 
 ## ❖ Usage
-<a href="https://github.com/WenjieDu/BrewedPOTS"><img src="https://raw.githubusercontent.com/WenjieDu/BrewedPOTS/main/figs/BrewedPOTS_logo.jpg" align="left" width="160" alt="BrewedPOTS logo"/></a>
-PyPOTS tutorials have been released. Considering the future workload on it, I separate the tutorials into a single repo,
-and you can find them in [BrewedPOTS](https://github.com/WenjieDu/BrewedPOTS).
+<a href="https://github.com/WenjieDu/BrewedPOTS">
+    <img src="https://raw.githubusercontent.com/WenjieDu/BrewedPOTS/main/figs/BrewedPOTS_logo.jpg" align="left" width="160" alt="BrewedPOTS logo"/>
+</a>
 
-If you have further questions, please refer to PyPOTS documentation [📑http://pypots.readthedocs.io](http://pypots.readthedocs.io).
-Besides, you can also
-[raise an issue](https://github.com/WenjieDu/PyPOTS/issues) or
-[ask in our community](#-community).
+PyPOTS tutorials have been released. Considering the future workload, I separate the tutorials into a single repo,
+and you can find them in [BrewedPOTS](https://github.com/WenjieDu/BrewedPOTS).
+Take a look at it now, and brew your POTS dataset into a cup of coffee! 🤓
+
+If you have further questions, please refer to PyPOTS documentation [📑https://docs.pypots.com](https://docs.pypots.com).
+Besides, you can also [raise an issue](https://github.com/WenjieDu/PyPOTS/issues) or [ask in our community](#-community).
 
 We present you a usage example of imputing missing values in time series with PyPOTS below, you can click it to view.
 
@@ -160,8 +186,10 @@ Zenodo. https://doi.org/10.5281/zenodo.6823221`
 ## ❖ Community
 We care about the feedback from our users, so we're building PyPOTS community on
 
-- [Slack](https://pypots-dev.slack.com);
-- [WeChat (微信公众号)](https://mp.weixin.qq.com/s/m6j83SJNgz-xySSZd-DTBw). We also run a group chat on WeChat, and you can get the QR code from the official account after following it;
+- [Slack](https://pypots-dev.slack.com). General discussion, Q&A, and our development team are here;
+- [LinkedIn](https://www.linkedin.com/company/pypots). Official announcements and news are here;
+- [WeChat (微信公众号)](https://mp.weixin.qq.com/s/m6j83SJNgz-xySSZd-DTBw). We also run a group chat on WeChat,
+  and you can get the QR code from the official account after following it;
 
 If you have any suggestions or want to contribute ideas or share time-series related papers, join us and tell.
 PyPOTS community is open, transparent, and surely friendly. Let's work together to build and improve PyPOTS 💪!
@@ -171,17 +199,34 @@ PyPOTS community is open, transparent, and surely friendly. Let's work together 
 You're very welcome to contribute to this exciting project!
 
 By committing your code, you'll
-1. make your well-established model out-of-the-box for PyPOTS users to run (Similar to [**Scikit-learn**](https://scikit-learn.org/stable/faq.html#what-are-the-inclusion-criteria-for-new-algorithms), we set current inclusion criteria as: the paper should be published for at least 1 year, have 10+ citations, and the usefulness to our users can be claimed);
-2. be listed as one of [PyPOTS contributors](https://github.com/WenjieDu/PyPOTS/graphs/contributors): <a href="https://github.com/wenjiedu/pypots/graphs/contributors"><img align="center" src="https://contrib.rocks/image?repo=wenjiedu/pypots"></a>;
+
+1. make your well-established model out-of-the-box for PyPOTS users to run (Similar to
+   [**Scikit-learn**](https://scikit-learn.org/stable/faq.html#what-are-the-inclusion-criteria-for-new-algorithms),
+   we set current inclusion criteria as: the paper should be published for at least 1 year, have 20+ citations,
+   and the usefulness to our users can be claimed);
+2. be listed as one of [PyPOTS contributors](https://github.com/WenjieDu/PyPOTS/graphs/contributors):
+   <a href="https://github.com/wenjiedu/pypots/graphs/contributors">
+      <img align="center" src="https://contrib.rocks/image?repo=wenjiedu/pypots">
+   </a>;
 3. get mentioned in our [release notes](https://github.com/WenjieDu/PyPOTS/releases);
 
 You can also contribute to PyPOTS by simply staring🌟 this repo to help more people notice it.
 Your star is your recognition to PyPOTS, and it matters!
 
 <details open>
-<summary><b><i>👏 Click here to view PyPOTS stargazers and forkers.<br>We're so proud to have more and more awesome users, as well as more bright ✨stars: </i></b></summary>
-<a href="https://github.com/WenjieDu/PyPOTS/stargazers"><img alt="PyPOTS stargazers" src="https://reporoster.com/stars/dark/WenjieDu/PyPOTS"></a> <br>
-<a href="https://github.com/WenjieDu/PyPOTS/network/members"><img alt="PyPOTS forkers" src="https://reporoster.com/forks/dark/WenjieDu/PyPOTS"></a>
+<summary>
+    <b><i>
+    👏 Click here to view PyPOTS stargazers and forkers.<br>
+    We're so proud to have more and more awesome users, as well as more bright ✨stars:
+    </i></b>
+</summary>
+<a href="https://github.com/WenjieDu/PyPOTS/stargazers">
+    <img alt="PyPOTS stargazers" src="https://reporoster.com/stars/dark/WenjieDu/PyPOTS">
+</a>
+<br>
+<a href="https://github.com/WenjieDu/PyPOTS/network/members">
+    <img alt="PyPOTS forkers" src="https://reporoster.com/forks/dark/WenjieDu/PyPOTS">
+</a>
 </details>
 
 
