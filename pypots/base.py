@@ -188,7 +188,7 @@ class BaseModel(ABC):
         try:
             create_dir_if_not_exist(saving_dir)
             torch.save(self.model, saving_path)
-            logger.info(f"Saved successfully to {saving_path}.")
+            logger.info(f"Saved the model to {saving_path}.")
         except Exception as e:
             raise RuntimeError(
                 f'Failed to save the model to "{saving_path}" because of the below error! \n{e}'
@@ -337,5 +337,5 @@ class BaseNNModel(BaseModel):
         """Print the number of trainable parameters in the initialized NN model."""
         num_params = sum(p.numel() for p in self.model.parameters() if p.requires_grad)
         logger.info(
-            f"Model initialized successfully with the number of trainable parameters: {num_params}"
+            f"Model initialized successfully with the number of trainable parameters: {num_params:,}"
         )
