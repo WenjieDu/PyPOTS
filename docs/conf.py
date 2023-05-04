@@ -76,12 +76,6 @@ html_context = {
     "last_updated": f"{date_now.year}/{date_now.month}/{date_now.day}",
 }
 
-# https://pradyunsg.me/furo/customisation/#top-of-page-button
-# Controls which button is shown on the top of the page. The only supported values are "edit" (the default) and None.
-html_theme_options = {
-    "top_of_page_button": None,
-}
-
 html_sidebars = {
     "**": [
         "sidebar/scroll-start.html",
