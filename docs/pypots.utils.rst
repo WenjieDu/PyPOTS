@@ -1,14 +1,6 @@
 pypots.utils package
 ====================
 
-Subpackages
------------
-
-.. toctree::
-   :maxdepth: 4
-
-   pypots.utils.commands
-
 Submodules
 ----------
 
