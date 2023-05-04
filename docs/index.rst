@@ -241,7 +241,6 @@ If you have any additional questions or have interests in collaboration, please 
 
 Thank you all for your attention! 😃
 
------------------
 
 .. toctree::
    :maxdepth: 2
@@ -255,4 +254,5 @@ Thank you all for your attention! 😃
    :hidden:
    :caption: Additional Information
 
+   about_us
    references
