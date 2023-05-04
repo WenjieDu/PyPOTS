@@ -50,8 +50,9 @@ Optional Dependencies
 
 Reasons of Version Limitations on Dependencies
 **********************************************
-* **Why we need python >3.7?**
+* **Why we need python >=3.7?**
 PyG (torch-geometric) is available starting from python v3.7, please refer to https://pytorch-geometric.readthedocs.io/en/latest/install/installation.html#installation-via-anaconda.
+Although torch-geometric is an optional dependency, we hope things go smoothly when our users opt to install it.
 
 * **Why we need pandas <2.0.0?**
 
