@@ -24,7 +24,8 @@ import pypots
 # -- Project information -----------------------------------------------------
 project = "PyPOTS"
 author = "Wenjie Du"
-copyright = f"{datetime.datetime.now().year}, {author}"
+date_now = datetime.datetime.now()
+copyright = f"{date_now.year}, {author}"
 
 # The full version, including alpha/beta/rc tags
 release = pypots.__version__
@@ -72,11 +73,26 @@ html_theme = "furo"
 html_static_path = ["_static"]
 
 html_context = {
-    "last_updated": True,
+    "last_updated": f"{date_now.year}/{date_now.month}/{date_now.day}",
 }
 
 # https://pradyunsg.me/furo/customisation/#top-of-page-button
 # Controls which button is shown on the top of the page. The only supported values are "edit" (the default) and None.
 html_theme_options = {
     "top_of_page_button": None,
+}
+
+html_sidebars = {
+    "**": [
+        "sidebar/scroll-start.html",
+        "sidebar/brand.html",
+        "sidebar/search.html",
+        "sidebar/navigation.html",
+        "sidebar/scroll-end.html",
+    ]
+}
+
+intersphinx_mapping = {
+    "python": ("https://docs.python.org/3", None),
+    "sphinx": ("https://www.sphinx-doc.org/en/master", None),
 }

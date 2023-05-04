@@ -12,7 +12,7 @@
         <img alt="the latest release version" src="https://img.shields.io/github/v/release/wenjiedu/pypots?color=e0eee8&include_prereleases&label=Release">
     </a>
     <a href="https://github.com/WenjieDu/PyPOTS/blob/main/LICENSE">
-        <img alt="GPL3 license" src="https://img.shields.io/badge/License-GPL--v3-c0ebd7">
+        <img alt="GPL-v3 license" src="https://img.shields.io/badge/License-GPL--v3-c0ebd7">
     </a>
     <a href="https://github.com/WenjieDu/PyPOTS/blob/main/README.md#-community">
         <img alt="Community" src="https://img.shields.io/badge/join_us-community!-7fecad">
@@ -102,7 +102,7 @@ PyPOTS tutorials have been released. Considering the future workload, I separate
 and you can find them in [BrewedPOTS](https://github.com/WenjieDu/BrewedPOTS).
 Take a look at it now, and brew your POTS dataset into a cup of coffee! 🤓
 
-If you have further questions, please refer to PyPOTS documentation [📑https://docs.pypots.com](https://docs.pypots.com).
+If you have further questions, please refer to PyPOTS documentation 📑[docs.pypots.com](https://docs.pypots.com).
 Besides, you can also [raise an issue](https://github.com/WenjieDu/PyPOTS/issues) or [ask in our community](#-community).
 
 We present you a usage example of imputing missing values in time series with PyPOTS below, you can click it to view.
@@ -193,7 +193,6 @@ We care about the feedback from our users, so we're building PyPOTS community on
 
 If you have any suggestions or want to contribute ideas or share time-series related papers, join us and tell.
 PyPOTS community is open, transparent, and surely friendly. Let's work together to build and improve PyPOTS 💪!
-
 
 ## ❖ Contribution
 You're very welcome to contribute to this exciting project!
