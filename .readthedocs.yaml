@@ -23,7 +23,3 @@ build:
          - pip install torch==1.13.1 -f https://download.pytorch.org/whl/cpu
          - pip install -e ".[optional]" -f "https://data.pyg.org/whl/torch-1.13.1+cpu.html"
          - pip install -e ".[basic,doc]"
-
-
-
-
