@@ -120,12 +120,13 @@ from pypots.utils.metrics import cal_mae
 data = load_specific_dataset('physionet_2012')  # PyPOTS will automatically download and extract it.
 X = data['X']
 num_samples = len(X['RecordID'].unique())
-X = X.drop('RecordID', axis = 1)
+X = X.drop(['RecordID', 'Time'], axis = 1)
 X = StandardScaler().fit_transform(X.to_numpy())
 X = X.reshape(num_samples, 48, -1)
 X_intact, X, missing_mask, indicating_mask = mcar(X, 0.1) # hold out 10% observed values as ground truth
 X = masked_fill(X, 1 - missing_mask, np.nan)
 dataset = {"X": X}
+print(dataset["X"].shape)  # (11988, 48, 37), 11988 samples, 48 time steps, 37 features
 # Model training. This is PyPOTS showtime. 💪
 saits = SAITS(n_steps=48, n_features=37, n_layers=2, d_model=256, d_inner=128, n_head=4, d_k=64, d_v=64, dropout=0.1, epochs=10)
 saits.fit(dataset)  # train the model. Here I use the whole dataset as the training set, because ground truth is not visible to the model.
@@ -199,10 +200,7 @@ You're very welcome to contribute to this exciting project!
 
 By committing your code, you'll
 
-1. make your well-established model out-of-the-box for PyPOTS users to run (Similar to
-   [**Scikit-learn**](https://scikit-learn.org/stable/faq.html#what-are-the-inclusion-criteria-for-new-algorithms),
-   we set current inclusion criteria as: the paper should be published for at least 1 year, have 20+ citations,
-   and the usefulness to our users can be claimed);
+1. make your well-established model out-of-the-box for PyPOTS users to run. Take a look at our [inclusion criteria](https://docs.pypots.com/en/latest/faq.html#inclusion-criteria);
 2. be listed as one of [PyPOTS contributors](https://github.com/WenjieDu/PyPOTS/graphs/contributors):
    <a href="https://github.com/wenjiedu/pypots/graphs/contributors">
       <img align="center" src="https://contrib.rocks/image?repo=wenjiedu/pypots">
