@@ -245,6 +245,13 @@ Thank you all for your attention! 😃
 .. toctree::
    :maxdepth: 2
    :hidden:
+   :caption: Getting Started
+
+   install
+
+.. toctree::
+   :maxdepth: 2
+   :hidden:
    :caption: Code Documentation
 
    pypots
