@@ -28,7 +28,7 @@ Welcome to PyPOTS docs!
 
 .. image:: https://img.shields.io/badge/join_us-community!-7fecad
    :alt: Community
-   :target: https://github.com/WenjieDu/PyPOTS/blob/main/README.md#-community
+   :target: #id14
 
 .. image:: https://img.shields.io/github/sponsors/wenjiedu?label=Sponsors&color=7bcfa6&logo=githubsponsors
    :alt: GitHub Sponsors
@@ -121,7 +121,7 @@ and you can find them in `BrewedPOTS <https://github.com/WenjieDu/BrewedPOTS>`_.
 Take a look at it now, and brew your POTS dataset into a cup of coffee! 🤓
 
 If you have further questions, please refer to PyPOTS documentation 📑 `docs.pypots.com <https://docs.pypots.com>`_.
-Besides, you can also `raise an issue <https://github.com/WenjieDu/PyPOTS/issues>`_ or `ask in our community <#community>`_.
+Besides, you can also `raise an issue <https://github.com/WenjieDu/PyPOTS/issues>`_ or `ask in our community <#id14>`_.
 
 
 ❖ Available Algorithms
@@ -186,10 +186,7 @@ You're very welcome to contribute to this exciting project!
 
 By committing your code, you'll
 
-1. make your well-established model out-of-the-box for PyPOTS users to run (Similar to
-   `Scikit-learn <https://scikit-learn.org/stable/faq.html#what-are-the-inclusion-criteria-for-new-algorithms>`_,
-   we set current inclusion criteria as: the paper should be published for at least 1 year, have 20+ citations,
-   and the usefulness to our users can be claimed);
+1. make your well-established model out-of-the-box for PyPOTS users to run. Take a look at our `inclusion criteria <https://docs.pypots.com/en/latest/faq.html#inclusion-criteria>`_;
 2. be listed as one of `PyPOTS contributors <https://github.com/WenjieDu/PyPOTS/graphs/contributors>`_:
 3. get mentioned in our `release notes <https://github.com/WenjieDu/PyPOTS/releases>`_;
 
