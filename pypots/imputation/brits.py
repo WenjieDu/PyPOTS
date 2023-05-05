@@ -508,6 +508,18 @@ class BRITS(BaseNNImputer):
 
     device :
         Run the model on which device.
+
+    saving_path : str, default = None,
+        The path for automatically saving model checkpoints and tensorboard files (i.e. loss values recorded during
+        training into a tensorboard file). Will not save if not given.
+
+    model_saving_strategy : str or None, None or "best" or "better" , default = "best",
+        The strategy to save model checkpoints. It has to be one of [None, "best", "better"].
+        No model will be saved when it is set as None.
+        The "best" strategy will only automatically save the best model after the training finished.
+        The "better" strategy will automatically save the model during training whenever the model performs
+        better than in previous epochs.
+
     """
 
     def __init__(
@@ -523,6 +535,7 @@ class BRITS(BaseNNImputer):
         num_workers: int = 0,
         device: Optional[Union[str, torch.device]] = None,
         saving_path: str = None,
+        model_saving_strategy: Optional[str] = "best",
     ):
         super().__init__(
             batch_size,
@@ -533,6 +546,7 @@ class BRITS(BaseNNImputer):
             num_workers,
             device,
             saving_path,
+            model_saving_strategy,
         )
 
         self.n_steps = n_steps
