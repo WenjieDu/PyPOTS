@@ -1,12 +1,12 @@
 """
 Test cases for imputation models.
 """
-import os.path
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: GPL-v3
 
 
+import os.path
 import unittest
 
 import numpy as np
