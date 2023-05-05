@@ -11,7 +11,11 @@ import unittest
 import pytest
 
 from pypots.classification import BRITS, GRUD, Raindrop
-from pypots.tests.global_test_config import DATA, RESULT_SAVING_DIR
+from pypots.tests.global_test_config import (
+    DATA,
+    RESULT_SAVING_DIR,
+    check_tb_and_model_checkpoints_existence,
+)
 from pypots.utils.logging import logger
 from pypots.utils.metrics import cal_binary_classification_metrics
 
@@ -39,6 +43,7 @@ class TestBRITS(unittest.TestCase):
         n_classes=DATA["n_classes"],
         epochs=EPOCHS,
         saving_path=saving_path,
+        model_saving_strategy="better",
     )
 
     @pytest.mark.xdist_group(name="classification-brits")
@@ -79,20 +84,17 @@ class TestBRITS(unittest.TestCase):
             self.saving_path
         ), f"file {self.saving_path} does not exist"
 
-        # whether the tensorboard file exists
-        assert (
-            self.brits.saving_path is not None
-            and len(os.listdir(self.brits.saving_path)) > 0
-        ), "tensorboard file does not exist"
+        # check if the tensorboard file and model checkpoints exist
+        check_tb_and_model_checkpoints_existence(self.brits)
 
         # save the trained model into file, and check if the path exists
         self.brits.save_model(
             saving_dir=self.saving_path, file_name=self.model_save_name
         )
+
+        # test loading the saved model, not necessary, but need to test
         saved_model_path = os.path.join(self.saving_path, self.model_save_name)
-        assert os.path.exists(
-            saved_model_path
-        ), f"file {self.saving_path} does not exist, model not saved"
+        self.brits.load_model(saved_model_path)
 
 
 class TestGRUD(unittest.TestCase):
@@ -150,20 +152,17 @@ class TestGRUD(unittest.TestCase):
             self.saving_path
         ), f"file {self.saving_path} does not exist"
 
-        # whether the tensorboard file exists
-        assert (
-            self.grud.saving_path is not None
-            and len(os.listdir(self.grud.saving_path)) > 0
-        ), "tensorboard file does not exist"
+        # check if the tensorboard file and model checkpoints exist
+        check_tb_and_model_checkpoints_existence(self.grud)
 
         # save the trained model into file, and check if the path exists
         self.grud.save_model(
             saving_dir=self.saving_path, file_name=self.model_save_name
         )
+
+        # test loading the saved model, not necessary, but need to test
         saved_model_path = os.path.join(self.saving_path, self.model_save_name)
-        assert os.path.exists(
-            saved_model_path
-        ), f"file {self.saving_path} does not exist, model not saved"
+        self.grud.load_model(saved_model_path)
 
 
 class TestRaindrop(unittest.TestCase):
@@ -231,20 +230,17 @@ class TestRaindrop(unittest.TestCase):
             self.saving_path
         ), f"file {self.saving_path} does not exist"
 
-        # whether the tensorboard file exists
-        assert (
-            self.raindrop.saving_path is not None
-            and len(os.listdir(self.raindrop.saving_path)) > 0
-        ), "tensorboard file does not exist"
+        # check if the tensorboard file and model checkpoints exist
+        check_tb_and_model_checkpoints_existence(self.raindrop)
 
         # save the trained model into file, and check if the path exists
         self.raindrop.save_model(
             saving_dir=self.saving_path, file_name=self.model_save_name
         )
+
+        # test loading the saved model, not necessary, but need to test
         saved_model_path = os.path.join(self.saving_path, self.model_save_name)
-        assert os.path.exists(
-            saved_model_path
-        ), f"file {self.saving_path} does not exist, model not saved"
+        self.raindrop.load_model(saved_model_path)
 
 
 if __name__ == "__main__":
