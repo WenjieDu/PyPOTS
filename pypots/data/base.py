@@ -72,7 +72,7 @@ class BaseDataset(Dataset):
         else:  # data from array
             X = data["X"]
             y = None if "y" not in data.keys() else data["y"]
-            self.X, self.y = self.check_input(X, y)
+            self.X, self.y = self._check_input(X, y)
 
         self.sample_num = self._get_sample_num()
 
@@ -103,7 +103,7 @@ class BaseDataset(Dataset):
         return self.sample_num
 
     @staticmethod
-    def check_input(
+    def _check_input(
         X: Union[np.ndarray, torch.Tensor, list],
         y: Optional[Union[np.ndarray, torch.Tensor, list]] = None,
         out_dtype: str = "tensor",

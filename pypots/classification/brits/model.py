@@ -14,30 +14,10 @@ from torch.utils.data import DataLoader
 
 from pypots.classification.base import BaseNNClassifier
 from pypots.classification.brits.dataset import DatasetForBRITS
+from pypots.classification.brits.modules import RITS
 from pypots.imputation.brits.model import (
-    RITS as imputation_RITS,
     _BRITS as imputation_BRITS,
 )
-
-
-class RITS(imputation_RITS):
-    def __init__(
-        self,
-        n_steps: int,
-        n_features: int,
-        rnn_hidden_size: int,
-        n_classes: int,
-        device: Union[str, torch.device],
-    ):
-        super().__init__(n_steps, n_features, rnn_hidden_size, device)
-        self.dropout = nn.Dropout(p=0.25)
-        self.classifier = nn.Linear(self.rnn_hidden_size, n_classes)
-
-    def forward(self, inputs: dict, direction: str = "forward") -> dict:
-        ret_dict = super().forward(inputs, direction)
-        logits = self.classifier(ret_dict["final_hidden_state"])
-        ret_dict["prediction"] = torch.softmax(logits, dim=1)
-        return ret_dict
 
 
 class _BRITS(imputation_BRITS, nn.Module):
@@ -361,7 +341,7 @@ class BRITS(BaseNNClassifier):
         self.model.eval()  # set the model as eval status to freeze it.
 
         # Step 3: save the model if necessary
-        self.auto_save_model_if_necessary(training_finished=True)
+        self._auto_save_model_if_necessary(training_finished=True)
 
     def classify(self, X: Union[dict, str], file_type: str = "h5py"):
         """Classify the input data with the trained model.

@@ -54,22 +54,16 @@ class BaseModel(ABC):
 
     """
 
-    # leverage typing to show type hints in IDEs
-    # SAVING_STRATEGY = Literal["best", "better"]
-    SAVING_STRATEGY = [None, "best", "better"]
-
     def __init__(
         self,
         device: Optional[Union[str, torch.device]] = None,
         saving_path: str = None,
         model_saving_strategy: Optional[str] = "best",
     ):
-
-        assert model_saving_strategy in [
-            None,
-            "best",
-            "better",
-        ], f"saving_strategy must be one of {self.SAVING_STRATEGY}, but got f{model_saving_strategy}."
+        saving_strategies = [None, "best", "better"]
+        assert (
+            model_saving_strategy in saving_strategies
+        ), f"saving_strategy must be one of {saving_strategies}, but got f{model_saving_strategy}."
 
         self.device = None
         self.saving_path = saving_path
@@ -121,7 +115,7 @@ class BaseModel(ABC):
                 f"the tensorboard file will be saved to {tb_saving_path}"
             )
 
-    def save_log_into_tb_file(self, step: int, stage: str, loss_dict: dict) -> None:
+    def _save_log_into_tb_file(self, step: int, stage: str, loss_dict: dict) -> None:
         """Saving training logs into the tensorboard file specified by the given path `tb_file_saving_path`.
 
         Parameters
@@ -190,7 +184,7 @@ class BaseModel(ABC):
                 f'Failed to save the model to "{saving_path}" because of the below error! \n{e}'
             )
 
-    def auto_save_model_if_necessary(
+    def _auto_save_model_if_necessary(
         self,
         training_finished: bool = True,
         saving_name: str = None,
