@@ -1,5 +1,5 @@
 """
-
+The package for BTTF model .
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>

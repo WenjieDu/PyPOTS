@@ -1,9 +1,6 @@
 pypots.clustering package
 =========================
 
-Submodules
-----------
-
 pypots.clustering.base module
 -----------------------------
 

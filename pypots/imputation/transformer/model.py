@@ -20,7 +20,7 @@ from torch.utils.data import DataLoader
 from pypots.data.base import BaseDataset
 from pypots.imputation.base import BaseNNImputer
 from pypots.imputation.transformer.dataset import DatasetForSAITS
-from pypots.imputation.transformer.module import EncoderLayer, PositionalEncoding
+from pypots.imputation.transformer.modules import EncoderLayer, PositionalEncoding
 from pypots.utils.metrics import cal_mae
 
 
@@ -314,7 +314,7 @@ class Transformer(BaseNNImputer):
         self.model.eval()  # set the model as eval status to freeze it.
 
         # Step 3: save the model if necessary
-        self.auto_save_model_if_necessary(training_finished=True)
+        self._auto_save_model_if_necessary(training_finished=True)
 
     def impute(self, X: Union[dict, str], file_type: str = "h5py") -> np.ndarray:
         """Impute missing values in the given data with the trained model.
