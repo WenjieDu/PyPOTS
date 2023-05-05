@@ -16,7 +16,7 @@ from torch.utils.data import DataLoader
 
 from pypots.classification.base import BaseNNClassifier
 from pypots.classification.grud.dataset import DatasetForGRUD
-from pypots.imputation.brits.module import TemporalDecay
+from pypots.imputation.brits.modules import TemporalDecay
 
 
 class _GRUD(nn.Module):
@@ -311,7 +311,7 @@ class GRUD(BaseNNClassifier):
         self.model.eval()  # set the model as eval status to freeze it.
 
         # Step 3: save the model if necessary
-        self.auto_save_model_if_necessary(training_finished=True)
+        self._auto_save_model_if_necessary(training_finished=True)
 
     def classify(self, X: Union[dict, str], file_type: str = "h5py") -> np.ndarray:
         """Classify the input data with the trained model.

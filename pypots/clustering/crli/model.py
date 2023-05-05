@@ -1,7 +1,7 @@
 """
 Torch implementation of CRLI (Clustering Representation Learning on Incomplete time-series data).
 
-Please refer to :cite:``ma2021CRLI``.
+Please refer to :cite:`ma2021CRLI`.
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
@@ -18,7 +18,7 @@ from torch.utils.data import DataLoader
 
 from pypots.clustering.base import BaseNNClusterer
 from pypots.clustering.crli.dataset import DatasetForCRLI
-from pypots.clustering.crli.module import Generator, Decoder, Discriminator
+from pypots.clustering.crli.modules import Generator, Decoder, Discriminator
 from pypots.utils.logging import logger
 from pypots.utils.metrics import cal_mse
 
@@ -292,7 +292,7 @@ class CRLI(BaseNNClusterer):
                             "generation_loss": mean_step_train_G_loss,
                             "discrimination_loss": mean_step_train_D_loss,
                         }
-                        self.save_log_into_tb_file(
+                        self._save_log_into_tb_file(
                             training_step, "training", loss_results
                         )
                 mean_epoch_train_D_loss = np.mean(epoch_train_loss_D_collector)
@@ -309,7 +309,7 @@ class CRLI(BaseNNClusterer):
                     self.best_model_dict = self.model.state_dict()
                     self.patience = self.original_patience
                     # save the model if necessary
-                    self.auto_save_model_if_necessary(
+                    self._auto_save_model_if_necessary(
                         training_finished=False,
                         saving_name=f"{self.__class__.__name__}_epoch{epoch}_loss{mean_loss}",
                     )
@@ -376,7 +376,7 @@ class CRLI(BaseNNClusterer):
         self.model.eval()  # set the model as eval status to freeze it.
 
         # Step 3: save the model if necessary
-        self.auto_save_model_if_necessary(training_finished=True)
+        self._auto_save_model_if_necessary(training_finished=True)
 
     def cluster(
         self,

@@ -17,7 +17,7 @@ from pypots.imputation.base import BaseImputer
 class LOCF(BaseImputer):
     """LOCF (Last Observed Carried Forward) imputation method.
 
-    Attributes
+    Parameters
     ----------
     nan : int/float
         Value used to impute data missing at the beginning of the sequence.

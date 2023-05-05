@@ -19,7 +19,7 @@ from torch.utils.data import DataLoader
 
 from pypots.imputation.base import BaseNNImputer
 from pypots.imputation.brits.dataset import DatasetForBRITS
-from pypots.imputation.brits.module import TemporalDecay, FeatureRegression
+from pypots.imputation.brits.modules import TemporalDecay, FeatureRegression
 from pypots.utils.metrics import cal_mae
 
 
@@ -581,7 +581,7 @@ class BRITS(BaseNNImputer):
         self.model.eval()  # set the model as eval status to freeze it.
 
         # Step 3: save the model if necessary
-        self.auto_save_model_if_necessary(training_finished=True)
+        self._auto_save_model_if_necessary(training_finished=True)
 
     def impute(
         self,
