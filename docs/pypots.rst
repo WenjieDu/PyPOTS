@@ -8,7 +8,6 @@ Subpackages
    :maxdepth: 4
 
    pypots.classification
-   pypots.cli
    pypots.clustering
    pypots.data
    pypots.forecasting
