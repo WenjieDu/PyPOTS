@@ -71,6 +71,7 @@ Welcome to PyPOTS docs!
 
 -----------------
 
+
 ⦿ `Motivation`: Due to all kinds of reasons like failure of collection sensors, communication error, and unexpected malfunction, missing values are common to see in time series from the real-world environment. This makes partially-observed time series (POTS) a pervasive problem in open-world modeling and prevents advanced data analysis. Although this problem is important, the area of data mining on POTS still lacks a dedicated toolkit. PyPOTS is created to fill in this blank.
 
 ⦿ `Mission`: PyPOTS is born to become a handy toolbox that is going to make data mining on POTS easy rather than tedious, to help engineers and researchers focus more on the core problems in their hands rather than on how to deal with the missing parts in their data. PyPOTS will keep integrating classical and the latest state-of-the-art data mining algorithms for partially-observed multivariate time series. For sure, besides various algorithms, PyPOTS is going to have unified APIs together with detailed documentation and interactive examples across algorithms as tutorials.
@@ -96,17 +97,10 @@ The rest of this readme file is organized as follows:
 
 ❖ Installation
 ^^^^^^^^^^^^^^^
-PyPOTS now is available on `Anaconda <https://anaconda.org/conda-forge/pypots>`_ ❗️
+PyPOTS is available on both `PyPI <https://pypi.python.org/pypi/pypots>`_ and `Anaconda <https://anaconda.org/conda-forge/pypots>`_ ❗️
 
-Install it with ``conda install pypots``, you may need to specify the channel with option ``-c conda-forge``
+Refer to the page `Installation <install.html>`_ to see how to install PyPOTS.
 
-Install the latest release from PyPI:
-
-   pip install pypots
-
-or install from the source code with the latest features not officially released in a version:
-
-   pip install https://github.com/WenjieDu/PyPOTS/archive/main.zip
 
 ❖ Usage
 ^^^^^^^^

@@ -1,9 +1,6 @@
 pypots.classification package
 =============================
 
-Submodules
-----------
-
 pypots.classification.base module
 ---------------------------------
 

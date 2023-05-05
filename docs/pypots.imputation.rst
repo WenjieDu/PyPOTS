@@ -1,9 +1,6 @@
 pypots.imputation package
 =========================
 
-Submodules
-----------
-
 pypots.imputation.base module
 -----------------------------
 

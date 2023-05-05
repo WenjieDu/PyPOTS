@@ -1,9 +1,6 @@
 pypots.forecasting package
 ==========================
 
-Submodules
-----------
-
 pypots.forecasting.base module
 ------------------------------
 
