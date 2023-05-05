@@ -17,7 +17,7 @@ from numpy.linalg import solve as solve
 from scipy.linalg import khatri_rao as kr_prod
 
 from pypots.forecasting.base import BaseForecaster
-from pypots.forecasting.bttf.module import (
+from pypots.forecasting.bttf.modules import (
     mvnrnd_pre,
     ten2mat,
     sample_factor_u,

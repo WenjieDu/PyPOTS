@@ -21,7 +21,7 @@ from torch.utils.data import DataLoader
 from pypots.data.base import BaseDataset
 from pypots.imputation.base import BaseNNImputer
 from pypots.imputation.saits.dataset import DatasetForSAITS
-from pypots.imputation.transformer.module import EncoderLayer, PositionalEncoding
+from pypots.imputation.transformer.modules import EncoderLayer, PositionalEncoding
 from pypots.utils.metrics import cal_mae
 
 
@@ -411,7 +411,7 @@ class SAITS(BaseNNImputer):
         self.model.eval()  # set the model as eval status to freeze it.
 
         # Step 3: save the model if necessary
-        self.auto_save_model_if_necessary(training_finished=True)
+        self._auto_save_model_if_necessary(training_finished=True)
 
     def impute(
         self,

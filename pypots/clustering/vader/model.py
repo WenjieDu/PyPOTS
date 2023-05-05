@@ -19,7 +19,7 @@ from sklearn.mixture import GaussianMixture
 from torch.utils.data import DataLoader
 
 from pypots.clustering.base import BaseNNClusterer
-from pypots.clustering.vader.module import (
+from pypots.clustering.vader.modules import (
     GMMLayer,
     PeepholeLSTMCell,
     ImplicitImputation,
@@ -412,7 +412,9 @@ class VaDER(BaseNNClusterer):
 
                 # save pre-training loss logs into the tensorboard file for every step if in need
                 if self.summary_writer is not None:
-                    self.save_log_into_tb_file(pretraining_step, "pretraining", results)
+                    self._save_log_into_tb_file(
+                        pretraining_step, "pretraining", results
+                    )
 
         with torch.no_grad():
             sample_collector = []
@@ -485,7 +487,7 @@ class VaDER(BaseNNClusterer):
 
                     # save training loss logs into the tensorboard file for every step if in need
                     if self.summary_writer is not None:
-                        self.save_log_into_tb_file(training_step, "training", results)
+                        self._save_log_into_tb_file(training_step, "training", results)
 
                 # mean training loss of the current epoch
                 mean_train_loss = np.mean(epoch_train_loss_collector)
@@ -506,7 +508,7 @@ class VaDER(BaseNNClusterer):
                         val_loss_dict = {
                             "loss": mean_val_loss,
                         }
-                        self.save_log_into_tb_file(epoch, "validating", val_loss_dict)
+                        self._save_log_into_tb_file(epoch, "validating", val_loss_dict)
 
                     logger.info(
                         f"epoch {epoch}: "
@@ -523,7 +525,7 @@ class VaDER(BaseNNClusterer):
                     self.best_model_dict = self.model.state_dict()
                     self.patience = self.original_patience
                     # save the model if necessary
-                    self.auto_save_model_if_necessary(
+                    self._auto_save_model_if_necessary(
                         training_finished=False,
                         saving_name=f"{self.__class__.__name__}_epoch{epoch}_loss{mean_loss}",
                     )
@@ -594,7 +596,7 @@ class VaDER(BaseNNClusterer):
         self.model.eval()  # set the model as eval status to freeze it.
 
         # Step 3: save the model if necessary
-        self.auto_save_model_if_necessary(training_finished=True)
+        self._auto_save_model_if_necessary(training_finished=True)
 
     def cluster(self, X: Union[dict, str], file_type: str = "h5py") -> np.ndarray:
         """Cluster the input with the trained model.
