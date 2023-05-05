@@ -231,6 +231,8 @@ class BaseModel(ABC):
         you can load the model directly with torch.load(model_path).
 
         """
+        assert os.path.exists(model_path), f"Model file {model_path} does not exist."
+
         try:
             loaded_model = torch.load(model_path, map_location=self.device)
             if isinstance(loaded_model, torch.nn.Module):
