@@ -35,17 +35,20 @@ class BaseImputer(BaseModel):
         to train ML models. Other devices like Google TPU and Apple Silicon accelerator MPS may be added in the future.
 
     saving_path : str, default = None,
-        The path to save the tensorboard file, which contains the loss values recorded during training.
+        The path to save model checkpoints and tensorboard files,
+        which contains the loss values recorded during training.
     """
 
     def __init__(
         self,
         device: Optional[Union[str, torch.device]] = None,
         saving_path: str = None,
+        model_saving_strategy: Optional[str] = "best",
     ):
         super().__init__(
             device,
             saving_path,
+            model_saving_strategy,
         )
 
     @abstractmethod
@@ -133,7 +136,9 @@ class BaseNNImputer(BaseNNModel, BaseImputer):
         to train ML models. Other devices like Google TPU and Apple Silicon accelerator MPS may be added in the future.
 
     saving_path : str, default = None,
-        The path to save the tensorboard file, which contains the loss values recorded during training.
+        The path for automatically saving model checkpoints and tensorboard files (i.e. loss values recorded during
+        training into a tensorboard file). Will not save if not given.
+
     """
 
     def __init__(
@@ -146,6 +151,7 @@ class BaseNNImputer(BaseNNModel, BaseImputer):
         num_workers: int = 0,
         device: Optional[Union[str, torch.device]] = None,
         saving_path: str = None,
+        model_saving_strategy: Optional[str] = "best",
     ):
         super().__init__(
             batch_size,
@@ -156,6 +162,7 @@ class BaseNNImputer(BaseNNModel, BaseImputer):
             num_workers,
             device,
             saving_path,
+            model_saving_strategy,
         )
 
     @abstractmethod
