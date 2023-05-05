@@ -28,11 +28,11 @@ class BaseModel(ABC):
         Other devices like Google TPU and Apple Silicon accelerator MPS may be added in the future.
 
     saving_path : str, default = None,
-        The path for automatically saving the trained model and training logs (i.e. loss values recorded during
+        The path for automatically saving model checkpoints and tensorboard files (i.e. loss values recorded during
         training into a tensorboard file). Will not save if not given.
 
     model_saving_strategy : str or None, None or "best" or "better" , default = "best",
-        The strategy to save the trained model. It has to be one of [None, "best", "better"].
+        The strategy to save model checkpoints. It has to be one of [None, "best", "better"].
         No model will be saved when it is set as None.
         The "best" strategy will only automatically save the best model after the training finished.
         The "better" strategy will automatically save the model during training whenever the model performs
@@ -276,6 +276,13 @@ class BaseNNModel(BaseModel):
     saving_path : str, default = None,
         The path to save the tensorboard file, which contains the loss values recorded during training.
 
+    model_saving_strategy : str or None, None or "best" or "better" , default = "best",
+        The strategy to save model checkpoints. It has to be one of [None, "best", "better"].
+        No model will be saved when it is set as None.
+        The "best" strategy will only automatically save the best model after the training finished.
+        The "better" strategy will automatically save the model during training whenever the model performs
+        better than in previous epochs.
+
 
     Attributes
     ---------
@@ -290,7 +297,6 @@ class BaseNNModel(BaseModel):
     best_loss : float, default = inf,
         The criteria to judge whether the model's performance is the best so far.
         Usually the lower, the better.
-
     """
 
     def __init__(
@@ -303,10 +309,9 @@ class BaseNNModel(BaseModel):
         num_workers: int = 0,
         device: Optional[Union[str, torch.device]] = None,
         saving_path: str = None,
-        auto_save_model: bool = True,
-        model_saving_strategy: str = "best",
+        model_saving_strategy: Optional[str] = "best",
     ):
-        super().__init__(device, saving_path, auto_save_model, model_saving_strategy)
+        super().__init__(device, saving_path, model_saving_strategy)
 
         if patience is None:
             patience = -1  # early stopping on patience won't work if it is set as < 0
