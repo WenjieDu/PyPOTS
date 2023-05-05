@@ -30,10 +30,12 @@ class BaseClassifier(BaseModel):
         self,
         device: Optional[Union[str, torch.device]] = None,
         saving_path: str = None,
+        model_saving_strategy: Optional[str] = "best",
     ):
         super().__init__(
             device,
             saving_path,
+            model_saving_strategy,
         )
 
     @abstractmethod
