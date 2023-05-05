@@ -13,7 +13,7 @@ from pycorruptor import mcar
 from pypots.data.base import BaseDataset
 
 
-class DatasetForMIT(BaseDataset):
+class DatasetForSAITS(BaseDataset):
     """Dataset for models that need MIT (masked imputation task) in their training, such as SAITS.
 
     For more information about MIT, please refer to :cite:`du2023SAITS`.

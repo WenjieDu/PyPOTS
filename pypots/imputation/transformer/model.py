@@ -1,5 +1,5 @@
 """
-PyTorch SAITS model for the time-series imputation task.
+PyTorch Transformer model for the time-series imputation task.
 
 Notes
 -----
@@ -15,17 +15,16 @@ import h5py
 import numpy as np
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 from torch.utils.data import DataLoader
 
 from pypots.data.base import BaseDataset
-from pypots.data.dataset_for_mit import DatasetForMIT
 from pypots.imputation.base import BaseNNImputer
-from pypots.imputation.transformer import EncoderLayer, PositionalEncoding
+from pypots.imputation.transformer.dataset import DatasetForSAITS
+from pypots.imputation.transformer.module import EncoderLayer, PositionalEncoding
 from pypots.utils.metrics import cal_mae
 
 
-class _SAITS(nn.Module):
+class _TransformerEncoder(nn.Module):
     def __init__(
         self,
         n_layers: int,
@@ -37,7 +36,6 @@ class _SAITS(nn.Module):
         d_k: int,
         d_v: int,
         dropout: float,
-        diagonal_attention_mask: bool = True,
         ORT_weight: float = 1,
         MIT_weight: float = 1,
     ):
@@ -47,7 +45,7 @@ class _SAITS(nn.Module):
         self.ORT_weight = ORT_weight
         self.MIT_weight = MIT_weight
 
-        self.layer_stack_for_first_block = nn.ModuleList(
+        self.layer_stack = nn.ModuleList(
             [
                 EncoderLayer(
                     d_time,
@@ -59,84 +57,31 @@ class _SAITS(nn.Module):
                     d_v,
                     dropout,
                     0,
-                    diagonal_attention_mask,
-                )
-                for _ in range(n_layers)
-            ]
-        )
-        self.layer_stack_for_second_block = nn.ModuleList(
-            [
-                EncoderLayer(
-                    d_time,
-                    actual_d_feature,
-                    d_model,
-                    d_inner,
-                    n_head,
-                    d_k,
-                    d_v,
-                    dropout,
-                    0,
-                    diagonal_attention_mask,
+                    False,
                 )
                 for _ in range(n_layers)
             ]
         )
 
-        self.dropout = nn.Dropout(p=dropout)
+        self.embedding = nn.Linear(actual_d_feature, d_model)
         self.position_enc = PositionalEncoding(d_model, n_position=d_time)
-        # for operation on time dim
-        self.embedding_1 = nn.Linear(actual_d_feature, d_model)
-        self.reduce_dim_z = nn.Linear(d_model, d_feature)
-        # for operation on measurement dim
-        self.embedding_2 = nn.Linear(actual_d_feature, d_model)
-        self.reduce_dim_beta = nn.Linear(d_model, d_feature)
-        self.reduce_dim_gamma = nn.Linear(d_feature, d_feature)
-        # for delta decay factor
-        self.weight_combine = nn.Linear(d_feature + d_time, d_feature)
+        self.dropout = nn.Dropout(p=dropout)
+        self.reduce_dim = nn.Linear(d_model, d_feature)
 
-    def _process(self, inputs: dict) -> Tuple[torch.Tensor, list]:
+    def _process(self, inputs: dict) -> Tuple[torch.Tensor, torch.Tensor]:
         X, masks = inputs["X"], inputs["missing_mask"]
-        # first DMSA block
-        input_X_for_first = torch.cat([X, masks], dim=2)
-        input_X_for_first = self.embedding_1(input_X_for_first)
-        enc_output = self.dropout(
-            self.position_enc(input_X_for_first)
-        )  # namely, term e in the math equation
-        for encoder_layer in self.layer_stack_for_first_block:
+        input_X = torch.cat([X, masks], dim=2)
+        input_X = self.embedding(input_X)
+        enc_output = self.dropout(self.position_enc(input_X))
+
+        for encoder_layer in self.layer_stack:
             enc_output, _ = encoder_layer(enc_output)
 
-        X_tilde_1 = self.reduce_dim_z(enc_output)
-        X_prime = masks * X + (1 - masks) * X_tilde_1
-
-        # second DMSA block
-        input_X_for_second = torch.cat([X_prime, masks], dim=2)
-        input_X_for_second = self.embedding_2(input_X_for_second)
-        enc_output = self.position_enc(
-            input_X_for_second
-        )  # namely term alpha in math algo
-        for encoder_layer in self.layer_stack_for_second_block:
-            enc_output, attn_weights = encoder_layer(enc_output)
-
-        X_tilde_2 = self.reduce_dim_gamma(F.relu(self.reduce_dim_beta(enc_output)))
-
-        # attention-weighted combine
-        attn_weights = attn_weights.squeeze(dim=1)  # namely term A_hat in Eq.
-        if len(attn_weights.shape) == 4:
-            # if having more than 1 head, then average attention weights from all heads
-            attn_weights = torch.transpose(attn_weights, 1, 3)
-            attn_weights = attn_weights.mean(dim=3)
-            attn_weights = torch.transpose(attn_weights, 1, 2)
-
-        # namely term eta
-        combining_weights = torch.sigmoid(
-            self.weight_combine(torch.cat([masks, attn_weights], dim=2))
-        )
-        # combine X_tilde_1 and X_tilde_2
-        X_tilde_3 = (1 - combining_weights) * X_tilde_2 + combining_weights * X_tilde_1
-        # replace non-missing part with original data
-        X_c = masks * X + (1 - masks) * X_tilde_3
-
-        return X_c, [X_tilde_1, X_tilde_2, X_tilde_3]
+        learned_presentation = self.reduce_dim(enc_output)
+        imputed_data = (
+            masks * X + (1 - masks) * learned_presentation
+        )  # replace non-missing part with original data
+        return imputed_data, learned_presentation
 
     def impute(self, inputs: dict) -> torch.Tensor:
         imputed_data, _ = self._process(inputs)
@@ -144,15 +89,12 @@ class _SAITS(nn.Module):
 
     def forward(self, inputs: dict) -> dict:
         X, masks = inputs["X"], inputs["missing_mask"]
-        ORT_loss = 0
-        imputed_data, [X_tilde_1, X_tilde_2, X_tilde_3] = self._process(inputs)
+        imputed_data, learned_presentation = self._process(inputs)
+        ORT_loss = cal_mae(learned_presentation, X, masks)
 
-        ORT_loss += cal_mae(X_tilde_1, X, masks)
-        ORT_loss += cal_mae(X_tilde_2, X, masks)
-        ORT_loss += cal_mae(X_tilde_3, X, masks)
-        ORT_loss /= 3
-
-        MIT_loss = cal_mae(X_tilde_3, inputs["X_intact"], inputs["indicating_mask"])
+        MIT_loss = cal_mae(
+            learned_presentation, inputs["X_intact"], inputs["indicating_mask"]
+        )
 
         # `loss` is always the item for backward propagating to update the model
         loss = self.ORT_weight * ORT_loss + self.MIT_weight * MIT_loss
@@ -161,49 +103,12 @@ class _SAITS(nn.Module):
             "imputed_data": imputed_data,
             "ORT_loss": ORT_loss,
             "MIT_loss": MIT_loss,
-            "loss": loss,  # will be used for backward propagating to update the model
+            "loss": loss,
         }
         return results
 
 
-class SAITS(BaseNNImputer):
-    """
-    Parameters
-    ----------
-    n_steps
-    n_features
-    n_layers
-    d_model
-    d_inner
-    n_head
-    d_k
-    d_v
-    dropout
-    diagonal_attention_mask
-    ORT_weight
-    MIT_weight
-    batch_size
-    epochs
-    patience : int, default = None,
-        Leaving it default as None will disable the early-stopping.
-
-    learning_rate
-    weight_decay
-    num_workers
-    device
-
-    saving_path : str, default = None,
-        The path for automatically saving model checkpoints and tensorboard files (i.e. loss values recorded during
-        training into a tensorboard file). Will not save if not given.
-
-    model_saving_strategy : str or None, None or "best" or "better" , default = "best",
-        The strategy to save model checkpoints. It has to be one of [None, "best", "better"].
-        No model will be saved when it is set as None.
-        The "best" strategy will only automatically save the best model after the training finished.
-        The "better" strategy will automatically save the model during training whenever the model performs
-        better than in previous epochs.
-    """
-
+class Transformer(BaseNNImputer):
     def __init__(
         self,
         n_steps: int,
@@ -214,8 +119,7 @@ class SAITS(BaseNNImputer):
         n_head: int,
         d_k: int,
         d_v: int,
-        dropout: int or float,
-        diagonal_attention_mask: bool = True,
+        dropout: float,
         ORT_weight: int = 1,
         MIT_weight: int = 1,
         batch_size: int = 32,
@@ -250,11 +154,10 @@ class SAITS(BaseNNImputer):
         self.d_k = d_k
         self.d_v = d_v
         self.dropout = dropout
-        self.diagonal_attention_mask = diagonal_attention_mask
         self.ORT_weight = ORT_weight
         self.MIT_weight = MIT_weight
 
-        self.model = _SAITS(
+        self.model = _TransformerEncoder(
             self.n_layers,
             self.n_steps,
             self.n_features,
@@ -264,14 +167,13 @@ class SAITS(BaseNNImputer):
             self.d_k,
             self.d_v,
             self.dropout,
-            self.diagonal_attention_mask,
             self.ORT_weight,
             self.MIT_weight,
         )
         self.model = self.model.to(self.device)
         self._print_model_size()
 
-    def _assemble_input_for_training(self, data: list) -> dict:
+    def _assemble_input_for_training(self, data: dict) -> dict:
         """Assemble the given data into a dictionary for training input.
 
         Parameters
@@ -298,7 +200,7 @@ class SAITS(BaseNNImputer):
 
         return inputs
 
-    def _assemble_input_for_validating(self, data) -> dict:
+    def _assemble_input_for_validating(self, data: list) -> dict:
         """Assemble the given data into a dictionary for validating input.
 
         Notes
@@ -322,9 +224,10 @@ class SAITS(BaseNNImputer):
             "X": X,
             "missing_mask": missing_mask,
         }
+
         return inputs
 
-    def _assemble_input_for_testing(self, data) -> dict:
+    def _assemble_input_for_testing(self, data: list) -> dict:
         """Assemble the given data into a dictionary for testing input.
 
         Notes
@@ -374,7 +277,7 @@ class SAITS(BaseNNImputer):
 
         """
         # Step 1: wrap the input data with classes Dataset and DataLoader
-        training_set = DatasetForMIT(train_set, file_type=file_type)
+        training_set = DatasetForSAITS(train_set, file_type=file_type)
         training_loader = DataLoader(
             training_set,
             batch_size=self.batch_size,
@@ -413,11 +316,7 @@ class SAITS(BaseNNImputer):
         # Step 3: save the model if necessary
         self.auto_save_model_if_necessary(training_finished=True)
 
-    def impute(
-        self,
-        X: Union[dict, str],
-        file_type="h5py",
-    ) -> np.ndarray:
+    def impute(self, X: Union[dict, str], file_type: str = "h5py") -> np.ndarray:
         """Impute missing values in the given data with the trained model.
 
         Parameters
@@ -434,7 +333,6 @@ class SAITS(BaseNNImputer):
         array-like, shape [n_samples, sequence length (time steps), n_features],
             Imputed data.
         """
-        # Step 1: wrap the input data with classes Dataset and DataLoader
         self.model.eval()  # set the model as eval status to freeze it.
         test_set = BaseDataset(X, return_labels=False, file_type=file_type)
         test_loader = DataLoader(
@@ -445,13 +343,11 @@ class SAITS(BaseNNImputer):
         )
         imputation_collector = []
 
-        # Step 2: process the data with the model
         with torch.no_grad():
             for idx, data in enumerate(test_loader):
                 inputs = self._assemble_input_for_testing(data)
                 imputed_data = self.model.impute(inputs)
                 imputation_collector.append(imputed_data)
 
-        # Step 3: output collection and return
         imputation_collector = torch.cat(imputation_collector)
         return imputation_collector.cpu().detach().numpy()
