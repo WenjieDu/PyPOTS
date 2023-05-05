@@ -76,6 +76,8 @@ html_context = {
     "last_updated": f"{date_now.year}/{date_now.month}/{date_now.day}",
 }
 
+html_favicon = "_static/figs/PyPOTS_logo.svg"
+
 html_sidebars = {
     "**": [
         "sidebar/scroll-start.html",

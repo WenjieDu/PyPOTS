@@ -7,15 +7,12 @@ Subpackages
 .. toctree::
    :maxdepth: 4
 
+   pypots.imputation
    pypots.classification
    pypots.clustering
-   pypots.data
    pypots.forecasting
-   pypots.imputation
+   pypots.data
    pypots.utils
-
-Submodules
-----------
 
 pypots.base module
 ------------------
