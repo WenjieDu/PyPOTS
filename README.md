@@ -72,24 +72,29 @@ It now supports a total of 119 open-source datasets.
 <br clear="left">
 
 The rest of this readme file is organized as follows:
-[**Installation**](#-installation),
-[**Usage**](#-usage),
-[**Available Algorithms**](#-available-algorithms),
-[**Citing PyPOTS**](#-citing-pypots),
-[**Community**](#-community),
-[**Contribution**](#-contribution).
+[**❖ Installation**](#-installation),
+[**❖ Usage**](#-usage),
+[**❖ Available Algorithms**](#-available-algorithms),
+[**❖ Citing PyPOTS**](#-citing-pypots),
+[**❖ Contribution**](#-contribution),
+[**❖ Community**](#-community).
 
 
 ## ❖ Installation
-PyPOTS now is available on <a href="https://anaconda.org/conda-forge/pypots"><img alt="on Anaconda" align="center"
-src="https://img.shields.io/badge/Anaconda--lightgreen?style=social&logo=anaconda"></a>❗️
+PyPOTS is available on both [PyPI](https://pypi.python.org/pypi/pypots) and [Anaconda](https://anaconda.org/conda-forge/pypots).
+You can install PyPOTS as shown below:
 
-Install it with `conda install pypots`, you may need to specify the channel with option `-c conda-forge`
+``` bash
+# by pip
+pip install pypots            # the first time installation
+pip install pypots --upgrade  # update pypots to the latest version
 
-Install the latest release from PyPI:
-> pip install pypots
+# by conda
+conda install -c conda-forge pypots  # the first time installation
+conda update  -c conda-forge pypots  # update pypots to the latest version
+````
 
-or install from the source code with the latest features not officially released in a version:
+Alternatively, you can install from the latest source code with the latest features but may be not officially released yet:
 > pip install https://github.com/WenjieDu/PyPOTS/archive/main.zip
 
 
@@ -166,45 +171,34 @@ We are pursuing to publish a short paper introducing PyPOTS in prestigious acade
 for reference. If you use PyPOTS in your research, please cite it as below and 🌟star this repository to make others
 notice this work. 🤗
 
-```bibtex
-@misc{du2022PyPOTS,
+``` bibtex
+@software{Du2022PyPOTS,
 author = {Wenjie Du},
 title = {{PyPOTS: A Python Toolbox for Data Mining on Partially-Observed Time Series}},
 year = {2022},
-howpublished = {\url{https://github.com/wenjiedu/pypots}},
-url = {\url{https://github.com/wenjiedu/pypots}},
+howpublished = {\url{https://github.com/WenjieDu/PyPOTS}},
+url = {\url{https://github.com/WenjieDu/PyPOTS}},
 doi = {10.5281/zenodo.6823221},
 }
 ```
 
 or
 
-`Wenjie Du. (2022).
-PyPOTS: A Python Toolbox for Data Mining on Partially-Observed Time Series.
-Zenodo. https://doi.org/10.5281/zenodo.6823221`
+> Wenjie Du. (2022).
+> PyPOTS: A Python Toolbox for Data Mining on Partially-Observed Time Series.
+> Zenodo. https://doi.org/10.5281/zenodo.6823221
 
-
-## ❖ Community
-We care about the feedback from our users, so we're building PyPOTS community on
-
-- [Slack](https://pypots-dev.slack.com). General discussion, Q&A, and our development team are here;
-- [LinkedIn](https://www.linkedin.com/company/pypots). Official announcements and news are here;
-- [WeChat (微信公众号)](https://mp.weixin.qq.com/s/m6j83SJNgz-xySSZd-DTBw). We also run a group chat on WeChat,
-  and you can get the QR code from the official account after following it;
-
-If you have any suggestions or want to contribute ideas or share time-series related papers, join us and tell.
-PyPOTS community is open, transparent, and surely friendly. Let's work together to build and improve PyPOTS 💪!
 
 ## ❖ Contribution
 You're very welcome to contribute to this exciting project!
 
 By committing your code, you'll
 
-1. make your well-established model out-of-the-box for PyPOTS users to run. Take a look at our [inclusion criteria](https://docs.pypots.com/en/latest/faq.html#inclusion-criteria);
+1. make your well-established model out-of-the-box for PyPOTS users to run,
+   and help your work obtain more exposure and impact.
+   Take a look at our [inclusion criteria](https://docs.pypots.com/en/latest/faq.html#inclusion-criteria);
 2. be listed as one of [PyPOTS contributors](https://github.com/WenjieDu/PyPOTS/graphs/contributors):
-   <a href="https://github.com/wenjiedu/pypots/graphs/contributors">
-      <img align="center" src="https://contrib.rocks/image?repo=wenjiedu/pypots">
-   </a>;
+   <img align="center" src="https://contrib.rocks/image?repo=wenjiedu/pypots">;
 3. get mentioned in our [release notes](https://github.com/WenjieDu/PyPOTS/releases);
 
 You can also contribute to PyPOTS by simply staring🌟 this repo to help more people notice it.
@@ -225,6 +219,18 @@ Your star is your recognition to PyPOTS, and it matters!
     <img alt="PyPOTS forkers" src="https://reporoster.com/forks/dark/WenjieDu/PyPOTS">
 </a>
 </details>
+
+
+## ❖ Community
+We care about the feedback from our users, so we're building PyPOTS community on
+
+- [Slack](https://pypots-dev.slack.com). General discussion, Q&A, and our development team are here;
+- [LinkedIn](https://www.linkedin.com/company/pypots). Official announcements and news are here;
+- [WeChat (微信公众号)](https://mp.weixin.qq.com/s/m6j83SJNgz-xySSZd-DTBw). We also run a group chat on WeChat,
+  and you can get the QR code from the official account after following it;
+
+If you have any suggestions or want to contribute ideas or share time-series related papers, join us and tell.
+PyPOTS community is open, transparent, and surely friendly. Let's work together to build and improve PyPOTS 💪!
 
 
 ## ❖ Attention 👀
