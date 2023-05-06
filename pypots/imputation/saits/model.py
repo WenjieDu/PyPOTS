@@ -20,7 +20,7 @@ from torch.utils.data import DataLoader
 
 from pypots.data.base import BaseDataset
 from pypots.imputation.base import BaseNNImputer
-from pypots.imputation.saits.dataset import DatasetForSAITS
+from pypots.imputation.saits.data import DatasetForSAITS
 from pypots.imputation.transformer.modules import EncoderLayer, PositionalEncoding
 from pypots.utils.metrics import cal_mae
 
