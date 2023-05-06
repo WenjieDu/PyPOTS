@@ -24,7 +24,7 @@ from pypots.clustering.vader.modules import (
     PeepholeLSTMCell,
     ImplicitImputation,
 )
-from pypots.clustering.vader.dataset import DatasetForVaDER
+from pypots.clustering.vader.data import DatasetForVaDER
 from pypots.utils.logging import logger
 from pypots.utils.metrics import cal_mse
 

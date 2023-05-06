@@ -7,7 +7,7 @@ Dataset class for model BRITS.
 
 from typing import Union
 
-from pypots.imputation.brits.dataset import (
+from pypots.imputation.brits.data import (
     DatasetForBRITS as DatasetForBRITS_Imputation,
 )
 

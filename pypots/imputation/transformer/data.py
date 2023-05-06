@@ -7,7 +7,7 @@ Dataset class for self-attention models trained with MIT (masked imputation task
 
 from typing import Union
 
-from pypots.imputation.saits.dataset import DatasetForSAITS
+from pypots.imputation.saits.data import DatasetForSAITS
 
 
 class DatasetForTransformer(DatasetForSAITS):

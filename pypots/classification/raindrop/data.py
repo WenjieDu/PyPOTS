@@ -8,7 +8,7 @@ Dataset class for model Raindrop.
 
 from typing import Union
 
-from pypots.classification.grud.dataset import DatasetForGRUD
+from pypots.classification.grud.data import DatasetForGRUD
 
 
 class DatasetForRaindrop(DatasetForGRUD):

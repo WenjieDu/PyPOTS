@@ -24,7 +24,7 @@ from torch.nn.parameter import Parameter
 from torch.utils.data import DataLoader
 
 from pypots.classification.base import BaseNNClassifier
-from pypots.classification.grud.dataset import DatasetForGRUD
+from pypots.classification.grud.data import DatasetForGRUD
 from pypots.classification.raindrop.modules import (
     PositionalEncoding,
     ObservationPropagation,

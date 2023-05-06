@@ -18,7 +18,7 @@ import torch.nn as nn
 from torch.utils.data import DataLoader
 
 from pypots.imputation.base import BaseNNImputer
-from pypots.imputation.brits.dataset import DatasetForBRITS
+from pypots.imputation.brits.data import DatasetForBRITS
 from pypots.imputation.brits.modules import TemporalDecay, FeatureRegression
 from pypots.utils.metrics import cal_mae
 
