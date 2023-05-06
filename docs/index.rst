@@ -88,11 +88,11 @@ Visit `TSDB <https://github.com/WenjieDu/TSDB>`_ right now to know more about th
 
 The rest of this readme file is organized as follows:
 `❖ Installation <#id1>`_,
-`❖ Usage <#id2>`_,
-`❖ Available Algorithms <#id3>`_,
-`❖ Citing PyPOTS <#id13>`_,
-`❖ Community <#id14>`_,
-`❖ Contribution <#id15>`_.
+`❖ Usage <#id3>`_,
+`❖ Available Algorithms <#id4>`_,
+`❖ Citing PyPOTS <#id14>`_,
+`❖ Contribution <#id15>`_,
+`❖ Community <#id16>`_.
 
 
 ❖ Installation
@@ -148,30 +148,20 @@ notice this work. 🤗
 .. code-block:: bibtex
    :linenos:
 
-   @misc{du2022PyPOTS,
+   @software{Du2022PyPOTS,
    author = {Wenjie Du},
    title = {{PyPOTS: A Python Toolbox for Data Mining on Partially-Observed Time Series}},
-   howpublished = {\url{https://github.com/wenjiedu/pypots}},
    year = {2022},
+   howpublished = {\url{https://github.com/WenjieDu/PyPOTS}},
+   url = {\url{https://github.com/WenjieDu/PyPOTS}},
    doi = {10.5281/zenodo.6823221},
    }
 
 or
 
-   Wenjie Du. (2022). PyPOTS: A Python Toolbox for Data Mining on Partially-Observed Time Series. Zenodo. https://doi.org/10.5281/zenodo.6823221
-
-
-❖ Community
-^^^^^^^^^^^^
-We care about the feedback from our users, so we're building PyPOTS community on
-
-- `Slack <https://pypots-dev.slack.com>`_. General discussion, Q&A, and our development team are here;
-- `LinkedIn <https://www.linkedin.com/company/pypots>`_. Official announcements and news are here;
-- `WeChat (微信公众号) <https://mp.weixin.qq.com/s/m6j83SJNgz-xySSZd-DTBw>`_. We also run a group chat on WeChat,
-  and you can get the QR code from the official account after following it;
-
-If you have any suggestions or want to contribute ideas or share time-series related papers, join us and tell.
-PyPOTS community is open, transparent, and surely friendly. Let's work together to build and improve PyPOTS 💪!
+   Wenjie Du. (2022).
+   PyPOTS: A Python Toolbox for Data Mining on Partially-Observed Time Series.
+   Zenodo. https://doi.org/10.5281/zenodo.6823221
 
 
 ❖ Contribution
@@ -180,7 +170,9 @@ You're very welcome to contribute to this exciting project!
 
 By committing your code, you'll
 
-1. make your well-established model out-of-the-box for PyPOTS users to run. Take a look at our `inclusion criteria <https://docs.pypots.com/en/latest/faq.html#inclusion-criteria>`_;
+1. make your well-established model out-of-the-box for PyPOTS users to run,
+   and help your work obtain more exposure and impact.
+   Take a look at our `inclusion criteria <https://docs.pypots.com/en/latest/faq.html#inclusion-criteria>`_;
 2. be listed as one of `PyPOTS contributors <https://github.com/WenjieDu/PyPOTS/graphs/contributors>`_:
 3. get mentioned in our `release notes <https://github.com/WenjieDu/PyPOTS/releases>`_;
 
@@ -196,6 +188,18 @@ The lists of PyPOTS stargazers and forkers are shown below, and we're so proud t
    :alt: PyPOTS forkers
    :target: https://github.com/WenjieDu/PyPOTS/network/members
 
+
+❖ Community
+^^^^^^^^^^^^
+We care about the feedback from our users, so we're building PyPOTS community on
+
+- `Slack <https://pypots-dev.slack.com>`_. General discussion, Q&A, and our development team are here;
+- `LinkedIn <https://www.linkedin.com/company/pypots>`_. Official announcements and news are here;
+- `WeChat (微信公众号) <https://mp.weixin.qq.com/s/m6j83SJNgz-xySSZd-DTBw>`_. We also run a group chat on WeChat,
+  and you can get the QR code from the official account after following it;
+
+If you have any suggestions or want to contribute ideas or share time-series related papers, join us and tell.
+PyPOTS community is open, transparent, and surely friendly. Let's work together to build and improve PyPOTS 💪!
 
 
 ❖ Attention 👀
