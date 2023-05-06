@@ -17,7 +17,7 @@ from sklearn.cluster import KMeans
 from torch.utils.data import DataLoader
 
 from pypots.clustering.base import BaseNNClusterer
-from pypots.clustering.crli.dataset import DatasetForCRLI
+from pypots.clustering.crli.data import DatasetForCRLI
 from pypots.clustering.crli.modules import Generator, Decoder, Discriminator
 from pypots.utils.logging import logger
 from pypots.utils.metrics import cal_mse

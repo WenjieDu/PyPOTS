@@ -12,13 +12,13 @@ It is recommended to use **pip** or **conda** for PyPOTS installation as shown b
 
     # by pip
     pip install pypots            # the first time installation
-    pip install --upgrade pypots  # update pypots to the latest version
+    pip install pypots --upgrade  # update pypots to the latest version
 
 .. code-block:: bash
 
     # by conda
     conda install -c conda-forge pypots  # the first time installation
-    conda update -c conda-forge pypots   # update pypots to the latest version
+    conda update  -c conda-forge pypots  # update pypots to the latest version
 
 Alternatively, you can install from the latest source code which may be not officially released yet:
 

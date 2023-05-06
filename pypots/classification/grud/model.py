@@ -15,7 +15,7 @@ import torch.nn.functional as F
 from torch.utils.data import DataLoader
 
 from pypots.classification.base import BaseNNClassifier
-from pypots.classification.grud.dataset import DatasetForGRUD
+from pypots.classification.grud.data import DatasetForGRUD
 from pypots.imputation.brits.modules import TemporalDecay
 
 
