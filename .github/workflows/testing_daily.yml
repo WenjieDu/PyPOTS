@@ -1,9 +1,6 @@
 name: Daily Testing
 
 on:
-    push:
-        branches:
-            - fix_dependency_error_in_daily_testing
     schedule:
         # https://crontab.guru. Run everyday at 0:00AM UTC, i.e. 08:00AM Beijing, i.e. 08:00PM Montreal (summer time)
         - cron: "0 0 * * *"
@@ -39,12 +36,13 @@ jobs:
                   which python
                   which pip
                   python -m pip install --upgrade pip
-                  pip install torch==${{ matrix.torch-version }} --extra-index-url https://download.pytorch.org/whl/cpu
+                  pip install torch==${{ matrix.torch-version }} -f https://download.pytorch.org/whl/cpu
                   python -c "import torch; print('PyTorch:', torch.__version__)"
 
             - name: Install other dependencies
               run: |
-                  pip install -e ".[optional]" -f "https://data.pyg.org/whl/torch-${{ matrix.torch-version }}+cpu.html"
+                  pip install pypots
+                  pip install torch-geometric torch-scatter torch-sparse -f "https://data.pyg.org/whl/torch-${{ matrix.torch-version }}+cpu.html"
                   pip install -e ".[dev]"
 
             - name: Fetch the test environment details
