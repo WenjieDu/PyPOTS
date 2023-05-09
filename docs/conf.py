@@ -95,6 +95,5 @@ intersphinx_mapping = {
 }
 
 gtagjs_ids = [
-    "G-TLYTE74XVR",  # PyPOTS website
     "G-HT18SK09XE",  # PyPOTS docs site
 ]
