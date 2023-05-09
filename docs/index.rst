@@ -50,9 +50,9 @@ Welcome to PyPOTS docs!
    :alt: Coveralls coverage
    :target: https://coveralls.io/github/WenjieDu/PyPOTS
 
-.. image:: https://img.shields.io/github/actions/workflow/status/wenjiedu/pypots/testing.yml?logo=github&color=48c0a3&label=CI
+.. image:: https://img.shields.io/github/actions/workflow/status/wenjiedu/pypots/testing_ci.yml?logo=github&color=48c0a3&label=CI
    :alt: GitHub Testing
-   :target: https://github.com/WenjieDu/PyPOTS/actions/workflows/testing.yml
+   :target: https://github.com/WenjieDu/PyPOTS/actions/workflows/testing_ci.yml
 
 .. image:: https://img.shields.io/badge/DOI-10.5281/zenodo.6823221-21a675
    :alt: Zenodo DOI
