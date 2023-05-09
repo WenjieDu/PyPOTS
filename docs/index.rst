@@ -104,14 +104,14 @@ Refer to the page `Installation <install.html>`_ to see how to install PyPOTS.
 
 ❖ Usage
 ^^^^^^^^
-.. image:: https://raw.githubusercontent.com/WenjieDu/BrewedPOTS/main/figs/BrewedPOTS_logo.jpg
+.. image:: https://raw.githubusercontent.com/WenjieDu/BrewPOTS/main/figs/BrewPOTS_logo.jpg
    :width: 160
-   :alt: BrewedPOTS logo
+   :alt: BrewPOTS logo
    :align: left
-   :target: https://github.com/WenjieDu/BrewedPOTS
+   :target: https://github.com/WenjieDu/BrewPOTS
 
 PyPOTS tutorials have been released. Considering the future workload, I separate the tutorials into a single repo,
-and you can find them in `BrewedPOTS <https://github.com/WenjieDu/BrewedPOTS>`_.
+and you can find them in `BrewPOTS <https://github.com/WenjieDu/BrewPOTS>`_.
 Take a look at it now, and brew your POTS dataset into a cup of coffee! 🤓
 
 If you have further questions, please refer to PyPOTS documentation 📑 `docs.pypots.com <https://docs.pypots.com>`_.
