@@ -32,8 +32,8 @@
     <a href="https://coveralls.io/github/WenjieDu/PyPOTS">
         <img alt="Coveralls coverage" src="https://img.shields.io/coverallsCoverage/github/WenjieDu/PyPOTS?branch=main&logo=coveralls&color=00e09e&label=Coverage">
     </a>
-    <a href="https://github.com/WenjieDu/PyPOTS/actions/workflows/testing.yml">
-        <img alt="GitHub Testing" src="https://img.shields.io/github/actions/workflow/status/wenjiedu/pypots/testing.yml?logo=github&color=48c0a3&label=CI">
+    <a href="https://github.com/WenjieDu/PyPOTS/actions/workflows/testing_ci.yml">
+        <img alt="GitHub Testing" src="https://img.shields.io/github/actions/workflow/status/wenjiedu/pypots/testing_ci.yml?logo=github&color=48c0a3&label=CI">
     </a>
     <a href="https://doi.org/10.5281/zenodo.6823221">
         <img alt="Zenodo DOI" src="https://img.shields.io/badge/DOI-10.5281/zenodo.6823221-21a675">
