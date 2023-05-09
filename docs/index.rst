@@ -28,11 +28,11 @@ Welcome to PyPOTS docs!
 
 .. image:: https://img.shields.io/badge/join_us-community!-7fecad
    :alt: Community
-   :target: #id14
+   :target: #id16
 
-.. image:: https://img.shields.io/github/sponsors/wenjiedu?label=Sponsors&color=7bcfa6&logo=githubsponsors
-   :alt: GitHub Sponsors
-   :target: https://github.com/sponsors/WenjieDu
+.. image:: https://img.shields.io/github/contributors/wenjiedu/pypots?color=7bcfa6&label=Contributors&logo=GitHub
+   :alt: GitHub Contributors
+   :target: https://github.com/WenjieDu/PyPOTS/graphs/contributors
 
 .. image:: https://img.shields.io/github/stars/wenjiedu/pypots?logo=Github&color=7bcfa6&label=Stars
    :alt: GitHub Repo stars
