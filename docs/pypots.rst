@@ -1,4 +1,4 @@
-PyPOTS Package
+pypots package
 ==============
 
 Subpackages
