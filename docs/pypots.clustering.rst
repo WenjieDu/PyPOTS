@@ -1,15 +1,6 @@
 pypots.clustering package
 =========================
 
-pypots.clustering.base module
------------------------------
-
-.. automodule:: pypots.clustering.base
-   :members:
-   :undoc-members:
-   :show-inheritance:
-   :inherited-members:
-
 pypots.clustering.crli module
 -----------------------------
 
@@ -23,15 +14,6 @@ pypots.clustering.vader module
 ------------------------------
 
 .. automodule:: pypots.clustering.vader
-   :members:
-   :undoc-members:
-   :show-inheritance:
-   :inherited-members:
-
-Module contents
----------------
-
-.. automodule:: pypots.clustering
    :members:
    :undoc-members:
    :show-inheritance:

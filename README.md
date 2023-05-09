@@ -17,8 +17,8 @@
     <a href="https://github.com/WenjieDu/PyPOTS/blob/main/README.md#-community">
         <img alt="Community" src="https://img.shields.io/badge/join_us-community!-7fecad">
     </a>
-    <a href="https://github.com/sponsors/WenjieDu">
-        <img alt="GitHub Sponsors" src="https://img.shields.io/github/sponsors/wenjiedu?label=Sponsors&color=7bcfa6&logo=githubsponsors">
+    <a href="https://github.com/WenjieDu/PyPOTS/graphs/contributors">
+        <img alt="GitHub contributors" src="https://img.shields.io/github/contributors/wenjiedu/pypots?color=7bcfa6&label=Contributors&logo=GitHub">
     </a>
     <a href="https://github.com/WenjieDu/PyPOTS/stargazers">
         <img alt="GitHub Repo stars" src="https://img.shields.io/github/stars/wenjiedu/pypots?logo=Github&color=7bcfa6&label=Stars">

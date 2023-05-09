@@ -1,15 +1,6 @@
 pypots.imputation package
 =========================
 
-pypots.imputation.base module
------------------------------
-
-.. automodule:: pypots.imputation.base
-   :members:
-   :undoc-members:
-   :show-inheritance:
-   :inherited-members:
-
 pypots.imputation.saits module
 ------------------------------
 
@@ -41,15 +32,6 @@ pypots.imputation.locf module
 -----------------------------
 
 .. automodule:: pypots.imputation.locf
-   :members:
-   :undoc-members:
-   :show-inheritance:
-   :inherited-members:
-
-Module contents
----------------
-
-.. automodule:: pypots.imputation
    :members:
    :undoc-members:
    :show-inheritance:
