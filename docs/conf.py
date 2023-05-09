@@ -44,6 +44,7 @@ extensions = [
     "sphinx.ext.viewcode",
     "sphinx.ext.napoleon",  # enables Sphinx to parse both NumPy and Google style docstrings, otherwise no Param/Returns
     "sphinxcontrib.bibtex",
+    "sphinxcontrib.gtagjs",
 ]
 
 bibtex_bibfiles = ["references.bib"]
@@ -92,3 +93,7 @@ intersphinx_mapping = {
     "python": ("https://docs.python.org/3", None),
     "sphinx": ("https://www.sphinx-doc.org/en/master", None),
 }
+
+gtagjs_ids = [
+    "G-HT18SK09XE",  # PyPOTS docs site
+]
