@@ -99,12 +99,12 @@ Alternatively, you can install from the latest source code with the latest featu
 
 
 ## ❖ Usage
-<a href="https://github.com/WenjieDu/BrewedPOTS">
-    <img src="https://raw.githubusercontent.com/WenjieDu/BrewedPOTS/main/figs/BrewedPOTS_logo.jpg" align="left" width="160" alt="BrewedPOTS logo"/>
+<a href="https://github.com/WenjieDu/BrewPOTS">
+    <img src="https://raw.githubusercontent.com/WenjieDu/BrewPOTS/main/figs/BrewPOTS_logo.jpg" align="left" width="160" alt="BrewPOTS logo"/>
 </a>
 
 PyPOTS tutorials have been released. Considering the future workload, I separate the tutorials into a single repo,
-and you can find them in [BrewedPOTS](https://github.com/WenjieDu/BrewedPOTS).
+and you can find them in [BrewPOTS](https://github.com/WenjieDu/BrewPOTS).
 Take a look at it now, and brew your POTS dataset into a cup of coffee! 🤓
 
 If you have further questions, please refer to PyPOTS documentation 📑[docs.pypots.com](https://docs.pypots.com).
