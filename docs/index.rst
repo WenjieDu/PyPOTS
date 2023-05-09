@@ -99,7 +99,7 @@ The rest of this readme file is organized as follows:
 ^^^^^^^^^^^^^^^
 PyPOTS is available on both `PyPI <https://pypi.python.org/pypi/pypots>`_ and `Anaconda <https://anaconda.org/conda-forge/pypots>`_ ❗️
 
-Refer to the page `Installation <install.html>`_ to see how to install PyPOTS.
+Refer to the page `Installation <install.html>`_ to see different ways of installing PyPOTS.
 
 
 ❖ Usage
@@ -221,10 +221,11 @@ Thank you all for your attention! 😃
    examples
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 4
    :hidden:
    :caption: Code Documentation
 
+   model_api
    pypots
 
 .. toctree::
