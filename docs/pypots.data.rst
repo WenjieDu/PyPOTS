@@ -45,12 +45,3 @@ pypots.data.utils module
    :undoc-members:
    :show-inheritance:
    :inherited-members:
-
-Module contents
----------------
-
-.. automodule:: pypots.data
-   :members:
-   :undoc-members:
-   :show-inheritance:
-   :inherited-members:
