@@ -14,6 +14,8 @@ import datetime
 import os
 import sys
 
+from sphinx.ext.napoleon.docstring import NumpyDocstring
+
 try:
     sys.path.insert(0, os.path.abspath(".."))
 except IndexError:
@@ -97,3 +99,37 @@ intersphinx_mapping = {
 gtagjs_ids = [
     "G-HT18SK09XE",  # PyPOTS docs site
 ]
+
+
+# the code below is for fixing the display of `Attributes` heading,
+# refer to https://github.com/ivadomed/ivadomed/issues/315
+# adds extensions to the Napoleon NumpyDocstring class
+def parse_keys_section(self, section):
+    return self._format_fields("Keys", self._consume_fields())
+
+
+NumpyDocstring._parse_keys_section = parse_keys_section
+
+
+def parse_attributes_section(self, section):
+    return self._format_fields("Attributes", self._consume_fields())
+
+
+NumpyDocstring._parse_attributes_section = parse_attributes_section
+
+
+def parse_class_attributes_section(self, section):
+    return self._format_fields("Class Attributes", self._consume_fields())
+
+
+NumpyDocstring._parse_class_attributes_section = parse_class_attributes_section
+
+
+def patched_parse(self):
+    self._sections["keys"] = self._parse_keys_section
+    self._sections["class attributes"] = self._parse_class_attributes_section
+    self._unpatched_parse()
+
+
+NumpyDocstring._unpatched_parse = NumpyDocstring._parse
+NumpyDocstring._parse = patched_parse
