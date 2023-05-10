@@ -13,7 +13,7 @@ import pytest
 import os
 
 from pypots.clustering import VaDER, CRLI
-from pypots.tests.global_test_config import (
+from tests.global_test_config import (
     DATA,
     RESULT_SAVING_DIR,
     check_tb_and_model_checkpoints_existence,
