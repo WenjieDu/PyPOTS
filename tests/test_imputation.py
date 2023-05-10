@@ -18,7 +18,7 @@ from pypots.imputation import (
     BRITS,
     LOCF,
 )
-from pypots.tests.global_test_config import (
+from tests.global_test_config import (
     DATA,
     RESULT_SAVING_DIR,
     check_tb_and_model_checkpoints_existence,

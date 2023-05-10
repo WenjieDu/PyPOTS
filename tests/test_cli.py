@@ -18,7 +18,7 @@ from pypots.cli.doc import doc_command_factory
 from pypots.cli.env import env_command_factory
 from pypots.utils.logging import logger
 
-PROJECT_ROOT_DIR = os.path.abspath(os.path.join(os.path.abspath(__file__), "../../.."))
+PROJECT_ROOT_DIR = os.path.abspath(os.path.join(os.path.abspath(__file__), "../.."))
 
 
 def callback_func():

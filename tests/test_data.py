@@ -13,7 +13,7 @@ import pytest
 
 from pypots.classification import BRITS, GRUD
 from pypots.imputation import SAITS
-from pypots.tests.global_test_config import DATA, DATA_SAVING_DIR
+from tests.global_test_config import DATA, DATA_SAVING_DIR
 from pypots.utils.logging import logger
 
 
