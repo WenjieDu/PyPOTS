@@ -8,9 +8,15 @@ Core Development Team
 
 Wenjie Du
 **********
-- Initialized the project in 2022
-- `Wenjie's Homepage <https://github.com/WenjieDu>`_
+- Initialized the project in March 2022
+- `GitHub (WenjieDu) <https://github.com/WenjieDu>`_
 - `LinkedIn (Wenjie Du) <https://www.linkedin.com/in/wenjie-du>`_
+
+Maciej Skrabski
+***************
+- Joined as a maintainer in May 2023
+- `GitHub (MaciejSkrabski) <https://github.com/MaciejSkrabski>`_
+- `LinkedIn (Maciej Skrabski) <https://www.linkedin.com/in/maciej-skrabski-75595525a>`_
 
 
 All Contributors
