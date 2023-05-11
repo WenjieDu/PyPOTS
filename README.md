@@ -224,7 +224,7 @@ Your star is your recognition to PyPOTS, and it matters!
 ## ❖ Community
 We care about the feedback from our users, so we're building PyPOTS community on
 
-- [Slack](https://pypots-dev.slack.com). General discussion, Q&A, and our development team are here;
+- [Slack](https://pypots-org.slack.com). General discussion, Q&A, and our development team are here;
 - [LinkedIn](https://www.linkedin.com/company/pypots). Official announcements and news are here;
 - [WeChat (微信公众号)](https://mp.weixin.qq.com/s/m6j83SJNgz-xySSZd-DTBw). We also run a group chat on WeChat,
   and you can get the QR code from the official account after following it;
