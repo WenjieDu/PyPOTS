@@ -193,7 +193,7 @@ The lists of PyPOTS stargazers and forkers are shown below, and we're so proud t
 ^^^^^^^^^^^^
 We care about the feedback from our users, so we're building PyPOTS community on
 
-- `Slack <https://pypots-dev.slack.com>`_. General discussion, Q&A, and our development team are here;
+- `Slack <https://pypots-org.slack.com>`_. General discussion, Q&A, and our development team are here;
 - `LinkedIn <https://www.linkedin.com/company/pypots>`_. Official announcements and news are here;
 - `WeChat (微信公众号) <https://mp.weixin.qq.com/s/m6j83SJNgz-xySSZd-DTBw>`_. We also run a group chat on WeChat,
   and you can get the QR code from the official account after following it;
