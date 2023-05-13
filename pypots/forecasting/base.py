@@ -23,11 +23,13 @@ class BaseForecaster(BaseModel):
     def __init__(
         self,
         device: Optional[Union[str, torch.device]] = None,
-        tb_file_saving_path: str = None,
+        saving_path: str = None,
+        model_saving_strategy: Optional[str] = "best",
     ):
         super().__init__(
             device,
-            tb_file_saving_path,
+            saving_path,
+            model_saving_strategy,
         )
 
     @abstractmethod
@@ -98,7 +100,7 @@ class BaseNNForecaster(BaseNNModel, BaseForecaster):
         weight_decay: float,
         num_workers: int = 0,
         device: Optional[Union[str, torch.device]] = None,
-        tb_file_saving_path: str = None,
+        saving_path: str = None,
     ):
         super().__init__(
             batch_size,
@@ -108,7 +110,7 @@ class BaseNNForecaster(BaseNNModel, BaseForecaster):
             weight_decay,
             num_workers,
             device,
-            tb_file_saving_path,
+            saving_path,
         )
 
     @abstractmethod
@@ -196,7 +198,7 @@ class BaseNNForecaster(BaseNNModel, BaseForecaster):
 
                     # save training loss logs into the tensorboard file for every step if in need
                     if self.summary_writer is not None:
-                        self.save_log_into_tb_file(training_step, "training", results)
+                        self._save_log_into_tb_file(training_step, "training", results)
 
                 # mean training loss of the current epoch
                 mean_train_loss = np.mean(epoch_train_loss_collector)
@@ -217,7 +219,7 @@ class BaseNNForecaster(BaseNNModel, BaseForecaster):
                         val_loss_dict = {
                             "imputation_loss": mean_val_loss,
                         }
-                        self.save_log_into_tb_file(epoch, "validating", val_loss_dict)
+                        self._save_log_into_tb_file(epoch, "validating", val_loss_dict)
 
                     logger.info(
                         f"epoch {epoch}: "

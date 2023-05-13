@@ -1,85 +1,59 @@
 """
-PyTorch GRU-D model.
+PyTorch BRITS model for both the time-series imputation task and the classification task.
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
-# License: GLP-v3
+# License: GPL-v3
 
+from typing import Optional, Union
 
-from typing import Union, Optional
-
-import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import DataLoader
 
 from pypots.classification.base import BaseNNClassifier
-from pypots.data.dataset_for_grud import DatasetForGRUD
-from pypots.imputation.brits import TemporalDecay
+from pypots.classification.brits.data import DatasetForBRITS
+from pypots.classification.brits.modules import RITS
+from pypots.imputation.brits.model import (
+    _BRITS as imputation_BRITS,
+)
 
 
-class _GRUD(nn.Module):
+class _BRITS(imputation_BRITS, nn.Module):
     def __init__(
         self,
         n_steps: int,
         n_features: int,
         rnn_hidden_size: int,
         n_classes: int,
+        classification_weight: float,
+        reconstruction_weight: float,
         device: Union[str, torch.device],
     ):
-        super().__init__()
+        super().__init__(n_steps, n_features, rnn_hidden_size, device)
         self.n_steps = n_steps
         self.n_features = n_features
         self.rnn_hidden_size = rnn_hidden_size
         self.n_classes = n_classes
-        self.device = device
 
         # create models
-        self.rnn_cell = nn.GRUCell(
-            self.n_features * 2 + self.rnn_hidden_size, self.rnn_hidden_size
-        )
-        self.temp_decay_h = TemporalDecay(
-            input_size=self.n_features, output_size=self.rnn_hidden_size, diag=False
-        )
-        self.temp_decay_x = TemporalDecay(
-            input_size=self.n_features, output_size=self.n_features, diag=True
-        )
-        self.classifier = nn.Linear(self.rnn_hidden_size, self.n_classes)
+        self.rits_f = RITS(n_steps, n_features, rnn_hidden_size, n_classes, device)
+        self.rits_b = RITS(n_steps, n_features, rnn_hidden_size, n_classes, device)
+        self.classification_weight = classification_weight
+        self.reconstruction_weight = reconstruction_weight
+
+    def impute(self, inputs: dict) -> torch.Tensor:
+        return super().impute(inputs)
 
     def classify(self, inputs: dict) -> torch.Tensor:
-        values = inputs["X"]
-        masks = inputs["missing_mask"]
-        deltas = inputs["deltas"]
-        empirical_mean = inputs["empirical_mean"]
-        X_filledLOCF = inputs["X_filledLOCF"]
-
-        hidden_state = torch.zeros(
-            (values.size()[0], self.rnn_hidden_size), device=self.device
-        )
-
-        for t in range(self.n_steps):
-            # for data, [batch, time, features]
-            x = values[:, t, :]  # values
-            m = masks[:, t, :]  # mask
-            d = deltas[:, t, :]  # delta, time gap
-            x_filledLOCF = X_filledLOCF[:, t, :]
-
-            gamma_h = self.temp_decay_h(d)
-            gamma_x = self.temp_decay_x(d)
-            hidden_state = hidden_state * gamma_h
-
-            x_h = gamma_x * x_filledLOCF + (1 - gamma_x) * empirical_mean
-            x_replaced = m * x + (1 - m) * x_h
-            inputs = torch.cat([x_replaced, hidden_state, m], dim=1)
-            hidden_state = self.rnn_cell(inputs, hidden_state)
-
-        logits = self.classifier(hidden_state)
-        prediction = torch.softmax(logits, dim=1)
-        return prediction
+        ret_f = self.rits_f(inputs, "forward")
+        ret_b = self._reverse(self.rits_b(inputs, "backward"))
+        classification_pred = (ret_f["prediction"] + ret_b["prediction"]) / 2
+        return classification_pred
 
     def forward(self, inputs: dict) -> dict:
-        """Forward processing of GRU-D.
+        """Forward processing of BRITS.
 
         Parameters
         ----------
@@ -88,26 +62,51 @@ class _GRUD(nn.Module):
 
         Returns
         -------
-        dict,
-            A dictionary includes all results.
+        dict, A dictionary includes all results.
         """
-        prediction = self.classify(inputs)
-        classification_loss = F.nll_loss(torch.log(prediction), inputs["label"])
-        results = {"prediction": prediction, "loss": classification_loss}
+        ret_f = self.rits_f(inputs, "forward")
+        ret_b = self._reverse(self.rits_b(inputs, "backward"))
+
+        ret_f["classification_loss"] = F.nll_loss(
+            torch.log(ret_f["prediction"]), inputs["label"]
+        )
+        ret_b["classification_loss"] = F.nll_loss(
+            torch.log(ret_b["prediction"]), inputs["label"]
+        )
+        consistency_loss = self._get_consistency_loss(
+            ret_f["imputed_data"], ret_b["imputed_data"]
+        )
+        classification_loss = (
+            ret_f["classification_loss"] + ret_b["classification_loss"]
+        ) / 2
+        reconstruction_loss = (
+            ret_f["reconstruction_loss"] + ret_b["reconstruction_loss"]
+        ) / 2
+
+        loss = (
+            consistency_loss
+            + reconstruction_loss * self.reconstruction_weight
+            + classification_loss * self.classification_weight
+        )
+
+        results = {
+            "consistency_loss": consistency_loss,
+            "classification_loss": classification_loss,
+            "reconstruction_loss": reconstruction_loss,
+            "loss": loss,
+        }
         return results
 
 
-class GRUD(BaseNNClassifier):
-    """GRU-D implementation of BaseClassifier.
+class BRITS(BaseNNClassifier):
+    """BRITS implementation of BaseClassifier.
 
     Attributes
     ----------
     model : object,
-        The underlying GRU-D model.
+        The underlying BRITS model.
     optimizer : object,
         The optimizer for model training.
-    data_loader : object,
-        The data loader for dataset loading.
 
     Parameters
     ----------
@@ -133,14 +132,17 @@ class GRUD(BaseNNClassifier):
         n_features: int,
         rnn_hidden_size: int,
         n_classes: int,
+        classification_weight: float = 1,
+        reconstruction_weight: float = 1,
         batch_size: int = 32,
         epochs: int = 100,
-        patience: int = 10,
+        patience: int = None,
         learning_rate: float = 1e-3,
         weight_decay: float = 1e-5,
         num_workers: int = 0,
         device: Optional[Union[str, torch.device]] = None,
-        tb_file_saving_path: str = None,
+        saving_path: str = None,
+        model_saving_strategy: Optional[str] = "best",
     ):
         super().__init__(
             n_classes,
@@ -151,17 +153,23 @@ class GRUD(BaseNNClassifier):
             weight_decay,
             num_workers,
             device,
-            tb_file_saving_path,
+            saving_path,
+            model_saving_strategy,
         )
 
         self.n_steps = n_steps
         self.n_features = n_features
         self.rnn_hidden_size = rnn_hidden_size
-        self.model = _GRUD(
+        self.classification_weight = classification_weight
+        self.reconstruction_weight = reconstruction_weight
+
+        self.model = _BRITS(
             self.n_steps,
             self.n_features,
             self.rnn_hidden_size,
             self.n_classes,
+            self.classification_weight,
+            self.reconstruction_weight,
             self.device,
         )
         self.model = self.model.to(self.device)
@@ -181,19 +189,31 @@ class GRUD(BaseNNClassifier):
             A dictionary with data assembled.
         """
         # fetch data
-        indices, X, X_filledLOCF, missing_mask, deltas, empirical_mean, label = map(
-            lambda x: x.to(self.device), data
-        )
+        (
+            indices,
+            X,
+            missing_mask,
+            deltas,
+            back_X,
+            back_missing_mask,
+            back_deltas,
+            label,
+        ) = map(lambda x: x.to(self.device), data)
 
         # assemble input data
         inputs = {
             "indices": indices,
-            "X": X,
-            "X_filledLOCF": X_filledLOCF,
-            "missing_mask": missing_mask,
-            "deltas": deltas,
-            "empirical_mean": empirical_mean,
             "label": label,
+            "forward": {
+                "X": X,
+                "missing_mask": missing_mask,
+                "deltas": deltas,
+            },
+            "backward": {
+                "X": back_X,
+                "missing_mask": back_missing_mask,
+                "deltas": back_deltas,
+            },
         }
         return inputs
 
@@ -234,19 +254,31 @@ class GRUD(BaseNNClassifier):
         inputs : dict,
             A python dictionary contains the input data for model testing.
         """
-        indices, X, X_filledLOCF, missing_mask, deltas, empirical_mean = map(
-            lambda x: x.to(self.device), data
-        )
+        # fetch data
+        (
+            indices,
+            X,
+            missing_mask,
+            deltas,
+            back_X,
+            back_missing_mask,
+            back_deltas,
+        ) = map(lambda x: x.to(self.device), data)
 
+        # assemble input data
         inputs = {
             "indices": indices,
-            "X": X,
-            "X_filledLOCF": X_filledLOCF,
-            "missing_mask": missing_mask,
-            "deltas": deltas,
-            "empirical_mean": empirical_mean,
+            "forward": {
+                "X": X,
+                "missing_mask": missing_mask,
+                "deltas": deltas,
+            },
+            "backward": {
+                "X": back_X,
+                "deltas": back_deltas,
+                "missing_mask": back_missing_mask,
+            },
         }
-
         return inputs
 
     def fit(
@@ -268,7 +300,7 @@ class GRUD(BaseNNClassifier):
             If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
             key-value pairs like a dict, and it has to include keys as 'X' and 'y'.
 
-        val_set : dict or str,
+        val_set : dict or str or None,
             The dataset for model validating, should be a dictionary including keys as 'X' and 'y',
             or a path string locating a data file.
             If it is a dict, X should be array-like of shape [n_samples, sequence length (time steps), n_features],
@@ -285,31 +317,33 @@ class GRUD(BaseNNClassifier):
         self : object,
             Trained classifier.
         """
-
-        training_set = DatasetForGRUD(train_set, file_type)
+        # Step 1: wrap the input data with classes Dataset and DataLoader
+        training_set = DatasetForBRITS(train_set, file_type=file_type)
         training_loader = DataLoader(
             training_set,
             batch_size=self.batch_size,
             shuffle=True,
             num_workers=self.num_workers,
         )
-
-        if val_set is None:
-            self._train_model(training_loader)
-        else:
-            val_set = DatasetForGRUD(val_set)
+        val_loader = None
+        if val_set is not None:
+            val_set = DatasetForBRITS(val_set, file_type=file_type)
             val_loader = DataLoader(
                 val_set,
                 batch_size=self.batch_size,
                 shuffle=False,
                 num_workers=self.num_workers,
             )
-            self._train_model(training_loader, val_loader)
 
+        # Step 2: train the model and freeze it
+        self._train_model(training_loader, val_loader)
         self.model.load_state_dict(self.best_model_dict)
         self.model.eval()  # set the model as eval status to freeze it.
 
-    def classify(self, X: Union[dict, str], file_type: str = "h5py") -> np.ndarray:
+        # Step 3: save the model if necessary
+        self._auto_save_model_if_necessary(training_finished=True)
+
+    def classify(self, X: Union[dict, str], file_type: str = "h5py"):
         """Classify the input data with the trained model.
 
         Parameters
@@ -327,7 +361,7 @@ class GRUD(BaseNNClassifier):
             Classification results of the given samples.
         """
         self.model.eval()  # set the model as eval status to freeze it.
-        test_set = DatasetForGRUD(X, file_type)
+        test_set = DatasetForBRITS(X, return_labels=False, file_type=file_type)
         test_loader = DataLoader(
             test_set,
             batch_size=self.batch_size,
@@ -339,8 +373,8 @@ class GRUD(BaseNNClassifier):
         with torch.no_grad():
             for idx, data in enumerate(test_loader):
                 inputs = self._assemble_input_for_testing(data)
-                prediction = self.model.classify(inputs)
-                prediction_collector.append(prediction)
+                classification_pred = self.model.classify(inputs)
+                prediction_collector.append(classification_pred)
 
         predictions = torch.cat(prediction_collector)
         return predictions.cpu().detach().numpy()

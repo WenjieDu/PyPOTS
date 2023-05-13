@@ -34,18 +34,21 @@ class BaseImputer(BaseModel):
         If not given, will try to use CUDA devices first, then CPUs. CUDA and CPU are so far the main devices for people
         to train ML models. Other devices like Google TPU and Apple Silicon accelerator MPS may be added in the future.
 
-    tb_file_saving_path : str, default = None,
-        The path to save the tensorboard file, which contains the loss values recorded during training.
+    saving_path : str, default = None,
+        The path to save model checkpoints and tensorboard files,
+        which contains the loss values recorded during training.
     """
 
     def __init__(
         self,
         device: Optional[Union[str, torch.device]] = None,
-        tb_file_saving_path: str = None,
+        saving_path: str = None,
+        model_saving_strategy: Optional[str] = "best",
     ):
         super().__init__(
             device,
-            tb_file_saving_path,
+            saving_path,
+            model_saving_strategy,
         )
 
     @abstractmethod
@@ -132,8 +135,10 @@ class BaseNNImputer(BaseNNModel, BaseImputer):
         If not given, will try to use CUDA devices first, then CPUs. CUDA and CPU are so far the main devices for people
         to train ML models. Other devices like Google TPU and Apple Silicon accelerator MPS may be added in the future.
 
-    tb_file_saving_path : str, default = None,
-        The path to save the tensorboard file, which contains the loss values recorded during training.
+    saving_path : str, default = None,
+        The path for automatically saving model checkpoints and tensorboard files (i.e. loss values recorded during
+        training into a tensorboard file). Will not save if not given.
+
     """
 
     def __init__(
@@ -145,7 +150,8 @@ class BaseNNImputer(BaseNNModel, BaseImputer):
         weight_decay: float,
         num_workers: int = 0,
         device: Optional[Union[str, torch.device]] = None,
-        tb_file_saving_path: str = None,
+        saving_path: str = None,
+        model_saving_strategy: Optional[str] = "best",
     ):
         super().__init__(
             batch_size,
@@ -155,7 +161,8 @@ class BaseNNImputer(BaseNNModel, BaseImputer):
             weight_decay,
             num_workers,
             device,
-            tb_file_saving_path,
+            saving_path,
+            model_saving_strategy,
         )
 
     @abstractmethod
@@ -243,7 +250,7 @@ class BaseNNImputer(BaseNNModel, BaseImputer):
 
                     # save training loss logs into the tensorboard file for every step if in need
                     if self.summary_writer is not None:
-                        self.save_log_into_tb_file(training_step, "training", results)
+                        self._save_log_into_tb_file(training_step, "training", results)
 
                 # mean training loss of the current epoch
                 mean_train_loss = np.mean(epoch_train_loss_collector)
@@ -272,7 +279,7 @@ class BaseNNImputer(BaseNNModel, BaseImputer):
                         val_loss_dict = {
                             "imputation_loss": mean_val_loss,
                         }
-                        self.save_log_into_tb_file(epoch, "validating", val_loss_dict)
+                        self._save_log_into_tb_file(epoch, "validating", val_loss_dict)
 
                     logger.info(
                         f"epoch {epoch}: "
@@ -288,6 +295,11 @@ class BaseNNImputer(BaseNNModel, BaseImputer):
                     self.best_loss = mean_loss
                     self.best_model_dict = self.model.state_dict()
                     self.patience = self.original_patience
+                    # save the model if necessary
+                    self._auto_save_model_if_necessary(
+                        training_finished=False,
+                        saving_name=f"{self.__class__.__name__}_epoch{epoch}_loss{mean_loss}",
+                    )
                 else:
                     self.patience -= 1
 

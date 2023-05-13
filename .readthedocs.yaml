@@ -21,9 +21,6 @@ build:
       pre_install:
          - python -m pip install --upgrade pip
          - pip install torch==1.13.1 -f https://download.pytorch.org/whl/cpu
-         - pip install -e ".[optional]" -f "https://data.pyg.org/whl/torch-1.13.1+cpu.html"
-         - pip install -e ".[basic,doc]"
-
-
-
-
+         - pip install torch-geometric torch-scatter torch-sparse -f "https://data.pyg.org/whl/torch-1.13.1+cpu.html"
+         - pip install pypots
+         - pip install sphinx==6.2.1 docutils==0.19 sphinxcontrib-bibtex furo

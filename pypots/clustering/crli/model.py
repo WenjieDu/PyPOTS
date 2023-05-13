@@ -1,13 +1,13 @@
 """
 Torch implementation of CRLI (Clustering Representation Learning on Incomplete time-series data).
 
-Please refer to :cite:``ma2021CRLI``.
+Please refer to :cite:`ma2021CRLI`.
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: GLP-v3
 
-from typing import Tuple, Union, Optional
+from typing import Union, Optional
 
 import numpy as np
 import torch
@@ -17,235 +17,10 @@ from sklearn.cluster import KMeans
 from torch.utils.data import DataLoader
 
 from pypots.clustering.base import BaseNNClusterer
-from pypots.data.dataset_for_grud import DatasetForGRUD
+from pypots.clustering.crli.data import DatasetForCRLI
+from pypots.clustering.crli.modules import Generator, Decoder, Discriminator
 from pypots.utils.logging import logger
 from pypots.utils.metrics import cal_mse
-
-RNN_CELL = {
-    "LSTM": nn.LSTMCell,
-    "GRU": nn.GRUCell,
-}
-
-
-def reverse_tensor(tensor_: torch.Tensor) -> torch.Tensor:
-    if tensor_.dim() <= 1:
-        return tensor_
-    indices = range(tensor_.size()[1])[::-1]
-    indices = torch.tensor(
-        indices, dtype=torch.long, device=tensor_.device, requires_grad=False
-    )
-    return tensor_.index_select(1, indices)
-
-
-class MultiRNNCell(nn.Module):
-    def __init__(
-        self,
-        cell_type: str,
-        n_layer: int,
-        d_input: int,
-        d_hidden: int,
-        device: Union[str, torch.device],
-    ):
-        super().__init__()
-        self.cell_type = cell_type
-        self.n_layer = n_layer
-        self.d_input = d_input
-        self.d_hidden = d_hidden
-        self.device = device
-
-        self.model = nn.ModuleList()
-        if cell_type in ["LSTM", "GRU"]:
-            for i in range(n_layer):
-                if i == 0:
-                    self.model.append(RNN_CELL[cell_type](d_input, d_hidden))
-                else:
-                    self.model.append(RNN_CELL[cell_type](d_hidden, d_hidden))
-
-        self.output_layer = nn.Linear(d_hidden, d_input)
-
-    def forward(self, inputs: dict) -> Tuple[torch.Tensor, torch.Tensor]:
-        X, missing_mask = inputs["X"], inputs["missing_mask"]
-        bz, n_steps, _ = X.shape
-        hidden_state = torch.zeros((bz, self.d_hidden), device=self.device)
-        hidden_state_collector = torch.empty(
-            (bz, n_steps, self.d_hidden), device=self.device
-        )
-        output_collector = torch.empty((bz, n_steps, self.d_input), device=self.device)
-        if self.cell_type == "LSTM":
-            # TODO: cell states should have different shapes
-            cell_states = torch.zeros((self.d_input, self.d_hidden), device=self.device)
-            for step in range(n_steps):
-                x = X[:, step, :]
-                estimation = self.output_layer(hidden_state)
-                output_collector[:, step] = estimation
-                imputed_x = (
-                    missing_mask[:, step] * x + (1 - missing_mask[:, step]) * estimation
-                )
-                for i in range(self.n_layer):
-                    if i == 0:
-                        hidden_state, cell_states = self.model[i](
-                            imputed_x, (hidden_state, cell_states)
-                        )
-                    else:
-                        hidden_state, cell_states = self.model[i](
-                            hidden_state, (hidden_state, cell_states)
-                        )
-                hidden_state_collector[:, step, :] = hidden_state
-
-        elif self.cell_type == "GRU":
-            for step in range(n_steps):
-                x = X[:, step, :]
-                estimation = self.output_layer(hidden_state)
-                output_collector[:, step] = estimation
-                imputed_x = (
-                    missing_mask[:, step] * x + (1 - missing_mask[:, step]) * estimation
-                )
-                for i in range(self.n_layer):
-                    if i == 0:
-                        hidden_state = self.model[i](imputed_x, hidden_state)
-                    else:
-                        hidden_state = self.model[i](hidden_state, hidden_state)
-
-                hidden_state_collector[:, step, :] = hidden_state
-
-        output_collector = output_collector[:, 1:]
-        estimation = self.output_layer(hidden_state).unsqueeze(1)
-        output_collector = torch.concat([output_collector, estimation], dim=1)
-        return output_collector, hidden_state
-
-
-class Generator(nn.Module):
-    def __init__(
-        self,
-        n_layers: int,
-        n_features: int,
-        d_hidden: int,
-        cell_type: str,
-        device: Union[str, torch.device],
-    ):
-        super().__init__()
-        self.f_rnn = MultiRNNCell(cell_type, n_layers, n_features, d_hidden, device)
-        self.b_rnn = MultiRNNCell(cell_type, n_layers, n_features, d_hidden, device)
-
-    def forward(self, inputs: dict) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
-        f_outputs, f_final_hidden_state = self.f_rnn(inputs)
-        b_outputs, b_final_hidden_state = self.b_rnn(inputs)
-        b_outputs = reverse_tensor(b_outputs)  # reverse the output of the backward rnn
-        imputation = (f_outputs + b_outputs) / 2
-        imputed_X = inputs["X"] * inputs["missing_mask"] + imputation * (
-            1 - inputs["missing_mask"]
-        )
-        fb_final_hidden_states = torch.concat(
-            [f_final_hidden_state, b_final_hidden_state], dim=-1
-        )
-        return imputation, imputed_X, fb_final_hidden_states
-
-
-class Discriminator(nn.Module):
-    def __init__(
-        self,
-        cell_type: str,
-        d_input: int,
-        device: Union[str, torch.device],
-    ):
-        super().__init__()
-        self.cell_type = cell_type
-        self.device = device
-        # this setting is the same with the official implementation
-        self.rnn_cell_module_list = nn.ModuleList(
-            [
-                RNN_CELL[cell_type](d_input, 32),
-                RNN_CELL[cell_type](32, 16),
-                RNN_CELL[cell_type](16, 8),
-                RNN_CELL[cell_type](8, 16),
-                RNN_CELL[cell_type](16, 32),
-            ]
-        )
-        self.output_layer = nn.Linear(32, d_input)
-
-    def forward(self, inputs: dict) -> torch.Tensor:
-        imputed_X = inputs["imputed_X"]
-        bz, n_steps, _ = imputed_X.shape
-        hidden_states = [
-            torch.zeros((bz, 32), device=self.device),
-            torch.zeros((bz, 16), device=self.device),
-            torch.zeros((bz, 8), device=self.device),
-            torch.zeros((bz, 16), device=self.device),
-            torch.zeros((bz, 32), device=self.device),
-        ]
-        hidden_state_collector = torch.empty((bz, n_steps, 32), device=self.device)
-        if self.cell_type == "LSTM":
-            cell_states = torch.zeros((self.d_input, self.d_hidden), device=self.device)
-            for step in range(n_steps):
-                x = imputed_X[:, step, :]
-                for i, rnn_cell in enumerate(self.rnn_cell_module_list):
-                    if i == 0:
-                        hidden_state, cell_states = rnn_cell(
-                            x, (hidden_states[i], cell_states)
-                        )
-                    else:
-                        hidden_state, cell_states = rnn_cell(
-                            hidden_states[i - 1], (hidden_states[i], cell_states)
-                        )
-                    hidden_states[i] = hidden_state
-                hidden_state_collector[:, step, :] = hidden_state
-
-        elif self.cell_type == "GRU":
-            for step in range(n_steps):
-                x = imputed_X[:, step, :]
-                for i, rnn_cell in enumerate(self.rnn_cell_module_list):
-                    if i == 0:
-                        hidden_state = rnn_cell(x, hidden_states[i])
-                    else:
-                        hidden_state = rnn_cell(hidden_states[i - 1], hidden_states[i])
-                    hidden_states[i] = hidden_state
-                hidden_state_collector[:, step, :] = hidden_state
-
-        output_collector = self.output_layer(hidden_state_collector)
-        return output_collector
-
-
-class Decoder(nn.Module):
-    def __init__(
-        self,
-        n_steps: int,
-        d_input: int,
-        d_output: int,
-        fcn_output_dims: list = None,
-        device: Union[str, torch.device] = "cpu",
-    ):
-        super().__init__()
-        self.n_steps = n_steps
-        self.d_output = d_output
-        self.device = device
-
-        if fcn_output_dims is None:
-            fcn_output_dims = [d_input]
-        self.fcn_output_dims = fcn_output_dims
-
-        self.fcn = nn.ModuleList()
-        for output_dim in fcn_output_dims:
-            self.fcn.append(nn.Linear(d_input, output_dim))
-            d_input = output_dim
-
-        self.rnn_cell = nn.GRUCell(fcn_output_dims[-1], fcn_output_dims[-1])
-        self.output_layer = nn.Linear(fcn_output_dims[-1], d_output)
-
-    def forward(self, inputs: dict) -> Tuple[torch.Tensor, torch.Tensor]:
-        generator_fb_hidden_states = inputs["generator_fb_hidden_states"]
-        bz, _ = generator_fb_hidden_states.shape
-        fcn_latent = generator_fb_hidden_states
-        for layer in self.fcn:
-            fcn_latent = layer(fcn_latent)
-        hidden_state = fcn_latent
-        hidden_state_collector = torch.empty(
-            (bz, self.n_steps, self.fcn_output_dims[-1]), device=self.device
-        )
-        for i in range(self.n_steps):
-            hidden_state = self.rnn_cell(hidden_state, hidden_state)
-            hidden_state_collector[:, i, :] = hidden_state
-        reconstruction = self.output_layer(hidden_state_collector)
-        return reconstruction, fcn_latent
 
 
 class _CRLI(nn.Module):
@@ -342,12 +117,13 @@ class CRLI(BaseNNClusterer):
         D_steps: int = 1,
         batch_size: int = 32,
         epochs: int = 100,
-        patience: int = 10,
+        patience: int = None,
         learning_rate: float = 1e-3,
         weight_decay: float = 1e-5,
         num_workers: int = 0,
         device: Optional[Union[str, torch.device]] = None,
-        tb_file_saving_path: str = None,
+        saving_path: str = None,
+        model_saving_strategy: Optional[str] = "best",
     ):
         super().__init__(
             n_clusters,
@@ -358,7 +134,8 @@ class CRLI(BaseNNClusterer):
             weight_decay,
             num_workers,
             device,
-            tb_file_saving_path,
+            saving_path,
+            model_saving_strategy,
         )
         assert G_steps > 0 and D_steps > 0, "G_steps and D_steps should both >0"
 
@@ -396,7 +173,7 @@ class CRLI(BaseNNClusterer):
         """
 
         # fetch data
-        indices, X, _, missing_mask, _, _ = map(lambda x: x.to(self.device), data)
+        indices, X, missing_mask = map(lambda x: x.to(self.device), data)
 
         inputs = {
             "X": X,
@@ -515,7 +292,7 @@ class CRLI(BaseNNClusterer):
                             "generation_loss": mean_step_train_G_loss,
                             "discrimination_loss": mean_step_train_D_loss,
                         }
-                        self.save_log_into_tb_file(
+                        self._save_log_into_tb_file(
                             training_step, "training", loss_results
                         )
                 mean_epoch_train_D_loss = np.mean(epoch_train_loss_D_collector)
@@ -531,6 +308,11 @@ class CRLI(BaseNNClusterer):
                     self.best_loss = mean_loss
                     self.best_model_dict = self.model.state_dict()
                     self.patience = self.original_patience
+                    # save the model if necessary
+                    self._auto_save_model_if_necessary(
+                        training_finished=False,
+                        saving_name=f"{self.__class__.__name__}_epoch{epoch}_loss{mean_loss}",
+                    )
                 else:
                     self.patience -= 1
                     if self.patience == 0:
@@ -577,16 +359,24 @@ class CRLI(BaseNNClusterer):
             The type of the given file if train_set is a path string.
 
         """
-        training_set = DatasetForGRUD(train_set, file_type)
+        # Step 1: wrap the input data with classes Dataset and DataLoader
+        training_set = DatasetForCRLI(
+            train_set, return_labels=False, file_type=file_type
+        )
         training_loader = DataLoader(
             training_set,
             batch_size=self.batch_size,
             shuffle=True,
             num_workers=self.num_workers,
         )
+
+        # Step 2: train the model and freeze it
         self._train_model(training_loader)
         self.model.load_state_dict(self.best_model_dict)
         self.model.eval()  # set the model as eval status to freeze it.
+
+        # Step 3: save the model if necessary
+        self._auto_save_model_if_necessary(training_finished=True)
 
     def cluster(
         self,
@@ -610,7 +400,7 @@ class CRLI(BaseNNClusterer):
             Clustering results.
         """
         self.model.eval()  # set the model as eval status to freeze it.
-        test_set = DatasetForGRUD(X, file_type)
+        test_set = DatasetForCRLI(X, return_labels=False, file_type=file_type)
         test_loader = DataLoader(
             test_set,
             batch_size=self.batch_size,

@@ -13,7 +13,11 @@ import pytest
 import os
 
 from pypots.clustering import VaDER, CRLI
-from pypots.tests.global_test_config import DATA, RESULT_SAVING_DIR
+from pypots.tests.global_test_config import (
+    DATA,
+    RESULT_SAVING_DIR,
+    check_tb_and_model_checkpoints_existence,
+)
 from pypots.utils.logging import logger
 from pypots.utils.metrics import cal_rand_index, cal_cluster_purity
 
@@ -41,7 +45,7 @@ class TestCRLI(unittest.TestCase):
         n_generator_layers=2,
         rnn_hidden_size=128,
         epochs=EPOCHS,
-        tb_file_saving_path=saving_path,
+        saving_path=saving_path,
     )
 
     @pytest.mark.xdist_group(name="clustering-crli")
@@ -77,20 +81,17 @@ class TestCRLI(unittest.TestCase):
             self.saving_path
         ), f"file {self.saving_path} does not exist"
 
-        # whether the tensorboard file exists
-        assert (
-                self.crli.tb_file_saving_path is not None
-                and len(os.listdir(self.crli.tb_file_saving_path)) > 0
-        ), "tensorboard file does not exist"
+        # check if the tensorboard file and model checkpoints exist
+        check_tb_and_model_checkpoints_existence(self.crli)
 
         # save the trained model into file, and check if the path exists
         self.crli.save_model(
             saving_dir=self.saving_path, file_name=self.model_save_name
         )
+
+        # test loading the saved model, not necessary, but need to test
         saved_model_path = os.path.join(self.saving_path, self.model_save_name)
-        assert os.path.exists(
-            saved_model_path
-        ), f"file {self.saving_path} does not exist, model not saved"
+        self.crli.load_model(saved_model_path)
 
 
 class TestVaDER(unittest.TestCase):
@@ -109,7 +110,7 @@ class TestVaDER(unittest.TestCase):
         d_mu_stddev=5,
         pretrain_epochs=20,
         epochs=EPOCHS,
-        tb_file_saving_path=saving_path,
+        saving_path=saving_path,
     )
 
     @pytest.mark.xdist_group(name="clustering-vader")
@@ -150,20 +151,17 @@ class TestVaDER(unittest.TestCase):
             self.saving_path
         ), f"file {self.saving_path} does not exist"
 
-        # whether the tensorboard file exists
-        assert (
-                self.vader.tb_file_saving_path is not None
-                and len(os.listdir(self.vader.tb_file_saving_path)) > 0
-        ), "tensorboard file does not exist"
+        # check if the tensorboard file and model checkpoints exist
+        check_tb_and_model_checkpoints_existence(self.vader)
 
         # save the trained model into file, and check if the path exists
         self.vader.save_model(
             saving_dir=self.saving_path, file_name=self.model_save_name
         )
+
+        # test loading the saved model, not necessary, but need to test
         saved_model_path = os.path.join(self.saving_path, self.model_save_name)
-        assert os.path.exists(
-            saved_model_path
-        ), f"file {self.saving_path} does not exist, model not saved"
+        self.vader.load_model(saved_model_path)
 
 
 if __name__ == "__main__":

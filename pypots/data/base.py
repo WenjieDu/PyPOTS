@@ -29,16 +29,31 @@ class BaseDataset(Dataset):
         If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
         key-value pairs like a dict, and it has to include keys as 'X' and 'y'.
 
+    return_labels : bool, default = True,
+        Whether to return labels in function __getitem__() if they exist in the given data. If `True`, for example,
+        during training of classification models, the Dataset class will return labels in __getitem__() for model input.
+        Otherwise, labels won't be included in the data returned by __getitem__(). This parameter exists because we
+        need the defined Dataset class for all training/validating/testing stages. For those big datasets stored in h5
+        files, they already have both X and y saved. But we don't read labels from the file for validating and testing
+        with function _fetch_data_from_file(), which works for all three stages. Therefore, we need this parameter for
+        distinction.
+
     file_type : str, default = "h5py"
         The type of the given file if train_set and val_set are path strings.
     """
 
-    def __init__(self, data: Union[dict, str], file_type: str = "h5py"):
+    def __init__(
+        self,
+        data: Union[dict, str],
+        return_labels: bool = True,
+        file_type: str = "h5py",
+    ):
         super().__init__()
         # types and shapes had been checked after X and y input into the model
         # So they are safe to use here. No need to check again.
 
         self.data = data
+        self.return_labels = return_labels
         if isinstance(self.data, str):  # data from file
             # check if the given file type is supported
             assert (
@@ -57,7 +72,7 @@ class BaseDataset(Dataset):
         else:  # data from array
             X = data["X"]
             y = None if "y" not in data.keys() else data["y"]
-            self.X, self.y = self.check_input(X, y)
+            self.X, self.y = self._check_input(X, y)
 
         self.sample_num = self._get_sample_num()
 
@@ -88,7 +103,7 @@ class BaseDataset(Dataset):
         return self.sample_num
 
     @staticmethod
-    def check_input(
+    def _check_input(
         X: Union[np.ndarray, torch.Tensor, list],
         y: Optional[Union[np.ndarray, torch.Tensor, list]] = None,
         out_dtype: str = "tensor",
@@ -194,7 +209,7 @@ class BaseDataset(Dataset):
             missing_mask.to(torch.float32),
         ]
 
-        if self.y is not None:
+        if self.y is not None and self.return_labels:
             sample.append(self.y[idx].to(torch.long))
 
         return sample
@@ -269,9 +284,8 @@ class BaseDataset(Dataset):
             missing_mask.to(torch.float32),
         ]
 
-        if (
-            "y" in self.file_handle.keys()
-        ):  # if the dataset has labels, then fetch it from the file
+        # if the dataset has labels and is for training, then fetch it from the file
+        if "y" in self.file_handle.keys() and self.return_labels:
             sample.append(self.file_handle["y"][idx].to(torch.long))
 
         return sample

@@ -1,12 +1,12 @@
 """
 Test cases for imputation models.
 """
-import os.path
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: GPL-v3
 
 
+import os.path
 import unittest
 
 import numpy as np
@@ -18,7 +18,11 @@ from pypots.imputation import (
     BRITS,
     LOCF,
 )
-from pypots.tests.global_test_config import DATA, RESULT_SAVING_DIR
+from pypots.tests.global_test_config import (
+    DATA,
+    RESULT_SAVING_DIR,
+    check_tb_and_model_checkpoints_existence,
+)
 from pypots.utils.logging import logger
 from pypots.utils.metrics import cal_mae
 
@@ -54,7 +58,7 @@ class TestSAITS(unittest.TestCase):
         d_v=64,
         dropout=0.1,
         epochs=EPOCH,
-        tb_file_saving_path=saving_path,
+        saving_path=saving_path,
     )
 
     @pytest.mark.xdist_group(name="imputation-saits")
@@ -93,20 +97,17 @@ class TestSAITS(unittest.TestCase):
             self.saving_path
         ), f"file {self.saving_path} does not exist"
 
-        # whether the tensorboard file exists
-        assert (
-            self.saits.tb_file_saving_path is not None
-            and len(os.listdir(self.saits.tb_file_saving_path)) > 0
-        ), "tensorboard file does not exist"
+        # check if the tensorboard file and model checkpoints exist
+        check_tb_and_model_checkpoints_existence(self.saits)
 
         # save the trained model into file, and check if the path exists
         self.saits.save_model(
             saving_dir=self.saving_path, file_name=self.model_save_name
         )
+
+        # test loading the saved model, not necessary, but need to test
         saved_model_path = os.path.join(self.saving_path, self.model_save_name)
-        assert os.path.exists(
-            saved_model_path
-        ), f"file {self.saving_path} does not exist, model not saved"
+        self.saits.load_model(saved_model_path)
 
 
 class TestTransformer(unittest.TestCase):
@@ -128,7 +129,7 @@ class TestTransformer(unittest.TestCase):
         d_v=64,
         dropout=0.1,
         epochs=EPOCH,
-        tb_file_saving_path=saving_path,
+        saving_path=saving_path,
     )
 
     @pytest.mark.xdist_group(name="imputation-transformer")
@@ -170,20 +171,17 @@ class TestTransformer(unittest.TestCase):
             self.saving_path
         ), f"file {self.saving_path} does not exist"
 
-        # whether the tensorboard file exists
-        assert (
-                self.transformer.tb_file_saving_path is not None
-                and len(os.listdir(self.transformer.tb_file_saving_path)) > 0
-        ), "tensorboard file does not exist"
+        # check if the tensorboard file and model checkpoints exist
+        check_tb_and_model_checkpoints_existence(self.transformer)
 
         # save the trained model into file, and check if the path exists
         self.transformer.save_model(
             saving_dir=self.saving_path, file_name=self.model_save_name
         )
+
+        # test loading the saved model, not necessary, but need to test
         saved_model_path = os.path.join(self.saving_path, self.model_save_name)
-        assert os.path.exists(
-            saved_model_path
-        ), f"file {self.saving_path} does not exist, model not saved"
+        self.transformer.load_model(saved_model_path)
 
 
 class TestBRITS(unittest.TestCase):
@@ -199,7 +197,7 @@ class TestBRITS(unittest.TestCase):
         DATA["n_features"],
         256,
         epochs=EPOCH,
-        tb_file_saving_path=f"{RESULT_SAVING_DIR_FOR_IMPUTATION}/BRITS",
+        saving_path=f"{RESULT_SAVING_DIR_FOR_IMPUTATION}/BRITS",
     )
 
     @pytest.mark.xdist_group(name="imputation-brits")
@@ -238,20 +236,17 @@ class TestBRITS(unittest.TestCase):
             self.saving_path
         ), f"file {self.saving_path} does not exist"
 
-        # whether the tensorboard file exists
-        assert (
-                self.brits.tb_file_saving_path is not None
-                and len(os.listdir(self.brits.tb_file_saving_path)) > 0
-        ), "tensorboard file does not exist"
+        # check if the tensorboard file and model checkpoints exist
+        check_tb_and_model_checkpoints_existence(self.brits)
 
         # save the trained model into file, and check if the path exists
         self.brits.save_model(
             saving_dir=self.saving_path, file_name=self.model_save_name
         )
+
+        # test loading the saved model, not necessary, but need to test
         saved_model_path = os.path.join(self.saving_path, self.model_save_name)
-        assert os.path.exists(
-            saved_model_path
-        ), f"file {self.saving_path} does not exist, model not saved"
+        self.brits.load_model(saved_model_path)
 
 
 class TestLOCF(unittest.TestCase):

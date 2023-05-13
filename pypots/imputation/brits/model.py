@@ -9,138 +9,18 @@ Partial implementation uses code from https://github.com/caow13/BRITS.
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: GPL-v3
 
-import math
 from typing import Tuple, Union, Optional
 
 import h5py
 import numpy as np
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
-from torch.autograd import Variable
-from torch.nn.parameter import Parameter
 from torch.utils.data import DataLoader
 
-from pypots.data.dataset_for_brits import DatasetForBRITS
 from pypots.imputation.base import BaseNNImputer
+from pypots.imputation.brits.data import DatasetForBRITS
+from pypots.imputation.brits.modules import TemporalDecay, FeatureRegression
 from pypots.utils.metrics import cal_mae
-
-
-class FeatureRegression(nn.Module):
-    """The module used to capture the correlation between features for imputation.
-
-    Attributes
-    ----------
-    W : tensor
-        The weights (parameters) of the module.
-
-    b : tensor
-        The bias of the module.
-
-    m (buffer) : tensor
-        The mask matrix, a squire matrix with diagonal entries all zeroes while left parts all ones.
-        It is applied to the weight matrix to mask out the estimation contributions from features themselves.
-        It is used to help enhance the imputation performance of the network.
-
-    Parameters
-    ----------
-    input_size : the feature dimension of the input
-    """
-
-    def __init__(self, input_size: int):
-        super().__init__()
-        self.W = Parameter(torch.Tensor(input_size, input_size))
-        self.b = Parameter(torch.Tensor(input_size))
-
-        m = torch.ones(input_size, input_size) - torch.eye(input_size, input_size)
-        self.register_buffer("m", m)
-
-        self._reset_parameters()
-
-    def _reset_parameters(self) -> None:
-        std_dev = 1.0 / math.sqrt(self.W.size(0))
-        self.W.data.uniform_(-std_dev, std_dev)
-        if self.b is not None:
-            self.b.data.uniform_(-std_dev, std_dev)
-
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        """Forward processing of the NN module.
-
-        Parameters
-        ----------
-        x : tensor,
-            the input for processing
-
-        Returns
-        -------
-        output: tensor,
-            the processed result containing imputation from feature regression
-
-        """
-        output = F.linear(x, self.W * Variable(self.m), self.b)
-        return output
-
-
-class TemporalDecay(nn.Module):
-    """The module used to generate the temporal decay factor gamma in the original paper.
-
-    Attributes
-    ----------
-    W: tensor,
-        The weights (parameters) of the module.
-    b: tensor,
-        The bias of the module.
-
-    Parameters
-    ----------
-    input_size : int,
-        the feature dimension of the input
-
-    output_size : int,
-        the feature dimension of the output
-
-    diag : bool,
-        whether to product the weight with an identity matrix before forward processing
-    """
-
-    def __init__(self, input_size: int, output_size: int, diag: bool = False):
-        super().__init__()
-        self.diag = diag
-        self.W = Parameter(torch.Tensor(output_size, input_size))
-        self.b = Parameter(torch.Tensor(output_size))
-
-        if self.diag:
-            assert input_size == output_size
-            m = torch.eye(input_size, input_size)
-            self.register_buffer("m", m)
-
-        self._reset_parameters()
-
-    def _reset_parameters(self) -> None:
-        std_dev = 1.0 / math.sqrt(self.W.size(0))
-        self.W.data.uniform_(-std_dev, std_dev)
-        if self.b is not None:
-            self.b.data.uniform_(-std_dev, std_dev)
-
-    def forward(self, delta: torch.Tensor) -> torch.Tensor:
-        """Forward processing of the NN module.
-
-        Parameters
-        ----------
-        delta : tensor, shape [batch size, sequence length, feature number]
-            The time gaps.
-
-        Returns
-        -------
-        gamma : array-like, same shape with parameter `delta`, values in (0,1]
-            The temporal decay factor.
-        """
-        if self.diag:
-            gamma = F.relu(F.linear(delta, self.W * Variable(self.m), self.b))
-        else:
-            gamma = F.relu(F.linear(delta, self.W, self.b))
-        gamma = torch.exp(-gamma)
-        return gamma
 
 
 class RITS(nn.Module):
@@ -508,6 +388,18 @@ class BRITS(BaseNNImputer):
 
     device :
         Run the model on which device.
+
+    saving_path : str, default = None,
+        The path for automatically saving model checkpoints and tensorboard files (i.e. loss values recorded during
+        training into a tensorboard file). Will not save if not given.
+
+    model_saving_strategy : str or None, None or "best" or "better" , default = "best",
+        The strategy to save model checkpoints. It has to be one of [None, "best", "better"].
+        No model will be saved when it is set as None.
+        The "best" strategy will only automatically save the best model after the training finished.
+        The "better" strategy will automatically save the model during training whenever the model performs
+        better than in previous epochs.
+
     """
 
     def __init__(
@@ -517,12 +409,13 @@ class BRITS(BaseNNImputer):
         rnn_hidden_size: int,
         batch_size: int = 32,
         epochs: int = 100,
-        patience: int = 10,
+        patience: int = None,
         learning_rate: float = 1e-3,
         weight_decay: float = 1e-5,
         num_workers: int = 0,
         device: Optional[Union[str, torch.device]] = None,
-        tb_file_saving_path: str = None,
+        saving_path: str = None,
+        model_saving_strategy: Optional[str] = "best",
     ):
         super().__init__(
             batch_size,
@@ -532,7 +425,8 @@ class BRITS(BaseNNImputer):
             weight_decay,
             num_workers,
             device,
-            tb_file_saving_path,
+            saving_path,
+            model_saving_strategy,
         )
 
         self.n_steps = n_steps
@@ -650,17 +544,16 @@ class BRITS(BaseNNImputer):
             The type of the given file if train_set and val_set are path strings.
 
         """
-        training_set = DatasetForBRITS(train_set, file_type)
+        # Step 1: wrap the input data with classes Dataset and DataLoader
+        training_set = DatasetForBRITS(train_set, file_type=file_type)
         training_loader = DataLoader(
             training_set,
             batch_size=self.batch_size,
             shuffle=True,
             num_workers=self.num_workers,
         )
-
-        if val_set is None:
-            self._train_model(training_loader)
-        else:
+        val_loader = None
+        if val_set is not None:
             if isinstance(val_set, str):
                 with h5py.File(val_set, "r") as hf:
                     # Here we read the whole validation set from the file to mask a portion for validation.
@@ -674,8 +567,7 @@ class BRITS(BaseNNImputer):
                         "X_intact": hf["X_intact"][:],
                         "indicating_mask": hf["indicating_mask"][:],
                     }
-
-            val_set = DatasetForBRITS(val_set)
+            val_set = DatasetForBRITS(val_set, file_type=file_type)
             val_loader = DataLoader(
                 val_set,
                 batch_size=self.batch_size,
@@ -683,10 +575,13 @@ class BRITS(BaseNNImputer):
                 num_workers=self.num_workers,
             )
 
-            self._train_model(training_loader, val_loader)
-
+        # Step 2: train the model and freeze it
+        self._train_model(training_loader, val_loader)
         self.model.load_state_dict(self.best_model_dict)
         self.model.eval()  # set the model as eval status to freeze it.
+
+        # Step 3: save the model if necessary
+        self._auto_save_model_if_necessary(training_finished=True)
 
     def impute(
         self,
@@ -710,7 +605,7 @@ class BRITS(BaseNNImputer):
             Imputed data.
         """
         self.model.eval()  # set the model as eval status to freeze it.
-        test_set = DatasetForBRITS(X)
+        test_set = DatasetForBRITS(X, return_labels=False, file_type=file_type)
         test_loader = DataLoader(
             test_set,
             batch_size=self.batch_size,

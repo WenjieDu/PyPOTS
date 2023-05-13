@@ -23,11 +23,13 @@ class BaseClusterer(BaseModel):
     def __init__(
         self,
         device: Optional[Union[str, torch.device]] = None,
-        tb_file_saving_path: str = None,
+        saving_path: str = None,
+        model_saving_strategy: Optional[str] = "best",
     ):
         super().__init__(
             device,
-            tb_file_saving_path,
+            saving_path,
+            model_saving_strategy,
         )
 
     @abstractmethod
@@ -70,10 +72,6 @@ class BaseClusterer(BaseModel):
         file_type : str, default = "h5py"
             The type of the given file if X is a path string.
 
-        num_workers : int, default = 0,
-            The number of subprocesses to use for data loading.
-            `0` means data loading will be in the main process, i.e. there won't be subprocesses.
-
         Returns
         -------
         array-like, shape [n_samples],
@@ -93,7 +91,8 @@ class BaseNNClusterer(BaseNNModel, BaseClusterer):
         weight_decay: float,
         num_workers: int = 0,
         device: Optional[Union[str, torch.device]] = None,
-        tb_file_saving_path: str = None,
+        saving_path: str = None,
+        model_saving_strategy: Optional[str] = "best",
     ):
         super().__init__(
             batch_size,
@@ -103,7 +102,8 @@ class BaseNNClusterer(BaseNNModel, BaseClusterer):
             weight_decay,
             num_workers,
             device,
-            tb_file_saving_path,
+            saving_path,
+            model_saving_strategy,
         )
         self.n_clusters = n_clusters
 

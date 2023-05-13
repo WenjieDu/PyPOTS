@@ -13,7 +13,7 @@ from pycorruptor import mcar
 from pypots.data.base import BaseDataset
 
 
-class DatasetForMIT(BaseDataset):
+class DatasetForSAITS(BaseDataset):
     """Dataset for models that need MIT (masked imputation task) in their training, such as SAITS.
 
     For more information about MIT, please refer to :cite:`du2023SAITS`.
@@ -28,6 +28,15 @@ class DatasetForMIT(BaseDataset):
         [n_samples], which is classification labels of X.
         If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
         key-value pairs like a dict, and it has to include keys as 'X' and 'y'.
+
+    return_labels : bool, default = True,
+        Whether to return labels in function __getitem__() if they exist in the given data. If `True`, for example,
+        during training of classification models, the Dataset class will return labels in __getitem__() for model input.
+        Otherwise, labels won't be included in the data returned by __getitem__(). This parameter exists because we
+        need the defined Dataset class for all training/validating/testing stages. For those big datasets stored in h5
+        files, they already have both X and y saved. But we don't read labels from the file for validating and testing
+        with function _fetch_data_from_file(), which works for all three stages. Therefore, we need this parameter for
+        distinction.
 
     file_type : str, default = "h5py"
         The type of the given file if train_set and val_set are path strings.
@@ -44,10 +53,11 @@ class DatasetForMIT(BaseDataset):
     def __init__(
         self,
         data: Union[dict, str],
+        return_labels: bool = True,
         file_type: str = "h5py",
         rate: float = 0.2,
     ):
-        super().__init__(data, file_type)
+        super().__init__(data, return_labels, file_type)
         self.rate = rate
 
     def _fetch_data_from_array(self, idx: int) -> Iterable:
@@ -89,7 +99,7 @@ class DatasetForMIT(BaseDataset):
             indicating_mask.to(torch.float32),
         ]
 
-        if self.y is not None:
+        if self.y is not None and self.return_labels:
             sample.append(self.y[idx].to(torch.long))
 
         return sample
@@ -123,9 +133,8 @@ class DatasetForMIT(BaseDataset):
             indicating_mask.to(torch.float32),
         ]
 
-        if (
-            "y" in self.file_handle.keys()
-        ):  # if the dataset has labels, then fetch it from the file
+        # if the dataset has labels and is for training, then fetch it from the file
+        if "y" in self.file_handle.keys() and self.return_labels:
             sample.append(torch.tensor(self.file_handle["y"][idx], dtype=torch.long))
 
         return sample
