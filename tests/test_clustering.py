@@ -6,20 +6,21 @@ Test cases for clustering models.
 # License: GLP-v3
 
 
+import os
 import unittest
 
 import numpy as np
 import pytest
-import os
 
 from pypots.clustering import VaDER, CRLI
+from pypots.optim import Adam
+from pypots.utils.logging import logger
+from pypots.utils.metrics import cal_rand_index, cal_cluster_purity
 from tests.global_test_config import (
     DATA,
     RESULT_SAVING_DIR,
     check_tb_and_model_checkpoints_existence,
 )
-from pypots.utils.logging import logger
-from pypots.utils.metrics import cal_rand_index, cal_cluster_purity
 
 EPOCHS = 5
 
@@ -37,6 +38,10 @@ class TestCRLI(unittest.TestCase):
     saving_path = os.path.join(RESULT_SAVING_DIR_FOR_CLUSTERING, "CRLI")
     model_save_name = "saved_CRLI_model.pypots"
 
+    # initialize an Adam optimizer
+    G_optimizer = Adam(lr=0.001, weight_decay=1e-5)
+    D_optimizer = Adam(lr=0.001, weight_decay=1e-5)
+
     # initialize a CRLI model
     crli = CRLI(
         n_steps=DATA["n_steps"],
@@ -46,6 +51,8 @@ class TestCRLI(unittest.TestCase):
         rnn_hidden_size=128,
         epochs=EPOCHS,
         saving_path=saving_path,
+        G_optimizer=G_optimizer,
+        D_optimizer=D_optimizer,
     )
 
     @pytest.mark.xdist_group(name="clustering-crli")
@@ -101,6 +108,9 @@ class TestVaDER(unittest.TestCase):
     saving_path = os.path.join(RESULT_SAVING_DIR_FOR_CLUSTERING, "VaDER")
     model_save_name = "saved_VaDER_model.pypots"
 
+    # initialize an Adam optimizer
+    optimizer = Adam(lr=0.001, weight_decay=1e-5)
+
     # initialize a VaDER model
     vader = VaDER(
         n_steps=DATA["n_steps"],
@@ -111,6 +121,7 @@ class TestVaDER(unittest.TestCase):
         pretrain_epochs=20,
         epochs=EPOCHS,
         saving_path=saving_path,
+        optimizer=optimizer,
     )
 
     @pytest.mark.xdist_group(name="clustering-vader")

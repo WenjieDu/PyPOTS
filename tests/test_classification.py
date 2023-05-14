@@ -11,13 +11,14 @@ import unittest
 import pytest
 
 from pypots.classification import BRITS, GRUD, Raindrop
+from pypots.optim import Adam
+from pypots.utils.logging import logger
+from pypots.utils.metrics import cal_binary_classification_metrics
 from tests.global_test_config import (
     DATA,
     RESULT_SAVING_DIR,
     check_tb_and_model_checkpoints_existence,
 )
-from pypots.utils.logging import logger
-from pypots.utils.metrics import cal_binary_classification_metrics
 
 EPOCHS = 5
 
@@ -35,6 +36,9 @@ class TestBRITS(unittest.TestCase):
     saving_path = os.path.join(RESULT_SAVING_DIR_FOR_CLASSIFICATION, "BRITS")
     model_save_name = "saved_BRITS_model.pypots"
 
+    # initialize an Adam optimizer
+    optimizer = Adam(lr=0.001, weight_decay=1e-5)
+
     # initialize a BRITS model
     brits = BRITS(
         DATA["n_steps"],
@@ -44,6 +48,7 @@ class TestBRITS(unittest.TestCase):
         epochs=EPOCHS,
         saving_path=saving_path,
         model_saving_strategy="better",
+        optimizer=optimizer,
     )
 
     @pytest.mark.xdist_group(name="classification-brits")
@@ -104,6 +109,9 @@ class TestGRUD(unittest.TestCase):
     saving_path = os.path.join(RESULT_SAVING_DIR_FOR_CLASSIFICATION, "GRUD")
     model_save_name = "saved_GRUD_model.pypots"
 
+    # initialize an Adam optimizer
+    optimizer = Adam(lr=0.001, weight_decay=1e-5)
+
     # initialize a GRUD model
     grud = GRUD(
         DATA["n_steps"],
@@ -112,6 +120,7 @@ class TestGRUD(unittest.TestCase):
         n_classes=DATA["n_classes"],
         epochs=EPOCHS,
         saving_path=saving_path,
+        optimizer=optimizer,
     )
 
     @pytest.mark.xdist_group(name="classification-grud")

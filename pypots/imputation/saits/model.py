@@ -22,6 +22,8 @@ from pypots.data.base import BaseDataset
 from pypots.imputation.base import BaseNNImputer
 from pypots.imputation.saits.data import DatasetForSAITS
 from pypots.imputation.transformer.modules import EncoderLayer, PositionalEncoding
+from pypots.optim.adam import Adam
+from pypots.optim.base import Optimizer
 from pypots.utils.metrics import cal_mae
 
 
@@ -37,6 +39,7 @@ class _SAITS(nn.Module):
         d_k: int,
         d_v: int,
         dropout: float,
+        attn_dropout: float,
         diagonal_attention_mask: bool = True,
         ORT_weight: float = 1,
         MIT_weight: float = 1,
@@ -58,7 +61,7 @@ class _SAITS(nn.Module):
                     d_k,
                     d_v,
                     dropout,
-                    0,
+                    attn_dropout,
                     diagonal_attention_mask,
                 )
                 for _ in range(n_layers)
@@ -75,7 +78,7 @@ class _SAITS(nn.Module):
                     d_k,
                     d_v,
                     dropout,
-                    0,
+                    attn_dropout,
                     diagonal_attention_mask,
                 )
                 for _ in range(n_layers)
@@ -167,30 +170,67 @@ class _SAITS(nn.Module):
 
 
 class SAITS(BaseNNImputer):
-    """
+    """The PyTorch implementation of the model
+
     Parameters
     ----------
-    n_steps
-    n_features
-    n_layers
-    d_model
-    d_inner
-    n_head
-    d_k
-    d_v
-    dropout
-    diagonal_attention_mask
-    ORT_weight
-    MIT_weight
-    batch_size
-    epochs
+    n_steps : int,
+        The number of time steps in the time-series data sample.
+
+    n_features : int,
+        The number of features in the time-series data sample.
+
+    n_layers : int,
+        The number of layers in the 1st and 2nd DMSA blocks in the SAITS model.
+
+    d_model : int,
+        The dimension of the model's backbone. It is the dimension of the
+
+    d_inner : int,
+        The dimension of the layer in the Feed-Forward Networks (FFN).
+
+    n_head : int,
+        The number of heads in the DMSA mechanism.
+        ``d_model`` must be divisible by ``n_head``, and the result should be equal to ``d_k``.
+
+    d_k : int,
+        The dimension of the `keys` (K) and the `queries` (Q) in the DMSA mechanism.
+        ``d_k`` should be the result of ``d_model`` divided by ``n_head``. Although ``d_k`` can be directly calculated
+        with given ``d_model`` and ``n_head``, we want it be explicitly given together with ``d_v`` by users to ensure
+        users be aware of them and to avoid any potential mistakes.
+
+    d_v : int,
+        The dimension of the `values` (V) in the DMSA mechanism.
+
+    dropout : float, 0<= ``dropout`` <1,
+        The dropout rate for all fully-connected layers in the model.
+
+    attn_dropout : float, 0<= ``attn_dropout`` <1,
+        The dropout rate for DMSA.
+
+    diagonal_attention_mask : bool, default = True,
+        Whether to apply a diagonal attention mask to the DMSA mechanism.
+
+    ORT_weight : float, default = 1.0,
+        The weight for the ORT loss.
+
+    MIT_weight : float, default = 1.0,
+        The weight for the MIT loss.
+
+    batch_size : int, default = 32,
+        The batch size for training and evaluating the model.
+
+    epochs : int, default = 100,
+        The number of epochs for training the model.
+
     patience : int, default = None,
+        The patience for the early-stopping mechanism. Given a positive integer, the training process will be
+        stopped when the model does not perform better after that number of epochs.
         Leaving it default as None will disable the early-stopping.
 
-    learning_rate
-    weight_decay
-    num_workers
-    device
+    optimizer : ``pypots.optim.base.Optimizer``, default = ``pypots.optim.Adam``(),
+        The optimizer for model training.
+        If not given, will use a default Adam optimizer.
 
     saving_path : str, default = None,
         The path for automatically saving model checkpoints and tensorboard files (i.e. loss values recorded during
@@ -214,26 +254,24 @@ class SAITS(BaseNNImputer):
         n_head: int,
         d_k: int,
         d_v: int,
-        dropout: int or float,
+        dropout: float = 0,
+        attn_dropout: float = 0,
         diagonal_attention_mask: bool = True,
         ORT_weight: int = 1,
         MIT_weight: int = 1,
         batch_size: int = 32,
         epochs: int = 100,
-        patience: int = None,
-        learning_rate: float = 1e-3,
-        weight_decay: float = 1e-5,
+        patience: Optional[int] = None,
+        optimizer: Optional[Optimizer] = Adam(),
         num_workers: int = 0,
         device: Optional[Union[str, torch.device]] = None,
-        saving_path: str = None,
+        saving_path: Optional[str] = None,
         model_saving_strategy: Optional[str] = "best",
     ):
         super().__init__(
             batch_size,
             epochs,
             patience,
-            learning_rate,
-            weight_decay,
             num_workers,
             device,
             saving_path,
@@ -250,10 +288,12 @@ class SAITS(BaseNNImputer):
         self.d_k = d_k
         self.d_v = d_v
         self.dropout = dropout
+        self.attn_dropout = attn_dropout
         self.diagonal_attention_mask = diagonal_attention_mask
         self.ORT_weight = ORT_weight
         self.MIT_weight = MIT_weight
 
+        # set up the model
         self.model = _SAITS(
             self.n_layers,
             self.n_steps,
@@ -264,12 +304,17 @@ class SAITS(BaseNNImputer):
             self.d_k,
             self.d_v,
             self.dropout,
+            self.attn_dropout,
             self.diagonal_attention_mask,
             self.ORT_weight,
             self.MIT_weight,
         )
         self.model = self.model.to(self.device)
         self._print_model_size()
+
+        # set up the optimizer
+        self.optimizer = optimizer
+        self.optimizer.init_optimizer(self.model.parameters())
 
     def _assemble_input_for_training(self, data: list) -> dict:
         """Assemble the given data into a dictionary for training input.
@@ -431,8 +476,9 @@ class SAITS(BaseNNImputer):
 
         Returns
         -------
-        array-like, shape [n_samples, sequence length (time steps), n_features],
-            Imputed data.
+        imputed_data : array-like, shape [n_samples, sequence length (time steps), n_features],
+            The imputed data.
+
         """
         # Step 1: wrap the input data with classes Dataset and DataLoader
         self.model.eval()  # set the model as eval status to freeze it.
@@ -454,4 +500,5 @@ class SAITS(BaseNNImputer):
 
         # Step 3: output collection and return
         imputation_collector = torch.cat(imputation_collector)
-        return imputation_collector.cpu().detach().numpy()
+        imputed_data = imputation_collector.cpu().detach().numpy()
+        return imputed_data
