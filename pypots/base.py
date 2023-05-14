@@ -254,12 +254,6 @@ class BaseNNModel(BaseModel):
         Once exceeding the number, the training will stop.
         Must be smaller than or equal to the value of `epoches`.
 
-    learning_rate : float,
-        The learning rate of the optimizer.
-
-    weight_decay : float,
-        The weight decay of the optimizer.
-
     num_workers : int, default = 0,
             The number of subprocesses to use for data loading.
             `0` means data loading will be in the main process, i.e. there won't be subprocesses.
@@ -282,10 +276,6 @@ class BaseNNModel(BaseModel):
 
     Attributes
     ---------
-    optimizer : torch.optim.Optimizer, default = None,
-        The optimizer to back propagate losses for model optimization. Default as None, will be implemented
-        when the concreate implementation model gets initialized.
-
     best_model_dict : dict, default = None,
         A dictionary contains the trained model that achieves the best performance according to the loss defined,
         i.e. the lowest loss.
@@ -300,8 +290,6 @@ class BaseNNModel(BaseModel):
         batch_size: int,
         epochs: int,
         patience: int,
-        learning_rate: float,
-        weight_decay: float,
         num_workers: int = 0,
         device: Optional[Union[str, torch.device]] = None,
         saving_path: str = None,
@@ -321,8 +309,6 @@ class BaseNNModel(BaseModel):
         self.epochs = epochs
         self.patience = patience
         self.original_patience = patience
-        self.lr = learning_rate
-        self.weight_decay = weight_decay
         self.num_workers = num_workers
 
         self.model = None
