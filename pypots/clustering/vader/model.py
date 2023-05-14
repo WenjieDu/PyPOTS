@@ -19,12 +19,14 @@ from sklearn.mixture import GaussianMixture
 from torch.utils.data import DataLoader
 
 from pypots.clustering.base import BaseNNClusterer
+from pypots.clustering.vader.data import DatasetForVaDER
 from pypots.clustering.vader.modules import (
     GMMLayer,
     PeepholeLSTMCell,
     ImplicitImputation,
 )
-from pypots.clustering.vader.data import DatasetForVaDER
+from pypots.optim.adam import Adam
+from pypots.optim.base import Optimizer
 from pypots.utils.logging import logger
 from pypots.utils.metrics import cal_mse
 
@@ -294,8 +296,7 @@ class VaDER(BaseNNClusterer):
         epochs: int = 100,
         pretrain_epochs: int = 10,
         patience: int = None,
-        learning_rate: float = 1e-3,
-        weight_decay: float = 1e-5,
+        optimizer: Optional[Optimizer] = Adam(),
         num_workers: int = 0,
         device: Optional[Union[str, torch.device]] = None,
         saving_path: str = None,
@@ -306,8 +307,6 @@ class VaDER(BaseNNClusterer):
             batch_size,
             epochs,
             patience,
-            learning_rate,
-            weight_decay,
             num_workers,
             device,
             saving_path,
@@ -316,11 +315,17 @@ class VaDER(BaseNNClusterer):
         self.n_steps = n_steps
         self.n_features = n_features
         self.pretrain_epochs = pretrain_epochs
+
+        # set up the model
         self.model = _VaDER(
             n_steps, n_features, n_clusters, rnn_hidden_size, d_mu_stddev
         )
         self.model = self.model.to(self.device)
         self._print_model_size()
+
+        # set up the optimizer
+        self.optimizer = optimizer
+        self.optimizer.init_optimizer(self.model.parameters())
 
     def _assemble_input_for_training(self, data: list) -> dict:
         """Assemble the given data into a dictionary for training input.
@@ -390,9 +395,6 @@ class VaDER(BaseNNClusterer):
         training_loader: DataLoader,
         val_loader: DataLoader = None,
     ) -> None:
-        self.optimizer = torch.optim.Adam(
-            self.model.parameters(), lr=self.lr, weight_decay=self.weight_decay
-        )
 
         # each training starts from the very beginning, so reset the loss and model dict here
         self.best_loss = float("inf")

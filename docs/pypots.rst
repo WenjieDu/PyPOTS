@@ -11,5 +11,6 @@ Subpackages
    pypots.classification
    pypots.clustering
    pypots.forecasting
+   pypots.optim
    pypots.data
    pypots.utils
