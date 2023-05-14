@@ -137,7 +137,6 @@ class LOCF(BaseImputer):
         self,
         X: Union[dict, str],
         file_type: str = "h5py",
-        num_workers: int = 0,
     ) -> np.ndarray:
         """Impute missing values in the given data with the trained model.
 
@@ -150,14 +149,10 @@ class LOCF(BaseImputer):
         file_type : str, default = "h5py",
             The type of the given file if X is a path string.
 
-        num_workers : int, default = 0,
-            The number of subprocesses to use for data loading.
-            `0` means data loading will be in the main process, i.e. there won't be subprocesses.
-
         Returns
         -------
-        array-like, shape [n_samples, sequence length (time steps), n_features],
-            Imputed data.
+        imputed_data : array-like, shape [n_samples, sequence length (time steps), n_features],
+            The imputed data.
         """
 
         assert not isinstance(X, str)
@@ -171,11 +166,12 @@ class LOCF(BaseImputer):
             X = np.asarray(X)
 
         if isinstance(X, np.ndarray):
-            X_imputed = self.locf_numpy(X)
+            imputed_data = self.locf_numpy(X)
         elif isinstance(X, torch.Tensor):
-            X_imputed = self.locf_torch(X).detach().cpu().numpy()
+            imputed_data = self.locf_torch(X).detach().cpu().numpy()
         else:
             raise TypeError(
                 "X must be type of list/np.ndarray/torch.Tensor, " f"but got {type(X)}"
             )
-        return X_imputed
+
+        return imputed_data
