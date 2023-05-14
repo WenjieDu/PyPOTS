@@ -19,6 +19,8 @@ from torch.utils.data import DataLoader
 from pypots.clustering.base import BaseNNClusterer
 from pypots.clustering.crli.data import DatasetForCRLI
 from pypots.clustering.crli.modules import Generator, Decoder, Discriminator
+from pypots.optim.adam import Adam
+from pypots.optim.base import Optimizer
 from pypots.utils.logging import logger
 from pypots.utils.metrics import cal_mse
 
@@ -118,8 +120,8 @@ class CRLI(BaseNNClusterer):
         batch_size: int = 32,
         epochs: int = 100,
         patience: int = None,
-        learning_rate: float = 1e-3,
-        weight_decay: float = 1e-5,
+        G_optimizer: Optional[Optimizer] = Adam(),
+        D_optimizer: Optional[Optimizer] = Adam(),
         num_workers: int = 0,
         device: Optional[Union[str, torch.device]] = None,
         saving_path: str = None,
@@ -130,8 +132,6 @@ class CRLI(BaseNNClusterer):
             batch_size,
             epochs,
             patience,
-            learning_rate,
-            weight_decay,
             num_workers,
             device,
             saving_path,
@@ -144,6 +144,7 @@ class CRLI(BaseNNClusterer):
         self.G_steps = G_steps
         self.D_steps = D_steps
 
+        # set up the model
         self.model = _CRLI(
             n_steps,
             n_features,
@@ -157,6 +158,17 @@ class CRLI(BaseNNClusterer):
         )
         self.model = self.model.to(self.device)
         self._print_model_size()
+
+        # set up the optimizer
+        self.G_optimizer = G_optimizer
+        self.G_optimizer.init_optimizer(
+            [
+                {"params": self.model.generator.parameters()},
+                {"params": self.model.decoder.parameters()},
+            ]
+        )
+        self.D_optimizer = D_optimizer
+        self.D_optimizer.init_optimizer(self.model.discriminator.parameters())
 
     def _assemble_input_for_training(self, data: list) -> dict:
         """Assemble the given data into a dictionary for training input.
@@ -226,20 +238,6 @@ class CRLI(BaseNNClusterer):
         training_loader: DataLoader,
         val_loader: DataLoader = None,
     ) -> None:
-        self.G_optimizer = torch.optim.Adam(
-            [
-                {"params": self.model.generator.parameters()},
-                {"params": self.model.decoder.parameters()},
-            ],
-            lr=self.lr,
-            weight_decay=self.weight_decay,
-        )
-        self.D_optimizer = torch.optim.Adam(
-            self.model.discriminator.parameters(),
-            lr=self.lr,
-            weight_decay=self.weight_decay,
-        )
-
         # each training starts from the very beginning, so reset the loss and model dict here
         self.best_loss = float("inf")
         self.best_model_dict = None

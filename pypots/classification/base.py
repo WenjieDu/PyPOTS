@@ -105,8 +105,6 @@ class BaseNNClassifier(BaseNNModel, BaseClassifier):
         batch_size: int,
         epochs: int,
         patience: int,
-        learning_rate: float,
-        weight_decay: float,
         num_workers: int = 0,
         device: Optional[Union[str, torch.device]] = None,
         saving_path: str = None,
@@ -116,8 +114,6 @@ class BaseNNClassifier(BaseNNModel, BaseClassifier):
             batch_size,
             epochs,
             patience,
-            learning_rate,
-            weight_decay,
             num_workers,
             device,
             saving_path,
@@ -186,10 +182,6 @@ class BaseNNClassifier(BaseNNModel, BaseClassifier):
         training_loader: DataLoader,
         val_loader: DataLoader = None,
     ) -> None:
-
-        self.optimizer = torch.optim.Adam(
-            self.model.parameters(), lr=self.lr, weight_decay=self.weight_decay
-        )
 
         # each training starts from the very beginning, so reset the loss and model dict here
         self.best_loss = float("inf")

@@ -29,6 +29,8 @@ from pypots.classification.raindrop.modules import (
     PositionalEncoding,
     ObservationPropagation,
 )
+from pypots.optim.adam import Adam
+from pypots.optim.base import Optimizer
 from pypots.utils.logging import logger
 
 try:
@@ -296,10 +298,9 @@ class Raindrop(BaseNNClassifier):
     Parameters
     ----------
 
-    learning_rate : float (0,1),
-        The learning rate parameter for the optimizer.
-    weight_decay : float in (0,1),
-        The weight decay parameter for the optimizer.
+    optimizer : ``pypots.optim.base.Optimizer``, default = ``pypots.optim.Adam``(),
+        The optimizer for model training.
+        If not given, will use a default Adam optimizer.
     epochs : int,
         The number of training epochs.
     patience : int,
@@ -327,8 +328,7 @@ class Raindrop(BaseNNClassifier):
         batch_size=32,
         epochs=100,
         patience: int = None,
-        learning_rate=1e-3,
-        weight_decay=1e-5,
+        optimizer: Optional[Optimizer] = Adam(),
         num_workers: int = 0,
         device: Optional[Union[str, torch.device]] = None,
         saving_path: str = None,
@@ -339,8 +339,6 @@ class Raindrop(BaseNNClassifier):
             batch_size,
             epochs,
             patience,
-            learning_rate,
-            weight_decay,
             num_workers,
             device,
             saving_path,
@@ -349,6 +347,8 @@ class Raindrop(BaseNNClassifier):
 
         self.n_features = n_features
         self.n_steps = max_len
+
+        # set up the model
         self.model = _Raindrop(
             n_layers,
             n_features,
@@ -366,6 +366,10 @@ class Raindrop(BaseNNClassifier):
         )
         self.model = self.model.to(self.device)
         self._print_model_size()
+
+        # set up the optimizer
+        self.optimizer = optimizer
+        self.optimizer.init_optimizer(self.model.parameters())
 
     def _assemble_input_for_training(self, data: dict) -> dict:
         """Assemble the input data into a dictionary.

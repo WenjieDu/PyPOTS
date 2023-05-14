@@ -17,6 +17,8 @@ from torch.utils.data import DataLoader
 from pypots.classification.base import BaseNNClassifier
 from pypots.classification.grud.data import DatasetForGRUD
 from pypots.imputation.brits.modules import TemporalDecay
+from pypots.optim.adam import Adam
+from pypots.optim.base import Optimizer
 
 
 class _GRUD(nn.Module):
@@ -113,10 +115,9 @@ class GRUD(BaseNNClassifier):
     ----------
     rnn_hidden_size : int,
         The size of the RNN hidden state.
-    learning_rate : float (0,1),
-        The learning rate parameter for the optimizer.
-    weight_decay : float in (0,1),
-        The weight decay parameter for the optimizer.
+    optimizer : ``pypots.optim.base.Optimizer``, default = ``pypots.optim.Adam``(),
+        The optimizer for model training.
+        If not given, will use a default Adam optimizer.
     epochs : int,
         The number of training epochs.
     patience : int,
@@ -136,8 +137,7 @@ class GRUD(BaseNNClassifier):
         batch_size: int = 32,
         epochs: int = 100,
         patience: int = None,
-        learning_rate: float = 1e-3,
-        weight_decay: float = 1e-5,
+        optimizer: Optional[Optimizer] = Adam(),
         num_workers: int = 0,
         device: Optional[Union[str, torch.device]] = None,
         saving_path: str = None,
@@ -148,8 +148,6 @@ class GRUD(BaseNNClassifier):
             batch_size,
             epochs,
             patience,
-            learning_rate,
-            weight_decay,
             num_workers,
             device,
             saving_path,
@@ -159,6 +157,8 @@ class GRUD(BaseNNClassifier):
         self.n_steps = n_steps
         self.n_features = n_features
         self.rnn_hidden_size = rnn_hidden_size
+
+        # set up the model
         self.model = _GRUD(
             self.n_steps,
             self.n_features,
@@ -168,6 +168,10 @@ class GRUD(BaseNNClassifier):
         )
         self.model = self.model.to(self.device)
         self._print_model_size()
+
+        # set up the optimizer
+        self.optimizer = optimizer
+        self.optimizer.init_optimizer(self.model.parameters())
 
     def _assemble_input_for_training(self, data: dict) -> dict:
         """Assemble the input data into a dictionary.

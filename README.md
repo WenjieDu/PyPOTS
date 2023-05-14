@@ -17,8 +17,8 @@
     <a href="https://github.com/WenjieDu/PyPOTS/blob/main/README.md#-community">
         <img alt="Community" src="https://img.shields.io/badge/join_us-community!-7fecad">
     </a>
-    <a href="https://github.com/sponsors/WenjieDu">
-        <img alt="GitHub Sponsors" src="https://img.shields.io/github/sponsors/wenjiedu?label=Sponsors&color=7bcfa6&logo=githubsponsors">
+    <a href="https://github.com/WenjieDu/PyPOTS/graphs/contributors">
+        <img alt="GitHub contributors" src="https://img.shields.io/github/contributors/wenjiedu/pypots?color=7bcfa6&label=Contributors&logo=GitHub">
     </a>
     <a href="https://github.com/WenjieDu/PyPOTS/stargazers">
         <img alt="GitHub Repo stars" src="https://img.shields.io/github/stars/wenjiedu/pypots?logo=Github&color=7bcfa6&label=Stars">
@@ -32,8 +32,8 @@
     <a href="https://coveralls.io/github/WenjieDu/PyPOTS">
         <img alt="Coveralls coverage" src="https://img.shields.io/coverallsCoverage/github/WenjieDu/PyPOTS?branch=main&logo=coveralls&color=00e09e&label=Coverage">
     </a>
-    <a href="https://github.com/WenjieDu/PyPOTS/actions/workflows/testing.yml">
-        <img alt="GitHub Testing" src="https://img.shields.io/github/actions/workflow/status/wenjiedu/pypots/testing.yml?logo=github&color=48c0a3&label=CI">
+    <a href="https://github.com/WenjieDu/PyPOTS/actions/workflows/testing_ci.yml">
+        <img alt="GitHub Testing" src="https://img.shields.io/github/actions/workflow/status/wenjiedu/pypots/testing_ci.yml?logo=github&color=48c0a3&label=CI">
     </a>
     <a href="https://doi.org/10.5281/zenodo.6823221">
         <img alt="Zenodo DOI" src="https://img.shields.io/badge/DOI-10.5281/zenodo.6823221-21a675">
@@ -99,12 +99,12 @@ Alternatively, you can install from the latest source code with the latest featu
 
 
 ## ❖ Usage
-<a href="https://github.com/WenjieDu/BrewedPOTS">
-    <img src="https://raw.githubusercontent.com/WenjieDu/BrewedPOTS/main/figs/BrewedPOTS_logo.jpg" align="left" width="160" alt="BrewedPOTS logo"/>
+<a href="https://github.com/WenjieDu/BrewPOTS">
+    <img src="https://raw.githubusercontent.com/WenjieDu/BrewPOTS/main/figs/BrewPOTS_logo.jpg" align="left" width="160" alt="BrewPOTS logo"/>
 </a>
 
 PyPOTS tutorials have been released. Considering the future workload, I separate the tutorials into a single repo,
-and you can find them in [BrewedPOTS](https://github.com/WenjieDu/BrewedPOTS).
+and you can find them in [BrewPOTS](https://github.com/WenjieDu/BrewPOTS).
 Take a look at it now, and brew your POTS dataset into a cup of coffee! 🤓
 
 If you have further questions, please refer to PyPOTS documentation 📑[docs.pypots.com](https://docs.pypots.com).
@@ -224,7 +224,7 @@ Your star is your recognition to PyPOTS, and it matters!
 ## ❖ Community
 We care about the feedback from our users, so we're building PyPOTS community on
 
-- [Slack](https://pypots-dev.slack.com). General discussion, Q&A, and our development team are here;
+- [Slack](https://pypots-org.slack.com). General discussion, Q&A, and our development team are here;
 - [LinkedIn](https://www.linkedin.com/company/pypots). Official announcements and news are here;
 - [WeChat (微信公众号)](https://mp.weixin.qq.com/s/m6j83SJNgz-xySSZd-DTBw). We also run a group chat on WeChat,
   and you can get the QR code from the official account after following it;

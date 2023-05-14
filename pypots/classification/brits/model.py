@@ -18,6 +18,8 @@ from pypots.classification.brits.modules import RITS
 from pypots.imputation.brits.model import (
     _BRITS as imputation_BRITS,
 )
+from pypots.optim.adam import Adam
+from pypots.optim.base import Optimizer
 
 
 class _BRITS(imputation_BRITS, nn.Module):
@@ -112,10 +114,9 @@ class BRITS(BaseNNClassifier):
     ----------
     rnn_hidden_size : int,
         The size of the RNN hidden state.
-    learning_rate : float (0,1),
-        The learning rate parameter for the optimizer.
-    weight_decay : float in (0,1),
-        The weight decay parameter for the optimizer.
+    optimizer : ``pypots.optim.base.Optimizer``, default = ``pypots.optim.Adam``(),
+        The optimizer for model training.
+        If not given, will use a default Adam optimizer.
     epochs : int,
         The number of training epochs.
     patience : int,
@@ -137,8 +138,7 @@ class BRITS(BaseNNClassifier):
         batch_size: int = 32,
         epochs: int = 100,
         patience: int = None,
-        learning_rate: float = 1e-3,
-        weight_decay: float = 1e-5,
+        optimizer: Optional[Optimizer] = Adam(),
         num_workers: int = 0,
         device: Optional[Union[str, torch.device]] = None,
         saving_path: str = None,
@@ -149,8 +149,6 @@ class BRITS(BaseNNClassifier):
             batch_size,
             epochs,
             patience,
-            learning_rate,
-            weight_decay,
             num_workers,
             device,
             saving_path,
@@ -163,6 +161,7 @@ class BRITS(BaseNNClassifier):
         self.classification_weight = classification_weight
         self.reconstruction_weight = reconstruction_weight
 
+        # set up the model
         self.model = _BRITS(
             self.n_steps,
             self.n_features,
@@ -174,6 +173,10 @@ class BRITS(BaseNNClassifier):
         )
         self.model = self.model.to(self.device)
         self._print_model_size()
+
+        # set up the optimizer
+        self.optimizer = optimizer
+        self.optimizer.init_optimizer(self.model.parameters())
 
     def _assemble_input_for_training(self, data: dict) -> dict:
         """Assemble the input data into a dictionary.

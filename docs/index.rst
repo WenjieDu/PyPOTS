@@ -28,11 +28,11 @@ Welcome to PyPOTS docs!
 
 .. image:: https://img.shields.io/badge/join_us-community!-7fecad
    :alt: Community
-   :target: #id14
+   :target: #id16
 
-.. image:: https://img.shields.io/github/sponsors/wenjiedu?label=Sponsors&color=7bcfa6&logo=githubsponsors
-   :alt: GitHub Sponsors
-   :target: https://github.com/sponsors/WenjieDu
+.. image:: https://img.shields.io/github/contributors/wenjiedu/pypots?color=7bcfa6&label=Contributors&logo=GitHub
+   :alt: GitHub Contributors
+   :target: https://github.com/WenjieDu/PyPOTS/graphs/contributors
 
 .. image:: https://img.shields.io/github/stars/wenjiedu/pypots?logo=Github&color=7bcfa6&label=Stars
    :alt: GitHub Repo stars
@@ -50,9 +50,9 @@ Welcome to PyPOTS docs!
    :alt: Coveralls coverage
    :target: https://coveralls.io/github/WenjieDu/PyPOTS
 
-.. image:: https://img.shields.io/github/actions/workflow/status/wenjiedu/pypots/testing.yml?logo=github&color=48c0a3&label=CI
+.. image:: https://img.shields.io/github/actions/workflow/status/wenjiedu/pypots/testing_ci.yml?logo=github&color=48c0a3&label=CI
    :alt: GitHub Testing
-   :target: https://github.com/WenjieDu/PyPOTS/actions/workflows/testing.yml
+   :target: https://github.com/WenjieDu/PyPOTS/actions/workflows/testing_ci.yml
 
 .. image:: https://img.shields.io/badge/DOI-10.5281/zenodo.6823221-21a675
    :alt: Zenodo DOI
@@ -99,19 +99,19 @@ The rest of this readme file is organized as follows:
 ^^^^^^^^^^^^^^^
 PyPOTS is available on both `PyPI <https://pypi.python.org/pypi/pypots>`_ and `Anaconda <https://anaconda.org/conda-forge/pypots>`_ ❗️
 
-Refer to the page `Installation <install.html>`_ to see how to install PyPOTS.
+Refer to the page `Installation <install.html>`_ to see different ways of installing PyPOTS.
 
 
 ❖ Usage
 ^^^^^^^^
-.. image:: https://raw.githubusercontent.com/WenjieDu/BrewedPOTS/main/figs/BrewedPOTS_logo.jpg
+.. image:: https://raw.githubusercontent.com/WenjieDu/BrewPOTS/main/figs/BrewPOTS_logo.jpg
    :width: 160
-   :alt: BrewedPOTS logo
+   :alt: BrewPOTS logo
    :align: left
-   :target: https://github.com/WenjieDu/BrewedPOTS
+   :target: https://github.com/WenjieDu/BrewPOTS
 
 PyPOTS tutorials have been released. Considering the future workload, I separate the tutorials into a single repo,
-and you can find them in `BrewedPOTS <https://github.com/WenjieDu/BrewedPOTS>`_.
+and you can find them in `BrewPOTS <https://github.com/WenjieDu/BrewPOTS>`_.
 Take a look at it now, and brew your POTS dataset into a cup of coffee! 🤓
 
 If you have further questions, please refer to PyPOTS documentation 📑 `docs.pypots.com <https://docs.pypots.com>`_.
@@ -193,7 +193,7 @@ The lists of PyPOTS stargazers and forkers are shown below, and we're so proud t
 ^^^^^^^^^^^^
 We care about the feedback from our users, so we're building PyPOTS community on
 
-- `Slack <https://pypots-dev.slack.com>`_. General discussion, Q&A, and our development team are here;
+- `Slack <https://pypots-org.slack.com>`_. General discussion, Q&A, and our development team are here;
 - `LinkedIn <https://www.linkedin.com/company/pypots>`_. Official announcements and news are here;
 - `WeChat (微信公众号) <https://mp.weixin.qq.com/s/m6j83SJNgz-xySSZd-DTBw>`_. We also run a group chat on WeChat,
   and you can get the QR code from the official account after following it;
@@ -221,10 +221,11 @@ Thank you all for your attention! 😃
    examples
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 4
    :hidden:
    :caption: Code Documentation
 
+   model_api
    pypots
 
 .. toctree::

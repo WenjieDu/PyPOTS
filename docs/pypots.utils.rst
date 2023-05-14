@@ -36,12 +36,3 @@ pypots.utils.random module
    :undoc-members:
    :show-inheritance:
    :inherited-members:
-
-Module contents
----------------
-
-.. automodule:: pypots.utils
-   :members:
-   :undoc-members:
-   :show-inheritance:
-   :inherited-members:
