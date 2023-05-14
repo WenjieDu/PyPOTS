@@ -255,8 +255,8 @@ class BaseNNModel(BaseModel):
         Must be smaller than or equal to the value of `epoches`.
 
     num_workers : int, default = 0,
-            The number of subprocesses to use for data loading.
-            `0` means data loading will be in the main process, i.e. there won't be subprocesses.
+        The number of subprocesses to use for data loading.
+        `0` means data loading will be in the main process, i.e. there won't be subprocesses.
 
     device : str or `torch.device`, default = None,
         The device for the model to run on.

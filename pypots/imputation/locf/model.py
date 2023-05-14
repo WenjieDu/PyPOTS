@@ -16,11 +16,13 @@ from pypots.imputation.base import BaseImputer
 
 class LOCF(BaseImputer):
     """LOCF (Last Observed Carried Forward) imputation method.
+    A naive imputation method that fills missing values with the last observed value.
+    Simple but commonly used in practice.
 
     Parameters
     ----------
-    nan : int/float
-        Value used to impute data missing at the beginning of the sequence.
+    nan : float, default=0,
+        The value used to impute data missing at the beginning of the sequence.
     """
 
     def __init__(self, nan: Optional[Union[float, int]] = 0):
@@ -79,6 +81,7 @@ class LOCF(BaseImputer):
         -----
         This implementation gets inspired by the question on StackOverflow:
         https://stackoverflow.com/questions/41190852/most-efficient-way-to-forward-fill-nan-values-in-numpy-array
+
         """
         trans_X = X.transpose((0, 2, 1))
         mask = np.isnan(trans_X)
