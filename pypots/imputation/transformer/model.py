@@ -21,6 +21,8 @@ from pypots.data.base import BaseDataset
 from pypots.imputation.base import BaseNNImputer
 from pypots.imputation.transformer.data import DatasetForSAITS
 from pypots.imputation.transformer.modules import EncoderLayer, PositionalEncoding
+from pypots.optim.adam import Adam
+from pypots.optim.base import Optimizer
 from pypots.utils.metrics import cal_mae
 
 
@@ -125,8 +127,7 @@ class Transformer(BaseNNImputer):
         batch_size: int = 32,
         epochs: int = 100,
         patience: int = None,
-        learning_rate: float = 1e-3,
-        weight_decay: float = 1e-5,
+        optimizer: Optional[Optimizer] = Adam(),
         num_workers: int = 0,
         device: Optional[Union[str, torch.device]] = None,
         saving_path: str = None,
@@ -136,8 +137,6 @@ class Transformer(BaseNNImputer):
             batch_size,
             epochs,
             patience,
-            learning_rate,
-            weight_decay,
             num_workers,
             device,
             saving_path,
@@ -157,6 +156,7 @@ class Transformer(BaseNNImputer):
         self.ORT_weight = ORT_weight
         self.MIT_weight = MIT_weight
 
+        # set up the model
         self.model = _TransformerEncoder(
             self.n_layers,
             self.n_steps,
@@ -172,6 +172,10 @@ class Transformer(BaseNNImputer):
         )
         self.model = self.model.to(self.device)
         self._print_model_size()
+
+        # set up the optimizer
+        self.optimizer = optimizer
+        self.optimizer.init_optimizer(self.model.parameters())
 
     def _assemble_input_for_training(self, data: dict) -> dict:
         """Assemble the given data into a dictionary for training input.
