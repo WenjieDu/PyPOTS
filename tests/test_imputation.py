@@ -18,13 +18,14 @@ from pypots.imputation import (
     BRITS,
     LOCF,
 )
+from pypots.optim import Adam
+from pypots.utils.logging import logger
+from pypots.utils.metrics import cal_mae
 from tests.global_test_config import (
     DATA,
     RESULT_SAVING_DIR,
     check_tb_and_model_checkpoints_existence,
 )
-from pypots.utils.logging import logger
-from pypots.utils.metrics import cal_mae
 
 EPOCH = 5
 
@@ -46,6 +47,9 @@ class TestSAITS(unittest.TestCase):
     saving_path = os.path.join(RESULT_SAVING_DIR_FOR_IMPUTATION, "SAITS")
     model_save_name = "saved_saits_model.pypots"
 
+    # initialize an Adam optimizer
+    optimizer = Adam(lr=0.001, weight_decay=1e-5)
+
     # initialize a SAITS model
     saits = SAITS(
         DATA["n_steps"],
@@ -59,6 +63,7 @@ class TestSAITS(unittest.TestCase):
         dropout=0.1,
         epochs=EPOCH,
         saving_path=saving_path,
+        optimizer=optimizer,
     )
 
     @pytest.mark.xdist_group(name="imputation-saits")
@@ -117,6 +122,9 @@ class TestTransformer(unittest.TestCase):
     saving_path = os.path.join(RESULT_SAVING_DIR_FOR_IMPUTATION, "Transformer")
     model_save_name = "saved_transformer_model.pypots"
 
+    # initialize an Adam optimizer
+    optimizer = Adam(lr=0.001, weight_decay=1e-5)
+
     # initialize a Transformer model
     transformer = Transformer(
         DATA["n_steps"],
@@ -130,6 +138,7 @@ class TestTransformer(unittest.TestCase):
         dropout=0.1,
         epochs=EPOCH,
         saving_path=saving_path,
+        optimizer=optimizer,
     )
 
     @pytest.mark.xdist_group(name="imputation-transformer")
@@ -191,6 +200,9 @@ class TestBRITS(unittest.TestCase):
     saving_path = os.path.join(RESULT_SAVING_DIR_FOR_IMPUTATION, "BRITS")
     model_save_name = "saved_BRITS_model.pypots"
 
+    # initialize an Adam optimizer
+    optimizer = Adam(lr=0.001, weight_decay=1e-5)
+
     # initialize a BRITS model
     brits = BRITS(
         DATA["n_steps"],
@@ -198,6 +210,7 @@ class TestBRITS(unittest.TestCase):
         256,
         epochs=EPOCH,
         saving_path=f"{RESULT_SAVING_DIR_FOR_IMPUTATION}/BRITS",
+        optimizer=optimizer,
     )
 
     @pytest.mark.xdist_group(name="imputation-brits")

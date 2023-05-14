@@ -87,8 +87,6 @@ class BaseNNClusterer(BaseNNModel, BaseClusterer):
         batch_size: int,
         epochs: int,
         patience: int,
-        learning_rate: float,
-        weight_decay: float,
         num_workers: int = 0,
         device: Optional[Union[str, torch.device]] = None,
         saving_path: str = None,
@@ -98,8 +96,6 @@ class BaseNNClusterer(BaseNNModel, BaseClusterer):
             batch_size,
             epochs,
             patience,
-            learning_rate,
-            weight_decay,
             num_workers,
             device,
             saving_path,
@@ -183,11 +179,6 @@ class BaseNNClusterer(BaseNNModel, BaseClusterer):
         discriminator separately. So far, I'd suggest to implement function _train_model() for each model individually.
 
         """
-
-        self.optimizer = torch.optim.Adam(
-            self.model.parameters(), lr=self.lr, weight_decay=self.weight_decay
-        )
-
         # each training starts from the very beginning, so reset the loss and model dict here
         self.best_loss = float("inf")
         self.best_model_dict = None
