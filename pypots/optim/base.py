@@ -4,9 +4,9 @@ The base wrapper for PyTorch optimizers, also is the base class for all optimize
 The optimizers in pypots.optim are all wrappers for PyTorch optimizers.
 pypots.optim.optimizers inherent all functionalities from torch.optim.optimizers (so you can see many docstrings
 are copied from torch), but are more powerful. So far, they are designed to
-1. separate the hyperparameters of models and optimizers in PyPOTS, so that users don't have to put all hyperparameters
-    in one place, which could result in a mess and be not readable.
-2. provide additional functionalities, such as learning rate scheduling, etc.
+1). separate the hyperparameters of models and optimizers in PyPOTS, so that users don't have to put all hyperparameters
+in one place, which could result in a mess and be not readable.
+2). provide additional functionalities, such as learning rate scheduling, etc.
 
 """
 # Created by Wenjie Du <wenjay.du@gmail.com>
@@ -57,7 +57,7 @@ class Optimizer(ABC):
         """
         self.torch_optimizer.add_param_group(param_group)
 
-    def load_state_dict(self, state_dict):
+    def load_state_dict(self, state_dict) -> None:
         """Loads the optimizer state.
 
         Parameters
