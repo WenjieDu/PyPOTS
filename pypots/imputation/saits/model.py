@@ -35,7 +35,7 @@ class _SAITS(nn.Module):
         d_feature: int,
         d_model: int,
         d_inner: int,
-        n_head: int,
+        n_heads: int,
         d_k: int,
         d_v: int,
         dropout: float,
@@ -57,7 +57,7 @@ class _SAITS(nn.Module):
                     actual_d_feature,
                     d_model,
                     d_inner,
-                    n_head,
+                    n_heads,
                     d_k,
                     d_v,
                     dropout,
@@ -74,7 +74,7 @@ class _SAITS(nn.Module):
                     actual_d_feature,
                     d_model,
                     d_inner,
-                    n_head,
+                    n_heads,
                     d_k,
                     d_v,
                     dropout,
@@ -117,6 +117,7 @@ class _SAITS(nn.Module):
         enc_output = self.position_enc(
             input_X_for_second
         )  # namely term alpha in math algo
+        attn_weights = None
         for encoder_layer in self.layer_stack_for_second_block:
             enc_output, attn_weights = encoder_layer(enc_output)
 
@@ -170,7 +171,7 @@ class _SAITS(nn.Module):
 
 
 class SAITS(BaseNNImputer):
-    """The PyTorch implementation of the model
+    """The PyTorch implementation of the SAITS model :cite:`du2023SAITS`.
 
     Parameters
     ----------
@@ -184,19 +185,20 @@ class SAITS(BaseNNImputer):
         The number of layers in the 1st and 2nd DMSA blocks in the SAITS model.
 
     d_model : int,
-        The dimension of the model's backbone. It is the dimension of the
+        The dimension of the model's backbone.
+        It is the input dimension of the multi-head DMSA layers.
 
     d_inner : int,
         The dimension of the layer in the Feed-Forward Networks (FFN).
 
-    n_head : int,
-        The number of heads in the DMSA mechanism.
-        ``d_model`` must be divisible by ``n_head``, and the result should be equal to ``d_k``.
+    n_heads : int,
+        The number of heads in the multi-head DMSA mechanism.
+        ``d_model`` must be divisible by ``n_heads``, and the result should be equal to ``d_k``.
 
     d_k : int,
         The dimension of the `keys` (K) and the `queries` (Q) in the DMSA mechanism.
-        ``d_k`` should be the result of ``d_model`` divided by ``n_head``. Although ``d_k`` can be directly calculated
-        with given ``d_model`` and ``n_head``, we want it be explicitly given together with ``d_v`` by users to ensure
+        ``d_k`` should be the result of ``d_model`` divided by ``n_heads``. Although ``d_k`` can be directly calculated
+        with given ``d_model`` and ``n_heads``, we want it be explicitly given together with ``d_v`` by users to ensure
         users be aware of them and to avoid any potential mistakes.
 
     d_v : int,
@@ -209,7 +211,8 @@ class SAITS(BaseNNImputer):
         The dropout rate for DMSA.
 
     diagonal_attention_mask : bool, default = True,
-        Whether to apply a diagonal attention mask to the DMSA mechanism.
+        Whether to apply a diagonal attention mask to the self-attention mechanism.
+        If so, the attention layers will use DMSA. Otherwise, the attention layers will use the original.
 
     ORT_weight : float, default = 1.0,
         The weight for the ORT loss.
@@ -228,9 +231,19 @@ class SAITS(BaseNNImputer):
         stopped when the model does not perform better after that number of epochs.
         Leaving it default as None will disable the early-stopping.
 
-    optimizer : ``pypots.optim.base.Optimizer``, default = ``pypots.optim.Adam``(),
+    optimizer : ``pypots.optim.base.Optimizer``, default = ``pypots.optim.Adam()``,
         The optimizer for model training.
         If not given, will use a default Adam optimizer.
+
+    num_workers : int, default = 0,
+        The number of subprocesses to use for data loading.
+        `0` means data loading will be in the main process, i.e. there won't be subprocesses.
+
+    device : str or `torch.device`, default = None,
+        The device for the model to run on.
+        If not given, will try to use CUDA devices first (will use the GPU with device number 0 only by default),
+        then CPUs, considering CUDA and CPU are so far the main devices for people to train ML models.
+        Other devices like Google TPU and Apple Silicon accelerator MPS may be added in the future.
 
     saving_path : str, default = None,
         The path for automatically saving model checkpoints and tensorboard files (i.e. loss values recorded during
@@ -242,6 +255,15 @@ class SAITS(BaseNNImputer):
         The "best" strategy will only automatically save the best model after the training finished.
         The "better" strategy will automatically save the model during training whenever the model performs
         better than in previous epochs.
+
+    Attributes
+    ----------
+    model : object,
+        The underlying SAITS model.
+
+    optimizer : object,
+        The optimizer for model training.
+
     """
 
     def __init__(
@@ -251,7 +273,7 @@ class SAITS(BaseNNImputer):
         n_layers: int,
         d_model: int,
         d_inner: int,
-        n_head: int,
+        n_heads: int,
         d_k: int,
         d_v: int,
         dropout: float = 0,
@@ -284,7 +306,7 @@ class SAITS(BaseNNImputer):
         self.n_layers = n_layers
         self.d_model = d_model
         self.d_inner = d_inner
-        self.n_head = n_head
+        self.n_heads = n_heads
         self.d_k = d_k
         self.d_v = d_v
         self.dropout = dropout
@@ -300,7 +322,7 @@ class SAITS(BaseNNImputer):
             self.n_features,
             self.d_model,
             self.d_inner,
-            self.n_head,
+            self.n_heads,
             self.d_k,
             self.d_v,
             self.dropout,
@@ -310,7 +332,7 @@ class SAITS(BaseNNImputer):
             self.MIT_weight,
         )
         self.model = self.model.to(self.device)
-        self._print_model_size()
+        self.print_model_size()
 
         # set up the optimizer
         self.optimizer = optimizer

@@ -49,8 +49,29 @@ extensions = [
     "sphinxcontrib.gtagjs",
 ]
 
+# configs for sphinx.ext.autodoc
+# set the order of the members in the documentation
+autodoc_member_order = "bysource"
+
+# configs for sphinx.ext.intersphinx
+intersphinx_mapping = {
+    "python": ("https://docs.python.org/3", None),
+    "sphinx": ("https://www.sphinx-doc.org/en/master", None),
+}
+
+# configs for sphinx.ext.imgmath
+imgmath_font_size = 16  # set the font size for math equations as 18, the original is 12
+imgmath_image_format = "svg"  # using SVG because svg is much clearer than png
+# # imgmath_dvipng_args = ["-gamma", "2", "-D", "20000", "-bg", "#F5F5F5"]  # configurations for png format
+
+# configs for sphinxcontrib-bibtex
 bibtex_bibfiles = ["references.bib"]
 bibtex_default_style = "unsrt"
+
+# configs for sphinxcontrib-gtagjs
+gtagjs_ids = [
+    "G-HT18SK09XE",  # PyPOTS docs site
+]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
@@ -65,9 +86,7 @@ pygments_style = "sphinx"
 
 # -- Options for HTML output -------------------------------------------------
 
-# The theme to use for HTML and HTML Help pages.  See the documentation for
-# a list of builtin themes.
-#
+# The theme to use for HTML and HTML Help pages.  See the documentation for a list of builtin themes.
 html_theme = "furo"
 
 # Add any paths that contain custom static files (such as style sheets) here,
@@ -90,15 +109,6 @@ html_sidebars = {
         "sidebar/scroll-end.html",
     ]
 }
-
-intersphinx_mapping = {
-    "python": ("https://docs.python.org/3", None),
-    "sphinx": ("https://www.sphinx-doc.org/en/master", None),
-}
-
-gtagjs_ids = [
-    "G-HT18SK09XE",  # PyPOTS docs site
-]
 
 
 # the code below is for fixing the display of `Attributes` heading,

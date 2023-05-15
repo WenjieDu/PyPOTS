@@ -13,70 +13,223 @@ from sklearn import metrics
 
 
 def cal_mae(
-    inputs: Union[np.ndarray, torch.Tensor, list],
-    target: Union[np.ndarray, torch.Tensor, list],
-    mask: Optional[Union[np.ndarray, torch.Tensor, list]] = None,
+    predictions: Union[np.ndarray, torch.Tensor, list],
+    targets: Union[np.ndarray, torch.Tensor, list],
+    masks: Optional[Union[np.ndarray, torch.Tensor, list]] = None,
 ) -> Union[float, torch.Tensor]:
-    """calculate Mean Absolute Error"""
-    assert type(inputs) == type(target), (
+    """Calculate the Mean Absolute Error between ``predictions`` and ``targets``.
+    ``masks`` can be used for filtering. For values==0 in ``masks``,
+    values at their corresponding positions in ``predictions`` will be ignored.
+
+    Parameters
+    ----------
+    predictions : Union[np.ndarray, torch.Tensor, list],
+        The prediction data to be evaluated.
+
+    targets : Union[np.ndarray, torch.Tensor, list],
+        The target data for helping evaluate the predictions.
+
+    masks : Optional[Union[np.ndarray, torch.Tensor, list]], optional, default = None,
+        The masks for filtering the specific values in inputs and target from evaluation.
+        When given, only values at corresponding positions where values ==1 in ``masks`` will be used for evaluation.
+
+    Examples
+    --------
+
+    >>> import numpy as np
+    >>> from pypots.utils.metrics import cal_mae
+    >>> targets = np.array([1, 2, 3, 4, 5])
+    >>> predictions = np.array([1, 2, 1, 4, 6])
+    >>> mae = cal_mae(predictions, targets)
+
+    mae = 0.6 here, the error is from the 3rd and 5th elements and is :math:`|3-1|+|5-6|=3`, so the result is 3/5=0.6.
+
+    If we want to prevent some values from MAE calculation, e.g. the first three elements here,
+    we can use ``masks`` to filter out them:
+
+    >>> masks = np.array([0, 0, 0, 1, 1])
+    >>> mae = cal_mae(predictions, targets, masks)
+
+    mae = 0.5 here, the first three elements are ignored, the error is from the 5th element and is :math:`|5-6|=1`,
+    so the result is 1/2=0.5.
+
+    """
+    assert type(predictions) == type(targets), (
         f"types of inputs and target must match, but got"
-        f"type(inputs)={type(inputs)}, type(target)={type(target)}"
+        f"type(inputs)={type(predictions)}, type(target)={type(targets)}"
     )
-    lib = np if isinstance(inputs, np.ndarray) else torch
-    if mask is not None:
-        return lib.sum(lib.abs(inputs - target) * mask) / (lib.sum(mask) + 1e-9)
+    lib = np if isinstance(predictions, np.ndarray) else torch
+    if masks is not None:
+        return lib.sum(lib.abs(predictions - targets) * masks) / (
+            lib.sum(masks) + 1e-12
+        )
     else:
-        return lib.mean(lib.abs(inputs - target))
+        return lib.mean(lib.abs(predictions - targets))
 
 
 def cal_mse(
-    inputs: Union[np.ndarray, torch.Tensor, list],
-    target: Union[np.ndarray, torch.Tensor, list],
-    mask: Optional[Union[np.ndarray, torch.Tensor, list]] = None,
+    predictions: Union[np.ndarray, torch.Tensor, list],
+    targets: Union[np.ndarray, torch.Tensor, list],
+    masks: Optional[Union[np.ndarray, torch.Tensor, list]] = None,
 ) -> Union[float, torch.Tensor]:
-    """calculate Mean Square Error"""
-    assert type(inputs) == type(target), (
+    """Calculate the Mean Square Error between ``predictions`` and ``targets``.
+    ``masks`` can be used for filtering. For values==0 in ``masks``,
+    values at their corresponding positions in ``predictions`` will be ignored.
+
+    Parameters
+    ----------
+    predictions : Union[np.ndarray, torch.Tensor, list],
+        The prediction data to be evaluated.
+
+    targets : Union[np.ndarray, torch.Tensor, list],
+        The target data for helping evaluate the predictions.
+
+    masks : Optional[Union[np.ndarray, torch.Tensor, list]], optional, default = None,
+        The masks for filtering the specific values in inputs and target from evaluation.
+        When given, only values at corresponding positions where values ==1 in ``masks`` will be used for evaluation.
+
+    Examples
+    --------
+
+    >>> import numpy as np
+    >>> from pypots.utils.metrics import cal_mse
+    >>> targets = np.array([1, 2, 3, 4, 5])
+    >>> predictions = np.array([1, 2, 1, 4, 6])
+    >>> mse = cal_mse(predictions, targets)
+
+    mse = 1 here, the error is from the 3rd and 5th elements and is :math:`|3-1|^2+|5-6|^2=5`, so the result is 5/5=1.
+
+    If we want to prevent some values from MSE calculation, e.g. the first three elements here,
+    we can use ``masks`` to filter out them:
+
+    >>> masks = np.array([0, 0, 0, 1, 1])
+    >>> mse = cal_mse(predictions, targets, masks)
+
+    mse = 0.5 here, the first three elements are ignored, the error is from the 5th element and is :math:`|5-6|^2=1`,
+    so the result is 1/2=0.5.
+
+    """
+
+    assert type(predictions) == type(targets), (
         f"types of inputs and target must match, but got"
-        f"type(inputs)={type(inputs)}, type(target)={type(target)}"
+        f"type(inputs)={type(predictions)}, type(target)={type(targets)}"
     )
-    lib = np if isinstance(inputs, np.ndarray) else torch
-    if mask is not None:
-        return lib.sum(lib.square(inputs - target) * mask) / (lib.sum(mask) + 1e-9)
+    lib = np if isinstance(predictions, np.ndarray) else torch
+    if masks is not None:
+        return lib.sum(lib.square(predictions - targets) * masks) / (
+            lib.sum(masks) + 1e-12
+        )
     else:
-        return lib.mean(lib.square(inputs - target))
+        return lib.mean(lib.square(predictions - targets))
 
 
 def cal_rmse(
-    inputs: Union[np.ndarray, torch.Tensor, list],
-    target: Union[np.ndarray, torch.Tensor, list],
-    mask: Optional[Union[np.ndarray, torch.Tensor, list]] = None,
+    predictions: Union[np.ndarray, torch.Tensor, list],
+    targets: Union[np.ndarray, torch.Tensor, list],
+    masks: Optional[Union[np.ndarray, torch.Tensor, list]] = None,
 ) -> Union[float, torch.Tensor]:
-    """calculate Root Mean Square Error"""
-    assert type(inputs) == type(target), (
+    """Calculate the Root Mean Square Error between ``predictions`` and ``targets``.
+    ``masks`` can be used for filtering. For values==0 in ``masks``,
+    values at their corresponding positions in ``predictions`` will be ignored.
+
+    Parameters
+    ----------
+    predictions : Union[np.ndarray, torch.Tensor, list],
+        The prediction data to be evaluated.
+
+    targets : Union[np.ndarray, torch.Tensor, list],
+        The target data for helping evaluate the predictions.
+
+    masks : Optional[Union[np.ndarray, torch.Tensor, list]], optional, default = None,
+        The masks for filtering the specific values in inputs and target from evaluation.
+        When given, only values at corresponding positions where values ==1 in ``masks`` will be used for evaluation.
+
+    Examples
+    --------
+
+    >>> import numpy as np
+    >>> from pypots.utils.metrics import cal_rmse
+    >>> targets = np.array([1, 2, 3, 4, 5])
+    >>> predictions = np.array([1, 2, 1, 4, 6])
+    >>> rmse = cal_rmse(predictions, targets)
+
+    rmse = 1 here, the error is from the 3rd and 5th elements and is :math:`|3-1|^2+|5-6|^2=5`,
+    so the result is :math:`\\sqrt{5/5}=1`.
+
+    If we want to prevent some values from RMSE calculation, e.g. the first three elements here,
+    we can use ``masks`` to filter out them:
+
+    >>> masks = np.array([0, 0, 0, 1, 1])
+    >>> rmse = cal_rmse(predictions, targets, masks)
+
+    rmse = 0.707 here, the first three elements are ignored, the error is from the 5th element and is :math:`|5-6|^2=1`,
+    so the result is :math:`\\sqrt{1/2}=0.5`.
+
+    """
+    assert type(predictions) == type(targets), (
         f"types of inputs and target must match, but got"
-        f"type(inputs)={type(inputs)}, type(target)={type(target)}"
+        f"type(inputs)={type(predictions)}, type(target)={type(targets)}"
     )
-    lib = np if isinstance(inputs, np.ndarray) else torch
-    return lib.sqrt(cal_mse(inputs, target, mask))
+    lib = np if isinstance(predictions, np.ndarray) else torch
+    return lib.sqrt(cal_mse(predictions, targets, masks))
 
 
 def cal_mre(
-    inputs: Union[np.ndarray, torch.Tensor, list],
-    target: Union[np.ndarray, torch.Tensor, list],
-    mask: Optional[Union[np.ndarray, torch.Tensor, list]] = None,
+    predictions: Union[np.ndarray, torch.Tensor, list],
+    targets: Union[np.ndarray, torch.Tensor, list],
+    masks: Optional[Union[np.ndarray, torch.Tensor, list]] = None,
 ) -> Union[float, torch.Tensor]:
-    """calculate Mean Relative Error"""
-    assert type(inputs) == type(target), (
+    """Calculate the Mean Relative Error between ``predictions`` and ``targets``.
+    ``masks`` can be used for filtering. For values==0 in ``masks``,
+    values at their corresponding positions in ``predictions`` will be ignored.
+
+    Parameters
+    ----------
+    predictions : Union[np.ndarray, torch.Tensor, list],
+        The prediction data to be evaluated.
+
+    targets : Union[np.ndarray, torch.Tensor, list],
+        The target data for helping evaluate the predictions.
+
+    masks : Optional[Union[np.ndarray, torch.Tensor, list]], optional, default = None,
+        The masks for filtering the specific values in inputs and target from evaluation.
+        When given, only values at corresponding positions where values ==1 in ``masks`` will be used for evaluation.
+
+    Examples
+    --------
+
+    >>> import numpy as np
+    >>> from pypots.utils.metrics import cal_mre
+    >>> targets = np.array([1, 2, 3, 4, 5])
+    >>> predictions = np.array([1, 2, 1, 4, 6])
+    >>> mre = cal_mre(predictions, targets)
+
+    mre = 0.2 here, the error is from the 3rd and 5th elements and is :math:`|3-1|+|5-6|=3`,
+    so the result is :math:`\\sqrt{3/(1+2+3+4+5)}=1`.
+
+    If we want to prevent some values from MRE calculation, e.g. the first three elements here,
+    we can use ``masks`` to filter out them:
+
+    >>> masks = np.array([0, 0, 0, 1, 1])
+    >>> mre = cal_mre(predictions, targets, masks)
+
+    mre = 0.111 here, the first three elements are ignored, the error is from the 5th element and is :math:`|5-6|^2=1`,
+    so the result is :math:`\\sqrt{1/2}=0.5`.
+
+    """
+    assert type(predictions) == type(targets), (
         f"types of inputs and target must match, but got"
-        f"type(inputs)={type(inputs)}, type(target)={type(target)}"
+        f"type(inputs)={type(predictions)}, type(target)={type(targets)}"
     )
-    lib = np if isinstance(inputs, np.ndarray) else torch
-    if mask is not None:
-        return lib.sum(lib.abs(inputs - target) * mask) / (
-            lib.sum(lib.abs(target * mask)) + 1e-9
+    lib = np if isinstance(predictions, np.ndarray) else torch
+    if masks is not None:
+        return lib.sum(lib.abs(predictions - targets) * masks) / (
+            lib.sum(lib.abs(targets * masks)) + 1e-12
         )
     else:
-        return lib.mean(lib.abs(inputs - target)) / (lib.sum(lib.abs(target)) + 1e-9)
+        return lib.sum(lib.abs(predictions - targets)) / (
+            lib.sum(lib.abs(targets)) + 1e-12
+        )
 
 
 def cal_binary_classification_metrics(
@@ -85,15 +238,17 @@ def cal_binary_classification_metrics(
     pos_label: int = 1,
 ) -> dict:
     """Calculate the evaluation metrics for the binary classification task,
-        including accuracy, precision, recall, f1 score, area under ROC curve, and area under Precision-Recall curve.
-        If targets contains multiple categories, please set the positive category as `pos_label`.
+    including accuracy, precision, recall, f1 score, area under ROC curve, and area under Precision-Recall curve.
+    If targets contains multiple categories, please set the positive category as `pos_label`.
 
     Parameters
     ----------
     prob_predictions : array-like, 1d or 2d, [n_samples] or [n_samples, n_categories]
         Estimated probability predictions returned by a decision function.
+
     targets : array-like, 1d or 2d, shape of [n_samples] or [n_samples, 1]
         Ground truth (correct) classification results.
+
     pos_label : int, default=1
         The label of the positive class.
         Note that pos_label is also the index used to extract binary prediction probabilities from `predictions`.
@@ -102,16 +257,27 @@ def cal_binary_classification_metrics(
     -------
     classification_metrics : dict
         A dictionary contains classification metrics and useful results:
+
         predictions: binary categories of the prediction results;
+
         accuracy: prediction accuracy;
+
         precision: prediction precision;
+
         recall: prediction recall;
+
         f1: F1-score;
+
         precisions: precision values of Precision-Recall curve
+
         recalls: recall values of Precision-Recall curve
+
         pr_auc: area under Precision-Recall curve
+
         fprs: false positive rates of ROC curve
+
         tprs: true positive rates of ROC curve
+
         roc_auc: area under ROC curve
 
     """
@@ -183,8 +349,10 @@ def cal_precision_recall_f1(
     ----------
     prob_predictions : array-like, 1d or 2d, [n_samples] or [n_samples, n_categories]
         Estimated probability predictions returned by a decision function.
+
     targets : array-like, 1d or 2d, shape of [n_samples] or [n_samples, 1]
         Ground truth (correct) classification results.
+
     pos_label: int, default=1
         The label of the positive class.
 
@@ -192,8 +360,10 @@ def cal_precision_recall_f1(
     -------
     precision : float
         The precision value of model predictions.
+
     recall : float
         The recall value of model predictions.
+
     f1 : float
         The F1 score of model predictions.
 
@@ -216,8 +386,10 @@ def cal_pr_auc(
     ----------
     prob_predictions : array-like, 1d or 2d, [n_samples] or [n_samples, n_categories]
         Estimated probability predictions returned by a decision function.
+
     targets : array-like, 1d or 2d, shape of [n_samples] or [n_samples, 1]
         Ground truth (correct) classification results.
+
     pos_label: int, default=1
         The label of the positive class.
 
@@ -225,10 +397,13 @@ def cal_pr_auc(
     -------
     pr_auc : float
         Value of area under Precision-Recall curve.
+
     precisions : array-like
         Precision values of Precision-Recall curve.
+
     recalls : array-like
         Recall values of Precision-Recall curve.
+
     thresholds : array-like
         Increasing thresholds on the decision function used to compute precision and recall.
 
@@ -252,8 +427,10 @@ def cal_roc_auc(
     ----------
     prob_predictions : array-like, 1d, [n_samples]
         Estimated probabilities/predictions returned by a decision function.
+
     targets : array-like, 1d or 2d, shape of [n_samples] or [n_samples, 1]
         Ground truth (correct) classification results.
+
     pos_label: int, default=1
         The label of the positive class.
 
@@ -261,10 +438,13 @@ def cal_roc_auc(
     -------
     roc_auc : float
         The area under ROC curve.
+
     fprs : array-like
         False positive rates of ROC curve.
+
     tprs : array-like
         True positive rates of ROC curve.
+
     thresholds : array-like
         Increasing thresholds on the decision function used to compute FPR and TPR.
 
@@ -283,6 +463,7 @@ def cal_acc(class_predictions: np.ndarray, targets: np.ndarray) -> float:
     ----------
     class_predictions : array-like, 1d or 2d, [n_samples] or [n_samples, n_categories]
         Estimated classification predictions returned by a classifier.
+
     targets : array-like, 1d or 2d, shape of [n_samples] or [n_samples, 1]
         Ground truth (correct) classification results.
 
@@ -301,12 +482,13 @@ def cal_rand_index(
     targets: np.ndarray,
 ) -> float:
     """Calculate Rand Index, a measure of the similarity between two data clusterings.
-        Refer to :cite:`rand1971RandIndex`.
+    Refer to :cite:`rand1971RandIndex`.
 
     Parameters
     ----------
     class_predictions : array
         Clustering results returned by a clusterer.
+
     targets : array
         Ground truth (correct) clustering results.
 
@@ -314,6 +496,7 @@ def cal_rand_index(
     -------
     RI : float
         Rand index.
+
     """
     # # detailed implementation
     # n = len(targets)
@@ -340,13 +523,13 @@ def cal_adjusted_rand_index(
     class_predictions: np.ndarray,
     targets: np.ndarray,
 ) -> float:
-    """Calculate adjusted Rand Index.
-    Refer to :cite:`hubert1985AdjustedRI`.
+    """Calculate adjusted Rand Index. Refer to :cite:`hubert1985AdjustedRI`.
 
     Parameters
     ----------
     class_predictions : array
         Clustering results returned by a clusterer.
+
     targets : array
         Ground truth (correct) clustering results.
 
@@ -354,6 +537,7 @@ def cal_adjusted_rand_index(
     -------
     aRI : float
         Adjusted Rand index.
+
     """
     aRI = metrics.adjusted_rand_score(targets, class_predictions)
     return aRI
@@ -369,6 +553,7 @@ def cal_cluster_purity(
     ----------
     class_predictions : array
         Clustering results returned by a clusterer.
+
     targets : array
         Ground truth (correct) clustering results.
 

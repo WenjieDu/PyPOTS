@@ -255,8 +255,8 @@ class BaseNNModel(BaseModel):
         Must be smaller than or equal to the value of `epoches`.
 
     num_workers : int, default = 0,
-            The number of subprocesses to use for data loading.
-            `0` means data loading will be in the main process, i.e. there won't be subprocesses.
+        The number of subprocesses to use for data loading.
+        `0` means data loading will be in the main process, i.e. there won't be subprocesses.
 
     device : str or `torch.device`, default = None,
         The device for the model to run on.
@@ -317,7 +317,7 @@ class BaseNNModel(BaseModel):
         # WDU: may enable users to customize the criteria in the future
         self.best_loss = float("inf")
 
-    def _print_model_size(self) -> None:
+    def print_model_size(self) -> None:
         """Print the number of trainable parameters in the initialized NN model."""
         num_params = sum(p.numel() for p in self.model.parameters() if p.requires_grad)
         logger.info(
