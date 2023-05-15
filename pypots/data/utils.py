@@ -21,27 +21,82 @@ pickle_dump = _pickle_dump
 
 
 def cal_missing_rate(X: Union[np.ndarray, torch.Tensor, list]) -> float:
-    return corruptor.cal_missing_rate(X)
+    """Calculate the missing rate of the given data.
+
+    Parameters
+    ----------
+    X : np.ndarray, torch.Tensor, list,
+        The data to calculate missing rate.
+
+    Returns
+    -------
+    missing_rate : float,
+        The missing rate of the given data.
+
+    """
+    missing_rate = corruptor.cal_missing_rate(X)
+    return missing_rate
 
 
 def masked_fill(
     X: Union[np.ndarray, torch.Tensor, list],
     mask: Union[np.ndarray, torch.Tensor, list],
-    val: Union[float, int],
-) -> Union[np.ndarray, torch.Tensor, list]:
-    return corruptor.masked_fill(X, mask, val)
+    value: float,
+) -> Union[np.ndarray, torch.Tensor]:
+    """Fill the masked values in ``X`` according to ``mask`` with the given ``value``.
+
+    Parameters
+    ----------
+    X : np.ndarray, torch.Tensor, list,
+        The data to be filled.
+
+    mask : np.ndarray, torch.Tensor, list,
+        The mask for filling the given data.
+
+    value : float,
+        The value to fill the masked values.
+
+    Returns
+    -------
+    filled_X : np.ndarray, torch.Tensor, list,
+        The filled data.
+
+    """
+    filled_X = corruptor.masked_fill(X, mask, value)
+    return filled_X
 
 
 def mcar(
     X: Union[np.ndarray, torch.Tensor, list],
     rate: float,
-    nan: Union[int, float] = 0,
-):
-    return corruptor.mcar(X, rate, nan)
+    nan: float = 0,
+) -> Union[np.ndarray, torch.Tensor]:
+    """Generate missing values in the given data with MCAR (Missing Completely At Random) mechanism.
+
+    Parameters
+    ----------
+    X : np.ndarray, torch.Tensor, list,
+        The data to add missing values.
+
+    rate : float,
+        The missing rate.
+
+    nan : float, default = 0,
+        The value to fill the missing values.
+
+    Returns
+    -------
+    X : np.ndarray, torch.Tensor,
+        The data with added missing values.
+
+    """
+    X = corruptor.mcar(X, rate, nan)
+    return X
 
 
 def torch_parse_delta(missing_mask: torch.Tensor) -> torch.Tensor:
-    """Generate time-gap (delta) matrix from missing masks. Please refer to :cite:`che2018GRUD` for its math definition.
+    """Generate time-gap (delta) matrix from missing masks.
+    Please refer to :cite:`che2018GRUD` for its math definition.
 
     Parameters
     ----------
