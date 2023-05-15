@@ -35,7 +35,7 @@ class _SAITS(nn.Module):
         d_feature: int,
         d_model: int,
         d_inner: int,
-        n_head: int,
+        n_heads: int,
         d_k: int,
         d_v: int,
         dropout: float,
@@ -57,7 +57,7 @@ class _SAITS(nn.Module):
                     actual_d_feature,
                     d_model,
                     d_inner,
-                    n_head,
+                    n_heads,
                     d_k,
                     d_v,
                     dropout,
@@ -74,7 +74,7 @@ class _SAITS(nn.Module):
                     actual_d_feature,
                     d_model,
                     d_inner,
-                    n_head,
+                    n_heads,
                     d_k,
                     d_v,
                     dropout,
@@ -185,19 +185,20 @@ class SAITS(BaseNNImputer):
         The number of layers in the 1st and 2nd DMSA blocks in the SAITS model.
 
     d_model : int,
-        The dimension of the model's backbone. It is the dimension of the
+        The dimension of the model's backbone.
+        It is the input dimension of the multi-head DMSA layers.
 
     d_inner : int,
         The dimension of the layer in the Feed-Forward Networks (FFN).
 
-    n_head : int,
-        The number of heads in the DMSA mechanism.
-        ``d_model`` must be divisible by ``n_head``, and the result should be equal to ``d_k``.
+    n_heads : int,
+        The number of heads in the multi-head DMSA mechanism.
+        ``d_model`` must be divisible by ``n_heads``, and the result should be equal to ``d_k``.
 
     d_k : int,
         The dimension of the `keys` (K) and the `queries` (Q) in the DMSA mechanism.
-        ``d_k`` should be the result of ``d_model`` divided by ``n_head``. Although ``d_k`` can be directly calculated
-        with given ``d_model`` and ``n_head``, we want it be explicitly given together with ``d_v`` by users to ensure
+        ``d_k`` should be the result of ``d_model`` divided by ``n_heads``. Although ``d_k`` can be directly calculated
+        with given ``d_model`` and ``n_heads``, we want it be explicitly given together with ``d_v`` by users to ensure
         users be aware of them and to avoid any potential mistakes.
 
     d_v : int,
@@ -272,7 +273,7 @@ class SAITS(BaseNNImputer):
         n_layers: int,
         d_model: int,
         d_inner: int,
-        n_head: int,
+        n_heads: int,
         d_k: int,
         d_v: int,
         dropout: float = 0,
@@ -305,7 +306,7 @@ class SAITS(BaseNNImputer):
         self.n_layers = n_layers
         self.d_model = d_model
         self.d_inner = d_inner
-        self.n_head = n_head
+        self.n_heads = n_heads
         self.d_k = d_k
         self.d_v = d_v
         self.dropout = dropout
@@ -321,7 +322,7 @@ class SAITS(BaseNNImputer):
             self.n_features,
             self.d_model,
             self.d_inner,
-            self.n_head,
+            self.n_heads,
             self.d_k,
             self.d_v,
             self.dropout,

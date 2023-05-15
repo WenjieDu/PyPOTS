@@ -259,6 +259,41 @@ def BTTF_forecast(
 
 
 class BTTF(BaseForecaster):
+    """The implementation of the BTTF model :cite:`chen2021BTMF`.
+
+    Parameters
+    ----------
+    n_steps : int,
+        The number of time steps in the time-series data sample.
+
+    n_features : int,
+        The number of features in the time-series data sample.
+
+    pred_step : int,
+        The number of time steps to forecast.
+
+    multi_step : int,
+        The number of time steps to forecast at each iteration.
+
+    rank : int,
+        The rank of the low-rank tensor.
+
+    time_lags : list,
+        The time lags.
+
+    burn_iter : int,
+        The number of burn-in iterations.
+
+    gibbs_iter : int,
+        The number of Gibbs iterations.
+
+    device : str or `torch.device`, default = None,
+        The device for the model to run on.
+        If not given, will try to use CUDA devices first (will use the GPU with device number 0 only by default),
+        then CPUs, considering CUDA and CPU are so far the main devices for people to train ML models.
+        Other devices like Google TPU and Apple Silicon accelerator MPS may be added in the future.
+    """
+
     def __init__(
         self,
         n_steps: int,
@@ -266,7 +301,7 @@ class BTTF(BaseForecaster):
         pred_step: int,
         multi_step: int,
         rank: int,
-        time_lags: np.ndarray,
+        time_lags: list,
         burn_iter: int,
         gibbs_iter: int,
         device: Optional[Union[str, torch.device]] = None,
@@ -277,7 +312,7 @@ class BTTF(BaseForecaster):
         self.pred_step = pred_step
         self.multi_step = multi_step
         self.rank = rank
-        self.time_lags = time_lags
+        self.time_lags = np.asarray(time_lags)
         self.burn_iter = burn_iter
         self.gibbs_iter = gibbs_iter
 

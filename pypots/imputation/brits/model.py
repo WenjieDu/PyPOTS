@@ -363,7 +363,7 @@ class BRITS(BaseNNImputer):
     Parameters
     ----------
     rnn_hidden_size : int,
-        The size of the RNN hidden state.
+        The size of the RNN hidden state, also the number of hidden units in the RNN cell.
 
     batch_size : int, default = 32,
         The batch size for training and evaluating the model.

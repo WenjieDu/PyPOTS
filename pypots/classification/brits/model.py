@@ -101,38 +101,80 @@ class _BRITS(imputation_BRITS, nn.Module):
 
 
 class BRITS(BaseNNClassifier):
-    """BRITS implementation of BaseClassifier.
+    """The PyTorch implementation of the BRITS model :cite:`cao2018BRITS`.
+
+    Parameters
+    ----------
+    n_steps : int,
+        The number of time steps in the time-series data sample.
+
+    n_features : int,
+        The number of features in the time-series data sample.
+
+    n_classes : int,
+        The number of classes in the classification task.
+
+    rnn_hidden_size : int,
+        The size of the RNN hidden state.
+
+    classification_weight : float, default = 1,
+        The loss weight for the classification task.
+
+    reconstruction_weight : float, default = 1,
+        The loss weight for the reconstruction task.
+
+    batch_size : int, default = 32,
+        The batch size for training and evaluating the model.
+
+    epochs : int, default = 100,
+        The number of epochs for training the model.
+
+    patience : int, default = None,
+        The patience for the early-stopping mechanism. Given a positive integer, the training process will be
+        stopped when the model does not perform better after that number of epochs.
+        Leaving it default as None will disable the early-stopping.
+
+    optimizer : ``pypots.optim.base.Optimizer``, default = ``pypots.optim.Adam()``,
+        The optimizer for model training.
+        If not given, will use a default Adam optimizer.
+
+    num_workers : int, default = 0,
+        The number of subprocesses to use for data loading.
+        `0` means data loading will be in the main process, i.e. there won't be subprocesses.
+
+    device : str or `torch.device`, default = None,
+        The device for the model to run on.
+        If not given, will try to use CUDA devices first (will use the GPU with device number 0 only by default),
+        then CPUs, considering CUDA and CPU are so far the main devices for people to train ML models.
+        Other devices like Google TPU and Apple Silicon accelerator MPS may be added in the future.
+
+    saving_path : str, default = None,
+        The path for automatically saving model checkpoints and tensorboard files (i.e. loss values recorded during
+        training into a tensorboard file). Will not save if not given.
+
+    model_saving_strategy : str, "best" or "better" , default = "best",
+        The strategy to save model checkpoints. It has to be one of [None, "best", "better"].
+        No model will be saved when it is set as None.
+        The "best" strategy will only automatically save the best model after the training finished.
+        The "better" strategy will automatically save the model during training whenever the model performs
+        better than in previous epochs.
 
     Attributes
     ----------
     model : object,
         The underlying BRITS model.
+
     optimizer : object,
         The optimizer for model training.
 
-    Parameters
-    ----------
-    rnn_hidden_size : int,
-        The size of the RNN hidden state.
-    optimizer : ``pypots.optim.base.Optimizer``, default = ``pypots.optim.Adam``(),
-        The optimizer for model training.
-        If not given, will use a default Adam optimizer.
-    epochs : int,
-        The number of training epochs.
-    patience : int,
-        The number of epochs with loss non-decreasing before early stopping the training.
-    batch_size : int,
-        The batch size of the training input.
-    device :
-        Run the model on which device.
     """
 
     def __init__(
         self,
         n_steps: int,
         n_features: int,
-        rnn_hidden_size: int,
         n_classes: int,
+        rnn_hidden_size: int,
         classification_weight: float = 1,
         reconstruction_weight: float = 1,
         batch_size: int = 32,
@@ -172,7 +214,7 @@ class BRITS(BaseNNClassifier):
             self.device,
         )
         self.model = self.model.to(self.device)
-        self._print_model_size()
+        self.print_model_size()
 
         # set up the optimizer
         self.optimizer = optimizer
