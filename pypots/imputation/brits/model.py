@@ -358,38 +358,37 @@ class _BRITS(nn.Module):
 
 
 class BRITS(BaseNNImputer):
-    """BRITS implementation
-
-    Attributes
-    ----------
-    model : object,
-        The underlying BRITS model.
-
-    optimizer : object,
-        The optimizer for model training.
+    """The PyTorch implementation of the BRITS model :cite:`cao2018BRITS`.
 
     Parameters
     ----------
     rnn_hidden_size : int,
-        The size of the RNN hidden state.
+        The size of the RNN hidden state, also the number of hidden units in the RNN cell.
 
-    learning_rate : float (0,1),
-        The learning rate parameter for the optimizer.
+    batch_size : int, default = 32,
+        The batch size for training and evaluating the model.
 
-    weight_decay : float in (0,1),
-        The weight decay parameter for the optimizer.
+    epochs : int, default = 100,
+        The number of epochs for training the model.
 
-    epochs : int,
-        The number of training epochs.
+    patience : int, default = None,
+        The patience for the early-stopping mechanism. Given a positive integer, the training process will be
+        stopped when the model does not perform better after that number of epochs.
+        Leaving it default as None will disable the early-stopping.
 
-    patience : int,
-        The number of epochs with loss non-decreasing before early stopping the training.
+    optimizer : ``pypots.optim.base.Optimizer``, default = ``pypots.optim.Adam()``,
+        The optimizer for model training.
+        If not given, will use a default Adam optimizer.
 
-    batch_size : int,
-        The batch size of the training input.
+    num_workers : int, default = 0,
+        The number of subprocesses to use for data loading.
+        `0` means data loading will be in the main process, i.e. there won't be subprocesses.
 
-    device :
-        Run the model on which device.
+    device : str or `torch.device`, default = None,
+        The device for the model to run on.
+        If not given, will try to use CUDA devices first (will use the GPU with device number 0 only by default),
+        then CPUs, considering CUDA and CPU are so far the main devices for people to train ML models.
+        Other devices like Google TPU and Apple Silicon accelerator MPS may be added in the future.
 
     saving_path : str, default = None,
         The path for automatically saving model checkpoints and tensorboard files (i.e. loss values recorded during
@@ -401,6 +400,14 @@ class BRITS(BaseNNImputer):
         The "best" strategy will only automatically save the best model after the training finished.
         The "better" strategy will automatically save the model during training whenever the model performs
         better than in previous epochs.
+
+    Attributes
+    ----------
+    model : object,
+        The underlying BRITS model.
+
+    optimizer : object,
+        The optimizer for model training.
 
     """
 
@@ -437,7 +444,7 @@ class BRITS(BaseNNImputer):
             self.n_steps, self.n_features, self.rnn_hidden_size, self.device
         )
         self.model = self.model.to(self.device)
-        self._print_model_size()
+        self.print_model_size()
 
         # set up the optimizer
         self.optimizer = optimizer
@@ -485,7 +492,6 @@ class BRITS(BaseNNImputer):
         Notes
         -----
         The validating data assembling processing is the same as training data assembling.
-
 
         Parameters
         ----------

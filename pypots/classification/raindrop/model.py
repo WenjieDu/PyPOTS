@@ -4,7 +4,7 @@ Inspired by the original implementation from https://github.com/mims-harvard/Rai
 
 Notes
 -----
-Due to the original implementation puts too many useless arguments and is not elegant, I simply the code.
+Due to the original implementation puts too many useless arguments and is not elegant, I simplify the code.
 If you need a version of the original implementation, please refer to my previous commit here
 https://github.com/WenjieDu/PyPOTS/blob/c381ad1853b465ebb918134d8bf6f6cf2996c9d3/pypots/classification/raindrop.py
 """
@@ -46,8 +46,8 @@ except ImportError as e:
 class _Raindrop(nn.Module):
     def __init__(
         self,
-        n_layers,
         n_features,
+        n_layers,
         d_model,
         d_inner,
         n_heads,
@@ -78,7 +78,9 @@ class _Raindrop(nn.Module):
         # create modules
         self.global_structure = torch.ones(n_features, n_features, device=self.device)
         if self.static:
-            self.emb = nn.Linear(d_static, n_features)
+            self.static_emb = nn.Linear(d_static, n_features)
+        else:
+            self.static_emb = None
         assert d_model % n_features == 0, "d_model must be divisible by n_features"
         self.d_ob = int(d_model / n_features)
         self.encoder = nn.Linear(n_features * self.d_ob, n_features * self.d_ob)
@@ -134,7 +136,7 @@ class _Raindrop(nn.Module):
         init_range = 1e-10
         self.encoder.weight.data.uniform_(-init_range, init_range)
         if self.static:
-            self.emb.weight.data.uniform_(-init_range, init_range)
+            self.static_emb.weight.data.uniform_(-init_range, init_range)
         glorot(self.R_u)
 
     def classify(self, inputs: dict) -> torch.Tensor:
@@ -147,16 +149,7 @@ class _Raindrop(nn.Module):
 
         Returns
         -------
-        dict, A dictionary includes all results.
-            X : array, shape of [n_steps, n_samples, n_features]
-                Time series data. If samples have different lengths, then need to be padded first.
-            static : array, shape of [n_samples, n_features]
-                Static features.
-            times : array, shape of [n_steps, n_samples]
-                Timestamps of time series data.
-            lengths : array, shape of [n_samples]
-                Number of nonzero recordings.
-            missing_mask : array, shape of [n_steps, n_samples, n_features]
+        prediction : torch.Tensor
         """
         src = inputs["X"]
         static = inputs["static"]
@@ -170,7 +163,7 @@ class _Raindrop(nn.Module):
         h = F.relu(src * self.R_u)
         pe = self.pos_encoder(times).to(self.device)
         if static is not None:
-            emb = self.emb(static)
+            emb = self.static_emb(static)
 
         h = self.dropout(h)
 
@@ -293,38 +286,110 @@ class _Raindrop(nn.Module):
 
 
 class Raindrop(BaseNNClassifier):
-    """
+    """The PyTorch implementation of the Raindrop model :cite:`zhang2022Raindrop`.
 
     Parameters
     ----------
+    max_len : int,
+        The maximum length of the time-series data samples.
 
-    optimizer : ``pypots.optim.base.Optimizer``, default = ``pypots.optim.Adam``(),
+    n_features : int,
+        The number of features in the time-series data samples.
+
+    n_classes, int,
+        The number of classes in the classification task.
+
+    n_layers : int,
+        The number of layers in the Transformer encoder in the Raindrop model.
+
+    n_classes : int,
+        The number of classes in the classification task.
+
+    d_model : int,
+        The dimension of the Transformer encoder backbone.
+        It is the input dimension of the multi-head self-attention layers.
+
+    d_inner : int,
+        The dimension of the layer in the Feed-Forward Networks (FFN).
+
+    n_heads : int,
+        The number of heads in the multi-head self-attention mechanism.
+
+    dropout : float, 0<= ``dropout`` <1,
+        The dropout rate for all fully-connected layers in the model.
+
+    d_static : int, default = 0,
+        The dimension of the static features.
+
+    aggregation : str, default = "mean",
+        The aggregation method for the Transformer encoder output.
+
+    sensor_wise_mask : bool, default = False,
+        Whether to apply the sensor-wise masking.
+
+    static : bool, default = False,
+        Whether to use the static features.
+
+    batch_size : int, default = 32,
+        The batch size for training and evaluating the model.
+
+    epochs : int, default = 100,
+        The number of epochs for training the model.
+
+    patience : int, default = None,
+        The patience for the early-stopping mechanism. Given a positive integer, the training process will be
+        stopped when the model does not perform better after that number of epochs.
+        Leaving it default as None will disable the early-stopping.
+
+    optimizer : ``pypots.optim.base.Optimizer``, default = ``pypots.optim.Adam()``,
         The optimizer for model training.
         If not given, will use a default Adam optimizer.
-    epochs : int,
-        The number of training epochs.
-    patience : int,
-        The number of epochs with loss non-decreasing before early stopping the training.
-    batch_size : int,
-        The batch size of the training input.
-    device :
-        Run the model on which device.
+
+    num_workers : int, default = 0,
+        The number of subprocesses to use for data loading.
+        `0` means data loading will be in the main process, i.e. there won't be subprocesses.
+
+    device : str or `torch.device`, default = None,
+        The device for the model to run on.
+        If not given, will try to use CUDA devices first (will use the GPU with device number 0 only by default),
+        then CPUs, considering CUDA and CPU are so far the main devices for people to train ML models.
+        Other devices like Google TPU and Apple Silicon accelerator MPS may be added in the future.
+
+    saving_path : str, default = None,
+        The path for automatically saving model checkpoints and tensorboard files (i.e. loss values recorded during
+        training into a tensorboard file). Will not save if not given.
+
+    model_saving_strategy : str or None, None or "best" or "better" , default = "best",
+        The strategy to save model checkpoints. It has to be one of [None, "best", "better"].
+        No model will be saved when it is set as None.
+        The "best" strategy will only automatically save the best model after the training finished.
+        The "better" strategy will automatically save the model during training whenever the model performs
+        better than in previous epochs.
+
+    Attributes
+    ----------
+    model : object,
+        The underlying Raindrop model.
+
+    optimizer : object,
+        The optimizer for model training.
+
     """
 
     def __init__(
         self,
+        max_len,
         n_features,
+        n_classes,
         n_layers,
         d_model,
         d_inner,
         n_heads,
-        n_classes,
         dropout,
-        max_len,
-        d_static,
-        aggregation,
-        sensor_wise_mask,
-        static,
+        d_static=0,
+        aggregation="mean",
+        sensor_wise_mask=False,
+        static=False,
         batch_size=32,
         epochs=100,
         patience: int = None,
@@ -350,8 +415,8 @@ class Raindrop(BaseNNClassifier):
 
         # set up the model
         self.model = _Raindrop(
-            n_layers,
             n_features,
+            n_layers,
             d_model,
             d_inner,
             n_heads,
@@ -365,7 +430,7 @@ class Raindrop(BaseNNClassifier):
             device=self.device,
         )
         self.model = self.model.to(self.device)
-        self._print_model_size()
+        self.print_model_size()
 
         # set up the optimizer
         self.optimizer = optimizer
