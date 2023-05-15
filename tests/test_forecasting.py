@@ -15,8 +15,8 @@ from pypots.utils.logging import logger
 from pypots.utils.metrics import cal_mae
 
 EPOCHS = 5
-DATA = gene_incomplete_random_walk_dataset(n_steps=120, n_features=37)
-TEST_SET = {"X": DATA["test_X"][:, :100]}
+DATA = gene_incomplete_random_walk_dataset(n_steps=60, n_features=10)
+TEST_SET = {"X": DATA["test_X"][:, :50]}
 
 
 class TestBTTF(unittest.TestCase):
@@ -24,9 +24,9 @@ class TestBTTF(unittest.TestCase):
 
     # initialize a BTTF model
     bttf = BTTF(
-        n_steps=100,
+        n_steps=50,
         n_features=10,
-        pred_step=20,
+        pred_step=10,
         rank=10,
         time_lags=[1, 2, 3, 10, 10 + 1, 10 + 2, 20, 20 + 1, 20 + 2],
         burn_iter=5,
@@ -38,7 +38,7 @@ class TestBTTF(unittest.TestCase):
     def test_0_forecasting(self):
         predictions = self.bttf.forecast(TEST_SET)
         logger.info(f"prediction shape: {predictions.shape}")
-        mae = cal_mae(predictions, DATA["test_X_intact"][:, 100:])
+        mae = cal_mae(predictions, DATA["test_X_intact"][:, 50:])
         logger.info(f"prediction MAE: {mae}")
 
 
