@@ -49,6 +49,10 @@ extensions = [
     "sphinxcontrib.gtagjs",
 ]
 
+imgmath_font_size = 18  # set the font size for math equations as 18, the original is 12
+imgmath_image_format = "svg"  # using SVG because svg is much clearer than png
+# imgmath_dvipng_args = ["-gamma", "2", "-D", "20000", "-bg", "#F5F5F5"]  # configurations for png format
+
 bibtex_bibfiles = ["references.bib"]
 bibtex_default_style = "unsrt"
 
