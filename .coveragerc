@@ -1,2 +1,4 @@
 [run]
-omit = pypots/*/template/*
+omit =
+    tests/*
+    pypots/*/template/*
