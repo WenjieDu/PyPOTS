@@ -1,7 +1,10 @@
 """
-Torch implementation of CRLI (Clustering Representation Learning on Incomplete time-series data).
+The implementation of CRLI (Clustering Representation Learning on Incomplete time-series data) for
+the partially-observed time-series clustering task.
 
-Please refer to :cite:`ma2021CRLI`.
+Refer to the paper "Ma, Q., Chen, C., Li, S., & Cottrell, G. W. (2021).
+Learning Representations for Incomplete Time Series Clustering. AAAI 2021."
+
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
@@ -124,10 +127,10 @@ class CRLI(BaseNNClusterer):
     rnn_hidden_size : int,
         The size of the RNN hidden state, also the number of hidden units in the RNN cell.
 
-    rnn_cell_type : str, default = "GRU",
+    rnn_cell_type : str, default = "GRU"
         The type of RNN cell to use. Can be either "GRU" or "LSTM".
 
-    decoder_fcn_output_dims : list,
+    decoder_fcn_output_dims : list, default = None
         The output dimensions of each layer in the FCN (fully-connected network) of the decoder.
 
     lambda_kmeans : float,

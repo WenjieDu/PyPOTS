@@ -1,5 +1,9 @@
 """
-PyTorch GRU-D model.
+The implementation of GRU-D for the partially-observed time-series imputation task.
+
+Refer to the paper "Che, Z., Purushotham, S., Cho, K., Sontag, D.A., & Liu, Y. (2018).
+Recurrent Neural Networks for Multivariate Time Series with Missing Values. Scientific Reports."
+
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
@@ -100,7 +104,7 @@ class _GRUD(nn.Module):
 
 
 class GRUD(BaseNNClassifier):
-    """The PyTorch implementation of the GRUD model :cite:`che2018GRUD`.
+    """The PyTorch implementation of the GRU-D model :cite:`che2018GRUD`.
 
     Parameters
     ----------
@@ -155,7 +159,7 @@ class GRUD(BaseNNClassifier):
     Attributes
     ----------
     model : object,
-        The underlying GRUD model.
+        The underlying GRU-D model.
 
     optimizer : object,
         The optimizer for model training.
