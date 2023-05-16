@@ -20,6 +20,8 @@ SUPPORTED_DATASET_FILE_TYPE = ["h5py"]
 class BaseDataset(Dataset):
     """Base dataset class in PyPOTS.
 
+    Parameters
+    ----------
     data : dict or str,
         The dataset for model input, should be a dictionary including keys as 'X' and 'y',
         or a path string locating a data file.
@@ -40,6 +42,7 @@ class BaseDataset(Dataset):
 
     file_type : str, default = "h5py"
         The type of the given file if train_set and val_set are path strings.
+
     """
 
     def __init__(
@@ -129,6 +132,7 @@ class BaseDataset(Dataset):
         X : array-like
 
         y : array-like
+
         """
         assert out_dtype in [
             "tensor",

@@ -43,7 +43,7 @@ class TestLazyLoadingClasses(unittest.TestCase):
         n_layers=2,
         d_model=256,
         d_inner=128,
-        n_head=4,
+        n_heads=4,
         d_k=64,
         d_v=64,
         dropout=0.1,
@@ -54,8 +54,8 @@ class TestLazyLoadingClasses(unittest.TestCase):
     brits = BRITS(
         DATA["n_steps"],
         DATA["n_features"],
-        256,
         n_classes=DATA["n_classes"],
+        rnn_hidden_size=256,
         epochs=EPOCHS,
     )
 
@@ -63,8 +63,8 @@ class TestLazyLoadingClasses(unittest.TestCase):
     grud = GRUD(
         DATA["n_steps"],
         DATA["n_features"],
-        256,
         n_classes=DATA["n_classes"],
+        rnn_hidden_size=256,
         epochs=EPOCHS,
     )
 

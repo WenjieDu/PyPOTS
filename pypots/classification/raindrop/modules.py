@@ -1,12 +1,9 @@
 """
-PyTorch Raindrop model. Refer :cite:`zhang2022Raindrop` for more information.
-Inspired by the original implementation from https://github.com/mims-harvard/Raindrop
+The implementation of the modules for Raindrop.
 
-Notes
------
-Due to the original implementation puts too many useless arguments and is not elegant, I simply the code.
-If you need a version of the original implementation, please refer to my previous commit here
-https://github.com/WenjieDu/PyPOTS/blob/c381ad1853b465ebb918134d8bf6f6cf2996c9d3/pypots/classification/raindrop.py
+Refer to the paper "Zhang, X., Zeman, M., Tsiligkaridis, T., & Zitnik, M. (2022).
+Graph-Guided Network for Irregularly Sampled Multivariate Time Series. ICLR 2022."
+
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>

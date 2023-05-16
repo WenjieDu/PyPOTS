@@ -1,17 +1,21 @@
 """
 The optimizer wrapper for PyTorch Adam.
+
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: GLP-v3
 
-from torch.optim import Adam as torch_Adam
-from pypots.optim.base import Optimizer
 from typing import Iterable, Tuple
+
+from torch.optim import Adam as torch_Adam
+
+from pypots.optim.base import Optimizer
 
 
 class Adam(Optimizer):
     """The optimizer wrapper for PyTorch Adam.
+    https://pytorch.org/docs/stable/generated/torch.optim.Adam.html#torch.optim.Adam
 
     Parameters
     ----------

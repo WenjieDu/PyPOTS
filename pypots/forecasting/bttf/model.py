@@ -1,7 +1,15 @@
 """
-Implementation of BTTF: Bayesian Temporal Tensor Factorization.
+The implementation of BTTF (Bayesian Temporal Tensor Factorization) for the partially-observed time-series
+forecasting task.
+
+Refer to the paper "Chen, X., & Sun, L. (2021).
+Bayesian Temporal Factorization for Multidimensional Time Series Prediction.
+IEEE transactions on pattern analysis and machine intelligence."
+
+Notes
+-----
 This numpy implementation is the same with the official one from https://github.com/xinychen/transdim.
-Refer to :cite:`chen2021BTMF`.
+
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
@@ -217,41 +225,43 @@ def BTTF_forecast(
     start_time = T - pred_step
     max_count = int(np.ceil(pred_step / multi_step))
     tensor_hat = np.zeros((dim1, dim2, max_count * multi_step))
-    for t in range(max_count):
-        if t == 0:
-            init = {
-                "U": 0.1 * np.random.randn(dim1, rank),
-                "V": 0.1 * np.random.randn(dim2, rank),
-                "X": 0.1 * np.random.randn(start_time, rank),
-            }
-            tensor, U, V, X_new, A, Sigma, tau = _BTTF(
-                dense_tensor[:, :, :start_time],
-                sparse_tensor[:, :, :start_time],
-                init,
-                rank,
-                time_lags,
-                burn_iter,
-                gibbs_iter,
-                multi_step,
-            )
-        else:
-            init = {
-                "U_plus": U,
-                "V_plus": V,
-                "X_plus": X_new,
-                "A_plus": A,
-                "Sigma_plus": Sigma,
-                "tau_plus": tau,
-            }
-            tensor, U, V, X_new, A, Sigma, tau = _BTTF_partial(
-                sparse_tensor[:, :, : start_time + t * multi_step],
-                init,
-                rank,
-                time_lags,
-                gibbs_iter,
-                multi_step,
-                gamma,
-            )
+
+    # t==0
+    init = {
+        "U": 0.1 * np.random.randn(dim1, rank),
+        "V": 0.1 * np.random.randn(dim2, rank),
+        "X": 0.1 * np.random.randn(start_time, rank),
+    }
+    tensor, U, V, X_new, A, Sigma, tau = _BTTF(
+        dense_tensor[:, :, :start_time],
+        sparse_tensor[:, :, :start_time],
+        init,
+        rank,
+        time_lags,
+        burn_iter,
+        gibbs_iter,
+        multi_step,
+    )
+    tensor_hat[:, :, 0:multi_step] = tensor[:, :, -multi_step:]
+    # 1<= t <max_count
+    for t in range(1, max_count):
+        init = {
+            "U_plus": U,
+            "V_plus": V,
+            "X_plus": X_new,
+            "A_plus": A,
+            "Sigma_plus": Sigma,
+            "tau_plus": tau,
+        }
+        tensor, U, V, X_new, A, Sigma, tau = _BTTF_partial(
+            sparse_tensor[:, :, : start_time + t * multi_step],
+            init,
+            rank,
+            time_lags,
+            gibbs_iter,
+            multi_step,
+            gamma,
+        )
         tensor_hat[:, :, t * multi_step : (t + 1) * multi_step] = tensor[
             :, :, -multi_step:
         ]
@@ -259,16 +269,58 @@ def BTTF_forecast(
 
 
 class BTTF(BaseForecaster):
+    """The implementation of the BTTF model :cite:`chen2021BTMF`.
+
+    Parameters
+    ----------
+    n_steps : int,
+        The number of time steps in the time-series data sample.
+
+    n_features : int,
+        The number of features in the time-series data sample.
+
+    pred_step : int,
+        The number of time steps to forecast.
+
+    rank : int,
+        The rank of the low-rank tensor.
+
+    time_lags : list,
+        The time lags.
+
+    burn_iter : int,
+        The number of burn-in iterations.
+
+    gibbs_iter : int,
+        The number of Gibbs iterations.
+
+    multi_step : int, default = 1,
+        The number of time steps to forecast at each iteration.
+
+    device : str or `torch.device`, default = None,
+        The device for the model to run on.
+        If not given, will try to use CUDA devices first (will use the GPU with device number 0 only by default),
+        then CPUs, considering CUDA and CPU are so far the main devices for people to train ML models.
+        Other devices like Google TPU and Apple Silicon accelerator MPS may be added in the future.
+
+    Notes
+    -----
+    1). ``n_steps`` must be larger than ``pred_step``;
+
+    2). ``n_steps - pred_step`` must be larger than ``max(time_lags)``;
+
+    """
+
     def __init__(
         self,
         n_steps: int,
         n_features: int,
         pred_step: int,
-        multi_step: int,
         rank: int,
-        time_lags: np.ndarray,
+        time_lags: list,
         burn_iter: int,
         gibbs_iter: int,
+        multi_step: int = 1,
         device: Optional[Union[str, torch.device]] = None,
     ):
         super().__init__(device)
@@ -277,7 +329,7 @@ class BTTF(BaseForecaster):
         self.pred_step = pred_step
         self.multi_step = multi_step
         self.rank = rank
-        self.time_lags = time_lags
+        self.time_lags = np.asarray(time_lags)
         self.burn_iter = burn_iter
         self.gibbs_iter = gibbs_iter
 
@@ -287,6 +339,12 @@ class BTTF(BaseForecaster):
         val_set: Optional[Union[dict, str]] = None,
         file_type="h5py",
     ) -> None:
+        """
+        Warnings
+        --------
+        BTTF does not need to run fit().
+        Please run func ``forecast()`` directly.
+        """
         warnings.warn("Please run func forecast(X) directly.")
 
     def forecast(
