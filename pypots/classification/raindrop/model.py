@@ -290,20 +290,17 @@ class Raindrop(BaseNNClassifier):
 
     Parameters
     ----------
-    max_len : int,
-        The maximum length of the time-series data samples.
+    n_steps : int,
+        The number of time steps in the time-series data sample.
 
     n_features : int,
         The number of features in the time-series data samples.
 
-    n_classes, int,
+    n_classes : int,
         The number of classes in the classification task.
 
     n_layers : int,
         The number of layers in the Transformer encoder in the Raindrop model.
-
-    n_classes : int,
-        The number of classes in the classification task.
 
     d_model : int,
         The dimension of the Transformer encoder backbone.
@@ -378,7 +375,7 @@ class Raindrop(BaseNNClassifier):
 
     def __init__(
         self,
-        max_len,
+        n_steps,
         n_features,
         n_classes,
         n_layers,
@@ -411,7 +408,7 @@ class Raindrop(BaseNNClassifier):
         )
 
         self.n_features = n_features
-        self.n_steps = max_len
+        self.n_steps = n_steps
 
         # set up the model
         self.model = _Raindrop(
@@ -422,7 +419,7 @@ class Raindrop(BaseNNClassifier):
             n_heads,
             n_classes,
             dropout,
-            max_len,
+            n_steps,
             d_static,
             aggregation,
             sensor_wise_mask,
@@ -430,7 +427,7 @@ class Raindrop(BaseNNClassifier):
             device=self.device,
         )
         self.model = self.model.to(self.device)
-        self.print_model_size()
+        self._print_model_size()
 
         # set up the optimizer
         self.optimizer = optimizer

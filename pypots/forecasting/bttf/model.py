@@ -331,6 +331,12 @@ class BTTF(BaseForecaster):
         val_set: Optional[Union[dict, str]] = None,
         file_type="h5py",
     ) -> None:
+        """
+        Warnings
+        --------
+        BTTF does not need to run fit().
+        Please run func ``forecast()`` directly.
+        """
         warnings.warn("Please run func forecast(X) directly.")
 
     def forecast(

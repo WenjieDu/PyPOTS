@@ -115,6 +115,7 @@ class Transformer(BaseNNImputer):
     """The PyTorch implementation of the Transformer model.
     Transformer is originally proposed by Vaswani et al. in :cite:`vaswani2017Transformer`,
     and gets re-implemented as a time-series imputation model by Du et al. in :cite:`du2023SAITS`.
+    Here you should refer to :cite:`du2023SAITS` for details about this Transformer imputation model.
 
     Parameters
     ----------
@@ -267,7 +268,7 @@ class Transformer(BaseNNImputer):
             self.MIT_weight,
         )
         self.model = self.model.to(self.device)
-        self.print_model_size()
+        self._print_model_size()
 
         # set up the optimizer
         self.optimizer = optimizer

@@ -444,7 +444,7 @@ class BRITS(BaseNNImputer):
             self.n_steps, self.n_features, self.rnn_hidden_size, self.device
         )
         self.model = self.model.to(self.device)
-        self.print_model_size()
+        self._print_model_size()
 
         # set up the optimizer
         self.optimizer = optimizer

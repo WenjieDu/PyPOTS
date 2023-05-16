@@ -124,11 +124,12 @@ class CRLI(BaseNNClusterer):
     rnn_hidden_size : int,
         The size of the RNN hidden state, also the number of hidden units in the RNN cell.
 
-    rnn_cell_type : str, default = "GRU",
+    rnn_cell_type : str, default = "GRU"
         The type of RNN cell to use. Can be either "GRU" or "LSTM".
 
-    decoder_fcn_output_dims : list,
+    decoder_fcn_output_dims : list, default = None
         The output dimensions of each layer in the FCN (fully-connected network) of the decoder.
+
 
     lambda_kmeans : float,
         The weight of the k-means loss,
@@ -243,7 +244,7 @@ class CRLI(BaseNNClusterer):
             self.device,
         )
         self.model = self.model.to(self.device)
-        self.print_model_size()
+        self._print_model_size()
 
         # set up the optimizer
         self.G_optimizer = G_optimizer

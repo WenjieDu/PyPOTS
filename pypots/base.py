@@ -110,10 +110,8 @@ class BaseModel(ABC):
                 filename_suffix=".pypots",
             )
 
-            logger.info(
-                f"the trained model will be saved to {self.saving_path}, "
-                f"the tensorboard file will be saved to {tb_saving_path}"
-            )
+            logger.info(f"the trained model will be saved to {self.saving_path}")
+            logger.info(f"the tensorboard file will be saved to {tb_saving_path}")
 
     def _save_log_into_tb_file(self, step: int, stage: str, loss_dict: dict) -> None:
         """Saving training logs into the tensorboard file specified by the given path `tb_file_saving_path`.
@@ -317,7 +315,7 @@ class BaseNNModel(BaseModel):
         # WDU: may enable users to customize the criteria in the future
         self.best_loss = float("inf")
 
-    def print_model_size(self) -> None:
+    def _print_model_size(self) -> None:
         """Print the number of trainable parameters in the initialized NN model."""
         num_params = sum(p.numel() for p in self.model.parameters() if p.requires_grad)
         logger.info(

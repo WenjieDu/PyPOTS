@@ -1,12 +1,15 @@
 """
-The base wrapper for PyTorch optimizers, also is the base class for all optimizers in pypots.optim.
+The base wrapper for PyTorch optimizers (https://pytorch.org/docs/stable/optim.html#algorithms),
+also is the base class for all optimizers in pypots.optim.
 
 The optimizers in pypots.optim are all wrappers for PyTorch optimizers.
 pypots.optim.optimizers inherent all functionalities from torch.optim.optimizers (so you can see many docstrings
-are copied from torch), but are more powerful. So far, they are designed to
+are copied from torch), but are more powerful. So far, they are designed to:
+
 1). separate the hyperparameters of models and optimizers in PyPOTS, so that users don't have to put all hyperparameters
-in one place, which could result in a mess and be not readable.
-2). provide additional functionalities, such as learning rate scheduling, etc.
+in one place, which could result in a mess and be not readable;
+
+2). provide additional functionalities, such as learning rate scheduling, etc.;
 
 """
 # Created by Wenjie Du <wenjay.du@gmail.com>
