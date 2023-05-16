@@ -43,14 +43,14 @@ jobs:
               run: |
                   # run tests separately here due to Segmentation Fault in test_clustering when run all in
                   # one command with `pytest` on MacOS. Bugs not caught, so this is a trade-off to avoid SF.
-                  python -m pytest -rA tests/test_classification.py -n auto --cov=pypots --dist=loadgroup
-                  python -m pytest -rA tests/test_imputation.py -n auto --cov=pypots --cov-append --dist=loadgroup
-                  python -m pytest -rA tests/test_clustering.py -n auto --cov=pypots --cov-append --dist=loadgroup
-                  python -m pytest -rA tests/test_forecasting.py -n auto --cov=pypots --cov-append --dist=loadgroup
-                  python -m pytest -rA tests/test_optim.py -n auto --cov=pypots --cov-append --dist=loadgroup
-                  python -m pytest -rA tests/test_data.py -n auto --cov=pypots --cov-append --dist=loadgroup
-                  python -m pytest -rA tests/test_utils.py -n auto --cov=pypots --cov-append --dist=loadgroup
-                  python -m pytest -rA tests/test_cli.py -n auto --cov=pypots --cov-append --dist=loadgroup
+                  python -m pytest -rA tests/test_classification.py -n auto --cov=pypots --dist=loadgroup --cov-config=.coveragerc
+                  python -m pytest -rA tests/test_imputation.py -n auto --cov=pypots --cov-append --dist=loadgroup --cov-config=.coveragerc
+                  python -m pytest -rA tests/test_clustering.py -n auto --cov=pypots --cov-append --dist=loadgroup --cov-config=.coveragerc
+                  python -m pytest -rA tests/test_forecasting.py -n auto --cov=pypots --cov-append --dist=loadgroup --cov-config=.coveragerc
+                  python -m pytest -rA tests/test_optim.py -n auto --cov=pypots --cov-append --dist=loadgroup --cov-config=.coveragerc
+                  python -m pytest -rA tests/test_data.py -n auto --cov=pypots --cov-append --dist=loadgroup --cov-config=.coveragerc
+                  python -m pytest -rA tests/test_utils.py -n auto --cov=pypots --cov-append --dist=loadgroup --cov-config=.coveragerc
+                  python -m pytest -rA tests/test_cli.py -n auto --cov=pypots --cov-append --dist=loadgroup --cov-config=.coveragerc
 
             - name: Generate the LCOV report
               run: |
