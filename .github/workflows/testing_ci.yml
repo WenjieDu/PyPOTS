@@ -47,6 +47,7 @@ jobs:
                   python -m pytest -rA tests/test_imputation.py -n auto --cov=pypots --cov-append --dist=loadgroup
                   python -m pytest -rA tests/test_clustering.py -n auto --cov=pypots --cov-append --dist=loadgroup
                   python -m pytest -rA tests/test_forecasting.py -n auto --cov=pypots --cov-append --dist=loadgroup
+                  python -m pytest -rA tests/test_optim.py -n auto --cov=pypots --cov-append --dist=loadgroup
                   python -m pytest -rA tests/test_data.py -n auto --cov=pypots --cov-append --dist=loadgroup
                   python -m pytest -rA tests/test_utils.py -n auto --cov=pypots --cov-append --dist=loadgroup
                   python -m pytest -rA tests/test_cli.py -n auto --cov=pypots --cov-append --dist=loadgroup
