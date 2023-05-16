@@ -13,7 +13,7 @@ from torch.optim import Adagrad as torch_Adagrad
 from pypots.optim.base import Optimizer
 
 
-class AdamW(Optimizer):
+class Adagrad(Optimizer):
     """The optimizer wrapper for PyTorch Adagrad.
     https://pytorch.org/docs/stable/generated/torch.optim.Adagrad.html#torch.optim.Adagrad
 
