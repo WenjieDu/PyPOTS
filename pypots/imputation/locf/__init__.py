@@ -1,5 +1,5 @@
 """
-
+The package of the partially-observed time-series imputation method LOCF.
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
