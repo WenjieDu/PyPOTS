@@ -313,19 +313,25 @@ def gene_incomplete_random_walk_dataset(
     return data
 
 
-def gene_physionet2012(artificially_missing: bool = True):
+def gene_physionet2012(artificially_missing_rate: float = 0.1):
     """Generate a fully-prepared PhysioNet-2012 dataset for model testing.
 
     Parameters
     ----------
-    artificially_missing : bool, default = True,
-        Whether to artificially mask out 10% observed values and hold out for imputation performance evaluation.
+    artificially_missing_rate : float, default = 0.1
+        The rate of artificially missing values to generate for model evaluation.
+        This ratio is calculated based on the number of observed values, i.e. if artificially_missing_rate = 0.1,
+        then 10% of the observed values will be randomly masked as missing data and hold out for model evaluation.
 
     Returns
     -------
     data: dict,
         A dictionary containing the generated PhysioNet-2012 dataset.
     """
+    assert (
+        0 <= artificially_missing_rate < 1
+    ), "artificially_missing_rate must be in [0,1)"
+
     # generate samples
     dataset = load_specific_dataset("physionet_2012")
     X = dataset["X"]
@@ -378,16 +384,16 @@ def gene_physionet2012(artificially_missing: bool = True):
         "scaler": scaler,
     }
 
-    if artificially_missing:
+    if artificially_missing_rate > 0:
         # mask values in the validation set as ground truth
         val_X_intact, val_X, val_X_missing_mask, val_X_indicating_mask = mcar(
-            val_X, 0.1
+            val_X, artificially_missing_rate
         )
         val_X = masked_fill(val_X, 1 - val_X_missing_mask, torch.nan)
 
         # mask values in the test set as ground truth
         test_X_intact, test_X, test_X_missing_mask, test_X_indicating_mask = mcar(
-            test_X, 0.1
+            test_X, artificially_missing_rate
         )
         test_X = masked_fill(test_X, 1 - test_X_missing_mask, torch.nan)
 
