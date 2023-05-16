@@ -10,6 +10,10 @@
 name: Publish to PyPI
 
 on:
+  push:
+    branches:
+      - release
+
   release:
     types: [published]
 
@@ -46,7 +50,8 @@ jobs:
         pip list
 
     - name: Build package
-      run: python -m build
+      run: |
+        python setup.py sdist bdist_wheel
 
     - name: Publish the new package to PyPI
       uses: pypa/gh-action-pypi-publish@v1.8.6
