@@ -336,7 +336,7 @@ class SAITS(BaseNNImputer):
             self.MIT_weight,
         )
         self.model = self.model.to(self.device)
-        self._print_model_size()
+        self.print_model_size()
 
         # set up the optimizer
         self.optimizer = optimizer

@@ -390,7 +390,7 @@ class VaDER(BaseNNClusterer):
             n_steps, n_features, n_clusters, rnn_hidden_size, d_mu_stddev
         )
         self.model = self.model.to(self.device)
-        self._print_model_size()
+        self.print_model_size()
 
         # set up the optimizer
         self.optimizer = optimizer
