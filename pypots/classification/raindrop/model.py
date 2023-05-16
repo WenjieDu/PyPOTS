@@ -1,13 +1,11 @@
 """
-PyTorch Raindrop model. Refer :cite:`zhang2022Raindrop` for more information.
-Inspired by the original implementation from https://github.com/mims-harvard/Raindrop
+The implementation of Raindrop for the partially-observed time-series classification task.
 
-Notes
------
-Due to the original implementation puts too many useless arguments and is not elegant, I simplify the code.
-If you need a version of the original implementation, please refer to my previous commit here
-https://github.com/WenjieDu/PyPOTS/blob/c381ad1853b465ebb918134d8bf6f6cf2996c9d3/pypots/classification/raindrop.py
+Refer to the paper "Zhang, X., Zeman, M., Tsiligkaridis, T., & Zitnik, M. (2022).
+Graph-Guided Network for Irregularly Sampled Multivariate Time Series. ICLR 2022."
+
 """
+
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: GLP-v3
@@ -290,20 +288,17 @@ class Raindrop(BaseNNClassifier):
 
     Parameters
     ----------
-    max_len : int,
-        The maximum length of the time-series data samples.
+    n_steps : int,
+        The number of time steps in the time-series data sample.
 
     n_features : int,
         The number of features in the time-series data samples.
 
-    n_classes, int,
+    n_classes : int,
         The number of classes in the classification task.
 
     n_layers : int,
         The number of layers in the Transformer encoder in the Raindrop model.
-
-    n_classes : int,
-        The number of classes in the classification task.
 
     d_model : int,
         The dimension of the Transformer encoder backbone.
@@ -378,7 +373,7 @@ class Raindrop(BaseNNClassifier):
 
     def __init__(
         self,
-        max_len,
+        n_steps,
         n_features,
         n_classes,
         n_layers,
@@ -411,7 +406,7 @@ class Raindrop(BaseNNClassifier):
         )
 
         self.n_features = n_features
-        self.n_steps = max_len
+        self.n_steps = n_steps
 
         # set up the model
         self.model = _Raindrop(
@@ -422,7 +417,7 @@ class Raindrop(BaseNNClassifier):
             n_heads,
             n_classes,
             dropout,
-            max_len,
+            n_steps,
             d_static,
             aggregation,
             sensor_wise_mask,

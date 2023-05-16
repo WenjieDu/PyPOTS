@@ -1,7 +1,9 @@
 """
-Torch implementation of CRLI (Clustering Representation Learning on Incomplete time-series data).
+The implementation of the modules for CRLI (Clustering Representation Learning on Incomplete time-series data).
 
-Please refer to :cite:`ma2021CRLI` for details.
+Refer to the paper "Ma, Q., Chen, C., Li, S., & Cottrell, G. W. (2021).
+Learning Representations for Incomplete Time Series Clustering. AAAI 2021."
+
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>

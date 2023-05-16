@@ -110,10 +110,8 @@ class BaseModel(ABC):
                 filename_suffix=".pypots",
             )
 
-            logger.info(
-                f"the trained model will be saved to {self.saving_path}, "
-                f"the tensorboard file will be saved to {tb_saving_path}"
-            )
+            logger.info(f"the trained model will be saved to {self.saving_path}")
+            logger.info(f"the tensorboard file will be saved to {tb_saving_path}")
 
     def _save_log_into_tb_file(self, step: int, stage: str, loss_dict: dict) -> None:
         """Saving training logs into the tensorboard file specified by the given path `tb_file_saving_path`.
