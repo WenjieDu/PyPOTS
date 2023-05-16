@@ -1,5 +1,5 @@
 """
-Test cases for data classes with the lazy-loading strategy of reading from files.
+Test cases for optimizers.
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
