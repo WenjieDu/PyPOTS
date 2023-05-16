@@ -1,5 +1,6 @@
 """
-Implementation of the imputation method LOCF (Last Observed Carried Forward).
+The implementation of LOCF (Last Observed Carried Forward) for the partially-observed time-series imputation task.
+
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>

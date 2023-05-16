@@ -1,5 +1,5 @@
 """
-PyTorch Transformer model for the time-series imputation task.
+The implementation of the modules for Transformer.
 
 Notes
 -----

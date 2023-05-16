@@ -1,7 +1,15 @@
 """
-Implementation of BTTF: Bayesian Temporal Tensor Factorization.
+The implementation of BTTF (Bayesian Temporal Tensor Factorization) for the partially-observed time-series
+forecasting task.
+
+Refer to the paper "Chen, X., & Sun, L. (2021).
+Bayesian Temporal Factorization for Multidimensional Time Series Prediction.
+IEEE transactions on pattern analysis and machine intelligence."
+
+Notes
+-----
 This numpy implementation is the same with the official one from https://github.com/xinychen/transdim.
-Refer to :cite:`chen2021BTMF`.
+
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
