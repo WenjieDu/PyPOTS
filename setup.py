@@ -53,7 +53,7 @@ setup(
     setup_requires=["setuptools>=38.6.0"],
     entry_points={"console_scripts": ["pypots-cli=pypots.cli.pypots_cli:main"]},
     classifiers=[
-        "Development Status :: 4 - Beta",
+        "Development Status :: 5 - Production/Stable",
         "Intended Audience :: Developers",
         "Intended Audience :: Education",
         "Intended Audience :: Science/Research",
