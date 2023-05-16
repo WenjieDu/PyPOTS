@@ -10,15 +10,6 @@ pypots.utils.files module
    :show-inheritance:
    :inherited-members:
 
-pypots.utils.logging module
----------------------------
-
-.. automodule:: pypots.utils.logging
-   :members:
-   :undoc-members:
-   :show-inheritance:
-   :inherited-members:
-
 pypots.utils.metrics module
 ---------------------------
 

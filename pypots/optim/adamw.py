@@ -1,5 +1,5 @@
 """
-The optimizer wrapper for PyTorch Adam.
+The optimizer wrapper for PyTorch AdamW.
 
 """
 
@@ -8,14 +8,14 @@ The optimizer wrapper for PyTorch Adam.
 
 from typing import Iterable, Tuple
 
-from torch.optim import Adam as torch_Adam
+from torch.optim import AdamW as torch_AdamW
 
 from pypots.optim.base import Optimizer
 
 
-class Adam(Optimizer):
-    """The optimizer wrapper for PyTorch Adam.
-    https://pytorch.org/docs/stable/generated/torch.optim.Adam.html#torch.optim.Adam
+class AdamW(Optimizer):
+    """The optimizer wrapper for PyTorch AdamW.
+    https://pytorch.org/docs/stable/generated/torch.optim.AdamW.html#torch.optim.AdamW
 
     Parameters
     ----------
@@ -28,7 +28,7 @@ class Adam(Optimizer):
     eps : float, default=1e-08,
         Term added to the denominator to improve numerical stability.
 
-    weight_decay : float, default=0,
+    weight_decay : float, default=0.01,
         Weight decay (L2 penalty).
 
     amsgrad : bool, default=False,
@@ -40,7 +40,7 @@ class Adam(Optimizer):
         lr: float = 0.001,
         betas: Tuple[float, float] = (0.9, 0.999),
         eps: float = 1e-08,
-        weight_decay: float = 0,
+        weight_decay: float = 0.01,
         amsgrad: bool = False,
     ):
         super().__init__(lr)
@@ -57,7 +57,7 @@ class Adam(Optimizer):
         params : Iterable,
             An iterable of ``torch.Tensor`` or ``dict``. Specifies what Tensors should be optimized.
         """
-        self.torch_optimizer = torch_Adam(
+        self.torch_optimizer = torch_AdamW(
             params=params,
             lr=self.lr,
             betas=self.betas,

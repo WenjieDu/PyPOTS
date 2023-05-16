@@ -12,7 +12,7 @@ from pypots.utils.logging import logger
 RANDOM_SEED = 2204
 
 
-def set_random_seed(random_seed: int = RANDOM_SEED):
+def set_random_seed(random_seed: int = RANDOM_SEED) -> None:
     """Manually set the random state to make PyPOTS output reproducible results.
 
     Parameters

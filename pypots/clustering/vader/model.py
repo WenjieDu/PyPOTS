@@ -1,7 +1,9 @@
 """
-Torch implementation of model VaDER.
+The implementation of VaDER for the partially-observed time-series clustering task.
 
-Refer to paper :cite:`dejong2019VaDER`.
+Refer to the paper "Jong, J.D., Emon, M.A., Wu, P., Karki, R., Sood, M., Godard, P., Ahmad, A., Vrooman, H.A.,
+Hofmann-Apitius, M., & Fröhlich, H. (2019).
+Deep learning for clustering of multivariate clinical patient trajectories with missing values. GigaScience."
 
 """
 
@@ -285,6 +287,73 @@ def inverse_softplus(x: np.ndarray) -> np.ndarray:
 
 
 class VaDER(BaseNNClusterer):
+    """The PyTorch implementation of the VaDER model :cite:`dejong2019VaDER`.
+
+    Parameters
+    ----------
+    n_steps : int,
+        The number of time steps in the time-series data sample.
+
+    n_features : int,
+        The number of features in the time-series data sample.
+
+    n_clusters : int,
+        The number of clusters in the clustering task.
+
+    rnn_hidden_size : int,
+        The size of the RNN hidden state, also the number of hidden units in the RNN cell.
+
+    d_mu_stddev : int,
+        The dimension of the mean and standard deviation of the Gaussian distribution.
+
+    batch_size : int, default = 32,
+        The batch size for training and evaluating the model.
+
+    pretrain_epochs : int, default = 10,
+        The number of epochs for pretraining the model.
+
+    epochs : int, default = 100,
+        The number of epochs for training the model.
+
+    patience : int, default = None,
+        The patience for the early-stopping mechanism. Given a positive integer, the training process will be
+        stopped when the model does not perform better after that number of epochs.
+        Leaving it default as None will disable the early-stopping.
+
+    optimizer : ``pypots.optim.base.Optimizer``, default = ``pypots.optim.Adam()``,
+        The optimizer for model training.
+        If not given, will use a default Adam optimizer.
+    num_workers : int, default = 0,
+        The number of subprocesses to use for data loading.
+        `0` means data loading will be in the main process, i.e. there won't be subprocesses.
+
+    device : str or `torch.device`, default = None,
+        The device for the model to run on.
+        If not given, will try to use CUDA devices first (will use the GPU with device number 0 only by default),
+        then CPUs, considering CUDA and CPU are so far the main devices for people to train ML models.
+        Other devices like Google TPU and Apple Silicon accelerator MPS may be added in the future.
+
+    saving_path : str, default = None,
+        The path for automatically saving model checkpoints and tensorboard files (i.e. loss values recorded during
+        training into a tensorboard file). Will not save if not given.
+
+    model_saving_strategy : str or None, None or "best" or "better" , default = "best",
+        The strategy to save model checkpoints. It has to be one of [None, "best", "better"].
+        No model will be saved when it is set as None.
+        The "best" strategy will only automatically save the best model after the training finished.
+        The "better" strategy will automatically save the model during training whenever the model performs
+        better than in previous epochs.
+
+    Attributes
+    ----------
+    model : object,
+        The underlying VaDER model.
+
+    optimizer : object,
+        The optimizer for model training.
+
+    """
+
     def __init__(
         self,
         n_steps: int,
@@ -321,7 +390,7 @@ class VaDER(BaseNNClusterer):
             n_steps, n_features, n_clusters, rnn_hidden_size, d_mu_stddev
         )
         self.model = self.model.to(self.device)
-        self._print_model_size()
+        self.print_model_size()
 
         # set up the optimizer
         self.optimizer = optimizer

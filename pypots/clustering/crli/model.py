@@ -1,7 +1,10 @@
 """
-Torch implementation of CRLI (Clustering Representation Learning on Incomplete time-series data).
+The implementation of CRLI (Clustering Representation Learning on Incomplete time-series data) for
+the partially-observed time-series clustering task.
 
-Please refer to :cite:`ma2021CRLI`.
+Refer to the paper "Ma, Q., Chen, C., Li, S., & Cottrell, G. W. (2021).
+Learning Representations for Incomplete Time Series Clustering. AAAI 2021."
+
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
@@ -33,7 +36,7 @@ class _CRLI(nn.Module):
         n_clusters: int,
         n_generator_layers: int,
         rnn_hidden_size: int,
-        decoder_fcn_output_dims: list,
+        decoder_fcn_output_dims: Optional[list],
         lambda_kmeans: float,
         rnn_cell_type: str = "GRU",
         device: Union[str, torch.device] = "cpu",
@@ -105,6 +108,91 @@ class _CRLI(nn.Module):
 
 
 class CRLI(BaseNNClusterer):
+    """The PyTorch implementation of the CRLI model :cite:`ma2021CRLI`.
+
+    Parameters
+    ----------
+    n_steps : int,
+        The number of time steps in the time-series data sample.
+
+    n_features : int,
+        The number of features in the time-series data sample.
+
+    n_clusters : int,
+        The number of clusters in the clustering task.
+
+    n_generator_layers : int,
+        The number of layers in the generator.
+
+    rnn_hidden_size : int,
+        The size of the RNN hidden state, also the number of hidden units in the RNN cell.
+
+    rnn_cell_type : str, default = "GRU"
+        The type of RNN cell to use. Can be either "GRU" or "LSTM".
+
+    decoder_fcn_output_dims : list, default = None
+        The output dimensions of each layer in the FCN (fully-connected network) of the decoder.
+
+    lambda_kmeans : float,
+        The weight of the k-means loss,
+        i.e. the item :math:`\\lambda` ahead of :math:`\\mathcal{L}_{k-means}` in Eq.13 of the original paper.
+
+    G_steps : int, default = 1,
+        The number of steps to train the generator in each iteration.
+
+    D_steps : int, default = 1,
+        The number of steps to train the discriminator in each iteration.
+
+    batch_size : int, default = 32,
+        The batch size for training and evaluating the model.
+
+    epochs : int, default = 100,
+        The number of epochs for training the model.
+
+    patience : int, default = None,
+        The patience for the early-stopping mechanism. Given a positive integer, the training process will be
+        stopped when the model does not perform better after that number of epochs.
+        Leaving it default as None will disable the early-stopping.
+
+    G_optimizer : ``pypots.optim.base.Optimizer``, default = ``pypots.optim.Adam()``,
+        The optimizer for the generator training.
+        If not given, will use a default Adam optimizer.
+
+    D_optimizer : ``pypots.optim.base.Optimizer``, default = ``pypots.optim.Adam()``,
+        The optimizer for the discriminator training.
+        If not given, will use a default Adam optimizer.
+
+    num_workers : int, default = 0,
+        The number of subprocesses to use for data loading.
+        `0` means data loading will be in the main process, i.e. there won't be subprocesses.
+
+    device : str or `torch.device`, default = None,
+        The device for the model to run on.
+        If not given, will try to use CUDA devices first (will use the GPU with device number 0 only by default),
+        then CPUs, considering CUDA and CPU are so far the main devices for people to train ML models.
+        Other devices like Google TPU and Apple Silicon accelerator MPS may be added in the future.
+
+    saving_path : str, default = None,
+        The path for automatically saving model checkpoints and tensorboard files (i.e. loss values recorded during
+        training into a tensorboard file). Will not save if not given.
+
+    model_saving_strategy : str or None, None or "best" or "better" , default = "best",
+        The strategy to save model checkpoints. It has to be one of [None, "best", "better"].
+        No model will be saved when it is set as None.
+        The "best" strategy will only automatically save the best model after the training finished.
+        The "better" strategy will automatically save the model during training whenever the model performs
+        better than in previous epochs.
+
+    Attributes
+    ----------
+    model : object,
+        The underlying CRLI model.
+
+    optimizer : object,
+        The optimizer for model training.
+
+    """
+
     def __init__(
         self,
         n_steps: int,
@@ -112,21 +200,22 @@ class CRLI(BaseNNClusterer):
         n_clusters: int,
         n_generator_layers: int,
         rnn_hidden_size: int,
-        decoder_fcn_output_dims: list = None,
-        lambda_kmeans: float = 1,
         rnn_cell_type: str = "GRU",
+        lambda_kmeans: float = 1,
+        decoder_fcn_output_dims: Optional[list] = None,
         G_steps: int = 1,
         D_steps: int = 1,
         batch_size: int = 32,
         epochs: int = 100,
-        patience: int = None,
+        patience: Optional[int] = None,
         G_optimizer: Optional[Optimizer] = Adam(),
         D_optimizer: Optional[Optimizer] = Adam(),
         num_workers: int = 0,
         device: Optional[Union[str, torch.device]] = None,
-        saving_path: str = None,
+        saving_path: Optional[str] = None,
         model_saving_strategy: Optional[str] = "best",
     ):
+
         super().__init__(
             n_clusters,
             batch_size,
@@ -157,7 +246,7 @@ class CRLI(BaseNNClusterer):
             self.device,
         )
         self.model = self.model.to(self.device)
-        self._print_model_size()
+        self.print_model_size()
 
         # set up the optimizer
         self.G_optimizer = G_optimizer
