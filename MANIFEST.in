@@ -1,1 +1,1 @@
-prune pypots/tests
+prune pypots/*/template
