@@ -246,7 +246,7 @@ class CRLI(BaseNNClusterer):
             self.device,
         )
         self.model = self.model.to(self.device)
-        self.print_model_size()
+        self._print_model_size()
 
         # set up the optimizer
         self.G_optimizer = G_optimizer
