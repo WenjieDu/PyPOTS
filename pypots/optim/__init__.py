@@ -6,6 +6,7 @@ Optimizers for PyPOTS NN models.
 # License: GLP-v3
 
 
+from pypots.optim.adadelta import Adadelta
 from pypots.optim.adagrad import Adagrad
 from pypots.optim.adam import Adam
 from pypots.optim.adamw import AdamW
@@ -16,6 +17,7 @@ __all__ = [
     "Adam",
     "AdamW",
     "Adagrad",
+    "Adadelta",
     "RMSprop",
     "SGD",
 ]

@@ -12,7 +12,7 @@ import numpy as np
 import pytest
 
 from pypots.imputation import SAITS
-from pypots.optim import Adam, AdamW, Adagrad, SGD, RMSprop
+from pypots.optim import Adam, AdamW, Adagrad, Adadelta, SGD, RMSprop
 from pypots.utils.logging import logger
 from pypots.utils.metrics import cal_mae
 from tests.global_test_config import DATA
@@ -73,7 +73,7 @@ class TestAdam(unittest.TestCase):
 class TestAdamW(unittest.TestCase):
     logger.info("Running tests for AdamW...")
 
-    # initialize an Adam optimizer
+    # initialize an AdamW optimizer
     adamw = AdamW(lr=0.001, weight_decay=1e-5)
 
     # initialize a SAITS model for testing DatasetForMIT and BaseDataset
@@ -107,7 +107,7 @@ class TestAdamW(unittest.TestCase):
 class TestAdagrad(unittest.TestCase):
     logger.info("Running tests for Adagrad...")
 
-    # initialize an Adam optimizer
+    # initialize an Adagrad optimizer
     adagrad = Adagrad(lr=0.001, weight_decay=1e-5)
 
     # initialize a SAITS model for testing DatasetForMIT and BaseDataset
@@ -138,10 +138,44 @@ class TestAdagrad(unittest.TestCase):
         logger.info(f"SAITS test_MAE: {test_MAE}")
 
 
+class TestAdadelta(unittest.TestCase):
+    logger.info("Running tests for Adadelta...")
+
+    # initialize an Adadelta optimizer
+    adadelta = Adadelta(lr=0.001, weight_decay=1e-5)
+
+    # initialize a SAITS model for testing DatasetForMIT and BaseDataset
+    saits = SAITS(
+        DATA["n_steps"],
+        DATA["n_features"],
+        n_layers=1,
+        d_model=128,
+        d_inner=64,
+        n_heads=2,
+        d_k=64,
+        d_v=64,
+        dropout=0.1,
+        optimizer=adadelta,
+        epochs=EPOCHS,
+    )
+
+    @pytest.mark.xdist_group(name="optim-adadelta")
+    def test_0_fit(self):
+        self.saits.fit(TRAIN_SET, VAL_SET)
+        imputed_X = self.saits.impute(TEST_SET)
+        assert not np.isnan(
+            imputed_X
+        ).any(), "Output still has missing values after running impute()."
+        test_MAE = cal_mae(
+            imputed_X, DATA["test_X_intact"], DATA["test_X_indicating_mask"]
+        )
+        logger.info(f"SAITS test_MAE: {test_MAE}")
+
+
 class TestSGD(unittest.TestCase):
     logger.info("Running tests for SGD...")
 
-    # initialize an Adam optimizer
+    # initialize a SGD optimizer
     sgd = SGD(lr=0.001, weight_decay=1e-5)
 
     # initialize a SAITS model for testing DatasetForMIT and BaseDataset
@@ -175,7 +209,7 @@ class TestSGD(unittest.TestCase):
 class TestRMSprop(unittest.TestCase):
     logger.info("Running tests for RMSprop...")
 
-    # initialize an Adam optimizer
+    # initialize a RMSprop optimizer
     rmsprop = RMSprop(lr=0.001, weight_decay=1e-5)
 
     # initialize a SAITS model for testing DatasetForMIT and BaseDataset
