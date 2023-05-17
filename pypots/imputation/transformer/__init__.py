@@ -10,7 +10,7 @@ Expert systems with applications."
 # License: GLP-v3
 
 
-from pypots.imputation.transformer.model import Transformer
+from .model import Transformer
 
 __all__ = [
     "Transformer",

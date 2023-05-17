@@ -10,7 +10,7 @@ from typing import Iterable
 
 from torch.optim import Adagrad as torch_Adagrad
 
-from pypots.optim.base import Optimizer
+from .base import Optimizer
 
 
 class Adagrad(Optimizer):

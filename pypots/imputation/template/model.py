@@ -17,11 +17,11 @@ import torch.nn as nn
 # TODO: import the base class from the imputation package in PyPOTS.
 #  Here I suppose this is a neural-network imputation model.
 #  You should make your model inherent BaseImputer if it is not a NN.
-# from pypots.imputation.base import BaseImputer
-from pypots.imputation.base import BaseNNImputer
+# from ..base import BaseImputer
+from ..base import BaseNNImputer
 
-from pypots.optim.adam import Adam
-from pypots.optim.base import Optimizer
+from ...optim.adam import Adam
+from ...optim.base import Optimizer
 
 
 # TODO: define your new model here.

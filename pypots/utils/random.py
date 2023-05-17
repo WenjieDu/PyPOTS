@@ -7,7 +7,7 @@ Transformer model for time-series imputation.
 
 import numpy as np
 import torch
-from pypots.utils.logging import logger
+from .logging import logger
 
 RANDOM_SEED = 2204
 

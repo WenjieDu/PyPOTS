@@ -22,12 +22,12 @@ import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
 
-from pypots.imputation.base import BaseNNImputer
-from pypots.imputation.brits.data import DatasetForBRITS
-from pypots.imputation.brits.modules import TemporalDecay, FeatureRegression
-from pypots.optim.adam import Adam
-from pypots.optim.base import Optimizer
-from pypots.utils.metrics import cal_mae
+from .data import DatasetForBRITS
+from .modules import TemporalDecay, FeatureRegression
+from ..base import BaseNNImputer
+from ...optim.adam import Adam
+from ...optim.base import Optimizer
+from ...utils.metrics import cal_mae
 
 
 class RITS(nn.Module):

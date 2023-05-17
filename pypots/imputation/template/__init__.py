@@ -11,7 +11,7 @@ TODO: modify the above description with your model's information.
 # License: GLP-v3
 
 # TODO: ensure the import is correct
-from pypots.imputation.template.model import YourNewModel
+from .model import YourNewModel
 
 __all__ = [
     "YourNewModel",  # TODO: ensure the name is correct

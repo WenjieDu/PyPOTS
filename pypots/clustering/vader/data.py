@@ -8,7 +8,7 @@ Dataset class for model GRU-D.
 
 from typing import Union
 
-from pypots.clustering.crli.data import DatasetForCRLI
+from ..crli.data import DatasetForCRLI
 
 
 class DatasetForVaDER(DatasetForCRLI):
