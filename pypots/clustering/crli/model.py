@@ -19,13 +19,13 @@ import torch.nn.functional as F
 from sklearn.cluster import KMeans
 from torch.utils.data import DataLoader
 
-from pypots.clustering.base import BaseNNClusterer
-from pypots.clustering.crli.data import DatasetForCRLI
-from pypots.clustering.crli.modules import Generator, Decoder, Discriminator
-from pypots.optim.adam import Adam
-from pypots.optim.base import Optimizer
-from pypots.utils.logging import logger
-from pypots.utils.metrics import cal_mse
+from .data import DatasetForCRLI
+from .modules import Generator, Decoder, Discriminator
+from ..base import BaseNNClusterer
+from ...optim.adam import Adam
+from ...optim.base import Optimizer
+from ...utils.logging import logger
+from ...utils.metrics import cal_mse
 
 
 class _CRLI(nn.Module):

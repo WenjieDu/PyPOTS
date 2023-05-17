@@ -18,11 +18,11 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import DataLoader
 
-from pypots.classification.base import BaseNNClassifier
-from pypots.classification.grud.data import DatasetForGRUD
-from pypots.imputation.brits.modules import TemporalDecay
-from pypots.optim.adam import Adam
-from pypots.optim.base import Optimizer
+from ..base import BaseNNClassifier
+from .data import DatasetForGRUD
+from ...imputation.brits.modules import TemporalDecay
+from ...optim.adam import Adam
+from ...optim.base import Optimizer
 
 
 class _GRUD(nn.Module):

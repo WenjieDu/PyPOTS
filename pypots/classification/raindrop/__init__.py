@@ -9,7 +9,7 @@ Graph-Guided Network for Irregularly Sampled Multivariate Time Series. ICLR 2022
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: GLP-v3
 
-from pypots.classification.raindrop.model import Raindrop
+from .model import Raindrop
 
 __all__ = [
     "Raindrop",

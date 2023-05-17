@@ -21,15 +21,15 @@ from torch.nn import TransformerEncoderLayer, TransformerEncoder
 from torch.nn.parameter import Parameter
 from torch.utils.data import DataLoader
 
-from pypots.classification.base import BaseNNClassifier
-from pypots.classification.grud.data import DatasetForGRUD
-from pypots.classification.raindrop.modules import (
+from .modules import (
     PositionalEncoding,
     ObservationPropagation,
 )
-from pypots.optim.adam import Adam
-from pypots.optim.base import Optimizer
-from pypots.utils.logging import logger
+from ...classification.base import BaseNNClassifier
+from ...classification.grud.data import DatasetForGRUD
+from ...optim.adam import Adam
+from ...optim.base import Optimizer
+from ...utils.logging import logger
 
 try:
     from torch_geometric.nn.inits import glorot

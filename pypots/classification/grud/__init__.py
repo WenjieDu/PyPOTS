@@ -9,7 +9,7 @@ Recurrent Neural Networks for Multivariate Time Series with Missing Values. Scie
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: GLP-v3
 
-from pypots.classification.grud.model import GRUD
+from .model import GRUD
 
 __all__ = [
     "GRUD",

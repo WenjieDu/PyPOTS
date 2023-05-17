@@ -9,8 +9,8 @@ import os
 import shutil
 from argparse import Namespace
 
-from pypots.cli.base import BaseCommand
-from pypots.utils.logging import logger
+from .base import BaseCommand
+from ..utils.logging import logger
 
 IMPORT_ERROR_MESSAGE = (
     "`pypots-cli dev` command is for PyPOTS developers to run tests easily. "

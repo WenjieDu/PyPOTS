@@ -27,8 +27,8 @@ from argparse import ArgumentParser, Namespace
 
 from setuptools.config import read_configuration
 
-from pypots.cli.base import BaseCommand
-from pypots.utils.logging import logger
+from .base import BaseCommand
+from ..utils.logging import logger
 
 
 def env_command_factory(args: Namespace):

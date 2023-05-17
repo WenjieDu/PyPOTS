@@ -17,11 +17,11 @@ import torch.nn as nn
 # TODO: import the base class from the forecasting package in PyPOTS.
 #  Here I suppose this is a neural-network forecasting model.
 #  You should make your model inherent BaseForecaster if it is not a NN.
-# from pypots.forecasting.base import BaseForecaster
-from pypots.forecasting.base import BaseNNForecaster
+# from ..base import BaseForecaster
+from ..base import BaseNNForecaster
 
-from pypots.optim.adam import Adam
-from pypots.optim.base import Optimizer
+from ...optim.adam import Adam
+from ...optim.base import Optimizer
 
 
 # TODO: define your new model here.

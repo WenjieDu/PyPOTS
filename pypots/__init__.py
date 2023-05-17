@@ -24,19 +24,14 @@ PyPOTS package.
 # 'X.Y.dev0' is the canonical version of 'X.Y.dev'
 __version__ = "0.1.0"
 
-from pypots import classification
-from pypots import clustering
-from pypots import data
-from pypots import forecasting
-from pypots import imputation
-from pypots import utils
 
 __all__ = [
+    "imputation",
     "classification",
     "clustering",
-    "data",
     "forecasting",
-    "imputation",
+    "optim",
+    "data",
     "utils",
     "__version__",
 ]

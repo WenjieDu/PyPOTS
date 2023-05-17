@@ -12,7 +12,7 @@ import sys
 from abc import ABC, abstractmethod
 from argparse import ArgumentParser
 
-from pypots.utils.logging import logger
+from ..utils.logging import logger
 
 
 class BaseCommand(ABC):

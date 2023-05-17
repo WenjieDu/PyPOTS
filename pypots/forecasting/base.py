@@ -13,8 +13,8 @@ import numpy as np
 import torch
 from torch.utils.data import DataLoader
 
-from pypots.base import BaseModel, BaseNNModel
-from pypots.utils.logging import logger
+from ..base import BaseModel, BaseNNModel
+from ..utils.logging import logger
 
 
 class BaseForecaster(BaseModel):

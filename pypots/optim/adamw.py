@@ -10,7 +10,7 @@ from typing import Iterable, Tuple
 
 from torch.optim import AdamW as torch_AdamW
 
-from pypots.optim.base import Optimizer
+from .base import Optimizer
 
 
 class AdamW(Optimizer):

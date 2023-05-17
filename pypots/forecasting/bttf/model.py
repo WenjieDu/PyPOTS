@@ -24,8 +24,7 @@ from numpy.linalg import inv as inv
 from numpy.linalg import solve as solve
 from scipy.linalg import khatri_rao as kr_prod
 
-from pypots.forecasting.base import BaseForecaster
-from pypots.forecasting.bttf.modules import (
+from .modules import (
     mvnrnd_pre,
     ten2mat,
     sample_factor_u,
@@ -34,6 +33,7 @@ from pypots.forecasting.bttf.modules import (
     sample_var_coefficient,
     ar4cast,
 )
+from ..base import BaseForecaster
 
 
 def _BTTF(
