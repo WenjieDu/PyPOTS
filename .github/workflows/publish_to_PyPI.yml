@@ -13,7 +13,6 @@ on:
   push:
     branches:
       - release
-      - test_release
 
   release:
     types: [published]
