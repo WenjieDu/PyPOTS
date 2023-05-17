@@ -19,7 +19,7 @@ from typing import Union
 import torch
 import torch.nn as nn
 
-from pypots.imputation.brits.model import (
+from ...imputation.brits.model import (
     RITS as imputation_RITS,
 )
 

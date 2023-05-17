@@ -12,7 +12,7 @@ from typing import Union, Optional
 import numpy as np
 import torch
 
-from pypots.imputation.base import BaseImputer
+from ..base import BaseImputer
 
 
 class LOCF(BaseImputer):

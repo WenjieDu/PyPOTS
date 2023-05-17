@@ -8,7 +8,7 @@ Dataset class for model GRU-D.
 
 from typing import Union, Iterable
 
-from pypots.data.base import BaseDataset
+from ...data.base import BaseDataset
 
 
 class DatasetForCRLI(BaseDataset):

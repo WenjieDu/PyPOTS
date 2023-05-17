@@ -9,8 +9,8 @@ from typing import Union, Iterable
 
 import torch
 
-from pypots.data.base import BaseDataset
-from pypots.data.utils import torch_parse_delta
+from ...data.base import BaseDataset
+from ...data.utils import torch_parse_delta
 
 
 class DatasetForBRITS(BaseDataset):

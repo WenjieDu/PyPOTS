@@ -14,9 +14,9 @@ import numpy as np
 import torch
 from torch.utils.data import DataLoader
 
-from pypots.base import BaseModel, BaseNNModel
-from pypots.utils.logging import logger
-from pypots.utils.metrics import cal_mae
+from ..base import BaseModel, BaseNNModel
+from ..utils.logging import logger
+from ..utils.metrics import cal_mae
 
 try:
     import nni

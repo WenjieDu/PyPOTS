@@ -10,7 +10,7 @@ from typing import Iterable
 
 from torch.optim import RMSprop as torch_RMSprop
 
-from pypots.optim.base import Optimizer
+from .base import Optimizer
 
 
 class RMSprop(Optimizer):

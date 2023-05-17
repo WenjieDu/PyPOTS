@@ -10,7 +10,7 @@ from typing import Union, Iterable
 import torch
 from pycorruptor import mcar
 
-from pypots.data.base import BaseDataset
+from ...data.base import BaseDataset
 
 
 class DatasetForSAITS(BaseDataset):
