@@ -10,9 +10,9 @@ from typing import Union, Iterable
 
 import torch
 
-from pypots.data.base import BaseDataset
-from pypots.data.utils import torch_parse_delta
-from pypots.imputation.locf import LOCF
+from ...data.base import BaseDataset
+from ...data.utils import torch_parse_delta
+from ...imputation.locf import LOCF
 
 
 class DatasetForGRUD(BaseDataset):

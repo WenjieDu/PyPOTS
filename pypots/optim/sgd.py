@@ -10,7 +10,7 @@ from typing import Iterable
 
 from torch.optim import SGD as torch_SGD
 
-from pypots.optim.base import Optimizer
+from .base import Optimizer
 
 
 class SGD(Optimizer):

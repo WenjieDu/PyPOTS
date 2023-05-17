@@ -9,14 +9,13 @@ import math
 from typing import Optional, Tuple
 
 import numpy as np
-from sklearn.utils import check_random_state
-
 import torch
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
+from sklearn.utils import check_random_state
 
-from pypots.data.utils import mcar, masked_fill
-from pypots.data.load_specific_datasets import load_specific_dataset
+from .load_specific_datasets import load_specific_dataset
+from .utils import mcar, masked_fill
 
 
 def gene_complete_random_walk(

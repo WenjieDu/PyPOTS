@@ -17,11 +17,11 @@ import torch.nn as nn
 # TODO: import the base class from the clustering package in PyPOTS.
 #  Here I suppose this is a neural-network clustering model.
 #  You should make your model inherent BaseClusterer if it is not a NN.
-# from pypots.clustering.base import BaseClusterer
-from pypots.clustering.base import BaseNNClusterer
+# from ..base import BaseClusterer
+from ..base import BaseNNClusterer
 
-from pypots.optim.adam import Adam
-from pypots.optim.base import Optimizer
+from ...optim.adam import Adam
+from ...optim.base import Optimizer
 
 
 # TODO: define your new model here.

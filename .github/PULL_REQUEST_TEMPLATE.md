@@ -16,7 +16,10 @@ Fixes # (issue)
 
 
 ## Before submitting
+
+<!-- You can remove checks that are not relevant to this PR. -->
+
 - [ ] This PR is made to fix a typo or improve the docs (you can dismiss the other checks if this is the case).
-- [ ] Was this discussed/approved via a Github issue? Please add a link to it if that's the case.
+- [ ] Was this discussed/approved via a GitHub issue? Please add a link to it if that's the case.
 - [ ] I have commented my code, particularly in hard-to-understand areas.
 - [ ] I have written necessary tests and already run them locally.

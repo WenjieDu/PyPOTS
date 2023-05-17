@@ -17,11 +17,11 @@ import torch.nn as nn
 # TODO: import the base class from the classification package in PyPOTS.
 #  Here I suppose this is a neural-network classification model.
 #  You should make your model inherent BaseClassifier if it is not a NN.
-# from pypots.classification.base import BaseClassifier
-from pypots.classification.base import BaseNNClassifier
+# from ..base import BaseClassifier
+from ..base import BaseNNClassifier
 
-from pypots.optim.adam import Adam
-from pypots.optim.base import Optimizer
+from ...optim.adam import Adam
+from ...optim.base import Optimizer
 
 
 # TODO: define your new model here.

@@ -9,7 +9,7 @@ BRITS: Bidirectional Recurrent Imputation for Time Series. NeurIPS 2018."
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: GLP-v3
 
-from pypots.classification.brits.model import BRITS
+from .model import BRITS
 
 __all__ = [
     "BRITS",

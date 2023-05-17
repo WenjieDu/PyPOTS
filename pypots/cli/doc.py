@@ -11,8 +11,8 @@ from argparse import Namespace
 
 from tsdb.data_processing import _download_and_extract
 
-from pypots.cli.base import BaseCommand
-from pypots.utils.logging import logger
+from ..cli.base import BaseCommand
+from ..utils.logging import logger
 
 CLONED_LATEST_PYPOTS = "temp_pypots_latest"
 

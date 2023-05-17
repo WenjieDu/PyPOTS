@@ -8,8 +8,8 @@ Functions to load supported open-source time-series datasets.
 
 import tsdb
 
-from pypots.data.load_preprocessing import preprocess_physionet2012
-from pypots.utils.logging import logger
+from .load_preprocessing import preprocess_physionet2012
+from ..utils.logging import logger
 
 # currently supported datasets
 SUPPORTED_DATASETS = [

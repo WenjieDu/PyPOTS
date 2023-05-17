@@ -21,14 +21,14 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import DataLoader
 
-from pypots.classification.base import BaseNNClassifier
-from pypots.classification.brits.data import DatasetForBRITS
-from pypots.classification.brits.modules import RITS
-from pypots.imputation.brits.model import (
+from .data import DatasetForBRITS
+from .modules import RITS
+from ..base import BaseNNClassifier
+from ...imputation.brits.model import (
     _BRITS as imputation_BRITS,
 )
-from pypots.optim.adam import Adam
-from pypots.optim.base import Optimizer
+from ...optim.adam import Adam
+from ...optim.base import Optimizer
 
 
 class _BRITS(imputation_BRITS, nn.Module):
