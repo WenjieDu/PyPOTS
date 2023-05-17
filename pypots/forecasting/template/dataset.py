@@ -10,7 +10,7 @@ TODO: modify the above description with your model's information.
 
 from typing import Union, Iterable
 
-from pypots.data.base import BaseDataset
+from ...data.base import BaseDataset
 
 
 class DatasetForYourNewModel(BaseDataset):

@@ -10,7 +10,7 @@ from typing import Iterable
 
 from torch.optim import Adadelta as torch_Adadelta
 
-from pypots.optim.base import Optimizer
+from .base import Optimizer
 
 
 class Adadelta(Optimizer):

@@ -12,8 +12,8 @@ from typing import Optional, Union
 import torch
 from torch.utils.tensorboard import SummaryWriter
 
-from pypots.utils.files import create_dir_if_not_exist
-from pypots.utils.logging import logger
+from .utils.files import create_dir_if_not_exist
+from .utils.logging import logger
 
 
 class BaseModel(ABC):
