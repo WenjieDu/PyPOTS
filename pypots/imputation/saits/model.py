@@ -290,7 +290,7 @@ class SAITS(BaseNNImputer):
         patience: Optional[int] = None,
         optimizer: Optional[Optimizer] = Adam(),
         num_workers: int = 0,
-        device: Optional[Union[str, torch.device]] = None,
+        device: Optional[Union[str, torch.device, list]] = None,
         saving_path: Optional[str] = None,
         model_saving_strategy: Optional[str] = "best",
     ):
@@ -335,8 +335,8 @@ class SAITS(BaseNNImputer):
             self.ORT_weight,
             self.MIT_weight,
         )
-        self.model = self.model.to(self.device)
         self._print_model_size()
+        self._send_model_to_given_device()
 
         # set up the optimizer
         self.optimizer = optimizer

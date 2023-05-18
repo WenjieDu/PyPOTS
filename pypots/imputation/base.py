@@ -141,7 +141,7 @@ class BaseNNImputer(BaseNNModel, BaseImputer):
         epochs: int,
         patience: int,
         num_workers: int = 0,
-        device: Optional[Union[str, torch.device]] = None,
+        device: Optional[Union[str, torch.device, list]] = None,
         saving_path: str = None,
         model_saving_strategy: Optional[str] = "best",
     ):

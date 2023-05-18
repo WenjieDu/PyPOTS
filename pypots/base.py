@@ -7,6 +7,7 @@ The base (abstract) classes for models in PyPOTS.
 
 import os
 from abc import ABC
+from datetime import datetime
 from typing import Optional, Union
 
 import torch
@@ -56,7 +57,7 @@ class BaseModel(ABC):
 
     def __init__(
         self,
-        device: Optional[Union[str, torch.device]] = None,
+        device: Optional[Union[str, torch.device, list]] = None,
         saving_path: str = None,
         model_saving_strategy: Optional[str] = "best",
     ):
@@ -74,7 +75,7 @@ class BaseModel(ABC):
 
         # set up the device for model running below
         if device is None:
-            # if it is None, then
+            # if it is None, then use the first cuda device if cuda is available, otherwise use cpu
             self.device = torch.device(
                 "cuda:0"
                 if torch.cuda.is_available() and torch.cuda.device_count() > 0
@@ -83,18 +84,34 @@ class BaseModel(ABC):
             logger.info(f"No given device, using default device: {self.device}")
         else:
             if isinstance(device, str):
-                self.device = torch.device(device)
+                self.device = torch.device(device.lower())
             elif isinstance(device, torch.device):
                 self.device = device
+            elif isinstance(device, list):
+                # parallely training on multiple CUDA devices
+                device_list = []
+                for idx, d in enumerate(device):
+                    if isinstance(d, str):
+                        device_list.append(torch.device(d.lower()))
+                    elif isinstance(d, torch.device):
+                        device_list.append(d)
+                    raise TypeError(
+                        f"Devices in the list should be str or torch.device, "
+                        f"but the device with index {idx} is {type(d)}."
+                    )
+                self.device = device_list
             else:
                 raise TypeError(
-                    f"device should be str or torch.device, but got {type(device)}"
+                    f"device should be str/torch.device/a list of str or torch.device, but got {type(device)}"
                 )
+        # check CUDA availability if using CUDA
+        if "cuda" in self.device.type or isinstance(self.device, list):
+            assert (
+                torch.cuda.is_available() and torch.cuda.device_count() > 0
+            ), "You are trying to use CUDA for model training, but CUDA is not available in your environment."
 
         # set up saving_path to save the trained model and training logs
         if isinstance(saving_path, str):
-            from datetime import datetime
-
             # get the current time to append to saving_path,
             # so you can use the same saving_path to run multiple times
             # and also be aware of when they were run
@@ -109,9 +126,18 @@ class BaseModel(ABC):
                 tb_saving_path,
                 filename_suffix=".pypots",
             )
+            logger.info(f"Model files will be saved to {self.saving_path}")
+            logger.info(f"Tensorboard file will be saved to {tb_saving_path}")
+        else:
+            logger.info(
+                "saving_path not given. Model files and tensorboard file will not be saved."
+            )
 
-            logger.info(f"the trained model will be saved to {self.saving_path}")
-            logger.info(f"the tensorboard file will be saved to {tb_saving_path}")
+    def _send_model_to_given_device(self):
+        if isinstance(self.device, torch.device):  # single device
+            self.model = self.model.to(self.device)
+        else:  # parallely training on multiple devices
+            self.model = torch.nn.DataParallel(self.model, device_ids=self.device)
 
     def _save_log_into_tb_file(self, step: int, stage: str, loss_dict: dict) -> None:
         """Saving training logs into the tensorboard file specified by the given path `tb_file_saving_path`.
@@ -226,7 +252,13 @@ class BaseModel(ABC):
         assert os.path.exists(model_path), f"Model file {model_path} does not exist."
 
         try:
-            loaded_model = torch.load(model_path, map_location=self.device)
+            if isinstance(self.device, torch.device):
+                loaded_model = torch.load(model_path, map_location=self.device)
+                # TODO: if the model was trained in parallel and saved with `module`?
+                #   need to remove 'module.'
+            else:
+                # TODO: multiple GUP
+                loaded_model = torch.load(model_path)
             if isinstance(loaded_model, torch.nn.Module):
                 self.model.load_state_dict(loaded_model.state_dict())
             else:
@@ -289,7 +321,7 @@ class BaseNNModel(BaseModel):
         epochs: int,
         patience: int,
         num_workers: int = 0,
-        device: Optional[Union[str, torch.device]] = None,
+        device: Optional[Union[str, torch.device, list]] = None,
         saving_path: str = None,
         model_saving_strategy: Optional[str] = "best",
     ):
