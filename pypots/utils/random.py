@@ -17,7 +17,7 @@ def set_random_seed(random_seed: int = RANDOM_SEED) -> None:
 
     Parameters
     ----------
-    random_seed : int, default = RANDOM_SEED,
+    random_seed :
         The seed to be set for generating random numbers in PyPOTS.
 
     """

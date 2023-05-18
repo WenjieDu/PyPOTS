@@ -15,12 +15,12 @@ def extract_parent_dir(path: str) -> str:
 
     Parameters
     ----------
-    path : str,
+    path :
         The path for extracting.
 
     Returns
     -------
-    parent_dir : str
+    parent_dir :
         The path to the parent dir of the given path.
 
     """
@@ -33,10 +33,10 @@ def create_dir_if_not_exist(path: str, is_dir: bool = True) -> None:
 
     Parameters
     ----------
-    path : str,
+    path :
         The path for check.
 
-    is_dir : bool,
+    is_dir :
         Whether the given path is to a directory. If `is_dir` is False, the given path is to a file or an object,
         then this file's parent directory will be checked.
 

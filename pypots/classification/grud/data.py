@@ -53,7 +53,7 @@ class DatasetForGRUD(BaseDataset):
 
         if not isinstance(self.data, str):  # data from array
             self.missing_mask = (~torch.isnan(self.X)).to(torch.float32)
-            self.X_filledLOCF = self.locf.locf_torch(self.X)
+            self.X_filledLOCF = self.locf._locf_torch(self.X)
             self.X = torch.nan_to_num(self.X)
             self.deltas = torch_parse_delta(self.missing_mask)
             self.empirical_mean = torch.sum(
@@ -125,7 +125,7 @@ class DatasetForGRUD(BaseDataset):
 
         X = torch.from_numpy(self.file_handle["X"][idx])
         missing_mask = (~torch.isnan(X)).to(torch.float32)
-        X_filledLOCF = self.locf.locf_torch(X.unsqueeze(dim=0)).squeeze()
+        X_filledLOCF = self.locf._locf_torch(X.unsqueeze(dim=0)).squeeze()
         X = torch.nan_to_num(X)
         deltas = torch_parse_delta(missing_mask)
         empirical_mean = torch.sum(missing_mask * X, dim=[0]) / torch.sum(

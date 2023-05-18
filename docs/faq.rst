@@ -1,8 +1,6 @@
 Frequently Asked Questions
 ==========================
 
--------------------------
-
 Inclusion Criteria
 ^^^^^^^^^^^^^^^^^^
 Similarly to `scikit-learn <https://scikit-learn.org/stable/faq.html#what-are-the-inclusion-criteria-for-new-algorithms>`_,

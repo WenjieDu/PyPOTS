@@ -25,12 +25,12 @@ class Optimizer(ABC):
 
     Parameters
     ----------
-    lr : float,
+    lr :
         The learning rate of the optimizer.
 
     Attributes
     ----------
-    torch_optimizer : torch.optim.Optimizer,
+    torch_optimizer :
         The torch optimizer wrapped by this class.
 
     """
@@ -45,7 +45,7 @@ class Optimizer(ABC):
 
         Parameters
         ----------
-        params : Iterable,
+        params :
             An iterable of ``torch.Tensor`` or ``dict``. Specifies what Tensors should be optimized.
         """
         raise NotImplementedError
@@ -55,7 +55,7 @@ class Optimizer(ABC):
 
         Parameters
         ----------
-        param_group : dict,
+        param_group :
             Specifies the parameters to be optimized and group-specific optimization options.
         """
         self.torch_optimizer.add_param_group(param_group)
@@ -65,7 +65,7 @@ class Optimizer(ABC):
 
         Parameters
         ----------
-        state_dict : dict,
+        state_dict :
             Optimizer state. It should be an object returned from ``state_dict()``.
         """
 
@@ -76,7 +76,7 @@ class Optimizer(ABC):
 
         Returns
         -------
-        state_dict : dict,
+        state_dict :
             The state dict of the optimizer, which contains two entries:
             1). state - a dict holding current optimization state. Its content differs between optimizer classes.
             2). param_groups - a list containing all parameter groups where each parameter group is a dict
@@ -90,7 +90,7 @@ class Optimizer(ABC):
 
         Parameters
         ----------
-        closure : Callable, optional, default=None,
+        closure :
             A closure that reevaluates the model and returns the loss. Optional for most optimizers.
             Refer to the torch.optim.Optimizer.step() docstring for more details.
 
@@ -102,7 +102,7 @@ class Optimizer(ABC):
 
         Parameters
         ----------
-        set_to_none : bool,
+        set_to_none :
             Instead of setting to zero, set the grads to None.
             Refer to the torch.optim.Optimizer.zero_grad() docstring for more details.
 

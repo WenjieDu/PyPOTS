@@ -31,11 +31,13 @@ class BaseImputer(BaseModel):
     ----------
     device :
         The device for the model to run on.
-        If not given, will try to use CUDA devices first, then CPUs. CUDA and CPU are so far the main devices for people
-        to train ML models. Other devices like Google TPU and Apple Silicon accelerator MPS may be added in the future.
+        If not given, will try to use CUDA devices first (will use the default CUDA device if there are multiple),
+        then CPUs, considering CUDA and CPU are so far the main devices for people to train ML models.
+        Other devices like Google TPU and Apple Silicon accelerator MPS may be added in the future.
 
     saving_path :
-        The path to save the tensorboard file, which contains the loss values recorded during training.
+        The path for automatically saving model checkpoints and tensorboard files (i.e. loss values recorded during
+        training into a tensorboard file). Will not save if not given.
 
     model_saving_strategy :
         The strategy to save model checkpoints. It has to be one of [None, "best", "better"].
@@ -138,11 +140,13 @@ class BaseNNImputer(BaseNNModel, BaseImputer):
 
     device :
         The device for the model to run on.
-        If not given, will try to use CUDA devices first, then CPUs. CUDA and CPU are so far the main devices for people
-        to train ML models. Other devices like Google TPU and Apple Silicon accelerator MPS may be added in the future.
+        If not given, will try to use CUDA devices first (will use the default CUDA device if there are multiple),
+        then CPUs, considering CUDA and CPU are so far the main devices for people to train ML models.
+        Other devices like Google TPU and Apple Silicon accelerator MPS may be added in the future.
 
     saving_path :
-        The path to save the tensorboard file, which contains the loss values recorded during training.
+        The path for automatically saving model checkpoints and tensorboard files (i.e. loss values recorded during
+        training into a tensorboard file). Will not save if not given.
 
     model_saving_strategy :
         The strategy to save model checkpoints. It has to be one of [None, "best", "better"].
@@ -150,7 +154,6 @@ class BaseNNImputer(BaseNNModel, BaseImputer):
         The "best" strategy will only automatically save the best model after the training finished.
         The "better" strategy will automatically save the model during training whenever the model performs
         better than in previous epochs.
-
 
     Notes
     -----
