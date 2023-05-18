@@ -106,7 +106,7 @@ class BaseModel(ABC):
                     f"device should be str/torch.device/a list of str or torch.device, but got {type(device)}"
                 )
         # check CUDA availability if using CUDA
-        if "cuda" in self.device.type or isinstance(self.device, list):
+        if isinstance(self.device, list) or "cuda" in self.device.type:
             assert (
                 torch.cuda.is_available() and torch.cuda.device_count() > 0
             ), "You are trying to use CUDA for model training, but CUDA is not available in your environment."
