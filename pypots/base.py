@@ -95,10 +95,11 @@ class BaseModel(ABC):
                         device_list.append(torch.device(d.lower()))
                     elif isinstance(d, torch.device):
                         device_list.append(d)
-                    raise TypeError(
-                        f"Devices in the list should be str or torch.device, "
-                        f"but the device with index {idx} is {type(d)}."
-                    )
+                    else:
+                        raise TypeError(
+                            f"Devices in the list should be str or torch.device, "
+                            f"but the device with index {idx} is {type(d)}."
+                        )
                 self.device = device_list
             else:
                 raise TypeError(
