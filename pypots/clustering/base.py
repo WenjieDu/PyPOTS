@@ -53,7 +53,7 @@ class BaseClusterer(BaseModel):
         file_type : str, default = "h5py"
             The type of the given file if train_set is a path string.
         """
-        pass
+        raise NotImplementedError
 
     @abstractmethod
     def cluster(
@@ -77,7 +77,7 @@ class BaseClusterer(BaseModel):
         array-like, shape [n_samples],
             Clustering results.
         """
-        pass
+        raise NotImplementedError
 
 
 class BaseNNClusterer(BaseNNModel, BaseClusterer):
@@ -117,7 +117,7 @@ class BaseNNClusterer(BaseNNModel, BaseClusterer):
         dict,
             A python dictionary contains the input data for model training.
         """
-        pass
+        raise NotImplementedError
 
     @abstractmethod
     def _assemble_input_for_validating(self, data: list) -> dict:
@@ -133,7 +133,7 @@ class BaseNNClusterer(BaseNNModel, BaseClusterer):
         dict,
             A python dictionary contains the input data for model validating.
         """
-        pass
+        raise NotImplementedError
 
     @abstractmethod
     def _assemble_input_for_testing(self, data: list) -> dict:
@@ -157,7 +157,7 @@ class BaseNNClusterer(BaseNNModel, BaseClusterer):
         dict,
             A python dictionary contains the input data for model testing.
         """
-        pass
+        raise NotImplementedError
 
     def _train_model(
         self,

@@ -63,7 +63,7 @@ class BaseForecaster(BaseModel):
             The type of the given file if train_set and val_set are path strings.
 
         """
-        pass
+        raise NotImplementedError
 
     @abstractmethod
     def forecast(
@@ -86,7 +86,7 @@ class BaseForecaster(BaseModel):
         array-like, shape [n_samples, prediction_horizon, n_features],
             Forecasting results.
         """
-        pass
+        raise NotImplementedError
 
 
 class BaseNNForecaster(BaseNNModel, BaseForecaster):
@@ -125,7 +125,7 @@ class BaseNNForecaster(BaseNNModel, BaseForecaster):
         dict,
             A python dictionary contains the input data for model training.
         """
-        pass
+        raise NotImplementedError
 
     @abstractmethod
     def _assemble_input_for_validating(self, data) -> dict:
@@ -141,7 +141,7 @@ class BaseNNForecaster(BaseNNModel, BaseForecaster):
         dict,
             A python dictionary contains the input data for model validating.
         """
-        pass
+        raise NotImplementedError
 
     @abstractmethod
     def _assemble_input_for_testing(self, data) -> dict:
@@ -165,16 +165,13 @@ class BaseNNForecaster(BaseNNModel, BaseForecaster):
         dict,
             A python dictionary contains the input data for model testing.
         """
-        pass
+        raise NotImplementedError
 
     def _train_model(
         self,
         training_loader: DataLoader,
         val_loader: DataLoader = None,
     ) -> None:
-        self.optimizer = torch.optim.Adam(
-            self.model.parameters(), lr=self.lr, weight_decay=self.weight_decay
-        )
 
         # each training starts from the very beginning, so reset the loss and model dict here
         self.best_loss = float("inf")
