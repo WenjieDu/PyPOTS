@@ -110,6 +110,11 @@ class BaseModel(ABC):
             assert (
                 torch.cuda.is_available() and torch.cuda.device_count() > 0
             ), "You are trying to use CUDA for model training, but CUDA is not available in your environment."
+        # TODO: following things to be done for enabling training on multiple devices
+        #   1. send data to multiple devices as well;
+        #   2. make each model call _send_model_to_given_device();
+        #   3. make each data assembling method call _send_data_to_given_device();
+        #   4. MULTI GPU TRAINING WITH DDP https://pytorch.org/tutorials/beginner/ddp_series_multigpu.html;
 
         # set up saving_path to save the trained model and training logs
         if isinstance(saving_path, str):
@@ -139,6 +144,13 @@ class BaseModel(ABC):
             self.model = self.model.to(self.device)
         else:  # parallely training on multiple devices
             self.model = torch.nn.DataParallel(self.model, device_ids=self.device)
+
+    def _send_data_to_given_device(self, data):
+        if isinstance(self.device, torch.device):  # single device
+            data = map(lambda x: x.to(self.device), data)
+        else:  # parallely training on multiple devices
+            data = map(lambda x: x.to(self.device[0]), data)
+        return data
 
     def _save_log_into_tb_file(self, step: int, stage: str, loss_dict: dict) -> None:
         """Saving training logs into the tensorboard file specified by the given path `tb_file_saving_path`.
@@ -202,7 +214,11 @@ class BaseModel(ABC):
                 logger.error(f"File {saving_path} exists. Saving operation aborted.")
         try:
             create_dir_if_not_exist(saving_dir)
-            torch.save(self.model, saving_path)
+            if isinstance(self.device, list):
+                # to save a DataParallel model generically, save the model.module.state_dict()
+                torch.save(self.model.module, saving_path)
+            else:
+                torch.save(self.model, saving_path)
             logger.info(f"Saved the model to {saving_path}.")
         except Exception as e:
             raise RuntimeError(
