@@ -111,6 +111,16 @@ class BaseModel(ABC):
                 torch.cuda.is_available() and torch.cuda.device_count() > 0
             ), "You are trying to use CUDA for model training, but CUDA is not available in your environment."
         # TODO: following things to be done for enabling training on multiple devices
+        #   0. fix error 2023-05-18 13:58:52 [INFO]: Exception: module must have its parameters and buffers on device
+        #       cuda:0 (device_ids[0]) but found one of them on device: cpu
+        #       Traceback (most recent call last):
+        #       File "/home/linml/.PyPOTS/pypots/imputation/base.py", line 232, in _train_model
+        #           results = self.model.forward(inputs)
+        #       File "/home/linml/anaconda3/envs/SAITS-python38/lib/python3.8/site-packages/torch/nn/parallel/data_
+        #           parallel.py", line 154, in forward
+        #           raise RuntimeError("module must have its parameters and buffers "
+        #       RuntimeError: module must have its parameters and buffers on device cuda:0 (device_ids[0]) but
+        #       found one of them on device: cpu
         #   1. send data to multiple devices as well;
         #   2. make each model call _send_model_to_given_device();
         #   3. make each data assembling method call _send_data_to_given_device();
