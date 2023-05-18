@@ -19,19 +19,19 @@ class Adam(Optimizer):
 
     Parameters
     ----------
-    lr : float, default=0.001,
+    lr :
         The learning rate of the optimizer.
 
-    betas : Tuple[float, float], default=(0.9, 0.999),
+    betas :
         Coefficients used for computing running averages of gradient and its square.
 
-    eps : float, default=1e-08,
+    eps :
         Term added to the denominator to improve numerical stability.
 
-    weight_decay : float, default=0,
+    weight_decay :
         Weight decay (L2 penalty).
 
-    amsgrad : bool, default=False,
+    amsgrad :
         Whether to use the AMSGrad variant of this algorithm from the paper :cite:`reddi2018OnTheConvergence`.
     """
 
@@ -54,8 +54,9 @@ class Adam(Optimizer):
 
         Parameters
         ----------
-        params : Iterable,
+        params :
             An iterable of ``torch.Tensor`` or ``dict``. Specifies what Tensors should be optimized.
+
         """
         self.torch_optimizer = torch_Adam(
             params=params,

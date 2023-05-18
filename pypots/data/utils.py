@@ -25,12 +25,12 @@ def cal_missing_rate(X: Union[np.ndarray, torch.Tensor, list]) -> float:
 
     Parameters
     ----------
-    X : np.ndarray, torch.Tensor, list,
+    X :
         The data to calculate missing rate.
 
     Returns
     -------
-    missing_rate : float,
+    missing_rate :
         The missing rate of the given data.
 
     """
@@ -47,18 +47,18 @@ def masked_fill(
 
     Parameters
     ----------
-    X : np.ndarray, torch.Tensor, list,
+    X :
         The data to be filled.
 
-    mask : np.ndarray, torch.Tensor, list,
+    mask :
         The mask for filling the given data.
 
-    value : float,
+    value :
         The value to fill the masked values.
 
     Returns
     -------
-    filled_X : np.ndarray, torch.Tensor, list,
+    filled_X :
         The filled data.
 
     """
@@ -75,18 +75,18 @@ def mcar(
 
     Parameters
     ----------
-    X : np.ndarray, torch.Tensor, list,
+    X :
         The data to add missing values.
 
-    rate : float,
+    rate :
         The missing rate.
 
-    nan : float, default = 0,
+    nan :
         The value to fill the missing values.
 
     Returns
     -------
-    X : np.ndarray, torch.Tensor,
+    X :
         The data with added missing values.
 
     """
@@ -100,12 +100,12 @@ def torch_parse_delta(missing_mask: torch.Tensor) -> torch.Tensor:
 
     Parameters
     ----------
-    missing_mask : torch.tensor, shape of [n_steps, n_features] or [n_samples, n_steps, n_features]
-        Binary masks indicate missing values.
+    missing_mask :
+        Binary masks indicate missing values. Shape of [n_steps, n_features] or [n_samples, n_steps, n_features]
 
     Returns
     -------
-    delta, torch.tensor,
+    delta
         Delta matrix indicates time gaps of missing values.
     """
 
@@ -142,12 +142,12 @@ def numpy_parse_delta(missing_mask: np.ndarray) -> np.ndarray:
 
     Parameters
     ----------
-    missing_mask : np.ndarray, shape of [n_steps, n_features] or [n_samples, n_steps, n_features]
-        Binary masks indicate missing values.
+    missing_mask :
+        Binary masks indicate missing values. Shape of [n_steps, n_features] or [n_samples, n_steps, n_features].
 
     Returns
     -------
-    delta, np.ndarray,
+    delta
         Delta matrix indicates time gaps of missing values.
     """
 
