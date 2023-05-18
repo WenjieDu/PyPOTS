@@ -18,7 +18,26 @@ from ..utils.logging import logger
 
 
 class BaseForecaster(BaseModel):
-    """Abstract class for all forecasting models."""
+    """Abstract class for all forecasting models.
+
+    Parameters
+    ----------
+    device :
+        The device for the model to run on.
+        If not given, will try to use CUDA devices first, then CPUs. CUDA and CPU are so far the main devices for people
+        to train ML models. Other devices like Google TPU and Apple Silicon accelerator MPS may be added in the future.
+
+    saving_path :
+        The path to save the tensorboard file, which contains the loss values recorded during training.
+
+    model_saving_strategy :
+        The strategy to save model checkpoints. It has to be one of [None, "best", "better"].
+        No model will be saved when it is set as None.
+        The "best" strategy will only automatically save the best model after the training finished.
+        The "better" strategy will automatically save the model during training whenever the model performs
+        better than in previous epochs.
+
+    """
 
     def __init__(
         self,
@@ -43,7 +62,7 @@ class BaseForecaster(BaseModel):
 
         Parameters
         ----------
-        train_set : dict or str,
+        train_set :
             The dataset for model training, should be a dictionary including the key 'X',
             or a path string locating a data file.
             If it is a dict, X should be array-like of shape [n_samples, sequence length (time steps), n_features],
@@ -51,7 +70,7 @@ class BaseForecaster(BaseModel):
             If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
             key-value pairs like a dict, and it has to include the key 'X'.
 
-        val_set : dict or str,
+        val_set :
             The dataset for model validating, should be a dictionary including the key 'X',
             or a path string locating a data file.
             If it is a dict, X should be array-like of shape [n_samples, sequence length (time steps), n_features],
@@ -59,7 +78,7 @@ class BaseForecaster(BaseModel):
             If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
             key-value pairs like a dict, and it has to include the key 'X'.
 
-        file_type : str, default = "h5py",
+        file_type :
             The type of the given file if train_set and val_set are path strings.
 
         """
@@ -75,10 +94,10 @@ class BaseForecaster(BaseModel):
 
         Parameters
         ----------
-        X : array-like of shape [n_samples, sequence length (time steps), n_features],
-            Time-series data containing missing values.
+        X :
+            Time-series data containing missing values. Shape [n_samples, sequence length (time steps), n_features].
 
-        file_type : str, default = "h5py"
+        file_type :
             The type of the given file if X is a path string.
 
         Returns
@@ -90,6 +109,50 @@ class BaseForecaster(BaseModel):
 
 
 class BaseNNForecaster(BaseNNModel, BaseForecaster):
+    """The abstract class for all neural-network forecasting models in PyPOTS.
+
+    Parameters
+    ----------
+    batch_size :
+        Size of the batch input into the model for one step.
+
+    epochs :
+        Training epochs, i.e. the maximum rounds of the model to be trained with.
+
+    patience :
+        Number of epochs the training procedure will keep if loss doesn't decrease.
+        Once exceeding the number, the training will stop.
+        Must be smaller than or equal to the value of ``epochs``.
+
+    num_workers :
+        The number of subprocesses to use for data loading.
+        `0` means data loading will be in the main process, i.e. there won't be subprocesses.
+
+    device :
+        The device for the model to run on.
+        If not given, will try to use CUDA devices first, then CPUs. CUDA and CPU are so far the main devices for people
+        to train ML models. Other devices like Google TPU and Apple Silicon accelerator MPS may be added in the future.
+
+    saving_path :
+        The path to save the tensorboard file, which contains the loss values recorded during training.
+
+    model_saving_strategy :
+        The strategy to save model checkpoints. It has to be one of [None, "best", "better"].
+        No model will be saved when it is set as None.
+        The "best" strategy will only automatically save the best model after the training finished.
+        The "better" strategy will automatically save the model during training whenever the model performs
+        better than in previous epochs.
+
+    Notes
+    -----
+    Optimizers are necessary for training deep-learning neural networks, but we don't put  a parameter ``optimizer``
+    here because some models (e.g. GANs) need more than one optimizer (e.g. one for generator, one for discriminator),
+    and ``optimizer`` is ambiguous for them. Therefore, we leave optimizers as parameters for concrete model
+    implementations, and you can pass any number of optimizers to your model when implementing it,
+    :class:`pypots.clustering.crli.CRLI` for example.
+
+    """
+
     def __init__(
         self,
         # n_forecasting_steps: int,
