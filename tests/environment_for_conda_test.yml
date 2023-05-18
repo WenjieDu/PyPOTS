@@ -30,9 +30,12 @@ dependencies:
     - conda-forge::pytest-xdist
 
     # doc
-    - conda-forge::sphinx
-    - conda-forge::sphinxcontrib-bibtex
     - conda-forge::furo
+    - conda-forge::sphinx
+    - conda-forge::docutils
+    - conda-forge::sphinxcontrib-bibtex
+    - conda-forge::sphinxcontrib-gtagjs
+    - conda-forge::sphinx_autodoc_typehints
 
     # dev
     - conda-forge::black
