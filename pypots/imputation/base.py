@@ -82,7 +82,7 @@ class BaseImputer(BaseModel):
             The type of the given file if train_set and val_set are path strings.
 
         """
-        pass
+        raise NotImplementedError
 
     @abstractmethod
     def impute(
@@ -106,7 +106,7 @@ class BaseImputer(BaseModel):
         array-like, shape [n_samples, sequence length (time steps), n_features],
             Imputed data.
         """
-        pass
+        raise NotImplementedError
 
 
 class BaseNNImputer(BaseNNModel, BaseImputer):
@@ -169,7 +169,7 @@ class BaseNNImputer(BaseNNModel, BaseImputer):
         dict,
             A python dictionary contains the input data for model training.
         """
-        pass
+        raise NotImplementedError
 
     @abstractmethod
     def _assemble_input_for_validating(self, data: list) -> dict:
@@ -185,7 +185,7 @@ class BaseNNImputer(BaseNNModel, BaseImputer):
         dict,
             A python dictionary contains the input data for model validating.
         """
-        pass
+        raise NotImplementedError
 
     @abstractmethod
     def _assemble_input_for_testing(self, data: list) -> dict:
@@ -209,7 +209,7 @@ class BaseNNImputer(BaseNNModel, BaseImputer):
         dict,
             A python dictionary contains the input data for model testing.
         """
-        pass
+        raise NotImplementedError
 
     def _train_model(
         self,

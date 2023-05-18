@@ -71,7 +71,7 @@ class BaseClassifier(BaseModel):
             The type of the given file if train_set and val_set are path strings.
 
         """
-        pass
+        raise NotImplementedError
 
     @abstractmethod
     def classify(
@@ -95,7 +95,7 @@ class BaseClassifier(BaseModel):
         array-like, shape [n_samples],
             Classification results of the given samples.
         """
-        pass
+        raise NotImplementedError
 
 
 class BaseNNClassifier(BaseNNModel, BaseClassifier):
@@ -135,7 +135,7 @@ class BaseNNClassifier(BaseNNModel, BaseClassifier):
         dict,
             A python dictionary contains the input data for model training.
         """
-        pass
+        raise NotImplementedError
 
     @abstractmethod
     def _assemble_input_for_validating(self, data) -> dict:
@@ -151,7 +151,7 @@ class BaseNNClassifier(BaseNNModel, BaseClassifier):
         dict,
             A python dictionary contains the input data for model validating.
         """
-        pass
+        raise NotImplementedError
 
     @abstractmethod
     def _assemble_input_for_testing(self, data) -> dict:
@@ -175,7 +175,7 @@ class BaseNNClassifier(BaseNNModel, BaseClassifier):
         dict,
             A python dictionary contains the input data for model testing.
         """
-        pass
+        raise NotImplementedError
 
     def _train_model(
         self,
