@@ -23,7 +23,7 @@ class BaseModel(ABC):
     ----------
     device :
         The device for the model to run on.
-        If not given, will try to use CUDA devices first (will use the GPU with device number 0 only by default),
+        If not given, will try to use CUDA devices first (will use the default CUDA device if there are multiple),
         then CPUs, considering CUDA and CPU are so far the main devices for people to train ML models.
         Other devices like Google TPU and Apple Silicon accelerator MPS may be added in the future.
 
@@ -76,7 +76,7 @@ class BaseModel(ABC):
         if device is None:
             # if it is None, then
             self.device = torch.device(
-                "cuda:0"
+                "cuda"
                 if torch.cuda.is_available() and torch.cuda.device_count() > 0
                 else "cpu"
             )
