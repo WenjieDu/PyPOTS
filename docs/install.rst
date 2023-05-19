@@ -1,9 +1,6 @@
 Installation
 ============
 
-----------------
-
-
 How to Install
 """"""""""""""
 It is recommended to use **pip** or **conda** for PyPOTS installation as shown below:
@@ -50,6 +47,7 @@ Optional Dependencies
 Reasons of Version Limitations on Dependencies
 **********************************************
 * **Why we need python >=3.7?**
+
 PyG (torch-geometric) is available starting from python v3.7, please refer to https://pytorch-geometric.readthedocs.io/en/latest/install/installation.html#installation-via-anaconda.
 Although torch-geometric is an optional dependency, we hope things go smoothly when our users opt to install it.
 

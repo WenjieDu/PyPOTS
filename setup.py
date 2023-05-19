@@ -15,8 +15,13 @@ setup(
     license="GPL-3.0",
     author="Wenjie Du",
     author_email="wenjay.du@gmail.com",
-    url="https://github.com/WenjieDu/PyPOTS",
-    download_url="https://github.com/WenjieDu/PyPOTS/archive/main.zip",
+    url="https://pypots.com/",
+    project_urls={
+        "Documentation": "https://docs.pypots.com/",
+        "Source": "https://github.com/WenjieDu/PyPOTS/",
+        "Tracker": "https://github.com/WenjieDu/PyPOTS/issues/",
+        "Download": "https://github.com/WenjieDu/PyPOTS/archive/main.zip",
+    },
     keywords=[
         "data mining",
         "neural networks",

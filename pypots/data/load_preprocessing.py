@@ -13,12 +13,12 @@ def preprocess_physionet2012(data: dict) -> dict:
 
     Parameters
     ----------
-    data : dict,
+    data :
         A data dict from tsdb.load_dataset().
 
     Returns
     -------
-    dataset : dict,
+    dataset :
         A dict containing processed data, including:
             X : pandas.DataFrame,
                 A dataframe contains all time series vectors from 11988 patients, distinguished by column `RecordID`.

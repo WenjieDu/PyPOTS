@@ -1,17 +1,17 @@
 Quick-start Examples
 ====================
 
-----------------
-
-.. image:: https://raw.githubusercontent.com/WenjieDu/BrewedPOTS/main/figs/BrewedPOTS_logo.jpg
+.. image:: https://raw.githubusercontent.com/WenjieDu/BrewPOTS/main/figs/BrewPOTS_logo.jpg
    :width: 160
-   :alt: BrewedPOTS logo
+   :alt: BrewPOTS logo
    :align: right
-   :target: https://github.com/WenjieDu/BrewedPOTS
+   :target: https://github.com/WenjieDu/BrewPOTS
 
 We put some examples here to help our users to get started quickly.
 
-Please refer to `BrewedPOTS <https://github.com/WenjieDu/BrewedPOTS>`_ for detailed PyPOTS tutorials.
+Please refer to `BrewPOTS <https://github.com/WenjieDu/BrewPOTS>`_ for detailed PyPOTS tutorials.
+You can also find a simple and quick-start tutorial notebook on Google Colab with
+`this link <https://colab.research.google.com/drive/1HEFjylEy05-r47jRy0H9jiS_WhD0UWmQ?usp=sharing>`_.
 
 .. raw:: html
 

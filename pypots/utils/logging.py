@@ -28,14 +28,15 @@ class Logger:
         """
         Parameters
         ----------
-        name : str,
+        name :
             The name for the logger to be initialized.
 
-        logging_level : str,
+        logging_level :
             The logging level of the logger, should be debug/info/warning/error.
 
-        logging_format : str,
+        logging_format :
             Logging format of the logger.
+
         """
 
         assert (
@@ -66,13 +67,13 @@ class Logger:
 
         Parameters
         ----------
-        saving_dir : str,
+        saving_dir :
             The path to the directory for logging file saving.
 
-        name : str,
+        name :
             The name of the logging file to be saved.
 
-        mode : str, default = 'a'
+        mode :
             Logging file writing mode.
 
         """
@@ -91,7 +92,7 @@ class Logger:
 
         Parameters
         ----------
-        level : str,
+        level :
             The logging level of the logger, should be debug/info/warning/error.
 
         """

@@ -19,24 +19,45 @@ from ..utils.logging import logger
 
 class BaseClassifier(BaseModel):
     """The abstract class for all PyPOTS classification models.
+
     Parameters
-    ---
-    device
-    saving_path
+    ----------
+    n_classes :
+        The number of classes in the classification task.
+
+    device :
+        The device for the model to run on.
+        If not given, will try to use CUDA devices first (will use the default CUDA device if there are multiple),
+        then CPUs, considering CUDA and CPU are so far the main devices for people to train ML models.
+        Other devices like Google TPU and Apple Silicon accelerator MPS may be added in the future.
+
+    saving_path :
+        The path for automatically saving model checkpoints and tensorboard files (i.e. loss values recorded during
+        training into a tensorboard file). Will not save if not given.
+
+    model_saving_strategy :
+        The strategy to save model checkpoints. It has to be one of [None, "best", "better"].
+        No model will be saved when it is set as None.
+        The "best" strategy will only automatically save the best model after the training finished.
+        The "better" strategy will automatically save the model during training whenever the model performs
+        better than in previous epochs.
 
     """
 
     def __init__(
         self,
+        n_classes: int,
         device: Optional[Union[str, torch.device]] = None,
         saving_path: str = None,
         model_saving_strategy: Optional[str] = "best",
     ):
-        super().__init__(
+        BaseModel.__init__(
+            self,
             device,
             saving_path,
             model_saving_strategy,
         )
+        self.n_classes = n_classes
 
     @abstractmethod
     def fit(
@@ -49,7 +70,7 @@ class BaseClassifier(BaseModel):
 
         Parameters
         ----------
-        train_set : dict or str,
+        train_set :
             The dataset for model training, should be a dictionary including keys as 'X' and 'y',
             or a path string locating a data file.
             If it is a dict, X should be array-like of shape [n_samples, sequence length (time steps), n_features],
@@ -58,7 +79,7 @@ class BaseClassifier(BaseModel):
             If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
             key-value pairs like a dict, and it has to include keys as 'X' and 'y'.
 
-        val_set : dict or str,
+        val_set :
             The dataset for model validating, should be a dictionary including keys as 'X' and 'y',
             or a path string locating a data file.
             If it is a dict, X should be array-like of shape [n_samples, sequence length (time steps), n_features],
@@ -67,11 +88,11 @@ class BaseClassifier(BaseModel):
             If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
             key-value pairs like a dict, and it has to include keys as 'X' and 'y'.
 
-        file_type : str, default = "h5py",
+        file_type :
             The type of the given file if train_set and val_set are path strings.
 
         """
-        pass
+        raise NotImplementedError
 
     @abstractmethod
     def classify(
@@ -83,11 +104,11 @@ class BaseClassifier(BaseModel):
 
         Parameters
         ----------
-        X : array-like or str,
+        X :
             The data samples for testing, should be array-like of shape [n_samples, sequence length (time steps),
             n_features], or a path string locating a data file, e.g. h5 file.
 
-        file_type : str, default = "h5py",
+        file_type :
             The type of the given file if X is a path string.
 
         Returns
@@ -95,10 +116,60 @@ class BaseClassifier(BaseModel):
         array-like, shape [n_samples],
             Classification results of the given samples.
         """
-        pass
+        raise NotImplementedError
 
 
 class BaseNNClassifier(BaseNNModel, BaseClassifier):
+    """The abstract class for all neural-network classification models in PyPOTS.
+
+    Parameters
+    ----------
+    n_classes :
+        The number of classes in the classification task.
+
+    batch_size :
+        Size of the batch input into the model for one step.
+
+    epochs :
+        Training epochs, i.e. the maximum rounds of the model to be trained with.
+
+    patience :
+        Number of epochs the training procedure will keep if loss doesn't decrease.
+        Once exceeding the number, the training will stop.
+        Must be smaller than or equal to the value of ``epochs``.
+
+    num_workers :
+        The number of subprocesses to use for data loading.
+        `0` means data loading will be in the main process, i.e. there won't be subprocesses.
+
+    device :
+        The device for the model to run on.
+        If not given, will try to use CUDA devices first (will use the default CUDA device if there are multiple),
+        then CPUs, considering CUDA and CPU are so far the main devices for people to train ML models.
+        Other devices like Google TPU and Apple Silicon accelerator MPS may be added in the future.
+
+    saving_path :
+        The path for automatically saving model checkpoints and tensorboard files (i.e. loss values recorded during
+        training into a tensorboard file). Will not save if not given.
+
+    model_saving_strategy :
+        The strategy to save model checkpoints. It has to be one of [None, "best", "better"].
+        No model will be saved when it is set as None.
+        The "best" strategy will only automatically save the best model after the training finished.
+        The "better" strategy will automatically save the model during training whenever the model performs
+        better than in previous epochs.
+
+
+    Notes
+    -----
+    Optimizers are necessary for training deep-learning neural networks, but we don't put  a parameter ``optimizer``
+    here because some models (e.g. GANs) need more than one optimizer (e.g. one for generator, one for discriminator),
+    and ``optimizer`` is ambiguous for them. Therefore, we leave optimizers as parameters for concrete model
+    implementations, and you can pass any number of optimizers to your model when implementing it,
+    :class:`pypots.clustering.crli.CRLI` for example.
+
+    """
+
     def __init__(
         self,
         n_classes: int,
@@ -110,7 +181,8 @@ class BaseNNClassifier(BaseNNModel, BaseClassifier):
         saving_path: str = None,
         model_saving_strategy: Optional[str] = "best",
     ):
-        super().__init__(
+        BaseNNModel.__init__(
+            self,
             batch_size,
             epochs,
             patience,
@@ -119,7 +191,13 @@ class BaseNNClassifier(BaseNNModel, BaseClassifier):
             saving_path,
             model_saving_strategy,
         )
-        self.n_classes = n_classes
+        BaseClassifier.__init__(
+            self,
+            n_classes,
+            device,
+            saving_path,
+            model_saving_strategy,
+        )
 
     @abstractmethod
     def _assemble_input_for_training(self, data) -> dict:
@@ -135,7 +213,7 @@ class BaseNNClassifier(BaseNNModel, BaseClassifier):
         dict,
             A python dictionary contains the input data for model training.
         """
-        pass
+        raise NotImplementedError
 
     @abstractmethod
     def _assemble_input_for_validating(self, data) -> dict:
@@ -151,7 +229,7 @@ class BaseNNClassifier(BaseNNModel, BaseClassifier):
         dict,
             A python dictionary contains the input data for model validating.
         """
-        pass
+        raise NotImplementedError
 
     @abstractmethod
     def _assemble_input_for_testing(self, data) -> dict:
@@ -175,7 +253,7 @@ class BaseNNClassifier(BaseNNModel, BaseClassifier):
         dict,
             A python dictionary contains the input data for model testing.
         """
-        pass
+        raise NotImplementedError
 
     def _train_model(
         self,

@@ -23,13 +23,13 @@ def cal_mae(
 
     Parameters
     ----------
-    predictions : Union[np.ndarray, torch.Tensor, list],
+    predictions :
         The prediction data to be evaluated.
 
-    targets : Union[np.ndarray, torch.Tensor, list],
+    targets :
         The target data for helping evaluate the predictions.
 
-    masks : Optional[Union[np.ndarray, torch.Tensor, list]], optional, default = None,
+    masks :
         The masks for filtering the specific values in inputs and target from evaluation.
         When given, only values at corresponding positions where values ==1 in ``masks`` will be used for evaluation.
 
@@ -78,13 +78,13 @@ def cal_mse(
 
     Parameters
     ----------
-    predictions : Union[np.ndarray, torch.Tensor, list],
+    predictions :
         The prediction data to be evaluated.
 
-    targets : Union[np.ndarray, torch.Tensor, list],
+    targets :
         The target data for helping evaluate the predictions.
 
-    masks : Optional[Union[np.ndarray, torch.Tensor, list]], optional, default = None,
+    masks :
         The masks for filtering the specific values in inputs and target from evaluation.
         When given, only values at corresponding positions where values ==1 in ``masks`` will be used for evaluation.
 
@@ -134,13 +134,13 @@ def cal_rmse(
 
     Parameters
     ----------
-    predictions : Union[np.ndarray, torch.Tensor, list],
+    predictions :
         The prediction data to be evaluated.
 
-    targets : Union[np.ndarray, torch.Tensor, list],
+    targets :
         The target data for helping evaluate the predictions.
 
-    masks : Optional[Union[np.ndarray, torch.Tensor, list]], optional, default = None,
+    masks :
         The masks for filtering the specific values in inputs and target from evaluation.
         When given, only values at corresponding positions where values ==1 in ``masks`` will be used for evaluation.
 
@@ -185,13 +185,13 @@ def cal_mre(
 
     Parameters
     ----------
-    predictions : Union[np.ndarray, torch.Tensor, list],
+    predictions :
         The prediction data to be evaluated.
 
-    targets : Union[np.ndarray, torch.Tensor, list],
+    targets :
         The target data for helping evaluate the predictions.
 
-    masks : Optional[Union[np.ndarray, torch.Tensor, list]], optional, default = None,
+    masks :
         The masks for filtering the specific values in inputs and target from evaluation.
         When given, only values at corresponding positions where values ==1 in ``masks`` will be used for evaluation.
 
@@ -243,19 +243,19 @@ def cal_binary_classification_metrics(
 
     Parameters
     ----------
-    prob_predictions : array-like, 1d or 2d, [n_samples] or [n_samples, n_categories]
+    prob_predictions :
         Estimated probability predictions returned by a decision function.
 
-    targets : array-like, 1d or 2d, shape of [n_samples] or [n_samples, 1]
+    targets :
         Ground truth (correct) classification results.
 
-    pos_label : int, default=1
+    pos_label :
         The label of the positive class.
         Note that pos_label is also the index used to extract binary prediction probabilities from `predictions`.
 
     Returns
     -------
-    classification_metrics : dict
+    classification_metrics :
         A dictionary contains classification metrics and useful results:
 
         predictions: binary categories of the prediction results;
@@ -347,10 +347,10 @@ def cal_precision_recall_f1(
 
     Parameters
     ----------
-    prob_predictions : array-like, 1d or 2d, [n_samples] or [n_samples, n_categories]
+    prob_predictions :
         Estimated probability predictions returned by a decision function.
 
-    targets : array-like, 1d or 2d, shape of [n_samples] or [n_samples, 1]
+    targets :
         Ground truth (correct) classification results.
 
     pos_label: int, default=1
@@ -358,13 +358,13 @@ def cal_precision_recall_f1(
 
     Returns
     -------
-    precision : float
+    precision :
         The precision value of model predictions.
 
-    recall : float
+    recall :
         The recall value of model predictions.
 
-    f1 : float
+    f1 :
         The F1 score of model predictions.
 
     """
@@ -384,10 +384,10 @@ def cal_pr_auc(
 
     Parameters
     ----------
-    prob_predictions : array-like, 1d or 2d, [n_samples] or [n_samples, n_categories]
+    prob_predictions :
         Estimated probability predictions returned by a decision function.
 
-    targets : array-like, 1d or 2d, shape of [n_samples] or [n_samples, 1]
+    targets :
         Ground truth (correct) classification results.
 
     pos_label: int, default=1
@@ -395,16 +395,16 @@ def cal_pr_auc(
 
     Returns
     -------
-    pr_auc : float
+    pr_auc :
         Value of area under Precision-Recall curve.
 
-    precisions : array-like
+    precisions :
         Precision values of Precision-Recall curve.
 
-    recalls : array-like
+    recalls :
         Recall values of Precision-Recall curve.
 
-    thresholds : array-like
+    thresholds :
         Increasing thresholds on the decision function used to compute precision and recall.
 
     """
@@ -425,10 +425,10 @@ def cal_roc_auc(
 
     Parameters
     ----------
-    prob_predictions : array-like, 1d, [n_samples]
+    prob_predictions :
         Estimated probabilities/predictions returned by a decision function.
 
-    targets : array-like, 1d or 2d, shape of [n_samples] or [n_samples, 1]
+    targets :
         Ground truth (correct) classification results.
 
     pos_label: int, default=1
@@ -436,16 +436,16 @@ def cal_roc_auc(
 
     Returns
     -------
-    roc_auc : float
+    roc_auc :
         The area under ROC curve.
 
-    fprs : array-like
+    fprs :
         False positive rates of ROC curve.
 
-    tprs : array-like
+    tprs :
         True positive rates of ROC curve.
 
-    thresholds : array-like
+    thresholds :
         Increasing thresholds on the decision function used to compute FPR and TPR.
 
     """
@@ -461,15 +461,15 @@ def cal_acc(class_predictions: np.ndarray, targets: np.ndarray) -> float:
 
     Parameters
     ----------
-    class_predictions : array-like, 1d or 2d, [n_samples] or [n_samples, n_categories]
+    class_predictions :
         Estimated classification predictions returned by a classifier.
 
-    targets : array-like, 1d or 2d, shape of [n_samples] or [n_samples, 1]
+    targets :
         Ground truth (correct) classification results.
 
     Returns
     -------
-    acc_score : float
+    acc_score :
         The accuracy of model predictions.
 
     """
@@ -486,15 +486,15 @@ def cal_rand_index(
 
     Parameters
     ----------
-    class_predictions : array
+    class_predictions :
         Clustering results returned by a clusterer.
 
-    targets : array
+    targets :
         Ground truth (correct) clustering results.
 
     Returns
     -------
-    RI : float
+    RI :
         Rand index.
 
     """
@@ -527,15 +527,15 @@ def cal_adjusted_rand_index(
 
     Parameters
     ----------
-    class_predictions : array
+    class_predictions :
         Clustering results returned by a clusterer.
 
-    targets : array
+    targets :
         Ground truth (correct) clustering results.
 
     Returns
     -------
-    aRI : float
+    aRI :
         Adjusted Rand index.
 
     """
@@ -551,15 +551,15 @@ def cal_cluster_purity(
 
     Parameters
     ----------
-    class_predictions : array
+    class_predictions :
         Clustering results returned by a clusterer.
 
-    targets : array
+    targets :
         Ground truth (correct) clustering results.
 
     Returns
     -------
-    cluster_purity : float
+    cluster_purity :
         cluster purity.
 
     Notes
