@@ -34,9 +34,12 @@ dependencies:
     - conda-forge::sphinx
     - conda-forge::docutils
     - conda-forge::sphinxcontrib-bibtex
-    - conda-forge::sphinxcontrib-gtagjs
     - conda-forge::sphinx-autodoc-typehints
 
     # dev
     - conda-forge::black
     - conda-forge::flake8
+
+    - pip:
+          # doc
+          sphinxcontrib-gtagjs
