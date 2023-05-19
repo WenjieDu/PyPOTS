@@ -321,7 +321,7 @@ class BTTF(BaseForecaster):
         burn_iter: int,
         gibbs_iter: int,
         multi_step: int = 1,
-        device: Optional[Union[str, torch.device]] = None,
+        device: Optional[Union[str, list, torch.device]] = None,
     ):
         super().__init__(device)
         self.n_steps = n_steps
