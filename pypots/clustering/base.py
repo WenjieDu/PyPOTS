@@ -316,12 +316,13 @@ class BaseNNClusterer(BaseNNModel, BaseClusterer):
             logger.info(f"Exception: {e}")
             if self.best_model_dict is None:
                 raise RuntimeError(
-                    "Training got interrupted. Model was not get trained. Please try fit() again."
+                    "Training got interrupted. Model was not trained.\n"
+                    "Please investigate the error printed above."
                 )
             else:
                 RuntimeWarning(
-                    "Training got interrupted. "
-                    "Model will load the best parameters so far for testing. "
+                    "Training got interrupted. Please investigate the error printed above.\n"
+                    "Model got trained and will load the best checkpoint so far for testing.\n"
                     "If you don't want it, please try fit() again."
                 )
 

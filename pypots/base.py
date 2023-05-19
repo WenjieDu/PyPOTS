@@ -74,13 +74,34 @@ class BaseModel(ABC):
         self.summary_writer = None
 
         # set up the device for model running below
+        self._setup_device(device)
+
+        # set up saving_path to save the trained model and training logs
+        self._setup_path(saving_path)
+
+    def _setup_device(self, device):
+        # TODO: following things to be done for enabling training on multiple devices
+        #   0. fix error 2023-05-18 13:58:52 [INFO]: Exception: module must have its parameters and buffers on device
+        #       cuda:0 (device_ids[0]) but found one of them on device: cpu
+        #       Traceback (most recent call last):
+        #       File "/home/linml/.PyPOTS/pypots/imputation/base.py", line 232, in _train_model
+        #           results = self.model.forward(inputs)
+        #       File "/home/linml/anaconda3/envs/SAITS-python38/lib/python3.8/site-packages/torch/nn/parallel/data_
+        #           parallel.py", line 154, in forward
+        #           raise RuntimeError("module must have its parameters and buffers "
+        #       RuntimeError: module must have its parameters and buffers on device cuda:0 (device_ids[0]) but
+        #       found one of them on device: cpu
+        #   1. send data to multiple devices as well;
+        #   2. make each model call _send_model_to_given_device();
+        #   3. make each data assembling method call _send_data_to_given_device();
+        #   4. MULTI GPU TRAINING WITH DDP https://pytorch.org/tutorials/beginner/ddp_series_multigpu.html;
+
         if device is None:
             # if it is None, then use the first cuda device if cuda is available, otherwise use cpu
-            self.device = torch.device(
-                "cuda"
-                if torch.cuda.is_available() and torch.cuda.device_count() > 0
-                else "cpu"
-            )
+            if torch.cuda.is_available() and torch.cuda.device_count() > 0:
+                self.device = torch.device("cuda")
+            else:
+                self.device = torch.device("cpu")
             logger.info(f"No given device, using default device: {self.device}")
         else:
             if isinstance(device, str):
@@ -100,33 +121,24 @@ class BaseModel(ABC):
                             f"Devices in the list should be str or torch.device, "
                             f"but the device with index {idx} is {type(d)}."
                         )
-                self.device = device_list
+                if len(device_list) > 1:
+                    self.device = device_list
+                else:
+                    self.device = device_list[0]
             else:
                 raise TypeError(
-                    f"device should be str/torch.device/a list of str or torch.device, but got {type(device)}"
+                    f"device should be str/torch.device/a list containing str or torch.device, but got {type(device)}"
                 )
+
         # check CUDA availability if using CUDA
-        if isinstance(self.device, list) or "cuda" in self.device.type:
+        if (isinstance(self.device, list) and "cuda" in self.device[0].type) or (
+            isinstance(self.device, torch.device) and "cuda" in self.device.type
+        ):
             assert (
                 torch.cuda.is_available() and torch.cuda.device_count() > 0
             ), "You are trying to use CUDA for model training, but CUDA is not available in your environment."
-        # TODO: following things to be done for enabling training on multiple devices
-        #   0. fix error 2023-05-18 13:58:52 [INFO]: Exception: module must have its parameters and buffers on device
-        #       cuda:0 (device_ids[0]) but found one of them on device: cpu
-        #       Traceback (most recent call last):
-        #       File "/home/linml/.PyPOTS/pypots/imputation/base.py", line 232, in _train_model
-        #           results = self.model.forward(inputs)
-        #       File "/home/linml/anaconda3/envs/SAITS-python38/lib/python3.8/site-packages/torch/nn/parallel/data_
-        #           parallel.py", line 154, in forward
-        #           raise RuntimeError("module must have its parameters and buffers "
-        #       RuntimeError: module must have its parameters and buffers on device cuda:0 (device_ids[0]) but
-        #       found one of them on device: cpu
-        #   1. send data to multiple devices as well;
-        #   2. make each model call _send_model_to_given_device();
-        #   3. make each data assembling method call _send_data_to_given_device();
-        #   4. MULTI GPU TRAINING WITH DDP https://pytorch.org/tutorials/beginner/ddp_series_multigpu.html;
 
-        # set up saving_path to save the trained model and training logs
+    def _setup_path(self, saving_path):
         if isinstance(saving_path, str):
             # get the current time to append to saving_path,
             # so you can use the same saving_path to run multiple times
@@ -154,6 +166,7 @@ class BaseModel(ABC):
             self.model = self.model.to(self.device)
         else:  # parallely training on multiple devices
             self.model = torch.nn.DataParallel(self.model, device_ids=self.device)
+            logger.info(f"Model is allocated on device {self.device}")
 
     def _send_data_to_given_device(self, data):
         if isinstance(self.device, torch.device):  # single device
