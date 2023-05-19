@@ -42,4 +42,4 @@ dependencies:
 
     - pip:
           # doc
-          sphinxcontrib-gtagjs
+          - sphinxcontrib-gtagjs
