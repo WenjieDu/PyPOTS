@@ -9,6 +9,7 @@ import os
 from abc import ABC
 from datetime import datetime
 from typing import Optional, Union
+import numpy as np
 
 import torch
 from torch.utils.tensorboard import SummaryWriter
@@ -162,17 +163,24 @@ class BaseModel(ABC):
             )
 
     def _send_model_to_given_device(self):
-        if isinstance(self.device, torch.device):  # single device
-            self.model = self.model.to(self.device)
-        else:  # parallely training on multiple devices
+        if isinstance(self.device, torch.device):
+            # parallely training on multiple devices
             self.model = torch.nn.DataParallel(self.model, device_ids=self.device)
-            logger.info(f"Model is allocated on device {self.device}")
+            logger.info(
+                f"Model has been allocated to the given multiple devices: {self.device}"
+            )
+        self.model = self.model.to(self.device)
 
     def _send_data_to_given_device(self, data):
         if isinstance(self.device, torch.device):  # single device
             data = map(lambda x: x.to(self.device), data)
         else:  # parallely training on multiple devices
-            data = map(lambda x: x.to(self.device[0]), data)
+
+            # randomly choose one device to balance the workload
+            device = np.random.choice(self.device)
+
+            data = map(lambda x: x.to(device), data)
+
         return data
 
     def _save_log_into_tb_file(self, step: int, stage: str, loss_dict: dict) -> None:
