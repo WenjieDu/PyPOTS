@@ -370,7 +370,7 @@ class VaDER(BaseNNClusterer):
         patience: int = None,
         optimizer: Optional[Optimizer] = Adam(),
         num_workers: int = 0,
-        device: Optional[Union[str, torch.device]] = None,
+        device: Optional[Union[str, list, torch.device]] = None,
         saving_path: str = None,
         model_saving_strategy: Optional[str] = "best",
     ):

@@ -43,7 +43,7 @@ class BaseForecaster(BaseModel):
 
     def __init__(
         self,
-        device: Optional[Union[str, torch.device]] = None,
+        device: Optional[Union[str, list, torch.device]] = None,
         saving_path: str = None,
         model_saving_strategy: Optional[str] = "best",
     ):
@@ -164,7 +164,7 @@ class BaseNNForecaster(BaseNNModel, BaseForecaster):
         epochs: int,
         patience: int,
         num_workers: int = 0,
-        device: Optional[Union[str, torch.device]] = None,
+        device: Optional[Union[str, list, torch.device]] = None,
         saving_path: str = None,
         model_saving_strategy: Optional[str] = "best",
     ):
