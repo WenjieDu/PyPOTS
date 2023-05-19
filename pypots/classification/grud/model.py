@@ -23,6 +23,7 @@ from .data import DatasetForGRUD
 from ...imputation.brits.modules import TemporalDecay
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
+from ...utils.logging import logger
 
 
 class _GRUD(nn.Module):
@@ -53,7 +54,22 @@ class _GRUD(nn.Module):
         )
         self.classifier = nn.Linear(self.rnn_hidden_size, self.n_classes)
 
-    def classify(self, inputs: dict) -> torch.Tensor:
+    def forward(self, inputs: dict, training: bool = True) -> dict:
+        """Forward processing of GRU-D.
+
+        Parameters
+        ----------
+        inputs :
+            The input data.
+
+        training :
+            Whether in training mode.
+
+        Returns
+        -------
+        dict,
+            A dictionary includes all results.
+        """
         values = inputs["X"]
         masks = inputs["missing_mask"]
         deltas = inputs["deltas"]
@@ -77,29 +93,26 @@ class _GRUD(nn.Module):
 
             x_h = gamma_x * x_filledLOCF + (1 - gamma_x) * empirical_mean
             x_replaced = m * x + (1 - m) * x_h
-            inputs = torch.cat([x_replaced, hidden_state, m], dim=1)
-            hidden_state = self.rnn_cell(inputs, hidden_state)
+            data_input = torch.cat([x_replaced, hidden_state, m], dim=1)
+            hidden_state = self.rnn_cell(data_input, hidden_state)
 
         logits = self.classifier(hidden_state)
-        prediction = torch.softmax(logits, dim=1)
-        return prediction
+        classification_pred = torch.softmax(logits, dim=1)
 
-    def forward(self, inputs: dict) -> dict:
-        """Forward processing of GRU-D.
+        if not training:
+            # if not in training mode, return the classification result only
+            return {"classification_pred": classification_pred}
 
-        Parameters
-        ----------
-        inputs :
-            The input data.
+        torch.log(classification_pred)
+        logger.error(f"ZShape {classification_pred.shape}")
+        classification_loss = F.nll_loss(
+            torch.log(classification_pred), inputs["label"]
+        )
 
-        Returns
-        -------
-        dict,
-            A dictionary includes all results.
-        """
-        prediction = self.classify(inputs)
-        classification_loss = F.nll_loss(torch.log(prediction), inputs["label"])
-        results = {"prediction": prediction, "loss": classification_loss}
+        results = {
+            "classification_pred": classification_pred,
+            "loss": classification_loss,
+        }
         return results
 
 
@@ -203,7 +216,7 @@ class GRUD(BaseNNClassifier):
             self.n_classes,
             self.device,
         )
-        self.model = self.model.to(self.device)
+        self._send_model_to_given_device()
         self._print_model_size()
 
         # set up the optimizer
@@ -212,9 +225,15 @@ class GRUD(BaseNNClassifier):
 
     def _assemble_input_for_training(self, data: dict) -> dict:
         # fetch data
-        indices, X, X_filledLOCF, missing_mask, deltas, empirical_mean, label = map(
-            lambda x: x.to(self.device), data
-        )
+        (
+            indices,
+            X,
+            X_filledLOCF,
+            missing_mask,
+            deltas,
+            empirical_mean,
+            label,
+        ) = self._send_data_to_given_device(data)
 
         # assemble input data
         inputs = {
@@ -293,7 +312,8 @@ class GRUD(BaseNNClassifier):
         with torch.no_grad():
             for idx, data in enumerate(test_loader):
                 inputs = self._assemble_input_for_testing(data)
-                prediction = self.model.classify(inputs)
+                results = self.model.forward(inputs, training=False)
+                prediction = results["classification_pred"]
                 prediction_collector.append(prediction)
 
         predictions = torch.cat(prediction_collector)

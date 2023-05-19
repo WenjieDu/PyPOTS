@@ -73,7 +73,12 @@ class _CRLI(nn.Module):
         inputs["fcn_latent"] = fcn_latent
         return inputs
 
-    def forward(self, inputs: dict, training_object: str = "generator") -> dict:
+    def forward(
+        self,
+        inputs: dict,
+        training_object: str = "generator",
+        mode: str = "training",
+    ) -> dict:
         assert training_object in [
             "generator",
             "discriminator",
@@ -84,6 +89,10 @@ class _CRLI(nn.Module):
         batch_size, n_steps, n_features = X.shape
         losses = {}
         inputs = self.cluster(inputs, training_object)
+        if mode == "clustering":
+            # if only run clustering, then no need to calculate loss
+            return inputs
+
         if training_object == "discriminator":
             l_D = F.binary_cross_entropy_with_logits(
                 inputs["discrimination"], missing_mask
@@ -245,7 +254,7 @@ class CRLI(BaseNNClusterer):
             rnn_cell_type,
             self.device,
         )
-        self.model = self.model.to(self.device)
+        self._send_model_to_given_device()
         self._print_model_size()
 
         # set up the optimizer
@@ -261,7 +270,7 @@ class CRLI(BaseNNClusterer):
 
     def _assemble_input_for_training(self, data: list) -> dict:
         # fetch data
-        indices, X, missing_mask = map(lambda x: x.to(self.device), data)
+        indices, X, missing_mask = self._send_data_to_given_device(data)
 
         inputs = {
             "X": X,
@@ -362,11 +371,10 @@ class CRLI(BaseNNClusterer):
                         )
                         break
         except Exception as e:
-            logger.info(f"Exception: {e}")
+            logger.error(f"Exception: {e}")
             if self.best_model_dict is None:
                 raise RuntimeError(
-                    "Training got interrupted. Model was not trained.\n"
-                    "Please investigate the error printed above."
+                    "Training got interrupted. Model was not trained. Please investigate the error printed above."
                 )
             else:
                 RuntimeWarning(

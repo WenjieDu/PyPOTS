@@ -57,19 +57,16 @@ class _BRITS(imputation_BRITS, nn.Module):
     def impute(self, inputs: dict) -> torch.Tensor:
         return super().impute(inputs)
 
-    def classify(self, inputs: dict) -> torch.Tensor:
-        ret_f = self.rits_f(inputs, "forward")
-        ret_b = self._reverse(self.rits_b(inputs, "backward"))
-        classification_pred = (ret_f["prediction"] + ret_b["prediction"]) / 2
-        return classification_pred
-
-    def forward(self, inputs: dict) -> dict:
+    def forward(self, inputs: dict, training: bool = True) -> dict:
         """Forward processing of BRITS.
 
         Parameters
         ----------
-        inputs : dict,
+        inputs :
             The input data.
+
+        training :
+            Whether in training mode.
 
         Returns
         -------
@@ -77,6 +74,11 @@ class _BRITS(imputation_BRITS, nn.Module):
         """
         ret_f = self.rits_f(inputs, "forward")
         ret_b = self._reverse(self.rits_b(inputs, "backward"))
+
+        classification_pred = (ret_f["prediction"] + ret_b["prediction"]) / 2
+        if not training:
+            # if not in training mode, return the classification result only
+            return {"classification_pred": classification_pred}
 
         ret_f["classification_loss"] = F.nll_loss(
             torch.log(ret_f["prediction"]), inputs["label"]
@@ -101,6 +103,7 @@ class _BRITS(imputation_BRITS, nn.Module):
         )
 
         results = {
+            "classification_pred": classification_pred,
             "consistency_loss": consistency_loss,
             "classification_loss": classification_loss,
             "reconstruction_loss": reconstruction_loss,
@@ -222,7 +225,7 @@ class BRITS(BaseNNClassifier):
             self.reconstruction_weight,
             self.device,
         )
-        self.model = self.model.to(self.device)
+        self._send_model_to_given_device()
         self._print_model_size()
 
         # set up the optimizer
@@ -240,7 +243,7 @@ class BRITS(BaseNNClassifier):
             back_missing_mask,
             back_deltas,
             label,
-        ) = map(lambda x: x.to(self.device), data)
+        ) = self._send_data_to_given_device(data)
 
         # assemble input data
         inputs = {
@@ -336,7 +339,8 @@ class BRITS(BaseNNClassifier):
         with torch.no_grad():
             for idx, data in enumerate(test_loader):
                 inputs = self._assemble_input_for_testing(data)
-                classification_pred = self.model.classify(inputs)
+                results = self.model.forward(inputs, training=False)
+                classification_pred = results["classification_pred"]
                 prediction_collector.append(classification_pred)
 
         predictions = torch.cat(prediction_collector)

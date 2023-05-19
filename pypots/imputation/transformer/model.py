@@ -90,15 +90,17 @@ class _TransformerEncoder(nn.Module):
         )  # replace non-missing part with original data
         return imputed_data, learned_presentation
 
-    def impute(self, inputs: dict) -> torch.Tensor:
-        imputed_data, _ = self._process(inputs)
-        return imputed_data
-
-    def forward(self, inputs: dict) -> dict:
+    def forward(self, inputs: dict, training: bool = True) -> dict:
         X, masks = inputs["X"], inputs["missing_mask"]
         imputed_data, learned_presentation = self._process(inputs)
-        ORT_loss = cal_mae(learned_presentation, X, masks)
 
+        if not training:
+            # if not in training mode, return the classification result only
+            return {
+                "imputed_data": imputed_data,
+            }
+
+        ORT_loss = cal_mae(learned_presentation, X, masks)
         MIT_loss = cal_mae(
             learned_presentation, inputs["X_intact"], inputs["indicating_mask"]
         )
@@ -271,7 +273,7 @@ class Transformer(BaseNNImputer):
             self.ORT_weight,
             self.MIT_weight,
         )
-        self.model = self.model.to(self.device)
+        self._send_model_to_given_device()
         self._print_model_size()
 
         # set up the optimizer
@@ -279,9 +281,13 @@ class Transformer(BaseNNImputer):
         self.optimizer.init_optimizer(self.model.parameters())
 
     def _assemble_input_for_training(self, data: dict) -> dict:
-        indices, X_intact, X, missing_mask, indicating_mask = map(
-            lambda x: x.to(self.device), data
-        )
+        (
+            indices,
+            X_intact,
+            X,
+            missing_mask,
+            indicating_mask,
+        ) = self._send_data_to_given_device(data)
 
         inputs = {
             "X": X,
@@ -365,7 +371,8 @@ class Transformer(BaseNNImputer):
         with torch.no_grad():
             for idx, data in enumerate(test_loader):
                 inputs = self._assemble_input_for_testing(data)
-                imputed_data = self.model.impute(inputs)
+                results = self.model.forward(inputs, training=False)
+                imputed_data = results["imputed_data"]
                 imputation_collector.append(imputed_data)
 
         imputation_collector = torch.cat(imputation_collector)

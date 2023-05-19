@@ -146,15 +146,17 @@ class _SAITS(nn.Module):
 
         return X_c, [X_tilde_1, X_tilde_2, X_tilde_3]
 
-    def impute(self, inputs: dict) -> torch.Tensor:
-        imputed_data, _ = self._process(inputs)
-        return imputed_data
-
-    def forward(self, inputs: dict) -> dict:
+    def forward(self, inputs: dict, training: bool = True) -> dict:
         X, masks = inputs["X"], inputs["missing_mask"]
-        ORT_loss = 0
         imputed_data, [X_tilde_1, X_tilde_2, X_tilde_3] = self._process(inputs)
 
+        if not training:
+            # if not in training mode, return the classification result only
+            return {
+                "imputed_data": imputed_data,
+            }
+
+        ORT_loss = 0
         ORT_loss += cal_mae(X_tilde_1, X, masks)
         ORT_loss += cal_mae(X_tilde_2, X, masks)
         ORT_loss += cal_mae(X_tilde_3, X, masks)
@@ -438,7 +440,8 @@ class SAITS(BaseNNImputer):
         with torch.no_grad():
             for idx, data in enumerate(test_loader):
                 inputs = self._assemble_input_for_testing(data)
-                imputed_data = self.model.impute(inputs)
+                results = self.model.forward(inputs, training=False)
+                imputed_data = results["imputed_data"]
                 imputation_collector.append(imputed_data)
 
         # Step 3: output collection and return

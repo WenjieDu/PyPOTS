@@ -275,9 +275,9 @@ class BaseNNClassifier(BaseNNModel, BaseClassifier):
                     inputs = self._assemble_input_for_training(data)
                     self.optimizer.zero_grad()
                     results = self.model.forward(inputs)
-                    results["loss"].backward()
+                    results["loss"].sum().backward()
                     self.optimizer.step()
-                    epoch_train_loss_collector.append(results["loss"].item())
+                    epoch_train_loss_collector.append(results["loss"].sum().item())
 
                     # save training loss logs into the tensorboard file for every step if in need
                     if self.summary_writer is not None:
@@ -293,7 +293,9 @@ class BaseNNClassifier(BaseNNModel, BaseClassifier):
                         for idx, data in enumerate(val_loader):
                             inputs = self._assemble_input_for_validating(data)
                             results = self.model.forward(inputs)
-                            epoch_val_loss_collector.append(results["loss"].item())
+                            epoch_val_loss_collector.append(
+                                results["loss"].sum().item()
+                            )
 
                     mean_val_loss = np.mean(epoch_val_loss_collector)
 
@@ -331,11 +333,10 @@ class BaseNNClassifier(BaseNNModel, BaseClassifier):
                         )
                         break
         except Exception as e:
-            logger.info(f"Exception: {e}")
+            logger.error(f"Exception: {e}")
             if self.best_model_dict is None:
                 raise RuntimeError(
-                    "Training got interrupted. Model was not trained.\n"
-                    "Please investigate the error printed above."
+                    "Training got interrupted. Model was not trained. Please investigate the error printed above."
                 )
             else:
                 RuntimeWarning(
