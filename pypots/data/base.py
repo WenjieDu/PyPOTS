@@ -22,7 +22,7 @@ class BaseDataset(Dataset):
 
     Parameters
     ----------
-    data : dict or str,
+    data :
         The dataset for model input, should be a dictionary including keys as 'X' and 'y',
         or a path string locating a data file.
         If it is a dict, X should be array-like of shape [n_samples, sequence length (time steps), n_features],
@@ -31,7 +31,7 @@ class BaseDataset(Dataset):
         If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
         key-value pairs like a dict, and it has to include keys as 'X' and 'y'.
 
-    return_labels : bool, default = True,
+    return_labels :
         Whether to return labels in function __getitem__() if they exist in the given data. If `True`, for example,
         during training of classification models, the Dataset class will return labels in __getitem__() for model input.
         Otherwise, labels won't be included in the data returned by __getitem__(). This parameter exists because we
@@ -40,7 +40,7 @@ class BaseDataset(Dataset):
         with function _fetch_data_from_file(), which works for all three stages. Therefore, we need this parameter for
         distinction.
 
-    file_type : str, default = "h5py"
+    file_type :
         The type of the given file if train_set and val_set are path strings.
 
     """
@@ -90,7 +90,7 @@ class BaseDataset(Dataset):
 
         Returns
         -------
-        sample_num : int
+        sample_num :
             The number of the samples in the given dataset.
         """
         if isinstance(self.data, str):
@@ -118,20 +118,20 @@ class BaseDataset(Dataset):
 
         Parameters
         ----------
-        X : array-like,
+        X :
             Time-series data that must have a shape like [n_samples, expected_n_steps, expected_n_features].
 
-        y : array-like, default=None
+        y :
             Labels of time-series samples (X) that must have a shape like [n_samples] or [n_samples, n_classes].
 
-        out_dtype : str, in ['tensor', 'ndarray'], default='tensor'
+        out_dtype :
             Data type of the output, should be np.ndarray or torch.Tensor
 
         Returns
         -------
-        X : array-like
+        X :
 
-        y : array-like
+        y :
 
         """
         assert out_dtype in [
@@ -195,12 +195,12 @@ class BaseDataset(Dataset):
 
         Parameters
         ----------
-        idx : int,
+        idx :
             The index of the sample to be return.
 
         Returns
         -------
-        sample : list,
+        sample :
             The collated data sample, a list including all necessary sample info.
         """
 
@@ -227,7 +227,7 @@ class BaseDataset(Dataset):
 
         Returns
         -------
-        file_handle : file
+        file_handle :
 
         """
         data_file_path = self.data
@@ -267,12 +267,12 @@ class BaseDataset(Dataset):
 
         Parameters
         ----------
-        idx : int,
+        idx :
             The index of the sample to be return.
 
         Returns
         -------
-        sample : list,
+        sample :
             The collated data sample, a list including all necessary sample info.
         """
 
@@ -299,12 +299,12 @@ class BaseDataset(Dataset):
 
         Parameters
         ----------
-        idx : int,
+        idx :
             The index to fetch the specified sample.
 
         Returns
         -------
-        sample : list,
+        sample :
             The collated data sample, a list including all necessary sample info.
         """
 

@@ -19,19 +19,19 @@ class SGD(Optimizer):
 
     Parameters
     ----------
-    lr : float, default=0.001
+    lr :
         The learning rate of the optimizer.
 
-    momentum : float, default=0
+    momentum :
         Momentum factor.
 
-    weight_decay : float, default=0.01
+    weight_decay :
         Weight decay (L2 penalty).
 
-    dampening : float, default = 0
+    dampening :
         Dampening for momentum.
 
-    nesterov : bool, default=False
+    nesterov :
         Whether to enable Nesterov momentum.
 
     """
@@ -55,8 +55,9 @@ class SGD(Optimizer):
 
         Parameters
         ----------
-        params : Iterable,
+        params :
             An iterable of ``torch.Tensor`` or ``dict``. Specifies what Tensors should be optimized.
+
         """
         self.torch_optimizer = torch_SGD(
             params=params,

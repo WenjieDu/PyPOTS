@@ -27,7 +27,7 @@ def list_supported_datasets() -> list:
 
     Returns
     -------
-    SUPPORTED_DATASETS : list,
+    SUPPORTED_DATASETS :
         A list including all supported datasets.
 
     """
@@ -42,7 +42,7 @@ def load_specific_dataset(dataset_name: str, use_cache: bool = True) -> dict:
 
     Parameters
     ----------
-    dataset_name : str,
+    dataset_name :
         The name of the dataset to be loaded, which should be supported, i.e. in SUPPORTED_DATASETS.
 
     use_cache :
@@ -50,7 +50,7 @@ def load_specific_dataset(dataset_name: str, use_cache: bool = True) -> dict:
 
     Returns
     -------
-    data : dict,
+    data :
         A dict contains the preprocessed dataset.
         Users only need to continue the preprocessing steps to generate the data they want,
         e.g. standardizing and splitting.
