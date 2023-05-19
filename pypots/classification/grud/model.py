@@ -77,7 +77,7 @@ class _GRUD(nn.Module):
         X_filledLOCF = inputs["X_filledLOCF"]
 
         hidden_state = torch.zeros(
-            (values.size()[0], self.rnn_hidden_size), device=self.device
+            (values.size()[0], self.rnn_hidden_size), device=values.device
         )
 
         for t in range(self.n_steps):
@@ -251,9 +251,14 @@ class GRUD(BaseNNClassifier):
         return self._assemble_input_for_training(data)
 
     def _assemble_input_for_testing(self, data: dict) -> dict:
-        indices, X, X_filledLOCF, missing_mask, deltas, empirical_mean = map(
-            lambda x: x.to(self.device), data
-        )
+        (
+            indices,
+            X,
+            X_filledLOCF,
+            missing_mask,
+            deltas,
+            empirical_mean,
+        ) = self._send_data_to_given_device(data)
 
         inputs = {
             "indices": indices,

@@ -381,7 +381,9 @@ class SAITS(BaseNNImputer):
         file_type: str = "h5py",
     ) -> None:
         # Step 1: wrap the input data with classes Dataset and DataLoader
-        training_set = DatasetForSAITS(train_set, file_type=file_type)
+        training_set = DatasetForSAITS(
+            train_set, return_labels=False, file_type=file_type
+        )
         training_loader = DataLoader(
             training_set,
             batch_size=self.batch_size,
@@ -404,7 +406,7 @@ class SAITS(BaseNNImputer):
                         "indicating_mask": hf["indicating_mask"][:],
                     }
 
-            val_set = BaseDataset(val_set, file_type=file_type)
+            val_set = BaseDataset(val_set, return_labels=False, file_type=file_type)
             val_loader = DataLoader(
                 val_set,
                 batch_size=self.batch_size,

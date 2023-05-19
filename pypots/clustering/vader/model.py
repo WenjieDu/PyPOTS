@@ -435,7 +435,7 @@ class VaDER(BaseNNClusterer):
                 inputs = self._assemble_input_for_training(data)
                 self.optimizer.zero_grad()
                 results = self.model.forward(inputs, pretrain=True)
-                results["loss"].backward()
+                results["loss"].sum().backward()
                 self.optimizer.step()
 
                 # save pre-training loss logs into the tensorboard file for every step if in need
@@ -489,16 +489,23 @@ class VaDER(BaseNNClusterer):
                     continue
 
             # get GMM parameters
-            phi = np.log(gmm.weights_ + 1e-9)  # inverse softmax
             mu = gmm.means_
             var = inverse_softplus(gmm.covariances_)
-            # use trained GMM's parameters to init GMM layer's
-            self.model.gmm_layer.set_values(
-                torch.from_numpy(mu).to(self.device),
-                torch.from_numpy(var).to(self.device),
-                torch.from_numpy(phi).to(self.device),
-            )
+            phi = np.log(gmm.weights_ + 1e-9)  # inverse softmax
 
+            # use trained GMM's parameters to init GMM layer's
+            if isinstance(self.device, list):  # if using multi-GPU
+                self.model.module.gmm_layer.set_values(
+                    torch.from_numpy(mu).to(results["z"].device),
+                    torch.from_numpy(var).to(results["z"].device),
+                    torch.from_numpy(phi).to(results["z"].device),
+                )
+            else:
+                self.model.gmm_layer.set_values(
+                    torch.from_numpy(mu).to(results["z"].device),
+                    torch.from_numpy(var).to(results["z"].device),
+                    torch.from_numpy(phi).to(results["z"].device),
+                )
         try:
             training_step = 0
             for epoch in range(self.epochs):
