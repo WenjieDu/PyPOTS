@@ -105,8 +105,10 @@ Alternatively, you can install from the latest source code with the latest featu
 
 PyPOTS tutorials have been released. Considering the future workload, I separate the tutorials into a single repo,
 and you can find them in [BrewPOTS](https://github.com/WenjieDu/BrewPOTS).
-Take a look at it now, and brew your POTS dataset into a cup of coffee! 🤓
+Take a look at it now, and learn how to brew your POTS datasets! 🤓
 
+You can also find a simple and quick-start tutorial notebook on Google Colab with
+[this link](https://colab.research.google.com/drive/1HEFjylEy05-r47jRy0H9jiS_WhD0UWmQ?usp=sharing).
 If you have further questions, please refer to PyPOTS documentation 📑[docs.pypots.com](https://docs.pypots.com).
 Besides, you can also [raise an issue](https://github.com/WenjieDu/PyPOTS/issues) or [ask in our community](#-community).
 
