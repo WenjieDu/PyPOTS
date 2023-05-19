@@ -305,7 +305,12 @@ class BaseNNModel(BaseModel):
         saving_path: str = None,
         model_saving_strategy: Optional[str] = "best",
     ):
-        super().__init__(device, saving_path, model_saving_strategy)
+        BaseModel.__init__(
+            self,
+            device,
+            saving_path,
+            model_saving_strategy,
+        )
 
         if patience is None:
             patience = -1  # early stopping on patience won't work if it is set as < 0
