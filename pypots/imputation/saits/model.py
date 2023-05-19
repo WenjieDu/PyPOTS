@@ -343,9 +343,13 @@ class SAITS(BaseNNImputer):
         self.optimizer.init_optimizer(self.model.parameters())
 
     def _assemble_input_for_training(self, data: list) -> dict:
-        indices, X_intact, X, missing_mask, indicating_mask = map(
-            lambda x: x.to(self.device), data
-        )
+        (
+            indices,
+            X_intact,
+            X,
+            missing_mask,
+            indicating_mask,
+        ) = self._send_data_to_given_device(data)
 
         inputs = {
             "X": X,
@@ -357,7 +361,7 @@ class SAITS(BaseNNImputer):
         return inputs
 
     def _assemble_input_for_validating(self, data) -> dict:
-        indices, X, missing_mask = map(lambda x: x.to(self.device), data)
+        indices, X, missing_mask = self._send_data_to_given_device(data)
 
         inputs = {
             "X": X,
