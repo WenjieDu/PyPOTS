@@ -51,7 +51,8 @@ class BaseClassifier(BaseModel):
         saving_path: str = None,
         model_saving_strategy: Optional[str] = "best",
     ):
-        super().__init__(
+        BaseModel.__init__(
+            self,
             device,
             saving_path,
             model_saving_strategy,
@@ -180,7 +181,8 @@ class BaseNNClassifier(BaseNNModel, BaseClassifier):
         saving_path: str = None,
         model_saving_strategy: Optional[str] = "best",
     ):
-        super().__init__(
+        BaseNNModel.__init__(
+            self,
             batch_size,
             epochs,
             patience,
@@ -189,7 +191,13 @@ class BaseNNClassifier(BaseNNModel, BaseClassifier):
             saving_path,
             model_saving_strategy,
         )
-        self.n_classes = n_classes
+        BaseClassifier.__init__(
+            self,
+            n_classes,
+            device,
+            saving_path,
+            model_saving_strategy,
+        )
 
     @abstractmethod
     def _assemble_input_for_training(self, data) -> dict:

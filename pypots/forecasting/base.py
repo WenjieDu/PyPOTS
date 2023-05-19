@@ -47,7 +47,8 @@ class BaseForecaster(BaseModel):
         saving_path: str = None,
         model_saving_strategy: Optional[str] = "best",
     ):
-        super().__init__(
+        BaseModel.__init__(
+            self,
             device,
             saving_path,
             model_saving_strategy,
@@ -167,11 +168,18 @@ class BaseNNForecaster(BaseNNModel, BaseForecaster):
         saving_path: str = None,
         model_saving_strategy: Optional[str] = "best",
     ):
-        super().__init__(
+        BaseNNModel.__init__(
+            self,
             batch_size,
             epochs,
             patience,
             num_workers,
+            device,
+            saving_path,
+            model_saving_strategy,
+        )
+        BaseForecaster.__init__(
+            self,
             device,
             saving_path,
             model_saving_strategy,

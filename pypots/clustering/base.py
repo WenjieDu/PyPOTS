@@ -168,7 +168,8 @@ class BaseNNClusterer(BaseNNModel, BaseClusterer):
         saving_path: str = None,
         model_saving_strategy: Optional[str] = "best",
     ):
-        super().__init__(
+        BaseNNModel.__init__(
+            self,
             batch_size,
             epochs,
             patience,
@@ -177,7 +178,13 @@ class BaseNNClusterer(BaseNNModel, BaseClusterer):
             saving_path,
             model_saving_strategy,
         )
-        self.n_clusters = n_clusters
+        BaseClusterer.__init__(
+            self,
+            n_clusters,
+            device,
+            saving_path,
+            model_saving_strategy,
+        )
 
     @abstractmethod
     def _assemble_input_for_training(self, data: list) -> dict:
