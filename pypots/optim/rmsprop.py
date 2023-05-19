@@ -19,22 +19,22 @@ class RMSprop(Optimizer):
 
     Parameters
     ----------
-    lr : float, default=0.001
+    lr :
         The learning rate of the optimizer.
 
-    momentum : float, default=0
+    momentum :
         Momentum factor.
 
-    alpha : float, default=0.99
+    alpha :
         Smoothing constant.
 
-    eps : float, default=1e-08
+    eps :
         Term added to the denominator to improve numerical stability.
 
-    centered : bool, default=False
+    centered :
         If True, compute the centered RMSProp, the gradient is normalized by an estimation of its variance
 
-    weight_decay : float, default=0.01
+    weight_decay :
         Weight decay (L2 penalty).
 
     """
@@ -60,8 +60,9 @@ class RMSprop(Optimizer):
 
         Parameters
         ----------
-        params : Iterable,
+        params :
             An iterable of ``torch.Tensor`` or ``dict``. Specifies what Tensors should be optimized.
+
         """
         self.torch_optimizer = torch_RMSprop(
             params=params,

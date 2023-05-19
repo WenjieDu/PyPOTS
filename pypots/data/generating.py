@@ -30,22 +30,22 @@ def gene_complete_random_walk(
 
     Parameters
     ----------
-    n_samples : int, default=1000
+    n_samples :
         The number of training time-series samples to generate.
 
     n_steps: int, default=24
         The number of time steps (length) of generated time-series samples.
 
-    n_features : int, default=10
+    n_features :
         The number of features (dimensions) of generated time-series samples.
 
-    mu : float, default 0.0,
+    mu :
         Mean of the normal distribution, which random walk steps are sampled from.
 
-    std : float, default 1.,
+    std :
         Standard deviation of the normal distribution, which random walk steps are sampled from.
 
-    random_state : int or numpy.RandomState, default=None,
+    random_state :
         Random seed for data generation.
 
     Returns
@@ -75,34 +75,34 @@ def gene_random_walk_for_classification(
 
     Parameters
     ----------
-    n_classes : int, default=2
+    n_classes :
         Number of classes (types) of the generated data.
 
-    n_samples_each_class : int, default=500
+    n_samples_each_class :
         Number of samples for each class to generate.
 
-    n_steps : int, default=24
+    n_steps :
         Number of time steps in each sample.
 
-    n_features : int, default=10
+    n_features :
         Number of features.
 
-    shuffle : bool, default=True
+    shuffle :
         Whether to shuffle generated samples.
         If not, you can separate samples of each class according to `n_samples_each_class`.
         For example,
         X_class0=X[:n_samples_each_class],
         X_class1=X[n_samples_each_class:n_samples_each_class*2]
 
-    random_state : int or numpy.RandomState, default=None,
+    random_state :
         Random seed for data generation.
 
     Returns
     -------
-    X : array, shape of [n_classes*n_samples_each_class, n_steps, n_features]
+    X :
         Generated time-series data.
 
-    y : array, shape of [n_classes*n_samples_each_class]
+    y :
         Labels indicating classes of time-series samples.
 
     """
@@ -149,39 +149,39 @@ def gene_complete_random_walk_for_anomaly_detection(
 
     Parameters
     ----------
-    n_samples : int, default=1000
+    n_samples :
         The number of training time-series samples to generate.
 
-    n_features : int, default=10
+    n_features :
         The number of features (dimensions) of generated time-series samples.
 
     n_steps: int, default=24
         The number of time steps (length) of generated time-series samples.
 
-    mu : float, default 0.0,
+    mu :
         Mean of the normal distribution, which random walk steps are sampled from.
 
-    std : float, default 1.,
+    std :
         Standard deviation of the normal distribution, which random walk steps are sampled from.
 
-    anomaly_proportion : float, in (0,1)
+    anomaly_proportion :
         Proportion of anomaly samples in all samples.
 
-    anomaly_fraction : float, in (0,1)
+    anomaly_fraction :
         Fraction of anomaly points in each anomaly sample.
 
-    anomaly_scale_factor : int or float,
+    anomaly_scale_factor :
         Scale factor for value scaling to create anomaly points in time series samples.
 
-    random_state : int or numpy.RandomState, default=None,
+    random_state :
         Random seed for data generation.
 
     Returns
     -------
-    X : array, shape of [n_classes*n_samples_each_class, n_steps, n_features]
+    X :
         Generated time-series data.
 
-    y : array, shape of [n_classes*n_samples_each_class]
+    y :
         Labels indicating if time-series samples are anomalies.
     """
     assert (
@@ -232,19 +232,19 @@ def gene_incomplete_random_walk_dataset(
 
     Parameters
     ----------
-    n_steps : int, default=24
+    n_steps :
         Number of time steps in each sample.
 
-    n_features : int, default=10
+    n_features :
         Number of features.
 
-    n_classes : int, default=2
+    n_classes :
         Number of classes (types) of the generated data.
 
-    n_samples_each_class : int, default=500
+    n_samples_each_class :
         Number of samples for each class to generate.
 
-    missing_rate : float, default=0.1,
+    missing_rate :
         The rate of randomly missing values to generate.
 
     Returns
@@ -317,7 +317,7 @@ def gene_physionet2012(artificially_missing_rate: float = 0.1):
 
     Parameters
     ----------
-    artificially_missing_rate : float, default = 0.1
+    artificially_missing_rate :
         The rate of artificially missing values to generate for model evaluation.
         This ratio is calculated based on the number of observed values, i.e. if artificially_missing_rate = 0.1,
         then 10% of the observed values will be randomly masked as missing data and hold out for model evaluation.
@@ -326,6 +326,7 @@ def gene_physionet2012(artificially_missing_rate: float = 0.1):
     -------
     data: dict,
         A dictionary containing the generated PhysioNet-2012 dataset.
+
     """
     assert (
         0 <= artificially_missing_rate < 1

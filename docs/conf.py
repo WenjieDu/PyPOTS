@@ -45,6 +45,7 @@ extensions = [
     "sphinx.ext.imgmath",
     "sphinx.ext.viewcode",
     "sphinx.ext.napoleon",  # enables Sphinx to parse both NumPy and Google style docstrings, otherwise no Param/Returns
+    "sphinx_autodoc_typehints",  # enables generating type hints automatically in docstrings
     "sphinxcontrib.bibtex",
     "sphinxcontrib.gtagjs",
 ]
@@ -53,10 +54,13 @@ extensions = [
 # set the order of the members in the documentation
 autodoc_member_order = "bysource"
 
+napoleon_use_param = True  # enables parsing parameters in docstrings
+
 # configs for sphinx.ext.intersphinx
 intersphinx_mapping = {
     "python": ("https://docs.python.org/3", None),
     "sphinx": ("https://www.sphinx-doc.org/en/master", None),
+    "torch": ("https://pytorch.org/docs/master/", None),
 }
 
 # configs for sphinx.ext.imgmath

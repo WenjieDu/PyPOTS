@@ -22,17 +22,17 @@ class BaseModel(ABC):
 
     Parameters
     ----------
-    device : str or `torch.device`, default = None,
+    device :
         The device for the model to run on.
-        If not given, will try to use CUDA devices first (will use the GPU with device number 0 only by default),
+        If not given, will try to use CUDA devices first (will use the default CUDA device if there are multiple),
         then CPUs, considering CUDA and CPU are so far the main devices for people to train ML models.
         Other devices like Google TPU and Apple Silicon accelerator MPS may be added in the future.
 
-    saving_path : str, default = None,
+    saving_path :
         The path for automatically saving model checkpoints and tensorboard files (i.e. loss values recorded during
         training into a tensorboard file). Will not save if not given.
 
-    model_saving_strategy : str or None, None or "best" or "better" , default = "best",
+    model_saving_strategy :
         The strategy to save model checkpoints. It has to be one of [None, "best", "better"].
         No model will be saved when it is set as None.
         The "best" strategy will only automatically save the best model after the training finished.
@@ -41,7 +41,7 @@ class BaseModel(ABC):
 
     Attributes
     ----------
-    model : object, default = None,
+    model : object, default = None
         The underlying model or algorithm to finish the task.
 
     summary_writer : None or torch.utils.tensorboard.SummaryWriter,  default = None,
@@ -77,7 +77,7 @@ class BaseModel(ABC):
         if device is None:
             # if it is None, then use the first cuda device if cuda is available, otherwise use cpu
             self.device = torch.device(
-                "cuda:0"
+                "cuda"
                 if torch.cuda.is_available() and torch.cuda.device_count() > 0
                 else "cpu"
             )
@@ -167,14 +167,14 @@ class BaseModel(ABC):
 
         Parameters
         ----------
-        step : int,
+        step :
             The current training step number.
             One step for one batch processing, so the number of steps means how many batches the model has processed.
 
-        stage : str,
+        stage :
             The stage of the current operation, e.g. 'pretraining', 'training', 'validating'.
 
-        loss_dict : dict,
+        loss_dict :
             A dictionary containing items to log, should have at least one item, and only items having its name
             including "loss" or "error" will be logged, e.g. {'imputation_loss': 0.05, "classification_error": 0.32}.
 
@@ -194,19 +194,19 @@ class BaseModel(ABC):
     ) -> None:
         """Save the model with current parameters to a disk file.
 
-        A .pypots extension will be appended to the filename if it does not already have one.
+        A ``.pypots`` extension will be appended to the filename if it does not already have one.
         Please note that such an extension is not necessary, but to indicate the saved model is from PyPOTS framework
         so people can distinguish.
 
         Parameters
         ----------
-        saving_dir : str,
+        saving_dir :
             The given directory to save the model.
 
-        file_name : str,
+        file_name :
             The file name of the model to be saved.
 
-        overwrite : bool, default = False,
+        overwrite :
             Whether to overwrite the model file if the path already exists.
 
         """
@@ -244,12 +244,12 @@ class BaseModel(ABC):
 
         Parameters
         ----------
-        training_finished : bool, default = False,
+        training_finished :
             Whether the training is already finished when invoke this function.
             The saving_strategy "better" only works when training_finished is False.
             The saving_strategy "best" only works when training_finished is True.
 
-        saving_name : str, default = None,
+        saving_name :
             The file name of the saved model.
 
         """
@@ -267,7 +267,7 @@ class BaseModel(ABC):
 
         Parameters
         ----------
-        model_path : str,
+        model_path :
             Local path to a disk file saving trained model.
 
         Notes
@@ -300,30 +300,32 @@ class BaseNNModel(BaseModel):
 
     Parameters
     ----------
-    batch_size : int,
+    batch_size :
         Size of the batch input into the model for one step.
 
-    epochs : int,
+    epochs :
         Training epochs, i.e. the maximum rounds of the model to be trained with.
 
-    patience : int,
+    patience :
         Number of epochs the training procedure will keep if loss doesn't decrease.
         Once exceeding the number, the training will stop.
-        Must be smaller than or equal to the value of `epoches`.
+        Must be smaller than or equal to the value of ``epochs``.
 
-    num_workers : int, default = 0,
+    num_workers :
         The number of subprocesses to use for data loading.
         `0` means data loading will be in the main process, i.e. there won't be subprocesses.
 
-    device : str or `torch.device`, default = None,
+    device :
         The device for the model to run on.
-        If not given, will try to use CUDA devices first, then CPUs. CUDA and CPU are so far the main devices for people
-        to train ML models. Other devices like Google TPU and Apple Silicon accelerator MPS may be added in the future.
+        If not given, will try to use CUDA devices first (will use the default CUDA device if there are multiple),
+        then CPUs, considering CUDA and CPU are so far the main devices for people to train ML models.
+        Other devices like Google TPU and Apple Silicon accelerator MPS may be added in the future.
 
-    saving_path : str, default = None,
-        The path to save the tensorboard file, which contains the loss values recorded during training.
+    saving_path :
+        The path for automatically saving model checkpoints and tensorboard files (i.e. loss values recorded during
+        training into a tensorboard file). Will not save if not given.
 
-    model_saving_strategy : str or None, None or "best" or "better" , default = "best",
+    model_saving_strategy :
         The strategy to save model checkpoints. It has to be one of [None, "best", "better"].
         No model will be saved when it is set as None.
         The "best" strategy will only automatically save the best model after the training finished.
@@ -340,6 +342,16 @@ class BaseNNModel(BaseModel):
     best_loss : float, default = inf,
         The criteria to judge whether the model's performance is the best so far.
         Usually the lower, the better.
+
+
+    Notes
+    -----
+    Optimizers are necessary for training deep-learning neural networks, but we don't put a parameter ``optimizer``
+    here because some models (e.g. GANs) need more than one optimizer (e.g. one for generator, one for discriminator),
+    and ``optimizer`` is ambiguous for them. Therefore, we leave optimizers as parameters for concrete model
+    implementations, and you can pass any number of optimizers to your model when implementing it,
+    :class:`pypots.clustering.crli.CRLI` for example.
+
     """
 
     def __init__(
@@ -352,7 +364,12 @@ class BaseNNModel(BaseModel):
         saving_path: str = None,
         model_saving_strategy: Optional[str] = "best",
     ):
-        super().__init__(device, saving_path, model_saving_strategy)
+        BaseModel.__init__(
+            self,
+            device,
+            saving_path,
+            model_saving_strategy,
+        )
 
         if patience is None:
             patience = -1  # early stopping on patience won't work if it is set as < 0
