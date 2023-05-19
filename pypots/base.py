@@ -9,7 +9,6 @@ import os
 from abc import ABC
 from datetime import datetime
 from typing import Optional, Union
-import numpy as np
 
 import torch
 from torch.utils.tensorboard import SummaryWriter
@@ -157,7 +156,7 @@ class BaseModel(ABC):
         if isinstance(self.device, list):
             # parallely training on multiple devices
             self.model = torch.nn.DataParallel(self.model, device_ids=self.device)
-            self.model = self.model.to("cuda")
+            self.model = self.model.cuda()
             logger.info(
                 f"Model has been allocated to the given multiple devices: {self.device}"
             )
@@ -170,9 +169,9 @@ class BaseModel(ABC):
         else:  # parallely training on multiple devices
 
             # randomly choose one device to balance the workload
-            device = np.random.choice(self.device)
+            # device = np.random.choice(self.device)
 
-            data = map(lambda x: x.to(device), data)
+            data = map(lambda x: x.cuda(), data)
 
         return data
 
@@ -295,13 +294,13 @@ class BaseModel(ABC):
         try:
             if isinstance(self.device, torch.device):
                 loaded_model = torch.load(model_path, map_location=self.device)
-                # TODO: if the model was trained in parallel and saved with `module`?
-                #   need to remove 'module.'
             else:
-                # TODO: multiple GUP
                 loaded_model = torch.load(model_path)
             if isinstance(loaded_model, torch.nn.Module):
-                self.model.load_state_dict(loaded_model.state_dict())
+                if isinstance(self.device, torch.device):
+                    self.model.load_state_dict(loaded_model.state_dict())
+                else:
+                    self.model.module.load_state_dict(loaded_model.state_dict())
             else:
                 self.model = loaded_model.model
         except Exception as e:

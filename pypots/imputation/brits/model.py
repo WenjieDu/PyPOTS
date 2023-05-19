@@ -135,14 +135,14 @@ class RITS(nn.Module):
 
         # create hidden states and cell states for the lstm cell
         hidden_states = torch.zeros(
-            (values.size()[0], self.rnn_hidden_size), device=self.device
+            (values.size()[0], self.rnn_hidden_size), device=values.device
         )
         cell_states = torch.zeros(
-            (values.size()[0], self.rnn_hidden_size), device=self.device
+            (values.size()[0], self.rnn_hidden_size), device=values.device
         )
 
         estimations = []
-        reconstruction_loss = torch.tensor(0.0).to(self.device)
+        reconstruction_loss = torch.tensor(0.0).to(values.device)
 
         # imputation period
         for t in range(self.n_steps):
@@ -202,7 +202,7 @@ class RITS(nn.Module):
 
         ret_dict = {
             "consistency_loss": torch.tensor(
-                0.0, device=self.device
+                0.0, device=imputed_data.device
             ),  # single direction, has no consistency loss
             "reconstruction_loss": reconstruction_loss,
             "imputed_data": imputed_data,
@@ -486,7 +486,9 @@ class BRITS(BaseNNImputer):
         file_type: str = "h5py",
     ) -> None:
         # Step 1: wrap the input data with classes Dataset and DataLoader
-        training_set = DatasetForBRITS(train_set, file_type=file_type)
+        training_set = DatasetForBRITS(
+            train_set, return_labels=False, file_type=file_type
+        )
         training_loader = DataLoader(
             training_set,
             batch_size=self.batch_size,
@@ -508,7 +510,7 @@ class BRITS(BaseNNImputer):
                         "X_intact": hf["X_intact"][:],
                         "indicating_mask": hf["indicating_mask"][:],
                     }
-            val_set = DatasetForBRITS(val_set, file_type=file_type)
+            val_set = DatasetForBRITS(val_set, return_labels=False, file_type=file_type)
             val_loader = DataLoader(
                 val_set,
                 batch_size=self.batch_size,
