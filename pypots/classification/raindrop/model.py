@@ -288,73 +288,73 @@ class Raindrop(BaseNNClassifier):
 
     Parameters
     ----------
-    n_steps : int,
+    n_steps :
         The number of time steps in the time-series data sample.
 
-    n_features : int,
+    n_features :
         The number of features in the time-series data samples.
 
-    n_classes : int,
+    n_classes :
         The number of classes in the classification task.
 
-    n_layers : int,
+    n_layers :
         The number of layers in the Transformer encoder in the Raindrop model.
 
-    d_model : int,
+    d_model :
         The dimension of the Transformer encoder backbone.
         It is the input dimension of the multi-head self-attention layers.
 
-    d_inner : int,
+    d_inner :
         The dimension of the layer in the Feed-Forward Networks (FFN).
 
-    n_heads : int,
+    n_heads :
         The number of heads in the multi-head self-attention mechanism.
 
-    dropout : float, 0<= ``dropout`` <1,
+    dropout :
         The dropout rate for all fully-connected layers in the model.
 
-    d_static : int, default = 0,
+    d_static :
         The dimension of the static features.
 
-    aggregation : str, default = "mean",
+    aggregation :
         The aggregation method for the Transformer encoder output.
 
-    sensor_wise_mask : bool, default = False,
+    sensor_wise_mask :
         Whether to apply the sensor-wise masking.
 
-    static : bool, default = False,
+    static :
         Whether to use the static features.
 
-    batch_size : int, default = 32,
+    batch_size :
         The batch size for training and evaluating the model.
 
-    epochs : int, default = 100,
+    epochs :
         The number of epochs for training the model.
 
-    patience : int, default = None,
+    patience :
         The patience for the early-stopping mechanism. Given a positive integer, the training process will be
         stopped when the model does not perform better after that number of epochs.
         Leaving it default as None will disable the early-stopping.
 
-    optimizer : ``pypots.optim.base.Optimizer``, default = ``pypots.optim.Adam()``,
+    optimizer :
         The optimizer for model training.
         If not given, will use a default Adam optimizer.
 
-    num_workers : int, default = 0,
+    num_workers :
         The number of subprocesses to use for data loading.
         `0` means data loading will be in the main process, i.e. there won't be subprocesses.
 
-    device : str or `torch.device`, default = None,
+    device :
         The device for the model to run on.
-        If not given, will try to use CUDA devices first (will use the GPU with device number 0 only by default),
+        If not given, will try to use CUDA devices first (will use the default CUDA device if there are multiple),
         then CPUs, considering CUDA and CPU are so far the main devices for people to train ML models.
         Other devices like Google TPU and Apple Silicon accelerator MPS may be added in the future.
 
-    saving_path : str, default = None,
+    saving_path :
         The path for automatically saving model checkpoints and tensorboard files (i.e. loss values recorded during
         training into a tensorboard file). Will not save if not given.
 
-    model_saving_strategy : str or None, None or "best" or "better" , default = "best",
+    model_saving_strategy :
         The strategy to save model checkpoints. It has to be one of [None, "best", "better"].
         No model will be saved when it is set as None.
         The "best" strategy will only automatically save the best model after the training finished.
@@ -363,10 +363,10 @@ class Raindrop(BaseNNClassifier):
 
     Attributes
     ----------
-    model : object,
+    model : :class:`torch.nn.Module`
         The underlying Raindrop model.
 
-    optimizer : object,
+    optimizer : :class:`pypots.optim.Optimizer`
         The optimizer for model training.
 
     """
@@ -432,18 +432,6 @@ class Raindrop(BaseNNClassifier):
         self.optimizer.init_optimizer(self.model.parameters())
 
     def _assemble_input_for_training(self, data: dict) -> dict:
-        """Assemble the input data into a dictionary.
-
-        Parameters
-        ----------
-        data : list
-            A list containing data fetched from Dataset by Dataload.
-
-        Returns
-        -------
-        inputs : dict
-            A dictionary with data assembled.
-        """
         # fetch data
         indices, X, X_filledLOCF, missing_mask, deltas, empirical_mean, label = map(
             lambda x: x.to(self.device), data
@@ -468,38 +456,9 @@ class Raindrop(BaseNNClassifier):
         return inputs
 
     def _assemble_input_for_validating(self, data: dict) -> dict:
-        """Assemble the given data into a dictionary for validating input.
-
-        Notes
-        -----
-        The validating data assembling processing is the same as training data assembling.
-
-
-        Parameters
-        ----------
-        data : list,
-            A list containing data fetched from Dataset by Dataloader.
-
-        Returns
-        -------
-        inputs : dict,
-            A python dictionary contains the input data for model validating.
-        """
         return self._assemble_input_for_training(data)
 
     def _assemble_input_for_testing(self, data: dict) -> dict:
-        """Assemble the given data into a dictionary for testing input.
-
-        Parameters
-        ----------
-        data : list,
-            A list containing data fetched from Dataset by Dataloader.
-
-        Returns
-        -------
-        inputs : dict,
-            A python dictionary contains the input data for model testing.
-        """
         indices, X, X_filledLOCF, missing_mask, deltas, empirical_mean = map(
             lambda x: x.to(self.device), data
         )
@@ -527,36 +486,6 @@ class Raindrop(BaseNNClassifier):
         val_set: Optional[Union[dict, str]] = None,
         file_type="h5py",
     ) -> None:
-        """Fit the model on the given training data.
-
-        Parameters
-        ----------
-        train_set : dict or str,
-            The dataset for model training, should be a dictionary including keys as 'X' and 'y',
-            or a path string locating a data file.
-            If it is a dict, X should be array-like of shape [n_samples, sequence length (time steps), n_features],
-            which is time-series data for training, can contain missing values, and y should be array-like of shape
-            [n_samples], which is classification labels of X.
-            If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
-            key-value pairs like a dict, and it has to include keys as 'X' and 'y'.
-
-        val_set : dict or str,
-            The dataset for model validating, should be a dictionary including keys as 'X' and 'y',
-            or a path string locating a data file.
-            If it is a dict, X should be array-like of shape [n_samples, sequence length (time steps), n_features],
-            which is time-series data for validating, can contain missing values, and y should be array-like of shape
-            [n_samples], which is classification labels of X.
-            If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
-            key-value pairs like a dict, and it has to include keys as 'X' and 'y'.
-
-        file_type : str, default = "h5py"
-            The type of the given file if train_set and val_set are path strings.
-
-        Returns
-        -------
-        self : object,
-            Trained model.
-        """
         # Step 1: wrap the input data with classes Dataset and DataLoader
         training_set = DatasetForGRUD(train_set, file_type=file_type)
         training_loader = DataLoader(
@@ -584,22 +513,6 @@ class Raindrop(BaseNNClassifier):
         self._auto_save_model_if_necessary(training_finished=True)
 
     def classify(self, X: Union[dict, str], file_type: str = "h5py") -> np.ndarray:
-        """Classify the input data with the trained model.
-
-        Parameters
-        ----------
-        X : array-like or str,
-            The data samples for testing, should be array-like of shape [n_samples, sequence length (time steps),
-            n_features], or a path string locating a data file, e.g. h5 file.
-
-        file_type : str, default = "h5py",
-            The type of the given file if X is a path string.
-
-        Returns
-        -------
-        array-like, shape [n_samples],
-            Classification results of the given samples.
-        """
         self.model.eval()  # set the model as eval status to freeze it.
         test_set = DatasetForGRUD(X, return_labels=False, file_type=file_type)
         test_loader = DataLoader(

@@ -339,11 +339,13 @@ class BTTF(BaseForecaster):
         val_set: Optional[Union[dict, str]] = None,
         file_type="h5py",
     ) -> None:
-        """
+        """Train the forecaster on the given data.
+
         Warnings
         --------
         BTTF does not need to run fit().
         Please run func ``forecast()`` directly.
+
         """
         warnings.warn("Please run func forecast(X) directly.")
 
@@ -352,22 +354,6 @@ class BTTF(BaseForecaster):
         X: Union[dict, str],
         file_type: str = "h5py",
     ) -> np.ndarray:
-        """Forecast the future the input with the trained model.
-
-        Parameters
-        ----------
-        X : array-like or str,
-            The data samples for testing, should be array-like of shape [n_samples, sequence length (time steps),
-            n_features], or a path string locating a data file, e.g. h5 file.
-
-        file_type : str, default = "h5py"
-            The type of the given file if X is a path string.
-
-        Returns
-        -------
-        array-like, shape [n_samples, prediction_horizon, n_features],
-            Forecasting results.
-        """
         assert not isinstance(
             X, str
         ), "BTTF so far does not accept file input. It needs a specified Dataset class."
