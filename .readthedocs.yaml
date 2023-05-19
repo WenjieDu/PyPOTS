@@ -23,7 +23,7 @@ build:
          - pip install torch==1.13.1 -f https://download.pytorch.org/whl/cpu
          - pip install torch-geometric torch-scatter torch-sparse -f "https://data.pyg.org/whl/torch-1.13.1+cpu.html"
          - pip install pypots
-         - pip install sphinx==6.2.1 docutils==0.19 sphinxcontrib-bibtex==2.1.4 sphinxcontrib-gtagjs furo
+         - pip install sphinx==6.2.1 docutils==0.19 sphinxcontrib-bibtex==2.1.4 sphinxcontrib-gtagjs sphinx-autodoc-typehints furo
 
       post_install:
          - pip install docutils==0.20

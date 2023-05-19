@@ -19,16 +19,16 @@ class Adadelta(Optimizer):
 
     Parameters
     ----------
-    lr : float, default=0.01
+    lr :
         The learning rate of the optimizer.
 
-    rho : float, default=0.9
+    rho :
         Coefficient used for computing a running average of squared gradients.
 
-    eps : float, default=1e-08
+    eps :
         Term added to the denominator to improve numerical stability.
 
-    weight_decay : float, default=0.01
+    weight_decay :
         Weight decay (L2 penalty).
 
     """
@@ -50,8 +50,9 @@ class Adadelta(Optimizer):
 
         Parameters
         ----------
-        params : Iterable,
+        params :
             An iterable of ``torch.Tensor`` or ``dict``. Specifies what Tensors should be optimized.
+
         """
         self.torch_optimizer = torch_Adadelta(
             params=params,

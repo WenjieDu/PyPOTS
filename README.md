@@ -105,8 +105,10 @@ Alternatively, you can install from the latest source code with the latest featu
 
 PyPOTS tutorials have been released. Considering the future workload, I separate the tutorials into a single repo,
 and you can find them in [BrewPOTS](https://github.com/WenjieDu/BrewPOTS).
-Take a look at it now, and brew your POTS dataset into a cup of coffee! 🤓
+Take a look at it now, and learn how to brew your POTS datasets! 🤓
 
+You can also find a simple and quick-start tutorial notebook on Google Colab with
+[this link](https://colab.research.google.com/drive/1HEFjylEy05-r47jRy0H9jiS_WhD0UWmQ?usp=sharing).
 If you have further questions, please refer to PyPOTS documentation 📑[docs.pypots.com](https://docs.pypots.com).
 Besides, you can also [raise an issue](https://github.com/WenjieDu/PyPOTS/issues) or [ask in our community](#-community).
 
@@ -196,7 +198,9 @@ By committing your code, you'll
 
 1. make your well-established model out-of-the-box for PyPOTS users to run,
    and help your work obtain more exposure and impact.
-   Take a look at our [inclusion criteria](https://docs.pypots.com/en/latest/faq.html#inclusion-criteria);
+   Take a look at our [inclusion criteria](https://docs.pypots.com/en/latest/faq.html#inclusion-criteria).
+   You can utilize the `template` folder in each task package (e.g.
+   [pypots/imputation/template](https://github.com/WenjieDu/PyPOTS/tree/main/pypots/imputation/template)) to quickly start;
 2. be listed as one of [PyPOTS contributors](https://github.com/WenjieDu/PyPOTS/graphs/contributors):
    <img align="center" src="https://contrib.rocks/image?repo=wenjiedu/pypots">;
 3. get mentioned in our [release notes](https://github.com/WenjieDu/PyPOTS/releases);
@@ -226,7 +230,7 @@ We care about the feedback from our users, so we're building PyPOTS community on
 
 - [Slack](https://pypots-org.slack.com). General discussion, Q&A, and our development team are here;
 - [LinkedIn](https://www.linkedin.com/company/pypots). Official announcements and news are here;
-- [WeChat (微信公众号)](https://mp.weixin.qq.com/s/m6j83SJNgz-xySSZd-DTBw). We also run a group chat on WeChat,
+- [WeChat (微信公众号)](https://mp.weixin.qq.com/s/sNgZmgAyxDn2sZxXoWJYMA). We also run a group chat on WeChat,
   and you can get the QR code from the official account after following it;
 
 If you have any suggestions or want to contribute ideas or share time-series related papers, join us and tell.
