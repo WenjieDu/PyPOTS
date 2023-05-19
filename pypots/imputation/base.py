@@ -268,9 +268,10 @@ class BaseNNImputer(BaseNNModel, BaseImputer):
                     inputs = self._assemble_input_for_training(data)
                     self.optimizer.zero_grad()
                     results = self.model.forward(inputs)
-                    results["loss"].backward()
+                    # use sum() before backward() in case of multi-gpu training
+                    results["loss"].sum().backward()
                     self.optimizer.step()
-                    epoch_train_loss_collector.append(results["loss"].item())
+                    epoch_train_loss_collector.append(results["loss"].sum().item())
 
                     # save training loss logs into the tensorboard file for every step if in need
                     if self.summary_writer is not None:
@@ -285,7 +286,8 @@ class BaseNNImputer(BaseNNModel, BaseImputer):
                     with torch.no_grad():
                         for idx, data in enumerate(val_loader):
                             inputs = self._assemble_input_for_validating(data)
-                            imputed_data = self.model.impute(inputs)
+                            results = self.model.forward(inputs, training=False)
+                            imputed_data = results["imputed_data"]
                             imputation_collector.append(imputed_data)
 
                     imputation_collector = torch.cat(imputation_collector)
@@ -339,11 +341,10 @@ class BaseNNImputer(BaseNNModel, BaseImputer):
                     break
 
         except Exception as e:
-            logger.info(f"Exception: {e}")
+            logger.error(f"Exception: {e}")
             if self.best_model_dict is None:
                 raise RuntimeError(
-                    "Training got interrupted. Model was not trained.\n"
-                    "Please investigate the error printed above."
+                    "Training got interrupted. Model was not trained. Please investigate the error printed above."
                 )
             else:
                 RuntimeWarning(

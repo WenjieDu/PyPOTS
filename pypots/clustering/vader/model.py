@@ -163,7 +163,12 @@ class _VaDER(nn.Module):
         mu_c, var_c, phi_c = self.gmm_layer()
         return X_reconstructed, mu_c, var_c, phi_c, z, mu_tilde, stddev_tilde
 
-    def cluster(self, inputs: dict) -> np.ndarray:
+    def forward(
+        self,
+        inputs: dict,
+        pretrain: bool = False,
+        mode: str = "training",
+    ) -> dict:
         X, missing_mask = inputs["X"], inputs["missing_mask"]
         (
             X_reconstructed,
@@ -175,39 +180,34 @@ class _VaDER(nn.Module):
             stddev_tilde,
         ) = self.get_results(X, missing_mask)
 
-        def func_to_apply(
-            mu_t_: np.ndarray, mu_: np.ndarray, stddev_: np.ndarray, phi_: np.ndarray
-        ) -> np.ndarray:
-            # the covariance matrix is diagonal, so we can just take the product
-            return np.log(self.eps + phi_) + np.log(
-                self.eps
-                + multivariate_normal.pdf(mu_t_, mean=mu_, cov=np.diag(stddev_))
+        if mode == "clustering":
+
+            def func_to_apply(
+                mu_t_: np.ndarray,
+                mu_: np.ndarray,
+                stddev_: np.ndarray,
+                phi_: np.ndarray,
+            ) -> np.ndarray:
+                # the covariance matrix is diagonal, so we can just take the product
+                return np.log(self.eps + phi_) + np.log(
+                    self.eps
+                    + multivariate_normal.pdf(mu_t_, mean=mu_, cov=np.diag(stddev_))
+                )
+
+            mu_tilde = mu_tilde.detach().cpu().numpy()
+            mu = mu_c.detach().cpu().numpy()
+            var = var_c.detach().cpu().numpy()
+            phi = phi_c.detach().cpu().numpy()
+            p = np.array(
+                [
+                    func_to_apply(mu_tilde, mu[i], var[i], phi[i])
+                    for i in np.arange(mu.shape[0])
+                ]
             )
-
-        mu_tilde = mu_tilde.detach().cpu().numpy()
-        mu = mu_c.detach().cpu().numpy()
-        var = var_c.detach().cpu().numpy()
-        phi = phi_c.detach().cpu().numpy()
-        p = np.array(
-            [
-                func_to_apply(mu_tilde, mu[i], var[i], phi[i])
-                for i in np.arange(mu.shape[0])
-            ]
-        )
-        clustering_results = np.argmax(p, axis=0)
-        return clustering_results
-
-    def forward(self, inputs: dict, pretrain: bool = False) -> dict:
-        X, missing_mask = inputs["X"], inputs["missing_mask"]
-        (
-            X_reconstructed,
-            mu_c,
-            var_c,
-            phi_c,
-            z,
-            mu_tilde,
-            stddev_tilde,
-        ) = self.get_results(X, missing_mask)
+            clustering_results = np.argmax(p, axis=0)
+            results = {"clustering_pred": clustering_results}
+            # if only run clustering, then no need to calculate loss
+            return results
 
         device = X.device
 
@@ -275,7 +275,10 @@ class _VaDER(nn.Module):
         latent_loss3 = latent_loss3.mean()
         latent_loss = latent_loss1 + latent_loss2 + latent_loss3
 
-        results = {"loss": reconstruction_loss + self.alpha * latent_loss, "z": z}
+        results = {
+            "loss": reconstruction_loss + self.alpha * latent_loss,
+            "z": z,
+        }
 
         return results
 
@@ -389,7 +392,7 @@ class VaDER(BaseNNClusterer):
         self.model = _VaDER(
             n_steps, n_features, n_clusters, rnn_hidden_size, d_mu_stddev
         )
-        self.model = self.model.to(self.device)
+        self._send_model_to_given_device()
         self._print_model_size()
 
         # set up the optimizer
@@ -398,7 +401,7 @@ class VaDER(BaseNNClusterer):
 
     def _assemble_input_for_training(self, data: list) -> dict:
         # fetch data
-        indices, X, missing_mask = map(lambda x: x.to(self.device), data)
+        indices, X, missing_mask = self._send_data_to_given_device(data)
 
         inputs = {
             "X": X,
@@ -506,9 +509,9 @@ class VaDER(BaseNNClusterer):
                     inputs = self._assemble_input_for_training(data)
                     self.optimizer.zero_grad()
                     results = self.model.forward(inputs)
-                    results["loss"].backward()
+                    results["loss"].sum().backward()
                     self.optimizer.step()
-                    epoch_train_loss_collector.append(results["loss"].item())
+                    epoch_train_loss_collector.append(results["loss"].sum().item())
 
                     # save training loss logs into the tensorboard file for every step if in need
                     if self.summary_writer is not None:
@@ -524,7 +527,9 @@ class VaDER(BaseNNClusterer):
                         for idx, data in enumerate(val_loader):
                             inputs = self._assemble_input_for_validating(data)
                             results = self.model.forward(inputs)
-                            epoch_val_loss_collector.append(results["loss"].item())
+                            epoch_val_loss_collector.append(
+                                results["loss"].sum().item()
+                            )
 
                     mean_val_loss = np.mean(epoch_val_loss_collector)
 
@@ -565,8 +570,7 @@ class VaDER(BaseNNClusterer):
             logger.error(f"Exception: {e}")
             if self.best_model_dict is None:
                 raise RuntimeError(
-                    "Training got interrupted. Model was not trained.\n"
-                    "Please investigate the error printed above."
+                    "Training got interrupted. Model was not trained. Please investigate the error printed above."
                 )
             else:
                 RuntimeWarning(
@@ -618,7 +622,9 @@ class VaDER(BaseNNClusterer):
         with torch.no_grad():
             for idx, data in enumerate(test_loader):
                 inputs = self._assemble_input_for_testing(data)
-                results = self.model.cluster(inputs)
+                results = self.model.forward(inputs, mode="clustering")[
+                    "clustering_pred"
+                ]
                 clustering_results_collector.append(results)
 
         clustering_results = np.concatenate(clustering_results_collector)

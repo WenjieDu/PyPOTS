@@ -81,22 +81,6 @@ class BaseModel(ABC):
         self._setup_path(saving_path)
 
     def _setup_device(self, device):
-        # TODO: following things to be done for enabling training on multiple devices
-        #   0. fix error 2023-05-18 13:58:52 [INFO]: Exception: module must have its parameters and buffers on device
-        #       cuda:0 (device_ids[0]) but found one of them on device: cpu
-        #       Traceback (most recent call last):
-        #       File "/home/linml/.PyPOTS/pypots/imputation/base.py", line 232, in _train_model
-        #           results = self.model.forward(inputs)
-        #       File "/home/linml/anaconda3/envs/SAITS-python38/lib/python3.8/site-packages/torch/nn/parallel/data_
-        #           parallel.py", line 154, in forward
-        #           raise RuntimeError("module must have its parameters and buffers "
-        #       RuntimeError: module must have its parameters and buffers on device cuda:0 (device_ids[0]) but
-        #       found one of them on device: cpu
-        #   1. send data to multiple devices as well;
-        #   2. make each model call _send_model_to_given_device();
-        #   3. make each data assembling method call _send_data_to_given_device();
-        #   4. MULTI GPU TRAINING WITH DDP https://pytorch.org/tutorials/beginner/ddp_series_multigpu.html;
-
         if device is None:
             # if it is None, then use the first cuda device if cuda is available, otherwise use cpu
             if torch.cuda.is_available() and torch.cuda.device_count() > 0:
@@ -114,8 +98,15 @@ class BaseModel(ABC):
                 device_list = []
                 for idx, d in enumerate(device):
                     if isinstance(d, str):
-                        device_list.append(torch.device(d.lower()))
+                        d = d.lower()
+                        assert (
+                            "cuda" in d
+                        ), "The feature of training on multiple devices currently only support CUDA devices."
+                        device_list.append(torch.device(d))
                     elif isinstance(d, torch.device):
+                        assert (
+                            "cuda" in d.type
+                        ), "The feature of training on multiple devices currently only support CUDA devices."
                         device_list.append(d)
                     else:
                         raise TypeError(
@@ -163,13 +154,15 @@ class BaseModel(ABC):
             )
 
     def _send_model_to_given_device(self):
-        if isinstance(self.device, torch.device):
+        if isinstance(self.device, list):
             # parallely training on multiple devices
             self.model = torch.nn.DataParallel(self.model, device_ids=self.device)
+            self.model = self.model.to("cuda")
             logger.info(
                 f"Model has been allocated to the given multiple devices: {self.device}"
             )
-        self.model = self.model.to(self.device)
+        else:
+            self.model = self.model.to(self.device)
 
     def _send_data_to_given_device(self, data):
         if isinstance(self.device, torch.device):  # single device
@@ -205,7 +198,7 @@ class BaseModel(ABC):
             # save all items containing "loss" or "error" in the name
             # WDU: may enable customization keywords in the future
             if ("loss" in item_name) or ("error" in item_name):
-                self.summary_writer.add_scalar(f"{stage}/{item_name}", loss, step)
+                self.summary_writer.add_scalar(f"{stage}/{item_name}", loss.sum(), step)
 
     def save_model(
         self,
