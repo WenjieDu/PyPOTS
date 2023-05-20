@@ -90,15 +90,17 @@ class _TransformerEncoder(nn.Module):
         )  # replace non-missing part with original data
         return imputed_data, learned_presentation
 
-    def impute(self, inputs: dict) -> torch.Tensor:
-        imputed_data, _ = self._process(inputs)
-        return imputed_data
-
-    def forward(self, inputs: dict) -> dict:
+    def forward(self, inputs: dict, training: bool = True) -> dict:
         X, masks = inputs["X"], inputs["missing_mask"]
         imputed_data, learned_presentation = self._process(inputs)
-        ORT_loss = cal_mae(learned_presentation, X, masks)
 
+        if not training:
+            # if not in training mode, return the classification result only
+            return {
+                "imputed_data": imputed_data,
+            }
+
+        ORT_loss = cal_mae(learned_presentation, X, masks)
         MIT_loss = cal_mae(
             learned_presentation, inputs["X_intact"], inputs["indicating_mask"]
         )
@@ -184,9 +186,11 @@ class Transformer(BaseNNImputer):
         `0` means data loading will be in the main process, i.e. there won't be subprocesses.
 
     device :
-        The device for the model to run on.
+        The device for the model to run on. It can be a string, a :class:`torch.device` object, or a list of them.
         If not given, will try to use CUDA devices first (will use the default CUDA device if there are multiple),
         then CPUs, considering CUDA and CPU are so far the main devices for people to train ML models.
+        If given a list of devices, e.g. ['cuda:0', 'cuda:1'], or [torch.device('cuda:0'), torch.device('cuda:1')] , the
+        model will be parallely trained on the multiple devices (so far only support parallel training on CUDA devices).
         Other devices like Google TPU and Apple Silicon accelerator MPS may be added in the future.
 
     saving_path :
@@ -229,7 +233,7 @@ class Transformer(BaseNNImputer):
         patience: int = None,
         optimizer: Optional[Optimizer] = Adam(),
         num_workers: int = 0,
-        device: Optional[Union[str, torch.device]] = None,
+        device: Optional[Union[str, torch.device, list]] = None,
         saving_path: str = None,
         model_saving_strategy: Optional[str] = "best",
     ):
@@ -271,7 +275,7 @@ class Transformer(BaseNNImputer):
             self.ORT_weight,
             self.MIT_weight,
         )
-        self.model = self.model.to(self.device)
+        self._send_model_to_given_device()
         self._print_model_size()
 
         # set up the optimizer
@@ -279,9 +283,13 @@ class Transformer(BaseNNImputer):
         self.optimizer.init_optimizer(self.model.parameters())
 
     def _assemble_input_for_training(self, data: dict) -> dict:
-        indices, X_intact, X, missing_mask, indicating_mask = map(
-            lambda x: x.to(self.device), data
-        )
+        (
+            indices,
+            X_intact,
+            X,
+            missing_mask,
+            indicating_mask,
+        ) = self._send_data_to_given_device(data)
 
         inputs = {
             "X": X,
@@ -293,7 +301,7 @@ class Transformer(BaseNNImputer):
         return inputs
 
     def _assemble_input_for_validating(self, data: list) -> dict:
-        indices, X, missing_mask = map(lambda x: x.to(self.device), data)
+        indices, X, missing_mask = self._send_data_to_given_device(data)
 
         inputs = {
             "X": X,
@@ -312,7 +320,9 @@ class Transformer(BaseNNImputer):
         file_type: str = "h5py",
     ) -> None:
         # Step 1: wrap the input data with classes Dataset and DataLoader
-        training_set = DatasetForSAITS(train_set, file_type=file_type)
+        training_set = DatasetForSAITS(
+            train_set, return_labels=False, file_type=file_type
+        )
         training_loader = DataLoader(
             training_set,
             batch_size=self.batch_size,
@@ -335,7 +345,7 @@ class Transformer(BaseNNImputer):
                         "indicating_mask": hf["indicating_mask"][:],
                     }
 
-            val_set = BaseDataset(val_set, file_type=file_type)
+            val_set = BaseDataset(val_set, return_labels=False, file_type=file_type)
             val_loader = DataLoader(
                 val_set,
                 batch_size=self.batch_size,
@@ -365,7 +375,8 @@ class Transformer(BaseNNImputer):
         with torch.no_grad():
             for idx, data in enumerate(test_loader):
                 inputs = self._assemble_input_for_testing(data)
-                imputed_data = self.model.impute(inputs)
+                results = self.model.forward(inputs, training=False)
+                imputed_data = results["imputed_data"]
                 imputation_collector.append(imputed_data)
 
         imputation_collector = torch.cat(imputation_collector)

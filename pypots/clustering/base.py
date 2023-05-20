@@ -26,9 +26,11 @@ class BaseClusterer(BaseModel):
         The number of clusters in the clustering task.
 
     device :
-        The device for the model to run on.
+        The device for the model to run on. It can be a string, a :class:`torch.device` object, or a list of them.
         If not given, will try to use CUDA devices first (will use the default CUDA device if there are multiple),
         then CPUs, considering CUDA and CPU are so far the main devices for people to train ML models.
+        If given a list of devices, e.g. ['cuda:0', 'cuda:1'], or [torch.device('cuda:0'), torch.device('cuda:1')] , the
+        model will be parallely trained on the multiple devices (so far only support parallel training on CUDA devices).
         Other devices like Google TPU and Apple Silicon accelerator MPS may be added in the future.
 
     saving_path :
@@ -47,7 +49,7 @@ class BaseClusterer(BaseModel):
     def __init__(
         self,
         n_clusters: int,
-        device: Optional[Union[str, torch.device]] = None,
+        device: Optional[Union[str, torch.device, list]] = None,
         saving_path: str = None,
         model_saving_strategy: Optional[str] = "best",
     ):
@@ -106,7 +108,7 @@ class BaseClusterer(BaseModel):
         raise NotImplementedError
 
 
-class BaseNNClusterer(BaseNNModel, BaseClusterer):
+class BaseNNClusterer(BaseNNModel):
     """The abstract class for all neural-network clustering models in PyPOTS.
 
     Parameters
@@ -130,9 +132,11 @@ class BaseNNClusterer(BaseNNModel, BaseClusterer):
         ``0`` means data loading will be in the main process, i.e. there won't be subprocesses.
 
     device :
-        The device for the model to run on.
+        The device for the model to run on. It can be a string, a :class:`torch.device` object, or a list of them.
         If not given, will try to use CUDA devices first (will use the default CUDA device if there are multiple),
         then CPUs, considering CUDA and CPU are so far the main devices for people to train ML models.
+        If given a list of devices, e.g. ['cuda:0', 'cuda:1'], or [torch.device('cuda:0'), torch.device('cuda:1')] , the
+        model will be parallely trained on the multiple devices (so far only support parallel training on CUDA devices).
         Other devices like Google TPU and Apple Silicon accelerator MPS may be added in the future.
 
     saving_path :
@@ -164,12 +168,11 @@ class BaseNNClusterer(BaseNNModel, BaseClusterer):
         epochs: int,
         patience: int,
         num_workers: int = 0,
-        device: Optional[Union[str, torch.device]] = None,
+        device: Optional[Union[str, torch.device, list]] = None,
         saving_path: str = None,
         model_saving_strategy: Optional[str] = "best",
     ):
-        BaseNNModel.__init__(
-            self,
+        super().__init__(
             batch_size,
             epochs,
             patience,
@@ -178,13 +181,7 @@ class BaseNNClusterer(BaseNNModel, BaseClusterer):
             saving_path,
             model_saving_strategy,
         )
-        BaseClusterer.__init__(
-            self,
-            n_clusters,
-            device,
-            saving_path,
-            model_saving_strategy,
-        )
+        self.n_clusters = n_clusters
 
     @abstractmethod
     def _assemble_input_for_training(self, data: list) -> dict:
@@ -274,9 +271,9 @@ class BaseNNClusterer(BaseNNModel, BaseClusterer):
                     inputs = self._assemble_input_for_training(data)
                     self.optimizer.zero_grad()
                     results = self.model.forward(inputs)
-                    results["loss"].backward()
+                    results["loss"].sum().backward()
                     self.optimizer.step()
-                    epoch_train_loss_collector.append(results["loss"].item())
+                    epoch_train_loss_collector.append(results["loss"].sum().item())
 
                 # mean training loss of the current epoch
                 mean_train_loss = np.mean(epoch_train_loss_collector)
@@ -288,7 +285,9 @@ class BaseNNClusterer(BaseNNModel, BaseClusterer):
                         for idx, data in enumerate(val_loader):
                             inputs = self._assemble_input_for_validating(data)
                             results = self.model.forward(inputs)
-                            epoch_val_loss_collector.append(results["loss"].item())
+                            epoch_val_loss_collector.append(
+                                results["loss"].sum().item()
+                            )
 
                     mean_val_loss = np.mean(epoch_val_loss_collector)
                     logger.info(
@@ -313,15 +312,15 @@ class BaseNNClusterer(BaseNNModel, BaseClusterer):
                         )
                         break
         except Exception as e:
-            logger.info(f"Exception: {e}")
+            logger.error(f"Exception: {e}")
             if self.best_model_dict is None:
                 raise RuntimeError(
-                    "Training got interrupted. Model was not get trained. Please try fit() again."
+                    "Training got interrupted. Model was not trained. Please investigate the error printed above."
                 )
             else:
                 RuntimeWarning(
-                    "Training got interrupted. "
-                    "Model will load the best parameters so far for testing. "
+                    "Training got interrupted. Please investigate the error printed above.\n"
+                    "Model got trained and will load the best checkpoint so far for testing.\n"
                     "If you don't want it, please try fit() again."
                 )
 
@@ -329,3 +328,50 @@ class BaseNNClusterer(BaseNNModel, BaseClusterer):
             raise ValueError("Something is wrong. best_loss is Nan after training.")
 
         logger.info("Finished training.")
+
+    @abstractmethod
+    def fit(
+        self,
+        train_set: Union[dict, str],
+        file_type: str = "h5py",
+    ) -> None:
+        """Train the cluster.
+
+        Parameters
+        ----------
+        train_set :
+            The dataset for model training, should be a dictionary including the key 'X',
+            or a path string locating a data file.
+            If it is a dict, X should be array-like of shape [n_samples, sequence length (time steps), n_features],
+            which is time-series data for training, can contain missing values.
+            If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
+            key-value pairs like a dict, and it has to include the key 'X'.
+
+        file_type :
+            The type of the given file if train_set is a path string.
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    def cluster(
+        self,
+        X: Union[dict, str],
+        file_type="h5py",
+    ) -> np.ndarray:
+        """Cluster the input with the trained model.
+
+        Parameters
+        ----------
+        X :
+            The data samples for testing, should be array-like of shape [n_samples, sequence length (time steps),
+            n_features], or a path string locating a data file, e.g. h5 file.
+
+        file_type :
+            The type of the given file if X is a path string.
+
+        Returns
+        -------
+        array-like,
+            Clustering results.
+        """
+        raise NotImplementedError

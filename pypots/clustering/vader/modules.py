@@ -94,7 +94,7 @@ class GMMLayer(nn.Module):
         super().__init__()
         self.mu_c_unscaled = Parameter(torch.Tensor(n_clusters, d_hidden))
         self.var_c_unscaled = Parameter(torch.Tensor(n_clusters, d_hidden))
-        self.phi_c_unscaled = torch.Tensor(n_clusters)
+        self.phi_c_unscaled = Parameter(torch.Tensor(n_clusters))
 
     def set_values(
         self,
@@ -107,7 +107,7 @@ class GMMLayer(nn.Module):
         assert phi.shape == self.phi_c_unscaled.shape
         self.mu_c_unscaled = torch.nn.Parameter(mu)
         self.var_c_unscaled = torch.nn.Parameter(var)
-        self.phi_c_unscaled = phi
+        self.phi_c_unscaled = torch.nn.Parameter(phi)
 
     def forward(self) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         mu_c = self.mu_c_unscaled

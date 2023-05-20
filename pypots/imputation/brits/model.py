@@ -135,14 +135,14 @@ class RITS(nn.Module):
 
         # create hidden states and cell states for the lstm cell
         hidden_states = torch.zeros(
-            (values.size()[0], self.rnn_hidden_size), device=self.device
+            (values.size()[0], self.rnn_hidden_size), device=values.device
         )
         cell_states = torch.zeros(
-            (values.size()[0], self.rnn_hidden_size), device=self.device
+            (values.size()[0], self.rnn_hidden_size), device=values.device
         )
 
         estimations = []
-        reconstruction_loss = torch.tensor(0.0).to(self.device)
+        reconstruction_loss = torch.tensor(0.0).to(values.device)
 
         # imputation period
         for t in range(self.n_steps):
@@ -202,7 +202,7 @@ class RITS(nn.Module):
 
         ret_dict = {
             "consistency_loss": torch.tensor(
-                0.0, device=self.device
+                0.0, device=imputed_data.device
             ),  # single direction, has no consistency loss
             "reconstruction_loss": reconstruction_loss,
             "imputed_data": imputed_data,
@@ -303,28 +303,7 @@ class _BRITS(nn.Module):
 
         return ret
 
-    def impute(self, inputs: dict) -> torch.Tensor:
-        """Impute the missing data. Only impute, this is for test stage.
-
-        Parameters
-        ----------
-        inputs :
-            A dictionary includes all input data.
-
-        Returns
-        -------
-        array-like, the same shape with the input feature vectors.
-            The feature vectors with missing part imputed.
-
-        """
-        imputed_data_f, _, _ = self.rits_f.impute(inputs, "forward")
-        imputed_data_b, _, _ = self.rits_b.impute(inputs, "backward")
-        imputed_data_b = {"imputed_data_b": imputed_data_b}
-        imputed_data_b = self._reverse(imputed_data_b)["imputed_data_b"]
-        imputed_data = (imputed_data_f + imputed_data_b) / 2
-        return imputed_data
-
-    def forward(self, inputs: dict) -> dict:
+    def forward(self, inputs: dict, training: bool = True) -> dict:
         """Forward processing of BRITS.
 
         Parameters
@@ -341,10 +320,17 @@ class _BRITS(nn.Module):
         # Results from the backward RITS.
         ret_b = self._reverse(self.rits_b(inputs, "backward"))
 
+        imputed_data = (ret_f["imputed_data"] + ret_b["imputed_data"]) / 2
+
+        if not training:
+            # if not in training mode, return the classification result only
+            return {
+                "imputed_data": imputed_data,
+            }
+
         consistency_loss = self._get_consistency_loss(
             ret_f["imputed_data"], ret_b["imputed_data"]
         )
-        imputed_data = (ret_f["imputed_data"] + ret_b["imputed_data"]) / 2
 
         # `loss` is always the item for backward propagating to update the model
         loss = (
@@ -390,9 +376,11 @@ class BRITS(BaseNNImputer):
         `0` means data loading will be in the main process, i.e. there won't be subprocesses.
 
     device :
-        The device for the model to run on.
+        The device for the model to run on. It can be a string, a :class:`torch.device` object, or a list of them.
         If not given, will try to use CUDA devices first (will use the default CUDA device if there are multiple),
         then CPUs, considering CUDA and CPU are so far the main devices for people to train ML models.
+        If given a list of devices, e.g. ['cuda:0', 'cuda:1'], or [torch.device('cuda:0'), torch.device('cuda:1')] , the
+        model will be parallely trained on the multiple devices (so far only support parallel training on CUDA devices).
         Other devices like Google TPU and Apple Silicon accelerator MPS may be added in the future.
 
     saving_path :
@@ -426,7 +414,7 @@ class BRITS(BaseNNImputer):
         patience: int = None,
         optimizer: Optional[Optimizer] = Adam(),
         num_workers: int = 0,
-        device: Optional[Union[str, torch.device]] = None,
+        device: Optional[Union[str, torch.device, list]] = None,
         saving_path: str = None,
         model_saving_strategy: Optional[str] = "best",
     ):
@@ -446,9 +434,12 @@ class BRITS(BaseNNImputer):
 
         # set up the model
         self.model = _BRITS(
-            self.n_steps, self.n_features, self.rnn_hidden_size, self.device
+            self.n_steps,
+            self.n_features,
+            self.rnn_hidden_size,
+            self.device,
         )
-        self.model = self.model.to(self.device)
+        self._send_model_to_given_device()
         self._print_model_size()
 
         # set up the optimizer
@@ -457,9 +448,15 @@ class BRITS(BaseNNImputer):
 
     def _assemble_input_for_training(self, data: list) -> dict:
         # fetch data
-        indices, X, missing_mask, deltas, back_X, back_missing_mask, back_deltas = map(
-            lambda x: x.to(self.device), data
-        )
+        (
+            indices,
+            X,
+            missing_mask,
+            deltas,
+            back_X,
+            back_missing_mask,
+            back_deltas,
+        ) = self._send_data_to_given_device(data)
 
         # assemble input data
         inputs = {
@@ -491,7 +488,9 @@ class BRITS(BaseNNImputer):
         file_type: str = "h5py",
     ) -> None:
         # Step 1: wrap the input data with classes Dataset and DataLoader
-        training_set = DatasetForBRITS(train_set, file_type=file_type)
+        training_set = DatasetForBRITS(
+            train_set, return_labels=False, file_type=file_type
+        )
         training_loader = DataLoader(
             training_set,
             batch_size=self.batch_size,
@@ -513,7 +512,7 @@ class BRITS(BaseNNImputer):
                         "X_intact": hf["X_intact"][:],
                         "indicating_mask": hf["indicating_mask"][:],
                     }
-            val_set = DatasetForBRITS(val_set, file_type=file_type)
+            val_set = DatasetForBRITS(val_set, return_labels=False, file_type=file_type)
             val_loader = DataLoader(
                 val_set,
                 batch_size=self.batch_size,
@@ -547,7 +546,8 @@ class BRITS(BaseNNImputer):
         with torch.no_grad():
             for idx, data in enumerate(test_loader):
                 inputs = self._assemble_input_for_testing(data)
-                imputed_data = self.model.impute(inputs)
+                results = self.model.forward(inputs, training=False)
+                imputed_data = results["imputed_data"]
                 imputation_collector.append(imputed_data)
 
         imputation_collector = torch.cat(imputation_collector)
