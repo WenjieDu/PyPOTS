@@ -68,7 +68,7 @@ GPU Acceleration
 Neural-network models in PyPOTS are implemented in PyTorch. So far we only support CUDA-enabled GPUs for GPU acceleration.
 If you have a CUDA device, you can install PyTorch with GPU support to accelerate the training and inference of neural-network models.
 After that, you can set the ``device`` argument to ``"cuda"`` when initializing the model to enable GPU acceleration.
-If you don't specify ``device``, PyPOTS will automatically detect and use the first CUDA device (i.e. ``cuda:0``) if multiple CUDA devices are available.
+If you don't specify ``device``, PyPOTS will automatically detect and use the default CUDA device if multiple CUDA devices are available.
 
 CPU Acceleration
 ****************
