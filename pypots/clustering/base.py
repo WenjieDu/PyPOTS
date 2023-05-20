@@ -106,7 +106,7 @@ class BaseClusterer(BaseModel):
         raise NotImplementedError
 
 
-class BaseNNClusterer(BaseNNModel, BaseClusterer):
+class BaseNNClusterer(BaseNNModel):
     """The abstract class for all neural-network clustering models in PyPOTS.
 
     Parameters
@@ -168,8 +168,7 @@ class BaseNNClusterer(BaseNNModel, BaseClusterer):
         saving_path: str = None,
         model_saving_strategy: Optional[str] = "best",
     ):
-        BaseNNModel.__init__(
-            self,
+        super().__init__(
             batch_size,
             epochs,
             patience,
@@ -178,13 +177,7 @@ class BaseNNClusterer(BaseNNModel, BaseClusterer):
             saving_path,
             model_saving_strategy,
         )
-        BaseClusterer.__init__(
-            self,
-            n_clusters,
-            device,
-            saving_path,
-            model_saving_strategy,
-        )
+        self.n_clusters = n_clusters
 
     @abstractmethod
     def _assemble_input_for_training(self, data: list) -> dict:
@@ -331,3 +324,50 @@ class BaseNNClusterer(BaseNNModel, BaseClusterer):
             raise ValueError("Something is wrong. best_loss is Nan after training.")
 
         logger.info("Finished training.")
+
+    @abstractmethod
+    def fit(
+        self,
+        train_set: Union[dict, str],
+        file_type: str = "h5py",
+    ) -> None:
+        """Train the cluster.
+
+        Parameters
+        ----------
+        train_set :
+            The dataset for model training, should be a dictionary including the key 'X',
+            or a path string locating a data file.
+            If it is a dict, X should be array-like of shape [n_samples, sequence length (time steps), n_features],
+            which is time-series data for training, can contain missing values.
+            If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
+            key-value pairs like a dict, and it has to include the key 'X'.
+
+        file_type :
+            The type of the given file if train_set is a path string.
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    def cluster(
+        self,
+        X: Union[dict, str],
+        file_type="h5py",
+    ) -> np.ndarray:
+        """Cluster the input with the trained model.
+
+        Parameters
+        ----------
+        X :
+            The data samples for testing, should be array-like of shape [n_samples, sequence length (time steps),
+            n_features], or a path string locating a data file, e.g. h5 file.
+
+        file_type :
+            The type of the given file if X is a path string.
+
+        Returns
+        -------
+        array-like,
+            Clustering results.
+        """
+        raise NotImplementedError
