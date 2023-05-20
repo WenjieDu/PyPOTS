@@ -51,8 +51,7 @@ class BaseClassifier(BaseModel):
         saving_path: str = None,
         model_saving_strategy: Optional[str] = "best",
     ):
-        BaseModel.__init__(
-            self,
+        super().__init__(
             device,
             saving_path,
             model_saving_strategy,
@@ -119,7 +118,7 @@ class BaseClassifier(BaseModel):
         raise NotImplementedError
 
 
-class BaseNNClassifier(BaseNNModel, BaseClassifier):
+class BaseNNClassifier(BaseNNModel):
     """The abstract class for all neural-network classification models in PyPOTS.
 
     Parameters
@@ -181,8 +180,7 @@ class BaseNNClassifier(BaseNNModel, BaseClassifier):
         saving_path: str = None,
         model_saving_strategy: Optional[str] = "best",
     ):
-        BaseNNModel.__init__(
-            self,
+        super().__init__(
             batch_size,
             epochs,
             patience,
@@ -191,13 +189,7 @@ class BaseNNClassifier(BaseNNModel, BaseClassifier):
             saving_path,
             model_saving_strategy,
         )
-        BaseClassifier.__init__(
-            self,
-            n_classes,
-            device,
-            saving_path,
-            model_saving_strategy,
-        )
+        self.n_classes = n_classes
 
     @abstractmethod
     def _assemble_input_for_training(self, data) -> dict:
@@ -349,3 +341,62 @@ class BaseNNClassifier(BaseNNModel, BaseClassifier):
             raise ValueError("Something is wrong. best_loss is Nan after training.")
 
         logger.info("Finished training.")
+
+    @abstractmethod
+    def fit(
+        self,
+        train_set: Union[dict, str],
+        val_set: Optional[Union[dict, str]] = None,
+        file_type: str = "h5py",
+    ) -> None:
+        """Train the classifier on the given data.
+
+        Parameters
+        ----------
+        train_set :
+            The dataset for model training, should be a dictionary including keys as 'X' and 'y',
+            or a path string locating a data file.
+            If it is a dict, X should be array-like of shape [n_samples, sequence length (time steps), n_features],
+            which is time-series data for training, can contain missing values, and y should be array-like of shape
+            [n_samples], which is classification labels of X.
+            If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
+            key-value pairs like a dict, and it has to include keys as 'X' and 'y'.
+
+        val_set :
+            The dataset for model validating, should be a dictionary including keys as 'X' and 'y',
+            or a path string locating a data file.
+            If it is a dict, X should be array-like of shape [n_samples, sequence length (time steps), n_features],
+            which is time-series data for validating, can contain missing values, and y should be array-like of shape
+            [n_samples], which is classification labels of X.
+            If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
+            key-value pairs like a dict, and it has to include keys as 'X' and 'y'.
+
+        file_type :
+            The type of the given file if train_set and val_set are path strings.
+
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    def classify(
+        self,
+        X: Union[dict, str],
+        file_type: str = "h5py",
+    ) -> np.ndarray:
+        """Classify the input data with the trained model.
+
+        Parameters
+        ----------
+        X :
+            The data samples for testing, should be array-like of shape [n_samples, sequence length (time steps),
+            n_features], or a path string locating a data file, e.g. h5 file.
+
+        file_type :
+            The type of the given file if X is a path string.
+
+        Returns
+        -------
+        array-like, shape [n_samples],
+            Classification results of the given samples.
+        """
+        raise NotImplementedError

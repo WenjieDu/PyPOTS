@@ -377,8 +377,7 @@ class BaseNNModel(BaseModel):
         saving_path: str = None,
         model_saving_strategy: Optional[str] = "best",
     ):
-        BaseModel.__init__(
-            self,
+        super().__init__(
             device,
             saving_path,
             model_saving_strategy,
