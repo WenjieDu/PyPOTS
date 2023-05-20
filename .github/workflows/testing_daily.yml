@@ -52,7 +52,8 @@ jobs:
 
             - name: Test with pytest
               run: |
-                  coverage run --source=pypots -m pytest
+                  coverage run --source=pypots -m pytest --ignore tests/test_training_on_multi_gpus.py
+                  # ignore the test_training_on_multi_gpus.py because it requires multiple GPUs which are not available on GitHub Actions
 
             - name: Generate the LCOV report
               run: |
