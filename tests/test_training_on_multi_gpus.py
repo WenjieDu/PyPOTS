@@ -37,7 +37,7 @@ from tests.global_test_config import (
 EPOCHS = 5
 
 DEVICES = [torch.device(i) for i in range(torch.cuda.device_count())]
-LESS_THAN_TWO_DEVICES = len(DEVICES) < 1
+LESS_THAN_TWO_DEVICES = len(DEVICES) < 2
 
 # global skip test if less than two cuda-enabled devices
 pytestmark = pytest.mark.skipif(LESS_THAN_TWO_DEVICES, reason="not enough cuda devices")
