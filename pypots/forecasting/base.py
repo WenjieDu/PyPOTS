@@ -23,9 +23,11 @@ class BaseForecaster(BaseModel):
     Parameters
     ----------
     device :
-        The device for the model to run on.
+        The device for the model to run on. It can be a string, a :class:`torch.device` object, or a list of them.
         If not given, will try to use CUDA devices first (will use the default CUDA device if there are multiple),
         then CPUs, considering CUDA and CPU are so far the main devices for people to train ML models.
+        If given a list of devices, e.g. ['cuda:0', 'cuda:1'], or [torch.device('cuda:0'), torch.device('cuda:1')] , the
+        model will be parallely trained on the multiple devices (so far only support parallel training on CUDA devices).
         Other devices like Google TPU and Apple Silicon accelerator MPS may be added in the future.
 
     saving_path :
@@ -43,12 +45,11 @@ class BaseForecaster(BaseModel):
 
     def __init__(
         self,
-        device: Optional[Union[str, list, torch.device]] = None,
+        device: Optional[Union[str, torch.device, list]] = None,
         saving_path: str = None,
         model_saving_strategy: Optional[str] = "best",
     ):
-        BaseModel.__init__(
-            self,
+        super().__init__(
             device,
             saving_path,
             model_saving_strategy,
@@ -132,9 +133,11 @@ class BaseNNForecaster(BaseNNModel):
         `0` means data loading will be in the main process, i.e. there won't be subprocesses.
 
     device :
-        The device for the model to run on.
+        The device for the model to run on. It can be a string, a :class:`torch.device` object, or a list of them.
         If not given, will try to use CUDA devices first (will use the default CUDA device if there are multiple),
         then CPUs, considering CUDA and CPU are so far the main devices for people to train ML models.
+        If given a list of devices, e.g. ['cuda:0', 'cuda:1'], or [torch.device('cuda:0'), torch.device('cuda:1')] , the
+        model will be parallely trained on the multiple devices (so far only support parallel training on CUDA devices).
         Other devices like Google TPU and Apple Silicon accelerator MPS may be added in the future.
 
     saving_path :
@@ -164,7 +167,7 @@ class BaseNNForecaster(BaseNNModel):
         epochs: int,
         patience: int,
         num_workers: int = 0,
-        device: Optional[Union[str, list, torch.device]] = None,
+        device: Optional[Union[str, torch.device, list]] = None,
         saving_path: str = None,
         model_saving_strategy: Optional[str] = "best",
     ):

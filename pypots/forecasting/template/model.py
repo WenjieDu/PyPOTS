@@ -57,7 +57,7 @@ class YourNewModel(BaseNNForecaster):
         patience: int,
         num_workers: int = 0,
         optimizer: Optional[Optimizer] = Adam(),
-        device: Optional[Union[str, list, torch.device]] = None,
+        device: Optional[Union[str, torch.device, list]] = None,
         saving_path: str = None,
         model_saving_strategy: Optional[str] = "best",
     ):
