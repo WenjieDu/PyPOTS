@@ -9,10 +9,12 @@ from .brits import BRITS
 from .locf import LOCF
 from .saits import SAITS
 from .transformer import Transformer
+from .mrnn import MRNN
 
 __all__ = [
-    "BRITS",
-    "Transformer",
     "SAITS",
+    "Transformer",
+    "BRITS",
+    "MRNN",
     "LOCF",
 ]
