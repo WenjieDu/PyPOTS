@@ -1,0 +1,23 @@
+repos:
+    # hooks for checking files
+    -   repo: https://github.com/pre-commit/pre-commit-hooks
+        rev: v4.4.0
+        hooks:
+            -   id: trailing-whitespace
+            -   id: end-of-file-fixer
+            -   id: check-yaml
+
+    # hooks for linting code
+    -   repo: https://github.com/psf/black
+        rev: 22.10.0
+        hooks:
+            -   id: black
+
+    -   repo: https://github.com/PyCQA/flake8
+        rev: 6.0.0
+        hooks:
+            -   id: flake8
+                args: [
+                    --max-line-length=120, # refer to setup.cfg
+                    --extend-ignore=E203, # why ignore E203? Refer to https://github.com/PyCQA/pycodestyle/issues/373
+                ]

@@ -1,0 +1,32 @@
+name: "🤙 New Model Addition"
+description: Submit a request to implement a new model.
+labels: ["new model", "enhancement"]
+
+body:
+  - type: textarea
+    id: model-description-requested
+    validations:
+      required: true
+    attributes:
+      label: 1. Model description
+      description: |
+        Put all important information relative to the new model, e.g. paper link, citation number, and why you think it is necessary for PyPOTS to include.
+        ❗️A rule of thumb is at least one year since publication, 10+ citations, and usefulness.
+
+  - type: checkboxes
+    id: information-tasks
+    attributes:
+      label: 2. Check open-source status
+      description: |
+          Please note that if the model's open-source implementation is not available, it'll take much more time to finish the implementation, so we are less likely to implement it in `PyPOTS`.
+      options:
+        - label: "The model implementation is publicly available"
+
+  - type: textarea
+    id: additional-info
+    attributes:
+      label: 3. Provide useful information for the implementation
+      description: |
+        Give any and all information you think is helpful to the implementation.
+        If there is open-source implementation, please provide information regarding it and the authors.
+        Please mention the authors by @github-username in case you're aware of their usernames.

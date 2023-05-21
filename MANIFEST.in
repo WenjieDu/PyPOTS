@@ -1,0 +1,2 @@
+prune tests
+prune pypots/*/template
