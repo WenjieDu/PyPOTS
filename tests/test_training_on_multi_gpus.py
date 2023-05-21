@@ -12,6 +12,8 @@ import unittest
 import numpy as np
 import pytest
 
+import torch
+
 from pypots.classification import BRITS, GRUD, Raindrop
 from pypots.clustering import VaDER, CRLI
 from pypots.forecasting import BTTF
@@ -33,7 +35,12 @@ from tests.global_test_config import (
 )
 
 EPOCHS = 5
-DEVICES = ["cuda:0", "cuda:1"]
+
+DEVICES = [torch.device(i) for i in range(torch.cuda.device_count())]
+LESS_THAN_TWO_DEVICES = len(DEVICES) < 2
+
+# global skip test if less than two cuda-enabled devices
+pytestmark = pytest.mark.skipif(LESS_THAN_TWO_DEVICES, reason="not enough cuda devices")
 
 
 TRAIN_SET = {"X": DATA["train_X"], "y": DATA["train_y"]}
