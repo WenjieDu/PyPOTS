@@ -128,6 +128,7 @@ Task                           Type             Algorithm                       
 Imputation                     Neural Network   SAITS (Self-Attention-based Imputation for Time Series)                    2022   :cite:`du2023SAITS`
 Imputation                     Neural Network   Transformer                                                                2017   :cite:`vaswani2017Transformer`, :cite:`du2023SAITS`
 Imputation, Classification     Neural Network   BRITS (Bidirectional Recurrent Imputation for Time Series)                 2018   :cite:`cao2018BRITS`
+Imputation                     Neural Network   M-RNN (Multi-directional Recurrent Neural Network)                         2019   :cite:`yoon2019MRNN`
 Imputation                     Naive            LOCF (Last Observation Carried Forward)                                    /      /
 Classification                 Neural Network   GRU-D                                                                      2018   :cite:`che2018GRUD`
 Classification                 Neural Network   Raindrop                                                                   2022   :cite:`zhang2022Raindrop`
@@ -136,6 +137,7 @@ Clustering                     Neural Network   VaDER (Variational Deep Embeddin
 Forecasting                    Probabilistic    BTTF (Bayesian Temporal Tensor Factorization)                              2021   :cite:`chen2021BTMF`
 ============================== ================ =========================================================================  ====== =========
 
+[^9]: Yoon, J., Zame, W. R., & van der Schaar, M. (2019). [Estimating Missing Data in Temporal Data Streams Using Multi-Directional Recurrent Neural Networks](https://ieeexplore.ieee.org/document/8485748). *IEEE Transactions on Biomedical Engineering*.
 
 ❖ Citing PyPOTS
 ^^^^^^^^^^^^^^^^

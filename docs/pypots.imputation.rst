@@ -28,6 +28,15 @@ pypots.imputation.brits module
    :show-inheritance:
    :inherited-members:
 
+pypots.imputation.mrnn module
+------------------------------
+
+.. automodule:: pypots.imputation.mrnn
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+
 pypots.imputation.locf module
 -----------------------------
 
