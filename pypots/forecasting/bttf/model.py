@@ -297,10 +297,12 @@ class BTTF(BaseForecaster):
     multi_step : int, default = 1,
         The number of time steps to forecast at each iteration.
 
-    device : str or `torch.device`, default = None,
-        The device for the model to run on.
-        If not given, will try to use CUDA devices first (will use the GPU with device number 0 only by default),
+    device :
+        The device for the model to run on. It can be a string, a :class:`torch.device` object, or a list of them.
+        If not given, will try to use CUDA devices first (will use the default CUDA device if there are multiple),
         then CPUs, considering CUDA and CPU are so far the main devices for people to train ML models.
+        If given a list of devices, e.g. ['cuda:0', 'cuda:1'], or [torch.device('cuda:0'), torch.device('cuda:1')] , the
+        model will be parallely trained on the multiple devices (so far only support parallel training on CUDA devices).
         Other devices like Google TPU and Apple Silicon accelerator MPS may be added in the future.
 
     Notes
@@ -321,7 +323,7 @@ class BTTF(BaseForecaster):
         burn_iter: int,
         gibbs_iter: int,
         multi_step: int = 1,
-        device: Optional[Union[str, torch.device]] = None,
+        device: Optional[Union[str, torch.device, list]] = None,
     ):
         super().__init__(device)
         self.n_steps = n_steps

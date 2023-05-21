@@ -73,7 +73,12 @@ class _CRLI(nn.Module):
         inputs["fcn_latent"] = fcn_latent
         return inputs
 
-    def forward(self, inputs: dict, training_object: str = "generator") -> dict:
+    def forward(
+        self,
+        inputs: dict,
+        training_object: str = "generator",
+        mode: str = "training",
+    ) -> dict:
         assert training_object in [
             "generator",
             "discriminator",
@@ -84,6 +89,10 @@ class _CRLI(nn.Module):
         batch_size, n_steps, n_features = X.shape
         losses = {}
         inputs = self.cluster(inputs, training_object)
+        if mode == "clustering":
+            # if only run clustering, then no need to calculate loss
+            return inputs
+
         if training_object == "discriminator":
             l_D = F.binary_cross_entropy_with_logits(
                 inputs["discrimination"], missing_mask
@@ -167,9 +176,11 @@ class CRLI(BaseNNClusterer):
         `0` means data loading will be in the main process, i.e. there won't be subprocesses.
 
     device :
-        The device for the model to run on.
+        The device for the model to run on. It can be a string, a :class:`torch.device` object, or a list of them.
         If not given, will try to use CUDA devices first (will use the default CUDA device if there are multiple),
         then CPUs, considering CUDA and CPU are so far the main devices for people to train ML models.
+        If given a list of devices, e.g. ['cuda:0', 'cuda:1'], or [torch.device('cuda:0'), torch.device('cuda:1')] , the
+        model will be parallely trained on the multiple devices (so far only support parallel training on CUDA devices).
         Other devices like Google TPU and Apple Silicon accelerator MPS may be added in the future.
 
     saving_path :
@@ -211,7 +222,7 @@ class CRLI(BaseNNClusterer):
         G_optimizer: Optional[Optimizer] = Adam(),
         D_optimizer: Optional[Optimizer] = Adam(),
         num_workers: int = 0,
-        device: Optional[Union[str, torch.device]] = None,
+        device: Optional[Union[str, torch.device, list]] = None,
         saving_path: Optional[str] = None,
         model_saving_strategy: Optional[str] = "best",
     ):
@@ -245,7 +256,7 @@ class CRLI(BaseNNClusterer):
             rnn_cell_type,
             self.device,
         )
-        self.model = self.model.to(self.device)
+        self._send_model_to_given_device()
         self._print_model_size()
 
         # set up the optimizer
@@ -261,7 +272,7 @@ class CRLI(BaseNNClusterer):
 
     def _assemble_input_for_training(self, data: list) -> dict:
         # fetch data
-        indices, X, missing_mask = map(lambda x: x.to(self.device), data)
+        indices, X, missing_mask = self._send_data_to_given_device(data)
 
         inputs = {
             "X": X,
@@ -362,15 +373,15 @@ class CRLI(BaseNNClusterer):
                         )
                         break
         except Exception as e:
-            logger.info(f"Exception: {e}")
+            logger.error(f"Exception: {e}")
             if self.best_model_dict is None:
                 raise RuntimeError(
-                    "Training got interrupted. Model was not get trained. Please try fit() again."
+                    "Training got interrupted. Model was not trained. Please investigate the error printed above."
                 )
             else:
                 RuntimeWarning(
-                    "Training got interrupted. "
-                    "Model will load the best parameters so far for testing. "
+                    "Training got interrupted. Please investigate the error printed above.\n"
+                    "Model got trained and will load the best checkpoint so far for testing.\n"
                     "If you don't want it, please try fit() again."
                 )
 
