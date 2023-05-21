@@ -1,0 +1,17 @@
+// Some IDEs or editors like PhCharm may not support comments in JSON files, but it is still valid JSON.
+// About configurations for GitHub codebase, please refer to
+// https://docs.github.com/en/codespaces/setting-up-your-project-for-codespaces/adding-a-dev-container-configuration/setting-up-your-python-project-for-codespaces
+
+{
+    "name": "PyPOTS developing environment",
+
+    "image": "mcr.microsoft.com/devcontainers/universal:2",
+
+    "features": {
+        "ghcr.io/devcontainers/features/conda:1": {},
+    },
+
+    // Please select the machine type with 4GB memory, otherwise the conda command below will exit with code 137,
+    // which is out of memory.
+    "postCreateCommand": "conda env create -f environment-dev.yml",
+}

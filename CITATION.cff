@@ -1,11 +1,11 @@
 cff-version: 1.2.0
-title: PyPOTS: A Python Toolbox for Data Mining on Partially-Observed Time Series
-message: 'If you use PyPOTS, please cite it as below.'
-type: software
-doi:
-url: "https://github.com/WenjieDu/PyPOTS"
+message: "If you use PyPOTS, please cite it as below."
 authors:
-  - given-names: Wenjie
-    family-names: Du
-    email: wenjay.du@gmail.com
-    orcid: 'https://orcid.org/0000-0003-3046-7835'
+- family-names: "Du"
+  given-names: "Wenjie"
+  orcid: "https://orcid.org/0000-0003-3046-7835"
+title: "PyPOTS: A Python Toolbox for Data Mining on Partially-Observed Time Series"
+version: 0.0.9
+doi: 10.5281/zenodo.6823221
+date-released: 2022-07-12
+url: "https://github.com/WenjieDu/PyPOTS"

@@ -1,6 +1,11 @@
 name: Autoreply to Issues Opened for PyPOTS
 
-on: [issues]
+on:
+  issues:
+    types: [opened]
+  pull_request:
+    branches: [main]
+    types: [opened]
 
 jobs:
   greeting:
@@ -11,4 +16,23 @@ jobs:
     - uses: actions/first-interaction@v1
       with:
         repo-token: ${{ secrets.ACCESS_TOKEN }}
-        issue-message: "Hi there,<br><br>Thank you so much for your attention to PyPOTS! If you find PyPOTS helpful to your work, please star⭐️ this repository. Your star is your recognition, which can help more people notice PyPOTS and grow PyPOTS community. It matters and is definitely a kind of contribution.<br><br>I have received your message and will respond ASAP. Thank you for your patience! 😃<br><br>Best,<br>Wenjie"
+        issue-message: |
+          Hi there 👋,
+
+          Thank you so much for your attention to PyPOTS! If you find PyPOTS helpful to your work, please star⭐️ this repository. Your star is your recognition, which can help more people notice PyPOTS and grow PyPOTS community. It matters and is definitely a kind of contribution to the community.
+
+          I have received your message and will respond ASAP. Thank you for your patience! 😃
+
+          Best,
+          Wenjie
+
+        pr-message: |
+          Hi there 👋,
+
+          We really really appreciate that you have taken the time to make this PR on PyPOTS!
+
+          If you are trying to fix a bug, please reference the issue number in the description or give your details about the bug.
+          If you are implementing a feature request, please check with the maintainers that the feature will be accepted first.
+
+          Best,
+          Wenjie

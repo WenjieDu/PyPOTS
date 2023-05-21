@@ -1,0 +1,31 @@
+name: Linting
+
+on:
+    push:
+        branches:
+            - main
+            - dev
+    pull_request:
+        branches:
+            - main
+            - dev
+
+jobs:
+    flake8-linting:
+        runs-on: ubuntu-latest
+
+        steps:
+            - uses: actions/checkout@v3
+
+            - name: Set up Python
+              uses: actions/setup-python@v3
+              with:
+                  python-version: "3.10"
+
+            - name: Install Flake8
+              run: |
+                pip install flake8
+
+            - name: Run linting
+              run: |
+                flake8 .
