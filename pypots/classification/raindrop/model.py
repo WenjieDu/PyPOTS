@@ -21,10 +21,6 @@ from torch.nn import TransformerEncoderLayer, TransformerEncoder
 from torch.nn.parameter import Parameter
 from torch.utils.data import DataLoader
 
-from .modules import (
-    PositionalEncoding,
-    ObservationPropagation,
-)
 from ...classification.base import BaseNNClassifier
 from ...classification.grud.data import DatasetForGRUD
 from ...optim.adam import Adam
@@ -32,11 +28,18 @@ from ...optim.base import Optimizer
 from ...utils.logging import logger
 
 try:
+    from .modules import PositionalEncoding, ObservationPropagation
     from torch_geometric.nn.inits import glorot
 except ImportError as e:
     logger.error(
         f"{e}\n"
-        "torch_geometric is missing, "
+        "Note torch_geometric is missing, "
+        "please install it with 'pip install torch_geometric' or 'conda install -c pyg pyg'"
+    )
+except NameError as e:
+    logger.error(
+        f"{e}\n"
+        "Note torch_geometric is missing, "
         "please install it with 'pip install torch_geometric' or 'conda install -c pyg pyg'"
     )
 
