@@ -146,25 +146,26 @@ mae = cal_mae(imputation, X_intact, indicating_mask)  # calculate mean absolute 
 ## ❖ Available Algorithms
 PyPOTS supports imputation, classification, clustering, and forecasting tasks on multivariate time series with missing values. The currently available algorithms of four tasks are cataloged in the following table with four partitions. The paper references are all listed at the bottom of this readme file. Please refer to them if you want more details.
 
-|   ***`Imputation`***   |      🚥      |                                                                                        🚥                                                                                         |    🚥    |
-|:----------------------:|:------------:|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------:|:--------:|
-|        **Type**        |  **Abbr.**   |                                                                    **Full name of the algorithm/model/paper**                                                                     | **Year** |
-|       Neural Net       |    SAITS     |                                                               Self-Attention-based Imputation for Time Series [^1]                                                                |   2023   |
-|       Neural Net       | Transformer  | Attention is All you Need [^2];<br>Self-Attention-based Imputation for Time Series [^1];<br><sub>Note: proposed in [^2], and re-implemented as an imputation model in [^1].</sub> |   2017   |
-|       Neural Net       |    BRITS     |                                                              Bidirectional Recurrent Imputation for Time Series [^3]                                                              |   2018   |
-|         Naive          |     LOCF     |                                                                         Last Observation Carried Forward                                                                          |    -     |
-| ***`Classification`*** |      🚥      |                                                                                        🚥                                                                                         |    🚥    |
-|        **Type**        |  **Abbr.**   |                                                                    **Full name of the algorithm/model/paper**                                                                     | **Year** |
-|       Neural Net       |    BRITS     |                                                              Bidirectional Recurrent Imputation for Time Series [^3]                                                              |   2018   |
-|       Neural Net       |    GRU-D     |                                                  Recurrent Neural Networks for Multivariate Time Series with Missing Values [^4]                                                  |   2018   |
-|       Neural Net       |   Raindrop   |                                                    Graph-Guided Network for Irregularly Sampled Multivariate Time Series [^5]                                                     |   2022   |
-|   ***`Clustering`***   |      🚥      |                                                                                        🚥                                                                                         |    🚥    |
-|        **Type**        |  **Abbr.**   |                                                                    **Full name of the algorithm/model/paper**                                                                     | **Year** |
-|       Neural Net       |     CRLI     |                                                      Clustering Representation Learning on Incomplete time-series data [^6]                                                       |   2021   |
-|       Neural Net       |    VaDER     |                                                                  Variational Deep Embedding with Recurrence [^7]                                                                  |   2019   |
-|  ***`Forecasting`***   |      🚥      |                                                                                        🚥                                                                                         |    🚥    |
-|        **Type**        |  **Abbr.**   |                                                                    **Full name of the algorithm/model/paper**                                                                     | **Year** |
-|     Probabilistic      |     BTTF     |                                                                    Bayesian Temporal Tensor Factorization [^8]                                                                    |   2021   |
+|   ***`Imputation`***   |     🚥      |                                                                                        🚥                                                                                         |    🚥    |
+|:----------------------:|:-----------:|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------:|:--------:|
+|        **Type**        |  **Abbr.**  |                                                                    **Full name of the algorithm/model/paper**                                                                     | **Year** |
+|       Neural Net       |    SAITS    |                                                               Self-Attention-based Imputation for Time Series [^1]                                                                |   2023   |
+|       Neural Net       | Transformer | Attention is All you Need [^2];<br>Self-Attention-based Imputation for Time Series [^1];<br><sub>Note: proposed in [^2], and re-implemented as an imputation model in [^1].</sub> |   2017   |
+|       Neural Net       |    BRITS    |                                                              Bidirectional Recurrent Imputation for Time Series [^3]                                                              |   2018   |
+|       Neural Net       |    M-RNN    |                                                                  Multi-directional Recurrent Neural Network [^9]                                                                  |   2019   |
+|         Naive          |    LOCF     |                                                                         Last Observation Carried Forward                                                                          |    -     |
+| ***`Classification`*** |     🚥      |                                                                                        🚥                                                                                         |    🚥    |
+|        **Type**        |  **Abbr.**  |                                                                    **Full name of the algorithm/model/paper**                                                                     | **Year** |
+|       Neural Net       |    BRITS    |                                                              Bidirectional Recurrent Imputation for Time Series [^3]                                                              |   2018   |
+|       Neural Net       |    GRU-D    |                                                  Recurrent Neural Networks for Multivariate Time Series with Missing Values [^4]                                                  |   2018   |
+|       Neural Net       |  Raindrop   |                                                    Graph-Guided Network for Irregularly Sampled Multivariate Time Series [^5]                                                     |   2022   |
+|   ***`Clustering`***   |     🚥      |                                                                                        🚥                                                                                         |    🚥    |
+|        **Type**        |  **Abbr.**  |                                                                    **Full name of the algorithm/model/paper**                                                                     | **Year** |
+|       Neural Net       |    CRLI     |                                                      Clustering Representation Learning on Incomplete time-series data [^6]                                                       |   2021   |
+|       Neural Net       |    VaDER    |                                                                  Variational Deep Embedding with Recurrence [^7]                                                                  |   2019   |
+|  ***`Forecasting`***   |     🚥      |                                                                                        🚥                                                                                         |    🚥    |
+|        **Type**        |  **Abbr.**  |                                                                    **Full name of the algorithm/model/paper**                                                                     | **Year** |
+|     Probabilistic      |    BTTF     |                                                                    Bayesian Temporal Tensor Factorization [^8]                                                                    |   2021   |
 
 
 ## ❖ Citing PyPOTS
@@ -254,6 +255,8 @@ Thank you all for your attention! 😃
 [^6]: Ma, Q., Chen, C., Li, S., & Cottrell, G. W. (2021). [Learning Representations for Incomplete Time Series Clustering](https://ojs.aaai.org/index.php/AAAI/article/view/17070). *AAAI 2021*.
 [^7]: Jong, J.D., Emon, M.A., Wu, P., Karki, R., Sood, M., Godard, P., Ahmad, A., Vrooman, H.A., Hofmann-Apitius, M., & Fröhlich, H. (2019). [Deep learning for clustering of multivariate clinical patient trajectories with missing values](https://academic.oup.com/gigascience/article/8/11/giz134/5626377). *GigaScience*.
 [^8]: Chen, X., & Sun, L. (2021). [Bayesian Temporal Factorization for Multidimensional Time Series Prediction](https://arxiv.org/abs/1910.06366). *IEEE transactions on pattern analysis and machine intelligence*.
+[^9]: Yoon, J., Zame, W. R., & van der Schaar, M. (2019). [Estimating Missing Data in Temporal Data Streams Using Multi-Directional Recurrent Neural Networks](https://ieeexplore.ieee.org/document/8485748). *IEEE Transactions on Biomedical Engineering*.
+
 
 <details>
 <summary>🏠 Visits</summary>
