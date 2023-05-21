@@ -270,12 +270,18 @@ class _Raindrop(nn.Module):
 
         return prediction
 
-    def forward(self, inputs):
-        prediction = self.classify(inputs)
-        classification_loss = F.nll_loss(torch.log(prediction), inputs["label"])
+    def forward(self, inputs, training=True):
+        classification_pred = self.classify(inputs)
+        if not training:
+            # if not in training mode, return the classification result only
+            return {"classification_pred": classification_pred}
+
+        classification_loss = F.nll_loss(
+            torch.log(classification_pred), inputs["label"]
+        )
 
         results = {
-            "prediction": prediction,
+            "prediction": classification_pred,
             "loss": classification_loss
             # 'distance': distance,
         }
@@ -345,9 +351,11 @@ class Raindrop(BaseNNClassifier):
         `0` means data loading will be in the main process, i.e. there won't be subprocesses.
 
     device :
-        The device for the model to run on.
+        The device for the model to run on. It can be a string, a :class:`torch.device` object, or a list of them.
         If not given, will try to use CUDA devices first (will use the default CUDA device if there are multiple),
         then CPUs, considering CUDA and CPU are so far the main devices for people to train ML models.
+        If given a list of devices, e.g. ['cuda:0', 'cuda:1'], or [torch.device('cuda:0'), torch.device('cuda:1')] , the
+        model will be parallely trained on the multiple devices (so far only support parallel training on CUDA devices).
         Other devices like Google TPU and Apple Silicon accelerator MPS may be added in the future.
 
     saving_path :
@@ -390,7 +398,7 @@ class Raindrop(BaseNNClassifier):
         patience: int = None,
         optimizer: Optional[Optimizer] = Adam(),
         num_workers: int = 0,
-        device: Optional[Union[str, torch.device]] = None,
+        device: Optional[Union[str, torch.device, list]] = None,
         saving_path: str = None,
         model_saving_strategy: Optional[str] = "best",
     ):
@@ -424,7 +432,7 @@ class Raindrop(BaseNNClassifier):
             static=static,
             device=self.device,
         )
-        self.model = self.model.to(self.device)
+        self._send_model_to_given_device()
         self._print_model_size()
 
         # set up the optimizer
@@ -433,9 +441,15 @@ class Raindrop(BaseNNClassifier):
 
     def _assemble_input_for_training(self, data: dict) -> dict:
         # fetch data
-        indices, X, X_filledLOCF, missing_mask, deltas, empirical_mean, label = map(
-            lambda x: x.to(self.device), data
-        )
+        (
+            indices,
+            X,
+            X_filledLOCF,
+            missing_mask,
+            deltas,
+            empirical_mean,
+            label,
+        ) = self._send_data_to_given_device(data)
 
         bz, n_steps, n_features = X.shape
         lengths = torch.tensor([n_steps] * bz, dtype=torch.float)
@@ -459,9 +473,14 @@ class Raindrop(BaseNNClassifier):
         return self._assemble_input_for_training(data)
 
     def _assemble_input_for_testing(self, data: dict) -> dict:
-        indices, X, X_filledLOCF, missing_mask, deltas, empirical_mean = map(
-            lambda x: x.to(self.device), data
-        )
+        (
+            indices,
+            X,
+            X_filledLOCF,
+            missing_mask,
+            deltas,
+            empirical_mean,
+        ) = self._send_data_to_given_device(data)
         bz, n_steps, n_features = X.shape
         lengths = torch.tensor([n_steps] * bz, dtype=torch.float)
         times = torch.tensor(range(n_steps), dtype=torch.float).repeat(bz, 1)
@@ -526,7 +545,8 @@ class Raindrop(BaseNNClassifier):
         with torch.no_grad():
             for idx, data in enumerate(test_loader):
                 inputs = self._assemble_input_for_testing(data)
-                prediction = self.model.classify(inputs)
+                results = self.model.forward(inputs, training=False)
+                prediction = results["classification_pred"]
                 prediction_collector.append(prediction)
 
         predictions = torch.cat(prediction_collector)

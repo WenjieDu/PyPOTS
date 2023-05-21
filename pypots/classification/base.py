@@ -26,9 +26,11 @@ class BaseClassifier(BaseModel):
         The number of classes in the classification task.
 
     device :
-        The device for the model to run on.
+        The device for the model to run on. It can be a string, a :class:`torch.device` object, or a list of them.
         If not given, will try to use CUDA devices first (will use the default CUDA device if there are multiple),
         then CPUs, considering CUDA and CPU are so far the main devices for people to train ML models.
+        If given a list of devices, e.g. ['cuda:0', 'cuda:1'], or [torch.device('cuda:0'), torch.device('cuda:1')] , the
+        model will be parallely trained on the multiple devices (so far only support parallel training on CUDA devices).
         Other devices like Google TPU and Apple Silicon accelerator MPS may be added in the future.
 
     saving_path :
@@ -47,12 +49,11 @@ class BaseClassifier(BaseModel):
     def __init__(
         self,
         n_classes: int,
-        device: Optional[Union[str, torch.device]] = None,
+        device: Optional[Union[str, torch.device, list]] = None,
         saving_path: str = None,
         model_saving_strategy: Optional[str] = "best",
     ):
-        BaseModel.__init__(
-            self,
+        super().__init__(
             device,
             saving_path,
             model_saving_strategy,
@@ -119,7 +120,7 @@ class BaseClassifier(BaseModel):
         raise NotImplementedError
 
 
-class BaseNNClassifier(BaseNNModel, BaseClassifier):
+class BaseNNClassifier(BaseNNModel):
     """The abstract class for all neural-network classification models in PyPOTS.
 
     Parameters
@@ -143,9 +144,11 @@ class BaseNNClassifier(BaseNNModel, BaseClassifier):
         `0` means data loading will be in the main process, i.e. there won't be subprocesses.
 
     device :
-        The device for the model to run on.
+        The device for the model to run on. It can be a string, a :class:`torch.device` object, or a list of them.
         If not given, will try to use CUDA devices first (will use the default CUDA device if there are multiple),
         then CPUs, considering CUDA and CPU are so far the main devices for people to train ML models.
+        If given a list of devices, e.g. ['cuda:0', 'cuda:1'], or [torch.device('cuda:0'), torch.device('cuda:1')] , the
+        model will be parallely trained on the multiple devices (so far only support parallel training on CUDA devices).
         Other devices like Google TPU and Apple Silicon accelerator MPS may be added in the future.
 
     saving_path :
@@ -177,12 +180,11 @@ class BaseNNClassifier(BaseNNModel, BaseClassifier):
         epochs: int,
         patience: int,
         num_workers: int = 0,
-        device: Optional[Union[str, torch.device]] = None,
+        device: Optional[Union[str, torch.device, list]] = None,
         saving_path: str = None,
         model_saving_strategy: Optional[str] = "best",
     ):
-        BaseNNModel.__init__(
-            self,
+        super().__init__(
             batch_size,
             epochs,
             patience,
@@ -191,13 +193,7 @@ class BaseNNClassifier(BaseNNModel, BaseClassifier):
             saving_path,
             model_saving_strategy,
         )
-        BaseClassifier.__init__(
-            self,
-            n_classes,
-            device,
-            saving_path,
-            model_saving_strategy,
-        )
+        self.n_classes = n_classes
 
     @abstractmethod
     def _assemble_input_for_training(self, data) -> dict:
@@ -275,9 +271,9 @@ class BaseNNClassifier(BaseNNModel, BaseClassifier):
                     inputs = self._assemble_input_for_training(data)
                     self.optimizer.zero_grad()
                     results = self.model.forward(inputs)
-                    results["loss"].backward()
+                    results["loss"].sum().backward()
                     self.optimizer.step()
-                    epoch_train_loss_collector.append(results["loss"].item())
+                    epoch_train_loss_collector.append(results["loss"].sum().item())
 
                     # save training loss logs into the tensorboard file for every step if in need
                     if self.summary_writer is not None:
@@ -293,7 +289,9 @@ class BaseNNClassifier(BaseNNModel, BaseClassifier):
                         for idx, data in enumerate(val_loader):
                             inputs = self._assemble_input_for_validating(data)
                             results = self.model.forward(inputs)
-                            epoch_val_loss_collector.append(results["loss"].item())
+                            epoch_val_loss_collector.append(
+                                results["loss"].sum().item()
+                            )
 
                     mean_val_loss = np.mean(epoch_val_loss_collector)
 
@@ -331,15 +329,15 @@ class BaseNNClassifier(BaseNNModel, BaseClassifier):
                         )
                         break
         except Exception as e:
-            logger.info(f"Exception: {e}")
+            logger.error(f"Exception: {e}")
             if self.best_model_dict is None:
                 raise RuntimeError(
-                    "Training got interrupted. Model was not get trained. Please try fit() again."
+                    "Training got interrupted. Model was not trained. Please investigate the error printed above."
                 )
             else:
                 RuntimeWarning(
-                    "Training got interrupted. "
-                    "Model will load the best parameters so far for testing. "
+                    "Training got interrupted. Please investigate the error printed above.\n"
+                    "Model got trained and will load the best checkpoint so far for testing.\n"
                     "If you don't want it, please try fit() again."
                 )
 
@@ -347,3 +345,62 @@ class BaseNNClassifier(BaseNNModel, BaseClassifier):
             raise ValueError("Something is wrong. best_loss is Nan after training.")
 
         logger.info("Finished training.")
+
+    @abstractmethod
+    def fit(
+        self,
+        train_set: Union[dict, str],
+        val_set: Optional[Union[dict, str]] = None,
+        file_type: str = "h5py",
+    ) -> None:
+        """Train the classifier on the given data.
+
+        Parameters
+        ----------
+        train_set :
+            The dataset for model training, should be a dictionary including keys as 'X' and 'y',
+            or a path string locating a data file.
+            If it is a dict, X should be array-like of shape [n_samples, sequence length (time steps), n_features],
+            which is time-series data for training, can contain missing values, and y should be array-like of shape
+            [n_samples], which is classification labels of X.
+            If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
+            key-value pairs like a dict, and it has to include keys as 'X' and 'y'.
+
+        val_set :
+            The dataset for model validating, should be a dictionary including keys as 'X' and 'y',
+            or a path string locating a data file.
+            If it is a dict, X should be array-like of shape [n_samples, sequence length (time steps), n_features],
+            which is time-series data for validating, can contain missing values, and y should be array-like of shape
+            [n_samples], which is classification labels of X.
+            If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
+            key-value pairs like a dict, and it has to include keys as 'X' and 'y'.
+
+        file_type :
+            The type of the given file if train_set and val_set are path strings.
+
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    def classify(
+        self,
+        X: Union[dict, str],
+        file_type: str = "h5py",
+    ) -> np.ndarray:
+        """Classify the input data with the trained model.
+
+        Parameters
+        ----------
+        X :
+            The data samples for testing, should be array-like of shape [n_samples, sequence length (time steps),
+            n_features], or a path string locating a data file, e.g. h5 file.
+
+        file_type :
+            The type of the given file if X is a path string.
+
+        Returns
+        -------
+        array-like, shape [n_samples],
+            Classification results of the given samples.
+        """
+        raise NotImplementedError
