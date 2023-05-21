@@ -18,12 +18,11 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import DataLoader
 
-from ..base import BaseNNClassifier
 from .data import DatasetForGRUD
+from ..base import BaseNNClassifier
 from ...imputation.brits.modules import TemporalDecay
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
-from ...utils.logging import logger
 
 
 class _GRUD(nn.Module):
@@ -104,7 +103,6 @@ class _GRUD(nn.Module):
             return {"classification_pred": classification_pred}
 
         torch.log(classification_pred)
-        logger.error(f"ZShape {classification_pred.shape}")
         classification_loss = F.nll_loss(
             torch.log(classification_pred), inputs["label"]
         )
