@@ -22,6 +22,7 @@ from torch.utils.data import DataLoader
 
 from .data import DatasetForVaDER
 from .modules import (
+    inverse_softplus,
     GMMLayer,
     PeepholeLSTMCell,
     ImplicitImputation,
@@ -167,9 +168,11 @@ class _VaDER(nn.Module):
         self,
         inputs: dict,
         pretrain: bool = False,
-        mode: str = "training",
+        training: bool = True,
     ) -> dict:
         X, missing_mask = inputs["X"], inputs["missing_mask"]
+        device = X.device
+
         (
             X_reconstructed,
             mu_c,
@@ -180,7 +183,7 @@ class _VaDER(nn.Module):
             stddev_tilde,
         ) = self.get_results(X, missing_mask)
 
-        if mode == "clustering":
+        if not training:
 
             def func_to_apply(
                 mu_t_: np.ndarray,
@@ -208,8 +211,6 @@ class _VaDER(nn.Module):
             results = {"clustering_pred": clustering_results}
             # if only run clustering, then no need to calculate loss
             return results
-
-        device = X.device
 
         # calculate the reconstruction loss
         unscaled_reconstruction_loss = cal_mse(X_reconstructed, X, missing_mask)
@@ -281,12 +282,6 @@ class _VaDER(nn.Module):
         }
 
         return results
-
-
-def inverse_softplus(x: np.ndarray) -> np.ndarray:
-    b = x < 1e2
-    x[b] = np.log(np.exp(x[b]) - 1.0 + 1e-9)
-    return x
 
 
 class VaDER(BaseNNClusterer):
@@ -384,6 +379,11 @@ class VaDER(BaseNNClusterer):
             saving_path,
             model_saving_strategy,
         )
+
+        assert (
+            pretrain_epochs > 0
+        ), f"pretrain_epochs must be a positive integer, but got {pretrain_epochs}"
+
         self.n_steps = n_steps
         self.n_features = n_features
         self.pretrain_epochs = pretrain_epochs
@@ -492,20 +492,22 @@ class VaDER(BaseNNClusterer):
             mu = gmm.means_
             var = inverse_softplus(gmm.covariances_)
             phi = np.log(gmm.weights_ + 1e-9)  # inverse softmax
+            device = results["z"].device
 
             # use trained GMM's parameters to init GMM layer's
             if isinstance(self.device, list):  # if using multi-GPU
                 self.model.module.gmm_layer.set_values(
-                    torch.from_numpy(mu).to(results["z"].device),
-                    torch.from_numpy(var).to(results["z"].device),
-                    torch.from_numpy(phi).to(results["z"].device),
+                    torch.from_numpy(mu).to(device),
+                    torch.from_numpy(var).to(device),
+                    torch.from_numpy(phi).to(device),
                 )
             else:
                 self.model.gmm_layer.set_values(
-                    torch.from_numpy(mu).to(results["z"].device),
-                    torch.from_numpy(var).to(results["z"].device),
-                    torch.from_numpy(phi).to(results["z"].device),
+                    torch.from_numpy(mu).to(device),
+                    torch.from_numpy(var).to(device),
+                    torch.from_numpy(phi).to(device),
                 )
+
         try:
             training_step = 0
             for epoch in range(self.epochs):
@@ -629,9 +631,7 @@ class VaDER(BaseNNClusterer):
         with torch.no_grad():
             for idx, data in enumerate(test_loader):
                 inputs = self._assemble_input_for_testing(data)
-                results = self.model.forward(inputs, mode="clustering")[
-                    "clustering_pred"
-                ]
+                results = self.model.forward(inputs, training=False)["clustering_pred"]
                 clustering_results_collector.append(results)
 
         clustering_results = np.concatenate(clustering_results_collector)
