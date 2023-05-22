@@ -36,11 +36,16 @@ from tests.global_test_config import (
 
 EPOCHS = 5
 
-DEVICES = [torch.device(i) for i in range(torch.cuda.device_count())]
-LESS_THAN_TWO_DEVICES = len(DEVICES) < 2
+cuda_devices = [torch.device(i) for i in range(torch.cuda.device_count())]
+
+# set DEVICES to None if no cuda device is available, to avoid initialization failed while importing test classes
+DEVICES = None if cuda_devices == [] else cuda_devices
 
 # global skip test if less than two cuda-enabled devices
-pytestmark = pytest.mark.skipif(LESS_THAN_TWO_DEVICES, reason="not enough cuda devices")
+LESS_THAN_TWO_DEVICES = len(cuda_devices) < 2
+pytestmark = pytest.mark.skipif(
+    LESS_THAN_TWO_DEVICES, reason="not enough cuda devices to run tests"
+)
 
 
 TRAIN_SET = {"X": DATA["train_X"], "y": DATA["train_y"]}
@@ -82,6 +87,7 @@ class TestSAITS(unittest.TestCase):
         epochs=EPOCHS,
         saving_path=saving_path,
         optimizer=optimizer,
+        num_workers=2,
         device=DEVICES,
     )
 
@@ -158,6 +164,7 @@ class TestTransformer(unittest.TestCase):
         epochs=EPOCHS,
         saving_path=saving_path,
         optimizer=optimizer,
+        num_workers=2,
         device=DEVICES,
     )
 
@@ -231,6 +238,7 @@ class TestImputationBRITS(unittest.TestCase):
         epochs=EPOCHS,
         saving_path=f"{RESULT_SAVING_DIR_FOR_IMPUTATION}/BRITS",
         optimizer=optimizer,
+        num_workers=2,
         device=DEVICES,
     )
 
@@ -301,6 +309,7 @@ class TestMRNN(unittest.TestCase):
         epochs=EPOCHS,
         saving_path=f"{RESULT_SAVING_DIR_FOR_IMPUTATION}/MRNN",
         optimizer=optimizer,
+        num_workers=2,
         device=DEVICES,
     )
 
@@ -393,6 +402,7 @@ class TestClassificationBRITS(unittest.TestCase):
         saving_path=saving_path,
         model_saving_strategy="better",
         optimizer=optimizer,
+        num_workers=2,
         device=DEVICES,
     )
 
@@ -466,6 +476,7 @@ class TestGRUD(unittest.TestCase):
         epochs=EPOCHS,
         saving_path=saving_path,
         optimizer=optimizer,
+        num_workers=2,
         device=DEVICES,
     )
 
@@ -689,6 +700,7 @@ class TestVaDER(unittest.TestCase):
         epochs=EPOCHS,
         saving_path=saving_path,
         optimizer=optimizer,
+        num_workers=2,
         device=DEVICES,
     )
 
