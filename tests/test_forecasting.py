@@ -9,14 +9,14 @@ import unittest
 
 import pytest
 
-from pypots.data.generating import gene_incomplete_random_walk_dataset
 from pypots.forecasting import BTTF
 from pypots.utils.logging import logger
 from pypots.utils.metrics import cal_mae
+from tests.global_test_config import DATA
 
 EPOCHS = 5
-DATA = gene_incomplete_random_walk_dataset(n_steps=60, n_features=10)
-TEST_SET = {"X": DATA["test_X"][:, :50]}
+N_PRED_STEP = 4
+TEST_SET = {"X": DATA["test_X"][:, :-N_PRED_STEP]}
 
 
 class TestBTTF(unittest.TestCase):
@@ -24,11 +24,11 @@ class TestBTTF(unittest.TestCase):
 
     # initialize a BTTF model
     bttf = BTTF(
-        n_steps=50,
+        n_steps=DATA["n_steps"] - N_PRED_STEP,
         n_features=10,
-        pred_step=10,
+        pred_step=N_PRED_STEP,
         rank=10,
-        time_lags=[1, 2, 3, 10, 10 + 1, 10 + 2, 20, 20 + 1, 20 + 2],
+        time_lags=[1, 2, 3, 5, 5 + 1, 5 + 2, 10, 10 + 1, 10 + 2],
         burn_iter=5,
         gibbs_iter=5,
         multi_step=1,
@@ -38,7 +38,7 @@ class TestBTTF(unittest.TestCase):
     def test_0_forecasting(self):
         predictions = self.bttf.forecast(TEST_SET)
         logger.info(f"prediction shape: {predictions.shape}")
-        mae = cal_mae(predictions, DATA["test_X_intact"][:, 50:])
+        mae = cal_mae(predictions, DATA["test_X_intact"][:, -N_PRED_STEP:])
         logger.info(f"prediction MAE: {mae}")
 
 
