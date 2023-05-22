@@ -11,7 +11,7 @@ from pypots.data.generating import gene_incomplete_random_walk_dataset
 
 # Generate the unified data for testing and cache it first, DATA here is a singleton
 # Otherwise, file lock will cause bug if running test parallely with pytest-xdist.
-DATA = gene_incomplete_random_walk_dataset()
+DATA = gene_incomplete_random_walk_dataset(n_steps=60, n_features=10)
 
 # The directory for saving the dataset into files for testing
 DATA_SAVING_DIR = "h5data_for_tests"
