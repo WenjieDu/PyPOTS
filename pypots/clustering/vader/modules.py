@@ -13,11 +13,18 @@ Deep learning for clustering of multivariate clinical patient trajectories with 
 
 from typing import Tuple, Optional
 
+import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.autograd import Variable
 from torch.nn.parameter import Parameter
+
+
+def inverse_softplus(x: np.ndarray) -> np.ndarray:
+    b = x < 1e2
+    x[b] = np.log(np.exp(x[b]) - 1.0 + 1e-9)
+    return x
 
 
 class ImplicitImputation(nn.Module):

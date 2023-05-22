@@ -35,28 +35,29 @@ class _MRNN(nn.Module):
 
         self.f_rnn = nn.GRUCell(self.feature_num * 3, self.rnn_hidden_size)
         self.b_rnn = nn.GRUCell(self.feature_num * 3, self.rnn_hidden_size)
-        self.rnn_cells = {"forward": self.f_rnn, "backward": self.b_rnn}
         self.concated_hidden_project = nn.Linear(
             self.rnn_hidden_size * 2, self.feature_num
         )
         self.fcn_regression = FCN_Regression(feature_num, rnn_hidden_size)
 
-    def gene_hidden_states(self, data, direction):
-        values = data[direction]["X"]
-        masks = data[direction]["missing_mask"]
-        deltas = data[direction]["deltas"]
+    def gene_hidden_states(self, inputs, direction):
+        X = inputs[direction]["X"]
+        masks = inputs[direction]["missing_mask"]
+        deltas = inputs[direction]["deltas"]
+        device = X.device
 
         hidden_states_collector = []
-        hidden_state = torch.zeros(
-            (values.size()[0], self.rnn_hidden_size), device=self.device
-        )
+        hidden_state = torch.zeros((X.size()[0], self.rnn_hidden_size), device=device)
 
         for t in range(self.seq_len):
-            x = values[:, t, :]
+            x = X[:, t, :]
             m = masks[:, t, :]
             d = deltas[:, t, :]
             inputs = torch.cat([x, m, d], dim=1)
-            hidden_state = self.rnn_cells[direction](inputs, hidden_state)
+            if direction == "forward":
+                hidden_state = self.f_rnn(inputs, hidden_state)
+            else:
+                hidden_state = self.b_rnn(inputs, hidden_state)
             hidden_states_collector.append(hidden_state)
         return hidden_states_collector
 
@@ -189,6 +190,7 @@ class MRNN(BaseNNImputer):
         self.n_features = n_features
         self.rnn_hidden_size = rnn_hidden_size
 
+        # set up the model
         self.model = _MRNN(
             self.n_steps,
             self.n_features,
