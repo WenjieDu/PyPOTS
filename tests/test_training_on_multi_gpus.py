@@ -11,18 +11,18 @@ import unittest
 
 import numpy as np
 import pytest
-
 import torch
 
 from pypots.classification import BRITS, GRUD, Raindrop
 from pypots.clustering import VaDER, CRLI
 from pypots.forecasting import BTTF
+from pypots.imputation import BRITS as ImputationBRITS
 from pypots.imputation import (
     SAITS,
     Transformer,
+    MRNN,
     LOCF,
 )
-from pypots.imputation import BRITS as ImputationBRITS
 from pypots.optim import Adam
 from pypots.utils.logging import logger
 from pypots.utils.metrics import cal_binary_classification_metrics
@@ -36,11 +36,16 @@ from tests.global_test_config import (
 
 EPOCHS = 5
 
-DEVICES = [torch.device(i) for i in range(torch.cuda.device_count())]
-LESS_THAN_TWO_DEVICES = len(DEVICES) < 2
+cuda_devices = [torch.device(i) for i in range(torch.cuda.device_count())]
+
+# set DEVICES to None if no cuda device is available, to avoid initialization failed while importing test classes
+DEVICES = None if cuda_devices == [] else cuda_devices
 
 # global skip test if less than two cuda-enabled devices
-pytestmark = pytest.mark.skipif(LESS_THAN_TWO_DEVICES, reason="not enough cuda devices")
+LESS_THAN_TWO_DEVICES = len(cuda_devices) < 2
+pytestmark = pytest.mark.skipif(
+    LESS_THAN_TWO_DEVICES, reason="not enough cuda devices to run tests"
+)
 
 
 TRAIN_SET = {"X": DATA["train_X"], "y": DATA["train_y"]}
@@ -82,6 +87,7 @@ class TestSAITS(unittest.TestCase):
         epochs=EPOCHS,
         saving_path=saving_path,
         optimizer=optimizer,
+        num_workers=2,
         device=DEVICES,
     )
 
@@ -158,6 +164,7 @@ class TestTransformer(unittest.TestCase):
         epochs=EPOCHS,
         saving_path=saving_path,
         optimizer=optimizer,
+        num_workers=2,
         device=DEVICES,
     )
 
@@ -231,6 +238,7 @@ class TestImputationBRITS(unittest.TestCase):
         epochs=EPOCHS,
         saving_path=f"{RESULT_SAVING_DIR_FOR_IMPUTATION}/BRITS",
         optimizer=optimizer,
+        num_workers=2,
         device=DEVICES,
     )
 
@@ -283,6 +291,77 @@ class TestImputationBRITS(unittest.TestCase):
         self.brits.load_model(saved_model_path)
 
 
+class TestMRNN(unittest.TestCase):
+    logger.info("Running tests for an imputation model MRNN...")
+
+    # set the log and model saving path
+    saving_path = os.path.join(RESULT_SAVING_DIR_FOR_IMPUTATION, "MRNN")
+    model_save_name = "saved_MRNN_model.pypots"
+
+    # initialize an Adam optimizer
+    optimizer = Adam(lr=0.001, weight_decay=1e-5)
+
+    # initialize a MRNN model
+    mrnn = MRNN(
+        DATA["n_steps"],
+        DATA["n_features"],
+        256,
+        epochs=EPOCHS,
+        saving_path=f"{RESULT_SAVING_DIR_FOR_IMPUTATION}/MRNN",
+        optimizer=optimizer,
+        num_workers=2,
+        device=DEVICES,
+    )
+
+    @pytest.mark.xdist_group(name="imputation-mrnn")
+    def test_0_fit(self):
+        self.mrnn.fit(TRAIN_SET, VAL_SET)
+
+    @pytest.mark.xdist_group(name="imputation-mrnn")
+    def test_1_impute(self):
+        imputed_X = self.mrnn.impute(TEST_SET)
+        assert not np.isnan(
+            imputed_X
+        ).any(), "Output still has missing values after running impute()."
+        test_MAE = cal_mae(
+            imputed_X, DATA["test_X_intact"], DATA["test_X_indicating_mask"]
+        )
+        logger.info(f"MRNN test_MAE: {test_MAE}")
+
+    @pytest.mark.xdist_group(name="imputation-mrnn")
+    def test_2_parameters(self):
+        assert hasattr(self.mrnn, "model") and self.mrnn.model is not None
+
+        assert hasattr(self.mrnn, "optimizer") and self.mrnn.optimizer is not None
+
+        assert hasattr(self.mrnn, "best_loss")
+        self.assertNotEqual(self.mrnn.best_loss, float("inf"))
+
+        assert (
+            hasattr(self.mrnn, "best_model_dict")
+            and self.mrnn.best_model_dict is not None
+        )
+
+    @pytest.mark.xdist_group(name="imputation-mrnn")
+    def test_3_saving_path(self):
+        # whether the root saving dir exists, which should be created by save_log_into_tb_file
+        assert os.path.exists(
+            self.saving_path
+        ), f"file {self.saving_path} does not exist"
+
+        # check if the tensorboard file and model checkpoints exist
+        check_tb_and_model_checkpoints_existence(self.mrnn)
+
+        # save the trained model into file, and check if the path exists
+        self.mrnn.save_model(
+            saving_dir=self.saving_path, file_name=self.model_save_name
+        )
+
+        # test loading the saved model, not necessary, but need to test
+        saved_model_path = os.path.join(self.saving_path, self.model_save_name)
+        self.mrnn.load_model(saved_model_path)
+
+
 class TestLOCF(unittest.TestCase):
     logger.info("Running tests for an imputation model LOCF...")
     locf = LOCF(nan=0)
@@ -323,6 +402,7 @@ class TestClassificationBRITS(unittest.TestCase):
         saving_path=saving_path,
         model_saving_strategy="better",
         optimizer=optimizer,
+        num_workers=2,
         device=DEVICES,
     )
 
@@ -396,6 +476,7 @@ class TestGRUD(unittest.TestCase):
         epochs=EPOCHS,
         saving_path=saving_path,
         optimizer=optimizer,
+        num_workers=2,
         device=DEVICES,
     )
 
@@ -619,6 +700,7 @@ class TestVaDER(unittest.TestCase):
         epochs=EPOCHS,
         saving_path=saving_path,
         optimizer=optimizer,
+        num_workers=2,
         device=DEVICES,
     )
 
@@ -677,12 +759,13 @@ class TestBTTF(unittest.TestCase):
     logger.info("Running tests for a forecasting model BTTF...")
 
     # initialize a BTTF model
+    pred_step = 4
     bttf = BTTF(
-        n_steps=50,
+        n_steps=DATA["n_steps"] - pred_step,
         n_features=10,
-        pred_step=10,
+        pred_step=pred_step,
         rank=10,
-        time_lags=[1, 2, 3, 10, 10 + 1, 10 + 2, 20, 20 + 1, 20 + 2],
+        time_lags=[1, 2, 3, 5, 5 + 1, 5 + 2, 10, 10 + 1, 10 + 2],
         burn_iter=5,
         gibbs_iter=5,
         multi_step=1,
@@ -690,9 +773,9 @@ class TestBTTF(unittest.TestCase):
 
     @pytest.mark.xdist_group(name="forecasting-bttf")
     def test_0_forecasting(self):
-        predictions = self.bttf.forecast(TEST_SET)
+        predictions = self.bttf.forecast({"X": DATA["test_X"][:, : -self.pred_step]})
         logger.info(f"prediction shape: {predictions.shape}")
-        mae = cal_mae(predictions, DATA["test_X_intact"][:, 50:])
+        mae = cal_mae(predictions, DATA["test_X_intact"][:, -self.pred_step :])
         logger.info(f"prediction MAE: {mae}")
 
 

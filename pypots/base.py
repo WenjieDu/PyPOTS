@@ -96,6 +96,12 @@ class BaseModel(ABC):
                 self.device = device
             elif isinstance(device, list):
                 # parallely training on multiple CUDA devices
+
+                # ensure the list is not empty
+                assert (
+                    len(device) > 1
+                ), "The list of devices should have at least 1 device, but got 0."
+
                 device_list = []
                 for idx, d in enumerate(device):
                     if isinstance(d, str):
