@@ -77,7 +77,7 @@ class _CRLI(nn.Module):
         self,
         inputs: dict,
         training_object: str = "generator",
-        mode: str = "training",
+        training: bool = True,
     ) -> dict:
         assert training_object in [
             "generator",
@@ -89,7 +89,7 @@ class _CRLI(nn.Module):
         batch_size, n_steps, n_features = X.shape
         losses = {}
         inputs = self.cluster(inputs, training_object)
-        if mode == "clustering":
+        if not training:
             # if only run clustering, then no need to calculate loss
             return inputs
 
@@ -432,7 +432,7 @@ class CRLI(BaseNNClusterer):
         with torch.no_grad():
             for idx, data in enumerate(test_loader):
                 inputs = self._assemble_input_for_testing(data)
-                inputs = self.model.cluster(inputs)
+                inputs = self.model.forward(inputs, training=False)
                 latent_collector.append(inputs["fcn_latent"])
 
         latent_collector = torch.cat(latent_collector).cpu().detach().numpy()
