@@ -759,12 +759,13 @@ class TestBTTF(unittest.TestCase):
     logger.info("Running tests for a forecasting model BTTF...")
 
     # initialize a BTTF model
+    pred_step = 4
     bttf = BTTF(
-        n_steps=50,
+        n_steps=DATA["n_steps"] - pred_step,
         n_features=10,
-        pred_step=10,
+        pred_step=pred_step,
         rank=10,
-        time_lags=[1, 2, 3, 10, 10 + 1, 10 + 2, 20, 20 + 1, 20 + 2],
+        time_lags=[1, 2, 3, 5, 5 + 1, 5 + 2, 10, 10 + 1, 10 + 2],
         burn_iter=5,
         gibbs_iter=5,
         multi_step=1,
@@ -772,9 +773,9 @@ class TestBTTF(unittest.TestCase):
 
     @pytest.mark.xdist_group(name="forecasting-bttf")
     def test_0_forecasting(self):
-        predictions = self.bttf.forecast(TEST_SET)
+        predictions = self.bttf.forecast({"X": DATA["test_X"][:, : -self.pred_step]})
         logger.info(f"prediction shape: {predictions.shape}")
-        mae = cal_mae(predictions, DATA["test_X_intact"][:, 50:])
+        mae = cal_mae(predictions, DATA["test_X_intact"][:, -self.pred_step :])
         logger.info(f"prediction MAE: {mae}")
 
 
