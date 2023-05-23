@@ -45,7 +45,7 @@ You can also find a simple and quick-start tutorial notebook on Google Colab wit
         n_layers=2,
         d_model=256,
         d_inner=128,
-        n_head=4,
+        n_heads=4,
         d_k=64,
         d_v=64,
         dropout=0.1,
