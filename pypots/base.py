@@ -156,7 +156,7 @@ class BaseModel(ABC):
             logger.info(f"Model files will be saved to {self.saving_path}")
             logger.info(f"Tensorboard file will be saved to {tb_saving_path}")
         else:
-            logger.info(
+            logger.warning(
                 "saving_path not given. Model files and tensorboard file will not be saved."
             )
 

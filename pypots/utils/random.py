@@ -24,6 +24,4 @@ def set_random_seed(random_seed: int = RANDOM_SEED) -> None:
 
     np.random.seed(RANDOM_SEED)
     torch.manual_seed(random_seed)
-    logger.info(
-        f"Done. Have already set the random seed as {random_seed} for numpy and pytorch."
-    )
+    logger.info(f"Have set the random seed as {random_seed} for numpy and pytorch.")
