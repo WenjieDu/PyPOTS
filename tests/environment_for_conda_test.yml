@@ -18,6 +18,7 @@ dependencies:
     - conda-forge::tensorboard
     - conda-forge::pycorruptor
     - conda-forge::tsdb
+    - conda-forge::protobuf ==4.21.12
     - pytorch::pytorch >=1.10.0
 
     # optional
