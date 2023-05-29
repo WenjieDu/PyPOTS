@@ -137,7 +137,6 @@ Clustering                     Neural Network   VaDER (Variational Deep Embeddin
 Forecasting                    Probabilistic    BTTF (Bayesian Temporal Tensor Factorization)                              2021   :cite:`chen2021BTMF`
 ============================== ================ =========================================================================  ====== =========
 
-[^9]: Yoon, J., Zame, W. R., & van der Schaar, M. (2019). [Estimating Missing Data in Temporal Data Streams Using Multi-Directional Recurrent Neural Networks](https://ieeexplore.ieee.org/document/8485748). *IEEE Transactions on Biomedical Engineering*.
 
 ❖ Citing PyPOTS
 ^^^^^^^^^^^^^^^^
@@ -204,16 +203,6 @@ We care about the feedback from our users, so we're building PyPOTS community on
 
 If you have any suggestions or want to contribute ideas or share time-series related papers, join us and tell.
 PyPOTS community is open, transparent, and surely friendly. Let's work together to build and improve PyPOTS 💪!
-
-
-❖ Attention 👀
-^^^^^^^^^^^^^^^
-PyPOTS is currently under developing. If you like it and look forward to its growth, **please give PyPOTS a star
-and watch it to keep you posted on its progress and to let me know that its development is meaningful**.
-If you have any additional questions or have interests in collaboration, please take a look at
-`my GitHub profile <https://github.com/WenjieDu>`_ and feel free to contact me 🤝.
-
-Thank you all for your attention! 😃
 
 
 .. toctree::

@@ -53,7 +53,7 @@ This makes partially-observed time series (POTS) a pervasive problem in open-wor
 data analysis. Although this problem is important, the area of data mining on POTS still lacks a dedicated toolkit.
 PyPOTS is created to fill in this blank.
 
-⦿ `Mission`: PyPOTS is born to become a handy toolbox that is going to make data mining on POTS easy rather than
+⦿ `Mission`: PyPOTS (pronounced "Pie Pots") is born to become a handy toolbox that is going to make data mining on POTS easy rather than
 tedious, to help engineers and researchers focus more on the core problems in their hands rather than on how to deal
 with the missing parts in their data. PyPOTS will keep integrating classical and the latest state-of-the-art data mining
 algorithms for partially-observed multivariate time series. For sure, besides various algorithms, PyPOTS is going to
@@ -236,15 +236,6 @@ We care about the feedback from our users, so we're building PyPOTS community on
 
 If you have any suggestions or want to contribute ideas or share time-series related papers, join us and tell.
 PyPOTS community is open, transparent, and surely friendly. Let's work together to build and improve PyPOTS 💪!
-
-
-## ❖ Attention 👀
-‼️ PyPOTS is currently under developing. If you like it and look forward to its growth, <ins>please give PyPOTS a star
-and watch it to keep you posted on its progress and to let me know that its development is meaningful</ins>.
-If you have any additional questions or have interests in collaboration, please take a look at
-[my GitHub profile](https://github.com/WenjieDu) and feel free to contact me 🤝.
-
-Thank you all for your attention! 😃
 
 
 [^1]: Du, W., Cote, D., & Liu, Y. (2023). [SAITS: Self-Attention-based Imputation for Time Series](https://doi.org/10.1016/j.eswa.2023.119619). *Expert systems with applications*.
