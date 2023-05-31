@@ -35,8 +35,8 @@
     <a href="https://github.com/WenjieDu/PyPOTS/actions/workflows/testing_ci.yml">
         <img alt="GitHub Testing" src="https://img.shields.io/github/actions/workflow/status/wenjiedu/pypots/testing_ci.yml?logo=github&color=48c0a3&label=CI">
     </a>
-    <a href="https://doi.org/10.5281/zenodo.6823221">
-        <img alt="Zenodo DOI" src="https://img.shields.io/badge/DOI-10.5281/zenodo.6823221-21a675">
+    <a href="https://arxiv.org/abs/2305.18811">
+        <img alt="arXiv DOI" src="https://img.shields.io/badge/DOI-10.48550/arXiv.2305.18811-21a675">
     </a>
     <a href="https://anaconda.org/conda-forge/pypots">
         <img alt="Conda downloads" src="https://img.shields.io/conda/dn/conda-forge/pypots?label=Conda%20Downloads&color=057748&logo=anaconda&logoColor=white">
@@ -81,6 +81,8 @@ The rest of this readme file is organized as follows:
 
 
 ## ❖ Installation
+You can refer to [the installation instruction](https://docs.pypots.com/en/latest/install.html) in PyPOTS documentation for a guideline with more details.
+
 PyPOTS is available on both [PyPI](https://pypi.python.org/pypi/pypots) and [Anaconda](https://anaconda.org/conda-forge/pypots).
 You can install PyPOTS as shown below:
 
@@ -169,27 +171,29 @@ PyPOTS supports imputation, classification, clustering, and forecasting tasks on
 
 
 ## ❖ Citing PyPOTS
-We are pursuing to publish a short paper introducing PyPOTS in prestigious academic venues, e.g. JMLR (track for
-[Machine Learning Open Source Software](https://www.jmlr.org/mloss/)). Before that, PyPOTS is using its DOI from Zenodo
-for reference. If you use PyPOTS in your research, please cite it as below and 🌟star this repository to make others
-notice this work. 🤗
+The paper introducing PyPOTS is available on arXiv at [this URL](https://arxiv.org/abs/2305.18811),
+and we are pursuing to publish it in prestigious academic venues, e.g. JMLR (track for
+[Machine Learning Open Source Software](https://www.jmlr.org/mloss/)). If you use PyPOTS in your work,
+please cite it as below and 🌟star this repository to make others notice this library. 🤗
 
 ``` bibtex
-@software{Du2022PyPOTS,
-author = {Wenjie Du},
-title = {{PyPOTS: A Python Toolbox for Data Mining on Partially-Observed Time Series}},
-year = {2022},
-howpublished = {\url{https://github.com/WenjieDu/PyPOTS}},
-url = {\url{https://github.com/WenjieDu/PyPOTS}},
-doi = {10.5281/zenodo.6823221},
+@article{du2023PyPOTS,
+title={PyPOTS: A Python Toolbox for Data Mining on Partially-Observed Time Series}, 
+author={Wenjie Du},
+year={2023},
+eprint={2305.18811},
+archivePrefix={arXiv},
+primaryClass={cs.LG},
+url={https://arxiv.org/abs/2305.18811},
+doi={10.48550/arXiv.2305.18811},
 }
 ```
 
 or
 
-> Wenjie Du. (2022).
+> Wenjie Du. (2023).
 > PyPOTS: A Python Toolbox for Data Mining on Partially-Observed Time Series.
-> Zenodo. https://doi.org/10.5281/zenodo.6823221
+> arXiv, abs/2305.18811. https://doi.org/10.48550/arXiv.2305.18811
 
 
 ## ❖ Contribution

@@ -140,29 +140,30 @@ Forecasting                    Probabilistic    BTTF (Bayesian Temporal Tensor F
 
 ❖ Citing PyPOTS
 ^^^^^^^^^^^^^^^^
-We are pursuing to publish a short paper introducing PyPOTS in prestigious academic venues, e.g. JMLR (track for
-`Machine Learning Open Source Software <https://www.jmlr.org/mloss/>`_. Before that, PyPOTS is using its DOI from Zenodo
-for reference. If you use PyPOTS in your research, please cite it as below and 🌟star this repository to make others
-notice this work. 🤗
-
+The paper introducing PyPOTS is available on arXiv at `this URL <https://arxiv.org/abs/2305.18811>`_.,
+and we are pursuing to publish it in prestigious academic venues, e.g. JMLR (track for
+`Machine Learning Open Source Software <https://www.jmlr.org/mloss/>`_). If you use PyPOTS in your work,
+please cite it as below and 🌟star this repository to make others notice this library. 🤗
 
 .. code-block:: bibtex
    :linenos:
 
-   @software{Du2022PyPOTS,
-   author = {Wenjie Du},
-   title = {{PyPOTS: A Python Toolbox for Data Mining on Partially-Observed Time Series}},
-   year = {2022},
-   howpublished = {\url{https://github.com/WenjieDu/PyPOTS}},
-   url = {\url{https://github.com/WenjieDu/PyPOTS}},
-   doi = {10.5281/zenodo.6823221},
+   @article{du2023PyPOTS,
+   title={PyPOTS: A Python Toolbox for Data Mining on Partially-Observed Time Series},
+   author={Wenjie Du},
+   year={2023},
+   eprint={2305.18811},
+   archivePrefix={arXiv},
+   primaryClass={cs.LG},
+   url={https://arxiv.org/abs/2305.18811},
+   doi={10.48550/arXiv.2305.18811},
    }
 
 or
 
-   Wenjie Du. (2022).
+   Wenjie Du. (2023).
    PyPOTS: A Python Toolbox for Data Mining on Partially-Observed Time Series.
-   Zenodo. https://doi.org/10.5281/zenodo.6823221
+   arXiv, abs/2305.18811. https://doi.org/10.48550/arXiv.2305.18811
 
 
 ❖ Contribution
