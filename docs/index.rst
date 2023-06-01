@@ -137,33 +137,33 @@ Clustering                     Neural Network   VaDER (Variational Deep Embeddin
 Forecasting                    Probabilistic    BTTF (Bayesian Temporal Tensor Factorization)                              2021   :cite:`chen2021BTMF`
 ============================== ================ =========================================================================  ====== =========
 
-[^9]: Yoon, J., Zame, W. R., & van der Schaar, M. (2019). [Estimating Missing Data in Temporal Data Streams Using Multi-Directional Recurrent Neural Networks](https://ieeexplore.ieee.org/document/8485748). *IEEE Transactions on Biomedical Engineering*.
 
 ❖ Citing PyPOTS
 ^^^^^^^^^^^^^^^^
-We are pursuing to publish a short paper introducing PyPOTS in prestigious academic venues, e.g. JMLR (track for
-`Machine Learning Open Source Software <https://www.jmlr.org/mloss/>`_. Before that, PyPOTS is using its DOI from Zenodo
-for reference. If you use PyPOTS in your research, please cite it as below and 🌟star this repository to make others
-notice this work. 🤗
-
+The paper introducing PyPOTS is available on arXiv at `this URL <https://arxiv.org/abs/2305.18811>`_.,
+and we are pursuing to publish it in prestigious academic venues, e.g. JMLR (track for
+`Machine Learning Open Source Software <https://www.jmlr.org/mloss/>`_). If you use PyPOTS in your work,
+please cite it as below and 🌟star this repository to make others notice this library. 🤗
 
 .. code-block:: bibtex
    :linenos:
 
-   @software{Du2022PyPOTS,
-   author = {Wenjie Du},
-   title = {{PyPOTS: A Python Toolbox for Data Mining on Partially-Observed Time Series}},
-   year = {2022},
-   howpublished = {\url{https://github.com/WenjieDu/PyPOTS}},
-   url = {\url{https://github.com/WenjieDu/PyPOTS}},
-   doi = {10.5281/zenodo.6823221},
+   @article{du2023PyPOTS,
+   title={PyPOTS: A Python Toolbox for Data Mining on Partially-Observed Time Series},
+   author={Wenjie Du},
+   year={2023},
+   eprint={2305.18811},
+   archivePrefix={arXiv},
+   primaryClass={cs.LG},
+   url={https://arxiv.org/abs/2305.18811},
+   doi={10.48550/arXiv.2305.18811},
    }
 
 or
 
-   Wenjie Du. (2022).
+   Wenjie Du. (2023).
    PyPOTS: A Python Toolbox for Data Mining on Partially-Observed Time Series.
-   Zenodo. https://doi.org/10.5281/zenodo.6823221
+   arXiv, abs/2305.18811. https://doi.org/10.48550/arXiv.2305.18811
 
 
 ❖ Contribution
@@ -204,16 +204,6 @@ We care about the feedback from our users, so we're building PyPOTS community on
 
 If you have any suggestions or want to contribute ideas or share time-series related papers, join us and tell.
 PyPOTS community is open, transparent, and surely friendly. Let's work together to build and improve PyPOTS 💪!
-
-
-❖ Attention 👀
-^^^^^^^^^^^^^^^
-PyPOTS is currently under developing. If you like it and look forward to its growth, **please give PyPOTS a star
-and watch it to keep you posted on its progress and to let me know that its development is meaningful**.
-If you have any additional questions or have interests in collaboration, please take a look at
-`my GitHub profile <https://github.com/WenjieDu>`_ and feel free to contact me 🤝.
-
-Thank you all for your attention! 😃
 
 
 .. toctree::

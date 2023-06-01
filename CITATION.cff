@@ -4,8 +4,16 @@ authors:
 - family-names: "Du"
   given-names: "Wenjie"
   orcid: "https://orcid.org/0000-0003-3046-7835"
+
 title: "PyPOTS: A Python Toolbox for Data Mining on Partially-Observed Time Series"
-version: 0.0.9
-doi: 10.5281/zenodo.6823221
-date-released: 2022-07-12
-url: "https://github.com/WenjieDu/PyPOTS"
+
+preferred-citation:
+  type: article
+  authors:
+  - family-names: "Du"
+    given-names: "Wenjie"
+    orcid: "https://orcid.org/0000-0003-3046-7835"
+  doi: "10.48550/arXiv.2305.18811"
+  journal: "arXiv"
+  title: "PyPOTS: A Python Toolbox for Data Mining on Partially-Observed Time Series"
+  url: https://arxiv.org/abs/2305.18811
