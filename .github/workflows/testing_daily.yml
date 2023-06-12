@@ -19,9 +19,11 @@ jobs:
                 torch-version: ["1.13.1"]
 
         steps:
-            - uses: actions/checkout@v3
+            - name: Check out the repo code
+              uses: actions/checkout@v3
 
-            - uses: haya14busa/action-cond@v1
+            - name: Determine the Python version
+              uses: haya14busa/action-cond@v1
               id: condval
               with:
                 cond: ${{ matrix.python-version == 3.7 && matrix.os == 'macOS-latest' }}
@@ -29,7 +31,8 @@ jobs:
                 if_true: "3.7.16"
                 if_false: ${{ matrix.python-version }}
 
-            - uses: actions/setup-python@v4
+            - name: Set up Python
+              uses: actions/setup-python@v4
               with:
                 python-version: ${{ steps.condval.outputs.value }}
                 check-latest: true
