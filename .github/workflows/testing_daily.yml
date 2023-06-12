@@ -27,7 +27,7 @@ jobs:
             - uses: haya14busa/action-cond@v1
               id: condval
               with:
-                cond: ${{ matrix.python-version == "3.7" && matrix.os == "macOS-latest" }}
+                cond: ${{ matrix.python-version == 3.7 && matrix.os == macOS-latest }}
                 # Note: the latest 3.7 subversion 3.7.17 for MacOS has "ModuleNotFoundError: No module named '_bz2'"
                 if_true: "3.7.16"
                 if_false: ${{ matrix.python-version }}
