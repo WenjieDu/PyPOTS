@@ -6,40 +6,40 @@
 **<p align="center">A Python Toolbox for Data Mining on Partially-Observed Time Series</p>**
 
 <p align="center">
-    <img alt="Python version" src="https://img.shields.io/badge/Python-v3.7--3.10-88ada6?logo=python&logoColor=white">
-    <img alt="powered by Pytorch" src="https://img.shields.io/badge/PyTorch-❤️-bbcdc5?logo=pytorch&logoColor=white">
+    <img alt="Python version" src="https://img.shields.io/badge/Python-v3.7--3.10-E97040?logo=python&logoColor=white">
+    <img alt="powered by Pytorch" src="https://img.shields.io/badge/PyTorch-❤️-F8C6B5?logo=pytorch&logoColor=white">
     <a href="https://pypi.org/project/">
-        <img alt="the latest release version" src="https://img.shields.io/github/v/release/wenjiedu/pypots?color=e0eee8&include_prereleases&label=Release">
+        <img alt="the latest release version" src="https://img.shields.io/github/v/release/wenjiedu/pypots?color=EE781F&include_prereleases&label=Release">
     </a>
     <a href="https://github.com/WenjieDu/PyPOTS/blob/main/LICENSE">
-        <img alt="GPL-v3 license" src="https://img.shields.io/badge/License-GPL--v3-c0ebd7">
+        <img alt="GPL-v3 license" src="https://img.shields.io/badge/License-GPL--v3-E9BB41">
     </a>
     <a href="https://github.com/WenjieDu/PyPOTS/blob/main/README.md#-community">
-        <img alt="Community" src="https://img.shields.io/badge/join_us-community!-7fecad">
+        <img alt="Community" src="https://img.shields.io/badge/join_us-community!-C8A062">
     </a>
     <a href="https://github.com/WenjieDu/PyPOTS/graphs/contributors">
-        <img alt="GitHub contributors" src="https://img.shields.io/github/contributors/wenjiedu/pypots?color=7bcfa6&label=Contributors&logo=GitHub">
+        <img alt="GitHub contributors" src="https://img.shields.io/github/contributors/wenjiedu/pypots?color=D8E699&label=Contributors&logo=GitHub">
     </a>
     <a href="https://github.com/WenjieDu/PyPOTS/stargazers">
-        <img alt="GitHub Repo stars" src="https://img.shields.io/github/stars/wenjiedu/pypots?logo=Github&color=7bcfa6&label=Stars">
+        <img alt="GitHub Repo stars" src="https://img.shields.io/github/stars/wenjiedu/pypots?logo=Github&color=6BB392&label=Stars">
     </a>
     <a href="https://github.com/WenjieDu/PyPOTS/forks">
-        <img alt="GitHub Repo forks" src="https://img.shields.io/github/forks/wenjiedu/pypots?logo=Github&color=2edfa3&label=Forks">
+        <img alt="GitHub Repo forks" src="https://img.shields.io/github/forks/wenjiedu/pypots?logo=Github&color=91B821&label=Forks">
     </a>
     <a href="https://codeclimate.com/github/WenjieDu/PyPOTS">
-        <img alt="Code Climate maintainability" src="https://img.shields.io/codeclimate/maintainability-percentage/WenjieDu/PyPOTS?color=25f8cb&label=Maintainability&logo=codeclimate">
+        <img alt="Code Climate maintainability" src="https://img.shields.io/codeclimate/maintainability-percentage/WenjieDu/PyPOTS?color=3C7699&label=Maintainability&logo=codeclimate">
     </a>
     <a href="https://coveralls.io/github/WenjieDu/PyPOTS">
-        <img alt="Coveralls coverage" src="https://img.shields.io/coverallsCoverage/github/WenjieDu/PyPOTS?branch=main&logo=coveralls&color=00e09e&label=Coverage">
+        <img alt="Coveralls coverage" src="https://img.shields.io/coverallsCoverage/github/WenjieDu/PyPOTS?branch=main&logo=coveralls&color=75C1C4&label=Coverage">
     </a>
     <a href="https://github.com/WenjieDu/PyPOTS/actions/workflows/testing_ci.yml">
-        <img alt="GitHub Testing" src="https://img.shields.io/github/actions/workflow/status/wenjiedu/pypots/testing_ci.yml?logo=github&color=48c0a3&label=CI">
+        <img alt="GitHub Testing" src="https://img.shields.io/github/actions/workflow/status/wenjiedu/pypots/testing_ci.yml?logo=github&color=C8D8E1&label=CI">
     </a>
     <a href="https://arxiv.org/abs/2305.18811">
-        <img alt="arXiv DOI" src="https://img.shields.io/badge/DOI-10.48550/arXiv.2305.18811-21a675">
+        <img alt="arXiv DOI" src="https://img.shields.io/badge/DOI-10.48550/arXiv.2305.18811-F8F7F0">
     </a>
     <a href="https://anaconda.org/conda-forge/pypots">
-        <img alt="Conda downloads" src="https://img.shields.io/conda/dn/conda-forge/pypots?label=Conda%20Downloads&color=057748&logo=anaconda&logoColor=white">
+        <img alt="Conda downloads" src="https://img.shields.io/conda/dn/conda-forge/pypots?label=Conda%20Downloads&color=AED0ED&logo=anaconda&logoColor=white">
     </a>
     <a href="https://pypi.org/project/pypots">
         <img alt="PyPI downloads" src="https://static.pepy.tech/personalized-badge/pypots?period=total&units=international_system&left_color=grey&right_color=teal&left_text=PyPI%20Downloads&logo=github">
@@ -107,11 +107,11 @@ Alternatively, you can install from the latest source code with the latest featu
 
 PyPOTS tutorials have been released. Considering the future workload, I separate the tutorials into a single repo,
 and you can find them in [BrewPOTS](https://github.com/WenjieDu/BrewPOTS).
-Take a look at it now, and learn how to brew your POTS datasets! 🤓
+Take a look at it now, and learn how to brew your POTS datasets!
 
 You can also find a simple and quick-start tutorial notebook on Google Colab with
 [this link](https://colab.research.google.com/drive/1HEFjylEy05-r47jRy0H9jiS_WhD0UWmQ?usp=sharing).
-If you have further questions, please refer to PyPOTS documentation 📑[docs.pypots.com](https://docs.pypots.com).
+If you have further questions, please refer to PyPOTS documentation [docs.pypots.com](https://docs.pypots.com).
 Besides, you can also [raise an issue](https://github.com/WenjieDu/PyPOTS/issues) or [ask in our community](#-community).
 
 We present you a usage example of imputing missing values in time series with PyPOTS below, you can click it to view.
@@ -125,7 +125,7 @@ from sklearn.preprocessing import StandardScaler
 from pypots.data import load_specific_dataset, mcar, masked_fill
 from pypots.imputation import SAITS
 from pypots.utils.metrics import cal_mae
-# Data preprocessing. Tedious, but PyPOTS can help. 🤓
+# Data preprocessing. Tedious, but PyPOTS can help.
 data = load_specific_dataset('physionet_2012')  # PyPOTS will automatically download and extract it.
 X = data['X']
 num_samples = len(X['RecordID'].unique())
@@ -136,8 +136,8 @@ X_intact, X, missing_mask, indicating_mask = mcar(X, 0.1) # hold out 10% observe
 X = masked_fill(X, 1 - missing_mask, np.nan)
 dataset = {"X": X}
 print(dataset["X"].shape)  # (11988, 48, 37), 11988 samples, 48 time steps, 37 features
-# Model training. This is PyPOTS showtime. 💪
-saits = SAITS(n_steps=48, n_features=37, n_layers=2, d_model=256, d_inner=128, n_head=4, d_k=64, d_v=64, dropout=0.1, epochs=10)
+# Model training. This is PyPOTS showtime.
+saits = SAITS(n_steps=48, n_features=37, n_layers=2, d_model=256, d_inner=128, n_heads=4, d_k=64, d_v=64, dropout=0.1, epochs=10)
 saits.fit(dataset)  # train the model. Here I use the whole dataset as the training set, because ground truth is not visible to the model.
 imputation = saits.impute(dataset)  # impute the originally-missing values and artificially-missing values
 mae = cal_mae(imputation, X_intact, indicating_mask)  # calculate mean absolute error on the ground truth (artificially-missing values)
@@ -178,7 +178,7 @@ please cite it as below and 🌟star this repository to make others notice this 
 
 ``` bibtex
 @article{du2023PyPOTS,
-title={PyPOTS: A Python Toolbox for Data Mining on Partially-Observed Time Series}, 
+title={{PyPOTS: A Python Toolbox for Data Mining on Partially-Observed Time Series}},
 author={Wenjie Du},
 year={2023},
 eprint={2305.18811},
@@ -239,7 +239,7 @@ We care about the feedback from our users, so we're building PyPOTS community on
   and you can get the QR code from the official account after following it;
 
 If you have any suggestions or want to contribute ideas or share time-series related papers, join us and tell.
-PyPOTS community is open, transparent, and surely friendly. Let's work together to build and improve PyPOTS 💪!
+PyPOTS community is open, transparent, and surely friendly. Let's work together to build and improve PyPOTS!
 
 
 [^1]: Du, W., Cote, D., & Liu, Y. (2023). [SAITS: Self-Attention-based Imputation for Time Series](https://doi.org/10.1016/j.eswa.2023.119619). *Expert systems with applications*.
