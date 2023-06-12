@@ -18,16 +18,24 @@ jobs:
             fail-fast: false
             matrix:
                 os: [ubuntu-latest, windows-latest, macOS-latest]
-                python-version: ["3.7.16", "3.8", "3.9", "3.10"]
-                # Note: the latest 3.7 subversion 3.7.17 for MacOS has "ModuleNotFoundError: No module named '_bz2'"
+                python-version: ["3.7", "3.8", "3.9", "3.10"]
                 torch-version: ["1.13.1"]
 
         steps:
             - uses: actions/checkout@v3
 
+            - uses: haya14busa/action-cond@v1
+              id: condval
+              with:
+                cond: ${{ matrix.python-version == "3.7" && matrix.os == "macOS-latest" }}
+                # Note: the latest 3.7 subversion 3.7.17 for MacOS has "ModuleNotFoundError: No module named '_bz2'"
+                if_true: "3.7.16"
+                if_false: ${{ matrix.python-version }}
+
             - uses: actions/setup-python@v4
               with:
-                python-version: ${{ matrix.python-version }}
+                if:
+                python-version: ${{ steps.condval.outputs.value }}
                 check-latest: true
                 cache: pip
                 cache-dependency-path: |
