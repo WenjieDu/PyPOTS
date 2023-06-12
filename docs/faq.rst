@@ -7,7 +7,7 @@ Similarly to `scikit-learn <https://scikit-learn.org/stable/faq.html#what-are-th
 PyPOTS mainly considers well-established models/algorithms for inclusion. A rule of thumb is the paper should be
 published for at least 1 year, have 20+ citations, and the usefulness to our users can be claimed.
 
-But we encourage the authors of proposed new models to share and add your implementations into PyPOTS
+**However**, we encourage the authors of proposed new models to share and add your implementations into PyPOTS
 to help boost research accessibility and reproducibility in the field of POTS modeling.
 Note this exception only applies if you commit to the maintenance of your model for at least two years.
 
@@ -16,13 +16,12 @@ Becoming a Maintainer
 ^^^^^^^^^^^^^^^^^^^^^
 To become a maintainer of PyPOTS, you should
 
-1. be active on GitHub and watch PyPOTS repository to receive latest news from it;
-2. be familiar with the PyPOTS codebase;
-3. have made at least one pull request merged into branch ``main`` of PyPOTS,
+1. be active on GitHub and watch PyPOTS repository to receive the latest news from it;
+2. be familiar with the PyPOTS codebase and have made at least one pull request merged into branch ``main`` of PyPOTS,
    which is not for fixing typos or improving the docs;
-4. join the `PyPOTS community on Slack <https://join.slack.com/t/pypots-org/shared_invite/zt-1gq6ufwsi-p0OZdW~e9UW_IA4_f1OfxA>`_
-   and become a member of the channel ``#dev-team``. ``#dev-team`` currently is a public channel, and you don't need an invitation to join it.
-5. commit to obey our development principles;
+3. join the `PyPOTS community on Slack <https://join.slack.com/t/pypots-org/shared_invite/zt-1gq6ufwsi-p0OZdW~e9UW_IA4_f1OfxA>`_
+   and become a member of the channel ``#dev-team``. ``#dev-team`` currently is a public channel, and you don't need an invitation to join it;
+4. commit to constantly maintain PyPOTS project and obey our development principles;
 
 After meeting up with the above conditions,
 you can propose to get a maintainer role by dropping an email to `team@pypots.com <mailto:team@pypots.com>`_.
