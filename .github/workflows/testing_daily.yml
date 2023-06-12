@@ -34,7 +34,6 @@ jobs:
 
             - uses: actions/setup-python@v4
               with:
-                if:
                 python-version: ${{ steps.condval.outputs.value }}
                 check-latest: true
                 cache: pip
