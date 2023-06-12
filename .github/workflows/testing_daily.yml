@@ -1,9 +1,6 @@
 name: Daily Testing
 
 on:
-    push:
-        branches:
-            - fix_daily_testing
     schedule:
         # https://crontab.guru. Run everyday at 0:00AM UTC, i.e. 08:00AM Beijing, i.e. 08:00PM Montreal (summer time)
         - cron: "0 0 * * *"
