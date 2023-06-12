@@ -1,6 +1,9 @@
 name: Daily Testing
 
 on:
+    push:
+        branches:
+            - fix_daily_testing
     schedule:
         # https://crontab.guru. Run everyday at 0:00AM UTC, i.e. 08:00AM Beijing, i.e. 08:00PM Montreal (summer time)
         - cron: "0 0 * * *"
@@ -15,7 +18,8 @@ jobs:
             fail-fast: false
             matrix:
                 os: [ubuntu-latest, windows-latest, macOS-latest]
-                python-version: ["3.7", "3.8", "3.9", "3.10"]
+                python-version: ["3.7.16", "3.8", "3.9", "3.10"]
+                # Note: the latest 3.7 subversion 3.7.17 for MacOS has "ModuleNotFoundError: No module named '_bz2'"
                 torch-version: ["1.13.1"]
 
         steps:
