@@ -6,7 +6,9 @@
 **<p align="center">A Python Toolbox for Data Mining on Partially-Observed Time Series</p>**
 
 <p align="center">
-    <img alt="Python version" src="https://img.shields.io/badge/Python-v3.7--3.10-E97040?logo=python&logoColor=white">
+    <a href="https://docs.pypots.com/en/latest/install.html#reasons-of-version-limitations-on-dependencies">
+       <img alt="Python version" src="https://img.shields.io/badge/Python-v3.7--3.10-E97040?logo=python&logoColor=white">
+    </a>
     <img alt="powered by Pytorch" src="https://img.shields.io/badge/PyTorch-❤️-F8C6B5?logo=pytorch&logoColor=white">
     <a href="https://pypi.org/project/">
         <img alt="the latest release version" src="https://img.shields.io/github/v/release/wenjiedu/pypots?color=EE781F&include_prereleases&label=Release">

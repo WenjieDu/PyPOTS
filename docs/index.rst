@@ -143,13 +143,13 @@ Forecasting                    Probabilistic    BTTF (Bayesian Temporal Tensor F
 The paper introducing PyPOTS is available on arXiv at `this URL <https://arxiv.org/abs/2305.18811>`_.,
 and we are pursuing to publish it in prestigious academic venues, e.g. JMLR (track for
 `Machine Learning Open Source Software <https://www.jmlr.org/mloss/>`_). If you use PyPOTS in your work,
-please cite it as below and 🌟star this repository to make others notice this library. 🤗
+please cite it as below and 🌟star `PyPOTS repository <https://github.com/WenjieDu/PyPOTS>`_ to make others notice this library. 🤗
 
 .. code-block:: bibtex
    :linenos:
 
    @article{du2023PyPOTS,
-   title={PyPOTS: A Python Toolbox for Data Mining on Partially-Observed Time Series},
+   title={{PyPOTS: A Python Toolbox for Data Mining on Partially-Observed Time Series}},
    author={Wenjie Du},
    year={2023},
    eprint={2305.18811},
@@ -228,5 +228,6 @@ PyPOTS community is open, transparent, and surely friendly. Let's work together 
    :caption: Additional Information
 
    faq
+   milestones
    about_us
    references
