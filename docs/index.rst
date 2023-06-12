@@ -12,53 +12,53 @@ Welcome to PyPOTS docs!
 
 .. centered:: A Python Toolbox for Data Mining on Partially-Observed Time Series
 
-.. image:: https://img.shields.io/badge/Python-v3.7--3.10-88ada6?logo=python&logoColor=white
+.. image:: https://img.shields.io/badge/Python-v3.7--3.10-E97040?logo=python&logoColor=white
    :alt: Python version
 
-.. image:: https://img.shields.io/badge/PyTorch-❤️-bbcdc5?logo=pytorch&logoColor=white
+.. image:: https://img.shields.io/badge/PyTorch-❤️-F8C6B5?logo=pytorch&logoColor=white
    :alt: powered by Pytorch
 
-.. image:: https://img.shields.io/github/v/release/wenjiedu/pypots?color=e0eee8&include_prereleases&label=Release
+.. image:: https://img.shields.io/github/v/release/wenjiedu/pypots?color=EE781F&include_prereleases&label=Release
    :alt: the latest release version
    :target: https://pypi.org/project/pypots
 
-.. image:: https://img.shields.io/badge/License-GPL--v3-c0ebd7
+.. image:: https://img.shields.io/badge/License-GPL--v3-E9BB41
    :alt: GPL-v3 license
    :target: https://github.com/WenjieDu/PyPOTS/blob/main/LICENSE
 
-.. image:: https://img.shields.io/badge/join_us-community!-7fecad
+.. image:: https://img.shields.io/badge/join_us-community!-C8A062
    :alt: Community
    :target: #id16
 
-.. image:: https://img.shields.io/github/contributors/wenjiedu/pypots?color=7bcfa6&label=Contributors&logo=GitHub
+.. image:: https://img.shields.io/github/contributors/wenjiedu/pypots?color=D8E699&label=Contributors&logo=GitHub
    :alt: GitHub Contributors
    :target: https://github.com/WenjieDu/PyPOTS/graphs/contributors
 
-.. image:: https://img.shields.io/github/stars/wenjiedu/pypots?logo=Github&color=7bcfa6&label=Stars
+.. image:: https://img.shields.io/github/stars/wenjiedu/pypots?logo=Github&color=6BB392&label=Stars
    :alt: GitHub Repo stars
    :target: https://github.com/WenjieDu/PyPOTS/stargazers
 
-.. image:: https://img.shields.io/github/forks/wenjiedu/pypots?logo=Github&color=2edfa3&label=Forks
+.. image:: https://img.shields.io/github/forks/wenjiedu/pypots?logo=Github&color=91B821&label=Forks
    :alt: GitHub Repo forks
    :target: https://github.com/WenjieDu/PyPOTS/forks
 
-.. image:: https://img.shields.io/codeclimate/maintainability-percentage/WenjieDu/PyPOTS?color=25f8cb&label=Maintainability&logo=codeclimate
+.. image:: https://img.shields.io/codeclimate/maintainability-percentage/WenjieDu/PyPOTS?color=3C7699&label=Maintainability&logo=codeclimate
    :alt: Code Climate maintainability
    :target: https://codeclimate.com/github/WenjieDu/PyPOTS
 
-.. image:: https://img.shields.io/coverallsCoverage/github/WenjieDu/PyPOTS?branch=main&logo=coveralls&color=00e09e&label=Coverage
+.. image:: https://img.shields.io/coverallsCoverage/github/WenjieDu/PyPOTS?branch=main&logo=coveralls&color=75C1C4&label=Coverage
    :alt: Coveralls coverage
    :target: https://coveralls.io/github/WenjieDu/PyPOTS
 
-.. image:: https://img.shields.io/github/actions/workflow/status/wenjiedu/pypots/testing_ci.yml?logo=github&color=48c0a3&label=CI
+.. image:: https://img.shields.io/github/actions/workflow/status/wenjiedu/pypots/testing_ci.yml?logo=github&color=C8D8E1&label=CI
    :alt: GitHub Testing
    :target: https://github.com/WenjieDu/PyPOTS/actions/workflows/testing_ci.yml
 
-.. image:: https://img.shields.io/badge/DOI-10.5281/zenodo.6823221-21a675
-   :alt: Zenodo DOI
-   :target: https://doi.org/10.5281/zenodo.6823221
+.. image:: https://img.shields.io/badge/DOI-10.48550/arXiv.2305.18811-F8F7F0
+   :alt: arXiv DOI
+   :target: https://arxiv.org/abs/2305.18811
 
-.. image:: https://img.shields.io/conda/dn/conda-forge/pypots?label=Conda%20Downloads&color=057748&logo=anaconda&logoColor=white
+.. image:: https://img.shields.io/conda/dn/conda-forge/pypots?label=Conda%20Downloads&color=AED0ED&logo=anaconda&logoColor=white
    :alt: Conda downloads
    :target: https://anaconda.org/conda-forge/pypots
 
@@ -97,7 +97,7 @@ The rest of this readme file is organized as follows:
 
 ❖ Installation
 ^^^^^^^^^^^^^^^
-PyPOTS is available on both `PyPI <https://pypi.python.org/pypi/pypots>`_ and `Anaconda <https://anaconda.org/conda-forge/pypots>`_ ❗️
+PyPOTS is available on both `PyPI <https://pypi.python.org/pypi/pypots>`_ and `Anaconda <https://anaconda.org/conda-forge/pypots>`_.
 
 Refer to the page `Installation <install.html>`_ to see different ways of installing PyPOTS.
 
@@ -112,9 +112,9 @@ Refer to the page `Installation <install.html>`_ to see different ways of instal
 
 PyPOTS tutorials have been released. Considering the future workload, I separate the tutorials into a single repo,
 and you can find them in `BrewPOTS <https://github.com/WenjieDu/BrewPOTS>`_.
-Take a look at it now, and brew your POTS dataset into a cup of coffee! 🤓
+Take a look at it now, and brew your POTS dataset into a cup of coffee!
 
-If you have further questions, please refer to PyPOTS documentation 📑 `docs.pypots.com <https://docs.pypots.com>`_.
+If you have further questions, please refer to PyPOTS documentation `docs.pypots.com <https://docs.pypots.com>`_.
 Besides, you can also `raise an issue <https://github.com/WenjieDu/PyPOTS/issues>`_ or `ask in our community <#id14>`_.
 
 
@@ -203,7 +203,7 @@ We care about the feedback from our users, so we're building PyPOTS community on
   and you can get the QR code from the official account after following it;
 
 If you have any suggestions or want to contribute ideas or share time-series related papers, join us and tell.
-PyPOTS community is open, transparent, and surely friendly. Let's work together to build and improve PyPOTS 💪!
+PyPOTS community is open, transparent, and surely friendly. Let's work together to build and improve PyPOTS!
 
 
 .. toctree::
