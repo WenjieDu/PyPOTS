@@ -240,6 +240,11 @@ We care about the feedback from our users, so we're building PyPOTS community on
 - [WeChat (微信公众号)](https://mp.weixin.qq.com/s/sNgZmgAyxDn2sZxXoWJYMA). We also run a group chat on WeChat,
   and you can get the QR code from the official account after following it;
 
+PyPOTS is also launched on [Product Hunt](https://www.producthunt.com/products/pypots), and we'd love to see your reviews and comments there!
+<a href="https://www.producthunt.com/posts/pypots?utm_source=badge-featured&utm_medium=badge&utm_souce=badge-pypots" target="_blank">
+   <img align='center' src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=399667&theme=light" alt="PyPOTS - a&#0032;Python&#0032;lib&#0032;for&#0032;data&#0032;mining&#0032;on&#0032;PartiallyObserved&#0032;TimeSeries | Product Hunt" style="width: 200px; height: 44px;" width="200" height="44" />
+</a>
+
 If you have any suggestions or want to contribute ideas or share time-series related papers, join us and tell.
 PyPOTS community is open, transparent, and surely friendly. Let's work together to build and improve PyPOTS!
 
