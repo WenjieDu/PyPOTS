@@ -57,7 +57,7 @@ Although torch-geometric is an optional dependency, we hope things go smoothly w
 Because v2 may cause ``ModuleNotFoundError: No module named 'pandas.core.indexes.numeric'``,
 see https://stackoverflow.com/questions/75953279/modulenotfounderror-no-module-named-pandas-core-indexes-numeric-using-metaflo.
 
-* **Why we need PyTorch >1.10?**
+* **Why we need PyTorch >=1.10?**
 
 Because of pytorch_sparse, please refer to https://github.com/rusty1s/pytorch_sparse/issues/207#issuecomment-1065549338.
 
