@@ -76,13 +76,17 @@ Welcome to PyPOTS docs!
 
 ⦿ `Mission`: PyPOTS is born to become a handy toolbox that is going to make data mining on POTS easy rather than tedious, to help engineers and researchers focus more on the core problems in their hands rather than on how to deal with the missing parts in their data. PyPOTS will keep integrating classical and the latest state-of-the-art data mining algorithms for partially-observed multivariate time series. For sure, besides various algorithms, PyPOTS is going to have unified APIs together with detailed documentation and interactive examples across algorithms as tutorials.
 
+👍 **Please** star this repo to help others notice PyPOTS if you think it is a useful toolkit.
+**Please** properly `cite PyPOTS <https://docs.pypots.com/en/latest/index.html#id14>`_ in your publications
+if it helps with your research. This really means a lot to our open-source research. Thank you!
+
 .. image:: https://raw.githubusercontent.com/WenjieDu/TSDB/main/docs/_static/figs/TSDB_logo.svg?sanitize=true
    :width: 170
    :alt: TSDB
    :align: left
    :target: https://github.com/WenjieDu/TSDB
 
-To make various open-source time-series datasets readily available to our users, PyPOTS gets supported by project `TSDB (Time-Series Data Base) <https://github.com/WenjieDu/TSDB>`_, a toolbox making loading time-series datasets super easy!
+To make various open-source time-series datasets readily available to our users, PyPOTS gets supported by its sub-project `TSDB (Time-Series Data Base) <https://github.com/WenjieDu/TSDB>`_, a toolbox making loading time-series datasets super easy!
 
 Visit `TSDB <https://github.com/WenjieDu/TSDB>`_ right now to know more about this handy tool 🛠! It now supports a total of 119 open-source datasets.
 
@@ -140,16 +144,20 @@ Forecasting                    Probabilistic    BTTF (Bayesian Temporal Tensor F
 
 ❖ Citing PyPOTS
 ^^^^^^^^^^^^^^^^
+**[Updates in Jun 2023]** 🎉A short version of the PyPOTS paper is accepted by the 9th SIGKDD international workshop on
+Mining and Learning from Time Series (`MiLeTS'23 <https://kdd-milets.github.io/milets2023/>`_).
+Besides, PyPOTS has been included as a `PyTorch Ecosystem <https://pytorch.org/ecosystem/>`_ project.
+
 The paper introducing PyPOTS is available on arXiv at `this URL <https://arxiv.org/abs/2305.18811>`_.,
 and we are pursuing to publish it in prestigious academic venues, e.g. JMLR (track for
 `Machine Learning Open Source Software <https://www.jmlr.org/mloss/>`_). If you use PyPOTS in your work,
-please cite it as below and 🌟star this repository to make others notice this library. 🤗
+please cite it as below and 🌟star `PyPOTS repository <https://github.com/WenjieDu/PyPOTS>`_ to make others notice this library. 🤗
 
 .. code-block:: bibtex
    :linenos:
 
    @article{du2023PyPOTS,
-   title={PyPOTS: A Python Toolbox for Data Mining on Partially-Observed Time Series},
+   title={{PyPOTS: A Python Toolbox for Data Mining on Partially-Observed Time Series}},
    author={Wenjie Du},
    year={2023},
    eprint={2305.18811},
@@ -228,5 +236,6 @@ PyPOTS community is open, transparent, and surely friendly. Let's work together 
    :caption: Additional Information
 
    faq
+   milestones
    about_us
    references
