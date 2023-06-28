@@ -48,7 +48,8 @@ Reasons of Version Limitations on Dependencies
 **********************************************
 * **Why we need python >=3.7?**
 
-PyG (torch-geometric) is available starting from python v3.7, please refer to https://pytorch-geometric.readthedocs.io/en/latest/install/installation.html#installation-via-anaconda.
+Python v3.6 and before versions have no longer been supported officially (check out `status of Python versions here <https://devguide.python.org/versions/>`_).
+Besides, PyG (torch-geometric) is available starting from Python v3.7, please refer to https://pytorch-geometric.readthedocs.io/en/latest/install/installation.html#installation-via-anaconda.
 Although torch-geometric is an optional dependency, we hope things go smoothly when our users opt to install it.
 
 * **Why we need pandas <2.0.0?**
@@ -56,7 +57,7 @@ Although torch-geometric is an optional dependency, we hope things go smoothly w
 Because v2 may cause ``ModuleNotFoundError: No module named 'pandas.core.indexes.numeric'``,
 see https://stackoverflow.com/questions/75953279/modulenotfounderror-no-module-named-pandas-core-indexes-numeric-using-metaflo.
 
-* **Why we need PyTorch >1.10?**
+* **Why we need PyTorch >=1.10?**
 
 Because of pytorch_sparse, please refer to https://github.com/rusty1s/pytorch_sparse/issues/207#issuecomment-1065549338.
 

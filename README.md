@@ -6,7 +6,9 @@
 **<p align="center">A Python Toolbox for Data Mining on Partially-Observed Time Series</p>**
 
 <p align="center">
-    <img alt="Python version" src="https://img.shields.io/badge/Python-v3.7--3.10-E97040?logo=python&logoColor=white">
+    <a href="https://docs.pypots.com/en/latest/install.html#reasons-of-version-limitations-on-dependencies">
+       <img alt="Python version" src="https://img.shields.io/badge/Python-v3.7--3.10-E97040?logo=python&logoColor=white">
+    </a>
     <img alt="powered by Pytorch" src="https://img.shields.io/badge/PyTorch-❤️-F8C6B5?logo=pytorch&logoColor=white">
     <a href="https://pypi.org/project/">
         <img alt="the latest release version" src="https://img.shields.io/github/v/release/wenjiedu/pypots?color=EE781F&include_prereleases&label=Release">
@@ -59,12 +61,16 @@ with the missing parts in their data. PyPOTS will keep integrating classical and
 algorithms for partially-observed multivariate time series. For sure, besides various algorithms, PyPOTS is going to
 have unified APIs together with detailed documentation and interactive examples across algorithms as tutorials.
 
+👍 **Please** star this repo to help others notice PyPOTS if you think it is a useful toolkit.
+**Please** properly [cite PyPOTS](https://github.com/WenjieDu/PyPOTS#-citing-pypots) in your publications 
+if it helps with your research. This really means a lot to our open-source research. Thank you!
+
 <a href="https://github.com/WenjieDu/TSDB">
     <img src="https://raw.githubusercontent.com/WenjieDu/TSDB/main/docs/_static/figs/TSDB_logo.svg?sanitize=true" align="left" width="160" alt="TSDB logo"/>
 </a>
 
 To make various open-source time-series datasets readily available to our users,
-PyPOTS gets supported by project [TSDB (Time-Series Data Base)](https://github.com/WenjieDu/TSDB),
+PyPOTS gets supported by its subproject [TSDB (Time-Series Data Base)](https://github.com/WenjieDu/TSDB),
 a toolbox making loading time-series datasets super easy!
 
 Visit [TSDB](https://github.com/WenjieDu/TSDB) right now to know more about this handy tool 🛠!
@@ -171,6 +177,10 @@ PyPOTS supports imputation, classification, clustering, and forecasting tasks on
 
 
 ## ❖ Citing PyPOTS
+**[Updates in Jun 2023]** 🎉A short version of the PyPOTS paper is accepted by the 9th SIGKDD international workshop on 
+Mining and Learning from Time Series ([MiLeTS'23](https://kdd-milets.github.io/milets2023/))). 
+Besides, PyPOTS has been included as a [PyTorch Ecosystem](https://pytorch.org/ecosystem/) project.
+
 The paper introducing PyPOTS is available on arXiv at [this URL](https://arxiv.org/abs/2305.18811),
 and we are pursuing to publish it in prestigious academic venues, e.g. JMLR (track for
 [Machine Learning Open Source Software](https://www.jmlr.org/mloss/)). If you use PyPOTS in your work,
