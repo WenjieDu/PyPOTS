@@ -77,7 +77,7 @@ Welcome to PyPOTS docs!
 ⦿ `Mission`: PyPOTS is born to become a handy toolbox that is going to make data mining on POTS easy rather than tedious, to help engineers and researchers focus more on the core problems in their hands rather than on how to deal with the missing parts in their data. PyPOTS will keep integrating classical and the latest state-of-the-art data mining algorithms for partially-observed multivariate time series. For sure, besides various algorithms, PyPOTS is going to have unified APIs together with detailed documentation and interactive examples across algorithms as tutorials.
 
 👍 **Please** star this repo to help others notice PyPOTS if you think it is a useful toolkit.
-**Please** properly `cite PyPOTS <https://docs.pypots.com/en/latest/index.html#id14>`_ in your publications
+**Please** properly `cite PyPOTS <https://docs.pypots.com/en/latest/milestones.html#citing-pypots>`_ in your publications
 if it helps with your research. This really means a lot to our open-source research. Thank you!
 
 .. image:: https://raw.githubusercontent.com/WenjieDu/TSDB/main/docs/_static/figs/TSDB_logo.svg?sanitize=true

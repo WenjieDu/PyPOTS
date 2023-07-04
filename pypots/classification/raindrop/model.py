@@ -77,7 +77,6 @@ class _Raindrop(nn.Module):
         self.device = device
 
         # create modules
-        self.global_structure = torch.ones(n_features, n_features, device=self.device)
         if self.static:
             self.static_emb = nn.Linear(d_static, n_features)
         else:
@@ -100,8 +99,6 @@ class _Raindrop(nn.Module):
                 d_model + d_pe, n_heads, d_inner, dropout
             )
         self.transformer_encoder = TransformerEncoder(encoder_layers, n_layers)
-
-        self.adj = torch.ones([self.n_features, self.n_features], device=self.device)
 
         self.R_u = Parameter(torch.Tensor(1, self.n_features * self.d_ob))
 
@@ -152,28 +149,28 @@ class _Raindrop(nn.Module):
         -------
         prediction : torch.Tensor
         """
-        src = inputs["X"]
+        src = inputs["X"].permute(1, 0, 2)
         static = inputs["static"]
-        times = inputs["timestamps"]
+        times = inputs["timestamps"].permute(1, 0)
         lengths = inputs["lengths"]
-        missing_mask = inputs["missing_mask"]
+        missing_mask = inputs["missing_mask"].permute(1, 0, 2)
 
         max_len, batch_size = src.shape[0], src.shape[1]
 
         src = torch.repeat_interleave(src, self.d_ob, dim=-1)
         h = F.relu(src * self.R_u)
-        pe = self.pos_encoder(times).to(self.device)
+        pe = self.pos_encoder(times).to(src.device)
         if static is not None:
             emb = self.static_emb(static)
 
         h = self.dropout(h)
 
         mask = torch.arange(max_len)[None, :] >= (lengths.cpu()[:, None])
-        mask = mask.squeeze(1).to(self.device)
+        mask = mask.squeeze(1).to(src.device)
 
         x = h
 
-        adj = self.global_structure
+        adj = torch.ones(self.n_features, self.n_features, device=src.device)
         adj[torch.eye(self.n_features, dtype=torch.bool)] = 1
 
         edge_index = torch.nonzero(adj).T
@@ -182,10 +179,10 @@ class _Raindrop(nn.Module):
         batch_size = src.shape[1]
         n_step = src.shape[0]
         output = torch.zeros(
-            [n_step, batch_size, self.n_features * self.d_ob], device=self.device
+            [n_step, batch_size, self.n_features * self.d_ob], device=src.device
         )
 
-        alpha_all = torch.zeros([edge_index.shape[1], batch_size], device=self.device)
+        alpha_all = torch.zeros([edge_index.shape[1], batch_size], device=src.device)
 
         # iterate on each sample
         for unit in range(0, batch_size):
@@ -240,13 +237,11 @@ class _Raindrop(nn.Module):
 
         r_out = self.transformer_encoder(output, src_key_padding_mask=mask)
 
-        sensor_wise_mask = self.sensor_wise_mask
-
-        lengths2 = lengths.unsqueeze(1).to(self.device)
+        lengths2 = lengths.unsqueeze(1).to(src.device)
         mask2 = mask.permute(1, 0).unsqueeze(2).long()
-        if sensor_wise_mask:
+        if self.sensor_wise_mask:
             output = torch.zeros(
-                [batch_size, self.n_features, self.d_ob + 16], device=self.device
+                [batch_size, self.n_features, self.d_ob + 16], device=src.device
             )
             extended_missing_mask = missing_mask.view(-1, batch_size, self.n_features)
             for se in range(self.n_features):
@@ -458,10 +453,6 @@ class Raindrop(BaseNNClassifier):
         lengths = torch.tensor([n_steps] * bz, dtype=torch.float)
         times = torch.tensor(range(n_steps), dtype=torch.float).repeat(bz, 1)
 
-        X = X.permute(1, 0, 2)
-        missing_mask = missing_mask.permute(1, 0, 2)
-        times = times.permute(1, 0)
-
         inputs = {
             "X": X,
             "static": None,
@@ -487,10 +478,6 @@ class Raindrop(BaseNNClassifier):
         bz, n_steps, n_features = X.shape
         lengths = torch.tensor([n_steps] * bz, dtype=torch.float)
         times = torch.tensor(range(n_steps), dtype=torch.float).repeat(bz, 1)
-
-        X = X.permute(1, 0, 2)
-        missing_mask = missing_mask.permute(1, 0, 2)
-        times = times.permute(1, 0)
 
         inputs = {
             "X": X,
