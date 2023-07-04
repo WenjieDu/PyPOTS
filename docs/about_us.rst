@@ -19,8 +19,12 @@ Maciej Skrabski
 
 All Contributors
 """"""""""""""""
-
-PyPOTS exists thanks to `all the nice people <https://github.com/WenjieDu/PyPOTS/graphs/contributors>`_ who contribute their time to work on the project:
+PyPOTS exists thanks to all the nice people who contribute their time to work on the project (including the repositories
+`PyPOTS <https://github.com/WenjieDu/PyPOTS/graphs/contributors>`_,
+`BrewPOTS <https://github.com/WenjieDu/BrewPOTS/graphs/contributors>`_,
+`TSDB <https://github.com/WenjieDu/TSDB/graphs/contributors>`_,
+`PyCorruptor <https://github.com/WenjieDu/PyCorruptor/graphs/contributors>`_
+):
 
 .. raw:: html
 
