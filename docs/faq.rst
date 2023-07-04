@@ -14,7 +14,7 @@ Note this exception only applies if you commit to the maintenance of your model 
 
 Becoming a Maintainer
 ^^^^^^^^^^^^^^^^^^^^^
-To become a maintainer of PyPOTS, you should
+To join the team and become a maintainer of PyPOTS, you should
 
 1. be active on GitHub and watch PyPOTS repository to receive the latest news from it;
 2. be familiar with the PyPOTS codebase and have made at least one pull request merged into branch ``main`` of PyPOTS,
@@ -30,6 +30,10 @@ Once you obtain the role, you'll be listed as a member on the ``About Us`` pages
 `PyPOTS main site <https://pypots.com/about/>`_
 and
 `PyPOTS docs site <https://docs.pypots.com/en/latest/about_us.html>`_.
+
+**NOTE**: The maintainer role is not permanent. The role is called "maintainer" because it actively maintains the project.
+You can take a leave of absence from the role with notice at any time.
+But if you're inactive for a long time (more than three months. With reasons, a longer period is allowed for sure), your role will be deactivated.
 
 
 Our Development Principles

@@ -66,7 +66,9 @@ class PositionalEncoding(nn.Module):
         timescales = self.max_len ** np.linspace(0, 1, self._num_timescales)
 
         times = time_vectors.unsqueeze(2)
-        scaled_time = times / torch.Tensor(timescales[None, None, :])
+        scaled_time = times / torch.from_numpy(timescales[None, None, :]).to(
+            time_vectors.device
+        )
         pe = torch.cat(
             [torch.sin(scaled_time), torch.cos(scaled_time)], dim=-1
         )  # T x B x d_model
