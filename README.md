@@ -10,7 +10,7 @@
        <img alt="Python version" src="https://img.shields.io/badge/Python-v3.7--3.10-E97040?logo=python&logoColor=white">
     </a>
     <img alt="powered by Pytorch" src="https://img.shields.io/badge/PyTorch-❤️-F8C6B5?logo=pytorch&logoColor=white">
-    <a href="https://pypi.org/project/">
+    <a href="https://pypi.org/project/PyPOTS">
         <img alt="the latest release version" src="https://img.shields.io/github/v/release/wenjiedu/pypots?color=EE781F&include_prereleases&label=Release">
     </a>
     <a href="https://github.com/WenjieDu/PyPOTS/blob/main/LICENSE">
@@ -22,10 +22,10 @@
     <a href="https://github.com/WenjieDu/PyPOTS/graphs/contributors">
         <img alt="GitHub contributors" src="https://img.shields.io/github/contributors/wenjiedu/pypots?color=D8E699&label=Contributors&logo=GitHub">
     </a>
-    <a href="https://github.com/WenjieDu/PyPOTS/stargazers">
+    <a href="https://star-history.com/#wenjiedu/pypots">
         <img alt="GitHub Repo stars" src="https://img.shields.io/github/stars/wenjiedu/pypots?logo=Github&color=6BB392&label=Stars">
     </a>
-    <a href="https://github.com/WenjieDu/PyPOTS/forks">
+    <a href="https://github.com/WenjieDu/PyPOTS/network/members">
         <img alt="GitHub Repo forks" src="https://img.shields.io/github/forks/wenjiedu/pypots?logo=Github&color=91B821&label=Forks">
     </a>
     <a href="https://codeclimate.com/github/WenjieDu/PyPOTS">
@@ -43,7 +43,7 @@
     <a href="https://anaconda.org/conda-forge/pypots">
         <img alt="Conda downloads" src="https://img.shields.io/conda/dn/conda-forge/pypots?label=Conda%20Downloads&color=AED0ED&logo=anaconda&logoColor=white">
     </a>
-    <a href="https://pypi.org/project/pypots">
+    <a href="https://pepy.tech/project/pypots">
         <img alt="PyPI downloads" src="https://static.pepy.tech/personalized-badge/pypots?period=total&units=international_system&left_color=grey&right_color=blue&left_text=PyPI%20Downloads">
     </a>
 
@@ -239,6 +239,7 @@ Your star is your recognition to PyPOTS, and it matters!
 </a>
 </details>
 
+👀 Check out a full list of our users' affiliations [on PyPOTS website here](https://pypots.com/users/)!
 
 ## ❖ Community
 We care about the feedback from our users, so we're building PyPOTS community on

@@ -36,11 +36,11 @@ Welcome to PyPOTS docs!
 
 .. image:: https://img.shields.io/github/stars/wenjiedu/pypots?logo=Github&color=6BB392&label=Stars
    :alt: GitHub Repo stars
-   :target: https://github.com/WenjieDu/PyPOTS/stargazers
+   :target: https://star-history.com/#wenjiedu/pypots
 
 .. image:: https://img.shields.io/github/forks/wenjiedu/pypots?logo=Github&color=91B821&label=Forks
    :alt: GitHub Repo forks
-   :target: https://github.com/WenjieDu/PyPOTS/forks
+   :target: https://github.com/WenjieDu/PyPOTS/network/members
 
 .. image:: https://img.shields.io/codeclimate/maintainability-percentage/WenjieDu/PyPOTS?color=3C7699&label=Maintainability&logo=codeclimate
    :alt: Code Climate maintainability
@@ -62,11 +62,11 @@ Welcome to PyPOTS docs!
    :alt: Conda downloads
    :target: https://anaconda.org/conda-forge/pypots
 
-.. image:: https://static.pepy.tech/personalized-badge/pypots?period=total&units=international_system&left_color=grey&right_color=teal&left_text=PyPI%20Downloads&logo=github
+.. image:: https://static.pepy.tech/personalized-badge/pypots?period=total&units=international_system&left_color=grey&right_color=blue&left_text=PyPI%20Downloads
    :alt: PyPI downloads
-   :target: https://pypi.org/project/pypots
+   :target: https://pepy.tech/project/pypots
 
-.. image:: https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2FPyPOTS%2FPyPOTS&count_bg=%23009A0A&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=Visits&edge_flat=false
+.. image:: https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2FPyPOTS%2FPyPOTS&count_bg=%23009A0A&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=Visits%20since%20May%202022&edge_flat=false
    :alt: Visiting number
 
 -----------------
@@ -200,6 +200,7 @@ The lists of PyPOTS stargazers and forkers are shown below, and we're so proud t
    :alt: PyPOTS forkers
    :target: https://github.com/WenjieDu/PyPOTS/network/members
 
+👀 Check out a full list of our users' affiliations `on PyPOTS website here <https://pypots.com/users/>`_ !
 
 ❖ Community
 ^^^^^^^^^^^^
