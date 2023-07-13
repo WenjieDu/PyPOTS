@@ -64,4 +64,4 @@ You can also find a simple and quick-start tutorial notebook on Google Colab wit
     # the best model has been already saved, but you can still manually save it with function save_model() as below
     saits.save_model(saving_dir="examples/saits",file_name="manually_saved_saits_model")
     # you can load the saved model into a new initialized model
-    saits.load_load("examples/saits/manually_saved_saits_model")
+    saits.load_model("examples/saits/manually_saved_saits_model")
