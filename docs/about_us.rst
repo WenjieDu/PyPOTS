@@ -23,10 +23,9 @@ PyPOTS exists thanks to all the nice people who contribute their time to work on
 `PyPOTS <https://github.com/WenjieDu/PyPOTS/graphs/contributors>`_,
 `BrewPOTS <https://github.com/WenjieDu/BrewPOTS/graphs/contributors>`_,
 `TSDB <https://github.com/WenjieDu/TSDB/graphs/contributors>`_,
-`PyCorruptor <https://github.com/WenjieDu/PyCorruptor/graphs/contributors>`_
-):
+`PyCorruptor <https://github.com/WenjieDu/PyCorruptor/graphs/contributors>`_):
 
 .. raw:: html
 
-    <object data="https://cdn.jsdelivr.net/gh/wenjiedu/wenjiedu@main/figs/projects/pypots_contributors.svg">
+    <object data="https://pypots.com/figs/PyPOTS_contributors.svg">
     </object>
