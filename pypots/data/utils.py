@@ -76,19 +76,38 @@ def mcar(
     Parameters
     ----------
     X :
-        The data to add missing values.
+        Data vector. If X has any missing values, they should be numpy.nan.
 
     rate :
-        The missing rate.
+        Artificially missing rate, rate of the observed values which will be artificially masked as missing.
+
+        Note that,
+        `rate` = (number of artificially missing values) / np.sum(~np.isnan(self.data)),
+        not (number of artificially missing values) / np.product(self.data.shape),
+        considering that the given data may already contain missing values,
+        the latter way may be confusing because if the original missing rate >= `rate`,
+        the function will do nothing, i.e. it won't play the role it has to be.
 
     nan :
-        The value to fill the missing values.
+        Value used to fill NaN values.
 
     Returns
     -------
-    X :
-        The data with added missing values.
+    X_intact : array,
+        Original data with missing values (nan) filled with given parameter `nan`, with observed values intact.
+        X_intact is for loss calculation in the masked imputation task.
 
+    X : array,
+        Original X with artificial missing values. X is for model input.
+        Both originally-missing and artificially-missing values are filled with given parameter `nan`.
+
+    missing_mask : array,
+        The mask indicates all missing values in X.
+        In it, 1 indicates observed values, and 0 indicates missing values.
+
+    indicating_mask : array,
+        The mask indicates the artificially-missing values in X, namely missing parts different from X_intact.
+        In it, 1 indicates artificially missing values, and other values are indicated as 0.
     """
     X = corruptor.mcar(X, rate, nan)
     return X
