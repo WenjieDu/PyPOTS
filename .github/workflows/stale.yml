@@ -11,11 +11,11 @@ jobs:
     steps:
       - uses: actions/stale@v8
         with:
-          stale-issue-message: 'This issue had no activity for **30 days**. It will be closed in **2 weeks** unless there is some new activity. Is this issue already resolved?'
+          stale-issue-message: 'This issue had no activity for **14 days**. It will be closed in **1 week** unless there is some new activity. Is this issue already resolved?'
           stale-issue-label: 'stale'
           exempt-issue-labels: 'bug,enhancement,good first issue,keep'
-          stale-pr-message: 'This pull request had no activity for **30 days**. It will be closed in **2 weeks** unless there is some new activity.'
+          stale-pr-message: 'This pull request had no activity for **14 days**. It will be closed in **1 week** unless there is some new activity.'
           stale-pr-label: 'stale'
-          days-before-stale: 30
-          days-before-close: 14
+          days-before-stale: 14
+          days-before-close: 7
           operations-per-run: 200
