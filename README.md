@@ -216,8 +216,7 @@ By committing your code, you'll
    Take a look at our [inclusion criteria](https://docs.pypots.com/en/latest/faq.html#inclusion-criteria).
    You can utilize the `template` folder in each task package (e.g.
    [pypots/imputation/template](https://github.com/WenjieDu/PyPOTS/tree/main/pypots/imputation/template)) to quickly start;
-2. be listed as one of [PyPOTS contributors](https://github.com/WenjieDu/PyPOTS/graphs/contributors):
-   <img align="center" src="https://contrib.rocks/image?repo=wenjiedu/pypots">;
+2. be listed as one of [PyPOTS contributors](https://pypots.com/about/#all-contributors);
 3. get mentioned in our [release notes](https://github.com/WenjieDu/PyPOTS/releases);
 
 You can also contribute to PyPOTS by simply staring🌟 this repo to help more people notice it.
