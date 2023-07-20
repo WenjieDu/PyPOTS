@@ -11,9 +11,10 @@ published for at least 1 year, have 20+ citations, and the usefulness to our use
 to help boost research accessibility and reproducibility in the field of POTS modeling.
 Note this exception only applies if you commit to the maintenance of your model for at least two years.
 
-
-Becoming a Maintainer
+Join PyPOTS
 ^^^^^^^^^^^^^^^^^^^^^
+Becoming a Maintainer
+"""""""""""""""""""""
 To join the team and become a maintainer of PyPOTS, you should
 
 1. be active on GitHub and watch PyPOTS repository to receive the latest news from it;
@@ -34,6 +35,18 @@ and
 **NOTE**: The maintainer role is not permanent. The role is called "maintainer" because it actively maintains the project.
 You can take a leave of absence from the role with notice at any time.
 But if you're inactive for a long time (more than three months. With reasons, a longer period is allowed for sure), your role will be deactivated.
+
+Becoming a Lead
+"""""""""""""""
+To become a lead at PyPOTS, surely you have to already obtain a maintainer role first.
+Your research should be highly related to data mining/machine learning on POTS data, and
+you have to prove that you're capable of proposing a research plan solely and conducting it.
+You're willing to take developing PyPOTS as your responsibility and commit to constantly and regularly
+contribute you time and ideas to PyPOTS things (including community culture construction,
+code maintenance, current research implementation, new research planning).
+
+If you believe you want to do this, you can drop an email with anything you want to tell and your CV attachment to
+`team@pypots.com <mailto:team@pypots.com>`_. We will schedule a meeting for you and all other leads at PyPOTS for further discussion.
 
 
 Our Development Principles
