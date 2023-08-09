@@ -12,14 +12,20 @@ Wenjie Du
 
 Maciej Skrabski
 ***************
-- Joined as a maintainer in May 2023
+- Joined in May 2023
 - `GitHub (MaciejSkrabski) <https://github.com/MaciejSkrabski>`_
 - `LinkedIn (Maciej Skrabski) <https://www.linkedin.com/in/maciej-skrabski-75595525a>`_
+
+Jun Wang
+********
+- Joined in August 2023
+- `GitHub (AugustJW) <https://github.com/AugustJW>`_
+- `LinkedIn (Jun Wang) <https://www.linkedin.com/in/wang-jun-35323b193>`_
 
 
 All Contributors
 """"""""""""""""
-PyPOTS exists thanks to all the nice people who contribute their time to work on the project (including the repositories
+PyPOTS exists thanks to all the nice people (sorted by contribution time) who contribute their time to work on the project (including the repositories
 `PyPOTS <https://github.com/WenjieDu/PyPOTS/graphs/contributors>`_,
 `BrewPOTS <https://github.com/WenjieDu/BrewPOTS/graphs/contributors>`_,
 `TSDB <https://github.com/WenjieDu/TSDB/graphs/contributors>`_,

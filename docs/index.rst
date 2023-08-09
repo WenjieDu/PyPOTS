@@ -4,7 +4,7 @@
 
 Welcome to PyPOTS docs!
 ===============================
-.. image:: https://raw.githubusercontent.com/WenjieDu/PyPOTS/main/docs/_static/figs/PyPOTS_logo.svg?sanitize=true
+.. image:: https://raw.githubusercontent.com/PyPOTS/pypots.github.io/main/static/figs/pypots_logos/PyPOTS_logo_FFBG.svg?sanitize=true
    :height: 168
    :align: right
    :target: https://github.com/WenjieDu/PyPOTS
@@ -80,7 +80,7 @@ Welcome to PyPOTS docs!
 **Please** properly `cite PyPOTS <https://docs.pypots.com/en/latest/milestones.html#citing-pypots>`_ in your publications
 if it helps with your research. This really means a lot to our open-source research. Thank you!
 
-.. image:: https://raw.githubusercontent.com/WenjieDu/TSDB/main/docs/_static/figs/TSDB_logo.svg?sanitize=true
+.. image:: https://raw.githubusercontent.com/PyPOTS/pypots.github.io/main/static/figs/pypots_logos/TSDB_logo_FFBG.svg?sanitize=true
    :width: 170
    :alt: TSDB
    :align: left
@@ -88,7 +88,7 @@ if it helps with your research. This really means a lot to our open-source resea
 
 To make various open-source time-series datasets readily available to our users, PyPOTS gets supported by its sub-project `TSDB (Time-Series Data Base) <https://github.com/WenjieDu/TSDB>`_, a toolbox making loading time-series datasets super easy!
 
-Visit `TSDB <https://github.com/WenjieDu/TSDB>`_ right now to know more about this handy tool 🛠! It now supports a total of 119 open-source datasets.
+Visit `TSDB <https://github.com/WenjieDu/TSDB>`_ right now to know more about this handy tool 🛠! It now supports a total of 168 open-source datasets.
 
 The rest of this readme file is organized as follows:
 `❖ Installation <#id1>`_,
@@ -108,7 +108,7 @@ Refer to the page `Installation <install.html>`_ to see different ways of instal
 
 ❖ Usage
 ^^^^^^^^
-.. image:: https://raw.githubusercontent.com/WenjieDu/BrewPOTS/main/figs/BrewPOTS_logo.jpg
+.. image:: https://raw.githubusercontent.com/PyPOTS/pypots.github.io/main/static/figs/pypots_logos/BrewPOTS_logo_FFBG.svg?sanitize=true
    :width: 160
    :alt: BrewPOTS logo
    :align: left

@@ -11,6 +11,7 @@ published for at least 1 year, have 20+ citations, and the usefulness to our use
 to help boost research accessibility and reproducibility in the field of POTS modeling.
 Note this exception only applies if you commit to the maintenance of your model for at least two years.
 
+
 Join PyPOTS
 ^^^^^^^^^^^^^^^^^^^^^
 Becoming a Maintainer
@@ -40,10 +41,12 @@ Becoming a Lead
 """""""""""""""
 To become a lead at PyPOTS, surely you have to already obtain a maintainer role first.
 Your research should be highly related to data mining/machine learning on POTS data, and
-you have to prove that you're capable of proposing a research plan solely and conducting it.
+you need to prove that you're capable of proposing a research plan solely and conducting it.
 You're willing to take developing PyPOTS as your responsibility and commit to constantly and regularly
 contribute you time and ideas to PyPOTS things (including community culture construction,
 code maintenance, current research implementation, new research planning).
+The lead is a permanent role unless your research is no longer related to the field of modeling POTS or
+you no longer want to get involved with affairs at PyPOTS.
 
 If you believe you want to do this, you can drop an email with anything you want to tell and your CV attachment to
 `team@pypots.com <mailto:team@pypots.com>`_. We will schedule a meeting for you and all other leads at PyPOTS for further discussion.
