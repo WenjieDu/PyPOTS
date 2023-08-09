@@ -54,7 +54,7 @@ def cal_mae(
     so the result is 1/2=0.5.
 
     """
-    assert type(predictions) == type(targets), (
+    assert isinstance(predictions, type(targets)), (
         f"types of inputs and target must match, but got"
         f"type(inputs)={type(predictions)}, type(target)={type(targets)}"
     )
@@ -110,7 +110,7 @@ def cal_mse(
 
     """
 
-    assert type(predictions) == type(targets), (
+    assert isinstance(predictions, type(targets)), (
         f"types of inputs and target must match, but got"
         f"type(inputs)={type(predictions)}, type(target)={type(targets)}"
     )
@@ -166,7 +166,7 @@ def cal_rmse(
     so the result is :math:`\\sqrt{1/2}=0.5`.
 
     """
-    assert type(predictions) == type(targets), (
+    assert isinstance(predictions, type(targets)), (
         f"types of inputs and target must match, but got"
         f"type(inputs)={type(predictions)}, type(target)={type(targets)}"
     )
@@ -217,7 +217,7 @@ def cal_mre(
     so the result is :math:`\\sqrt{1/2}=0.5`.
 
     """
-    assert type(predictions) == type(targets), (
+    assert isinstance(predictions, type(targets)), (
         f"types of inputs and target must match, but got"
         f"type(inputs)={type(predictions)}, type(target)={type(targets)}"
     )
