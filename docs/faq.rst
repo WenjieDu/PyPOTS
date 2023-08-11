@@ -13,17 +13,20 @@ Note this exception only applies if you commit to the maintenance of your model 
 
 
 Join PyPOTS
-^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^
+.. _becoming-a-maintainer:
+
 Becoming a Maintainer
 """""""""""""""""""""
 To join the team and become a maintainer of PyPOTS, you should
 
-1. be active on GitHub and watch PyPOTS repository to receive the latest news from it;
+1. love open-source science and be active on GitHub;
 2. be familiar with the PyPOTS codebase and have made at least one pull request merged into branch ``main`` of PyPOTS,
    which is not for fixing typos or improving the docs;
-3. join the `PyPOTS community on Slack <https://join.slack.com/t/pypots-org/shared_invite/zt-1gq6ufwsi-p0OZdW~e9UW_IA4_f1OfxA>`_
+3. watch PyPOTS repository to receive the latest news from it;
+4. join the `PyPOTS community on Slack <https://join.slack.com/t/pypots-org/shared_invite/zt-1gq6ufwsi-p0OZdW~e9UW_IA4_f1OfxA>`_
    and become a member of the channel ``#dev-team``. ``#dev-team`` currently is a public channel, and you don't need an invitation to join it;
-4. commit to constantly maintain PyPOTS project and obey our development principles;
+5. commit to constantly maintain PyPOTS project and obey our development principles;
 
 After meeting up with the above conditions,
 you can propose to get a maintainer role by dropping an email to `team@pypots.com <mailto:team@pypots.com>`_.
@@ -39,7 +42,7 @@ But if you're inactive for a long time (more than three months. With reasons, a 
 
 Becoming a Lead
 """""""""""""""
-To become a lead at PyPOTS, surely you have to already obtain a maintainer role first.
+To become a lead at PyPOTS, surely you have to already obtain a maintainer role first, i.e. you've met all requirements in the section :ref:`becoming-a-maintainer`.
 Your research should be highly related to data mining/machine learning on POTS data, and
 you need to prove that you're capable of proposing a research plan solely and conducting it.
 You're willing to take developing PyPOTS as your responsibility and commit to constantly and regularly
