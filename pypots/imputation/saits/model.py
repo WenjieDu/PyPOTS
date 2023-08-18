@@ -24,8 +24,8 @@ from torch.utils.data import DataLoader
 
 from .data import DatasetForSAITS
 from ..base import BaseNNImputer
-from ..transformer.modules import EncoderLayer, PositionalEncoding
 from ...data.base import BaseDataset
+from ...modules.self_attention import EncoderLayer, PositionalEncoding
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
 from ...utils.metrics import cal_mae
@@ -91,10 +91,10 @@ class _SAITS(nn.Module):
 
         self.dropout = nn.Dropout(p=dropout)
         self.position_enc = PositionalEncoding(d_model, n_position=d_time)
-        # for operation on time dim
+        # for the 1st block
         self.embedding_1 = nn.Linear(actual_d_feature, d_model)
         self.reduce_dim_z = nn.Linear(d_model, d_feature)
-        # for operation on measurement dim
+        # for the 2nd block
         self.embedding_2 = nn.Linear(actual_d_feature, d_model)
         self.reduce_dim_beta = nn.Linear(d_model, d_feature)
         self.reduce_dim_gamma = nn.Linear(d_feature, d_feature)
