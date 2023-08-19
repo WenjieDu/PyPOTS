@@ -55,8 +55,6 @@ class _TransformerEncoder(nn.Module):
         self.layer_stack = nn.ModuleList(
             [
                 EncoderLayer(
-                    d_time,
-                    actual_d_feature,
                     d_model,
                     d_inner,
                     n_heads,
@@ -64,7 +62,6 @@ class _TransformerEncoder(nn.Module):
                     d_v,
                     dropout,
                     attn_dropout,
-                    False,
                 )
                 for _ in range(n_layers)
             ]

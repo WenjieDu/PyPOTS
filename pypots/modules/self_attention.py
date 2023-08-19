@@ -1,15 +1,16 @@
 """
-The implementation of the modules for Transformer.
+The implementation of the modules for Transformer :cite:`vaswani2017Transformer`
 
 Notes
 -----
 Partial implementation uses code from https://github.com/WenjieDu/SAITS.
+
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: GPL-v3
 
-from typing import Tuple
+from typing import Tuple, Optional
 
 import numpy as np
 import torch
@@ -32,10 +33,20 @@ class ScaledDotProductAttention(nn.Module):
         v: torch.Tensor,
         attn_mask: torch.Tensor = None,
     ) -> Tuple[torch.Tensor, torch.Tensor]:
+        # q, k, v all have 4 dimensions [batch_size, n_heads, n_steps, d_tensor]
+        # d_tensor could be d_q, d_k, d_v
+
+        # dot product q with k.T to obtain similarity
         attn = torch.matmul(q / self.temperature, k.transpose(2, 3))
+
+        # apply masking on the attention map, this is optional
         if attn_mask is not None:
             attn = attn.masked_fill(attn_mask == 1, -1e9)
+
+        # compute attention score [0, 1], then apply dropout
         attn = self.dropout(F.softmax(attn, dim=-1))
+
+        # multiply the score with v
         output = torch.matmul(attn, v)
         return output, attn
 
@@ -45,81 +56,99 @@ class MultiHeadAttention(nn.Module):
 
     def __init__(
         self,
-        n_head: int,
+        n_heads: int,
         d_model: int,
         d_k: int,
         d_v: int,
+        dropout: float,
         attn_dropout: float,
     ):
         super().__init__()
 
-        self.n_head = n_head
+        self.n_head = n_heads
         self.d_k = d_k
         self.d_v = d_v
 
-        self.w_qs = nn.Linear(d_model, n_head * d_k, bias=False)
-        self.w_ks = nn.Linear(d_model, n_head * d_k, bias=False)
-        self.w_vs = nn.Linear(d_model, n_head * d_v, bias=False)
+        self.w_qs = nn.Linear(d_model, n_heads * d_k, bias=False)
+        self.w_ks = nn.Linear(d_model, n_heads * d_k, bias=False)
+        self.w_vs = nn.Linear(d_model, n_heads * d_v, bias=False)
 
         self.attention = ScaledDotProductAttention(d_k**0.5, attn_dropout)
-        self.fc = nn.Linear(n_head * d_v, d_model, bias=False)
+        self.fc = nn.Linear(n_heads * d_v, d_model, bias=False)
+
+        self.dropout = nn.Dropout(dropout)
+        self.layer_norm = nn.LayerNorm(d_model, eps=1e-6)
 
     def forward(
         self,
         q: torch.Tensor,
         k: torch.Tensor,
         v: torch.Tensor,
-        attn_mask: torch.Tensor = None,
+        attn_mask: Optional[torch.Tensor],
     ) -> Tuple[torch.Tensor, torch.Tensor]:
-        d_k, d_v, n_head = self.d_k, self.d_v, self.n_head
-        sz_b, len_q, len_k, len_v = q.size(0), q.size(1), k.size(1), v.size(1)
+        # the input q, k, v currently have 3 dimensions [batch_size, n_steps, d_tensor]
+        # d_tensor could be n_heads*d_k, n_heads*d_v
 
-        # Pass through the pre-attention projection: b x lq x (n*dv)
-        # Separate different heads: b x lq x n x dv
-        q = self.w_qs(q).view(sz_b, len_q, n_head, d_k)
-        k = self.w_ks(k).view(sz_b, len_k, n_head, d_k)
-        v = self.w_vs(v).view(sz_b, len_v, n_head, d_v)
+        # keep useful variables
+        batch_size, n_steps = q.size(0), q.size(1)
+        residual = q
 
-        # Transpose for attention dot product: b x n x lq x dv
+        # now separate the last dimension of q, k, v into different heads -> [batch_size, n_steps, n_heads, d_k or d_v]
+        q = self.w_qs(q).view(batch_size, n_steps, self.n_head, self.d_k)
+        k = self.w_ks(k).view(batch_size, n_steps, self.n_head, self.d_k)
+        v = self.w_vs(v).view(batch_size, n_steps, self.n_head, self.d_v)
+
+        # transpose for self-attention calculation -> [batch_size, n_steps, d_k or d_v, n_heads]
         q, k, v = q.transpose(1, 2), k.transpose(1, 2), v.transpose(1, 2)
 
         if attn_mask is not None:
-            # this mask is imputation mask, which is not generated from each batch, so needs broadcasting on batch dim
-            attn_mask = attn_mask.unsqueeze(0).unsqueeze(
-                1
-            )  # For batch and head axis broadcasting.
+            # broadcasting on the head axis
+            attn_mask = attn_mask.unsqueeze(1)
 
         v, attn_weights = self.attention(q, k, v, attn_mask)
 
-        # Transpose to move the head dimension back: b x lq x n x dv
-        # Combine the last two dimensions to concatenate all the heads together: b x lq x (n*dv)
-        v = v.transpose(1, 2).contiguous().view(sz_b, len_q, -1)
+        # transpose back -> [batch_size, n_steps, n_heads, d_v]
+        # then merge the last two dimensions to combine all the heads -> [batch_size, n_steps, n_heads*d_v]
+        v = v.transpose(1, 2).contiguous().view(batch_size, n_steps, -1)
         v = self.fc(v)
+
+        # apply dropout and residual connection
+        v = self.dropout(v)
+        v += residual
+
+        # apply layer-norm
+        v = self.layer_norm(v)
+
         return v, attn_weights
 
 
 class PositionWiseFeedForward(nn.Module):
     def __init__(self, d_in: int, d_hid: int, dropout: float = 0.1):
         super().__init__()
-        self.w_1 = nn.Linear(d_in, d_hid)
-        self.w_2 = nn.Linear(d_hid, d_in)
+        self.linear_1 = nn.Linear(d_in, d_hid)
+        self.linear_2 = nn.Linear(d_hid, d_in)
         self.layer_norm = nn.LayerNorm(d_in, eps=1e-6)
         self.dropout = nn.Dropout(dropout)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
+        # save the original input for the later residual connection
         residual = x
-        x = self.layer_norm(x)
-        x = self.w_2(F.relu(self.w_1(x)))
+        # the 1st linear processing and ReLU non-linear projection
+        x = F.relu(self.linear_1(x))
+        # the 2nd linear processing
+        x = self.linear_2(x)
+        # apply dropout
         x = self.dropout(x)
+        # apply residual connection
         x += residual
+        # apply layer-norm
+        x = self.layer_norm(x)
         return x
 
 
 class EncoderLayer(nn.Module):
     def __init__(
         self,
-        d_time: int,
-        d_feature: int,
         d_model: int,
         d_inner: int,
         n_head: int,
@@ -127,36 +156,174 @@ class EncoderLayer(nn.Module):
         d_v: int,
         dropout: float = 0.1,
         attn_dropout: float = 0.1,
-        diagonal_attention_mask: bool = False,
+    ):
+        super().__init__()
+        self.slf_attn = MultiHeadAttention(
+            n_head, d_model, d_k, d_v, dropout, attn_dropout
+        )
+        self.pos_ffn = PositionWiseFeedForward(d_model, d_inner, dropout)
+
+    def forward(
+        self,
+        enc_input: torch.Tensor,
+        src_mask: Optional[torch.Tensor] = None,
+    ) -> Tuple[torch.Tensor, torch.Tensor]:
+        enc_output, attn_weights = self.slf_attn(
+            enc_input,
+            enc_input,
+            enc_input,
+            attn_mask=src_mask,
+        )
+        enc_output = self.pos_ffn(enc_output)
+        return enc_output, attn_weights
+
+
+class DecoderLayer(nn.Module):
+    def __init__(
+        self,
+        d_model: int,
+        d_inner: int,
+        n_head: int,
+        d_k: int,
+        d_v: int,
+        dropout: float = 0.1,
+        attn_dropout: float = 0.1,
+    ):
+        super().__init__()
+        self.slf_attn = MultiHeadAttention(
+            n_head, d_model, d_k, d_v, dropout, attn_dropout
+        )
+        self.enc_attn = MultiHeadAttention(
+            n_head, d_model, d_k, d_v, dropout, attn_dropout
+        )
+        self.pos_ffn = PositionWiseFeedForward(d_model, d_inner, dropout)
+
+    def forward(
+        self,
+        dec_input: torch.Tensor,
+        enc_output: torch.Tensor,
+        slf_attn_mask: Optional[torch.Tensor] = None,
+        dec_enc_attn_mask: Optional[torch.Tensor] = None,
+    ):
+        dec_output, dec_slf_attn = self.slf_attn(
+            dec_input, dec_input, dec_input, mask=slf_attn_mask
+        )
+        dec_output, dec_enc_attn = self.enc_attn(
+            dec_output, enc_output, enc_output, mask=dec_enc_attn_mask
+        )
+        dec_output = self.pos_ffn(dec_output)
+        return dec_output, dec_slf_attn, dec_enc_attn
+
+
+class Encoder(nn.Module):
+    def __init__(
+        self,
+        n_layers: int,
+        n_steps: int,
+        n_features: int,
+        d_model: int,
+        d_inner: int,
+        n_heads: int,
+        d_k: int,
+        d_v: int,
+        dropout: float,
+        attn_dropout: float,
     ):
         super().__init__()
 
-        self.diagonal_attention_mask = diagonal_attention_mask
-        self.d_time = d_time
-        self.d_feature = d_feature
-
-        self.layer_norm = nn.LayerNorm(d_model)
-        self.slf_attn = MultiHeadAttention(n_head, d_model, d_k, d_v, attn_dropout)
+        self.embedding = nn.Linear(n_features, d_model)
         self.dropout = nn.Dropout(dropout)
-        self.pos_ffn = PositionWiseFeedForward(d_model, d_inner, dropout)
-
-    def forward(self, enc_input: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
-        if self.diagonal_attention_mask:
-            mask_time = torch.eye(self.d_time).to(enc_input.device)
-        else:
-            mask_time = None
-
-        residual = enc_input
-        # here we apply LN before attention cal, namely Pre-LN, refer paper https://arxiv.org/abs/2002.04745
-        enc_input = self.layer_norm(enc_input)
-        enc_output, attn_weights = self.slf_attn(
-            enc_input, enc_input, enc_input, attn_mask=mask_time
+        self.position_enc = PositionalEncoding(d_model, n_position=n_steps)
+        self.enc_layer_stack = nn.ModuleList(
+            [
+                EncoderLayer(
+                    d_model,
+                    d_inner,
+                    n_heads,
+                    d_k,
+                    d_v,
+                    dropout,
+                    attn_dropout,
+                )
+                for _ in range(n_layers)
+            ]
         )
-        enc_output = self.dropout(enc_output)
-        enc_output += residual
 
-        enc_output = self.pos_ffn(enc_output)
-        return enc_output, attn_weights
+    def forward(
+        self,
+        x: torch.Tensor,
+        src_mask: Optional[torch.Tensor] = None,
+    ) -> torch.Tensor:
+        x = self.embedding(x)
+        enc_output = self.dropout(self.position_enc(x))
+
+        for layer in self.enc_layer_stack:
+            enc_output = layer(enc_output, src_mask)
+
+        return enc_output
+
+
+class Decoder(nn.Module):
+    def __init__(
+        self,
+        n_layers: int,
+        n_steps: int,
+        n_features: int,
+        d_model: int,
+        d_inner: int,
+        n_heads: int,
+        d_k: int,
+        d_v: int,
+        dropout: float,
+        attn_dropout: float,
+    ):
+        super().__init__()
+        self.embedding = nn.Linear(n_features, d_model)
+        self.dropout = nn.Dropout(dropout)
+        self.position_enc = PositionalEncoding(d_model, n_position=n_steps)
+        self.dec_layer_stack = nn.ModuleList(
+            [
+                DecoderLayer(
+                    d_model,
+                    d_inner,
+                    n_heads,
+                    d_k,
+                    d_v,
+                    dropout,
+                    attn_dropout,
+                )
+                for _ in range(n_layers)
+            ]
+        )
+
+    def forward(
+        self,
+        trg_seq: torch.Tensor,
+        enc_output: torch.Tensor,
+        trg_mask: Optional[torch.Tensor] = None,
+        src_mask: Optional[torch.Tensor] = None,
+        return_attn_weights: bool = False,
+    ):
+        trg_seq = self.embedding(trg_seq)
+        dec_output = self.dropout(self.position_enc(trg_seq))
+
+        dec_slf_attn_collector = []
+        dec_enc_attn_collector = []
+
+        for layer in self.layer_stack:
+            dec_output, dec_slf_attn, dec_enc_attn = layer(
+                dec_output,
+                enc_output,
+                slf_attn_mask=trg_mask,
+                dec_enc_attn_mask=src_mask,
+            )
+            dec_slf_attn_collector.append(dec_slf_attn)
+            dec_enc_attn_collector.append(dec_enc_attn)
+
+        if return_attn_weights:
+            return dec_output, dec_slf_attn_collector, dec_enc_attn_collector
+
+        return dec_output
 
 
 class PositionalEncoding(nn.Module):
