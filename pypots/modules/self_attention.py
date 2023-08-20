@@ -3,7 +3,8 @@ The implementation of the modules for Transformer :cite:`vaswani2017Transformer`
 
 Notes
 -----
-Partial implementation uses code from https://github.com/WenjieDu/SAITS.
+Partial implementation uses code from https://github.com/WenjieDu/SAITS,
+and https://github.com/jadore801120/attention-is-all-you-need-pytorch.
 
 """
 
@@ -253,12 +254,18 @@ class Encoder(nn.Module):
         self,
         x: torch.Tensor,
         src_mask: Optional[torch.Tensor] = None,
-    ) -> torch.Tensor:
+        return_attn_weights: bool = False,
+    ) -> Optional[torch.Tensor, Tuple[torch.Tensor, torch.Tensor]]:
         x = self.embedding(x)
         enc_output = self.dropout(self.position_enc(x))
+        attn_weights_collector = []
 
         for layer in self.enc_layer_stack:
-            enc_output = layer(enc_output, src_mask)
+            enc_output, attn_weights = layer(enc_output, src_mask)
+            attn_weights_collector.append(attn_weights)
+
+        if return_attn_weights:
+            return enc_output, attn_weights_collector
 
         return enc_output
 
