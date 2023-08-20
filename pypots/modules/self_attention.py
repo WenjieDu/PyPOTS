@@ -11,7 +11,7 @@ and https://github.com/jadore801120/attention-is-all-you-need-pytorch.
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: GPL-v3
 
-from typing import Tuple, Optional
+from typing import Tuple, Optional, Union
 
 import numpy as np
 import torch
@@ -205,7 +205,7 @@ class DecoderLayer(nn.Module):
         enc_output: torch.Tensor,
         slf_attn_mask: Optional[torch.Tensor] = None,
         dec_enc_attn_mask: Optional[torch.Tensor] = None,
-    ):
+    ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         dec_output, dec_slf_attn = self.slf_attn(
             dec_input, dec_input, dec_input, mask=slf_attn_mask
         )
@@ -255,7 +255,7 @@ class Encoder(nn.Module):
         x: torch.Tensor,
         src_mask: Optional[torch.Tensor] = None,
         return_attn_weights: bool = False,
-    ) -> Optional[torch.Tensor, Tuple[torch.Tensor, list]]:
+    ) -> Union[torch.Tensor, Tuple[torch.Tensor, list]]:
         x = self.embedding(x)
         enc_output = self.dropout(self.position_enc(x))
         attn_weights_collector = []
@@ -310,7 +310,7 @@ class Decoder(nn.Module):
         trg_mask: Optional[torch.Tensor] = None,
         src_mask: Optional[torch.Tensor] = None,
         return_attn_weights: bool = False,
-    ):
+    ) -> Union[torch.Tensor, Tuple[torch.Tensor, list, list]]:
         trg_seq = self.embedding(trg_seq)
         dec_output = self.dropout(self.position_enc(trg_seq))
 
@@ -358,5 +358,5 @@ class PositionalEncoding(nn.Module):
         sinusoid_table[:, 1::2] = np.cos(sinusoid_table[:, 1::2])  # dim 2i+1
         return torch.FloatTensor(sinusoid_table).unsqueeze(0)
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         return x + self.pos_table[:, : x.size(1)].clone().detach()
