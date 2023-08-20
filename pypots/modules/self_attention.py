@@ -255,7 +255,7 @@ class Encoder(nn.Module):
         x: torch.Tensor,
         src_mask: Optional[torch.Tensor] = None,
         return_attn_weights: bool = False,
-    ) -> Optional[torch.Tensor, Tuple[torch.Tensor, torch.Tensor]]:
+    ) -> Optional[torch.Tensor, Tuple[torch.Tensor, list]]:
         x = self.embedding(x)
         enc_output = self.dropout(self.position_enc(x))
         attn_weights_collector = []
