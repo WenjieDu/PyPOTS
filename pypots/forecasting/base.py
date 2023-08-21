@@ -242,7 +242,6 @@ class BaseNNForecaster(BaseNNModel):
         training_loader: DataLoader,
         val_loader: DataLoader = None,
     ) -> None:
-
         # each training starts from the very beginning, so reset the loss and model dict here
         self.best_loss = float("inf")
         self.best_model_dict = None

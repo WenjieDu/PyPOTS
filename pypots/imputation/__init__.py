@@ -10,11 +10,7 @@ from .locf import LOCF
 from .saits import SAITS
 from .transformer import Transformer
 from .mrnn import MRNN
+from .gpvae import GPVAE
+from .usgan import USGAN
 
-__all__ = [
-    "SAITS",
-    "Transformer",
-    "BRITS",
-    "MRNN",
-    "LOCF",
-]
+__all__ = ["SAITS", "Transformer", "BRITS", "MRNN", "LOCF", "GPVAE" "USGAN"]
