@@ -12,7 +12,7 @@ Once you're done, I will review your PR shortly. I may suggest changes to make t
 
 <!-- Remove if not applicable -->
 
-Fixes # (issue)
+Fixing # (issue)
 
 
 ## Before submitting
