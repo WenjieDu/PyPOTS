@@ -96,7 +96,9 @@ class BaseModel(ABC):
                 self.device = device
             elif isinstance(device, list):
                 if len(device) == 0:
-                    raise ValueError("The list of devices should have at least 1 device, but got 0.")
+                    raise ValueError(
+                        "The list of devices should have at least 1 device, but got 0."
+                    )
                 elif len(device) == 1:
                     return self._setup_device(device[0])
                 # parallely training on multiple CUDA devices
@@ -176,7 +178,6 @@ class BaseModel(ABC):
         if isinstance(self.device, torch.device):  # single device
             data = map(lambda x: x.to(self.device), data)
         else:  # parallely training on multiple devices
-
             # randomly choose one device to balance the workload
             # device = np.random.choice(self.device)
 

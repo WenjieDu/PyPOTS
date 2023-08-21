@@ -174,7 +174,6 @@ class ObservationPropagation(MessagePassing):
         edge_attr: OptTensor = None,
         return_attention_weights=None,
     ) -> Tuple[torch.Tensor, Any]:
-
         r"""
         Args:
             return_attention_weights (bool, optional): If set to :obj:`True`,
