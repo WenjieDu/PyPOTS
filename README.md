@@ -1,5 +1,5 @@
 <a href="https://github.com/WenjieDu/PyPOTS">
-    <img src="https://raw.githubusercontent.com/WenjieDu/PyPOTS/main/docs/_static/figs/PyPOTS_logo.svg?sanitize=true" width="200" align="right">
+    <img src="https://raw.githubusercontent.com/PyPOTS/pypots.github.io/main/static/figs/pypots_logos/PyPOTS_logo_FFBG.svg?sanitize=true" width="200" align="right">
 </a>
 
 ## <p align="center">Welcome to PyPOTS</p>
@@ -66,7 +66,7 @@ have unified APIs together with detailed documentation and interactive examples 
 if it helps with your research. This really means a lot to our open-source research. Thank you!
 
 <a href="https://github.com/WenjieDu/TSDB">
-    <img src="https://raw.githubusercontent.com/WenjieDu/TSDB/main/docs/_static/figs/TSDB_logo.svg?sanitize=true" align="left" width="160" alt="TSDB logo"/>
+    <img src="https://raw.githubusercontent.com/PyPOTS/pypots.github.io/main/static/figs/pypots_logos/TSDB_logo_FFBG.svg?sanitize=true" align="left" width="160" alt="TSDB logo"/>
 </a>
 
 To make various open-source time-series datasets readily available to our users,
@@ -74,7 +74,7 @@ PyPOTS gets supported by its subproject [TSDB (Time-Series Data Base)](https://g
 a toolbox making loading time-series datasets super easy!
 
 Visit [TSDB](https://github.com/WenjieDu/TSDB) right now to know more about this handy tool 🛠!
-It now supports a total of 119 open-source datasets.
+It now supports a total of 168 open-source datasets.
 <br clear="left">
 
 The rest of this readme file is organized as follows:
@@ -108,7 +108,7 @@ Alternatively, you can install from the latest source code with the latest featu
 
 ## ❖ Usage
 <a href="https://github.com/WenjieDu/BrewPOTS">
-    <img src="https://raw.githubusercontent.com/WenjieDu/BrewPOTS/main/figs/BrewPOTS_logo.jpg" align="left" width="160" alt="BrewPOTS logo"/>
+    <img src="https://raw.githubusercontent.com/PyPOTS/pypots.github.io/main/static/figs/pypots_logos/BrewPOTS_logo_FFBG.svg?sanitize=true" align="left" width="160" alt="BrewPOTS logo"/>
 </a>
 
 PyPOTS tutorials have been released. Considering the future workload, I separate the tutorials into a single repo,
