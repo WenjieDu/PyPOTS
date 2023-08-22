@@ -156,7 +156,7 @@ class _SAITS(nn.Module):
         if (training and self.diagonal_attention_mask) or (
             (not training) and diagonal_attention_mask
         ):
-            diagonal_attention_mask = torch.eye(self.n_steps).to(X.device)
+            diagonal_attention_mask = (1 - torch.eye(self.n_steps)).to(X.device)
             # then broadcast on the batch axis
             diagonal_attention_mask = diagonal_attention_mask.unsqueeze(0)
         else:
