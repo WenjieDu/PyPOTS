@@ -438,4 +438,5 @@ class CRLI(BaseNNClusterer):
         latent_collector = torch.cat(latent_collector).cpu().detach().numpy()
         clustering = self.model.kmeans.fit_predict(latent_collector)
 
-        return clustering
+        return {'clustering':clustering,
+               'inputs':inputs}
