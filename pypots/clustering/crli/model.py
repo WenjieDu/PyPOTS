@@ -439,4 +439,4 @@ class CRLI(BaseNNClusterer):
         clustering = self.model.kmeans.fit_predict(latent_collector)
 
         return {'clustering':clustering,
-               'inputs':inputs}
+               'inputs':inputs} # this only returns a single batch
