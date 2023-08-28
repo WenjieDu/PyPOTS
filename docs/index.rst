@@ -10,7 +10,7 @@ Welcome to PyPOTS docs!
    :target: https://github.com/WenjieDu/PyPOTS
    :alt: PyPOTS logo
 
-.. centered:: A Python Toolbox for Data Mining on Partially-Observed Time Series
+**A Python Toolbox for Data Mining on Partially-Observed Time Series**
 
 .. image:: https://img.shields.io/badge/Python-v3.7--3.10-E97040?logo=python&logoColor=white
    :alt: Python version
@@ -62,7 +62,7 @@ Welcome to PyPOTS docs!
    :alt: Conda downloads
    :target: https://anaconda.org/conda-forge/pypots
 
-.. image:: https://static.pepy.tech/personalized-badge/pypots?period=total&units=international_system&left_color=grey&right_color=blue&left_text=PyPI%20Downloads
+.. image:: https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2FWenjieDu%2FWenjieDu%2Fmain%2Ffigs%2Fprojects%2Fpypots_downloads.json
    :alt: PyPI downloads
    :target: https://pepy.tech/project/pypots
 
