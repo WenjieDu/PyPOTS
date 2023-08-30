@@ -14,15 +14,17 @@ Welcome to PyPOTS docs!
 
 .. image:: https://img.shields.io/badge/Python-v3.7--3.10-E97040?logo=python&logoColor=white
    :alt: Python version
+   :target: https://docs.pypots.com/en/latest/install.html#reasons-of-version-limitations-on-dependencies
 
 .. image:: https://img.shields.io/badge/PyTorch-❤️-F8C6B5?logo=pytorch&logoColor=white
    :alt: powered by Pytorch
+   :target: https://github.com/WenjieDu/PyPOTS
 
-.. image:: https://img.shields.io/github/v/release/wenjiedu/pypots?color=EE781F&include_prereleases&label=Release
+.. image:: https://img.shields.io/github/v/release/wenjiedu/pypots?color=EE781F&include_prereleases&label=Release&logo=github&logoColor=white
    :alt: the latest release version
-   :target: https://pypi.org/project/pypots
+   :target: https://github.com/WenjieDu/PyPOTS/releases
 
-.. image:: https://img.shields.io/badge/License-GPL--v3-E9BB41
+.. image:: https://img.shields.io/badge/License-GPL--v3-E9BB41?logo=opensourceinitiative&logoColor=white
    :alt: GPL-v3 license
    :target: https://github.com/WenjieDu/PyPOTS/blob/main/LICENSE
 

@@ -9,12 +9,14 @@
     <a href="https://docs.pypots.com/en/latest/install.html#reasons-of-version-limitations-on-dependencies">
        <img alt="Python version" src="https://img.shields.io/badge/Python-v3.7--3.10-E97040?logo=python&logoColor=white">
     </a>
-    <img alt="powered by Pytorch" src="https://img.shields.io/badge/PyTorch-❤️-F8C6B5?logo=pytorch&logoColor=white">
-    <a href="https://pypi.org/project/PyPOTS">
-        <img alt="the latest release version" src="https://img.shields.io/github/v/release/wenjiedu/pypots?color=EE781F&include_prereleases&label=Release">
+    <a href="https://github.com/WenjieDu/PyPOTS">
+        <img alt="powered by Pytorch" src="https://img.shields.io/badge/PyTorch-❤️-F8C6B5?logo=pytorch&logoColor=white">
+    </a>
+    <a href="https://github.com/WenjieDu/PyPOTS/releases">
+        <img alt="the latest release version" src="https://img.shields.io/github/v/release/wenjiedu/pypots?color=EE781F&include_prereleases&label=Release&logo=github&logoColor=white">
     </a>
     <a href="https://github.com/WenjieDu/PyPOTS/blob/main/LICENSE">
-        <img alt="GPL-v3 license" src="https://img.shields.io/badge/License-GPL--v3-E9BB41">
+        <img alt="GPL-v3 license" src="https://img.shields.io/badge/License-GPL--v3-E9BB41?logo=opensourceinitiative&logoColor=white">
     </a>
     <a href="https://github.com/WenjieDu/PyPOTS/blob/main/README.md#-community">
         <img alt="Community" src="https://img.shields.io/badge/join_us-community!-C8A062">
