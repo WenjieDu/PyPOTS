@@ -30,6 +30,57 @@ from ...utils.metrics import cal_mae
 
 
 class _GPVAE(nn.Module):
+    """model GPVAE with Gaussian Process prior
+
+        Attributes
+        ----------
+        Encoder :
+            the encoder in GPVAE
+
+        Decoder :
+            the decoder in GPVAE
+
+        Parameters
+        ----------
+        input_dim : int,
+            the feature dimension of the input
+
+        time_length : int,
+            the length of each time series
+
+        latent_dim : int,
+            the feature dimension of the latent embedding
+        
+        device : str,
+            specify running the model on which device, CPU/GPU
+
+        encoder_sizes : tuple,
+            the tuple of the network size in encoder
+
+        decoder_sizes : tuple,
+            the tuple of the network size in decoder
+
+        beta : float,
+            the weight of the KL divergence
+
+        M : int,
+            the number of Monte Carlo samples for ELBO estimation
+
+        K : int,
+            the number of importance weights for IWAE model
+
+        kernel : str,
+            the Gaussial Process kernel ["cauchy", "diffusion", "rbf", "matern"]
+
+        sigma : float,
+            the scale parameter for a kernel function
+
+        length_scale : float,
+            the length scale parameter for a kernel function
+
+        kernel_scales : int,
+            the number of different length scales over latent space dimensions
+        """
     def __init__(
         self,
         input_dim,
@@ -48,12 +99,6 @@ class _GPVAE(nn.Module):
         length_scale=7.0,
         kernel_scales=1,
     ):
-        """GPVAE model with Gaussian Process prior
-        :param kernel: Gaussial Process kernel ["cauchy", "diffusion", "rbf", "matern"]
-        :param sigma: scale parameter for a kernel function
-        :param length_scale: length scale parameter for a kernel function
-        :param kernel_scales: number of different length scales over latent space dimensions
-        """
         super(_GPVAE, self).__init__()
         self.kernel = kernel
         self.sigma = sigma
@@ -256,8 +301,15 @@ class GPVAE(BaseNNImputer):
         n_steps: int,
         n_features: int,
         latent_size: int,
+        encoder_sizes: tuple = (64, 64),
+        decoder_sizes: tuple = (64, 64),
         kernel: str = "cauchy",
         beta: float = 0.2,
+        M: int = 1,
+        K: int = 1,
+        sigma: float = 1.0,
+        length_scale: float = 7.0,
+        kernel_scales: int = 1,
         batch_size: int = 32,
         epochs: int = 100,
         patience: int = None,
@@ -281,7 +333,15 @@ class GPVAE(BaseNNImputer):
         self.n_features = n_features
         self.latent_size = latent_size
         self.kernel = kernel
+        self.encoder_sizes = encoder_sizes
+        self.decoder_sizes = decoder_sizes
         self.beta = beta
+        self.M = M
+        self.K = K
+        self.sigma = sigma
+        self.length_scale = length_scale
+        self.kernel_scales = kernel_scales
+
 
         # set up the model
         self.model = _GPVAE(
@@ -289,8 +349,15 @@ class GPVAE(BaseNNImputer):
             time_length=self.n_steps,
             latent_dim=self.latent_size,
             kernel=self.kernel,
-            device=self.device,
+            encoder_sizes=self.encoder_sizes,
+            decoder_sizes=self.decoder_sizes,
             beta=self.beta,
+            M=self.M,
+            K=self.K,
+            sigma=self.sigma,
+            length_scale=self.length_scale,
+            kernel_scales=self.kernel_scales,
+            device=self.device,
         )
         self._send_model_to_given_device()
         self._print_model_size()

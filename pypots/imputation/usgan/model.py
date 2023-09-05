@@ -219,6 +219,26 @@ class RITS(nn.Module):
 
 
 class Discriminator(nn.Module):
+    """model Discriminator: built on BiRNN
+
+    Parameters
+    ----------
+    n_features : 
+        the feature dimension of the input
+
+    rnn_hidden_size : 
+        the hidden size of the RNN cell
+
+    hint_rate : 
+        the hint rate for the input imputed_data
+
+    dropout_rate :
+        the dropout rate for the output layer
+    
+    device :     
+        specify running the model on which device, CPU/GPU
+
+    """
     def __init__(
         self,
         n_features: int,
@@ -237,6 +257,17 @@ class Discriminator(nn.Module):
         self.read_out = nn.Linear(2 * rnn_hidden_size, n_features).to(device)
 
     def forward(self, inputs: dict, training: bool = True) -> dict:
+        """Forward processing of Discriminator.
+
+        Parameters
+        ----------
+        inputs :
+            The input data.
+
+        Returns
+        -------
+        dict, the logits of the probability of being the true value.
+        """
         x = inputs["imputed_data"]
         m = inputs["forward"]["missing_mask"]
 
@@ -344,7 +375,7 @@ class Generator(nn.Module):
         return ret
 
     def forward(self, inputs: dict, training: bool = True) -> dict:
-        """Forward processing of BRITS.
+        """Forward processing of Generator.
 
         Parameters
         ----------
@@ -405,11 +436,17 @@ class _USGAN(nn.Module):
     rnn_hidden_size :
         the hidden size of the RNN cell
 
-    rits_f: RITS object
-        the forward RITS model
+    lambda_mse : 
+        the weigth of the reconstruction loss
+    
+    hint_rate : 
+        the hint rate for the discriminator
+    
+    dropout_rate : 
+        the dropout rate for the last layer in Discriminator
 
-    rits_b: RITS object
-        the backward RITS model
+    device : 
+        specify running the model on which device, CPU/GPU
 
     """
 
@@ -449,7 +486,6 @@ class _USGAN(nn.Module):
 
         X = inputs["forward"]["X"]
         missing_mask = inputs["forward"]["missing_mask"]
-        batch_size, n_steps, n_features = X.shape
         losses = {}
         inputs["imputed_data"], inputs["reconstruction"] = self.generator(
             inputs, training=False
@@ -487,24 +523,17 @@ class USGAN(BaseNNImputer):
     n_features :
         The number of features in the time-series data sample.
 
-    n_clusters :
-        The number of clusters in the clustering task.
-
-    n_generator_layers :
-        The number of layers in the generator.
-
     rnn_hidden_size :
-        The size of the RNN hidden state, also the number of hidden units in the RNN cell.
+        the hidden size of the RNN cell
 
-    rnn_cell_type :
-        The type of RNN cell to use. Can be either "GRU" or "LSTM".
-
-    decoder_fcn_output_dims :
-        The output dimensions of each layer in the FCN (fully-connected network) of the decoder.
-
-    lambda_kmeans :
-        The weight of the k-means loss,
-        i.e. the item :math:`\\lambda` ahead of :math:`\\mathcal{L}_{k-means}` in Eq.13 of the original paper.
+    lambda_mse : 
+        the weigth of the reconstruction loss
+    
+    hint_rate : 
+        the hint rate for the discriminator
+    
+    dropout_rate : 
+        the dropout rate for the last layer in Discriminator
 
     G_steps :
         The number of steps to train the generator in each iteration.
@@ -573,7 +602,7 @@ class USGAN(BaseNNImputer):
         hint_rate: float = 0.7,
         dropout_rate: float = 0.0,
         G_steps: int = 1,
-        D_steps: int = 5,
+        D_steps: int = 1,
         batch_size: int = 32,
         epochs: int = 100,
         patience: Optional[int] = None,
@@ -675,7 +704,7 @@ class USGAN(BaseNNImputer):
 
                     step_train_loss_G_collector = []
                     step_train_loss_D_collector = []
-                    # for _ in range(self.G_steps):
+    
                     if idx % self.G_steps == 0:
                         self.G_optimizer.zero_grad()
                         results = self.model.forward(
@@ -687,7 +716,6 @@ class USGAN(BaseNNImputer):
                             results["generation_loss"].item()
                         )
 
-                    # for _ in range(self.D_steps):
                     if idx % self.D_steps == 0:
                         self.D_optimizer.zero_grad()
                         results = self.model.forward(
