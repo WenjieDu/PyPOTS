@@ -9,7 +9,7 @@ import os
 import shutil
 from argparse import Namespace
 
-from tsdb.utils.downloading import _download_and_extract
+from tsdb.data_processing import _download_and_extract
 
 from ..cli.base import BaseCommand
 from ..utils.logging import logger

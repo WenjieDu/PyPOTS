@@ -13,7 +13,7 @@ from typing import Optional, Union
 import torch
 from torch.utils.tensorboard import SummaryWriter
 
-from .utils.file import create_dir_if_not_exist
+from .utils.files import create_dir_if_not_exist
 from .utils.logging import logger
 
 
