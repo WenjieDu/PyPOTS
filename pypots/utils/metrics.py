@@ -572,3 +572,75 @@ def cal_cluster_purity(
         contingency_matrix
     )
     return cluster_purity
+
+
+def cal_silhouette(
+    latent_rep: np.ndarray,
+    class_predictions: np.ndarray
+) -> float:
+    """Compute the mean Silhouette Coefficient of all samples.
+
+    Parameters
+    ----------
+    latent_rep :
+        Latent representation learned by a clusterer.
+
+    class_predictions :
+        Clustering results returned by a clusterer.
+
+    Returns
+    -------
+    silhouette :
+        Mean Silhouette Coefficient for all samples.
+
+    """
+    silhouette = metrics.silhouette_score(latent_rep, class_predictions)
+    return silhouette
+
+
+def cal_chs(
+    latent_rep: np.ndarray,
+    class_predictions: np.ndarray
+) -> float:
+    """Compute the Calinski and Harabasz score (also known as the Variance Ratio Criterion).
+
+    Parameters
+    ----------
+    latent_rep :
+        Latent representation learned by a clusterer.
+
+    class_predictions :
+        Clustering results returned by a clusterer.
+
+    Returns
+    -------
+    chs :
+        The resulting Calinski-Harabasz score.
+
+    """
+    chs = metrics.calinski_harabasz_score(latent_rep, class_predictions)
+    return chs
+
+
+def cal_dbs(
+    latent_rep: np.ndarray,
+    class_predictions: np.ndarray
+) -> float:
+    """Compute the Davies-Bouldin score.
+
+    Parameters
+    ----------
+    latent_rep :
+        Latent representation learned by a clusterer.
+
+    class_predictions :
+        Clustering results returned by a clusterer.
+
+    Returns
+    -------
+    dbs :
+        The resulting Davies-Bouldin score.
+
+    """
+    dbs = metrics.davies_bouldin_score(latent_rep, class_predictions)
+    return dbs
