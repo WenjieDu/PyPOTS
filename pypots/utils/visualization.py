@@ -1,8 +1,8 @@
 """
-Utilities for evaluation metrics
+Utilities for clustering visualization
 """
 
-# Created by Wenjie Du <wenjay.du@gmail.com>
+# Created by Bhargav Vemuri <vemuri.bhargav@gmail.com>
 # License: GPL-v3
 
 from typing import Union, Optional, Tuple
