@@ -72,23 +72,10 @@ def cauchy_kernel(T, sigma, length_scale):
 
 
 def make_nn(input_size, output_size, hidden_sizes):
-    """This function used to creates fully connected neural network.
-
-    Parameters
-    ----------
-    input_size : int,
-        the dimension of input embeddings
-
-    output_size : int,
-        the dimension of out embeddings
-
-    hidden_sizes : tuple,
-        the tuple of hidden layer sizes, and the tuple length sets the number of hidden layers
-    
-    Returns
-    -------
-    output: tensor
-        the processing embeddings
+    """Creates fully connected neural network
+    :param output_size: output dimensionality
+    :param hidden_sizes: tuple of hidden layer sizes.
+                         The tuple length sets the number of hidden layers.
     """
     layers = []
     for i in range(len(hidden_sizes)):
@@ -128,28 +115,13 @@ class CustomConv1d(torch.nn.Conv1d):
 
 
 def make_cnn(input_size, output_size, hidden_sizes, kernel_size=3):
-    """This function used to construct neural network consisting of
-       one 1d-convolutional layer that utilizes temporal dependences,
-       fully connected network
-
-    Parameters
-    ----------
-    input_size : int,
-        the dimension of input embeddings
-
-    output_size : int,
-        the dimension of out embeddings
-
-    hidden_sizes : tuple,
-        the tuple of hidden layer sizes, and the tuple length sets the number of hidden layers,
-
-    kernel_size : int 
-        kernel size for convolutional layer
-
-    Returns
-    -------
-    output: tensor
-        the processing embeddings
+    """Construct neural network consisting of
+      one 1d-convolutional layer that utilizes temporal dependences,
+      fully connected network
+    :param output_size: output dimensionality
+    :param hidden_sizes: tuple of hidden layer sizes.
+                         The tuple length sets the number of hidden layers.
+    :param kernel_size: kernel size for convolutional layer
     """
     padding = kernel_size // 2
 
@@ -170,21 +142,15 @@ def make_cnn(input_size, output_size, hidden_sizes, kernel_size=3):
 
 class Encoder(nn.Module):
     def __init__(self, input_size, z_size, hidden_sizes=(128, 128), window_size=24):
-        """This moudule is an encoder with 1d-convolutional network and multivariate Normal posterior used by GP-VAE with proposed banded covariance matrix
-
-        Parameters
-        ----------
-        input_size : int,
-            the feature dimension of the input
-
-        z_size : int,
-            the feature dimension of the output latent embedding
-        
-        hidden_sizes : tuple,
-            the tuple of the hidden layer sizes, and the tuple length sets the number of hidden layers
-
-        window_size : int
-            the kernel size for the Conv1D layer
+        """Encoder with 1d-convolutional network and multivariate Normal posterior
+        Used by GP-VAE with proposed banded covariance matrix
+        :param z_size: latent space dimensionality
+        :param hidden_sizes: tuple of hidden layer sizes.
+                             The tuple length sets the number of hidden layers.
+        :param window_size: kernel size for Conv1D layer
+        :param data_type: needed for some data specific modifications, e.g:
+            tf.nn.softplus is a more common and correct choice, however
+            tf.nn.sigmoid provides more stable performance on Physionet dataset
         """
         super(Encoder, self).__init__()
         self.z_size = int(z_size)
@@ -198,6 +164,7 @@ class Encoder(nn.Module):
         batch_size = mapped.size(0)
         time_length = mapped.size(1)
 
+        # Obtain mean and precision matrix components
         num_dim = len(mapped.shape)
         mu = self.mu_layer(mapped)
         logvar = self.logvar_layer(mapped)
@@ -252,15 +219,10 @@ class Encoder(nn.Module):
 
 class Decoder(nn.Module):
     def __init__(self, input_size, output_size, hidden_sizes=(256, 256)):
-        """This module is a decoder with Gaussian output distribution
-
-        Parameters
-        ----------
-        output_size : int,
-            the feature dimension of the output
-
-        idden_sizes: tuple
-            the tuple of hidden layer sizes, and the tuple length sets the number of hidden layers.
+        """Decoder with Gaussian output distribution
+        :param output_size: output dimensionality
+        :param hidden_sizes: tuple of hidden layer sizes.
+                             The tuple length sets the number of hidden layers.
         """
         super(Decoder, self).__init__()
         self.output_size = int(output_size)
