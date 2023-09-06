@@ -4,17 +4,12 @@ The implementation of USGAN for the partially-observed time-series imputation ta
 Refer to the paper "Miao, X., Wu, Y., Wang, J., Gao, Y., Mao, X., & Yin, J. (2021).
 Generative Semi-supervised Learning for Multivariate Time Series Imputation. AAAI 2021."
 
-Notes
------
-Partial implementation uses code from https://github.com/zjuwuyy-DL/Generative-Semi-supervised-Learning-for-Multivariate-Time-Series-Imputation. The bugs in the original implementation
-are fixed here.
-
 """
 
-# Created by Jun Wang <jwangfx@connect.ust.hk>
+# Created by Jun Wang <jwangfx@connect.ust.hk> and Wenjie Du <wenjay.du@gmail.com>
 # License: GPL-v3
 
-from typing import Tuple, Union, Optional
+from typing import Union, Optional
 
 import h5py
 import numpy as np
@@ -24,201 +19,35 @@ import torch.nn.functional as F
 from torch.utils.data import DataLoader
 
 from .data import DatasetForUSGAN
-from .modules import TemporalDecay, FeatureRegression
-
-# from ..brits.model import RITS
 from ..base import BaseNNImputer
+from ..brits.model import _BRITS
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
-from ...utils.metrics import cal_mae, cal_mse
 from ...utils.logging import logger
 
 
-class RITS(nn.Module):
-    """model RITS: Recurrent Imputation for Time Series
-
-    Attributes
-    ----------
-    n_steps :
-        sequence length (number of time steps)
-
-    n_features :
-        number of features (input dimensions)
-
-    rnn_hidden_size :
-        the hidden size of the RNN cell
-
-    device :
-        specify running the model on which device, CPU/GPU
-
-    rnn_cell :
-        the LSTM cell to model temporal data
-
-    temp_decay_h :
-        the temporal decay module to decay RNN hidden state
-
-    temp_decay_x :
-        the temporal decay module to decay data in the raw feature space
-
-    hist_reg :
-        the temporal-regression module to project RNN hidden state into the raw feature space
-
-    feat_reg :
-        the feature-regression module
-
-    combining_weight :
-        the module used to generate the weight to combine history regression and feature regression
+class Discriminator(nn.Module):
+    """model Discriminator: built on BiRNN
 
     Parameters
     ----------
-    n_steps :
-        sequence length (number of time steps)
-
     n_features :
-        number of features (input dimensions)
+        the feature dimension of the input
 
     rnn_hidden_size :
         the hidden size of the RNN cell
+
+    hint_rate :
+        the hint rate for the input imputed_data
+
+    dropout_rate :
+        the dropout rate for the output layer
 
     device :
         specify running the model on which device, CPU/GPU
 
     """
 
-    def __init__(
-        self,
-        n_steps: int,
-        n_features: int,
-        rnn_hidden_size: int,
-        device: Union[str, torch.device],
-    ):
-        super().__init__()
-        self.n_steps = n_steps
-        self.n_features = n_features
-        self.rnn_hidden_size = rnn_hidden_size
-        self.device = device
-
-        self.rnn_cell = nn.LSTMCell(self.n_features * 2, self.rnn_hidden_size)
-        self.temp_decay_h = TemporalDecay(
-            input_size=self.n_features, output_size=self.rnn_hidden_size, diag=False
-        )
-        self.temp_decay_x = TemporalDecay(
-            input_size=self.n_features, output_size=self.n_features, diag=True
-        )
-        self.hist_reg = nn.Linear(self.rnn_hidden_size, self.n_features)
-        self.feat_reg = FeatureRegression(self.n_features)
-        self.combining_weight = nn.Linear(self.n_features * 2, self.n_features)
-
-    def impute(
-        self, inputs: dict, direction: str
-    ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
-        """The imputation function.
-        Parameters
-        ----------
-        inputs :
-            Input data, a dictionary includes feature values, missing masks, and time-gap values.
-
-        direction :
-            A keyword to extract data from parameter `data`.
-
-        Returns
-        -------
-        imputed_data :
-            [batch size, sequence length, feature number]
-
-        hidden_states: tensor,
-            [batch size, RNN hidden size]
-
-        reconstruction_loss :
-            reconstruction loss
-
-        """
-        values = inputs[direction]["X"]  # feature values
-        masks = inputs[direction]["missing_mask"]  # missing masks
-        deltas = inputs[direction]["deltas"]  # time-gap values
-
-        # create hidden states and cell states for the lstm cell
-        hidden_states = torch.zeros(
-            (values.size()[0], self.rnn_hidden_size), device=values.device
-        )
-        cell_states = torch.zeros(
-            (values.size()[0], self.rnn_hidden_size), device=values.device
-        )
-
-        estimations = []
-        reconstruction_loss = torch.tensor(0.0).to(values.device)
-
-        # imputation period
-        for t in range(self.n_steps):
-            # data shape: [batch, time, features]
-            x = values[:, t, :]  # values
-            m = masks[:, t, :]  # mask
-            d = deltas[:, t, :]  # delta, time gap
-
-            gamma_h = self.temp_decay_h(d)
-            gamma_x = self.temp_decay_x(d)
-
-            hidden_states = hidden_states * gamma_h  # decay hidden states
-            x_h = self.hist_reg(hidden_states)
-            reconstruction_loss += cal_mae(x_h, x, m)
-
-            x_c = m * x + (1 - m) * x_h
-
-            z_h = self.feat_reg(x_c)
-            reconstruction_loss += cal_mae(z_h, x, m)
-
-            alpha = torch.sigmoid(self.combining_weight(torch.cat([gamma_x, m], dim=1)))
-
-            c_h = alpha * z_h + (1 - alpha) * x_h
-            reconstruction_loss += cal_mae(c_h, x, m)
-
-            c_c = m * x + (1 - m) * c_h
-            estimations.append(c_h.unsqueeze(dim=1))
-
-            inputs = torch.cat([c_c, m], dim=1)
-            hidden_states, cell_states = self.rnn_cell(
-                inputs, (hidden_states, cell_states)
-            )
-
-        estimations = torch.cat(estimations, dim=1)
-        imputed_data = masks * values + (1 - masks) * estimations
-        return imputed_data, hidden_states, reconstruction_loss, estimations
-
-    def forward(self, inputs: dict, direction: str = "forward") -> dict:
-        """Forward processing of the NN module.
-        Parameters
-        ----------
-        inputs :
-            The input data.
-
-        direction :
-            A keyword to extract data from parameter `data`.
-
-        Returns
-        -------
-        dict,
-            A dictionary includes all results.
-
-        """
-        imputed_data, hidden_state, reconstruction_loss, estimations = self.impute(
-            inputs, direction
-        )
-        # for each iteration, reconstruction_loss increases its value for 3 times
-        reconstruction_loss /= self.n_steps * 3
-
-        ret_dict = {
-            "consistency_loss": torch.tensor(
-                0.0, device=imputed_data.device
-            ),  # single direction, has no consistency loss
-            "reconstruction_loss": reconstruction_loss,
-            "imputed_data": imputed_data,
-            "final_hidden_state": hidden_state,
-            "estimations": estimations,
-        }
-        return ret_dict
-
-
-class Discriminator(nn.Module):
     def __init__(
         self,
         n_features: int,
@@ -230,164 +59,45 @@ class Discriminator(nn.Module):
         super().__init__()
         self.hint_rate = hint_rate
         self.device = device
-        self.birnn = nn.GRU(
-            2 * n_features, rnn_hidden_size, bidirectional=True, batch_first=True
+        self.biRNN = nn.GRU(
+            n_features * 2, rnn_hidden_size, bidirectional=True, batch_first=True
         ).to(device)
         self.dropout = nn.Dropout(dropout_rate).to(device)
-        self.read_out = nn.Linear(2 * rnn_hidden_size, n_features).to(device)
+        self.read_out = nn.Linear(rnn_hidden_size * 2, n_features).to(device)
 
-    def forward(self, inputs: dict, training: bool = True) -> dict:
-        x = inputs["imputed_data"]
-        m = inputs["forward"]["missing_mask"]
+    def forward(
+        self,
+        imputed_X: torch.Tensor,
+        missing_mask: torch.Tensor,
+    ) -> torch.Tensor:
+        """Forward processing of USGAN Discriminator.
+
+        Parameters
+        ----------
+        imputed_X : torch.Tensor,
+            The original X with missing parts already imputed.
+
+        missing_mask : torch.Tensor,
+            The missing mask of X.
+
+        Returns
+        -------
+        logits : torch.Tensor,
+            the logits of the probability of being the true value.
+
+        """
 
         hint = (
-            torch.rand_like(m, dtype=torch.float, device=self.device) < self.hint_rate
+            torch.rand_like(missing_mask, dtype=torch.float, device=self.device)
+            < self.hint_rate
         )
-        hint = hint.byte()
-        h = hint * m + (1 - hint) * 0.5
-        x_in = torch.cat([x, h], dim=-1)
+        hint = hint.int()
+        h = hint * missing_mask + (1 - hint) * 0.5
+        x_in = torch.cat([imputed_X, h], dim=-1)
 
-        out, _ = self.birnn(x_in)
+        out, _ = self.biRNN(x_in)
         logits = self.read_out(self.dropout(out))
         return logits
-
-
-class Generator(nn.Module):
-    """model Generator:
-
-    Attributes
-    ----------
-    n_steps :
-        sequence length (number of time steps)
-
-    n_features :
-        number of features (input dimensions)
-
-    rnn_hidden_size :
-        the hidden size of the RNN cell
-
-    rits_f: RITS object
-        the forward RITS model
-
-    rits_b: RITS object
-        the backward RITS model
-
-    """
-
-    def __init__(
-        self,
-        n_steps: int,
-        n_features: int,
-        rnn_hidden_size: int,
-        device: Union[str, torch.device],
-    ):
-        super().__init__()
-        # data settings
-        self.n_steps = n_steps
-        self.n_features = n_features
-        # imputer settings
-        self.rnn_hidden_size = rnn_hidden_size
-        # create models
-        self.rits_f = RITS(n_steps, n_features, rnn_hidden_size, device)
-        self.rits_b = RITS(n_steps, n_features, rnn_hidden_size, device)
-
-    @staticmethod
-    def _get_consistency_loss(
-        pred_f: torch.Tensor, pred_b: torch.Tensor
-    ) -> torch.Tensor:
-        """Calculate the consistency loss between the imputation from two RITS models.
-
-        Parameters
-        ----------
-        pred_f :
-            The imputation from the forward RITS.
-
-        pred_b :
-            The imputation from the backward RITS (already gets reverted).
-
-        Returns
-        -------
-        float tensor,
-            The consistency loss.
-
-        """
-        loss = torch.abs(pred_f - pred_b).mean() * 1e-1
-        return loss
-
-    @staticmethod
-    def _reverse(ret: dict) -> dict:
-        """Reverse the array values on the time dimension in the given dictionary.
-
-        Parameters
-        ----------
-        ret :
-
-        Returns
-        -------
-        dict,
-            A dictionary contains values reversed on the time dimension from the given dict.
-
-        """
-
-        def reverse_tensor(tensor_):
-            if tensor_.dim() <= 1:
-                return tensor_
-            indices = range(tensor_.size()[1])[::-1]
-            indices = torch.tensor(
-                indices, dtype=torch.long, device=tensor_.device, requires_grad=False
-            )
-            return tensor_.index_select(1, indices)
-
-        for key in ret:
-            ret[key] = reverse_tensor(ret[key])
-
-        return ret
-
-    def forward(self, inputs: dict, training: bool = True) -> dict:
-        """Forward processing of BRITS.
-
-        Parameters
-        ----------
-        inputs :
-            The input data.
-
-        Returns
-        -------
-        dict, A dictionary includes all results.
-        """
-        # Results from the forward RITS.
-        ret_f = self.rits_f(inputs, "forward")
-        # Results from the backward RITS.
-        ret_b = self._reverse(self.rits_b(inputs, "backward"))
-
-        imputed_data = (ret_f["imputed_data"] + ret_b["imputed_data"]) / 2
-        estimation = (ret_f["estimations"] + ret_b["estimations"]) / 2
-
-        if not training:
-            # if not in training mode, return the classification result only
-            # return {
-            #     "imputed_data": imputed_data,
-            # }
-            return imputed_data, estimation
-
-        consistency_loss = self._get_consistency_loss(
-            ret_f["imputed_data"], ret_b["imputed_data"]
-        )
-
-        # `loss` is always the item for backward propagating to update the model
-        loss = (
-            consistency_loss
-            + ret_f["reconstruction_loss"]
-            + ret_b["reconstruction_loss"]
-        )
-
-        results = {
-            "imputed_data": imputed_data,
-            "consistency_loss": consistency_loss,
-            "loss": loss,  # will be used for backward propagating to update the model
-        }
-
-        return results
 
 
 class _USGAN(nn.Module):
@@ -405,11 +115,17 @@ class _USGAN(nn.Module):
     rnn_hidden_size :
         the hidden size of the RNN cell
 
-    rits_f: RITS object
-        the forward RITS model
+    lambda_mse :
+        the weigth of the reconstruction loss
 
-    rits_b: RITS object
-        the backward RITS model
+    hint_rate :
+        the hint rate for the discriminator
+
+    dropout_rate :
+        the dropout rate for the last layer in Discriminator
+
+    device :
+        specify running the model on which device, CPU/GPU
 
     """
 
@@ -424,7 +140,7 @@ class _USGAN(nn.Module):
         device: Union[str, torch.device] = "cpu",
     ):
         super().__init__()
-        self.generator = Generator(n_steps, n_features, rnn_hidden_size, device)
+        self.generator = _BRITS(n_steps, n_features, rnn_hidden_size, device)
         self.discriminator = Discriminator(
             n_features,
             rnn_hidden_size,
@@ -447,14 +163,10 @@ class _USGAN(nn.Module):
             "discriminator",
         ], 'training_object should be "generator" or "discriminator"'
 
-        X = inputs["forward"]["X"]
         missing_mask = inputs["forward"]["missing_mask"]
-        batch_size, n_steps, n_features = X.shape
         losses = {}
-        inputs["imputed_data"], inputs["reconstruction"] = self.generator(
-            inputs, training=False
-        )
-        inputs["discrimination"] = self.discriminator(inputs, training=False)
+        results = self.generator(inputs, training=training)
+        inputs["discrimination"] = self.discriminator(inputs)
         if not training:
             # if only run clustering, then no need to calculate loss
             return inputs
@@ -469,8 +181,7 @@ class _USGAN(nn.Module):
             l_G = F.binary_cross_entropy_with_logits(
                 inputs["discrimination"], 1 - missing_mask, weight=1 - missing_mask
             )
-            l_rec = cal_mse(inputs["reconstruction"], X, missing_mask)
-            loss_gene = l_G + self.lambda_mse * l_rec
+            loss_gene = l_G + self.lambda_mse * results["loss"]
             losses["generation_loss"] = loss_gene
         losses["imputed_data"] = inputs["imputed_data"]
         return losses
@@ -487,24 +198,17 @@ class USGAN(BaseNNImputer):
     n_features :
         The number of features in the time-series data sample.
 
-    n_clusters :
-        The number of clusters in the clustering task.
-
-    n_generator_layers :
-        The number of layers in the generator.
-
     rnn_hidden_size :
-        The size of the RNN hidden state, also the number of hidden units in the RNN cell.
+        the hidden size of the RNN cell
 
-    rnn_cell_type :
-        The type of RNN cell to use. Can be either "GRU" or "LSTM".
+    lambda_mse :
+        the weigth of the reconstruction loss
 
-    decoder_fcn_output_dims :
-        The output dimensions of each layer in the FCN (fully-connected network) of the decoder.
+    hint_rate :
+        the hint rate for the discriminator
 
-    lambda_kmeans :
-        The weight of the k-means loss,
-        i.e. the item :math:`\\lambda` ahead of :math:`\\mathcal{L}_{k-means}` in Eq.13 of the original paper.
+    dropout_rate :
+        the dropout rate for the last layer in Discriminator
 
     G_steps :
         The number of steps to train the generator in each iteration.
@@ -573,7 +277,7 @@ class USGAN(BaseNNImputer):
         hint_rate: float = 0.7,
         dropout_rate: float = 0.0,
         G_steps: int = 1,
-        D_steps: int = 5,
+        D_steps: int = 1,
         batch_size: int = 32,
         epochs: int = 100,
         patience: Optional[int] = None,
@@ -675,7 +379,7 @@ class USGAN(BaseNNImputer):
 
                     step_train_loss_G_collector = []
                     step_train_loss_D_collector = []
-                    # for _ in range(self.G_steps):
+
                     if idx % self.G_steps == 0:
                         self.G_optimizer.zero_grad()
                         results = self.model.forward(
@@ -687,7 +391,6 @@ class USGAN(BaseNNImputer):
                             results["generation_loss"].item()
                         )
 
-                    # for _ in range(self.D_steps):
                     if idx % self.D_steps == 0:
                         self.D_optimizer.zero_grad()
                         results = self.model.forward(
