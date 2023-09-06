@@ -10,19 +10,21 @@ Welcome to PyPOTS docs!
    :target: https://github.com/WenjieDu/PyPOTS
    :alt: PyPOTS logo
 
-.. centered:: A Python Toolbox for Data Mining on Partially-Observed Time Series
+**A Python Toolbox for Data Mining on Partially-Observed Time Series**
 
 .. image:: https://img.shields.io/badge/Python-v3.7--3.10-E97040?logo=python&logoColor=white
    :alt: Python version
+   :target: https://docs.pypots.com/en/latest/install.html#reasons-of-version-limitations-on-dependencies
 
 .. image:: https://img.shields.io/badge/PyTorch-❤️-F8C6B5?logo=pytorch&logoColor=white
    :alt: powered by Pytorch
+   :target: https://github.com/WenjieDu/PyPOTS
 
-.. image:: https://img.shields.io/github/v/release/wenjiedu/pypots?color=EE781F&include_prereleases&label=Release
+.. image:: https://img.shields.io/github/v/release/wenjiedu/pypots?color=EE781F&include_prereleases&label=Release&logo=github&logoColor=white
    :alt: the latest release version
-   :target: https://pypi.org/project/pypots
+   :target: https://github.com/WenjieDu/PyPOTS/releases
 
-.. image:: https://img.shields.io/badge/License-GPL--v3-E9BB41
+.. image:: https://img.shields.io/badge/License-GPL--v3-E9BB41?logo=opensourceinitiative&logoColor=white
    :alt: GPL-v3 license
    :target: https://github.com/WenjieDu/PyPOTS/blob/main/LICENSE
 
@@ -62,7 +64,7 @@ Welcome to PyPOTS docs!
    :alt: Conda downloads
    :target: https://anaconda.org/conda-forge/pypots
 
-.. image:: https://static.pepy.tech/personalized-badge/pypots?period=total&units=international_system&left_color=grey&right_color=blue&left_text=PyPI%20Downloads
+.. image:: https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2FWenjieDu%2FWenjieDu%2Fmain%2Ffigs%2Fprojects%2Fpypots_downloads.json
    :alt: PyPI downloads
    :target: https://pepy.tech/project/pypots
 

@@ -38,7 +38,7 @@ and
 
 **NOTE**: The maintainer role is not permanent. The role is called "maintainer" because it actively maintains the project.
 You can take a leave of absence from the role with notice at any time.
-But if you're inactive for a long time (more than three months. With reasons, a longer period is allowed for sure), your role will be deactivated.
+But if you're inactive for a long time (more than three months. With reasons, a longer period is allowed for sure), your role may be deactivated.
 
 Becoming a Lead
 """""""""""""""
@@ -52,7 +52,8 @@ The lead is a permanent role unless your research is no longer related to the fi
 you no longer want to get involved with affairs at PyPOTS.
 
 If you believe you want to do this, you can drop an email with anything you want to tell and your CV attachment to
-`team@pypots.com <mailto:team@pypots.com>`_. We will schedule a meeting for you and all other leads at PyPOTS for further discussion.
+`team@pypots.com <mailto:team@pypots.com>`_. We will schedule a meeting for you and all other members at PyPOTS for further discussion.
+This is absolutely not a so-called interview, please don't take it formal and we just would like to listen to your thoughts about the field of POTS ;-)
 
 
 Our Development Principles
@@ -64,7 +65,7 @@ Our Development Principles
    We develop PyPOTS and we should try the best to use it in any scenarios related to POTS data.
    Only in this way, we can figure out how it tastes like, if it is a good toolset for users, and what other features and models should be included into PyPOTS;
 3. `No silver bullet <https://en.wikipedia.org/wiki/No_Silver_Bullet>`_ and `No free launch <https://en.wikipedia.org/wiki/No_free_lunch_theorem>`_.
-   There is no one solution to all problems in the Universe. In PyPOTS, we keep things modular, so one can easily try and replace parts of the pipeline
+   There is no one solution to all problems in the universe. In PyPOTS, we keep things modular, so one can easily try and replace parts of the pipeline
    in search for the optimal combination for the particular task;
 4. Keep things easy to use and familiar. We try to keep PyPOTS intuitive without compromising flexibility and without forcing users to learn a completely new technology.
    We do this by keeping the toolkit close to APIs in scikit-learn and pytorch that people know and love;

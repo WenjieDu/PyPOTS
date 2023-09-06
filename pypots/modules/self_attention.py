@@ -42,7 +42,7 @@ class ScaledDotProductAttention(nn.Module):
 
         # apply masking on the attention map, this is optional
         if attn_mask is not None:
-            attn = attn.masked_fill(attn_mask == 1, -1e9)
+            attn = attn.masked_fill(attn_mask == 0, -1e9)
 
         # compute attention score [0, 1], then apply dropout
         attn = self.dropout(F.softmax(attn, dim=-1))
@@ -207,10 +207,10 @@ class DecoderLayer(nn.Module):
         dec_enc_attn_mask: Optional[torch.Tensor] = None,
     ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         dec_output, dec_slf_attn = self.slf_attn(
-            dec_input, dec_input, dec_input, mask=slf_attn_mask
+            dec_input, dec_input, dec_input, attn_mask=slf_attn_mask
         )
         dec_output, dec_enc_attn = self.enc_attn(
-            dec_output, enc_output, enc_output, mask=dec_enc_attn_mask
+            dec_output, enc_output, enc_output, attn_mask=dec_enc_attn_mask
         )
         dec_output = self.pos_ffn(dec_output)
         return dec_output, dec_slf_attn, dec_enc_attn
@@ -288,7 +288,7 @@ class Decoder(nn.Module):
         self.embedding = nn.Linear(n_features, d_model)
         self.dropout = nn.Dropout(dropout)
         self.position_enc = PositionalEncoding(d_model, n_position=n_steps)
-        self.dec_layer_stack = nn.ModuleList(
+        self.layer_stack = nn.ModuleList(
             [
                 DecoderLayer(
                     d_model,
