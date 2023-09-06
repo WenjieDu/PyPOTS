@@ -1,10 +1,10 @@
 pypots.utils package
 ====================
 
-pypots.utils.files module
+pypots.utils.file module
 -------------------------
 
-.. automodule:: pypots.utils.files
+.. automodule:: pypots.utils.file
    :members:
    :undoc-members:
    :show-inheritance:
