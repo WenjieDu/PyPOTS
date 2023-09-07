@@ -120,5 +120,66 @@ def plot_clusters(
             plt.show()
 
 
+def get_cluster_means(
+    dict_to_plot: dict[int,dict]
+) -> dict[int,dict]:
+    """
+    Get time series variables' mean values and 95% confidence intervals at each time point per cluster.
 
+    Parameters
+    __________
+    dict_to_plot :
+        Output from clusters_for_plotting function.
+
+    Returns
+    _______
+    cluster_means:
+        Means and CI lower and upper bounds for each time series variable per cluster.
+        
+        structure = { 'var0': {'cluster0': {'mean': [tp0,tp1,...,tpN],
+                                            'CI_low': [tp0,tp1,...tpN],
+                                            'CI_high': [tp0,tp1,...tpN],
+                                            },
+                               ...
+                               'clusterX': {'mean': [tp0,tp1,...,tpN],
+                                            'CI_low': [tp0,tp1,...tpN],
+                                            'CI_high': [tp0,tp1,...tpN],
+                                            }
+                              },    
+                      ...,
+                      'varY': {'cluster0': {'mean': [tp0,tp1,...,tpN],
+                                            'CI_low': [tp0,tp1,...tpN],
+                                            'CI_high': [tp0,tp1,...tpN],
+                                            },
+                               ...
+                               'clusterX': {'mean': [tp0,tp1,...,tpN],
+                                            'CI_low': [tp0,tp1,...tpN],
+                                            'CI_high': [tp0,tp1,...tpN],
+                                            }
+                              }
+                    }
+
+                    where
+                        varY is number of time series variables recorded
+                        clusterX is number of clusters predicted (n_clusters in model)
+                        tpN is number of time points in each time series
+   
+        
+    """
+    cluster_means = {}
+    
+    for i in dict_to_plot: # iterate clusters
+        for j in dict_to_plot[i]: # iterate labs
+            if j not in cluster_means:
+                cluster_means[j] = {}
+            
+            cluster_means[j][i] = {} # clusters nested within vars (reverse structure to clusters_for_plotting)
+            
+            cluster_means[j][i]['mean'] = list(pd.DataFrame(dict_to_plot[i][j]).mean(axis=0,skipna=True)) # cluster mean array of time series var
+            # CI calculation, from https://stackoverflow.com/a/34474255
+            cluster_means[j][i]['CI_low'],cluster_means[j][i]['CI_high'] = st.t.interval(0.95,
+                                                                                         len(dict_to_plot[i][j])-1, # degrees of freedom
+                                                                                         loc=cluster_means[j][i]['mean'],
+                                                                                         scale=pd.DataFrame(var_clust[i][j]).sem(axis=0,skipna=True))
+    return cluster_means
   
