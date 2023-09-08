@@ -12,4 +12,5 @@ __all__ = [
     "logging",
     "metrics",
     "random",
+    "visualization"
 ]
