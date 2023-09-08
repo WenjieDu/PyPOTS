@@ -642,4 +642,4 @@ class VaDER(BaseNNClusterer):
                 clustering_results_collector.append(clustering_results)
 
         clustering_results = np.concatenate(clustering_results_collector)
-        return clsutering_results
+        return clustering_results
