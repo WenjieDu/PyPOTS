@@ -178,10 +178,11 @@ def get_cluster_means(
             
             cluster_means[j][i] = {} # clusters nested within vars (reverse structure to clusters_for_plotting)
             
+            cluster_means[j][i]['n'] = len(dict_to_plot[i][j]) # save cluster size for later
             cluster_means[j][i]['mean'] = list(pd.DataFrame(dict_to_plot[i][j]).mean(axis=0,skipna=True)) # cluster mean array of time series var
             # CI calculation, from https://stackoverflow.com/a/34474255
             cluster_means[j][i]['CI_low'],cluster_means[j][i]['CI_high'] = st.t.interval(0.95,
-                                                                                         len(dict_to_plot[i][j])-1, # degrees of freedom
+                                                                                         cluster_means[j][i]['n']-1, # degrees of freedom
                                                                                          loc=cluster_means[j][i]['mean'],
                                                                                          scale=pd.DataFrame(dict_to_plot[i][j]).sem(axis=0,skipna=True))
     return cluster_means
