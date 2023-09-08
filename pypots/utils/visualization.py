@@ -8,6 +8,7 @@ Utilities for clustering visualization
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+import matplotlib.lines as mlines
 
 
 def get_cluster_members(
