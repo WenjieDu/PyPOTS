@@ -221,10 +221,10 @@ def plot_cluster_means(
                     s1mask = np.isfinite(series1)
                     plt.plot(x[s1mask], series1[s1mask],'.-', # mean as solid line
                              color = colors[y_values],
-                             label='Cluster %i mean (n = %d)' %(y_values, len(var_clust[y_values][i])) # legend will include cluster size
+                             label='Cluster %i mean (n = %d)' %(y_values, y[y_values]['n']) # legend will include cluster size
                              )
     
-                else:
+                if val in ('CI_low','CI_high'):
                     series1 = np.array(y[y_values][val]).astype(np.double)
                     s1mask = np.isfinite(series1)
                     plt.plot(x[s1mask], series1[s1mask],'--', # CI bounds as dashed lines
