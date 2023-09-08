@@ -213,10 +213,9 @@ def plot_cluster_means(
         plt.figure(figsize=(16,8))
     
         for y_values in y: # iterate clusters
-            for val in y[y_values]: # iterate calculation (mean, CI_low, CI_high)
-                x = np.arange(len(y[y_values][val]))
-                
+            for val in y[y_values]: # iterate calculation (mean, CI_low, CI_high)                
                 if val=='mean':
+                    x = np.arange(len(y[y_values][val]))
                     series1 = np.array(y[y_values][val]).astype(np.double)
                     s1mask = np.isfinite(series1)
                     plt.plot(x[s1mask], series1[s1mask],'.-', # mean as solid line
@@ -225,6 +224,7 @@ def plot_cluster_means(
                              )
     
                 if val in ('CI_low','CI_high'):
+                    x = np.arange(len(y[y_values][val]))
                     series1 = np.array(y[y_values][val]).astype(np.double)
                     s1mask = np.isfinite(series1)
                     plt.plot(x[s1mask], series1[s1mask],'--', # CI bounds as dashed lines
