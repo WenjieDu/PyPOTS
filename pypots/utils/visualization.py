@@ -184,3 +184,53 @@ def get_cluster_means(
                                                                                          scale=pd.DataFrame(var_clust[i][j]).sem(axis=0,skipna=True))
     return cluster_means
   
+
+def plot_cluster_means(
+    cluster_means: dict[int,dict]
+) -> None:
+    """
+    Generate line plots of cluster means and 95% confidence intervals for each time series variable.
+
+    Parameters
+    __________
+    cluster_means : 
+        Output from get_cluster_means function.
+    """
+    colors = plt.rcParams['axes.prop_cycle'].by_key()['color'] # to keep cluster colors consistent
+
+    for i in cluster_means: # iterate time series vars
+        y = cluster_means[i]
+    
+        plt.figure(figsize=(16,8))
+    
+        for y_values in y: # iterate clusters
+            for val in y[y_values]: # iterate calculation (mean, CI_low, CI_high)
+                x = np.arange(len(y[y_values][val]))
+                
+                if val=='mean':
+                    series1 = np.array(y[y_values][val]).astype(np.double)
+                    s1mask = np.isfinite(series1)
+                    plt.plot(x[s1mask], series1[s1mask],'.-', # mean as solid line
+                             color = colors[y_values],
+                             label='Cluster %i mean (n = %d)' %(y_values, len(var_clust[y_values][i])) # legend will include cluster size
+                             )
+    
+                else:
+                    series1 = np.array(y[y_values][val]).astype(np.double)
+                    s1mask = np.isfinite(series1)
+                    plt.plot(x[s1mask], series1[s1mask],'--', # CI bounds as dashed lines
+                            color = colors[y_values]
+                            ) 
+        
+        plt.title('Var %d' %i) 
+        plt.xlabel('Timepoint') 
+        plt.xticks(x) 
+        
+        # add dashed line label to legend
+        line_dashed = mlines.Line2D([], [], color='gray', linestyle='--', linewidth=1.5, label='95% CI')
+        handles, labels = plt.legend().axes.get_legend_handles_labels()
+        handles.append(line_dashed)
+        new_lgd = plt.legend(handles=handles)
+        plt.gca().add_artist(new_lgd)    
+        
+        plt.show()
