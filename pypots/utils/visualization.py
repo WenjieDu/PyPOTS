@@ -183,7 +183,7 @@ def get_cluster_means(
             cluster_means[j][i]['CI_low'],cluster_means[j][i]['CI_high'] = st.t.interval(0.95,
                                                                                          len(dict_to_plot[i][j])-1, # degrees of freedom
                                                                                          loc=cluster_means[j][i]['mean'],
-                                                                                         scale=pd.DataFrame(var_clust[i][j]).sem(axis=0,skipna=True))
+                                                                                         scale=pd.DataFrame(dict_to_plot[i][j]).sem(axis=0,skipna=True))
     return cluster_means
   
 
