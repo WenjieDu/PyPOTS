@@ -13,4 +13,12 @@ from .mrnn import MRNN
 from .gpvae import GPVAE
 from .usgan import USGAN
 
-__all__ = ["SAITS", "Transformer", "BRITS", "MRNN", "LOCF", "GPVAE" "USGAN"]
+__all__ = [
+    "SAITS",
+    "Transformer",
+    "BRITS",
+    "MRNN",
+    "LOCF",
+    "GPVAE",
+    "USGAN",
+]
