@@ -163,27 +163,31 @@ class _USGAN(nn.Module):
             "discriminator",
         ], 'training_object should be "generator" or "discriminator"'
 
-        missing_mask = inputs["forward"]["missing_mask"]
+        forward_X = inputs["forward"]["X"]
+        forward_missing_mask = inputs["forward"]["missing_mask"]
         losses = {}
         results = self.generator(inputs, training=training)
-        inputs["discrimination"] = self.discriminator(inputs)
+        inputs["discrimination"] = self.discriminator(forward_X, forward_missing_mask)
         if not training:
-            # if only run clustering, then no need to calculate loss
-            return inputs
+            # if only run imputation operation, then no need to calculate loss
+            return results
 
         if training_object == "discriminator":
             l_D = F.binary_cross_entropy_with_logits(
-                inputs["discrimination"], missing_mask
+                inputs["discrimination"], forward_missing_mask
             )
             losses["discrimination_loss"] = l_D
         else:
             inputs["discrimination"] = inputs["discrimination"].detach()
             l_G = F.binary_cross_entropy_with_logits(
-                inputs["discrimination"], 1 - missing_mask, weight=1 - missing_mask
+                inputs["discrimination"],
+                1 - forward_missing_mask,
+                weight=1 - forward_missing_mask,
             )
             loss_gene = l_G + self.lambda_mse * results["loss"]
             losses["generation_loss"] = loss_gene
-        losses["imputed_data"] = inputs["imputed_data"]
+
+        losses["imputed_data"] = results["imputed_data"]
         return losses
 
 
@@ -202,7 +206,7 @@ class USGAN(BaseNNImputer):
         the hidden size of the RNN cell
 
     lambda_mse :
-        the weigth of the reconstruction loss
+        the weight of the reconstruction loss
 
     hint_rate :
         the hint rate for the discriminator
