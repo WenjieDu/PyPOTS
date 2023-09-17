@@ -6,11 +6,11 @@ Expose all usable time-series imputation models.
 # License: GPL-v3
 
 from .brits import BRITS
+from .gpvae import GPVAE
 from .locf import LOCF
+from .mrnn import MRNN
 from .saits import SAITS
 from .transformer import Transformer
-from .mrnn import MRNN
-from .gpvae import GPVAE
 from .usgan import USGAN
 
 __all__ = [

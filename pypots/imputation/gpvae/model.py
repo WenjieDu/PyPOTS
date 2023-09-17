@@ -1,19 +1,16 @@
 """
 The implementation of GP-VAE for the partially-observed time-series imputation task.
 
-Refer to the paper Fortuin V, Baranchuk D, Rätsch G, et al. Gp-vae: Deep probabilistic time series imputation[C]//International conference on artificial intelligence and statistics. PMLR, 2020: 1651-1661.
-
-Notes
------
-Pytorch implementation of the code from https://github.com/ratschlab/GP-VAE. 
+Refer to the paper Fortuin V, Baranchuk D, Rätsch G, et al.
+GP-VAE: Deep probabilistic time series imputation. AISTATS. PMLR, 2020: 1651-1661.
 
 """
 
-# Created by Jun Wang <jwangfx@connect.ust.hk>
+# Created by Jun Wang <jwangfx@connect.ust.hk> and Wenjie Du <wenjay.du@gmail.com>
 # License: GPL-v3
 
 
-from typing import Tuple, Union, Optional
+from typing import Union, Optional
 
 import h5py
 import numpy as np
@@ -21,15 +18,65 @@ import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
 
-from .modules import *
 from .data import DatasetForGPVAE
+from .modules import (
+    Encoder,
+    rbf_kernel,
+    diffusion_kernel,
+    matern_kernel,
+    cauchy_kernel,
+    Decoder,
+)
 from ..base import BaseNNImputer
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
-from ...utils.metrics import cal_mae
 
 
 class _GPVAE(nn.Module):
+    """model GPVAE with Gaussian Process prior
+
+    Parameters
+    ----------
+    input_dim : int,
+        the feature dimension of the input
+
+    time_length : int,
+        the length of each time series
+
+    latent_dim : int,
+        the feature dimension of the latent embedding
+
+    device : str,
+        specify running the model on which device, CPU/GPU
+
+    encoder_sizes : tuple,
+        the tuple of the network size in encoder
+
+    decoder_sizes : tuple,
+        the tuple of the network size in decoder
+
+    beta : float,
+        the weight of the KL divergence
+
+    M : int,
+        the number of Monte Carlo samples for ELBO estimation
+
+    K : int,
+        the number of importance weights for IWAE model
+
+    kernel : str,
+        the Gaussial Process kernel ["cauchy", "diffusion", "rbf", "matern"]
+
+    sigma : float,
+        the scale parameter for a kernel function
+
+    length_scale : float,
+        the length scale parameter for a kernel function
+
+    kernel_scales : int,
+        the number of different length scales over latent space dimensions
+    """
+
     def __init__(
         self,
         input_dim,
@@ -37,9 +84,7 @@ class _GPVAE(nn.Module):
         latent_dim,
         device,
         encoder_sizes=(64, 64),
-        encoder=Encoder,
         decoder_sizes=(64, 64),
-        decoder=Decoder,
         beta=1,
         M=1,
         K=1,
@@ -48,13 +93,7 @@ class _GPVAE(nn.Module):
         length_scale=7.0,
         kernel_scales=1,
     ):
-        """GPVAE model with Gaussian Process prior
-        :param kernel: Gaussial Process kernel ["cauchy", "diffusion", "rbf", "matern"]
-        :param sigma: scale parameter for a kernel function
-        :param length_scale: length scale parameter for a kernel function
-        :param kernel_scales: number of different length scales over latent space dimensions
-        """
-        super(_GPVAE, self).__init__()
+        super().__init__()
         self.kernel = kernel
         self.sigma = sigma
         self.length_scale = length_scale
@@ -69,8 +108,8 @@ class _GPVAE(nn.Module):
         self.time_length = time_length
         self.latent_dim = latent_dim
         self.beta = beta
-        self.encoder = encoder(input_dim, latent_dim, encoder_sizes).to(device)
-        self.decoder = decoder(latent_dim, input_dim, decoder_sizes).to(device)
+        self.encoder = Encoder(input_dim, latent_dim, encoder_sizes).to(device)
+        self.decoder = Decoder(latent_dim, input_dim, decoder_sizes).to(device)
         self.device = device
         self.M = M
         self.K = K
@@ -89,9 +128,8 @@ class _GPVAE(nn.Module):
         return self.decoder(self.encode(inputs).sample()).sample()
 
     def forward(self, inputs, training=True):
-        x = inputs["forward"]["X"]
-        m_mask = inputs["forward"]["missing_mask"]
-        delta = inputs["forward"]["deltas"]
+        x = inputs["X"]
+        m_mask = inputs["missing_mask"]
         x = x.repeat(self.M * self.K, 1, 1)
         if m_mask is not None:
             m_mask = m_mask.repeat(self.M * self.K, 1, 1)
@@ -256,8 +294,15 @@ class GPVAE(BaseNNImputer):
         n_steps: int,
         n_features: int,
         latent_size: int,
+        encoder_sizes: tuple = (64, 64),
+        decoder_sizes: tuple = (64, 64),
         kernel: str = "cauchy",
         beta: float = 0.2,
+        M: int = 1,
+        K: int = 1,
+        sigma: float = 1.0,
+        length_scale: float = 7.0,
+        kernel_scales: int = 1,
         batch_size: int = 32,
         epochs: int = 100,
         patience: int = None,
@@ -281,7 +326,14 @@ class GPVAE(BaseNNImputer):
         self.n_features = n_features
         self.latent_size = latent_size
         self.kernel = kernel
+        self.encoder_sizes = encoder_sizes
+        self.decoder_sizes = decoder_sizes
         self.beta = beta
+        self.M = M
+        self.K = K
+        self.sigma = sigma
+        self.length_scale = length_scale
+        self.kernel_scales = kernel_scales
 
         # set up the model
         self.model = _GPVAE(
@@ -289,8 +341,15 @@ class GPVAE(BaseNNImputer):
             time_length=self.n_steps,
             latent_dim=self.latent_size,
             kernel=self.kernel,
-            device=self.device,
+            encoder_sizes=self.encoder_sizes,
+            decoder_sizes=self.decoder_sizes,
             beta=self.beta,
+            M=self.M,
+            K=self.K,
+            sigma=self.sigma,
+            length_scale=self.length_scale,
+            kernel_scales=self.kernel_scales,
+            device=self.device,
         )
         self._send_model_to_given_device()
         self._print_model_size()
@@ -305,17 +364,13 @@ class GPVAE(BaseNNImputer):
             indices,
             X,
             missing_mask,
-            deltas,
         ) = self._send_data_to_given_device(data)
 
         # assemble input data
         inputs = {
             "indices": indices,
-            "forward": {
-                "X": X,
-                "missing_mask": missing_mask,
-                "deltas": deltas,
-            },
+            "X": X,
+            "missing_mask": missing_mask,
         }
 
         return inputs
