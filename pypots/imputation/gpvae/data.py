@@ -2,7 +2,7 @@
 Dataset class for model GP-VAE.
 """
 
-# Created by Jun Wang <jwangfx@connect.ust.hk>
+# Created by Jun Wang <jwangfx@connect.ust.hk> and Wenjie Du <wenjay.du@gmail.com>
 # License: GLP-v3
 
 from typing import Union, Iterable
@@ -14,7 +14,7 @@ from ...data.utils import torch_parse_delta
 
 
 class DatasetForGPVAE(BaseDataset):
-    """Dataset class for BRITS.
+    """Dataset class for GP-VAE.
 
     Parameters
     ----------
@@ -52,12 +52,10 @@ class DatasetForGPVAE(BaseDataset):
             # calculate all delta here.
             missing_mask = (~torch.isnan(self.X)).type(torch.float32)
             X = torch.nan_to_num(self.X)
-            delta = torch_parse_delta(missing_mask)
 
             self.processed_data = {
                 "X": X,
                 "missing_mask": missing_mask,
-                "delta": delta,
             }
 
     def _fetch_data_from_array(self, idx: int) -> Iterable:
@@ -93,7 +91,6 @@ class DatasetForGPVAE(BaseDataset):
             # for forward
             self.processed_data["X"][idx].to(torch.float32),
             self.processed_data["missing_mask"][idx].to(torch.float32),
-            self.processed_data["delta"][idx].to(torch.float32),
         ]
 
         if self.y is not None and self.return_labels:
@@ -123,18 +120,10 @@ class DatasetForGPVAE(BaseDataset):
         missing_mask = (~torch.isnan(X)).to(torch.float32)
         X = torch.nan_to_num(X)
 
-        forward = {
-            "X": X,
-            "missing_mask": missing_mask,
-            "deltas": torch_parse_delta(missing_mask),
-        }
-
         sample = [
             torch.tensor(idx),
-            # for forward
-            forward["X"],
-            forward["missing_mask"],
-            forward["deltas"],
+            X,
+            missing_mask,
         ]
 
         # if the dataset has labels and is for training, then fetch it from the file
