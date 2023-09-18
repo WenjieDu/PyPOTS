@@ -4,7 +4,7 @@
 
 Welcome to PyPOTS docs!
 ===============================
-.. image:: https://raw.githubusercontent.com/PyPOTS/pypots.github.io/main/static/figs/pypots_logos/PyPOTS_logo_FFBG.svg?sanitize=true
+.. image:: https://pypots.com/figs/pypots_logos/PyPOTS_logo_FFBG.svg?sanitize=true
    :height: 168
    :align: right
    :target: https://github.com/WenjieDu/PyPOTS
@@ -60,11 +60,11 @@ Welcome to PyPOTS docs!
    :alt: arXiv DOI
    :target: https://arxiv.org/abs/2305.18811
 
-.. image:: https://img.shields.io/conda/dn/conda-forge/pypots?label=Conda%20Downloads&color=AED0ED&logo=anaconda&logoColor=white
+.. image:: https://img.shields.io/endpoint?url=https://pypots.com/figs/downloads_badges/conda_pypots_downloads.json
    :alt: Conda downloads
    :target: https://anaconda.org/conda-forge/pypots
 
-.. image:: https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2FWenjieDu%2FWenjieDu%2Fmain%2Ffigs%2Fprojects%2Fpypots_downloads.json
+.. image:: https://img.shields.io/endpoint?url=https://pypots.com/figs/downloads_badges/pypi_pypots_downloads.json
    :alt: PyPI downloads
    :target: https://pepy.tech/project/pypots
 
@@ -82,7 +82,7 @@ Welcome to PyPOTS docs!
 **Please** properly `cite PyPOTS <https://docs.pypots.com/en/latest/milestones.html#citing-pypots>`_ in your publications
 if it helps with your research. This really means a lot to our open-source research. Thank you!
 
-.. image:: https://raw.githubusercontent.com/PyPOTS/pypots.github.io/main/static/figs/pypots_logos/TSDB_logo_FFBG.svg?sanitize=true
+.. image:: https://pypots.com/figs/pypots_logos/TSDB_logo_FFBG.svg?sanitize=true
    :width: 170
    :alt: TSDB
    :align: left
@@ -110,7 +110,7 @@ Refer to the page `Installation <install.html>`_ to see different ways of instal
 
 ❖ Usage
 ^^^^^^^^
-.. image:: https://raw.githubusercontent.com/PyPOTS/pypots.github.io/main/static/figs/pypots_logos/BrewPOTS_logo_FFBG.svg?sanitize=true
+.. image:: https://pypots.com/figs/pypots_logos/BrewPOTS_logo_FFBG.svg?sanitize=true
    :width: 160
    :alt: BrewPOTS logo
    :align: left

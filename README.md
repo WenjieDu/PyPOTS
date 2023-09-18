@@ -1,5 +1,5 @@
 <a href="https://github.com/WenjieDu/PyPOTS">
-    <img src="https://raw.githubusercontent.com/PyPOTS/pypots.github.io/main/static/figs/pypots_logos/PyPOTS_logo_FFBG.svg?sanitize=true" width="200" align="right">
+    <img src="https://pypots.com/figs/pypots_logos/PyPOTS_logo_FFBG.svg?sanitize=true" width="200" align="right">
 </a>
 
 ## <p align="center">Welcome to PyPOTS</p>
@@ -43,10 +43,10 @@
         <img alt="arXiv DOI" src="https://img.shields.io/badge/DOI-10.48550/arXiv.2305.18811-F8F7F0">
     </a>
     <a href="https://anaconda.org/conda-forge/pypots">
-        <img alt="Conda downloads" src="https://img.shields.io/conda/dn/conda-forge/pypots?label=Conda%20Downloads&color=AED0ED&logo=anaconda&logoColor=white">
+        <img alt="Conda downloads" src="https://img.shields.io/endpoint?url=https://pypots.com/figs/downloads_badges/conda_pypots_downloads.json">
     </a>
     <a href="https://pepy.tech/project/pypots">
-        <img alt="PyPI downloads" src="https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2FWenjieDu%2FWenjieDu%2Fmain%2Ffigs%2Fprojects%2Fpypots_downloads.json">
+        <img alt="PyPI downloads" src="https://img.shields.io/endpoint?url=https://pypots.com/figs/downloads_badges/pypi_pypots_downloads.json">
     </a>
 
 </p>
@@ -68,7 +68,7 @@ have unified APIs together with detailed documentation and interactive examples 
 if it helps with your research. This really means a lot to our open-source research. Thank you!
 
 <a href="https://github.com/WenjieDu/TSDB">
-    <img src="https://raw.githubusercontent.com/PyPOTS/pypots.github.io/main/static/figs/pypots_logos/TSDB_logo_FFBG.svg?sanitize=true" align="left" width="160" alt="TSDB logo"/>
+    <img src="https://pypots.com/figs/pypots_logos/TSDB_logo_FFBG.svg?sanitize=true" align="left" width="160" alt="TSDB logo"/>
 </a>
 
 To make various open-source time-series datasets readily available to our users,
@@ -110,7 +110,7 @@ Alternatively, you can install from the latest source code with the latest featu
 
 ## ❖ Usage
 <a href="https://github.com/WenjieDu/BrewPOTS">
-    <img src="https://raw.githubusercontent.com/PyPOTS/pypots.github.io/main/static/figs/pypots_logos/BrewPOTS_logo_FFBG.svg?sanitize=true" align="left" width="160" alt="BrewPOTS logo"/>
+    <img src="https://pypots.com/figs/pypots_logos/BrewPOTS_logo_FFBG.svg?sanitize=true" align="left" width="160" alt="BrewPOTS logo"/>
 </a>
 
 PyPOTS tutorials have been released. Considering the future workload, I separate the tutorials into a single repo,
@@ -271,3 +271,4 @@ PyPOTS community is open, transparent, and surely friendly. Let's work together 
     <img alt="PyPOTS visits" align="left" src="https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2FPyPOTS%2FPyPOTS&count_bg=%23009A0A&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=Visits%20since%20May%202022&edge_flat=false">
 </a>
 </details>
+<br>
