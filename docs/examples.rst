@@ -1,7 +1,7 @@
 Quick-start Examples
 ====================
 
-.. image:: https://raw.githubusercontent.com/PyPOTS/pypots.github.io/main/static/figs/pypots_logos/BrewPOTS_logo_FFBG.svg?sanitize=true
+.. image:: https://pypots.com/figs/pypots_logos/BrewPOTS_logo_FFBG.svg?sanitize=true
    :width: 160
    :alt: BrewPOTS logo
    :align: right
