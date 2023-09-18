@@ -1,0 +1,20 @@
+# ignore special files or folds
+*~
+.idea
+.DS_Store
+
+# ignore all building results
+dist
+build
+docs/_build
+*.egg-info
+
+# ignore all testing/running results
+.run
+.coverage
+.pytest_cache
+*__pycache__*
+*testing_results*
+
+# ignore specific kinds of files like all PDFs
+*.pdf
