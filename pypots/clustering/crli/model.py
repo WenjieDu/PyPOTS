@@ -49,9 +49,10 @@ class _CRLI(nn.Module):
         self.decoder = Decoder(
             n_steps, rnn_hidden_size * 2, n_features, decoder_fcn_output_dims, device
         )  # fully connected network is included in Decoder
-        self.kmeans = KMeans(
-            n_clusters=n_clusters
-        )  # TODO: implement KMean with torch for gpu acceleration
+        self.kmeans = KMeans(n_clusters=n_clusters)
+
+        self.term_F = None
+        self.counter_for_updating_F = 0
 
         self.n_clusters = n_clusters
         self.lambda_kmeans = lambda_kmeans
@@ -106,10 +107,16 @@ class _CRLI(nn.Module):
             l_pre = cal_mse(inputs["imputation"], X, missing_mask)
             l_rec = cal_mse(inputs["reconstruction"], X, missing_mask)
             HTH = torch.matmul(inputs["fcn_latent"], inputs["fcn_latent"].permute(1, 0))
-            term_F = torch.nn.init.orthogonal_(
-                torch.randn(batch_size, self.n_clusters, device=self.device), gain=1
+
+            if (
+                self.counter_for_updating_F == 0
+                or self.counter_for_updating_F % 10 == 0
+            ):
+                U, s, V = torch.linalg.svd(inputs["fcn_latent"])
+                self.term_F = U[:, : self.n_clusters]
+            FTHTHF = torch.matmul(
+                torch.matmul(self.term_F.permute(1, 0), HTH), self.term_F
             )
-            FTHTHF = torch.matmul(torch.matmul(term_F.permute(1, 0), HTH), term_F)
             l_kmeans = torch.trace(HTH) - torch.trace(FTHTHF)  # k-means loss
             loss_gene = l_G + l_pre + l_rec + l_kmeans * self.lambda_kmeans
             losses["generation_loss"] = loss_gene
