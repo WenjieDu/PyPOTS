@@ -99,8 +99,8 @@ def make_nn(input_size, output_size, hidden_sizes):
 
 
 class CustomConv1d(torch.nn.Conv1d):
-    def __init(self, in_channels, out_channels, kernal_size, padding):
-        super().__init__(in_channels, out_channels, kernal_size, padding)
+    def __init(self, in_channels, out_channels, kernel_size, padding):
+        super().__init__(in_channels, out_channels, kernel_size, padding)
 
     def forward(self, x):
         if len(x.shape) > 2:
@@ -118,7 +118,7 @@ class CustomConv1d(torch.nn.Conv1d):
 
 def make_cnn(input_size, output_size, hidden_sizes, kernel_size=3):
     """This function used to construct neural network consisting of
-       one 1d-convolutional layer that utilizes temporal dependences,
+       one 1d-convolutional layer that utilizes temporal dependencies,
        fully connected network
 
     Parameters
@@ -183,7 +183,7 @@ class Encoder(nn.Module):
             input_size, (z_size, z_size * 2), hidden_sizes, window_size
         )
 
-    def __call__(self, x):
+    def forward(self, x):
         mapped = self.net(x)
         batch_size = mapped.size(0)
         time_length = mapped.size(1)
@@ -235,14 +235,14 @@ class Encoder(nn.Module):
         cov_tril_lower = torch.transpose(cov_tril, num_dim - 1, num_dim - 2)
 
         z_dist = torch.distributions.MultivariateNormal(
-            loc=mapped_mean, scale_tril=(cov_tril_lower)
+            loc=mapped_mean, scale_tril=cov_tril_lower
         )
         return z_dist
 
 
 class Decoder(nn.Module):
     def __init__(self, input_size, output_size, hidden_sizes=(256, 256)):
-        """This module is a decoder with Gaussian output distribution
+        """This module is a decoder with Gaussian output distribution.
 
         Parameters
         ----------
@@ -253,10 +253,9 @@ class Decoder(nn.Module):
             the tuple of hidden layer sizes, and the tuple length sets the number of hidden layers.
         """
         super().__init__()
-        self.output_size = int(output_size)
         self.net = make_nn(input_size, output_size, hidden_sizes)
 
-    def __call__(self, x):
+    def forward(self, x):
         mu = self.net(x)
         var = torch.ones_like(mu)
         return torch.distributions.Normal(mu, var)
