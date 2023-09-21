@@ -15,6 +15,8 @@ import pytest
 from pypots.imputation import (
     SAITS,
     Transformer,
+    USGAN,
+    GPVAE,
     BRITS,
     MRNN,
     LOCF,
@@ -194,6 +196,151 @@ class TestTransformer(unittest.TestCase):
         self.transformer.load_model(saved_model_path)
 
 
+class TestUSGAN(unittest.TestCase):
+    logger.info("Running tests for an imputation model US-GAN...")
+
+    # set the log and model saving path
+    saving_path = os.path.join(RESULT_SAVING_DIR_FOR_IMPUTATION, "US-GAN")
+    model_save_name = "saved_USGAN_model.pypots"
+
+    # initialize an Adam optimizer
+    G_optimizer = Adam(lr=0.001, weight_decay=1e-5)
+    D_optimizer = Adam(lr=0.001, weight_decay=1e-5)
+
+    # initialize a US-GAN model
+    us_gan = USGAN(
+        DATA["n_steps"],
+        DATA["n_features"],
+        256,
+        epochs=EPOCH,
+        saving_path=saving_path,
+        G_optimizer=G_optimizer,
+        D_optimizer=D_optimizer,
+    )
+
+    @pytest.mark.xdist_group(name="imputation-usgan")
+    def test_0_fit(self):
+        self.us_gan.fit(TRAIN_SET, VAL_SET)
+
+    @pytest.mark.xdist_group(name="imputation-usgan")
+    def test_1_impute(self):
+        imputed_X = self.us_gan.impute(TEST_SET)
+        assert not np.isnan(
+            imputed_X
+        ).any(), "Output still has missing values after running impute()."
+        test_MAE = cal_mae(
+            imputed_X, DATA["test_X_intact"], DATA["test_X_indicating_mask"]
+        )
+        logger.info(f"US-GAN test_MAE: {test_MAE}")
+
+    @pytest.mark.xdist_group(name="imputation-usgan")
+    def test_2_parameters(self):
+        assert hasattr(self.us_gan, "model") and self.us_gan.model is not None
+
+        assert (
+            hasattr(self.us_gan, "G_optimizer") and self.us_gan.G_optimizer is not None
+        )
+        assert (
+            hasattr(self.us_gan, "D_optimizer") and self.us_gan.D_optimizer is not None
+        )
+
+        assert hasattr(self.us_gan, "best_loss")
+        self.assertNotEqual(self.us_gan.best_loss, float("inf"))
+
+        assert (
+            hasattr(self.us_gan, "best_model_dict")
+            and self.us_gan.best_model_dict is not None
+        )
+
+    @pytest.mark.xdist_group(name="imputation-usgan")
+    def test_3_saving_path(self):
+        # whether the root saving dir exists, which should be created by save_log_into_tb_file
+        assert os.path.exists(
+            self.saving_path
+        ), f"file {self.saving_path} does not exist"
+
+        # check if the tensorboard file and model checkpoints exist
+        check_tb_and_model_checkpoints_existence(self.us_gan)
+
+        # save the trained model into file, and check if the path exists
+        self.us_gan.save_model(
+            saving_dir=self.saving_path, file_name=self.model_save_name
+        )
+
+        # test loading the saved model, not necessary, but need to test
+        saved_model_path = os.path.join(self.saving_path, self.model_save_name)
+        self.us_gan.load_model(saved_model_path)
+
+
+class TestGPVAE(unittest.TestCase):
+    logger.info("Running tests for an imputation model GP-VAE...")
+
+    # set the log and model saving path
+    saving_path = os.path.join(RESULT_SAVING_DIR_FOR_IMPUTATION, "GP-VAE")
+    model_save_name = "saved_GPVAE_model.pypots"
+
+    # initialize an Adam optimizer
+    optimizer = Adam(lr=0.001, weight_decay=1e-5)
+
+    # initialize a GP-VAE model
+    gp_vae = GPVAE(
+        DATA["n_steps"],
+        DATA["n_features"],
+        256,
+        epochs=EPOCH,
+        saving_path=saving_path,
+        optimizer=optimizer,
+    )
+
+    @pytest.mark.xdist_group(name="imputation-gpvae")
+    def test_0_fit(self):
+        self.gp_vae.fit(TRAIN_SET, VAL_SET)
+
+    @pytest.mark.xdist_group(name="imputation-gpvae")
+    def test_1_impute(self):
+        imputed_X = self.gp_vae.impute(TEST_SET)
+        assert not np.isnan(
+            imputed_X
+        ).any(), "Output still has missing values after running impute()."
+        test_MAE = cal_mae(
+            imputed_X, DATA["test_X_intact"], DATA["test_X_indicating_mask"]
+        )
+        logger.info(f"GP-VAE test_MAE: {test_MAE}")
+
+    @pytest.mark.xdist_group(name="imputation-gpvae")
+    def test_2_parameters(self):
+        assert hasattr(self.gp_vae, "model") and self.gp_vae.model is not None
+
+        assert hasattr(self.gp_vae, "optimizer") and self.gp_vae.optimizer is not None
+
+        assert hasattr(self.gp_vae, "best_loss")
+        self.assertNotEqual(self.gp_vae.best_loss, float("inf"))
+
+        assert (
+            hasattr(self.gp_vae, "best_model_dict")
+            and self.gp_vae.best_model_dict is not None
+        )
+
+    @pytest.mark.xdist_group(name="imputation-GPVAE")
+    def test_3_saving_path(self):
+        # whether the root saving dir exists, which should be created by save_log_into_tb_file
+        assert os.path.exists(
+            self.saving_path
+        ), f"file {self.saving_path} does not exist"
+
+        # check if the tensorboard file and model checkpoints exist
+        check_tb_and_model_checkpoints_existence(self.gp_vae)
+
+        # save the trained model into file, and check if the path exists
+        self.gp_vae.save_model(
+            saving_dir=self.saving_path, file_name=self.model_save_name
+        )
+
+        # test loading the saved model, not necessary, but need to test
+        saved_model_path = os.path.join(self.saving_path, self.model_save_name)
+        self.gp_vae.load_model(saved_model_path)
+
+
 class TestBRITS(unittest.TestCase):
     logger.info("Running tests for an imputation model BRITS...")
 
@@ -210,7 +357,7 @@ class TestBRITS(unittest.TestCase):
         DATA["n_features"],
         256,
         epochs=EPOCH,
-        saving_path=f"{RESULT_SAVING_DIR_FOR_IMPUTATION}/BRITS",
+        saving_path=saving_path,
         optimizer=optimizer,
     )
 
@@ -279,7 +426,7 @@ class TestMRNN(unittest.TestCase):
         DATA["n_features"],
         256,
         epochs=EPOCH,
-        saving_path=f"{RESULT_SAVING_DIR_FOR_IMPUTATION}/MRNN",
+        saving_path=saving_path,
         optimizer=optimizer,
     )
 

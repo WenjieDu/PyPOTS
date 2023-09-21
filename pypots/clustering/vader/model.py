@@ -184,7 +184,6 @@ class _VaDER(nn.Module):
         ) = self.get_results(X, missing_mask)
 
         if not training and not pretrain:
-
             results = {
                 "mu_tilde": mu_tilde,
                 "mu": mu_c,
@@ -403,7 +402,6 @@ class VaDER(BaseNNClusterer):
         training_loader: DataLoader,
         val_loader: DataLoader = None,
     ) -> None:
-
         # each training starts from the very beginning, so reset the loss and model dict here
         self.best_loss = float("inf")
         self.best_model_dict = None
