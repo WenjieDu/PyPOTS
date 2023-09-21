@@ -88,15 +88,15 @@ class DatasetForSAITS(BaseDataset):
             indicating_mask : tensor.
                 The mask indicates artificially missing values in X.
         """
-        X = self.X[idx]
+        X = self.X[idx].to(torch.float32)
         X_intact, X, missing_mask, indicating_mask = mcar(X, rate=self.rate)
 
         sample = [
             torch.tensor(idx),
-            X_intact.to(torch.float32),
-            X.to(torch.float32),
-            missing_mask.to(torch.float32),
-            indicating_mask.to(torch.float32),
+            X_intact,
+            X,
+            missing_mask,
+            indicating_mask,
         ]
 
         if self.y is not None and self.return_labels:
@@ -122,15 +122,15 @@ class DatasetForSAITS(BaseDataset):
         if self.file_handle is None:
             self.file_handle = self._open_file_handle()
 
-        X = torch.from_numpy(self.file_handle["X"][idx])
+        X = torch.from_numpy(self.file_handle["X"][idx]).to(torch.float32)
         X_intact, X, missing_mask, indicating_mask = mcar(X, rate=self.rate)
 
         sample = [
             torch.tensor(idx),
-            X_intact.to(torch.float32),
-            X.to(torch.float32),
-            missing_mask.to(torch.float32),
-            indicating_mask.to(torch.float32),
+            X_intact,
+            X,
+            missing_mask,
+            indicating_mask,
         ]
 
         # if the dataset has labels and is for training, then fetch it from the file

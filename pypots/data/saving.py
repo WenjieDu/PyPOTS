@@ -14,7 +14,11 @@ from pypots.utils.file import create_dir_if_not_exist
 from pypots.utils.logging import logger
 
 
-def save_dict_into_h5(data_dict: dict, saving_dir: str) -> None:
+def save_dict_into_h5(
+    data_dict: dict,
+    saving_dir: str,
+    saving_name: str = "datasets.h5",
+) -> None:
     """Save the given data (in a dictionary) into the given h5 file.
 
     Parameters
@@ -24,6 +28,9 @@ def save_dict_into_h5(data_dict: dict, saving_dir: str) -> None:
 
     saving_dir : str,
         The h5 file to save the data.
+
+    saving_name : str, optional (default="datasets.h5")
+        The final name of the saved h5 file.
 
     """
 
@@ -36,7 +43,7 @@ def save_dict_into_h5(data_dict: dict, saving_dir: str) -> None:
             handle.create_dataset(name, data=data)
 
     create_dir_if_not_exist(saving_dir)
-    saving_path = os.path.join(saving_dir, "datasets.h5")
+    saving_path = os.path.join(saving_dir, saving_name)
     with h5py.File(saving_path, "w") as hf:
         for k, v in data_dict.items():
             save_set(hf, k, v)
