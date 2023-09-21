@@ -38,8 +38,7 @@ class TestBTTF(unittest.TestCase):
     @pytest.mark.xdist_group(name="forecasting-bttf")
     def test_0_forecasting(self):
         predictions = self.bttf.forecast(TEST_SET)
-        logger.info(f"prediction shape: {predictions.shape}")
-        mae = cal_mae(predictions, TEST_SET_INTACT)
+        mae = cal_mae(predictions, TEST_SET_INTACT["X"][:, -N_PRED_STEP:])
         logger.info(f"prediction MAE: {mae}")
 
 
