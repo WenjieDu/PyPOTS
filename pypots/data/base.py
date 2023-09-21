@@ -204,13 +204,13 @@ class BaseDataset(Dataset):
             The collated data sample, a list including all necessary sample info.
         """
 
-        X = self.X[idx]
+        X = self.X[idx].to(torch.float32)
         missing_mask = ~torch.isnan(X)
         X = torch.nan_to_num(X)
         sample = [
             torch.tensor(idx),
-            X.to(torch.float32),
-            missing_mask.to(torch.float32),
+            X,
+            missing_mask,
         ]
 
         if self.y is not None and self.return_labels:
@@ -279,13 +279,13 @@ class BaseDataset(Dataset):
         if self.file_handle is None:
             self.file_handle = self._open_file_handle()
 
-        X = torch.from_numpy(self.file_handle["X"][idx])
+        X = torch.from_numpy(self.file_handle["X"][idx]).to(torch.float32)
         missing_mask = ~torch.isnan(X)
         X = torch.nan_to_num(X)
         sample = [
             torch.tensor(idx),
-            X.to(torch.float32),
-            missing_mask.to(torch.float32),
+            X,
+            missing_mask,
         ]
 
         # if the dataset has labels and is for training, then fetch it from the file

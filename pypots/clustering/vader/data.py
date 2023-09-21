@@ -6,12 +6,12 @@ Dataset class for model GRU-D.
 # License: GLP-v3
 
 
-from typing import Union
+from typing import Union, Iterable
 
-from ..crli.data import DatasetForCRLI
+from ...data.base import BaseDataset
 
 
-class DatasetForVaDER(DatasetForCRLI):
+class DatasetForVaDER(BaseDataset):
     """Dataset class for model VaDER.
 
     Parameters
@@ -45,3 +45,9 @@ class DatasetForVaDER(DatasetForCRLI):
         file_type: str = "h5py",
     ):
         super().__init__(data, return_labels, file_type)
+
+    def _fetch_data_from_array(self, idx: int) -> Iterable:
+        return super()._fetch_data_from_array(idx)
+
+    def _fetch_data_from_file(self, idx: int) -> Iterable:
+        return super()._fetch_data_from_file(idx)

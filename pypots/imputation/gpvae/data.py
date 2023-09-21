@@ -10,7 +10,6 @@ from typing import Union, Iterable
 import torch
 
 from ...data.base import BaseDataset
-from ...data.utils import torch_parse_delta
 
 
 class DatasetForGPVAE(BaseDataset):
@@ -51,7 +50,7 @@ class DatasetForGPVAE(BaseDataset):
         if not isinstance(self.data, str):
             # calculate all delta here.
             missing_mask = (~torch.isnan(self.X)).type(torch.float32)
-            X = torch.nan_to_num(self.X)
+            X = torch.nan_to_num(self.X).to(torch.float32)
 
             self.processed_data = {
                 "X": X,
@@ -89,8 +88,8 @@ class DatasetForGPVAE(BaseDataset):
         sample = [
             torch.tensor(idx),
             # for forward
-            self.processed_data["X"][idx].to(torch.float32),
-            self.processed_data["missing_mask"][idx].to(torch.float32),
+            self.processed_data["X"][idx],
+            self.processed_data["missing_mask"][idx],
         ]
 
         if self.y is not None and self.return_labels:
@@ -116,8 +115,8 @@ class DatasetForGPVAE(BaseDataset):
         if self.file_handle is None:
             self.file_handle = self._open_file_handle()
 
-        X = torch.from_numpy(self.file_handle["X"][idx])
-        missing_mask = (~torch.isnan(X)).to(torch.float32)
+        X = torch.from_numpy(self.file_handle["X"][idx]).to(torch.float32)
+        missing_mask = ~torch.isnan(X)
         X = torch.nan_to_num(X)
 
         sample = [
