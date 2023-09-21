@@ -1,26 +1,19 @@
 """
 The implementation of GP-VAE for the partially-observed time-series imputation task.
 
-Refer to the paper Fortuin V, Baranchuk D, Rätsch G, et al. Gp-vae: Deep probabilistic time series imputation[C]//International conference on artificial intelligence and statistics. PMLR, 2020: 1651-1661.
+Refer to the paper Fortuin V, Baranchuk D, Rätsch G, et al.
+GP-VAE: Deep probabilistic time series imputation. AISTATS. PMLR, 2020: 1651-1661.
 
-Notes
------
-Pytorch implementation of the code from https://github.com/ratschlab/GP-VAE. 
 
 """
 
-# Created by Jun Wang <jwangfx@connect.ust.hk>
+# Created by Jun Wang <jwangfx@connect.ust.hk> and Wenjie Du <wenjay.du@gmail.com>
 # License: GPL-v3
 
-from typing import Tuple, Union, Optional
-
-import h5py
 import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torch.utils.data import DataLoader
-from torch.distributions.multivariate_normal import MultivariateNormal
 
 
 def rbf_kernel(T, length_scale):
@@ -84,7 +77,7 @@ def make_nn(input_size, output_size, hidden_sizes):
 
     hidden_sizes : tuple,
         the tuple of hidden layer sizes, and the tuple length sets the number of hidden layers
-    
+
     Returns
     -------
     output: tensor
@@ -106,12 +99,8 @@ def make_nn(input_size, output_size, hidden_sizes):
 
 
 class CustomConv1d(torch.nn.Conv1d):
-    def __init(self, in_channels, out_channels, kernal_size, padding):
-        super(CustomConv1d, self).__init__()
-        self.in_channels = in_channels
-        self.out_channels = out_channels
-        self.kernel_size = kernal_size
-        self.padding = padding
+    def __init(self, in_channels, out_channels, kernel_size, padding):
+        super().__init__(in_channels, out_channels, kernel_size, padding)
 
     def forward(self, x):
         if len(x.shape) > 2:
@@ -129,7 +118,7 @@ class CustomConv1d(torch.nn.Conv1d):
 
 def make_cnn(input_size, output_size, hidden_sizes, kernel_size=3):
     """This function used to construct neural network consisting of
-       one 1d-convolutional layer that utilizes temporal dependences,
+       one 1d-convolutional layer that utilizes temporal dependencies,
        fully connected network
 
     Parameters
@@ -143,7 +132,7 @@ def make_cnn(input_size, output_size, hidden_sizes, kernel_size=3):
     hidden_sizes : tuple,
         the tuple of hidden layer sizes, and the tuple length sets the number of hidden layers,
 
-    kernel_size : int 
+    kernel_size : int
         kernel size for convolutional layer
 
     Returns
@@ -170,7 +159,8 @@ def make_cnn(input_size, output_size, hidden_sizes, kernel_size=3):
 
 class Encoder(nn.Module):
     def __init__(self, input_size, z_size, hidden_sizes=(128, 128), window_size=24):
-        """This moudule is an encoder with 1d-convolutional network and multivariate Normal posterior used by GP-VAE with proposed banded covariance matrix
+        """This module is an encoder with 1d-convolutional network and multivariate Normal posterior used by GP-VAE with
+        proposed banded covariance matrix
 
         Parameters
         ----------
@@ -179,21 +169,21 @@ class Encoder(nn.Module):
 
         z_size : int,
             the feature dimension of the output latent embedding
-        
+
         hidden_sizes : tuple,
             the tuple of the hidden layer sizes, and the tuple length sets the number of hidden layers
 
         window_size : int
             the kernel size for the Conv1D layer
         """
-        super(Encoder, self).__init__()
+        super().__init__()
         self.z_size = int(z_size)
         self.input_size = input_size
         self.net, self.mu_layer, self.logvar_layer = make_cnn(
             input_size, (z_size, z_size * 2), hidden_sizes, window_size
         )
 
-    def __call__(self, x):
+    def forward(self, x):
         mapped = self.net(x)
         batch_size = mapped.size(0)
         time_length = mapped.size(1)
@@ -245,28 +235,27 @@ class Encoder(nn.Module):
         cov_tril_lower = torch.transpose(cov_tril, num_dim - 1, num_dim - 2)
 
         z_dist = torch.distributions.MultivariateNormal(
-            loc=mapped_mean, scale_tril=(cov_tril_lower)
+            loc=mapped_mean, scale_tril=cov_tril_lower
         )
         return z_dist
 
 
 class Decoder(nn.Module):
     def __init__(self, input_size, output_size, hidden_sizes=(256, 256)):
-        """This module is a decoder with Gaussian output distribution
+        """This module is a decoder with Gaussian output distribution.
 
         Parameters
         ----------
         output_size : int,
             the feature dimension of the output
 
-        idden_sizes: tuple
+        hidden_sizes: tuple
             the tuple of hidden layer sizes, and the tuple length sets the number of hidden layers.
         """
-        super(Decoder, self).__init__()
-        self.output_size = int(output_size)
+        super().__init__()
         self.net = make_nn(input_size, output_size, hidden_sizes)
 
-    def __call__(self, x):
+    def forward(self, x):
         mu = self.net(x)
         var = torch.ones_like(mu)
         return torch.distributions.Normal(mu, var)
