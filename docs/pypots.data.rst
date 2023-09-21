@@ -10,6 +10,15 @@ pypots.data.base module
    :show-inheritance:
    :inherited-members:
 
+pypots.data.saving module
+-----------------------------
+
+.. automodule:: pypots.data.saving
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+
 pypots.data.generating module
 -----------------------------
 
