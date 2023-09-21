@@ -1,5 +1,5 @@
 """
-Test cases for forecasting models.
+Test cases for BTTF forecasting model.
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
@@ -12,11 +12,12 @@ import pytest
 from pypots.forecasting import BTTF
 from pypots.utils.logging import logger
 from pypots.utils.metrics import cal_mae
+from tests.forecasting.config import (
+    TEST_SET,
+    TEST_SET_INTACT,
+    N_PRED_STEP,
+)
 from tests.global_test_config import DATA
-
-EPOCHS = 5
-N_PRED_STEP = 4
-TEST_SET = {"X": DATA["test_X"][:, :-N_PRED_STEP]}
 
 
 class TestBTTF(unittest.TestCase):
@@ -38,7 +39,7 @@ class TestBTTF(unittest.TestCase):
     def test_0_forecasting(self):
         predictions = self.bttf.forecast(TEST_SET)
         logger.info(f"prediction shape: {predictions.shape}")
-        mae = cal_mae(predictions, DATA["test_X_intact"][:, -N_PRED_STEP:])
+        mae = cal_mae(predictions, TEST_SET_INTACT)
         logger.info(f"prediction MAE: {mae}")
 
 
