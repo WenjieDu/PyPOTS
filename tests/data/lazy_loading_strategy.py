@@ -8,29 +8,26 @@ Test cases for data classes with the lazy-loading strategy of reading from files
 import os
 import unittest
 
-import h5py
 import pytest
 
 from pypots.classification import BRITS, GRUD
+from pypots.data.saving import save_dict_into_h5
 from pypots.imputation import SAITS
-from tests.global_test_config import DATA, DATA_SAVING_DIR
 from pypots.utils.logging import logger
+from tests.global_test_config import DATA, DATA_SAVING_DIR
 
-
-TRAIN_SET = f"{DATA_SAVING_DIR}/train_set.h5"
-VAL_SET = f"{DATA_SAVING_DIR}/val_set.h5"
-TEST_SET = f"{DATA_SAVING_DIR}/test_set.h5"
-IMPUTATION_TRAIN_SET = f"{DATA_SAVING_DIR}/imputation_train_set.h5"
-IMPUTATION_VAL_SET = f"{DATA_SAVING_DIR}/imputation_val_set.h5"
+TRAIN_SET_NAME = "train_set.h5"
+TRAIN_SET_PATH = f"{DATA_SAVING_DIR}/{TRAIN_SET_NAME}"
+VAL_SET_NAME = "val_set.h5"
+VAL_SET_PATH = f"{DATA_SAVING_DIR}/{VAL_SET_NAME}"
+TEST_SET_NAME = "test_set.h5"
+TEST_SET_PATH = f"{DATA_SAVING_DIR}/{TEST_SET_NAME}"
+IMPUTATION_TRAIN_SET_NAME = "imputation_train_set.h5"
+IMPUTATION_TRAIN_SET_PATH = f"{DATA_SAVING_DIR}/{IMPUTATION_TRAIN_SET_NAME}"
+IMPUTATION_VAL_SET_NAME = "imputation_val_set.h5"
+IMPUTATION_VAL_SET_PATH = f"{DATA_SAVING_DIR}/{IMPUTATION_VAL_SET_NAME}"
 
 EPOCHS = 1
-
-
-def save_data_set_into_h5(data, path):
-    with h5py.File(path, "w") as hf:
-        for i in data.keys():
-            tp = int if i == "y" else "float32"
-            hf.create_dataset(i, data=data[i].astype(tp))
 
 
 class TestLazyLoadingClasses(unittest.TestCase):
@@ -73,53 +70,63 @@ class TestLazyLoadingClasses(unittest.TestCase):
         # create the dir for saving files
         os.makedirs(DATA_SAVING_DIR, exist_ok=True)
 
-        if not os.path.exists(TRAIN_SET):
-            save_data_set_into_h5(
-                {"X": DATA["train_X"], "y": DATA["train_y"].astype(int)}, TRAIN_SET
+        if not os.path.exists(TRAIN_SET_PATH):
+            save_dict_into_h5(
+                {"X": DATA["train_X"], "y": DATA["train_y"].astype(float)},
+                DATA_SAVING_DIR,
+                TRAIN_SET_NAME,
             )
 
-        if not os.path.exists(VAL_SET):
-            save_data_set_into_h5(
-                {"X": DATA["val_X"], "y": DATA["val_y"].astype(int)}, VAL_SET
+        if not os.path.exists(VAL_SET_PATH):
+            save_dict_into_h5(
+                {"X": DATA["val_X"], "y": DATA["val_y"].astype(float)},
+                DATA_SAVING_DIR,
+                VAL_SET_NAME,
             )
 
-        if not os.path.exists(IMPUTATION_TRAIN_SET):
-            save_data_set_into_h5({"X": DATA["train_X"]}, IMPUTATION_TRAIN_SET)
+        if not os.path.exists(IMPUTATION_TRAIN_SET_PATH):
+            save_dict_into_h5(
+                {"X": DATA["train_X"]}, DATA_SAVING_DIR, IMPUTATION_TRAIN_SET_NAME
+            )
 
-        if not os.path.exists(IMPUTATION_VAL_SET):
-            save_data_set_into_h5(
+        if not os.path.exists(IMPUTATION_VAL_SET_PATH):
+            save_dict_into_h5(
                 {
                     "X": DATA["val_X"],
                     "X_intact": DATA["val_X_intact"],
                     "indicating_mask": DATA["val_X_indicating_mask"],
                 },
-                IMPUTATION_VAL_SET,
+                DATA_SAVING_DIR,
+                IMPUTATION_VAL_SET_NAME,
             )
 
-        if not os.path.exists(TEST_SET):
-            save_data_set_into_h5(
+        if not os.path.exists(TEST_SET_PATH):
+            save_dict_into_h5(
                 {
                     "X": DATA["test_X"],
                     "X_intact": DATA["test_X_intact"],
                     "indicating_mask": DATA["test_X_indicating_mask"],
                 },
-                TEST_SET,
+                DATA_SAVING_DIR,
+                TEST_SET_NAME,
             )
 
     @pytest.mark.xdist_group(name="data-lazy-loading")
     def test_1_DatasetForMIT_BaseDataset(self):
-        self.saits.fit(train_set=IMPUTATION_TRAIN_SET, val_set=IMPUTATION_VAL_SET)
-        _ = self.saits.impute(X=TEST_SET)
+        self.saits.fit(
+            train_set=IMPUTATION_TRAIN_SET_PATH, val_set=IMPUTATION_VAL_SET_PATH
+        )
+        _ = self.saits.impute(X=TEST_SET_PATH)
 
     @pytest.mark.xdist_group(name="data-lazy-loading")
     def test_2_DatasetForBRITS(self):
-        self.brits.fit(train_set=TRAIN_SET, val_set=VAL_SET)
-        _ = self.brits.classify(X=TEST_SET)
+        self.brits.fit(train_set=TRAIN_SET_PATH, val_set=VAL_SET_PATH)
+        _ = self.brits.classify(X=TEST_SET_PATH)
 
     @pytest.mark.xdist_group(name="data-lazy-loading")
     def test_3_DatasetForGRUD(self):
-        self.grud.fit(train_set=TRAIN_SET, val_set=VAL_SET)
-        _ = self.grud.classify(X=TEST_SET)
+        self.grud.fit(train_set=TRAIN_SET_PATH, val_set=VAL_SET_PATH)
+        _ = self.grud.classify(X=TEST_SET_PATH)
 
 
 if __name__ == "__main__":
