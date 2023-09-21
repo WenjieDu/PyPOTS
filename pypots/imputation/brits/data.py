@@ -59,14 +59,14 @@ class DatasetForBRITS(BaseDataset):
 
             self.processed_data = {
                 "forward": {
-                    "X": forward_X,
-                    "missing_mask": forward_missing_mask,
-                    "delta": forward_delta,
+                    "X": forward_X.to(torch.float32),
+                    "missing_mask": forward_missing_mask.to(torch.float32),
+                    "delta": forward_delta.to(torch.float32),
                 },
                 "backward": {
-                    "X": backward_X,
-                    "missing_mask": backward_missing_mask,
-                    "delta": backward_delta,
+                    "X": backward_X.to(torch.float32),
+                    "missing_mask": backward_missing_mask.to(torch.float32),
+                    "delta": backward_delta.to(torch.float32),
                 },
             }
 
@@ -101,13 +101,13 @@ class DatasetForBRITS(BaseDataset):
         sample = [
             torch.tensor(idx),
             # for forward
-            self.processed_data["forward"]["X"][idx].to(torch.float32),
-            self.processed_data["forward"]["missing_mask"][idx].to(torch.float32),
-            self.processed_data["forward"]["delta"][idx].to(torch.float32),
+            self.processed_data["forward"]["X"][idx],
+            self.processed_data["forward"]["missing_mask"][idx],
+            self.processed_data["forward"]["delta"][idx],
             # for backward
-            self.processed_data["backward"]["X"][idx].to(torch.float32),
-            self.processed_data["backward"]["missing_mask"][idx].to(torch.float32),
-            self.processed_data["backward"]["delta"][idx].to(torch.float32),
+            self.processed_data["backward"]["X"][idx],
+            self.processed_data["backward"]["missing_mask"][idx],
+            self.processed_data["backward"]["delta"][idx],
         ]
 
         if self.y is not None and self.return_labels:
@@ -133,7 +133,7 @@ class DatasetForBRITS(BaseDataset):
         if self.file_handle is None:
             self.file_handle = self._open_file_handle()
 
-        X = torch.from_numpy(self.file_handle["X"][idx])
+        X = torch.from_numpy(self.file_handle["X"][idx]).to(torch.float32)
         missing_mask = (~torch.isnan(X)).to(torch.float32)
         X = torch.nan_to_num(X)
 

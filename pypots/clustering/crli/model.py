@@ -226,7 +226,6 @@ class CRLI(BaseNNClusterer):
         saving_path: Optional[str] = None,
         model_saving_strategy: Optional[str] = "best",
     ):
-
         super().__init__(
             n_clusters,
             batch_size,

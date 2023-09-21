@@ -123,7 +123,7 @@ class DatasetForGRUD(BaseDataset):
         if self.file_handle is None:
             self.file_handle = self._open_file_handle()
 
-        X = torch.from_numpy(self.file_handle["X"][idx])
+        X = torch.from_numpy(self.file_handle["X"][idx]).to(torch.float32)
         missing_mask = (~torch.isnan(X)).to(torch.float32)
         X_filledLOCF = self.locf._locf_torch(X.unsqueeze(dim=0)).squeeze()
         X = torch.nan_to_num(X)

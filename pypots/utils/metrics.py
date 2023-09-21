@@ -574,73 +574,90 @@ def cal_cluster_purity(
     return cluster_purity
 
 
-def cal_silhouette(
-    latent_rep: np.ndarray,
-    class_predictions: np.ndarray
-) -> float:
+def cal_silhouette(X: np.ndarray, predicted_labels: np.ndarray) -> float:
     """Compute the mean Silhouette Coefficient of all samples.
 
     Parameters
     ----------
-    latent_rep :
-        Latent representation learned by a clusterer.
+    X : array-like of shape (n_samples_a, n_features)
+        A feature array, or learned latent representation, that can be used for clustering.
 
-    class_predictions :
-        Clustering results returned by a clusterer.
+    predicted_labels : array-like of shape (n_samples)
+        Predicted labels for each sample.
 
     Returns
     -------
-    silhouette :
+    silhouette_score : float
         Mean Silhouette Coefficient for all samples.
 
     """
-    silhouette = metrics.silhouette_score(latent_rep, class_predictions)
-    return silhouette
+    silhouette_score = metrics.silhouette_score(X, predicted_labels)
+    return silhouette_score
 
 
-def cal_chs(
-    latent_rep: np.ndarray,
-    class_predictions: np.ndarray
-) -> float:
+def cal_chs(X: np.ndarray, predicted_labels: np.ndarray) -> float:
     """Compute the Calinski and Harabasz score (also known as the Variance Ratio Criterion).
 
-    Parameters
-    ----------
-    latent_rep :
-        Latent representation learned by a clusterer.
+    X : array-like of shape (n_samples_a, n_features)
+        A feature array, or learned latent representation, that can be used for clustering.
 
-    class_predictions :
-        Clustering results returned by a clusterer.
-
+    predicted_labels : array-like of shape (n_samples)
+        Predicted labels for each sample.
     Returns
     -------
-    chs :
+    calinski_harabasz_score : float
         The resulting Calinski-Harabasz score.
 
     """
-    chs = metrics.calinski_harabasz_score(latent_rep, class_predictions)
-    return chs
+    calinski_harabasz_score = metrics.calinski_harabasz_score(X, predicted_labels)
+    return calinski_harabasz_score
 
 
-def cal_dbs(
-    latent_rep: np.ndarray,
-    class_predictions: np.ndarray
-) -> float:
+def cal_dbs(X: np.ndarray, predicted_labels: np.ndarray) -> float:
     """Compute the Davies-Bouldin score.
 
     Parameters
     ----------
-    latent_rep :
-        Latent representation learned by a clusterer.
+    X : array-like of shape (n_samples_a, n_features)
+        A feature array, or learned latent representation, that can be used for clustering.
 
-    class_predictions :
-        Clustering results returned by a clusterer.
+    predicted_labels : array-like of shape (n_samples)
+        Predicted labels for each sample.
 
     Returns
     -------
-    dbs :
+    davies_bouldin_score : float
         The resulting Davies-Bouldin score.
 
     """
-    dbs = metrics.davies_bouldin_score(latent_rep, class_predictions)
-    return dbs
+    davies_bouldin_score = metrics.davies_bouldin_score(X, predicted_labels)
+    return davies_bouldin_score
+
+
+def cal_internal_cluster_validation_metrics(X, predicted_labels):
+    """Computer all internal cluster validation metrics available in PyPOTS and return as a dictionary.
+
+    Parameters
+    ----------
+    X : array-like of shape (n_samples_a, n_features)
+        A feature array, or learned latent representation, that can be used for clustering.
+
+    predicted_labels : array-like of shape (n_samples)
+        Predicted labels for each sample.
+
+    Returns
+    -------
+    internal_cluster_validation_metrics : dict
+        A dictionary contains all internal cluster validation metrics available in PyPOTS.
+    """
+
+    silhouette_score = cal_silhouette(X, predicted_labels)
+    calinski_harabasz_score = cal_chs(X, predicted_labels)
+    davies_bouldin_score = cal_dbs(X, predicted_labels)
+
+    internal_cluster_validation_metrics = {
+        "silhouette_score": silhouette_score,
+        "calinski_harabasz_score": calinski_harabasz_score,
+        "davies_bouldin_score": davies_bouldin_score,
+    }
+    return internal_cluster_validation_metrics
