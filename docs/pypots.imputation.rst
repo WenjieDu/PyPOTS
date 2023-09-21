@@ -19,6 +19,24 @@ pypots.imputation.transformer module
    :show-inheritance:
    :inherited-members:
 
+pypots.imputation.usgan module
+------------------------------
+
+.. automodule:: pypots.imputation.usgan
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+
+pypots.imputation.gpvae module
+------------------------------
+
+.. automodule:: pypots.imputation.gpvae
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+
 pypots.imputation.brits module
 ------------------------------
 

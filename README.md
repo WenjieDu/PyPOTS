@@ -2,7 +2,8 @@
     <img src="https://pypots.com/figs/pypots_logos/PyPOTS_logo_FFBG.svg?sanitize=true" width="200" align="right">
 </a>
 
-## <p align="center">Welcome to PyPOTS</p>
+<h2 align="center">Welcome to PyPOTS</h2>
+
 **<p align="center">A Python Toolbox for Data Mining on Partially-Observed Time Series</p>**
 
 <p align="center">
@@ -161,6 +162,8 @@ PyPOTS supports imputation, classification, clustering, and forecasting tasks on
 |        **Type**        |  **Abbr.**  |                                                                    **Full name of the algorithm/model/paper**                                                                     | **Year** |
 |       Neural Net       |    SAITS    |                                                               Self-Attention-based Imputation for Time Series [^1]                                                                |   2023   |
 |       Neural Net       | Transformer | Attention is All you Need [^2];<br>Self-Attention-based Imputation for Time Series [^1];<br><sub>Note: proposed in [^2], and re-implemented as an imputation model in [^1].</sub> |   2017   |
+|       Neural Net       |   US-GAN    |                                                 Generative Semi-supervised Learning for Multivariate Time Series Imputation [^10]                                                 |   2021   |
+|       Neural Net       |   GP-VAE    |                                                              GP-VAE: Deep Probabilistic Time Series Imputation [^11]                                                              |   2020   |
 |       Neural Net       |    BRITS    |                                                              Bidirectional Recurrent Imputation for Time Series [^3]                                                              |   2018   |
 |       Neural Net       |    M-RNN    |                                                                  Multi-directional Recurrent Neural Network [^9]                                                                  |   2019   |
 |         Naive          |    LOCF     |                                                                         Last Observation Carried Forward                                                                          |    -     |
@@ -253,7 +256,7 @@ We care about the feedback from our users, so we're building PyPOTS community on
 If you have any suggestions or want to contribute ideas or share time-series related papers, join us and tell.
 PyPOTS community is open, transparent, and surely friendly. Let's work together to build and improve PyPOTS!
 
-
+[//]: # (Use APA reference style below)
 [^1]: Du, W., Cote, D., & Liu, Y. (2023). [SAITS: Self-Attention-based Imputation for Time Series](https://doi.org/10.1016/j.eswa.2023.119619). *Expert systems with applications*.
 [^2]: Vaswani, A., Shazeer, N.M., Parmar, N., Uszkoreit, J., Jones, L., Gomez, A.N., Kaiser, L., & Polosukhin, I. (2017). [Attention is All you Need](https://papers.nips.cc/paper/2017/hash/3f5ee243547dee91fbd053c1c4a845aa-Abstract.html). *NeurIPS 2017*.
 [^3]: Cao, W., Wang, D., Li, J., Zhou, H., Li, L., & Li, Y. (2018). [BRITS: Bidirectional Recurrent Imputation for Time Series](https://papers.nips.cc/paper/2018/hash/734e6bfcd358e25ac1db0a4241b95651-Abstract.html). *NeurIPS 2018*.
@@ -263,7 +266,8 @@ PyPOTS community is open, transparent, and surely friendly. Let's work together 
 [^7]: Jong, J.D., Emon, M.A., Wu, P., Karki, R., Sood, M., Godard, P., Ahmad, A., Vrooman, H.A., Hofmann-Apitius, M., & Fröhlich, H. (2019). [Deep learning for clustering of multivariate clinical patient trajectories with missing values](https://academic.oup.com/gigascience/article/8/11/giz134/5626377). *GigaScience*.
 [^8]: Chen, X., & Sun, L. (2021). [Bayesian Temporal Factorization for Multidimensional Time Series Prediction](https://arxiv.org/abs/1910.06366). *IEEE transactions on pattern analysis and machine intelligence*.
 [^9]: Yoon, J., Zame, W. R., & van der Schaar, M. (2019). [Estimating Missing Data in Temporal Data Streams Using Multi-Directional Recurrent Neural Networks](https://ieeexplore.ieee.org/document/8485748). *IEEE Transactions on Biomedical Engineering*.
-
+[^10]: Miao, X., Wu, Y., Wang, J., Gao, Y., Mao, X., & Yin, J. (2021). [Generative Semi-supervised Learning for Multivariate Time Series Imputation](https://ojs.aaai.org/index.php/AAAI/article/view/17086). *AAAI 2021*.
+[^11]: Fortuin, V., Baranchuk, D., Raetsch, G. & Mandt, S.. (2020). [GP-VAE: Deep Probabilistic Time Series Imputation](https://proceedings.mlr.press/v108/fortuin20a.html). *AISTATS 2020*.
 
 <details>
 <summary>🏠 Visits</summary>

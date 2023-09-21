@@ -244,7 +244,6 @@ class BaseNNClusterer(BaseNNModel):
         training_loader: DataLoader,
         val_loader: DataLoader = None,
     ) -> None:
-
         """
 
         Parameters

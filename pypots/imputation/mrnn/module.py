@@ -18,7 +18,7 @@ from ...imputation.brits.modules import FeatureRegression
 
 class FCN_Regression(nn.Module):
     def __init__(self, feature_num, rnn_hid_size):
-        super(FCN_Regression, self).__init__()
+        super().__init__()
         self.feat_reg = FeatureRegression(rnn_hid_size * 2)
         self.U = Parameter(torch.Tensor(feature_num, feature_num))
         self.V1 = Parameter(torch.Tensor(feature_num, feature_num))
