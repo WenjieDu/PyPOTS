@@ -68,7 +68,8 @@ jobs:
 
             - name: Test with pytest
               run: |
-                  coverage run --source=pypots -m pytest -rA tests/*/*
+                  rm -rf tests/__pycache__
+                  coverage run --source=pypots -m pytest -rA tests/*/* -n auto --dist=loadgroup
 
             - name: Generate the LCOV report
               run: |
