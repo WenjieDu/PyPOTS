@@ -22,6 +22,7 @@ from .utils import (
     pickle_load,
     pickle_dump,
 )
+from .saving import save_dict_into_h5
 
 __all__ = [
     # datasets
@@ -39,4 +40,6 @@ __all__ = [
     "mcar",
     "pickle_load",
     "pickle_dump",
+    # saving
+    "save_dict_into_h5",
 ]

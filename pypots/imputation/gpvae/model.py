@@ -1,19 +1,16 @@
 """
 The implementation of GP-VAE for the partially-observed time-series imputation task.
 
-Refer to the paper Fortuin V, Baranchuk D, Rätsch G, et al. Gp-vae: Deep probabilistic time series imputation[C]//International conference on artificial intelligence and statistics. PMLR, 2020: 1651-1661.
-
-Notes
------
-Pytorch implementation of the code from https://github.com/ratschlab/GP-VAE. 
+Refer to the paper Fortuin V, Baranchuk D, Rätsch G, et al.
+GP-VAE: Deep probabilistic time series imputation. AISTATS. PMLR, 2020: 1651-1661.
 
 """
 
-# Created by Jun Wang <jwangfx@connect.ust.hk>
+# Created by Jun Wang <jwangfx@connect.ust.hk> and Wenjie Du <wenjay.du@gmail.com>
 # License: GPL-v3
 
 
-from typing import Tuple, Union, Optional
+from typing import Union, Optional
 
 import h5py
 import numpy as np
@@ -21,76 +18,69 @@ import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
 
-from .modules import *
 from .data import DatasetForGPVAE
+from .modules import (
+    Encoder,
+    rbf_kernel,
+    diffusion_kernel,
+    matern_kernel,
+    cauchy_kernel,
+    Decoder,
+)
 from ..base import BaseNNImputer
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
-from ...utils.metrics import cal_mae
 
 
 class _GPVAE(nn.Module):
     """model GPVAE with Gaussian Process prior
 
-        Attributes
-        ----------
-        Encoder :
-            the encoder in GPVAE
+    Parameters
+    ----------
+    input_dim : int,
+        the feature dimension of the input
 
-        Decoder :
-            the decoder in GPVAE
+    time_length : int,
+        the length of each time series
 
-        Parameters
-        ----------
-        input_dim : int,
-            the feature dimension of the input
+    latent_dim : int,
+        the feature dimension of the latent embedding
 
-        time_length : int,
-            the length of each time series
+    encoder_sizes : tuple,
+        the tuple of the network size in encoder
 
-        latent_dim : int,
-            the feature dimension of the latent embedding
-        
-        device : str,
-            specify running the model on which device, CPU/GPU
+    decoder_sizes : tuple,
+        the tuple of the network size in decoder
 
-        encoder_sizes : tuple,
-            the tuple of the network size in encoder
+    beta : float,
+        the weight of the KL divergence
 
-        decoder_sizes : tuple,
-            the tuple of the network size in decoder
+    M : int,
+        the number of Monte Carlo samples for ELBO estimation
 
-        beta : float,
-            the weight of the KL divergence
+    K : int,
+        the number of importance weights for IWAE model
 
-        M : int,
-            the number of Monte Carlo samples for ELBO estimation
+    kernel : str,
+        the Gaussian Process kernel ["cauchy", "diffusion", "rbf", "matern"]
 
-        K : int,
-            the number of importance weights for IWAE model
+    sigma : float,
+        the scale parameter for a kernel function
 
-        kernel : str,
-            the Gaussial Process kernel ["cauchy", "diffusion", "rbf", "matern"]
+    length_scale : float,
+        the length scale parameter for a kernel function
 
-        sigma : float,
-            the scale parameter for a kernel function
+    kernel_scales : int,
+        the number of different length scales over latent space dimensions
+    """
 
-        length_scale : float,
-            the length scale parameter for a kernel function
-
-        kernel_scales : int,
-            the number of different length scales over latent space dimensions
-        """
     def __init__(
         self,
         input_dim,
         time_length,
         latent_dim,
-        device,
         encoder_sizes=(64, 64),
-        encoder=Encoder,
         decoder_sizes=(64, 64),
-        decoder=Decoder,
         beta=1,
         M=1,
         K=1,
@@ -98,27 +88,27 @@ class _GPVAE(nn.Module):
         sigma=1.0,
         length_scale=7.0,
         kernel_scales=1,
+        window_size=24,
     ):
-        super(_GPVAE, self).__init__()
+        super().__init__()
         self.kernel = kernel
         self.sigma = sigma
         self.length_scale = length_scale
         self.kernel_scales = kernel_scales
 
-        # Precomputed KL components for efficiency
-        self.pz_scale_inv = None
-        self.pz_scale_log_abs_determinant = None
-        self.prior = None
-
         self.input_dim = input_dim
         self.time_length = time_length
         self.latent_dim = latent_dim
         self.beta = beta
-        self.encoder = encoder(input_dim, latent_dim, encoder_sizes).to(device)
-        self.decoder = decoder(latent_dim, input_dim, decoder_sizes).to(device)
-        self.device = device
+        self.encoder = Encoder(input_dim, latent_dim, encoder_sizes, window_size)
+        self.decoder = Decoder(latent_dim, input_dim, decoder_sizes)
         self.M = M
         self.K = K
+
+        # Precomputed KL components for efficiency
+        self.prior = self._init_prior()
+        # self.pz_scale_inv = None
+        # self.pz_scale_log_abs_determinant = None
 
     def encode(self, x):
         return self.encoder(x)
@@ -130,19 +120,15 @@ class _GPVAE(nn.Module):
         assert num_dim > 2
         return self.decoder(torch.transpose(z, num_dim - 1, num_dim - 2))
 
-    def __call__(self, inputs):
-        return self.decoder(self.encode(inputs).sample()).sample()
-
     def forward(self, inputs, training=True):
-        x = inputs["forward"]["X"]
-        m_mask = inputs["forward"]["missing_mask"]
-        delta = inputs["forward"]["deltas"]
+        x = inputs["X"]
+        m_mask = inputs["missing_mask"]
         x = x.repeat(self.M * self.K, 1, 1)
         if m_mask is not None:
             m_mask = m_mask.repeat(self.M * self.K, 1, 1)
             m_mask = m_mask.type(torch.bool)
 
-        pz = self._get_prior()
+        # pz = self.prior()
         qz_x = self.encode(x)
         z = qz_x.rsample()
         px_z = self.decode(z)
@@ -154,7 +140,7 @@ class _GPVAE(nn.Module):
         nll = nll.sum(dim=(1, 2))
 
         if self.K > 1:
-            kl = qz_x.log_prob(z) - pz.log_prob(z)
+            kl = qz_x.log_prob(z) - self.prior.log_prob(z)
             kl = torch.where(torch.isfinite(kl), kl, torch.zeros_like(kl))
             kl = kl.sum(1)
 
@@ -164,7 +150,7 @@ class _GPVAE(nn.Module):
             elbo = torch.logsumexp(weights, dim=1)
             elbo = elbo.mean()
         else:
-            kl = self.kl_divergence(qz_x, pz)
+            kl = self.kl_divergence(qz_x, self.prior)
             kl = torch.where(torch.isfinite(kl), kl, torch.zeros_like(kl))
             kl = kl.sum(1)
 
@@ -185,53 +171,54 @@ class _GPVAE(nn.Module):
         }
         return results
 
-    def kl_divergence(self, a, b):
+    @staticmethod
+    def kl_divergence(a, b):
+        # TODO: different from the author's implementation
         return torch.distributions.kl.kl_divergence(a, b)
 
-    def _get_prior(self):
-        if self.prior is None:
-            # Compute kernel matrices for each latent dimension
-            kernel_matrices = []
-            for i in range(self.kernel_scales):
-                if self.kernel == "rbf":
-                    kernel_matrices.append(
-                        rbf_kernel(self.time_length, self.length_scale / 2**i)
-                    )
-                elif self.kernel == "diffusion":
-                    kernel_matrices.append(
-                        diffusion_kernel(self.time_length, self.length_scale / 2**i)
-                    )
-                elif self.kernel == "matern":
-                    kernel_matrices.append(
-                        matern_kernel(self.time_length, self.length_scale / 2**i)
-                    )
-                elif self.kernel == "cauchy":
-                    kernel_matrices.append(
-                        cauchy_kernel(
-                            self.time_length, self.sigma, self.length_scale / 2**i
-                        )
-                    )
-
-            # Combine kernel matrices for each latent dimension
-            tiled_matrices = []
-            total = 0
-            for i in range(self.kernel_scales):
-                if i == self.kernel_scales - 1:
-                    multiplier = self.latent_dim - total
-                else:
-                    multiplier = int(np.ceil(self.latent_dim / self.kernel_scales))
-                    total += multiplier
-                tiled_matrices.append(
-                    torch.unsqueeze(kernel_matrices[i], 0).repeat(multiplier, 1, 1)
+    def _init_prior(self):
+        # Compute kernel matrices for each latent dimension
+        kernel_matrices = []
+        for i in range(self.kernel_scales):
+            if self.kernel == "rbf":
+                kernel_matrices.append(
+                    rbf_kernel(self.time_length, self.length_scale / 2**i)
                 )
-            kernel_matrix_tiled = torch.cat(tiled_matrices)
-            assert len(kernel_matrix_tiled) == self.latent_dim
-            self.prior = torch.distributions.MultivariateNormal(
-                loc=torch.zeros(self.latent_dim, self.time_length, device=self.device),
-                covariance_matrix=kernel_matrix_tiled.to(self.device),
-            )
+            elif self.kernel == "diffusion":
+                kernel_matrices.append(
+                    diffusion_kernel(self.time_length, self.length_scale / 2**i)
+                )
+            elif self.kernel == "matern":
+                kernel_matrices.append(
+                    matern_kernel(self.time_length, self.length_scale / 2**i)
+                )
+            elif self.kernel == "cauchy":
+                kernel_matrices.append(
+                    cauchy_kernel(
+                        self.time_length, self.sigma, self.length_scale / 2**i
+                    )
+                )
 
-        return self.prior
+        # Combine kernel matrices for each latent dimension
+        tiled_matrices = []
+        total = 0
+        for i in range(self.kernel_scales):
+            if i == self.kernel_scales - 1:
+                multiplier = self.latent_dim - total
+            else:
+                multiplier = int(np.ceil(self.latent_dim / self.kernel_scales))
+                total += multiplier
+            tiled_matrices.append(
+                torch.unsqueeze(kernel_matrices[i], 0).repeat(multiplier, 1, 1)
+            )
+        kernel_matrix_tiled = torch.cat(tiled_matrices)
+        assert len(kernel_matrix_tiled) == self.latent_dim
+        prior = torch.distributions.MultivariateNormal(
+            loc=torch.zeros(self.latent_dim, self.time_length),
+            covariance_matrix=kernel_matrix_tiled,
+        )
+
+        return prior
 
 
 class GPVAE(BaseNNImputer):
@@ -239,9 +226,6 @@ class GPVAE(BaseNNImputer):
 
     Parameters
     ----------
-    latent_dim :
-        The size of the latent variable.
-
     beta:
         The weight of KL divergence in EBLO.
 
@@ -310,6 +294,7 @@ class GPVAE(BaseNNImputer):
         sigma: float = 1.0,
         length_scale: float = 7.0,
         kernel_scales: int = 1,
+        window_size: int = 3,
         batch_size: int = 32,
         epochs: int = 100,
         patience: int = None,
@@ -342,7 +327,6 @@ class GPVAE(BaseNNImputer):
         self.length_scale = length_scale
         self.kernel_scales = kernel_scales
 
-
         # set up the model
         self.model = _GPVAE(
             input_dim=self.n_features,
@@ -357,7 +341,7 @@ class GPVAE(BaseNNImputer):
             sigma=self.sigma,
             length_scale=self.length_scale,
             kernel_scales=self.kernel_scales,
-            device=self.device,
+            window_size=window_size,
         )
         self._send_model_to_given_device()
         self._print_model_size()
@@ -372,17 +356,13 @@ class GPVAE(BaseNNImputer):
             indices,
             X,
             missing_mask,
-            deltas,
         ) = self._send_data_to_given_device(data)
 
         # assemble input data
         inputs = {
             "indices": indices,
-            "forward": {
-                "X": X,
-                "missing_mask": missing_mask,
-                "deltas": deltas,
-            },
+            "X": X,
+            "missing_mask": missing_mask,
         }
 
         return inputs
