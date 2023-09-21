@@ -80,7 +80,7 @@ class TestGPVAE(unittest.TestCase):
             and self.gp_vae.best_model_dict is not None
         )
 
-    @pytest.mark.xdist_group(name="imputation-GPVAE")
+    @pytest.mark.xdist_group(name="imputation-gpvae")
     def test_3_saving_path(self):
         # whether the root saving dir exists, which should be created by save_log_into_tb_file
         assert os.path.exists(

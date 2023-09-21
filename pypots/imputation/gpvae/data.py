@@ -116,7 +116,7 @@ class DatasetForGPVAE(BaseDataset):
             self.file_handle = self._open_file_handle()
 
         X = torch.from_numpy(self.file_handle["X"][idx]).to(torch.float32)
-        missing_mask = ~torch.isnan(X)
+        missing_mask = (~torch.isnan(X)).to(torch.float32)
         X = torch.nan_to_num(X)
 
         sample = [
