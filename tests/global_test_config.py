@@ -7,7 +7,10 @@ The global configurations for test cases.
 
 import os
 
+import torch
+
 from pypots.data.generating import gene_incomplete_random_walk_dataset
+from pypots.utils.logging import logger
 
 # Generate the unified data for testing and cache it first, DATA here is a singleton
 # Otherwise, file lock will cause bug if running test parallely with pytest-xdist.
@@ -18,6 +21,16 @@ DATA_SAVING_DIR = "h5data_for_tests"
 
 # tensorboard and model files saving directory
 RESULT_SAVING_DIR = "testing_results"
+
+
+# set DEVICES to None if no cuda device is available, to avoid initialization failed while importing test classes
+cuda_devices = [torch.device(i) for i in range(torch.cuda.device_count())]
+if len(cuda_devices) > 2:
+    logger.info("❗️Detected multiple cuda devices, using all of them to run testing.")
+    DEVICE = cuda_devices
+else:
+    # if having no multiple cuda devices, leave it as None to use the default device
+    DEVICE = None
 
 
 def check_tb_and_model_checkpoints_existence(model):

@@ -14,7 +14,8 @@ docs/_build
 .coverage
 .pytest_cache
 *__pycache__*
-*testing_results*
+*test*
 
 # ignore specific kinds of files like all PDFs
 *.pdf
+*.ipynb

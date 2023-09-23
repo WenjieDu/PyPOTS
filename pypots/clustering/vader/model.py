@@ -184,7 +184,6 @@ class _VaDER(nn.Module):
         ) = self.get_results(X, missing_mask)
 
         if not training and not pretrain:
-
             results = {
                 "mu_tilde": mu_tilde,
                 "mu": mu_c,
@@ -344,7 +343,7 @@ class VaDER(BaseNNClusterer):
         batch_size: int = 32,
         epochs: int = 100,
         pretrain_epochs: int = 10,
-        patience: int = None,
+        patience: Optional[int] = None,
         optimizer: Optional[Optimizer] = Adam(),
         num_workers: int = 0,
         device: Optional[Union[str, torch.device, list]] = None,
@@ -403,7 +402,6 @@ class VaDER(BaseNNClusterer):
         training_loader: DataLoader,
         val_loader: DataLoader = None,
     ) -> None:
-
         # each training starts from the very beginning, so reset the loss and model dict here
         self.best_loss = float("inf")
         self.best_model_dict = None
@@ -464,7 +462,7 @@ class VaDER(BaseNNClusterer):
                             "Now quit to let you check your model training.\n"
                             "Please raise an issue https://github.com/WenjieDu/PyPOTS/issues if you have questions."
                         )
-                        exit()
+                        raise RuntimeError
                     else:
                         reg_covar *= 2
 
