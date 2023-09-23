@@ -50,7 +50,9 @@ class _CRLI(nn.Module):
             n_steps, rnn_hidden_size * 2, n_features, decoder_fcn_output_dims, device
         )  # fully connected network is included in Decoder
         self.kmeans = KMeans(
-            n_clusters=n_clusters
+            n_clusters=n_clusters,
+            n_init=10,  # FutureWarning: The default value of `n_init` will change from 10 to 'auto' in 1.4. Set the
+            # value of `n_init` explicitly to suppress the warning.
         )  # TODO: implement KMean with torch for gpu acceleration
 
         self.n_clusters = n_clusters

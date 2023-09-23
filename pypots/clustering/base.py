@@ -166,7 +166,7 @@ class BaseNNClusterer(BaseNNModel):
         n_clusters: int,
         batch_size: int,
         epochs: int,
-        patience: int,
+        patience: Optional[int] = None,
         num_workers: int = 0,
         device: Optional[Union[str, torch.device, list]] = None,
         saving_path: str = None,
