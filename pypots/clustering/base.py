@@ -332,6 +332,7 @@ class BaseNNClusterer(BaseNNModel):
     def fit(
         self,
         train_set: Union[dict, str],
+        val_set: Union[dict, str],
         file_type: str = "h5py",
     ) -> None:
         """Train the cluster.

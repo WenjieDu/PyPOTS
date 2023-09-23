@@ -124,14 +124,11 @@ class Generator(nn.Module):
         f_outputs, f_final_hidden_state = self.f_rnn(inputs)
         b_outputs, b_final_hidden_state = self.b_rnn(inputs)
         b_outputs = reverse_tensor(b_outputs)  # reverse the output of the backward rnn
-        imputation = (f_outputs + b_outputs) / 2
-        imputed_X = inputs["X"] * inputs["missing_mask"] + imputation * (
-            1 - inputs["missing_mask"]
-        )
+        estimation = (f_outputs + b_outputs) / 2
         fb_final_hidden_states = torch.concat(
             [f_final_hidden_state, b_final_hidden_state], dim=-1
         )
-        return imputation, imputed_X, fb_final_hidden_states
+        return estimation, fb_final_hidden_states
 
 
 class Discriminator(nn.Module):

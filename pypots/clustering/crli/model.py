@@ -12,6 +12,7 @@ Learning Representations for Incomplete Time Series Clustering. AAAI 2021."
 
 from typing import Union, Optional
 
+import h5py
 import numpy as np
 import torch
 import torch.nn as nn
@@ -61,27 +62,10 @@ class _CRLI(nn.Module):
         self.lambda_kmeans = lambda_kmeans
         self.device = device
 
-    def cluster(self, inputs: dict, training_object: str = "generator") -> dict:
-        # concat final states from generator and input it as the initial state of decoder
-        imputation, imputed_X, generator_fb_hidden_states = self.generator(inputs)
-        inputs["imputation"] = imputation
-        inputs["imputed_X"] = imputed_X
-        inputs["generator_fb_hidden_states"] = generator_fb_hidden_states
-        if training_object == "discriminator":
-            discrimination = self.discriminator(inputs)
-            inputs["discrimination"] = discrimination
-            return inputs  # if only train discriminator, then no need to run decoder
-
-        reconstruction, fcn_latent = self.decoder(inputs)
-        inputs["reconstruction"] = reconstruction
-        inputs["fcn_latent"] = fcn_latent
-        return inputs
-
     def forward(
         self,
         inputs: dict,
         training_object: str = "generator",
-        training: bool = True,
     ) -> dict:
         assert training_object in [
             "generator",
@@ -91,39 +75,46 @@ class _CRLI(nn.Module):
         X = inputs["X"]
         missing_mask = inputs["missing_mask"]
         batch_size, n_steps, n_features = X.shape
-        losses = {}
-        inputs = self.cluster(inputs, training_object)
-        if not training:
-            # if only run clustering, then no need to calculate loss
-            return inputs
+        results = {}
+
+        estimation, generator_fb_hidden_states = self.generator(inputs)
+        inputs["generator_fb_hidden_states"] = generator_fb_hidden_states
+        imputed_X = inputs["X"] * inputs["missing_mask"] + estimation * (
+            1 - inputs["missing_mask"]
+        )
+        inputs["imputed_X"] = imputed_X
+        discrimination = self.discriminator(inputs)
+        reconstruction, fcn_latent = self.decoder(inputs)
 
         if training_object == "discriminator":
-            l_D = F.binary_cross_entropy_with_logits(
-                inputs["discrimination"], missing_mask
-            )
-            losses["discrimination_loss"] = l_D
+            l_D = F.binary_cross_entropy_with_logits(discrimination, missing_mask)
+            results["discrimination_loss"] = l_D
         else:
-            inputs["discrimination"] = inputs["discrimination"].detach()
+            discrimination = discrimination.detach()
             l_G = F.binary_cross_entropy_with_logits(
-                inputs["discrimination"], 1 - missing_mask, weight=1 - missing_mask
+                discrimination, 1 - missing_mask, weight=1 - missing_mask
             )
-            l_pre = cal_mse(inputs["imputation"], X, missing_mask)
-            l_rec = cal_mse(inputs["reconstruction"], X, missing_mask)
-            HTH = torch.matmul(inputs["fcn_latent"], inputs["fcn_latent"].permute(1, 0))
+            l_pre = cal_mse(estimation, X, missing_mask)
+            l_rec = cal_mse(reconstruction, X, missing_mask)
 
+            HTH = torch.matmul(fcn_latent, fcn_latent.permute(1, 0))
             if (
                 self.counter_for_updating_F == 0
                 or self.counter_for_updating_F % 10 == 0
             ):
-                U, s, V = torch.linalg.svd(inputs["fcn_latent"])
+                U, s, V = torch.linalg.svd(fcn_latent)
                 self.term_F = U[:, : self.n_clusters]
+
             FTHTHF = torch.matmul(
                 torch.matmul(self.term_F.permute(1, 0), HTH), self.term_F
             )
             l_kmeans = torch.trace(HTH) - torch.trace(FTHTHF)  # k-means loss
             loss_gene = l_G + l_pre + l_rec + l_kmeans * self.lambda_kmeans
-            losses["generation_loss"] = loss_gene
-        return losses
+            results["generation_loss"] = loss_gene
+
+        results["imputation"] = imputed_X
+        results["fcn_latent"] = fcn_latent
+        return results
 
 
 class CRLI(BaseNNClusterer):
@@ -325,7 +316,7 @@ class CRLI(BaseNNClusterer):
                         results["discrimination_loss"].backward(retain_graph=True)
                         self.D_optimizer.step()
                         step_train_loss_D_collector.append(
-                            results["discrimination_loss"].item()
+                            results["discrimination_loss"].sum().item()
                         )
 
                     for _ in range(self.G_steps):
@@ -336,7 +327,7 @@ class CRLI(BaseNNClusterer):
                         results["generation_loss"].backward()
                         self.G_optimizer.step()
                         step_train_loss_G_collector.append(
-                            results["generation_loss"].item()
+                            results["generation_loss"].sum().item()
                         )
 
                     mean_step_train_D_loss = np.mean(step_train_loss_D_collector)
@@ -358,12 +349,42 @@ class CRLI(BaseNNClusterer):
                         )
                 mean_epoch_train_D_loss = np.mean(epoch_train_loss_D_collector)
                 mean_epoch_train_G_loss = np.mean(epoch_train_loss_G_collector)
-                logger.info(
-                    f"epoch {epoch}: "
-                    f"training loss_generator {mean_epoch_train_G_loss:.4f}, "
-                    f"train loss_discriminator {mean_epoch_train_D_loss:.4f}"
-                )
-                mean_loss = mean_epoch_train_G_loss
+                mean_train_loss = mean_epoch_train_G_loss
+
+                if val_loader is not None:
+                    self.model.eval()
+                    epoch_val_loss_G_collector = []
+                    with torch.no_grad():
+                        for idx, data in enumerate(val_loader):
+                            inputs = self._assemble_input_for_validating(data)
+                            results = self.model.forward(inputs)
+                            epoch_val_loss_G_collector.append(
+                                results["generation_loss"].sum().item()
+                            )
+
+                    mean_val_loss = np.mean(epoch_val_loss_G_collector)
+
+                    # save validating loss logs into the tensorboard file for every epoch if in need
+                    if self.summary_writer is not None:
+                        val_loss_dict = {
+                            "generation_loss": mean_val_loss,
+                        }
+                        self._save_log_into_tb_file(epoch, "validating", val_loss_dict)
+
+                    logger.info(
+                        f"epoch {epoch}: "
+                        f"training loss_generator {mean_epoch_train_G_loss:.4f}, "
+                        f"train loss_discriminator {mean_epoch_train_D_loss:.4f}, "
+                        f"validating loss {mean_val_loss:.4f}"
+                    )
+                    mean_loss = mean_val_loss
+                else:
+                    logger.info(
+                        f"epoch {epoch}: "
+                        f"training loss_generator {mean_epoch_train_G_loss:.4f}, "
+                        f"train loss_discriminator {mean_epoch_train_D_loss:.4f}"
+                    )
+                    mean_loss = mean_train_loss
 
                 if mean_loss < self.best_loss:
                     self.best_loss = mean_loss
@@ -402,6 +423,7 @@ class CRLI(BaseNNClusterer):
     def fit(
         self,
         train_set: Union[dict, str],
+        val_set: Union[dict, str],
         file_type: str = "h5py",
     ) -> None:
         # Step 1: wrap the input data with classes Dataset and DataLoader
@@ -414,9 +436,30 @@ class CRLI(BaseNNClusterer):
             shuffle=True,
             num_workers=self.num_workers,
         )
+        val_loader = None
+        if val_set is not None:
+            if isinstance(val_set, str):
+                with h5py.File(val_set, "r") as hf:
+                    # Here we read the whole validation set from the file to mask a portion for validation.
+                    # In PyPOTS, using a file usually because the data is too big. However, the validation set is
+                    # generally shouldn't be too large. For example, we have 1 billion samples for model training.
+                    # We won't take 20% of them as the validation set because we want as much as possible data for the
+                    # training stage to enhance the model's generalization ability. Therefore, 100,000 representative
+                    # samples will be enough to validate the model.
+                    val_set = {
+                        "X": hf["X"][:],
+                    }
+
+            val_set = DatasetForCRLI(val_set, return_labels=False, file_type=file_type)
+            val_loader = DataLoader(
+                val_set,
+                batch_size=self.batch_size,
+                shuffle=False,
+                num_workers=self.num_workers,
+            )
 
         # Step 2: train the model and freeze it
-        self._train_model(training_loader)
+        self._train_model(training_loader, val_loader)
         self.model.load_state_dict(self.best_model_dict)
         self.model.eval()  # set the model as eval status to freeze it.
 
@@ -441,8 +484,8 @@ class CRLI(BaseNNClusterer):
         with torch.no_grad():
             for idx, data in enumerate(test_loader):
                 inputs = self._assemble_input_for_testing(data)
-                inputs = self.model.forward(inputs, training=False)
-                latent_collector.append(inputs["fcn_latent"])
+                results = self.model.forward(inputs)
+                latent_collector.append(results["fcn_latent"])
 
         latent_collector = torch.cat(latent_collector).cpu().detach().numpy()
         clustering = self.model.kmeans.fit_predict(latent_collector)
