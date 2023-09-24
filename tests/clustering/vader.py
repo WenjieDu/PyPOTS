@@ -15,7 +15,7 @@ import pytest
 from pypots.clustering import VaDER
 from pypots.optim import Adam
 from pypots.utils.logging import logger
-from pypots.utils.metrics import cal_rand_index, cal_cluster_purity
+from pypots.utils.metrics import cal_external_cluster_validation_metrics
 from tests.clustering.config import (
     EPOCHS,
     TRAIN_SET,
@@ -61,9 +61,10 @@ class TestVaDER(unittest.TestCase):
     def test_1_cluster(self):
         try:
             clustering = self.vader.cluster(TEST_SET)
-            RI = cal_rand_index(clustering, DATA["test_y"])
-            CP = cal_cluster_purity(clustering, DATA["test_y"])
-            logger.info(f"RI: {RI}\nCP: {CP}")
+            external_metrics = cal_external_cluster_validation_metrics(
+                clustering, DATA["test_y"]
+            )
+            logger.info(f"{external_metrics}")
         except np.linalg.LinAlgError as e:
             logger.error(
                 f"{e}\n"
