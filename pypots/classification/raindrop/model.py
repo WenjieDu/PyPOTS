@@ -393,7 +393,7 @@ class Raindrop(BaseNNClassifier):
         static=False,
         batch_size=32,
         epochs=100,
-        patience: int = None,
+        patience: Optional[int] = None,
         optimizer: Optional[Optimizer] = Adam(),
         num_workers: int = 0,
         device: Optional[Union[str, torch.device, list]] = None,

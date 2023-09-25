@@ -1,4 +1,4 @@
-name: Autoreply to Issues Opened for PyPOTS
+name: Auto reply to new issues and PR
 
 on:
   issues:
@@ -28,7 +28,6 @@ jobs:
 
           Best,
           Wenjie
-
         pr-message: |
           Hi there 👋,
 

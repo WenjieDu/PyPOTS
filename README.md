@@ -1,20 +1,23 @@
 <a href="https://github.com/WenjieDu/PyPOTS">
-    <img src="https://raw.githubusercontent.com/PyPOTS/pypots.github.io/main/static/figs/pypots_logos/PyPOTS_logo_FFBG.svg?sanitize=true" width="200" align="right">
+    <img src="https://pypots.com/figs/pypots_logos/PyPOTS_logo_FFBG.svg?sanitize=true" width="200" align="right">
 </a>
 
-## <p align="center">Welcome to PyPOTS</p>
+<h2 align="center">Welcome to PyPOTS</h2>
+
 **<p align="center">A Python Toolbox for Data Mining on Partially-Observed Time Series</p>**
 
 <p align="center">
     <a href="https://docs.pypots.com/en/latest/install.html#reasons-of-version-limitations-on-dependencies">
        <img alt="Python version" src="https://img.shields.io/badge/Python-v3.7--3.10-E97040?logo=python&logoColor=white">
     </a>
-    <img alt="powered by Pytorch" src="https://img.shields.io/badge/PyTorch-❤️-F8C6B5?logo=pytorch&logoColor=white">
-    <a href="https://pypi.org/project/PyPOTS">
-        <img alt="the latest release version" src="https://img.shields.io/github/v/release/wenjiedu/pypots?color=EE781F&include_prereleases&label=Release">
+    <a href="https://github.com/WenjieDu/PyPOTS">
+        <img alt="powered by Pytorch" src="https://img.shields.io/badge/PyTorch-❤️-F8C6B5?logo=pytorch&logoColor=white">
+    </a>
+    <a href="https://github.com/WenjieDu/PyPOTS/releases">
+        <img alt="the latest release version" src="https://img.shields.io/github/v/release/wenjiedu/pypots?color=EE781F&include_prereleases&label=Release&logo=github&logoColor=white">
     </a>
     <a href="https://github.com/WenjieDu/PyPOTS/blob/main/LICENSE">
-        <img alt="GPL-v3 license" src="https://img.shields.io/badge/License-GPL--v3-E9BB41">
+        <img alt="GPL-v3 license" src="https://img.shields.io/badge/License-GPL--v3-E9BB41?logo=opensourceinitiative&logoColor=white">
     </a>
     <a href="https://github.com/WenjieDu/PyPOTS/blob/main/README.md#-community">
         <img alt="Community" src="https://img.shields.io/badge/join_us-community!-C8A062">
@@ -41,10 +44,10 @@
         <img alt="arXiv DOI" src="https://img.shields.io/badge/DOI-10.48550/arXiv.2305.18811-F8F7F0">
     </a>
     <a href="https://anaconda.org/conda-forge/pypots">
-        <img alt="Conda downloads" src="https://img.shields.io/conda/dn/conda-forge/pypots?label=Conda%20Downloads&color=AED0ED&logo=anaconda&logoColor=white">
+        <img alt="Conda downloads" src="https://img.shields.io/endpoint?url=https://pypots.com/figs/downloads_badges/conda_pypots_downloads.json">
     </a>
     <a href="https://pepy.tech/project/pypots">
-        <img alt="PyPI downloads" src="https://static.pepy.tech/personalized-badge/pypots?period=total&units=international_system&left_color=grey&right_color=blue&left_text=PyPI%20Downloads">
+        <img alt="PyPI downloads" src="https://img.shields.io/endpoint?url=https://pypots.com/figs/downloads_badges/pypi_pypots_downloads.json">
     </a>
 
 </p>
@@ -66,7 +69,7 @@ have unified APIs together with detailed documentation and interactive examples 
 if it helps with your research. This really means a lot to our open-source research. Thank you!
 
 <a href="https://github.com/WenjieDu/TSDB">
-    <img src="https://raw.githubusercontent.com/PyPOTS/pypots.github.io/main/static/figs/pypots_logos/TSDB_logo_FFBG.svg?sanitize=true" align="left" width="160" alt="TSDB logo"/>
+    <img src="https://pypots.com/figs/pypots_logos/TSDB_logo_FFBG.svg?sanitize=true" align="left" width="160" alt="TSDB logo"/>
 </a>
 
 To make various open-source time-series datasets readily available to our users,
@@ -108,7 +111,7 @@ Alternatively, you can install from the latest source code with the latest featu
 
 ## ❖ Usage
 <a href="https://github.com/WenjieDu/BrewPOTS">
-    <img src="https://raw.githubusercontent.com/PyPOTS/pypots.github.io/main/static/figs/pypots_logos/BrewPOTS_logo_FFBG.svg?sanitize=true" align="left" width="160" alt="BrewPOTS logo"/>
+    <img src="https://pypots.com/figs/pypots_logos/BrewPOTS_logo_FFBG.svg?sanitize=true" align="left" width="160" alt="BrewPOTS logo"/>
 </a>
 
 PyPOTS tutorials have been released. Considering the future workload, I separate the tutorials into a single repo,
@@ -159,6 +162,8 @@ PyPOTS supports imputation, classification, clustering, and forecasting tasks on
 |        **Type**        |  **Abbr.**  |                                                                    **Full name of the algorithm/model/paper**                                                                     | **Year** |
 |       Neural Net       |    SAITS    |                                                               Self-Attention-based Imputation for Time Series [^1]                                                                |   2023   |
 |       Neural Net       | Transformer | Attention is All you Need [^2];<br>Self-Attention-based Imputation for Time Series [^1];<br><sub>Note: proposed in [^2], and re-implemented as an imputation model in [^1].</sub> |   2017   |
+|       Neural Net       |   US-GAN    |                                                 Generative Semi-supervised Learning for Multivariate Time Series Imputation [^10]                                                 |   2021   |
+|       Neural Net       |   GP-VAE    |                                                              GP-VAE: Deep Probabilistic Time Series Imputation [^11]                                                              |   2020   |
 |       Neural Net       |    BRITS    |                                                              Bidirectional Recurrent Imputation for Time Series [^3]                                                              |   2018   |
 |       Neural Net       |    M-RNN    |                                                                  Multi-directional Recurrent Neural Network [^9]                                                                  |   2019   |
 |         Naive          |    LOCF     |                                                                         Last Observation Carried Forward                                                                          |    -     |
@@ -251,7 +256,7 @@ We care about the feedback from our users, so we're building PyPOTS community on
 If you have any suggestions or want to contribute ideas or share time-series related papers, join us and tell.
 PyPOTS community is open, transparent, and surely friendly. Let's work together to build and improve PyPOTS!
 
-
+[//]: # (Use APA reference style below)
 [^1]: Du, W., Cote, D., & Liu, Y. (2023). [SAITS: Self-Attention-based Imputation for Time Series](https://doi.org/10.1016/j.eswa.2023.119619). *Expert systems with applications*.
 [^2]: Vaswani, A., Shazeer, N.M., Parmar, N., Uszkoreit, J., Jones, L., Gomez, A.N., Kaiser, L., & Polosukhin, I. (2017). [Attention is All you Need](https://papers.nips.cc/paper/2017/hash/3f5ee243547dee91fbd053c1c4a845aa-Abstract.html). *NeurIPS 2017*.
 [^3]: Cao, W., Wang, D., Li, J., Zhou, H., Li, L., & Li, Y. (2018). [BRITS: Bidirectional Recurrent Imputation for Time Series](https://papers.nips.cc/paper/2018/hash/734e6bfcd358e25ac1db0a4241b95651-Abstract.html). *NeurIPS 2018*.
@@ -261,7 +266,8 @@ PyPOTS community is open, transparent, and surely friendly. Let's work together 
 [^7]: Jong, J.D., Emon, M.A., Wu, P., Karki, R., Sood, M., Godard, P., Ahmad, A., Vrooman, H.A., Hofmann-Apitius, M., & Fröhlich, H. (2019). [Deep learning for clustering of multivariate clinical patient trajectories with missing values](https://academic.oup.com/gigascience/article/8/11/giz134/5626377). *GigaScience*.
 [^8]: Chen, X., & Sun, L. (2021). [Bayesian Temporal Factorization for Multidimensional Time Series Prediction](https://arxiv.org/abs/1910.06366). *IEEE transactions on pattern analysis and machine intelligence*.
 [^9]: Yoon, J., Zame, W. R., & van der Schaar, M. (2019). [Estimating Missing Data in Temporal Data Streams Using Multi-Directional Recurrent Neural Networks](https://ieeexplore.ieee.org/document/8485748). *IEEE Transactions on Biomedical Engineering*.
-
+[^10]: Miao, X., Wu, Y., Wang, J., Gao, Y., Mao, X., & Yin, J. (2021). [Generative Semi-supervised Learning for Multivariate Time Series Imputation](https://ojs.aaai.org/index.php/AAAI/article/view/17086). *AAAI 2021*.
+[^11]: Fortuin, V., Baranchuk, D., Raetsch, G. & Mandt, S.. (2020). [GP-VAE: Deep Probabilistic Time Series Imputation](https://proceedings.mlr.press/v108/fortuin20a.html). *AISTATS 2020*.
 
 <details>
 <summary>🏠 Visits</summary>
@@ -269,3 +275,4 @@ PyPOTS community is open, transparent, and surely friendly. Let's work together 
     <img alt="PyPOTS visits" align="left" src="https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2FPyPOTS%2FPyPOTS&count_bg=%23009A0A&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=Visits%20since%20May%202022&edge_flat=false">
 </a>
 </details>
+<br>

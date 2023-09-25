@@ -165,7 +165,7 @@ class BaseNNForecaster(BaseNNModel):
         # n_forecasting_steps: int,
         batch_size: int,
         epochs: int,
-        patience: int,
+        patience: Optional[int] = None,
         num_workers: int = 0,
         device: Optional[Union[str, torch.device, list]] = None,
         saving_path: str = None,
@@ -242,7 +242,6 @@ class BaseNNForecaster(BaseNNModel):
         training_loader: DataLoader,
         val_loader: DataLoader = None,
     ) -> None:
-
         # each training starts from the very beginning, so reset the loss and model dict here
         self.best_loss = float("inf")
         self.best_model_dict = None

@@ -4,25 +4,27 @@
 
 Welcome to PyPOTS docs!
 ===============================
-.. image:: https://raw.githubusercontent.com/PyPOTS/pypots.github.io/main/static/figs/pypots_logos/PyPOTS_logo_FFBG.svg?sanitize=true
+.. image:: https://pypots.com/figs/pypots_logos/PyPOTS_logo_FFBG.svg?sanitize=true
    :height: 168
    :align: right
    :target: https://github.com/WenjieDu/PyPOTS
    :alt: PyPOTS logo
 
-.. centered:: A Python Toolbox for Data Mining on Partially-Observed Time Series
+**A Python Toolbox for Data Mining on Partially-Observed Time Series**
 
 .. image:: https://img.shields.io/badge/Python-v3.7--3.10-E97040?logo=python&logoColor=white
    :alt: Python version
+   :target: https://docs.pypots.com/en/latest/install.html#reasons-of-version-limitations-on-dependencies
 
 .. image:: https://img.shields.io/badge/PyTorch-❤️-F8C6B5?logo=pytorch&logoColor=white
    :alt: powered by Pytorch
+   :target: https://github.com/WenjieDu/PyPOTS
 
-.. image:: https://img.shields.io/github/v/release/wenjiedu/pypots?color=EE781F&include_prereleases&label=Release
+.. image:: https://img.shields.io/github/v/release/wenjiedu/pypots?color=EE781F&include_prereleases&label=Release&logo=github&logoColor=white
    :alt: the latest release version
-   :target: https://pypi.org/project/pypots
+   :target: https://github.com/WenjieDu/PyPOTS/releases
 
-.. image:: https://img.shields.io/badge/License-GPL--v3-E9BB41
+.. image:: https://img.shields.io/badge/License-GPL--v3-E9BB41?logo=opensourceinitiative&logoColor=white
    :alt: GPL-v3 license
    :target: https://github.com/WenjieDu/PyPOTS/blob/main/LICENSE
 
@@ -58,11 +60,11 @@ Welcome to PyPOTS docs!
    :alt: arXiv DOI
    :target: https://arxiv.org/abs/2305.18811
 
-.. image:: https://img.shields.io/conda/dn/conda-forge/pypots?label=Conda%20Downloads&color=AED0ED&logo=anaconda&logoColor=white
+.. image:: https://img.shields.io/endpoint?url=https://pypots.com/figs/downloads_badges/conda_pypots_downloads.json
    :alt: Conda downloads
    :target: https://anaconda.org/conda-forge/pypots
 
-.. image:: https://static.pepy.tech/personalized-badge/pypots?period=total&units=international_system&left_color=grey&right_color=blue&left_text=PyPI%20Downloads
+.. image:: https://img.shields.io/endpoint?url=https://pypots.com/figs/downloads_badges/pypi_pypots_downloads.json
    :alt: PyPI downloads
    :target: https://pepy.tech/project/pypots
 
@@ -80,7 +82,7 @@ Welcome to PyPOTS docs!
 **Please** properly `cite PyPOTS <https://docs.pypots.com/en/latest/milestones.html#citing-pypots>`_ in your publications
 if it helps with your research. This really means a lot to our open-source research. Thank you!
 
-.. image:: https://raw.githubusercontent.com/PyPOTS/pypots.github.io/main/static/figs/pypots_logos/TSDB_logo_FFBG.svg?sanitize=true
+.. image:: https://pypots.com/figs/pypots_logos/TSDB_logo_FFBG.svg?sanitize=true
    :width: 170
    :alt: TSDB
    :align: left
@@ -108,7 +110,7 @@ Refer to the page `Installation <install.html>`_ to see different ways of instal
 
 ❖ Usage
 ^^^^^^^^
-.. image:: https://raw.githubusercontent.com/PyPOTS/pypots.github.io/main/static/figs/pypots_logos/BrewPOTS_logo_FFBG.svg?sanitize=true
+.. image:: https://pypots.com/figs/pypots_logos/BrewPOTS_logo_FFBG.svg?sanitize=true
    :width: 160
    :alt: BrewPOTS logo
    :align: left
