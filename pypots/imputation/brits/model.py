@@ -411,7 +411,7 @@ class BRITS(BaseNNImputer):
         rnn_hidden_size: int,
         batch_size: int = 32,
         epochs: int = 100,
-        patience: int = None,
+        patience: Optional[int] = None,
         optimizer: Optional[Optimizer] = Adam(),
         num_workers: int = 0,
         device: Optional[Union[str, torch.device, list]] = None,
