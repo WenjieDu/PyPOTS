@@ -14,7 +14,10 @@ import pytest
 from pypots.clustering import CRLI
 from pypots.optim import Adam
 from pypots.utils.logging import logger
-from pypots.utils.metrics import cal_rand_index, cal_cluster_purity
+from pypots.utils.metrics import (
+    cal_external_cluster_validation_metrics,
+    cal_internal_cluster_validation_metrics,
+)
 from tests.clustering.config import (
     EPOCHS,
     TRAIN_SET,
@@ -74,10 +77,15 @@ class TestCRLI(unittest.TestCase):
 
     @pytest.mark.xdist_group(name="clustering-crli")
     def test_2_cluster(self):
-        clustering = self.crli.cluster(TEST_SET)
-        RI = cal_rand_index(clustering, DATA["test_y"])
-        CP = cal_cluster_purity(clustering, DATA["test_y"])
-        logger.info(f"RI: {RI}\nCP: {CP}")
+        clustering, latent_collector = self.crli.cluster(TEST_SET, return_latent=True)
+        external_metrics = cal_external_cluster_validation_metrics(
+            clustering, DATA["test_y"]
+        )
+        internal_metrics = cal_internal_cluster_validation_metrics(
+            latent_collector["clustering_latent"], DATA["test_y"]
+        )
+        logger.info(f"{external_metrics}")
+        logger.info(f"{internal_metrics}")
 
     @pytest.mark.xdist_group(name="clustering-crli")
     def test_3_saving_path(self):

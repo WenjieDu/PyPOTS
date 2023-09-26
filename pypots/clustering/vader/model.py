@@ -182,13 +182,17 @@ class _VaDER(nn.Module):
             mu_tilde,
             stddev_tilde,
         ) = self.get_results(X, missing_mask)
+        imputed_X = X_reconstructed * (1 - missing_mask) + X * missing_mask
 
         if not training and not pretrain:
             results = {
                 "mu_tilde": mu_tilde,
+                "stddev_tilde": stddev_tilde,
                 "mu": mu_c,
                 "var": var_c,
                 "phi": phi_c,
+                "z": z,
+                "imputed_X": imputed_X,
             }
             # if only run clustering, then no need to calculate loss
             return results
@@ -260,6 +264,7 @@ class _VaDER(nn.Module):
         results = {
             "loss": reconstruction_loss + self.alpha * latent_loss,
             "z": z,
+            "imputed_X": imputed_X,
         }
 
         return results
@@ -343,7 +348,7 @@ class VaDER(BaseNNClusterer):
         batch_size: int = 32,
         epochs: int = 100,
         pretrain_epochs: int = 10,
-        patience: int = None,
+        patience: Optional[int] = None,
         optimizer: Optional[Optimizer] = Adam(),
         num_workers: int = 0,
         device: Optional[Union[str, torch.device, list]] = None,
@@ -462,7 +467,7 @@ class VaDER(BaseNNClusterer):
                             "Now quit to let you check your model training.\n"
                             "Please raise an issue https://github.com/WenjieDu/PyPOTS/issues if you have questions."
                         )
-                        exit()
+                        raise RuntimeError
                     else:
                         reg_covar *= 2
 
@@ -597,7 +602,12 @@ class VaDER(BaseNNClusterer):
         # Step 3: save the model if necessary
         self._auto_save_model_if_necessary(training_finished=True)
 
-    def cluster(self, X: Union[dict, str], file_type: str = "h5py") -> np.ndarray:
+    def cluster(
+        self,
+        X: Union[dict, str],
+        file_type: str = "h5py",
+        return_latent: bool = False,
+    ) -> Union[np.ndarray, Tuple[np.ndarray, dict]]:
         self.model.eval()  # set the model as eval status to freeze it.
         test_set = DatasetForVaDER(X, return_labels=False, file_type=file_type)
         test_loader = DataLoader(
@@ -606,6 +616,13 @@ class VaDER(BaseNNClusterer):
             shuffle=False,
             num_workers=self.num_workers,
         )
+        mu_tilde_collector = []
+        stddev_tilde_collector = []
+        mu_collector = []
+        var_collector = []
+        phi_collector = []
+        z_collector = []
+        imputed_X_collector = []
         clustering_results_collector = []
 
         with torch.no_grad():
@@ -614,9 +631,19 @@ class VaDER(BaseNNClusterer):
                 results = self.model.forward(inputs, training=False)
 
                 mu_tilde = results["mu_tilde"].cpu().numpy()
+                mu_tilde_collector.append(mu_tilde)
+                stddev_tilde = results["stddev_tilde"].cpu().numpy()
+                stddev_tilde_collector.append(stddev_tilde)
                 mu = results["mu"].cpu().numpy()
+                mu_collector.append(mu)
                 var = results["var"].cpu().numpy()
+                var_collector.append(var)
                 phi = results["phi"].cpu().numpy()
+                phi_collector.append(phi)
+                z = results["z"].cpu().numpy()
+                z_collector.append(z)
+                imputed_X = results["imputed_X"].cpu().numpy()
+                imputed_X_collector.append(imputed_X)
 
                 def func_to_apply(
                     mu_t_: np.ndarray,
@@ -640,4 +667,17 @@ class VaDER(BaseNNClusterer):
                 clustering_results_collector.append(clustering_results)
 
         clustering_results = np.concatenate(clustering_results_collector)
+        latent_collector = {
+            "mu_tilde": np.concatenate(mu_tilde_collector),
+            "stddev_tilde": np.concatenate(stddev_tilde_collector),
+            "mu": np.concatenate(mu_collector),
+            "var": np.concatenate(var_collector),
+            "phi": np.concatenate(phi_collector),
+            "z": np.concatenate(z_collector),
+            "imputation": np.concatenate(imputed_X_collector),
+        }
+
+        if return_latent:
+            return clustering_results, latent_collector
+
         return clustering_results
