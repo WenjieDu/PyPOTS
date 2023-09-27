@@ -19,6 +19,8 @@ in one place, which could result in a mess and be not readable;
 from abc import ABC, abstractmethod
 from typing import Callable, Iterable, Optional
 
+from .lr_scheduler.base import LRScheduler
+
 
 class Optimizer(ABC):
     """The base wrapper for PyTorch optimizers, also is the base class for all optimizers in pypots.optim.
@@ -35,9 +37,10 @@ class Optimizer(ABC):
 
     """
 
-    def __init__(self, lr):
+    def __init__(self, lr, lr_scheduler: Optional[LRScheduler] = None):
         self.lr = lr
         self.torch_optimizer = None
+        self.lr_scheduler = lr_scheduler
 
     @abstractmethod
     def init_optimizer(self, params: Iterable) -> None:
@@ -96,6 +99,9 @@ class Optimizer(ABC):
 
         """
         self.torch_optimizer.step(closure)
+
+        if self.lr_scheduler is not None:
+            self.lr_scheduler.step()
 
     def zero_grad(self, set_to_none: bool = True) -> None:
         """Sets the gradients of all optimized ``torch.Tensor`` to zero.
