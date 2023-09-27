@@ -6,11 +6,12 @@ The optimizer wrapper for PyTorch Adam.
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: GLP-v3
 
-from typing import Iterable, Tuple
+from typing import Iterable, Tuple, Optional
 
 from torch.optim import Adam as torch_Adam
 
 from .base import Optimizer
+from .lr_scheduler.base import LRScheduler
 
 
 class Adam(Optimizer):
@@ -42,8 +43,9 @@ class Adam(Optimizer):
         eps: float = 1e-08,
         weight_decay: float = 0,
         amsgrad: bool = False,
+        lr_scheduler: Optional[LRScheduler] = None,
     ):
-        super().__init__(lr)
+        super().__init__(lr, lr_scheduler)
         self.betas = betas
         self.eps = eps
         self.weight_decay = weight_decay
@@ -66,3 +68,6 @@ class Adam(Optimizer):
             weight_decay=self.weight_decay,
             amsgrad=self.amsgrad,
         )
+
+        if self.lr_scheduler is not None:
+            self.lr_scheduler.init_scheduler(self.torch_optimizer)
