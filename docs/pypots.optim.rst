@@ -54,3 +54,12 @@ pypots.optim.base module
    :undoc-members:
    :show-inheritance:
    :inherited-members:
+
+pypots.optim.lr_scheduler module
+------------------------------
+
+.. automodule:: pypots.optim.lr_scheduler
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:

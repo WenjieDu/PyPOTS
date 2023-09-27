@@ -113,6 +113,9 @@ class LRScheduler(ABC):
             logger.info(f"Adjusting learning rate of group {group} to {lr:.4e}.")
 
     def step(self):
+        """Step could be called after every batch update. This should be called in ``pypots.optim.Optimizer.step()``
+        after ``pypots.optim.Optimizer.torch_optimizer.step()``.
+        """
         # Raise a warning if old pattern is detected
         # https://github.com/pytorch/pytorch/issues/20124
         if self._step_count == 1:
