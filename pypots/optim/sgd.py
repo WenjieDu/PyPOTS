@@ -1,38 +1,41 @@
 """
-The optimizer wrapper for PyTorch SGD.
+The optimizer wrapper for PyTorch SGD :class:`torch.optim.SGD`.
 
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: GLP-v3
 
-from typing import Iterable
+from typing import Iterable, Optional
 
 from torch.optim import SGD as torch_SGD
 
 from .base import Optimizer
+from .lr_scheduler.base import LRScheduler
 
 
 class SGD(Optimizer):
-    """The optimizer wrapper for PyTorch SGD.
-    https://pytorch.org/docs/stable/generated/torch.optim.SGD.html#torch.optim.SGD
+    """The optimizer wrapper for PyTorch SGD :class:`torch.optim.SGD`.
 
     Parameters
     ----------
-    lr :
+    lr : float
         The learning rate of the optimizer.
 
-    momentum :
+    momentum : float
         Momentum factor.
 
-    weight_decay :
+    weight_decay : float
         Weight decay (L2 penalty).
 
-    dampening :
+    dampening : float
         Dampening for momentum.
 
-    nesterov :
+    nesterov : bool
         Whether to enable Nesterov momentum.
+
+    lr_scheduler : pypots.optim.lr_scheduler.base.LRScheduler
+        The learning rate scheduler of the optimizer.
 
     """
 
@@ -43,8 +46,9 @@ class SGD(Optimizer):
         weight_decay: float = 0,
         dampening: float = 0,
         nesterov: bool = False,
+        lr_scheduler: Optional[LRScheduler] = None,
     ):
-        super().__init__(lr)
+        super().__init__(lr, lr_scheduler)
         self.momentum = momentum
         self.weight_decay = weight_decay
         self.dampening = dampening
@@ -67,3 +71,6 @@ class SGD(Optimizer):
             dampening=self.dampening,
             nesterov=self.nesterov,
         )
+
+        if self.lr_scheduler is not None:
+            self.lr_scheduler.init_scheduler(self.torch_optimizer)

@@ -173,7 +173,6 @@ class _GPVAE(nn.Module):
 
     @staticmethod
     def kl_divergence(a, b):
-        # TODO: different from the author's implementation
         return torch.distributions.kl.kl_divergence(a, b)
 
     def _init_prior(self):
@@ -222,36 +221,36 @@ class _GPVAE(nn.Module):
 
 
 class GPVAE(BaseNNImputer):
-    """The PyTorch implementation of the GPVAE model :cite:``.
+    """The PyTorch implementation of the GPVAE model :cite:`fortuin2020GPVAEDeep`.
 
     Parameters
     ----------
-    beta:
+    beta: float
         The weight of KL divergence in EBLO.
 
-    kernel:
+    kernel: str
         The type of kernel function chosen in the Gaussain Process Proir. ["cauchy", "diffusion", "rbf", "matern"]
 
-    batch_size :
+    batch_size : int
         The batch size for training and evaluating the model.
 
-    epochs :
+    epochs : int
         The number of epochs for training the model.
 
-    patience :
+    patience : int
         The patience for the early-stopping mechanism. Given a positive integer, the training process will be
         stopped when the model does not perform better after that number of epochs.
         Leaving it default as None will disable the early-stopping.
 
-    optimizer :
+    optimizer : pypots.optim.base.Optimizer
         The optimizer for model training.
         If not given, will use a default Adam optimizer.
 
-    num_workers :
+    num_workers : int
         The number of subprocesses to use for data loading.
         `0` means data loading will be in the main process, i.e. there won't be subprocesses.
 
-    device :
+    device : :class:`torch.device` or list
         The device for the model to run on. It can be a string, a :class:`torch.device` object, or a list of them.
         If not given, will try to use CUDA devices first (will use the default CUDA device if there are multiple),
         then CPUs, considering CUDA and CPU are so far the main devices for people to train ML models.
@@ -259,24 +258,24 @@ class GPVAE(BaseNNImputer):
         model will be parallely trained on the multiple devices (so far only support parallel training on CUDA devices).
         Other devices like Google TPU and Apple Silicon accelerator MPS may be added in the future.
 
-    saving_path :
+    saving_path : str
         The path for automatically saving model checkpoints and tensorboard files (i.e. loss values recorded during
         training into a tensorboard file). Will not save if not given.
 
-    model_saving_strategy :
+    model_saving_strategy : str
         The strategy to save model checkpoints. It has to be one of [None, "best", "better"].
         No model will be saved when it is set as None.
         The "best" strategy will only automatically save the best model after the training finished.
         The "better" strategy will automatically save the model during training whenever the model performs
         better than in previous epochs.
 
-    Attributes
+    References
     ----------
-    model : :class:`torch.nn.Module`
-        The underlying GPVAE model.
-
-    optimizer : :class:`pypots.optim.Optimizer`
-        The optimizer for model training.
+    .. [1] `Fortuin, V., Baranchuk, D., Raetsch, G. &amp; Mandt, S.. (2020).
+        "GP-VAE: Deep Probabilistic Time Series Imputation".
+        <i>Proceedings of the Twenty Third International Conference on Artificial Intelligence and Statistics</i>,
+        in <i>Proceedings of Machine Learning Research</i> 108:1651-1661
+        <https://proceedings.mlr.press/v108/fortuin20a.html>`_
 
     """
 

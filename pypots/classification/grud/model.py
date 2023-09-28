@@ -169,13 +169,13 @@ class GRUD(BaseNNClassifier):
         The "better" strategy will automatically save the model during training whenever the model performs
         better than in previous epochs.
 
-    Attributes
+    References
     ----------
-    model : :class:`torch.nn.Module`
-        The underlying GRU-D model.
+    .. [1] `Che, Zhengping, Sanjay Purushotham, Kyunghyun Cho, David Sontag, and Yan Liu.
+        "Recurrent neural networks for multivariate time series with missing values."
+        Scientific reports 8, no. 1 (2018): 6085.
+        <https://www.nature.com/articles/s41598-018-24271-9.pdf>`_
 
-    optimizer : :class:`pypots.optim.Optimizer`
-        The optimizer for model training.
     """
 
     def __init__(
