@@ -196,13 +196,13 @@ class CRLI(BaseNNClusterer):
         The "better" strategy will automatically save the model during training whenever the model performs
         better than in previous epochs.
 
-    Attributes
+    References
     ----------
-    model : :class:`torch.nn.Module`
-        The underlying CRLI model.
-
-    optimizer : :class:`pypots.optim.Optimizer`
-        The optimizer for model training.
+    .. [1] `Ma, Qianli, Chuxin Chen, Sen Li, and Garrison W. Cottrell. 2021.
+        "Learning Representations for Incomplete Time Series Clustering".
+        Proceedings of the AAAI Conference on Artificial Intelligence 35 (10):8837-46.
+        https://doi.org/10.1609/aaai.v35i10.17070.
+        <https://ojs.aaai.org/index.php/AAAI/article/view/17070>`_
 
     """
 

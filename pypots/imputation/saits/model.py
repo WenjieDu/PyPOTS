@@ -280,13 +280,12 @@ class SAITS(BaseNNImputer):
         The "better" strategy will automatically save the model during training whenever the model performs
         better than in previous epochs.
 
-    Attributes
+    References
     ----------
-    model : :class:`torch.nn.Module`
-        The underlying SAITS model.
-
-    optimizer : :class:`pypots.optim.Optimizer`
-        The optimizer for model training.
+    .. [1] `Du, Wenjie, David Côté, and Yan Liu.
+        "Saits: Self-attention-based imputation for time series".
+        Expert Systems with Applications 219 (2023): 119619.
+        <https://arxiv.org/pdf/2202.08516>`_
 
     """
 

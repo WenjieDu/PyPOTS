@@ -201,13 +201,18 @@ class Transformer(BaseNNImputer):
         The "better" strategy will automatically save the model during training whenever the model performs
         better than in previous epochs.
 
-    Attributes
+    References
     ----------
-    model : :class:`torch.nn.Module`
-        The underlying Transformer model.
+    .. [1] `Vaswani, Ashish, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones, Aidan N. Gomez, Łukasz Kaiser,
+        and Illia Polosukhin.
+        "Attention is all you need."
+        Advances in neural information processing systems 30 (2017).
+        <https://proceedings.neurips.cc/paper/2017/file/3f5ee243547dee91fbd053c1c4a845aa-Paper.pdf>`_
 
-    optimizer : :class:`pypots.optim.Optimizer`
-        The optimizer for model training.
+    .. [2] `Du, Wenjie, David Côté, and Yan Liu.
+        "Saits: Self-attention-based imputation for time series".
+        Expert Systems with Applications 219 (2023): 119619.
+        <https://arxiv.org/pdf/2202.08516>`_
 
     """
 
