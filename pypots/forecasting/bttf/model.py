@@ -311,6 +311,13 @@ class BTTF(BaseForecaster):
 
     2). ``n_steps - pred_step`` must be larger than ``max(time_lags)``;
 
+    References
+    ----------
+    .. [1] `Chen, Xinyu, and Lijun Sun.
+        "Bayesian temporal factorization for multidimensional time series prediction."
+        IEEE Transactions on Pattern Analysis and Machine Intelligence 44, no. 9 (2021): 4659-4673.
+        <http://arxiv.org/pdf/1910.06366>`_
+
     """
 
     def __init__(

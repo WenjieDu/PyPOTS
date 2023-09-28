@@ -152,13 +152,13 @@ class MRNN(BaseNNImputer):
         The "better" strategy will automatically save the model during training whenever the model performs
         better than in previous epochs.
 
-    Attributes
+    References
     ----------
-    model : :class:`torch.nn.Module`
-        The underlying BRITS model.
-
-    optimizer : :class:`pypots.optim.Optimizer`
-        The optimizer for model training.
+    .. [1] `J. Yoon, W. R. Zame and M. van der Schaar,
+        "Estimating Missing Data in Temporal Data Streams Using Multi-Directional Recurrent Neural Networks,"
+        in IEEE Transactions on Biomedical Engineering,
+        vol. 66, no. 5, pp. 1477-1490, May 2019, doi: 10.1109/TBME.2018.2874712.
+        <https://arxiv.org/pdf/1711.08742>`_
 
     """
 

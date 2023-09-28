@@ -37,12 +37,12 @@ class LRScheduler(ABC):
         self._step_count = 0
 
     def init_scheduler(self, optimizer):
-        """Initialize the scheduler. This method should be called in pypots.optim.Optimizer.init_optimizer()
-        to initialize the scheduler together with the optimizer.
+        """Initialize the scheduler. This method should be called in
+        :class:`pypots.optim.base.Optimizer.init_optimizer()` to initialize the scheduler together with the optimizer.
 
         Parameters
         ----------
-        optimizer: torch.optim.Optimizer,
+        optimizer: torch.optim.Optimizer
             The optimizer to be scheduled.
 
         """
@@ -113,8 +113,9 @@ class LRScheduler(ABC):
             logger.info(f"Adjusting learning rate of group {group} to {lr:.4e}.")
 
     def step(self):
-        """Step could be called after every batch update. This should be called in ``pypots.optim.Optimizer.step()``
-        after ``pypots.optim.Optimizer.torch_optimizer.step()``.
+        """Step could be called after every batch update.
+        This should be called in :class:`pypots.optim.base.Optimizer.step()` after
+        :class:`pypots.optim.base.Optimizer.torch_optimizer.step()`.
         """
         # Raise a warning if old pattern is detected
         # https://github.com/pytorch/pytorch/issues/20124

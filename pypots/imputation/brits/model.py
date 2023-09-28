@@ -394,13 +394,12 @@ class BRITS(BaseNNImputer):
         The "better" strategy will automatically save the model during training whenever the model performs
         better than in previous epochs.
 
-    Attributes
+    References
     ----------
-    model : :class:`torch.nn.Module`
-        The underlying BRITS model.
-
-    optimizer : :class:`pypots.optim.Optimizer`
-        The optimizer for model training.
+    .. [1] `Cao, Wei, Dong Wang, Jian Li, Hao Zhou, Lei Li, and Yitan Li.
+        "Brits: Bidirectional recurrent imputation for time series."
+        Advances in neural information processing systems 31 (2018).
+        <https://arxiv.org/pdf/1805.10572>`_
 
     """
 
