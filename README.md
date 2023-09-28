@@ -4,7 +4,7 @@
 
 <h2 align="center">Welcome to PyPOTS</h2>
 
-**<p align="center">A Python Toolbox for Data Mining on Partially-Observed Time Series</p>**
+<p align="center"><i>a Python toolbox for data mining on Partially-Observed Time Series</i></p>
 
 <p align="center">
     <a href="https://docs.pypots.com/en/latest/install.html#reasons-of-version-limitations-on-dependencies">
