@@ -26,26 +26,26 @@ def gene_complete_random_walk(
     std: float = 1.0,
     random_state: Optional[int] = None,
 ) -> np.ndarray:
-    """Generate complete random walk time-series data.
+    """Generate complete random walk time-series data, i.e. having no missing values.
 
     Parameters
     ----------
-    n_samples :
+    n_samples : int, default=1000
         The number of training time-series samples to generate.
 
     n_steps: int, default=24
         The number of time steps (length) of generated time-series samples.
 
-    n_features :
+    n_features : int, default=10
         The number of features (dimensions) of generated time-series samples.
 
-    mu :
+    mu : float, default=0.0
         Mean of the normal distribution, which random walk steps are sampled from.
 
-    std :
+    std : float, default=1.0
         Standard deviation of the normal distribution, which random walk steps are sampled from.
 
-    random_state :
+    random_state : int, default=None
         Random seed for data generation.
 
     Returns
@@ -63,7 +63,7 @@ def gene_complete_random_walk(
     return ts_samples
 
 
-def gene_random_walk_for_classification(
+def gene_complete_random_walk_for_classification(
     n_classes: int = 2,
     n_samples_each_class: int = 500,
     n_steps: int = 24,
@@ -75,37 +75,39 @@ def gene_random_walk_for_classification(
 
     Parameters
     ----------
-    n_classes :
+    n_classes : int, must >=1, default=2
         Number of classes (types) of the generated data.
 
-    n_samples_each_class :
+    n_samples_each_class : int, default=500
         Number of samples for each class to generate.
 
-    n_steps :
+    n_steps : int, default=24
         Number of time steps in each sample.
 
-    n_features :
+    n_features : int, default=10
         Number of features.
 
-    shuffle :
+    shuffle : bool, default=True
         Whether to shuffle generated samples.
         If not, you can separate samples of each class according to `n_samples_each_class`.
         For example,
         X_class0=X[:n_samples_each_class],
         X_class1=X[n_samples_each_class:n_samples_each_class*2]
 
-    random_state :
+    random_state : int, default=None
         Random seed for data generation.
 
     Returns
     -------
-    X :
+    X : array, shape of [n_samples, n_steps, n_features]
         Generated time-series data.
 
-    y :
+    y : array, shape of [n_samples]
         Labels indicating classes of time-series samples.
 
     """
+    assert n_classes > 1, f"n_classes should be >1, but got {n_classes}"
+
     ts_collector = []
     label_collector = []
 
@@ -149,39 +151,39 @@ def gene_complete_random_walk_for_anomaly_detection(
 
     Parameters
     ----------
-    n_samples :
+    n_samples : int, default=1000
         The number of training time-series samples to generate.
 
-    n_features :
+    n_features : int, default=10
         The number of features (dimensions) of generated time-series samples.
 
     n_steps: int, default=24
         The number of time steps (length) of generated time-series samples.
 
-    mu :
+    mu : float, default=0.0
         Mean of the normal distribution, which random walk steps are sampled from.
 
-    std :
+    std : float, default=1.0
         Standard deviation of the normal distribution, which random walk steps are sampled from.
 
-    anomaly_proportion :
+    anomaly_proportion : float, default=0.1
         Proportion of anomaly samples in all samples.
 
-    anomaly_fraction :
+    anomaly_fraction : float, default=0.02
         Fraction of anomaly points in each anomaly sample.
 
-    anomaly_scale_factor :
+    anomaly_scale_factor : float, default=2.0
         Scale factor for value scaling to create anomaly points in time series samples.
 
-    random_state :
+    random_state : int, default=None
         Random seed for data generation.
 
     Returns
     -------
-    X :
+    X : array, shape of [n_samples, n_steps, n_features]
         Generated time-series data.
 
-    y :
+    y : array, shape of [n_samples]
         Labels indicating if time-series samples are anomalies.
     """
     assert (
@@ -225,35 +227,41 @@ def gene_complete_random_walk_for_anomaly_detection(
     return X, y
 
 
-def gene_incomplete_random_walk_dataset(
-    n_steps=24, n_features=10, n_classes=2, n_samples_each_class=1000, missing_rate=0.1
+def gene_random_walk(
+    n_steps=24,
+    n_features=10,
+    n_classes=2,
+    n_samples_each_class=1000,
+    missing_rate=0.1,
 ) -> dict:
     """Generate a random-walk data.
 
     Parameters
     ----------
-    n_steps :
+    n_steps : int, default=24
         Number of time steps in each sample.
 
-    n_features :
+    n_features : int, default=10
         Number of features.
 
-    n_classes :
+    n_classes : int, default=2
         Number of classes (types) of the generated data.
 
-    n_samples_each_class :
+    n_samples_each_class : int, default=1000
         Number of samples for each class to generate.
 
-    missing_rate :
-        The rate of randomly missing values to generate.
+    missing_rate : float, default=0.1
+        The rate of randomly missing values to generate, should be in [0,1).
 
     Returns
     -------
     data: dict,
         A dictionary containing the generated data.
     """
+    assert 0 <= missing_rate < 1, "missing_rate must be in [0,1)"
+
     # generate samples
-    X, y = gene_random_walk_for_classification(
+    X, y = gene_complete_random_walk_for_classification(
         n_classes=n_classes,
         n_samples_each_class=n_samples_each_class,
         n_steps=n_steps,
@@ -262,12 +270,14 @@ def gene_incomplete_random_walk_dataset(
     # split into train/val/test sets
     train_X, test_X, train_y, test_y = train_test_split(X, y, test_size=0.2)
     train_X, val_X, train_y, val_y = train_test_split(train_X, train_y, test_size=0.2)
-    # create random missing values
-    _, train_X, missing_mask, _ = mcar(train_X, missing_rate)
-    train_X = masked_fill(train_X, 1 - missing_mask, torch.nan)
-    _, val_X, missing_mask, _ = mcar(val_X, missing_rate)
-    val_X = masked_fill(val_X, 1 - missing_mask, torch.nan)
-    # test set is left to mask after normalization
+
+    if missing_rate > 0:
+        # create random missing values
+        _, train_X, missing_mask, _ = mcar(train_X, missing_rate)
+        train_X = masked_fill(train_X, 1 - missing_mask, torch.nan)
+        _, val_X, missing_mask, _ = mcar(val_X, missing_rate)
+        val_X = masked_fill(val_X, 1 - missing_mask, torch.nan)
+        # test set is left to mask after normalization
 
     train_X = train_X.reshape(-1, n_features)
     val_X = val_X.reshape(-1, n_features)
@@ -281,19 +291,6 @@ def gene_incomplete_random_walk_dataset(
     train_X = train_X.reshape(-1, n_steps, n_features)
     val_X = val_X.reshape(-1, n_steps, n_features)
     test_X = test_X.reshape(-1, n_steps, n_features)
-
-    # mask values in the validation set as ground truth
-    val_X_intact, val_X, val_X_missing_mask, val_X_indicating_mask = mcar(
-        val_X, missing_rate
-    )
-    val_X = masked_fill(val_X, 1 - val_X_missing_mask, torch.nan)
-
-    # mask values in the test set as ground truth
-    test_X_intact, test_X, test_X_missing_mask, test_X_indicating_mask = mcar(
-        test_X, 0.3
-    )
-    test_X = masked_fill(test_X, 1 - test_X_missing_mask, torch.nan)
-
     data = {
         "n_classes": n_classes,
         "n_steps": n_steps,
@@ -302,13 +299,30 @@ def gene_incomplete_random_walk_dataset(
         "train_y": train_y,
         "val_X": val_X,
         "val_y": val_y,
-        "val_X_intact": val_X_intact,
-        "val_X_indicating_mask": val_X_indicating_mask,
         "test_X": test_X,
         "test_y": test_y,
-        "test_X_intact": test_X_intact,
-        "test_X_indicating_mask": test_X_indicating_mask,
+        "scaler": scaler,
     }
+
+    if missing_rate > 0:
+        # mask values in the validation set as ground truth
+        val_X_intact, val_X, val_X_missing_mask, val_X_indicating_mask = mcar(
+            val_X, missing_rate
+        )
+        val_X = masked_fill(val_X, 1 - val_X_missing_mask, torch.nan)
+
+        # mask values in the test set as ground truth
+        test_X_intact, test_X, test_X_missing_mask, test_X_indicating_mask = mcar(
+            test_X, 0.3
+        )
+        test_X = masked_fill(test_X, 1 - test_X_missing_mask, torch.nan)
+
+        data["val_X"] = val_X
+        data["val_X_intact"] = val_X_intact
+        data["val_X_indicating_mask"] = val_X_indicating_mask
+        data["test_X"] = test_X
+        data["test_X_intact"] = test_X_intact
+        data["test_X_indicating_mask"] = test_X_indicating_mask
     return data
 
 
@@ -317,7 +331,7 @@ def gene_physionet2012(artificially_missing_rate: float = 0.1):
 
     Parameters
     ----------
-    artificially_missing_rate :
+    artificially_missing_rate : float, default=0.1
         The rate of artificially missing values to generate for model evaluation.
         This ratio is calculated based on the number of observed values, i.e. if artificially_missing_rate = 0.1,
         then 10% of the observed values will be randomly masked as missing data and hold out for model evaluation.
