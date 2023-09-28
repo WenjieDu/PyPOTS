@@ -367,14 +367,12 @@ class Raindrop(BaseNNClassifier):
         The "better" strategy will automatically save the model during training whenever the model performs
         better than in previous epochs.
 
-    Attributes
+    References
     ----------
-    model : :class:`torch.nn.Module`
-        The underlying Raindrop model.
-
-    optimizer : :class:`pypots.optim.Optimizer`
-        The optimizer for model training.
-
+    .. [1] `Zhang, Xiang, Marko Zeman, Theodoros Tsiligkaridis, and Marinka Zitnik.
+        "Graph-guided network for irregularly sampled multivariate time series."
+        International Conference on Learning Representations (ICLR). 2022.
+        <https://openreview.net/forum?id=Kwm8I7dU-l5>`_
     """
 
     def __init__(

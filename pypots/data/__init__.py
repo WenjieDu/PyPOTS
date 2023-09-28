@@ -8,8 +8,9 @@ Expose all usable data manipulation classes and functions.
 from .base import BaseDataset
 from .generating import (
     gene_complete_random_walk,
-    gene_random_walk_for_classification,
-    gene_incomplete_random_walk_dataset,
+    gene_complete_random_walk_for_anomaly_detection,
+    gene_complete_random_walk_for_classification,
+    gene_random_walk,
     gene_physionet2012,
 )
 from .load_specific_datasets import (
@@ -29,8 +30,9 @@ __all__ = [
     "BaseDataset",
     # data generation
     "gene_complete_random_walk",
-    "gene_random_walk_for_classification",
-    "gene_incomplete_random_walk_dataset",
+    "gene_complete_random_walk_for_anomaly_detection",
+    "gene_complete_random_walk_for_classification",
+    "gene_random_walk",
     "gene_physionet2012",
     # list and load datasets
     "list_supported_datasets",

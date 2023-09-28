@@ -497,6 +497,15 @@ def cal_rand_index(
     RI :
         Rand index.
 
+    References
+    ----------
+    .. L. Hubert and P. Arabie, Comparing Partitions, Journal of
+      Classification 1985
+      https://link.springer.com/article/10.1007%2FBF01908075
+
+    .. https://en.wikipedia.org/wiki/Simple_matching_coefficient
+
+    .. https://en.wikipedia.org/wiki/Rand_index
     """
     # # detailed implementation
     # n = len(targets)
@@ -523,7 +532,7 @@ def cal_adjusted_rand_index(
     class_predictions: np.ndarray,
     targets: np.ndarray,
 ) -> float:
-    """Calculate adjusted Rand Index. Refer to :cite:`hubert1985AdjustedRI`.
+    """Calculate adjusted Rand Index.
 
     Parameters
     ----------
@@ -537,6 +546,17 @@ def cal_adjusted_rand_index(
     -------
     aRI :
         Adjusted Rand index.
+
+    References
+    ----------
+    .. [Hubert1985] L. Hubert and P. Arabie, Comparing Partitions,
+      Journal of Classification 1985
+      https://link.springer.com/article/10.1007%2FBF01908075
+
+    .. [Steinley2004] D. Steinley, Properties of the Hubert-Arabie
+      adjusted Rand index, Psychological Methods 2004
+
+    .. [wk] https://en.wikipedia.org/wiki/Rand_index#Adjusted_Rand_index
 
     """
     aRI = metrics.adjusted_rand_score(targets, class_predictions)
@@ -644,7 +664,17 @@ def cal_silhouette(X: np.ndarray, predicted_labels: np.ndarray) -> float:
     Returns
     -------
     silhouette_score : float
-        Mean Silhouette Coefficient for all samples.
+        Mean Silhouette Coefficient for all samples. In short, the higher, the better.
+
+    References
+    ----------
+    .. [1] `Peter J. Rousseeuw (1987). "Silhouettes: a Graphical Aid to the
+       Interpretation and Validation of Cluster Analysis". Computational
+       and Applied Mathematics 20: 53-65.
+       <https://www.sciencedirect.com/science/article/pii/0377042787901257>`_
+
+    .. [2] `Wikipedia entry on the Silhouette Coefficient
+           <https://en.wikipedia.org/wiki/Silhouette_(clustering)>`_
 
     """
     silhouette_score = metrics.silhouette_score(X, predicted_labels)
@@ -659,10 +689,17 @@ def cal_chs(X: np.ndarray, predicted_labels: np.ndarray) -> float:
 
     predicted_labels : array-like of shape (n_samples)
         Predicted labels for each sample.
+
     Returns
     -------
     calinski_harabasz_score : float
-        The resulting Calinski-Harabasz score.
+        The resulting Calinski-Harabasz score. In short, the higher, the better.
+
+    References
+    ----------
+    .. [1] `T. Calinski and J. Harabasz, 1974. "A dendrite method for cluster
+       analysis". Communications in Statistics
+       <https://www.tandfonline.com/doi/abs/10.1080/03610927408827101>`_
 
     """
     calinski_harabasz_score = metrics.calinski_harabasz_score(X, predicted_labels)
@@ -683,7 +720,15 @@ def cal_dbs(X: np.ndarray, predicted_labels: np.ndarray) -> float:
     Returns
     -------
     davies_bouldin_score : float
-        The resulting Davies-Bouldin score.
+        The resulting Davies-Bouldin score. In short, the lower, the better.
+
+    References
+    ----------
+    .. [1] Davies, David L.; Bouldin, Donald W. (1979).
+       `"A Cluster Separation Measure"
+       <https://ieeexplore.ieee.org/document/4766909>`__.
+       IEEE Transactions on Pattern Analysis and Machine Intelligence.
+       PAMI-1 (2): 224-227
 
     """
     davies_bouldin_score = metrics.davies_bouldin_score(X, predicted_labels)
