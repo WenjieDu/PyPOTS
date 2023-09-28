@@ -10,7 +10,7 @@ Learning Representations for Incomplete Time Series Clustering. AAAI 2021."
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: GLP-v3
 
-from typing import Union, Optional
+from typing import Union, Optional, Tuple
 
 import numpy as np
 import torch
@@ -50,7 +50,9 @@ class _CRLI(nn.Module):
             n_steps, rnn_hidden_size * 2, n_features, decoder_fcn_output_dims, device
         )  # fully connected network is included in Decoder
         self.kmeans = KMeans(
-            n_clusters=n_clusters
+            n_clusters=n_clusters,
+            n_init=10,  # FutureWarning: The default value of `n_init` will change from 10 to 'auto' in 1.4. Set the
+            # value of `n_init` explicitly to suppress the warning.
         )  # TODO: implement KMean with torch for gpu acceleration
 
         self.n_clusters = n_clusters
@@ -226,7 +228,6 @@ class CRLI(BaseNNClusterer):
         saving_path: Optional[str] = None,
         model_saving_strategy: Optional[str] = "best",
     ):
-
         super().__init__(
             n_clusters,
             batch_size,
@@ -418,7 +419,8 @@ class CRLI(BaseNNClusterer):
         self,
         X: Union[dict, str],
         file_type: str = "h5py",
-    ) -> np.ndarray:
+        return_latent: bool = False,
+    ) -> Union[np.ndarray, Tuple[np.ndarray, dict]]:
         self.model.eval()  # set the model as eval status to freeze it.
         test_set = DatasetForCRLI(X, return_labels=False, file_type=file_type)
         test_loader = DataLoader(
@@ -427,15 +429,27 @@ class CRLI(BaseNNClusterer):
             shuffle=False,
             num_workers=self.num_workers,
         )
-        latent_collector = []
+        clustering_latent_collector = []
+        imputation_collector = []
 
         with torch.no_grad():
             for idx, data in enumerate(test_loader):
                 inputs = self._assemble_input_for_testing(data)
                 inputs = self.model.forward(inputs, training=False)
-                latent_collector.append(inputs["fcn_latent"])
+                clustering_latent_collector.append(inputs["fcn_latent"])
+                imputation_collector.append(inputs["imputation"])
 
-        latent_collector = torch.cat(latent_collector).cpu().detach().numpy()
-        clustering = self.model.kmeans.fit_predict(latent_collector)
+        imputation = torch.cat(imputation_collector).cpu().detach().numpy()
+        clustering_latent = (
+            torch.cat(clustering_latent_collector).cpu().detach().numpy()
+        )
+        clustering_results = self.model.kmeans.fit_predict(clustering_latent)
+        latent_collector = {
+            "clustering_latent": clustering_latent,
+            "imputation": imputation,
+        }
 
-        return clustering
+        if return_latent:
+            return clustering_results, latent_collector
+
+        return clustering_results
