@@ -77,7 +77,7 @@ class BaseDataset(Dataset):
             y = None if "y" not in data.keys() else data["y"]
             self.X, self.y = self._check_input(X, y)
 
-        self.sample_num = self._get_sample_num()
+        self.n_samples, self.n_steps, self.n_features = self._get_data_sizes()
 
         # set up function fetch_data()
         if isinstance(self.data, str):
@@ -85,25 +85,31 @@ class BaseDataset(Dataset):
         else:
             self.fetch_data = self._fetch_data_from_array
 
-    def _get_sample_num(self) -> int:
+    def _get_data_sizes(self) -> Tuple[int, int, int]:
         """Determine the number of samples in the dataset and return the number.
 
         Returns
         -------
-        sample_num :
+        n_samples :
             The number of the samples in the given dataset.
         """
+
         if isinstance(self.data, str):
             if self.file_handle is None:
                 self.file_handle = self._open_file_handle()
-            sample_num = len(self.file_handle["X"])
+            n_samples = len(self.file_handle["X"])
+            first_sample = self.file_handle["X"][0]
+            n_steps = len(first_sample)
+            n_features = first_sample.shape[-1]
         else:
-            sample_num = len(self.X)
+            n_samples = len(self.X)
+            n_steps = len(self.X[0])
+            n_features = self.X[0].shape[-1]
 
-        return sample_num
+        return n_samples, n_steps, n_features
 
     def __len__(self) -> int:
-        return self.sample_num
+        return self.n_samples
 
     @staticmethod
     def _check_input(
