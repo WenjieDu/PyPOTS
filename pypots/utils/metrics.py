@@ -549,14 +549,15 @@ def cal_adjusted_rand_index(
 
     References
     ----------
-    .. [Hubert1985] L. Hubert and P. Arabie, Comparing Partitions,
+    .. [1] `L. Hubert and P. Arabie, Comparing Partitions,
       Journal of Classification 1985
-      https://link.springer.com/article/10.1007%2FBF01908075
+      <https://link.springer.com/article/10.1007%2FBF01908075>`_
 
-    .. [Steinley2004] D. Steinley, Properties of the Hubert-Arabie
+    .. [2] `D. Steinley, Properties of the Hubert-Arabie
       adjusted Rand index, Psychological Methods 2004
+      <https://psycnet.apa.org/record/2004-17801-007>`_
 
-    .. [wk] https://en.wikipedia.org/wiki/Rand_index#Adjusted_Rand_index
+    .. [3] https://en.wikipedia.org/wiki/Rand_index#Adjusted_Rand_index
 
     """
     aRI = metrics.adjusted_rand_score(targets, class_predictions)
@@ -724,11 +725,11 @@ def cal_dbs(X: np.ndarray, predicted_labels: np.ndarray) -> float:
 
     References
     ----------
-    .. [1] Davies, David L.; Bouldin, Donald W. (1979).
-       `"A Cluster Separation Measure"
-       <https://ieeexplore.ieee.org/document/4766909>`__.
+    .. [1] `Davies, David L.; Bouldin, Donald W. (1979).
+       "A Cluster Separation Measure"
        IEEE Transactions on Pattern Analysis and Machine Intelligence.
        PAMI-1 (2): 224-227
+       <https://ieeexplore.ieee.org/document/4766909>`_
 
     """
     davies_bouldin_score = metrics.davies_bouldin_score(X, predicted_labels)
