@@ -96,6 +96,14 @@ class BaseImputer(BaseModel):
         raise NotImplementedError
 
     @abstractmethod
+    def predict(
+        self,
+        test_set: Union[dict, str],
+        file_type: str = "h5py",
+    ) -> dict:
+        raise NotImplementedError
+
+    @abstractmethod
     def impute(
         self,
         X: Union[dict, str],
@@ -117,6 +125,8 @@ class BaseImputer(BaseModel):
         array-like, shape [n_samples, sequence length (time steps), n_features],
             Imputed data.
         """
+        # this is for old API compatibility, will be removed in the future.
+        # Please implement predict() instead.
         raise NotImplementedError
 
 
@@ -384,29 +394,5 @@ class BaseNNImputer(BaseNNModel):
         file_type : str, default = "h5py",
             The type of the given file if train_set and val_set are path strings.
 
-        """
-        raise NotImplementedError
-
-    @abstractmethod
-    def impute(
-        self,
-        X: Union[dict, str],
-        file_type: str = "h5py",
-    ) -> np.ndarray:
-        """Impute missing values in the given data with the trained model.
-
-        Parameters
-        ----------
-        X :
-            The data samples for testing, should be array-like of shape [n_samples, sequence length (time steps),
-            n_features], or a path string locating a data file, e.g. h5 file.
-
-        file_type :
-            The type of the given file if X is a path string.
-
-        Returns
-        -------
-        array-like, shape [n_samples, sequence length (time steps), n_features],
-            Imputed data.
         """
         raise NotImplementedError

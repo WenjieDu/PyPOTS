@@ -121,11 +121,11 @@ class LOCF(BaseImputer):
 
         return X_imputed
 
-    def impute(
+    def predict(
         self,
-        X: Union[dict, str],
+        test_set: Union[dict, str],
         file_type: str = "h5py",
-    ) -> np.ndarray:
+    ) -> dict:
         assert not isinstance(X, str)
         X = X["X"]
 
@@ -145,4 +145,18 @@ class LOCF(BaseImputer):
                 "X must be type of list/np.ndarray/torch.Tensor, " f"but got {type(X)}"
             )
 
-        return imputed_data
+        result_dict = {
+            "imputation": imputed_data,
+        }
+        return result_dict
+
+    def impute(
+        self,
+        X: Union[dict, str],
+        file_type="h5py",
+    ) -> np.ndarray:
+        logger.warning(
+            "🚨DeprecationWarning: The method impute is deprecated. Please use `predict` instead."
+        )
+        results_dict = self.predict(X, file_type=file_type)
+        return results_dict["imputation"]

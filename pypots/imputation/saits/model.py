@@ -439,12 +439,12 @@ class SAITS(BaseNNImputer):
         # Step 3: save the model if necessary
         self._auto_save_model_if_necessary(training_finished=True)
 
-    def impute(
+    def predict(
         self,
-        X: Union[dict, str],
+        test_set: Union[dict, str],
         file_type: str = "h5py",
         diagonal_attention_mask: bool = True,
-    ) -> np.ndarray:
+    ) -> dict:
         # Step 1: wrap the input data with classes Dataset and DataLoader
         self.model.eval()  # set the model as eval status to freeze it.
         test_set = BaseDataset(X, return_labels=False, file_type=file_type)
@@ -467,6 +467,19 @@ class SAITS(BaseNNImputer):
                 imputation_collector.append(imputed_data)
 
         # Step 3: output collection and return
-        imputation_collector = torch.cat(imputation_collector)
-        imputed_data = imputation_collector.cpu().detach().numpy()
-        return imputed_data
+        imputation_collector = torch.cat(imputation_collector).cpu().detach().numpy()
+        result_dict = {
+            "imputation": imputation_collector,
+        }
+        return result_dict
+
+    def impute(
+        self,
+        X: Union[dict, str],
+        file_type="h5py",
+    ) -> np.ndarray:
+        logger.warning(
+            "🚨DeprecationWarning: The method impute is deprecated. Please use `predict` instead."
+        )
+        results_dict = self.predict(X, file_type=file_type)
+        return results_dict["imputation"]
