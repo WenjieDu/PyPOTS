@@ -519,9 +519,13 @@ class Raindrop(BaseNNClassifier):
         # Step 3: save the model if necessary
         self._auto_save_model_if_necessary(training_finished=True)
 
-    def classify(self, X: Union[dict, str], file_type: str = "h5py") -> np.ndarray:
+    def predict(
+        self,
+        test_set: Union[dict, str],
+        file_type: str = "h5py",
+    ) -> dict:
         self.model.eval()  # set the model as eval status to freeze it.
-        test_set = DatasetForGRUD(X, return_labels=False, file_type=file_type)
+        test_set = DatasetForGRUD(test_set, return_labels=False, file_type=file_type)
         test_loader = DataLoader(
             test_set,
             batch_size=self.batch_size,
@@ -529,13 +533,28 @@ class Raindrop(BaseNNClassifier):
             num_workers=self.num_workers,
         )
 
-        prediction_collector = []
+        classification_collector = []
         with torch.no_grad():
             for idx, data in enumerate(test_loader):
                 inputs = self._assemble_input_for_testing(data)
                 results = self.model.forward(inputs, training=False)
                 prediction = results["classification_pred"]
-                prediction_collector.append(prediction)
+                classification_collector.append(prediction)
 
-        predictions = torch.cat(prediction_collector)
-        return predictions.cpu().detach().numpy()
+        classification = torch.cat(classification_collector).cpu().detach().numpy()
+
+        result_dict = {
+            "classification": classification,
+        }
+        return result_dict
+
+    def classify(
+        self,
+        X: Union[dict, str],
+        file_type: str = "h5py",
+    ) -> np.ndarray:
+        logger.warning(
+            "🚨DeprecationWarning: The method impute is deprecated. Please use `predict` instead."
+        )
+        result_dict = self.predict(X, file_type=file_type)
+        return result_dict["classification"]

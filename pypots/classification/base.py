@@ -96,6 +96,14 @@ class BaseClassifier(BaseModel):
         raise NotImplementedError
 
     @abstractmethod
+    def predict(
+        self,
+        test_set: Union[dict, str],
+        file_type: str = "h5py",
+    ) -> dict:
+        raise NotImplementedError
+
+    @abstractmethod
     def classify(
         self,
         X: Union[dict, str],
@@ -117,6 +125,8 @@ class BaseClassifier(BaseModel):
         array-like, shape [n_samples],
             Classification results of the given samples.
         """
+        # this is for old API compatibility, will be removed in the future.
+        # Please implement predict() instead.
         raise NotImplementedError
 
 
@@ -402,4 +412,6 @@ class BaseNNClassifier(BaseNNModel):
         array-like, shape [n_samples],
             Classification results of the given samples.
         """
+        # this is for old API compatibility, will be removed in the future.
+        # Please implement predict() instead.
         raise NotImplementedError

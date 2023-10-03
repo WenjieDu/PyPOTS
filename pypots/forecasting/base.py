@@ -89,6 +89,14 @@ class BaseForecaster(BaseModel):
         raise NotImplementedError
 
     @abstractmethod
+    def predict(
+        self,
+        test_set: Union[dict, str],
+        file_type: str = "h5py",
+    ) -> dict:
+        raise NotImplementedError
+
+    @abstractmethod
     def forecast(
         self,
         X: dict or str,
@@ -109,6 +117,8 @@ class BaseForecaster(BaseModel):
         array-like, shape [n_samples, prediction_horizon, n_features],
             Forecasting results.
         """
+        # this is for old API compatibility, will be removed in the future.
+        # Please implement predict() instead.
         raise NotImplementedError
 
 
@@ -380,4 +390,6 @@ class BaseNNForecaster(BaseNNModel):
         array-like, shape [n_samples, prediction_horizon, n_features],
             Forecasting results.
         """
+        # this is for old API compatibility, will be removed in the future.
+        # Please implement predict() instead.
         raise NotImplementedError
