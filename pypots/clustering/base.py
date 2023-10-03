@@ -384,6 +384,14 @@ class BaseNNClusterer(BaseNNModel):
         raise NotImplementedError
 
     @abstractmethod
+    def predict(
+        self,
+        test_set: Union[dict, str],
+        file_type: str = "h5py",
+    ) -> dict:
+        raise NotImplementedError
+
+    @abstractmethod
     def cluster(
         self,
         X: Union[dict, str],

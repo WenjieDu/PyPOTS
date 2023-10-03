@@ -465,7 +465,7 @@ class CRLI(BaseNNClusterer):
         return_latent: bool = False,
     ) -> Union[np.ndarray, Tuple[np.ndarray, dict]]:
         logger.warning(
-            "🚨DeprecationWarning: The method impute is deprecated. Please use `predict` instead."
+            "🚨DeprecationWarning: The method cluster is deprecated. Please use `predict` instead."
         )
 
         result_dict = self.predict(X, file_type, return_latent)

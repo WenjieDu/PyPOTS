@@ -362,7 +362,7 @@ class BRITS(BaseNNClassifier):
         file_type: str = "h5py",
     ) -> np.ndarray:
         logger.warning(
-            "🚨DeprecationWarning: The method impute is deprecated. Please use `predict` instead."
+            "🚨DeprecationWarning: The method classify is deprecated. Please use `predict` instead."
         )
         result_dict = self.predict(X, file_type=file_type)
         return result_dict["classification"]
