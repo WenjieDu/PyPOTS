@@ -28,6 +28,7 @@ from ...data.base import BaseDataset
 from ...modules.self_attention import EncoderLayer, PositionalEncoding
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
+from ...utils.logging import logger
 from ...utils.metrics import cal_mae
 
 
@@ -447,7 +448,7 @@ class SAITS(BaseNNImputer):
     ) -> dict:
         # Step 1: wrap the input data with classes Dataset and DataLoader
         self.model.eval()  # set the model as eval status to freeze it.
-        test_set = BaseDataset(X, return_labels=False, file_type=file_type)
+        test_set = BaseDataset(test_set, return_labels=False, file_type=file_type)
         test_loader = DataLoader(
             test_set,
             batch_size=self.batch_size,
@@ -467,9 +468,9 @@ class SAITS(BaseNNImputer):
                 imputation_collector.append(imputed_data)
 
         # Step 3: output collection and return
-        imputation_collector = torch.cat(imputation_collector).cpu().detach().numpy()
+        imputation = torch.cat(imputation_collector).cpu().detach().numpy()
         result_dict = {
-            "imputation": imputation_collector,
+            "imputation": imputation,
         }
         return result_dict
 

@@ -101,5 +101,9 @@ class YourNewModel(BaseNNClassifier):
     ) -> None:
         raise NotImplementedError
 
-    def classify(self, X: Union[dict, str], file_type: str = "h5py") -> np.ndarray:
+    def predict(
+        self,
+        test_set: Union[dict, str],
+        file_type: str = "h5py",
+    ) -> dict:
         raise NotImplementedError

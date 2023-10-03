@@ -492,7 +492,7 @@ class USGAN(BaseNNImputer):
         file_type="h5py",
     ) -> dict:
         self.model.eval()  # set the model as eval status to freeze it.
-        test_set = DatasetForUSGAN(X, return_labels=False, file_type=file_type)
+        test_set = DatasetForUSGAN(test_set, return_labels=False, file_type=file_type)
         test_loader = DataLoader(
             test_set,
             batch_size=self.batch_size,
@@ -508,9 +508,9 @@ class USGAN(BaseNNImputer):
                 imputed_data = results["imputed_data"]
                 imputation_collector.append(imputed_data)
 
-        imputation_collector = torch.cat(imputation_collector).cpu().detach().numpy()
+        imputation = torch.cat(imputation_collector).cpu().detach().numpy()
         result_dict = {
-            "imputation": imputation_collector,
+            "imputation": imputation,
         }
         return result_dict
 

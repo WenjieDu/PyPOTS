@@ -415,14 +415,14 @@ class CRLI(BaseNNClusterer):
         # Step 3: save the model if necessary
         self._auto_save_model_if_necessary(training_finished=True)
 
-    def cluster(
+    def predict(
         self,
-        X: Union[dict, str],
+        test_set: Union[dict, str],
         file_type: str = "h5py",
         return_latent: bool = False,
-    ) -> Union[np.ndarray, Tuple[np.ndarray, dict]]:
+    ) -> dict:
         self.model.eval()  # set the model as eval status to freeze it.
-        test_set = DatasetForCRLI(X, return_labels=False, file_type=file_type)
+        test_set = DatasetForCRLI(test_set, return_labels=False, file_type=file_type)
         test_loader = DataLoader(
             test_set,
             batch_size=self.batch_size,
@@ -443,13 +443,33 @@ class CRLI(BaseNNClusterer):
         clustering_latent = (
             torch.cat(clustering_latent_collector).cpu().detach().numpy()
         )
-        clustering_results = self.model.kmeans.fit_predict(clustering_latent)
+        clustering = self.model.kmeans.fit_predict(clustering_latent)
         latent_collector = {
             "clustering_latent": clustering_latent,
             "imputation": imputation,
         }
 
-        if return_latent:
-            return clustering_results, latent_collector
+        result_dict = {
+            "clustering": clustering,
+        }
 
-        return clustering_results
+        if return_latent:
+            result_dict["latent"] = latent_collector
+
+        return result_dict
+
+    def cluster(
+        self,
+        X: Union[dict, str],
+        file_type: str = "h5py",
+        return_latent: bool = False,
+    ) -> Union[np.ndarray, Tuple[np.ndarray, dict]]:
+        logger.warning(
+            "🚨DeprecationWarning: The method impute is deprecated. Please use `predict` instead."
+        )
+
+        result_dict = self.predict(X, file_type, return_latent)
+        if return_latent:
+            return result_dict["clustering"], result_dict["latent"]
+
+        return result_dict["clustering"]

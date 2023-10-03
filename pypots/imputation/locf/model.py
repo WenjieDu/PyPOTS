@@ -13,6 +13,7 @@ import numpy as np
 import torch
 
 from ..base import BaseImputer
+from ...utils.logging import logger
 
 
 class LOCF(BaseImputer):
@@ -126,8 +127,8 @@ class LOCF(BaseImputer):
         test_set: Union[dict, str],
         file_type: str = "h5py",
     ) -> dict:
-        assert not isinstance(X, str)
-        X = X["X"]
+        assert not isinstance(test_set, str)
+        X = test_set["X"]
 
         assert len(X.shape) == 3, (
             f"Input X should have 3 dimensions [n_samples, n_steps, n_features], "
