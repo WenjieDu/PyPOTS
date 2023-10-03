@@ -393,7 +393,7 @@ class BTTF(BaseForecaster):
         file_type: str = "h5py",
     ) -> np.ndarray:
         logger.warning(
-            "🚨DeprecationWarning: The method impute is deprecated. Please use `predict` instead."
+            "🚨DeprecationWarning: The method forecast is deprecated. Please use `predict` instead."
         )
         result_dict = self.predict(X, file_type=file_type)
         forecasting = result_dict["forecasting"]
