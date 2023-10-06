@@ -28,6 +28,7 @@ from ...data.base import BaseDataset
 from ...modules.self_attention import EncoderLayer, PositionalEncoding
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
+from ...utils.logging import logger
 from ...utils.metrics import cal_mae
 
 
@@ -280,13 +281,12 @@ class SAITS(BaseNNImputer):
         The "better" strategy will automatically save the model during training whenever the model performs
         better than in previous epochs.
 
-    Attributes
+    References
     ----------
-    model : :class:`torch.nn.Module`
-        The underlying SAITS model.
-
-    optimizer : :class:`pypots.optim.Optimizer`
-        The optimizer for model training.
+    .. [1] `Du, Wenjie, David Côté, and Yan Liu.
+        "Saits: Self-attention-based imputation for time series".
+        Expert Systems with Applications 219 (2023): 119619.
+        <https://arxiv.org/pdf/2202.08516>`_
 
     """
 
@@ -440,15 +440,15 @@ class SAITS(BaseNNImputer):
         # Step 3: save the model if necessary
         self._auto_save_model_if_necessary(training_finished=True)
 
-    def impute(
+    def predict(
         self,
-        X: Union[dict, str],
+        test_set: Union[dict, str],
         file_type: str = "h5py",
         diagonal_attention_mask: bool = True,
-    ) -> np.ndarray:
+    ) -> dict:
         # Step 1: wrap the input data with classes Dataset and DataLoader
         self.model.eval()  # set the model as eval status to freeze it.
-        test_set = BaseDataset(X, return_labels=False, file_type=file_type)
+        test_set = BaseDataset(test_set, return_labels=False, file_type=file_type)
         test_loader = DataLoader(
             test_set,
             batch_size=self.batch_size,
@@ -468,6 +468,19 @@ class SAITS(BaseNNImputer):
                 imputation_collector.append(imputed_data)
 
         # Step 3: output collection and return
-        imputation_collector = torch.cat(imputation_collector)
-        imputed_data = imputation_collector.cpu().detach().numpy()
-        return imputed_data
+        imputation = torch.cat(imputation_collector).cpu().detach().numpy()
+        result_dict = {
+            "imputation": imputation,
+        }
+        return result_dict
+
+    def impute(
+        self,
+        X: Union[dict, str],
+        file_type="h5py",
+    ) -> np.ndarray:
+        logger.warning(
+            "🚨DeprecationWarning: The method impute is deprecated. Please use `predict` instead."
+        )
+        results_dict = self.predict(X, file_type=file_type)
+        return results_dict["imputation"]

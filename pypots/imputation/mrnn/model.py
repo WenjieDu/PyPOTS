@@ -21,6 +21,7 @@ from .module import FCN_Regression
 from ..base import BaseNNImputer
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
+from ...utils.logging import logger
 from ...utils.metrics import cal_rmse
 
 
@@ -152,13 +153,13 @@ class MRNN(BaseNNImputer):
         The "better" strategy will automatically save the model during training whenever the model performs
         better than in previous epochs.
 
-    Attributes
+    References
     ----------
-    model : :class:`torch.nn.Module`
-        The underlying BRITS model.
-
-    optimizer : :class:`pypots.optim.Optimizer`
-        The optimizer for model training.
+    .. [1] `J. Yoon, W. R. Zame and M. van der Schaar,
+        "Estimating Missing Data in Temporal Data Streams Using Multi-Directional Recurrent Neural Networks,"
+        in IEEE Transactions on Biomedical Engineering,
+        vol. 66, no. 5, pp. 1477-1490, May 2019, doi: 10.1109/TBME.2018.2874712.
+        <https://arxiv.org/pdf/1711.08742>`_
 
     """
 
@@ -286,13 +287,13 @@ class MRNN(BaseNNImputer):
         # Step 3: save the model if necessary
         self._auto_save_model_if_necessary(training_finished=True)
 
-    def impute(
+    def predict(
         self,
-        X: Union[dict, str],
+        test_set: Union[dict, str],
         file_type="h5py",
-    ) -> np.ndarray:
+    ) -> dict:
         self.model.eval()  # set the model as eval status to freeze it.
-        test_set = DatasetForMRNN(X, return_labels=False, file_type=file_type)
+        test_set = DatasetForMRNN(test_set, return_labels=False, file_type=file_type)
         test_loader = DataLoader(
             test_set,
             batch_size=self.batch_size,
@@ -308,5 +309,19 @@ class MRNN(BaseNNImputer):
                 imputed_data = results["imputed_data"]
                 imputation_collector.append(imputed_data)
 
-        imputation_collector = torch.cat(imputation_collector)
-        return imputation_collector.cpu().detach().numpy()
+        imputation = torch.cat(imputation_collector).cpu().detach().numpy()
+        result_dict = {
+            "imputation": imputation,
+        }
+        return result_dict
+
+    def impute(
+        self,
+        X: Union[dict, str],
+        file_type="h5py",
+    ) -> np.ndarray:
+        logger.warning(
+            "🚨DeprecationWarning: The method impute is deprecated. Please use `predict` instead."
+        )
+        results_dict = self.predict(X, file_type=file_type)
+        return results_dict["imputation"]

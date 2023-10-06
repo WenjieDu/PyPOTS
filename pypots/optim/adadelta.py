@@ -15,22 +15,24 @@ from .lr_scheduler.base import LRScheduler
 
 
 class Adadelta(Optimizer):
-    """The optimizer wrapper for PyTorch Adadelta.
-    https://pytorch.org/docs/stable/generated/torch.optim.Adadelta.html#torch.optim.Adadelta
+    """The optimizer wrapper for PyTorch Adadelta :class:`torch.optim.Adadelta`.
 
     Parameters
     ----------
-    lr :
+    lr : float
         The learning rate of the optimizer.
 
-    rho :
+    rho : float
         Coefficient used for computing a running average of squared gradients.
 
-    eps :
+    eps : float
         Term added to the denominator to improve numerical stability.
 
-    weight_decay :
+    weight_decay : float
         Weight decay (L2 penalty).
+
+    lr_scheduler : pypots.optim.lr_scheduler.base.LRScheduler
+        The learning rate scheduler of the optimizer.
 
     """
 

@@ -34,6 +34,7 @@ from .modules import (
     ar4cast,
 )
 from ..base import BaseForecaster
+from ...utils.logging import logger
 
 
 def _BTTF(
@@ -311,6 +312,13 @@ class BTTF(BaseForecaster):
 
     2). ``n_steps - pred_step`` must be larger than ``max(time_lags)``;
 
+    References
+    ----------
+    .. [1] `Chen, Xinyu, and Lijun Sun.
+        "Bayesian temporal factorization for multidimensional time series prediction."
+        IEEE Transactions on Pattern Analysis and Machine Intelligence 44, no. 9 (2021): 4659-4673.
+        <http://arxiv.org/pdf/1910.06366>`_
+
     """
 
     def __init__(
@@ -351,16 +359,16 @@ class BTTF(BaseForecaster):
         """
         warnings.warn("Please run func forecast(X) directly.")
 
-    def forecast(
+    def predict(
         self,
-        X: Union[dict, str],
+        test_set: Union[dict, str],
         file_type: str = "h5py",
-    ) -> np.ndarray:
+    ) -> dict:
         assert not isinstance(
-            X, str
+            test_set, str
         ), "BTTF so far does not accept file input. It needs a specified Dataset class."
 
-        X = X["X"]
+        X = test_set["X"]
         X = X.transpose((0, 2, 1))
 
         pred = BTTF_forecast(
@@ -373,5 +381,20 @@ class BTTF(BaseForecaster):
             self.burn_iter,
             self.gibbs_iter,
         )
-        pred = pred.transpose((0, 2, 1))
-        return pred
+        forecasting = pred.transpose((0, 2, 1))
+        result_dict = {
+            "forecasting": forecasting,
+        }
+        return result_dict
+
+    def forecast(
+        self,
+        X: Union[dict, str],
+        file_type: str = "h5py",
+    ) -> np.ndarray:
+        logger.warning(
+            "🚨DeprecationWarning: The method impute is deprecated. Please use `predict` instead."
+        )
+        result_dict = self.predict(X, file_type=file_type)
+        forecasting = result_dict["forecasting"]
+        return forecasting

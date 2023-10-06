@@ -27,6 +27,7 @@ from ...data.base import BaseDataset
 from ...modules.self_attention import EncoderLayer, PositionalEncoding
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
+from ...utils.logging import logger
 from ...utils.metrics import cal_mae
 
 
@@ -201,13 +202,18 @@ class Transformer(BaseNNImputer):
         The "better" strategy will automatically save the model during training whenever the model performs
         better than in previous epochs.
 
-    Attributes
+    References
     ----------
-    model : :class:`torch.nn.Module`
-        The underlying Transformer model.
+    .. [1] `Vaswani, Ashish, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones, Aidan N. Gomez, Łukasz Kaiser,
+        and Illia Polosukhin.
+        "Attention is all you need."
+        Advances in neural information processing systems 30 (2017).
+        <https://proceedings.neurips.cc/paper/2017/file/3f5ee243547dee91fbd053c1c4a845aa-Paper.pdf>`_
 
-    optimizer : :class:`pypots.optim.Optimizer`
-        The optimizer for model training.
+    .. [2] `Du, Wenjie, David Côté, and Yan Liu.
+        "Saits: Self-attention-based imputation for time series".
+        Expert Systems with Applications 219 (2023): 119619.
+        <https://arxiv.org/pdf/2202.08516>`_
 
     """
 
@@ -358,9 +364,13 @@ class Transformer(BaseNNImputer):
         # Step 3: save the model if necessary
         self._auto_save_model_if_necessary(training_finished=True)
 
-    def impute(self, X: Union[dict, str], file_type: str = "h5py") -> np.ndarray:
+    def predict(
+        self,
+        test_set: Union[dict, str],
+        file_type: str = "h5py",
+    ) -> dict:
         self.model.eval()  # set the model as eval status to freeze it.
-        test_set = BaseDataset(X, return_labels=False, file_type=file_type)
+        test_set = BaseDataset(test_set, return_labels=False, file_type=file_type)
         test_loader = DataLoader(
             test_set,
             batch_size=self.batch_size,
@@ -376,5 +386,19 @@ class Transformer(BaseNNImputer):
                 imputed_data = results["imputed_data"]
                 imputation_collector.append(imputed_data)
 
-        imputation_collector = torch.cat(imputation_collector)
-        return imputation_collector.cpu().detach().numpy()
+        imputation = torch.cat(imputation_collector).cpu().detach().numpy()
+        result_dict = {
+            "imputation": imputation,
+        }
+        return result_dict
+
+    def impute(
+        self,
+        X: Union[dict, str],
+        file_type="h5py",
+    ) -> np.ndarray:
+        logger.warning(
+            "🚨DeprecationWarning: The method impute is deprecated. Please use `predict` instead."
+        )
+        results_dict = self.predict(X, file_type=file_type)
+        return results_dict["imputation"]

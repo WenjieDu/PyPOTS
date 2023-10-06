@@ -27,6 +27,7 @@ from .modules import TemporalDecay, FeatureRegression
 from ..base import BaseNNImputer
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
+from ...utils.logging import logger
 from ...utils.metrics import cal_mae
 
 
@@ -394,13 +395,12 @@ class BRITS(BaseNNImputer):
         The "better" strategy will automatically save the model during training whenever the model performs
         better than in previous epochs.
 
-    Attributes
+    References
     ----------
-    model : :class:`torch.nn.Module`
-        The underlying BRITS model.
-
-    optimizer : :class:`pypots.optim.Optimizer`
-        The optimizer for model training.
+    .. [1] `Cao, Wei, Dong Wang, Jian Li, Hao Zhou, Lei Li, and Yitan Li.
+        "Brits: Bidirectional recurrent imputation for time series."
+        Advances in neural information processing systems 31 (2018).
+        <https://arxiv.org/pdf/1805.10572>`_
 
     """
 
@@ -528,13 +528,13 @@ class BRITS(BaseNNImputer):
         # Step 3: save the model if necessary
         self._auto_save_model_if_necessary(training_finished=True)
 
-    def impute(
+    def predict(
         self,
-        X: Union[dict, str],
-        file_type="h5py",
-    ) -> np.ndarray:
+        test_set: Union[dict, str],
+        file_type: str = "h5py",
+    ) -> dict:
         self.model.eval()  # set the model as eval status to freeze it.
-        test_set = DatasetForBRITS(X, return_labels=False, file_type=file_type)
+        test_set = DatasetForBRITS(test_set, return_labels=False, file_type=file_type)
         test_loader = DataLoader(
             test_set,
             batch_size=self.batch_size,
@@ -550,5 +550,19 @@ class BRITS(BaseNNImputer):
                 imputed_data = results["imputed_data"]
                 imputation_collector.append(imputed_data)
 
-        imputation_collector = torch.cat(imputation_collector)
-        return imputation_collector.cpu().detach().numpy()
+        imputation = torch.cat(imputation_collector).cpu().detach().numpy()
+        result_dict = {
+            "imputation": imputation,
+        }
+        return result_dict
+
+    def impute(
+        self,
+        X: Union[dict, str],
+        file_type="h5py",
+    ) -> np.ndarray:
+        logger.warning(
+            "🚨DeprecationWarning: The method impute is deprecated. Please use `predict` instead."
+        )
+        results_dict = self.predict(X, file_type=file_type)
+        return results_dict["imputation"]

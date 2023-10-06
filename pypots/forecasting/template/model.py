@@ -99,5 +99,9 @@ class YourNewModel(BaseNNForecaster):
     ) -> None:
         raise NotImplementedError
 
-    def forecast(self, X: Union[dict, str], file_type: str = "h5py") -> np.ndarray:
+    def predict(
+        self,
+        test_set: Union[dict, str],
+        file_type: str = "h5py",
+    ) -> dict:
         raise NotImplementedError

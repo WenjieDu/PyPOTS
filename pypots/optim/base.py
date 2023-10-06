@@ -23,12 +23,15 @@ from .lr_scheduler.base import LRScheduler
 
 
 class Optimizer(ABC):
-    """The base wrapper for PyTorch optimizers, also is the base class for all optimizers in pypots.optim.
+    """The base wrapper for PyTorch optimizers, also is the base class for all optimizers in PyPOTS.
 
     Parameters
     ----------
-    lr :
+    lr : float
         The learning rate of the optimizer.
+
+    lr_scheduler : pypots.optim.lr_scheduler.base.LRScheduler
+        The learning rate scheduler of the optimizer.
 
     Attributes
     ----------
@@ -95,7 +98,7 @@ class Optimizer(ABC):
         ----------
         closure :
             A closure that reevaluates the model and returns the loss. Optional for most optimizers.
-            Refer to the torch.optim.Optimizer.step() docstring for more details.
+            Refer to the :class:`torch.optim.Optimizer.step()` docstring for more details.
 
         """
         self.torch_optimizer.step(closure)
