@@ -328,13 +328,15 @@ class VaDER(BaseNNClusterer):
         The "better" strategy will automatically save the model during training whenever the model performs
         better than in previous epochs.
 
-    Attributes
+    References
     ----------
-    model : :class:`torch.nn.Module`
-        The underlying VaDER model.
+    .. [1] `de Jong, Johann, Mohammad Asif Emon, Ping Wu, Reagon Karki, Meemansa Sood, Patrice Godard,
+    Ashar Ahmad, Henri Vrooman, Martin Hofmann-Apitius, and Holger Fröhlich.
+    "Deep learning for clustering of multivariate clinical patient trajectories with missing values."
+    GigaScience 8, no. 11 (2019): giz134.
+    <https://academic.oup.com/gigascience/article-pdf/8/11/giz134/30797160/giz134.pdf>`_
 
-    optimizer : :class:`pypots.optim.Optimizer`
-        The optimizer for model training.
+
 
     """
 
@@ -602,14 +604,14 @@ class VaDER(BaseNNClusterer):
         # Step 3: save the model if necessary
         self._auto_save_model_if_necessary(training_finished=True)
 
-    def cluster(
+    def predict(
         self,
-        X: Union[dict, str],
+        test_set: Union[dict, str],
         file_type: str = "h5py",
         return_latent: bool = False,
-    ) -> Union[np.ndarray, Tuple[np.ndarray, dict]]:
+    ) -> dict:
         self.model.eval()  # set the model as eval status to freeze it.
-        test_set = DatasetForVaDER(X, return_labels=False, file_type=file_type)
+        test_set = DatasetForVaDER(test_set, return_labels=False, file_type=file_type)
         test_loader = DataLoader(
             test_set,
             batch_size=self.batch_size,
@@ -666,7 +668,7 @@ class VaDER(BaseNNClusterer):
                 clustering_results = np.argmax(p, axis=0)
                 clustering_results_collector.append(clustering_results)
 
-        clustering_results = np.concatenate(clustering_results_collector)
+        clustering = np.concatenate(clustering_results_collector)
         latent_collector = {
             "mu_tilde": np.concatenate(mu_tilde_collector),
             "stddev_tilde": np.concatenate(stddev_tilde_collector),
@@ -677,7 +679,27 @@ class VaDER(BaseNNClusterer):
             "imputation": np.concatenate(imputed_X_collector),
         }
 
-        if return_latent:
-            return clustering_results, latent_collector
+        result_dict = {
+            "clustering": clustering,
+        }
 
-        return clustering_results
+        if return_latent:
+            result_dict["latent"] = latent_collector
+
+        return result_dict
+
+    def cluster(
+        self,
+        X: Union[dict, str],
+        file_type: str = "h5py",
+        return_latent: bool = False,
+    ) -> Union[np.ndarray, Tuple[np.ndarray, dict]]:
+        logger.warning(
+            "🚨DeprecationWarning: The method impute is deprecated. Please use `predict` instead."
+        )
+
+        result_dict = self.predict(X, file_type, return_latent)
+        if return_latent:
+            return result_dict["clustering"], result_dict["latent"]
+
+        return result_dict["clustering"]

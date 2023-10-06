@@ -15,25 +15,27 @@ from .lr_scheduler.base import LRScheduler
 
 
 class Adam(Optimizer):
-    """The optimizer wrapper for PyTorch Adam.
-    https://pytorch.org/docs/stable/generated/torch.optim.Adam.html#torch.optim.Adam
+    """The optimizer wrapper for PyTorch Adam :class:`torch.optim.Adam`.
 
     Parameters
     ----------
-    lr :
+    lr : float
         The learning rate of the optimizer.
 
-    betas :
+    betas : Tuple[float, float]
         Coefficients used for computing running averages of gradient and its square.
 
-    eps :
+    eps : float
         Term added to the denominator to improve numerical stability.
 
-    weight_decay :
+    weight_decay : float
         Weight decay (L2 penalty).
 
-    amsgrad :
+    amsgrad : bool
         Whether to use the AMSGrad variant of this algorithm from the paper :cite:`reddi2018OnTheConvergence`.
+
+    lr_scheduler : pypots.optim.lr_scheduler.base.LRScheduler
+        The learning rate scheduler of the optimizer.
     """
 
     def __init__(
