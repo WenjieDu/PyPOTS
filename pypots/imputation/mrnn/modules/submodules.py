@@ -13,7 +13,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.nn.parameter import Parameter
 
-from ...imputation.brits.modules import FeatureRegression
+from ...brits.modules import FeatureRegression
 
 
 class FCN_Regression(nn.Module):

@@ -13,106 +13,20 @@ Partial implementation uses code from https://github.com/WenjieDu/SAITS.
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: GPL-v3
 
-from typing import Tuple, Union, Optional
+from typing import Union, Optional
 
 import h5py
 import numpy as np
 import torch
-import torch.nn as nn
 from torch.utils.data import DataLoader
 
 from .data import DatasetForSAITS
+from .modules import _TransformerEncoder
 from ..base import BaseNNImputer
 from ...data.base import BaseDataset
-from ...modules.self_attention import EncoderLayer, PositionalEncoding
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
 from ...utils.logging import logger
-from ...utils.metrics import cal_mae
-
-
-class _TransformerEncoder(nn.Module):
-    def __init__(
-        self,
-        n_layers: int,
-        d_time: int,
-        d_feature: int,
-        d_model: int,
-        d_inner: int,
-        n_heads: int,
-        d_k: int,
-        d_v: int,
-        dropout: float,
-        attn_dropout: float,
-        ORT_weight: float = 1,
-        MIT_weight: float = 1,
-    ):
-        super().__init__()
-        self.n_layers = n_layers
-        actual_d_feature = d_feature * 2
-        self.ORT_weight = ORT_weight
-        self.MIT_weight = MIT_weight
-
-        self.layer_stack = nn.ModuleList(
-            [
-                EncoderLayer(
-                    d_model,
-                    d_inner,
-                    n_heads,
-                    d_k,
-                    d_v,
-                    dropout,
-                    attn_dropout,
-                )
-                for _ in range(n_layers)
-            ]
-        )
-
-        self.embedding = nn.Linear(actual_d_feature, d_model)
-        self.position_enc = PositionalEncoding(d_model, n_position=d_time)
-        self.dropout = nn.Dropout(p=dropout)
-        self.reduce_dim = nn.Linear(d_model, d_feature)
-
-    def _process(self, inputs: dict) -> Tuple[torch.Tensor, torch.Tensor]:
-        X, masks = inputs["X"], inputs["missing_mask"]
-        input_X = torch.cat([X, masks], dim=2)
-        input_X = self.embedding(input_X)
-        enc_output = self.dropout(self.position_enc(input_X))
-
-        for encoder_layer in self.layer_stack:
-            enc_output, _ = encoder_layer(enc_output)
-
-        learned_presentation = self.reduce_dim(enc_output)
-        imputed_data = (
-            masks * X + (1 - masks) * learned_presentation
-        )  # replace non-missing part with original data
-        return imputed_data, learned_presentation
-
-    def forward(self, inputs: dict, training: bool = True) -> dict:
-        X, masks = inputs["X"], inputs["missing_mask"]
-        imputed_data, learned_presentation = self._process(inputs)
-
-        if not training:
-            # if not in training mode, return the classification result only
-            return {
-                "imputed_data": imputed_data,
-            }
-
-        ORT_loss = cal_mae(learned_presentation, X, masks)
-        MIT_loss = cal_mae(
-            learned_presentation, inputs["X_intact"], inputs["indicating_mask"]
-        )
-
-        # `loss` is always the item for backward propagating to update the model
-        loss = self.ORT_weight * ORT_loss + self.MIT_weight * MIT_loss
-
-        results = {
-            "imputed_data": imputed_data,
-            "ORT_loss": ORT_loss,
-            "MIT_loss": MIT_loss,
-            "loss": loss,
-        }
-        return results
 
 
 class Transformer(BaseNNImputer):
