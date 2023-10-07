@@ -22,7 +22,7 @@ from torch.nn import Linear
 from torch.nn import init
 from torch.nn.parameter import Parameter
 
-from ...utils.logging import logger
+from ....utils.logging import logger
 
 try:
     from torch_geometric.nn.conv import MessagePassing
