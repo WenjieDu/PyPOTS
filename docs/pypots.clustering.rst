@@ -1,7 +1,7 @@
 pypots.clustering package
 =========================
 
-pypots.clustering.crli module
+pypots.clustering.crli
 -----------------------------
 
 .. automodule:: pypots.clustering.crli
@@ -10,7 +10,7 @@ pypots.clustering.crli module
    :show-inheritance:
    :inherited-members:
 
-pypots.clustering.vader module
+pypots.clustering.vader
 ------------------------------
 
 .. automodule:: pypots.clustering.vader
