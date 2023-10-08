@@ -97,10 +97,7 @@ class _GPVAE(nn.Module):
         self.M = M
         self.K = K
 
-        # Precomputed KL components for efficiency
-        self.prior = self._init_prior()
-        # self.pz_scale_inv = None
-        # self.pz_scale_log_abs_determinant = None
+        self.prior = None
 
     def encode(self, x):
         return self.encoder(x)
@@ -116,6 +113,10 @@ class _GPVAE(nn.Module):
         x = inputs["X"]
         m_mask = inputs["missing_mask"]
         x = x.repeat(self.M * self.K, 1, 1)
+
+        if self.prior is None:
+            self.prior = self._init_prior(device=x.device)
+
         if m_mask is not None:
             m_mask = m_mask.repeat(self.M * self.K, 1, 1)
             m_mask = m_mask.type(torch.bool)
@@ -167,7 +168,7 @@ class _GPVAE(nn.Module):
     def kl_divergence(a, b):
         return torch.distributions.kl.kl_divergence(a, b)
 
-    def _init_prior(self):
+    def _init_prior(self, device="cpu"):
         # Compute kernel matrices for each latent dimension
         kernel_matrices = []
         for i in range(self.kernel_scales):
@@ -205,8 +206,8 @@ class _GPVAE(nn.Module):
         kernel_matrix_tiled = torch.cat(tiled_matrices)
         assert len(kernel_matrix_tiled) == self.latent_dim
         prior = torch.distributions.MultivariateNormal(
-            loc=torch.zeros(self.latent_dim, self.time_length),
-            covariance_matrix=kernel_matrix_tiled,
+            loc=torch.zeros(self.latent_dim, self.time_length, device=device),
+            covariance_matrix=kernel_matrix_tiled.to(device),
         )
 
         return prior
