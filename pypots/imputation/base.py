@@ -96,6 +96,14 @@ class BaseImputer(BaseModel):
         raise NotImplementedError
 
     @abstractmethod
+    def predict(
+        self,
+        test_set: Union[dict, str],
+        file_type: str = "h5py",
+    ) -> dict:
+        raise NotImplementedError
+
+    @abstractmethod
     def impute(
         self,
         X: Union[dict, str],
@@ -117,6 +125,8 @@ class BaseImputer(BaseModel):
         array-like, shape [n_samples, sequence length (time steps), n_features],
             Imputed data.
         """
+        # this is for old API compatibility, will be removed in the future.
+        # Please implement predict() instead.
         raise NotImplementedError
 
 
@@ -388,6 +398,14 @@ class BaseNNImputer(BaseNNModel):
         raise NotImplementedError
 
     @abstractmethod
+    def predict(
+        self,
+        test_set: Union[dict, str],
+        file_type: str = "h5py",
+    ) -> dict:
+        raise NotImplementedError
+
+    @abstractmethod
     def impute(
         self,
         X: Union[dict, str],
@@ -409,4 +427,6 @@ class BaseNNImputer(BaseNNModel):
         array-like, shape [n_samples, sequence length (time steps), n_features],
             Imputed data.
         """
+        # this is for old API compatibility, will be removed in the future.
+        # Please implement predict() instead.
         raise NotImplementedError

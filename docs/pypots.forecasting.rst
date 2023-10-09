@@ -1,7 +1,7 @@
 pypots.forecasting package
 ==========================
 
-pypots.forecasting.bttf module
+pypots.forecasting.bttf
 ------------------------------
 
 .. automodule:: pypots.forecasting.bttf

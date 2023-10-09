@@ -25,7 +25,8 @@ def preprocess_physionet2012(data: dict) -> dict:
             y : pandas.Series
                 The 11988 classification labels of all patients, indicating whether they were deceased.
     """
-    # remove the static features, e.g. age, gender
+    data["static_features"].remove("ICUType")  # keep ICUType for now
+    # remove the other static features, e.g. age, gender
     X = data["X"].drop(data["static_features"], axis=1)
 
     def apply_func(df_temp):  # pad and truncate to set the max length of samples as 48
@@ -41,11 +42,13 @@ def preprocess_physionet2012(data: dict) -> dict:
     X = X.groupby("RecordID").apply(apply_func)
     X = X.drop("RecordID", axis=1)
     X = X.reset_index()
-    X = X.drop(["level_1"], axis=1)
+    ICUType = X[["RecordID", "ICUType"]].set_index("RecordID").dropna()
+    X = X.drop(["level_1", "ICUType"], axis=1)
 
     dataset = {
         "X": X,
         "y": data["y"],
+        "ICUType": ICUType,
     }
 
     return dataset

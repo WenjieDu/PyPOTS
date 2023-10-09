@@ -7,6 +7,7 @@ The base (abstract) classes for models in PyPOTS.
 
 import os
 from abc import ABC
+from abc import abstractmethod
 from datetime import datetime
 from typing import Optional, Union
 
@@ -209,6 +210,33 @@ class BaseModel(ABC):
             if ("loss" in item_name) or ("error" in item_name):
                 self.summary_writer.add_scalar(f"{stage}/{item_name}", loss.sum(), step)
 
+    def _auto_save_model_if_necessary(
+        self,
+        training_finished: bool = True,
+        saving_name: str = None,
+    ):
+        """Automatically save the current model into a file if in need.
+
+        Parameters
+        ----------
+        training_finished :
+            Whether the training is already finished when invoke this function.
+            The saving_strategy "better" only works when training_finished is False.
+            The saving_strategy "best" only works when training_finished is True.
+
+        saving_name :
+            The file name of the saved model.
+
+        """
+        if self.saving_path is not None and self.model_saving_strategy is not None:
+            name = self.__class__.__name__ if saving_name is None else saving_name
+            if not training_finished and self.model_saving_strategy == "better":
+                self.save_model(self.saving_path, name)
+            elif training_finished and self.model_saving_strategy == "best":
+                self.save_model(self.saving_path, name)
+        else:
+            return
+
     def save_model(
         self,
         saving_dir: str,
@@ -258,33 +286,6 @@ class BaseModel(ABC):
                 f'Failed to save the model to "{saving_path}" because of the below error! \n{e}'
             )
 
-    def _auto_save_model_if_necessary(
-        self,
-        training_finished: bool = True,
-        saving_name: str = None,
-    ):
-        """Automatically save the current model into a file if in need.
-
-        Parameters
-        ----------
-        training_finished :
-            Whether the training is already finished when invoke this function.
-            The saving_strategy "better" only works when training_finished is False.
-            The saving_strategy "best" only works when training_finished is True.
-
-        saving_name :
-            The file name of the saved model.
-
-        """
-        if self.saving_path is not None and self.model_saving_strategy is not None:
-            name = self.__class__.__name__ if saving_name is None else saving_name
-            if not training_finished and self.model_saving_strategy == "better":
-                self.save_model(self.saving_path, name)
-            elif training_finished and self.model_saving_strategy == "best":
-                self.save_model(self.saving_path, name)
-        else:
-            return
-
     def load_model(self, model_path: str) -> None:
         """Load the saved model from a disk file.
 
@@ -316,6 +317,72 @@ class BaseModel(ABC):
         except Exception as e:
             raise e
         logger.info(f"Model loaded successfully from {model_path}.")
+
+    @abstractmethod
+    def fit(
+        self,
+        train_set: Union[dict, str],
+        val_set: Optional[Union[dict, str]] = None,
+        file_type: str = "h5py",
+    ) -> None:
+        """Train the classifier on the given data.
+
+        Parameters
+        ----------
+        train_set : dict or str
+            The dataset for model training, should be a dictionary including keys as 'X' and 'y',
+            or a path string locating a data file.
+            If it is a dict, X should be array-like of shape [n_samples, sequence length (time steps), n_features],
+            which is time-series data for training, can contain missing values, and y should be array-like of shape
+            [n_samples], which is classification labels of X.
+            If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
+            key-value pairs like a dict, and it has to include keys as 'X' and 'y'.
+
+        val_set : dict or str
+            The dataset for model validating, should be a dictionary including keys as 'X' and 'y',
+            or a path string locating a data file.
+            If it is a dict, X should be array-like of shape [n_samples, sequence length (time steps), n_features],
+            which is time-series data for validating, can contain missing values, and y should be array-like of shape
+            [n_samples], which is classification labels of X.
+            If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
+            key-value pairs like a dict, and it has to include keys as 'X' and 'y'.
+
+        file_type : str
+            The type of the given file if train_set and val_set are path strings.
+
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    def predict(
+        self,
+        test_set: Union[dict, str],
+        file_type: str = "h5py",
+    ) -> dict:
+        """Make predictions for the input data with the trained model.
+
+        Parameters
+        ----------
+        test_set : dict or str
+            The dataset for model validating, should be a dictionary including keys as 'X' and 'y',
+            or a path string locating a data file.
+            If it is a dict, X should be array-like of shape [n_samples, sequence length (time steps), n_features],
+            which is time-series data for validating, can contain missing values, and y should be array-like of shape
+            [n_samples], which is classification labels of X.
+            If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
+            key-value pairs like a dict, and it has to include keys as 'X' and 'y'.
+
+        file_type : str
+            The type of the given file if test_set is a path string.
+
+        Returns
+        -------
+        result_dict: dict
+            Prediction results in a Python Dictionary for the given samples.
+            It should be a dictionary including keys as 'imputation', 'classification', 'clustering', and 'forecasting'.
+            For sure, only the keys that relevant tasks are supported by the model will be returned.
+        """
+        raise NotImplementedError
 
 
 class BaseNNModel(BaseModel):
@@ -400,7 +467,7 @@ class BaseNNModel(BaseModel):
         else:
             assert (
                 patience <= epochs
-            ), f"patience must be smaller than epoches which is {epochs}, but got patience={patience}"
+            ), f"patience must be smaller than epochs which is {epochs}, but got patience={patience}"
 
         # training hype-parameters
         self.batch_size = batch_size
@@ -421,3 +488,20 @@ class BaseNNModel(BaseModel):
         logger.info(
             f"Model initialized successfully with the number of trainable parameters: {num_params:,}"
         )
+
+    @abstractmethod
+    def fit(
+        self,
+        train_set: Union[dict, str],
+        val_set: Optional[Union[dict, str]] = None,
+        file_type: str = "h5py",
+    ) -> None:
+        raise NotImplementedError
+
+    @abstractmethod
+    def predict(
+        self,
+        test_set: Union[dict, str],
+        file_type: str = "h5py",
+    ) -> dict:
+        raise NotImplementedError

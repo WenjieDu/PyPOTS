@@ -1,7 +1,7 @@
 pypots.imputation package
 =========================
 
-pypots.imputation.saits module
+pypots.imputation.saits
 ------------------------------
 
 .. automodule:: pypots.imputation.saits
@@ -10,7 +10,7 @@ pypots.imputation.saits module
    :show-inheritance:
    :inherited-members:
 
-pypots.imputation.transformer module
+pypots.imputation.transformer
 ------------------------------------
 
 .. automodule:: pypots.imputation.transformer
@@ -19,7 +19,7 @@ pypots.imputation.transformer module
    :show-inheritance:
    :inherited-members:
 
-pypots.imputation.usgan module
+pypots.imputation.usgan
 ------------------------------
 
 .. automodule:: pypots.imputation.usgan
@@ -28,7 +28,7 @@ pypots.imputation.usgan module
    :show-inheritance:
    :inherited-members:
 
-pypots.imputation.gpvae module
+pypots.imputation.gpvae
 ------------------------------
 
 .. automodule:: pypots.imputation.gpvae
@@ -37,7 +37,7 @@ pypots.imputation.gpvae module
    :show-inheritance:
    :inherited-members:
 
-pypots.imputation.brits module
+pypots.imputation.brits
 ------------------------------
 
 .. automodule:: pypots.imputation.brits
@@ -46,7 +46,7 @@ pypots.imputation.brits module
    :show-inheritance:
    :inherited-members:
 
-pypots.imputation.mrnn module
+pypots.imputation.mrnn
 ------------------------------
 
 .. automodule:: pypots.imputation.mrnn
@@ -55,7 +55,7 @@ pypots.imputation.mrnn module
    :show-inheritance:
    :inherited-members:
 
-pypots.imputation.locf module
+pypots.imputation.locf
 -----------------------------
 
 .. automodule:: pypots.imputation.locf

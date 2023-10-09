@@ -350,6 +350,8 @@ def gene_physionet2012(artificially_missing_rate: float = 0.1):
     dataset = load_specific_dataset("physionet_2012")
     X = dataset["X"]
     y = dataset["y"]
+    ICUType = dataset["ICUType"]
+
     all_recordID = X["RecordID"].unique()
     train_set_ids, test_set_ids = train_test_split(all_recordID, test_size=0.2)
     train_set_ids, val_set_ids = train_test_split(train_set_ids, test_size=0.2)
@@ -385,16 +387,28 @@ def gene_physionet2012(artificially_missing_rate: float = 0.1):
     test_y = y[y.index.isin(test_set_ids)].sort_index()
     train_y, val_y, test_y = train_y.to_numpy(), val_y.to_numpy(), test_y.to_numpy()
 
+    train_ICUType = ICUType[ICUType.index.isin(train_set_ids)].sort_index()
+    val_ICUType = ICUType[ICUType.index.isin(val_set_ids)].sort_index()
+    test_ICUType = ICUType[ICUType.index.isin(test_set_ids)].sort_index()
+    train_ICUType, val_ICUType, test_ICUType = (
+        train_ICUType.to_numpy(),
+        val_ICUType.to_numpy(),
+        test_ICUType.to_numpy(),
+    )
+
     data = {
         "n_classes": 2,
         "n_steps": 48,
         "n_features": train_X.shape[-1],
         "train_X": train_X,
         "train_y": train_y.flatten(),
+        "train_ICUType": train_ICUType.flatten(),
         "val_X": val_X,
         "val_y": val_y.flatten(),
+        "val_ICUType": val_ICUType.flatten(),
         "test_X": test_X,
         "test_y": test_y.flatten(),
+        "test_ICUType": test_ICUType.flatten(),
         "scaler": scaler,
     }
 
