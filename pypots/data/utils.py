@@ -194,7 +194,7 @@ def numpy_parse_delta(missing_mask: np.ndarray) -> np.ndarray:
     return delta
 
 
-def sliding_window(time_series, n_steps, sliding_len=None):
+def sliding_window(time_series, window_len, sliding_len=None):
     """Generate time series samples with sliding window method, truncating windows from time-series data
     with a given sequence length.
 
@@ -208,11 +208,11 @@ def sliding_window(time_series, n_steps, sliding_len=None):
     time_series : np.ndarray,
         time series data, len(shape)=2, [total_length, feature_num]
 
-    n_steps : int,
-        The number of time steps in the generated data samples.
+    window_len : int,
+        The length of the sliding window, i.e. the number of time steps in the generated data samples.
 
     sliding_len : int, default = None,
-        The size of the sliding window. It will be set as the same with n_steps if None.
+        The sliding length of the window for each moving step. It will be set as the same with n_steps if None.
 
     Returns
     -------
@@ -220,17 +220,17 @@ def sliding_window(time_series, n_steps, sliding_len=None):
         The generated time-series data samples of shape [seq_len//sliding_len, n_steps, n_features].
 
     """
-    sliding_len = n_steps if sliding_len is None else sliding_len
+    sliding_len = window_len if sliding_len is None else sliding_len
     total_len = time_series.shape[0]
     start_indices = np.asarray(range(total_len // sliding_len)) * sliding_len
 
     # remove the last one if left length is not enough
-    if total_len - start_indices[-1] * sliding_len < n_steps:
+    if total_len - start_indices[-1] * sliding_len < window_len:
         start_indices = start_indices[:-1]
 
     sample_collector = []
     for idx in start_indices:
-        sample_collector.append(time_series[idx : idx + n_steps])
+        sample_collector.append(time_series[idx : idx + window_len])
 
     samples = np.asarray(sample_collector).astype("float32")
 

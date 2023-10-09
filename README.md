@@ -191,9 +191,12 @@ and we are pursuing to publish it in prestigious academic venues, e.g. JMLR (tra
 [Machine Learning Open Source Software](https://www.jmlr.org/mloss/)). If you use PyPOTS in your work,
 please cite it as below and 🌟star this repository to make others notice this library. 🤗
 
+There are scientific research projects using PyPOTS and referencing in their papers.
+Here is [an incomplete list of them](https://scholar.google.com/scholar?as_ylo=2022&q=%E2%80%9CPyPOTS%E2%80%9D&hl=en>).
+
 ``` bibtex
 @article{du2023PyPOTS,
-title={{PyPOTS: A Python Toolbox for Data Mining on Partially-Observed Time Series}},
+title={{PyPOTS: a Python toolbox for data mining on Partially-Observed Time Series}},
 author={Wenjie Du},
 year={2023},
 eprint={2305.18811},
@@ -204,11 +207,25 @@ doi={10.48550/arXiv.2305.18811},
 }
 ```
 
+> Wenjie Du. (2023).
+> PyPOTS: a Python toolbox for data mining on Partially-Observed Time Series.
+> arXiv, abs/2305.18811.https://arxiv.org/abs/2305.18811
+
 or
 
+``` bibtex
+@inproceedings{du2023PyPOTS,
+title={{PyPOTS: a Python toolbox for data mining on Partially-Observed Time Series}},
+booktitle={9th SIGKDD workshop on Mining and Learning from Time Series (MiLeTS'23)},
+author={Wenjie Du},
+year={2023},
+url={https://arxiv.org/abs/2305.18811},
+}
+```
+
 > Wenjie Du. (2023).
-> PyPOTS: A Python Toolbox for Data Mining on Partially-Observed Time Series.
-> arXiv, abs/2305.18811. https://doi.org/10.48550/arXiv.2305.18811
+> PyPOTS: a Python toolbox for data mining on Partially-Observed Time Series.
+> In *9th SIGKDD workshop on Mining and Learning from Time Series (MiLeTS'23)*. https://arxiv.org/abs/2305.18811
 
 
 ## ❖ Contribution

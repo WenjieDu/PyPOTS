@@ -1,7 +1,7 @@
 pypots.utils package
 ====================
 
-pypots.utils.file module
+pypots.utils.file
 -------------------------
 
 .. automodule:: pypots.utils.file
@@ -10,7 +10,7 @@ pypots.utils.file module
    :show-inheritance:
    :inherited-members:
 
-pypots.utils.metrics module
+pypots.utils.metrics
 ---------------------------
 
 .. automodule:: pypots.utils.metrics
@@ -19,7 +19,7 @@ pypots.utils.metrics module
    :show-inheritance:
    :inherited-members:
 
-pypots.utils.random module
+pypots.utils.random
 --------------------------
 
 .. automodule:: pypots.utils.random

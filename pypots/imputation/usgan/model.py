@@ -14,155 +14,14 @@ from typing import Union, Optional
 import h5py
 import numpy as np
 import torch
-import torch.nn as nn
-import torch.nn.functional as F
 from torch.utils.data import DataLoader
 
 from .data import DatasetForUSGAN
+from .modules import _USGAN
 from ..base import BaseNNImputer
-from ..brits.model import _BRITS
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
 from ...utils.logging import logger
-
-
-class Discriminator(nn.Module):
-    """model Discriminator: built on BiRNN
-
-    Parameters
-    ----------
-    n_features :
-        the feature dimension of the input
-
-    rnn_hidden_size :
-        the hidden size of the RNN cell
-
-    hint_rate :
-        the hint rate for the input imputed_data
-
-    dropout_rate :
-        the dropout rate for the output layer
-
-    device :
-        specify running the model on which device, CPU/GPU
-
-    """
-
-    def __init__(
-        self,
-        n_features: int,
-        rnn_hidden_size: int,
-        hint_rate: float = 0.7,
-        dropout_rate: float = 0.0,
-        device: Union[str, torch.device] = "cpu",
-    ):
-        super().__init__()
-        self.hint_rate = hint_rate
-        self.device = device
-        self.biRNN = nn.GRU(
-            n_features * 2, rnn_hidden_size, bidirectional=True, batch_first=True
-        ).to(device)
-        self.dropout = nn.Dropout(dropout_rate).to(device)
-        self.read_out = nn.Linear(rnn_hidden_size * 2, n_features).to(device)
-
-    def forward(
-        self,
-        imputed_X: torch.Tensor,
-        missing_mask: torch.Tensor,
-    ) -> torch.Tensor:
-        """Forward processing of USGAN Discriminator.
-
-        Parameters
-        ----------
-        imputed_X : torch.Tensor,
-            The original X with missing parts already imputed.
-
-        missing_mask : torch.Tensor,
-            The missing mask of X.
-
-        Returns
-        -------
-        logits : torch.Tensor,
-            the logits of the probability of being the true value.
-
-        """
-
-        hint = (
-            torch.rand_like(missing_mask, dtype=torch.float, device=self.device)
-            < self.hint_rate
-        )
-        hint = hint.int()
-        h = hint * missing_mask + (1 - hint) * 0.5
-        x_in = torch.cat([imputed_X, h], dim=-1)
-
-        out, _ = self.biRNN(x_in)
-        logits = self.read_out(self.dropout(out))
-        return logits
-
-
-class _USGAN(nn.Module):
-    """USGAN model"""
-
-    def __init__(
-        self,
-        n_steps: int,
-        n_features: int,
-        rnn_hidden_size: int,
-        lambda_mse: float,
-        hint_rate: float = 0.7,
-        dropout_rate: float = 0.0,
-        device: Union[str, torch.device] = "cpu",
-    ):
-        super().__init__()
-        self.generator = _BRITS(n_steps, n_features, rnn_hidden_size, device)
-        self.discriminator = Discriminator(
-            n_features,
-            rnn_hidden_size,
-            hint_rate=hint_rate,
-            dropout_rate=dropout_rate,
-            device=device,
-        )
-
-        self.lambda_mse = lambda_mse
-        self.device = device
-
-    def forward(
-        self,
-        inputs: dict,
-        training_object: str = "generator",
-        training: bool = True,
-    ) -> dict:
-        assert training_object in [
-            "generator",
-            "discriminator",
-        ], 'training_object should be "generator" or "discriminator"'
-
-        forward_X = inputs["forward"]["X"]
-        forward_missing_mask = inputs["forward"]["missing_mask"]
-        losses = {}
-        results = self.generator(inputs, training=training)
-        inputs["discrimination"] = self.discriminator(forward_X, forward_missing_mask)
-        if not training:
-            # if only run imputation operation, then no need to calculate loss
-            return results
-
-        if training_object == "discriminator":
-            l_D = F.binary_cross_entropy_with_logits(
-                inputs["discrimination"], forward_missing_mask
-            )
-            losses["discrimination_loss"] = l_D
-        else:
-            inputs["discrimination"] = inputs["discrimination"].detach()
-            l_G = F.binary_cross_entropy_with_logits(
-                inputs["discrimination"],
-                1 - forward_missing_mask,
-                weight=1 - forward_missing_mask,
-            )
-            loss_gene = l_G + self.lambda_mse * results["loss"]
-            losses["generation_loss"] = loss_gene
-
-        losses["imputed_data"] = results["imputed_data"]
-        return losses
 
 
 class USGAN(BaseNNImputer):
@@ -486,13 +345,13 @@ class USGAN(BaseNNImputer):
         # Step 3: save the model if necessary
         self._auto_save_model_if_necessary(training_finished=True)
 
-    def impute(
+    def predict(
         self,
-        X: Union[dict, str],
+        test_set: Union[dict, str],
         file_type="h5py",
-    ) -> np.ndarray:
+    ) -> dict:
         self.model.eval()  # set the model as eval status to freeze it.
-        test_set = DatasetForUSGAN(X, return_labels=False, file_type=file_type)
+        test_set = DatasetForUSGAN(test_set, return_labels=False, file_type=file_type)
         test_loader = DataLoader(
             test_set,
             batch_size=self.batch_size,
@@ -508,5 +367,19 @@ class USGAN(BaseNNImputer):
                 imputed_data = results["imputed_data"]
                 imputation_collector.append(imputed_data)
 
-        imputation_collector = torch.cat(imputation_collector)
-        return imputation_collector.cpu().detach().numpy()
+        imputation = torch.cat(imputation_collector).cpu().detach().numpy()
+        result_dict = {
+            "imputation": imputation,
+        }
+        return result_dict
+
+    def impute(
+        self,
+        X: Union[dict, str],
+        file_type="h5py",
+    ) -> np.ndarray:
+        logger.warning(
+            "🚨DeprecationWarning: The method impute is deprecated. Please use `predict` instead."
+        )
+        results_dict = self.predict(X, file_type=file_type)
+        return results_dict["imputation"]

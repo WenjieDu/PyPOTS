@@ -16,100 +16,16 @@ are fixed here.
 
 from typing import Optional, Union
 
+import numpy as np
 import torch
-import torch.nn as nn
-import torch.nn.functional as F
 from torch.utils.data import DataLoader
 
 from .data import DatasetForBRITS
-from .modules import RITS
+from .modules import _BRITS
 from ..base import BaseNNClassifier
-from ...imputation.brits.model import (
-    _BRITS as imputation_BRITS,
-)
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
-
-
-class _BRITS(imputation_BRITS, nn.Module):
-    def __init__(
-        self,
-        n_steps: int,
-        n_features: int,
-        rnn_hidden_size: int,
-        n_classes: int,
-        classification_weight: float,
-        reconstruction_weight: float,
-        device: Union[str, torch.device],
-    ):
-        super().__init__(n_steps, n_features, rnn_hidden_size, device)
-        self.n_steps = n_steps
-        self.n_features = n_features
-        self.rnn_hidden_size = rnn_hidden_size
-        self.n_classes = n_classes
-
-        # create models
-        self.rits_f = RITS(n_steps, n_features, rnn_hidden_size, n_classes, device)
-        self.rits_b = RITS(n_steps, n_features, rnn_hidden_size, n_classes, device)
-        self.classification_weight = classification_weight
-        self.reconstruction_weight = reconstruction_weight
-
-    def impute(self, inputs: dict) -> torch.Tensor:
-        return super().impute(inputs)
-
-    def forward(self, inputs: dict, training: bool = True) -> dict:
-        """Forward processing of BRITS.
-
-        Parameters
-        ----------
-        inputs :
-            The input data.
-
-        training :
-            Whether in training mode.
-
-        Returns
-        -------
-        dict, A dictionary includes all results.
-        """
-        ret_f = self.rits_f(inputs, "forward")
-        ret_b = self._reverse(self.rits_b(inputs, "backward"))
-
-        classification_pred = (ret_f["prediction"] + ret_b["prediction"]) / 2
-        if not training:
-            # if not in training mode, return the classification result only
-            return {"classification_pred": classification_pred}
-
-        ret_f["classification_loss"] = F.nll_loss(
-            torch.log(ret_f["prediction"]), inputs["label"]
-        )
-        ret_b["classification_loss"] = F.nll_loss(
-            torch.log(ret_b["prediction"]), inputs["label"]
-        )
-        consistency_loss = self._get_consistency_loss(
-            ret_f["imputed_data"], ret_b["imputed_data"]
-        )
-        classification_loss = (
-            ret_f["classification_loss"] + ret_b["classification_loss"]
-        ) / 2
-        reconstruction_loss = (
-            ret_f["reconstruction_loss"] + ret_b["reconstruction_loss"]
-        ) / 2
-
-        loss = (
-            consistency_loss
-            + reconstruction_loss * self.reconstruction_weight
-            + classification_loss * self.classification_weight
-        )
-
-        results = {
-            "classification_pred": classification_pred,
-            "consistency_loss": consistency_loss,
-            "classification_loss": classification_loss,
-            "reconstruction_loss": reconstruction_loss,
-            "loss": loss,
-        }
-        return results
+from ...utils.logging import logger
 
 
 class BRITS(BaseNNClassifier):
@@ -326,23 +242,41 @@ class BRITS(BaseNNClassifier):
         # Step 3: save the model if necessary
         self._auto_save_model_if_necessary(training_finished=True)
 
-    def classify(self, X: Union[dict, str], file_type: str = "h5py"):
+    def predict(
+        self,
+        test_set: Union[dict, str],
+        file_type: str = "h5py",
+    ) -> dict:
         self.model.eval()  # set the model as eval status to freeze it.
-        test_set = DatasetForBRITS(X, return_labels=False, file_type=file_type)
+        test_set = DatasetForBRITS(test_set, return_labels=False, file_type=file_type)
         test_loader = DataLoader(
             test_set,
             batch_size=self.batch_size,
             shuffle=False,
             num_workers=self.num_workers,
         )
-        prediction_collector = []
+        classification_collector = []
 
         with torch.no_grad():
             for idx, data in enumerate(test_loader):
                 inputs = self._assemble_input_for_testing(data)
                 results = self.model.forward(inputs, training=False)
                 classification_pred = results["classification_pred"]
-                prediction_collector.append(classification_pred)
+                classification_collector.append(classification_pred)
 
-        predictions = torch.cat(prediction_collector)
-        return predictions.cpu().detach().numpy()
+        classification = torch.cat(classification_collector).cpu().detach().numpy()
+        result_dict = {
+            "classification": classification,
+        }
+        return result_dict
+
+    def classify(
+        self,
+        X: Union[dict, str],
+        file_type: str = "h5py",
+    ) -> np.ndarray:
+        logger.warning(
+            "🚨DeprecationWarning: The method classify is deprecated. Please use `predict` instead."
+        )
+        result_dict = self.predict(X, file_type=file_type)
+        return result_dict["classification"]
