@@ -20,8 +20,28 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from .modules import RITS
-from ....imputation.brits.model import _BRITS as imputation_BRITS
+from ....imputation.brits.modules.core import RITS as imputation_RITS
+from ....imputation.brits.modules.core import _BRITS as imputation_BRITS
+
+
+class RITS(imputation_RITS):
+    def __init__(
+        self,
+        n_steps: int,
+        n_features: int,
+        rnn_hidden_size: int,
+        n_classes: int,
+        device: Union[str, torch.device],
+    ):
+        super().__init__(n_steps, n_features, rnn_hidden_size, device)
+        self.dropout = nn.Dropout(p=0.25)
+        self.classifier = nn.Linear(self.rnn_hidden_size, n_classes)
+
+    def forward(self, inputs: dict, direction: str = "forward") -> dict:
+        ret_dict = super().forward(inputs, direction)
+        logits = self.classifier(ret_dict["final_hidden_state"])
+        ret_dict["prediction"] = torch.softmax(logits, dim=1)
+        return ret_dict
 
 
 class _BRITS(imputation_BRITS, nn.Module):
