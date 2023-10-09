@@ -191,6 +191,9 @@ and we are pursuing to publish it in prestigious academic venues, e.g. JMLR (tra
 [Machine Learning Open Source Software](https://www.jmlr.org/mloss/)). If you use PyPOTS in your work,
 please cite it as below and 🌟star this repository to make others notice this library. 🤗
 
+There are scientific research projects using PyPOTS and referencing in their papers.
+Here is [an incomplete list of them](https://scholar.google.com/scholar?as_ylo=2022&q=%E2%80%9CPyPOTS%E2%80%9D&hl=en>).
+
 ``` bibtex
 @article{du2023PyPOTS,
 title={{PyPOTS: a Python toolbox for data mining on Partially-Observed Time Series}},
