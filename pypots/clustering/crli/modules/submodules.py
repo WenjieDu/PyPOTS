@@ -124,18 +124,15 @@ class Generator(nn.Module):
         self.f_rnn = MultiRNNCell(cell_type, n_layers, n_features, d_hidden, device)
         self.b_rnn = MultiRNNCell(cell_type, n_layers, n_features, d_hidden, device)
 
-    def forward(self, inputs: dict) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+    def forward(self, inputs: dict) -> Tuple[torch.Tensor, torch.Tensor]:
         f_outputs, f_final_hidden_state = self.f_rnn(inputs)
         b_outputs, b_final_hidden_state = self.b_rnn(inputs)
         b_outputs = reverse_tensor(b_outputs)  # reverse the output of the backward rnn
-        imputation = (f_outputs + b_outputs) / 2
-        imputed_X = inputs["X"] * inputs["missing_mask"] + imputation * (
-            1 - inputs["missing_mask"]
-        )
+        imputation_latent = (f_outputs + b_outputs) / 2
         fb_final_hidden_states = torch.concat(
             [f_final_hidden_state, b_final_hidden_state], dim=-1
         )
-        return imputation, imputed_X, fb_final_hidden_states
+        return imputation_latent, fb_final_hidden_states
 
 
 class Discriminator(nn.Module):
@@ -161,7 +158,10 @@ class Discriminator(nn.Module):
         self.output_layer = nn.Linear(32, d_input)
 
     def forward(self, inputs: dict) -> torch.Tensor:
-        imputed_X = inputs["imputed_X"]
+        imputed_X = (inputs["X"] * inputs["missing_mask"]) + (
+            inputs["imputation_latent"] * (1 - inputs["missing_mask"])
+        )
+
         bz, n_steps, _ = imputed_X.shape
         hidden_states = [
             torch.zeros((bz, 32), device=self.device),

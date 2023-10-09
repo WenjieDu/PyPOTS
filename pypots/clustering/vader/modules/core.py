@@ -172,7 +172,6 @@ class _VaDER(nn.Module):
             mu_tilde,
             stddev_tilde,
         ) = self.get_results(X, missing_mask)
-        imputed_X = X_reconstructed * (1 - missing_mask) + X * missing_mask
 
         if not training and not pretrain:
             results = {
@@ -182,7 +181,7 @@ class _VaDER(nn.Module):
                 "var": var_c,
                 "phi": phi_c,
                 "z": z,
-                "imputed_X": imputed_X,
+                "imputation_latent": X_reconstructed,
             }
             # if only run clustering, then no need to calculate loss
             return results

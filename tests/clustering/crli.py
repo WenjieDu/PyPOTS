@@ -21,6 +21,7 @@ from pypots.utils.metrics import (
 from tests.clustering.config import (
     EPOCHS,
     TRAIN_SET,
+    VAL_SET,
     TEST_SET,
     RESULT_SAVING_DIR_FOR_CLUSTERING,
 )
@@ -74,9 +75,9 @@ class TestCRLI(unittest.TestCase):
     @pytest.mark.xdist_group(name="clustering-crli")
     def test_0_fit(self):
         logger.info("Training CRLI-GRU...")
-        self.crli_gru.fit(TRAIN_SET)
+        self.crli_gru.fit(TRAIN_SET, VAL_SET)
         logger.info("Training CRLI-LSTM...")
-        self.crli_lstm.fit(TRAIN_SET)
+        self.crli_lstm.fit(TRAIN_SET, VAL_SET)
 
     @pytest.mark.xdist_group(name="clustering-crli")
     def test_1_parameters(self):
