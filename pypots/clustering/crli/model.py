@@ -254,14 +254,42 @@ class CRLI(BaseNNClusterer):
                         self._save_log_into_tb_file(
                             training_step, "training", loss_results
                         )
+
                 mean_epoch_train_D_loss = np.mean(epoch_train_loss_D_collector)
                 mean_epoch_train_G_loss = np.mean(epoch_train_loss_G_collector)
-                logger.info(
-                    f"epoch {epoch}: "
-                    f"training loss_generator {mean_epoch_train_G_loss:.4f}, "
-                    f"train loss_discriminator {mean_epoch_train_D_loss:.4f}"
-                )
-                mean_loss = mean_epoch_train_G_loss
+
+                if val_loader is not None:
+                    self.model.eval()
+                    epoch_val_loss_G_collector = []
+                    with torch.no_grad():
+                        for idx, data in enumerate(val_loader):
+                            inputs = self._assemble_input_for_validating(data)
+                            results = self.model.forward(inputs, return_loss=True)
+                            epoch_val_loss_G_collector.append(
+                                results["generation_loss"].sum().item()
+                            )
+                    mean_val_G_loss = np.mean(epoch_val_loss_G_collector)
+                    # save validating loss logs into the tensorboard file for every epoch if in need
+                    if self.summary_writer is not None:
+                        val_loss_dict = {
+                            "generation_loss": mean_val_G_loss,
+                        }
+                        self._save_log_into_tb_file(epoch, "validating", val_loss_dict)
+                    logger.info(
+                        f"epoch {epoch}: "
+                        f"training loss_generator {mean_epoch_train_G_loss:.4f}, "
+                        f"training loss_discriminator {mean_epoch_train_D_loss:.4f}, "
+                        f"validating loss_generator {mean_val_G_loss:.4f}"
+                    )
+                    mean_loss = mean_val_G_loss
+                else:
+
+                    logger.info(
+                        f"epoch {epoch}: "
+                        f"training loss_generator {mean_epoch_train_G_loss:.4f}, "
+                        f"training loss_discriminator {mean_epoch_train_D_loss:.4f}"
+                    )
+                    mean_loss = mean_epoch_train_G_loss
 
                 if mean_loss < self.best_loss:
                     self.best_loss = mean_loss
@@ -314,8 +342,18 @@ class CRLI(BaseNNClusterer):
             num_workers=self.num_workers,
         )
 
+        val_loader = None
+        if val_set is not None:
+            val_set = DatasetForCRLI(val_set, return_labels=False, file_type=file_type)
+            val_loader = DataLoader(
+                val_set,
+                batch_size=self.batch_size,
+                shuffle=False,
+                num_workers=self.num_workers,
+            )
+
         # Step 2: train the model and freeze it
-        self._train_model(training_loader)
+        self._train_model(training_loader, val_loader)
         self.model.load_state_dict(self.best_model_dict)
         self.model.eval()  # set the model as eval status to freeze it.
 
@@ -342,9 +380,9 @@ class CRLI(BaseNNClusterer):
         with torch.no_grad():
             for idx, data in enumerate(test_loader):
                 inputs = self._assemble_input_for_testing(data)
-                inputs = self.model.forward(inputs, training=False)
+                inputs = self.model.forward(inputs, return_loss=False)
                 clustering_latent_collector.append(inputs["fcn_latent"])
-                imputation_collector.append(inputs["imputation"])
+                imputation_collector.append(inputs["imputation_latent"])
 
         imputation = torch.cat(imputation_collector).cpu().detach().numpy()
         clustering_latent = (
@@ -353,7 +391,7 @@ class CRLI(BaseNNClusterer):
         clustering = self.model.kmeans.fit_predict(clustering_latent)
         latent_collector = {
             "clustering_latent": clustering_latent,
-            "imputation": imputation,
+            "imputation_latent": imputation,
         }
 
         result_dict = {
