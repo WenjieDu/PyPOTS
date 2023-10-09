@@ -18,100 +18,14 @@ from typing import Optional, Union
 
 import numpy as np
 import torch
-import torch.nn as nn
-import torch.nn.functional as F
 from torch.utils.data import DataLoader
 
 from .data import DatasetForBRITS
-from .modules import RITS
+from .modules import _BRITS
 from ..base import BaseNNClassifier
-from ...imputation.brits.model import (
-    _BRITS as imputation_BRITS,
-)
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
 from ...utils.logging import logger
-
-
-class _BRITS(imputation_BRITS, nn.Module):
-    def __init__(
-        self,
-        n_steps: int,
-        n_features: int,
-        rnn_hidden_size: int,
-        n_classes: int,
-        classification_weight: float,
-        reconstruction_weight: float,
-        device: Union[str, torch.device],
-    ):
-        super().__init__(n_steps, n_features, rnn_hidden_size, device)
-        self.n_steps = n_steps
-        self.n_features = n_features
-        self.rnn_hidden_size = rnn_hidden_size
-        self.n_classes = n_classes
-
-        # create models
-        self.rits_f = RITS(n_steps, n_features, rnn_hidden_size, n_classes, device)
-        self.rits_b = RITS(n_steps, n_features, rnn_hidden_size, n_classes, device)
-        self.classification_weight = classification_weight
-        self.reconstruction_weight = reconstruction_weight
-
-    def impute(self, inputs: dict) -> torch.Tensor:
-        return super().impute(inputs)
-
-    def forward(self, inputs: dict, training: bool = True) -> dict:
-        """Forward processing of BRITS.
-
-        Parameters
-        ----------
-        inputs :
-            The input data.
-
-        training :
-            Whether in training mode.
-
-        Returns
-        -------
-        dict, A dictionary includes all results.
-        """
-        ret_f = self.rits_f(inputs, "forward")
-        ret_b = self._reverse(self.rits_b(inputs, "backward"))
-
-        classification_pred = (ret_f["prediction"] + ret_b["prediction"]) / 2
-        if not training:
-            # if not in training mode, return the classification result only
-            return {"classification_pred": classification_pred}
-
-        ret_f["classification_loss"] = F.nll_loss(
-            torch.log(ret_f["prediction"]), inputs["label"]
-        )
-        ret_b["classification_loss"] = F.nll_loss(
-            torch.log(ret_b["prediction"]), inputs["label"]
-        )
-        consistency_loss = self._get_consistency_loss(
-            ret_f["imputed_data"], ret_b["imputed_data"]
-        )
-        classification_loss = (
-            ret_f["classification_loss"] + ret_b["classification_loss"]
-        ) / 2
-        reconstruction_loss = (
-            ret_f["reconstruction_loss"] + ret_b["reconstruction_loss"]
-        ) / 2
-
-        loss = (
-            consistency_loss
-            + reconstruction_loss * self.reconstruction_weight
-            + classification_loss * self.classification_weight
-        )
-
-        results = {
-            "classification_pred": classification_pred,
-            "consistency_loss": consistency_loss,
-            "classification_loss": classification_loss,
-            "reconstruction_loss": reconstruction_loss,
-            "loss": loss,
-        }
-        return results
 
 
 class BRITS(BaseNNClassifier):
@@ -362,7 +276,7 @@ class BRITS(BaseNNClassifier):
         file_type: str = "h5py",
     ) -> np.ndarray:
         logger.warning(
-            "🚨DeprecationWarning: The method impute is deprecated. Please use `predict` instead."
+            "🚨DeprecationWarning: The method classify is deprecated. Please use `predict` instead."
         )
         result_dict = self.predict(X, file_type=file_type)
         return result_dict["classification"]
