@@ -133,6 +133,8 @@ Task                           Type             Algorithm                       
 ============================== ================ =========================================================================  ====== =========
 Imputation                     Neural Network   SAITS (Self-Attention-based Imputation for Time Series)                    2022   :cite:`du2023SAITS`
 Imputation                     Neural Network   Transformer                                                                2017   :cite:`vaswani2017Transformer`, :cite:`du2023SAITS`
+Imputation                     Neural Network   US-GAN                                                                     2021   :cite:`miao2021SSGAN`
+Imputation                     Neural Network   GP-VAE                                                                     2020   :cite:`fortuin2020GPVAEDeep`
 Imputation, Classification     Neural Network   BRITS (Bidirectional Recurrent Imputation for Time Series)                 2018   :cite:`cao2018BRITS`
 Imputation                     Neural Network   M-RNN (Multi-directional Recurrent Neural Network)                         2019   :cite:`yoon2019MRNN`
 Imputation                     Naive            LOCF (Last Observation Carried Forward)                                    /      /
@@ -159,7 +161,7 @@ please cite it as below and 🌟star `PyPOTS repository <https://github.com/Wenj
    :linenos:
 
    @article{du2023PyPOTS,
-   title={{PyPOTS: A Python Toolbox for Data Mining on Partially-Observed Time Series}},
+   title={{PyPOTS: a Python toolbox for data mining on Partially-Observed Time Series}},
    author={Wenjie Du},
    year={2023},
    eprint={2305.18811},
@@ -169,11 +171,31 @@ please cite it as below and 🌟star `PyPOTS repository <https://github.com/Wenj
    doi={10.48550/arXiv.2305.18811},
    }
 
-or
+..
 
    Wenjie Du. (2023).
-   PyPOTS: A Python Toolbox for Data Mining on Partially-Observed Time Series.
+   PyPOTS: a Python toolbox for data mining on Partially-Observed Time Series.
    arXiv, abs/2305.18811. https://doi.org/10.48550/arXiv.2305.18811
+
+or
+
+.. code-block:: bibtex
+   :linenos:
+
+   @inproceedings{du2023PyPOTS,
+   title={{PyPOTS: a Python toolbox for data mining on Partially-Observed Time Series}},
+   booktitle={9th SIGKDD workshop on Mining and Learning from Time Series (MiLeTS'23)},
+   author={Wenjie Du},
+   year={2023},
+   url={https://arxiv.org/abs/2305.18811},
+   }
+
+..
+
+   Wenjie Du. (2023).
+   PyPOTS: a Python toolbox for data mining on Partially-Observed Time Series.
+   In *9th SIGKDD workshop on Mining and Learning from Time Series (MiLeTS'23)*. https://arxiv.org/abs/2305.18811
+
 
 
 ❖ Contribution

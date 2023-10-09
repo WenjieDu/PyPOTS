@@ -11,7 +11,6 @@ from abc import abstractmethod
 from datetime import datetime
 from typing import Optional, Union
 
-import numpy as np
 import torch
 from torch.utils.tensorboard import SummaryWriter
 

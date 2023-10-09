@@ -1,7 +1,7 @@
 pypots.classification package
 =============================
 
-pypots.classification.brits module
+pypots.classification.brits
 ----------------------------------
 
 .. automodule:: pypots.classification.brits
@@ -10,7 +10,7 @@ pypots.classification.brits module
    :show-inheritance:
    :inherited-members:
 
-pypots.classification.grud module
+pypots.classification.grud
 ---------------------------------
 
 .. automodule:: pypots.classification.grud
@@ -19,7 +19,7 @@ pypots.classification.grud module
    :show-inheritance:
    :inherited-members:
 
-pypots.classification.raindrop module
+pypots.classification.raindrop
 -------------------------------------
 
 .. automodule:: pypots.classification.raindrop
