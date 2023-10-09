@@ -340,6 +340,7 @@ class VaDER(BaseNNClusterer):
     def fit(
         self,
         train_set: Union[dict, str],
+        val_set: Optional[Union[dict, str]] = None,
         file_type: str = "h5py",
     ) -> None:
         # Step 1: wrap the input data with classes Dataset and DataLoader
@@ -353,8 +354,18 @@ class VaDER(BaseNNClusterer):
             num_workers=self.num_workers,
         )
 
+        val_loader = None
+        if val_set is not None:
+            val_set = DatasetForVaDER(val_set, return_labels=False, file_type=file_type)
+            val_loader = DataLoader(
+                val_set,
+                batch_size=self.batch_size,
+                shuffle=False,
+                num_workers=self.num_workers,
+            )
+
         # Step 2: train the model and freeze it
-        self._train_model(training_loader)
+        self._train_model(training_loader, val_loader)
         self.model.load_state_dict(self.best_model_dict)
         self.model.eval()  # set the model as eval status to freeze it.
 

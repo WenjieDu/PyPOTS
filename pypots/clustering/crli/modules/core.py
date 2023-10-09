@@ -46,46 +46,36 @@ class _CRLI(nn.Module):
             n_clusters=n_clusters,
             n_init=10,  # FutureWarning: The default value of `n_init` will change from 10 to 'auto' in 1.4. Set the
             # value of `n_init` explicitly to suppress the warning.
-        )  # TODO: implement KMean with torch for gpu acceleration
+        )
 
         self.n_clusters = n_clusters
         self.lambda_kmeans = lambda_kmeans
         self.device = device
 
-    def cluster(self, inputs: dict, training_object: str = "generator") -> dict:
-        # concat final states from generator and input it as the initial state of decoder
-        imputation, imputed_X, generator_fb_hidden_states = self.generator(inputs)
-        inputs["imputation"] = imputation
-        inputs["imputed_X"] = imputed_X
-        inputs["generator_fb_hidden_states"] = generator_fb_hidden_states
-        if training_object == "discriminator":
-            discrimination = self.discriminator(inputs)
-            inputs["discrimination"] = discrimination
-            return inputs  # if only train discriminator, then no need to run decoder
-
-        reconstruction, fcn_latent = self.decoder(inputs)
-        inputs["reconstruction"] = reconstruction
-        inputs["fcn_latent"] = fcn_latent
-        return inputs
-
     def forward(
         self,
         inputs: dict,
         training_object: str = "generator",
-        training: bool = True,
+        return_loss: bool = True,
     ) -> dict:
-        assert training_object in [
-            "generator",
-            "discriminator",
-        ], 'training_object should be "generator" or "discriminator"'
-
         X = inputs["X"]
         missing_mask = inputs["missing_mask"]
         batch_size, n_steps, n_features = X.shape
         losses = {}
-        inputs = self.cluster(inputs, training_object)
-        if not training:
-            # if only run clustering, then no need to calculate loss
+
+        # concat final states from generator and input it as the initial state of decoder
+        imputation_latent, generator_fb_hidden_states = self.generator(inputs)
+        inputs["imputation_latent"] = imputation_latent
+        inputs["generator_fb_hidden_states"] = generator_fb_hidden_states
+        discrimination = self.discriminator(inputs)
+        inputs["discrimination"] = discrimination
+
+        reconstruction, fcn_latent = self.decoder(inputs)
+        inputs["reconstruction"] = reconstruction
+        inputs["fcn_latent"] = fcn_latent
+
+        # return results directly, skip loss calculation to reduce inference time
+        if not return_loss:
             return inputs
 
         if training_object == "discriminator":
@@ -98,7 +88,7 @@ class _CRLI(nn.Module):
             l_G = F.binary_cross_entropy_with_logits(
                 inputs["discrimination"], 1 - missing_mask, weight=1 - missing_mask
             )
-            l_pre = cal_mse(inputs["imputation"], X, missing_mask)
+            l_pre = cal_mse(inputs["imputation_latent"], X, missing_mask)
             l_rec = cal_mse(inputs["reconstruction"], X, missing_mask)
             HTH = torch.matmul(inputs["fcn_latent"], inputs["fcn_latent"].permute(1, 0))
             term_F = torch.nn.init.orthogonal_(

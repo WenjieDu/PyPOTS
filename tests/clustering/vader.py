@@ -22,6 +22,7 @@ from pypots.utils.metrics import (
 from tests.clustering.config import (
     EPOCHS,
     TRAIN_SET,
+    VAL_SET,
     TEST_SET,
     RESULT_SAVING_DIR_FOR_CLUSTERING,
 )
@@ -58,7 +59,7 @@ class TestVaDER(unittest.TestCase):
 
     @pytest.mark.xdist_group(name="clustering-vader")
     def test_0_fit(self):
-        self.vader.fit(TRAIN_SET)
+        self.vader.fit(TRAIN_SET, VAL_SET)
 
     @pytest.mark.xdist_group(name="clustering-vader")
     def test_1_cluster(self):
