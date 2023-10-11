@@ -20,20 +20,56 @@ import torch.nn.functional as F
 
 
 class ScaledDotProductAttention(nn.Module):
-    """Scaled dot-product attention"""
+    """Scaled dot-product attention.
+
+    Parameters
+    ----------
+    temperature:
+        The temperature for scaling.
+
+    attn_dropout:
+        The dropout rate for the attention map.
+
+    """
 
     def __init__(self, temperature: float, attn_dropout: float = 0.1):
         super().__init__()
+        assert temperature > 0, "temperature should be positive"
+        assert attn_dropout >= 0, "dropout rate should be non-negative"
         self.temperature = temperature
-        self.dropout = nn.Dropout(attn_dropout)
+        self.dropout = nn.Dropout(attn_dropout) if attn_dropout > 0 else None
 
     def forward(
         self,
         q: torch.Tensor,
         k: torch.Tensor,
         v: torch.Tensor,
-        attn_mask: torch.Tensor = None,
+        attn_mask: Optional[torch.Tensor] = None,
     ) -> Tuple[torch.Tensor, torch.Tensor]:
+        """Forward processing of the scaled dot-product attention.
+
+        Parameters
+        ----------
+        q:
+            Query tensor.
+        k:
+            Key tensor.
+        v:
+            Value tensor.
+
+        attn_mask:
+            Masking tensor for the attention map. The shape should be [batch_size, n_heads, n_steps, n_steps].
+            0 in attn_mask means values at the according position in the attention map will be masked out.
+
+        Returns
+        -------
+        output:
+            The result of Value multiplied with the scaled dot-product attention map.
+
+        attn:
+            The scaled dot-product attention map.
+
+        """
         # q, k, v all have 4 dimensions [batch_size, n_heads, n_steps, d_tensor]
         # d_tensor could be d_q, d_k, d_v
 
@@ -45,7 +81,9 @@ class ScaledDotProductAttention(nn.Module):
             attn = attn.masked_fill(attn_mask == 0, -1e9)
 
         # compute attention score [0, 1], then apply dropout
-        attn = self.dropout(F.softmax(attn, dim=-1))
+        attn = F.softmax(attn, dim=-1)
+        if self.dropout is not None:
+            attn = self.dropout(attn)
 
         # multiply the score with v
         output = torch.matmul(attn, v)
@@ -53,7 +91,29 @@ class ScaledDotProductAttention(nn.Module):
 
 
 class MultiHeadAttention(nn.Module):
-    """original Transformer multi-head attention"""
+    """Transformer multi-head attention module.
+
+    Parameters
+    ----------
+    n_heads:
+        The number of heads in multi-head attention.
+
+    d_model:
+        The dimension of the input tensor.
+
+    d_k:
+        The dimension of the key and query tensor.
+
+    d_v:
+        The dimension of the value tensor.
+
+    dropout:
+        The dropout rate.
+
+    attn_dropout:
+        The dropout rate for the attention map.
+
+    """
 
     def __init__(
         self,
@@ -66,7 +126,7 @@ class MultiHeadAttention(nn.Module):
     ):
         super().__init__()
 
-        self.n_head = n_heads
+        self.n_heads = n_heads
         self.d_k = d_k
         self.d_v = d_v
 
@@ -87,6 +147,32 @@ class MultiHeadAttention(nn.Module):
         v: torch.Tensor,
         attn_mask: Optional[torch.Tensor],
     ) -> Tuple[torch.Tensor, torch.Tensor]:
+        """Forward processing of the multi-head attention module.
+
+        Parameters
+        ----------
+        q:
+            Query tensor.
+
+        k:
+            Key tensor.
+
+        v:
+            Value tensor.
+
+        attn_mask:
+            Masking tensor for the attention map. The shape should be [batch_size, n_heads, n_steps, n_steps].
+            0 in attn_mask means values at the according position in the attention map will be masked out.
+
+        Returns
+        -------
+        v:
+            The output of the multi-head attention layer.
+
+        attn_weights:
+            The attention map.
+
+        """
         # the input q, k, v currently have 3 dimensions [batch_size, n_steps, d_tensor]
         # d_tensor could be n_heads*d_k, n_heads*d_v
 
@@ -95,9 +181,9 @@ class MultiHeadAttention(nn.Module):
         residual = q
 
         # now separate the last dimension of q, k, v into different heads -> [batch_size, n_steps, n_heads, d_k or d_v]
-        q = self.w_qs(q).view(batch_size, n_steps, self.n_head, self.d_k)
-        k = self.w_ks(k).view(batch_size, n_steps, self.n_head, self.d_k)
-        v = self.w_vs(v).view(batch_size, n_steps, self.n_head, self.d_v)
+        q = self.w_qs(q).view(batch_size, n_steps, self.n_heads, self.d_k)
+        k = self.w_ks(k).view(batch_size, n_steps, self.n_heads, self.d_k)
+        v = self.w_vs(v).view(batch_size, n_steps, self.n_heads, self.d_v)
 
         # transpose for self-attention calculation -> [batch_size, n_steps, d_k or d_v, n_heads]
         q, k, v = q.transpose(1, 2), k.transpose(1, 2), v.transpose(1, 2)
@@ -124,6 +210,21 @@ class MultiHeadAttention(nn.Module):
 
 
 class PositionWiseFeedForward(nn.Module):
+    """Position-wise feed forward network (FFN) in Transformer.
+
+    Parameters
+    ----------
+    d_in:
+        The dimension of the input tensor.
+
+    d_hid:
+        The dimension of the hidden layer.
+
+    dropout:
+        The dropout rate.
+
+    """
+
     def __init__(self, d_in: int, d_hid: int, dropout: float = 0.1):
         super().__init__()
         self.linear_1 = nn.Linear(d_in, d_hid)
@@ -132,6 +233,18 @@ class PositionWiseFeedForward(nn.Module):
         self.dropout = nn.Dropout(dropout)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """Forward processing of the position-wise feed forward network.
+
+        Parameters
+        ----------
+        x:
+            Input tensor.
+
+        Returns
+        -------
+        x:
+            Output tensor.
+        """
         # save the original input for the later residual connection
         residual = x
         # the 1st linear processing and ReLU non-linear projection
@@ -148,11 +261,37 @@ class PositionWiseFeedForward(nn.Module):
 
 
 class EncoderLayer(nn.Module):
+    """Transformer encoder layer.
+
+    Parameters
+    ----------
+    d_model:
+        The dimension of the input tensor.
+
+    d_inner:
+        The dimension of the hidden layer.
+
+    n_heads:
+        The number of heads in multi-head attention.
+
+    d_k:
+        The dimension of the key and query tensor.
+
+    d_v:
+        The dimension of the value tensor.
+
+    dropout:
+        The dropout rate.
+
+    attn_dropout:
+        The dropout rate for the attention map.
+    """
+
     def __init__(
         self,
         d_model: int,
         d_inner: int,
-        n_head: int,
+        n_heads: int,
         d_k: int,
         d_v: int,
         dropout: float = 0.1,
@@ -160,7 +299,7 @@ class EncoderLayer(nn.Module):
     ):
         super().__init__()
         self.slf_attn = MultiHeadAttention(
-            n_head, d_model, d_k, d_v, dropout, attn_dropout
+            n_heads, d_model, d_k, d_v, dropout, attn_dropout
         )
         self.pos_ffn = PositionWiseFeedForward(d_model, d_inner, dropout)
 
@@ -169,6 +308,25 @@ class EncoderLayer(nn.Module):
         enc_input: torch.Tensor,
         src_mask: Optional[torch.Tensor] = None,
     ) -> Tuple[torch.Tensor, torch.Tensor]:
+        """Forward processing of the encoder layer.
+
+        Parameters
+        ----------
+        enc_input:
+            Input tensor.
+
+        src_mask:
+            Masking tensor for the attention map. The shape should be [batch_size, n_heads, n_steps, n_steps].
+
+        Returns
+        -------
+        enc_output:
+            Output tensor.
+
+        attn_weights:
+            The attention map.
+
+        """
         enc_output, attn_weights = self.slf_attn(
             enc_input,
             enc_input,
@@ -180,11 +338,38 @@ class EncoderLayer(nn.Module):
 
 
 class DecoderLayer(nn.Module):
+    """Transformer decoder layer.
+
+    Parameters
+    ----------
+    d_model:
+        The dimension of the input tensor.
+
+    d_inner:
+        The dimension of the hidden layer.
+
+    n_heads:
+        The number of heads in multi-head attention.
+
+    d_k:
+        The dimension of the key and query tensor.
+
+    d_v:
+        The dimension of the value tensor.
+
+    dropout:
+        The dropout rate.
+
+    attn_dropout:
+        The dropout rate for the attention map.
+
+    """
+
     def __init__(
         self,
         d_model: int,
         d_inner: int,
-        n_head: int,
+        n_heads: int,
         d_k: int,
         d_v: int,
         dropout: float = 0.1,
@@ -192,10 +377,10 @@ class DecoderLayer(nn.Module):
     ):
         super().__init__()
         self.slf_attn = MultiHeadAttention(
-            n_head, d_model, d_k, d_v, dropout, attn_dropout
+            n_heads, d_model, d_k, d_v, dropout, attn_dropout
         )
         self.enc_attn = MultiHeadAttention(
-            n_head, d_model, d_k, d_v, dropout, attn_dropout
+            n_heads, d_model, d_k, d_v, dropout, attn_dropout
         )
         self.pos_ffn = PositionWiseFeedForward(d_model, d_inner, dropout)
 
@@ -206,6 +391,36 @@ class DecoderLayer(nn.Module):
         slf_attn_mask: Optional[torch.Tensor] = None,
         dec_enc_attn_mask: Optional[torch.Tensor] = None,
     ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+        """Forward processing of the decoder layer.
+
+        Parameters
+        ----------
+        dec_input:
+            Input tensor.
+
+        enc_output:
+            Output tensor from the encoder.
+
+        slf_attn_mask:
+            Masking tensor for the self-attention module.
+            The shape should be [batch_size, n_heads, n_steps, n_steps].
+
+        dec_enc_attn_mask:
+            Masking tensor for the encoding attention module.
+            The shape should be [batch_size, n_heads, n_steps, n_steps].
+
+        Returns
+        -------
+        dec_output:
+            Output tensor.
+
+        dec_slf_attn:
+            The self-attention map.
+
+        dec_enc_attn:
+            The encoding attention map.
+
+        """
         dec_output, dec_slf_attn = self.slf_attn(
             dec_input, dec_input, dec_input, attn_mask=slf_attn_mask
         )
@@ -217,6 +432,43 @@ class DecoderLayer(nn.Module):
 
 
 class Encoder(nn.Module):
+    """Transformer encoder.
+
+    Parameters
+    ----------
+    n_layers:
+        The number of layers in the encoder.
+
+    n_steps:
+        The number of time steps in the input tensor.
+
+    n_features:
+        The number of features in the input tensor.
+
+    d_model:
+        The dimension of the module manipulation space.
+        The input tensor will be projected to a space with d_model dimensions.
+
+    d_inner:
+        The dimension of the hidden layer in the feed-forward network.
+
+    n_heads:
+        The number of heads in multi-head attention.
+
+    d_k:
+        The dimension of the key and query tensor.
+
+    d_v:
+        The dimension of the value tensor.
+
+    dropout:
+        The dropout rate.
+
+    attn_dropout:
+        The dropout rate for the attention map.
+
+    """
+
     def __init__(
         self,
         n_layers: int,
@@ -256,6 +508,28 @@ class Encoder(nn.Module):
         src_mask: Optional[torch.Tensor] = None,
         return_attn_weights: bool = False,
     ) -> Union[torch.Tensor, Tuple[torch.Tensor, list]]:
+        """Forward processing of the encoder.
+
+        Parameters
+        ----------
+        x:
+            Input tensor.
+
+        src_mask:
+            Masking tensor for the attention map. The shape should be [batch_size, n_heads, n_steps, n_steps].
+
+        return_attn_weights:
+            Whether to return the attention map.
+
+        Returns
+        -------
+        enc_output:
+            Output tensor.
+
+        attn_weights_collector:
+            A list containing the attention map from each encoder layer.
+
+        """
         x = self.embedding(x)
         enc_output = self.dropout(self.position_enc(x))
         attn_weights_collector = []
@@ -271,6 +545,43 @@ class Encoder(nn.Module):
 
 
 class Decoder(nn.Module):
+    """Transformer decoder.
+
+    Parameters
+    ----------
+    n_layers:
+        The number of layers in the decoder.
+
+    n_steps:
+        The number of time steps in the input tensor.
+
+    n_features:
+        The number of features in the input tensor.
+
+    d_model:
+        The dimension of the module manipulation space.
+        The input tensor will be projected to a space with d_model dimensions.
+
+    d_inner:
+        The dimension of the hidden layer in the feed-forward network.
+
+    n_heads:
+        The number of heads in multi-head attention.
+
+    d_k:
+        The dimension of the key and query tensor.
+
+    d_v:
+        The dimension of the value tensor.
+
+    dropout:
+        The dropout rate.
+
+    attn_dropout:
+        The dropout rate for the attention map.
+
+    """
+
     def __init__(
         self,
         n_layers: int,
@@ -311,6 +622,37 @@ class Decoder(nn.Module):
         src_mask: Optional[torch.Tensor] = None,
         return_attn_weights: bool = False,
     ) -> Union[torch.Tensor, Tuple[torch.Tensor, list, list]]:
+        """Forward processing of the decoder.
+
+        Parameters
+        ----------
+        trg_seq:
+            Input tensor.
+
+        enc_output:
+            Output tensor from the encoder.
+
+        trg_mask:
+            Masking tensor for the self-attention module.
+
+        src_mask:
+            Masking tensor for the encoding attention module.
+
+        return_attn_weights:
+            Whether to return the attention map.
+
+        Returns
+        -------
+        dec_output:
+            Output tensor.
+
+        dec_slf_attn_collector:
+            A list containing the self-attention map from each decoder layer.
+
+        dec_enc_attn_collector:
+            A list containing the encoding attention map from each decoder layer.
+
+        """
         trg_seq = self.embedding(trg_seq)
         dec_output = self.dropout(self.position_enc(trg_seq))
 
@@ -334,6 +676,18 @@ class Decoder(nn.Module):
 
 
 class PositionalEncoding(nn.Module):
+    """Positional-encoding module for Transformer.
+
+    Parameters
+    ----------
+    d_hid:
+        The dimension of the hidden layer.
+
+    n_position:
+        The number of positions.
+
+    """
+
     def __init__(self, d_hid: int, n_position: int = 200):
         super().__init__()
         # Not a parameter
@@ -359,4 +713,17 @@ class PositionalEncoding(nn.Module):
         return torch.FloatTensor(sinusoid_table).unsqueeze(0)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """Forward processing of the positional encoding module.
+
+        Parameters
+        ----------
+        x:
+            Input tensor.
+
+        Returns
+        -------
+        x:
+            Output tensor, the input tensor with the positional encoding added.
+
+        """
         return x + self.pos_table[:, : x.size(1)].clone().detach()

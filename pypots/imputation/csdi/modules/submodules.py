@@ -26,13 +26,13 @@ def Conv1d_with_init(in_channels, out_channels, kernel_size):
 
 
 class DiffusionEmbedding(nn.Module):
-    def __init__(self, n_steps, d_embedding=128, d_projection=None):
+    def __init__(self, n_diffusion_steps, d_embedding=128, d_projection=None):
         super().__init__()
         if d_projection is None:
             d_projection = d_embedding
         self.register_buffer(
             "embedding",
-            self._build_embedding(n_steps, d_embedding / 2),
+            self._build_embedding(n_diffusion_steps, d_embedding // 2),
             persistent=False,
         )
         self.projection1 = nn.Linear(d_embedding, d_projection)
@@ -122,7 +122,7 @@ class ResidualBlock(nn.Module):
 class DiffusionModel(nn.Module):
     def __init__(
         self,
-        n_steps,
+        n_diffusion_steps,
         d_diffusion_embedding,
         d_input,
         d_side,
@@ -132,7 +132,7 @@ class DiffusionModel(nn.Module):
     ):
         super().__init__()
         self.diffusion_embedding = DiffusionEmbedding(
-            n_steps=n_steps,
+            n_diffusion_steps=n_diffusion_steps,
             d_embedding=d_diffusion_embedding,
         )
         self.input_projection = Conv1d_with_init(d_input, n_channels, 1)

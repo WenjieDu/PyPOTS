@@ -19,6 +19,15 @@ pypots.imputation.transformer
    :show-inheritance:
    :inherited-members:
 
+pypots.imputation.csdi
+------------------------------
+
+.. automodule:: pypots.imputation.csdi
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+
 pypots.imputation.usgan
 ------------------------------
 
