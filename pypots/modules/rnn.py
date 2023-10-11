@@ -65,16 +65,16 @@ class TemporalDecay(nn.Module):
             self.b.data.uniform_(-std_dev, std_dev)
 
     def forward(self, delta: torch.Tensor) -> torch.Tensor:
-        """Forward processing of the NN module.
+        """Forward processing of this NN module.
 
         Parameters
         ----------
-        delta : tensor, shape [batch size, sequence length, feature number]
+        delta : tensor, shape [n_samples, n_steps, n_features]
             The time gaps.
 
         Returns
         -------
-        gamma : array-like, same shape with parameter `delta`, values in (0,1]
+        gamma : tensor, of the same shape with parameter `delta`, values in (0,1]
             The temporal decay factor.
         """
         if self.diag:
