@@ -1,8 +1,3 @@
-"""
-
-https://github.com/ermongroup/CSDI/blob/main/diff_models.py
-"""
-
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: GLP-v3
 
@@ -16,7 +11,6 @@ from .submodules import DiffusionModel
 class _CSDI(nn.Module):
     def __init__(
         self,
-        n_steps,
         n_layers,
         n_heads,
         n_channels,
@@ -26,19 +20,20 @@ class _CSDI(nn.Module):
         d_diffusion_embedding,
         is_unconditional,
         target_strategy,
+        n_diffusion_steps,
         schedule,
         beta_start,
         beta_end,
     ):
         super().__init__()
 
-        self.n_steps = n_steps
         self.d_target = d_target
         self.d_time_embedding = d_time_embedding
         self.d_feature_embedding = d_feature_embedding
         self.is_unconditional = is_unconditional
         self.target_strategy = target_strategy
         self.n_channels = n_channels
+        self.n_diffusion_steps = n_diffusion_steps
 
         d_side = d_time_embedding + d_feature_embedding
         if self.is_unconditional:
@@ -53,7 +48,7 @@ class _CSDI(nn.Module):
         )
 
         self.diff_model = DiffusionModel(
-            n_steps,
+            n_diffusion_steps,
             d_diffusion_embedding,
             d_input,
             d_side,
@@ -65,19 +60,24 @@ class _CSDI(nn.Module):
         # parameters for diffusion models
         if schedule == "quad":
             self.beta = (
-                np.linspace(beta_start**0.5, beta_end**0.5, self.n_steps) ** 2
+                np.linspace(beta_start**0.5, beta_end**0.5, self.n_diffusion_steps)
+                ** 2
             )
         elif schedule == "linear":
-            self.beta = np.linspace(beta_start, beta_end, self.n_steps)
+            self.beta = np.linspace(beta_start, beta_end, self.n_diffusion_steps)
 
         self.alpha_hat = 1 - self.beta
         self.alpha = np.cumprod(self.alpha_hat)
-        self.alpha_torch = torch.tensor(self.alpha).float().unsqueeze(1).unsqueeze(1)
+        self.register_buffer(
+            "alpha_torch", torch.tensor(self.alpha).float().unsqueeze(1).unsqueeze(1)
+        )
 
     def time_embedding(self, pos, d_model=128):
-        pe = torch.zeros(pos.shape[0], pos.shape[1], d_model)
+        pe = torch.zeros(pos.shape[0], pos.shape[1], d_model).to(pos.device)
         position = pos.unsqueeze(2)
-        div_term = 1 / torch.pow(10000.0, torch.arange(0, d_model, 2) / d_model)
+        div_term = 1 / torch.pow(
+            10000.0, torch.arange(0, d_model, 2, device=pos.device) / d_model
+        )
         pe[:, :, 0::2] = torch.sin(position * div_term)
         pe[:, :, 1::2] = torch.cos(position * div_term)
         return pe
@@ -134,12 +134,12 @@ class _CSDI(nn.Module):
         self, observed_data, cond_mask, observed_mask, side_info, is_train
     ):
         loss_sum = 0
-        for t in range(self.n_steps):  # calculate loss for all t
+        for t in range(self.n_diffusion_steps):  # calculate loss for all t
             loss = self.calc_loss(
                 observed_data, cond_mask, observed_mask, side_info, is_train, set_t=t
             )
             loss_sum += loss.detach()
-        return loss_sum / self.n_steps
+        return loss_sum / self.n_diffusion_steps
 
     def calc_loss(
         self, observed_data, cond_mask, observed_mask, side_info, is_train, set_t=-1
@@ -149,7 +149,7 @@ class _CSDI(nn.Module):
         if is_train != 1:  # for validation
             t = (torch.ones(B) * set_t).long().to(device)
         else:
-            t = torch.randint(0, self.n_steps, [B]).to(device)
+            t = torch.randint(0, self.n_diffusion_steps, [B]).to(device)
 
         current_alpha = self.alpha_torch[t]  # (B,1,1)
         noise = torch.randn_like(observed_data)
@@ -187,7 +187,7 @@ class _CSDI(nn.Module):
             if self.is_unconditional:
                 noisy_obs = observed_data
                 noisy_cond_history = []
-                for t in range(self.n_steps):
+                for t in range(self.n_diffusion_steps):
                     noise = torch.randn_like(noisy_obs)
                     noisy_obs = (self.alpha_hat[t] ** 0.5) * noisy_obs + self.beta[
                         t
@@ -196,7 +196,7 @@ class _CSDI(nn.Module):
 
             current_sample = torch.randn_like(observed_data)
 
-            for t in range(self.n_steps - 1, -1, -1):
+            for t in range(self.n_diffusion_steps - 1, -1, -1):
                 if self.is_unconditional:
                     diff_input = (
                         cond_mask * noisy_cond_history[t]
