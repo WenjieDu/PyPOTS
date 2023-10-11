@@ -6,7 +6,7 @@
 # License: GLP-v3
 
 from .core import _GRUD
-from .submodules import TemporalDecay
+from pypots.modules.rnn import TemporalDecay
 
 __all__ = [
     "_GRUD",

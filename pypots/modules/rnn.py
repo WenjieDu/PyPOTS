@@ -1,5 +1,5 @@
 """
-
+The implementation of some common-use modules related to RNN.
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
@@ -15,7 +15,8 @@ from torch.nn.parameter import Parameter
 
 
 class TemporalDecay(nn.Module):
-    """The module used to generate the temporal decay factor gamma in the original paper.
+    """The module used to generate the temporal decay factor gamma in the GRUD model.
+    Please refer to the original paper :cite:`che2018GRUD` for more deinails.
 
     Attributes
     ----------
@@ -34,6 +35,14 @@ class TemporalDecay(nn.Module):
 
     diag : bool,
         whether to product the weight with an identity matrix before forward processing
+
+    References
+    ----------
+    .. [1] `Che, Zhengping, Sanjay Purushotham, Kyunghyun Cho, David Sontag, and Yan Liu.
+        "Recurrent neural networks for multivariate time series with missing values."
+        Scientific reports 8, no. 1 (2018): 6085.
+        <https://www.nature.com/articles/s41598-018-24271-9.pdf>`_
+
     """
 
     def __init__(self, input_size: int, output_size: int, diag: bool = False):
@@ -56,16 +65,16 @@ class TemporalDecay(nn.Module):
             self.b.data.uniform_(-std_dev, std_dev)
 
     def forward(self, delta: torch.Tensor) -> torch.Tensor:
-        """Forward processing of the NN module.
+        """Forward processing of this NN module.
 
         Parameters
         ----------
-        delta : tensor, shape [batch size, sequence length, feature number]
+        delta : tensor, shape [n_samples, n_steps, n_features]
             The time gaps.
 
         Returns
         -------
-        gamma : array-like, same shape with parameter `delta`, values in (0,1]
+        gamma : tensor, of the same shape with parameter `delta`, values in (0,1]
             The temporal decay factor.
         """
         if self.diag:
