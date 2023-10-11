@@ -12,6 +12,7 @@ from .mrnn import MRNN
 from .saits import SAITS
 from .transformer import Transformer
 from .usgan import USGAN
+from .csdi import CSDI
 
 __all__ = [
     "SAITS",
@@ -21,4 +22,5 @@ __all__ = [
     "LOCF",
     "GPVAE",
     "USGAN",
+    "CSDI",
 ]
