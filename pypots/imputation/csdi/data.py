@@ -24,14 +24,18 @@ class DatasetForCSDI(BaseDataset):
         rate: float = 0.1,
     ):
         super().__init__(data, return_labels, file_type)
-        time_points = None if "time_points" not in data.keys() else data["time_points"]
-        _, self.time_points = self._check_input(self.X, time_points)
-        for_pattern_mask = (
+        self.time_points = (
+            None if "time_points" not in data.keys() else data["time_points"]
+        )
+        # _, self.time_points = self._check_input(self.X, time_points)
+        self.for_pattern_mask = (
             None if "for_pattern_mask" not in data.keys() else data["for_pattern_mask"]
         )
-        _, self.for_pattern_mask = self._check_input(self.X, for_pattern_mask)
-        cut_length = None if "cut_length" not in data.keys() else data["cut_length"]
-        _, self.cut_length = self._check_input(self.X, cut_length)
+        # _, self.for_pattern_mask = self._check_input(self.X, for_pattern_mask)
+        self.cut_length = (
+            None if "cut_length" not in data.keys() else data["cut_length"]
+        )
+        # _, self.cut_length = self._check_input(self.X, cut_length)
         self.rate = rate
 
     def _fetch_data_from_array(self, idx: int) -> Iterable:

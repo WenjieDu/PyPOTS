@@ -1,8 +1,8 @@
 """
 The implementation of CSDI for the partially-observed time-series imputation task.
 
-Refer to the paper "Du, W., Cote, D., & Liu, Y. (2023). SAITS: Self-Attention-based Imputation for Time Series.
-Expert systems with applications."
+Refer to the paper Tashiro, Y., Song, J., Song, Y., & Ermon, S. (2021).
+CSDI: Conditional Score-based Diffusion Models for Probabilistic Time Series Imputation. NeurIPS 2021.
 
 Notes
 -----
@@ -28,18 +28,48 @@ from ...utils.logging import logger
 
 
 class CSDI(BaseNNImputer):
-    """The PyTorch implementation of the CSDI model :cite:``.
+    """The PyTorch implementation of the CSDI model :cite:`tashiro2021csdi`.
 
     Parameters
     ----------
-    n_steps :
-        The number of time steps in the time-series data sample.
-
     n_features :
         The number of features in the time-series data sample.
 
     n_layers :
         The number of layers in the 1st and 2nd DMSA blocks in the SAITS model.
+
+    n_heads :
+        The number of heads in the multi-head attention mechanism.
+
+    n_channels :
+        The number of residual channels.
+
+    d_time_embedding :
+        The dimension number of the time (temporal) embedding.
+
+    d_feature_embedding :
+        The dimension number of the feature embedding.
+
+    d_diffusion_embedding :
+        The dimension number of the diffusion embedding.
+
+    is_unconditional :
+        Whether the model is unconditional or conditional.
+
+    target_strategy :
+        The strategy for selecting the target for the diffusion process. It has to be one of ["mix", "random"].
+
+    n_diffusion_steps :
+        The number of the diffusion step T in the original paper.
+
+    schedule:
+        The schedule for other noise levels. It has to be one of ["quad", "linear"].
+
+    beta_start:
+        The minimum noise level.
+
+    beta_end:
+        The maximum noise level.
 
     batch_size :
         The batch size for training and evaluating the model.
@@ -81,13 +111,15 @@ class CSDI(BaseNNImputer):
 
     References
     ----------
-    .. [1]
+    .. [1] `Yusuke Tashiro, Jiaming Song, Yang Song, Stefano Ermon.
+        "CSDI: Conditional Score-based Diffusion Models for Probabilistic Time Series Imputation".
+        NeurIPS 2021.
+        <https://proceedings.neurips.cc/paper/2021/hash/cfe8504bda37b575c70ee1a8276f3486-Abstract.html>`_
 
     """
 
     def __init__(
         self,
-        n_steps: int,
         n_features: int,
         n_layers: int,
         n_heads: int,
@@ -97,6 +129,7 @@ class CSDI(BaseNNImputer):
         d_diffusion_embedding: int,
         is_unconditional: bool = False,
         target_strategy: str = "random",
+        n_diffusion_steps: int = 50,
         schedule: str = "quad",
         beta_start: float = 0.0001,
         beta_end: float = 0.5,
@@ -123,7 +156,6 @@ class CSDI(BaseNNImputer):
 
         # set up the model
         self.model = _CSDI(
-            n_steps,
             n_layers,
             n_heads,
             n_channels,
@@ -133,6 +165,7 @@ class CSDI(BaseNNImputer):
             d_diffusion_embedding,
             is_unconditional,
             target_strategy,
+            n_diffusion_steps,
             schedule,
             beta_start,
             beta_end,
@@ -212,6 +245,32 @@ class CSDI(BaseNNImputer):
         file_type: str = "h5py",
         n_sampling_times: int = 1,
     ) -> dict:
+        """
+
+        Parameters
+        ----------
+        test_set : dict or str
+            The dataset for model validating, should be a dictionary including keys as 'X' and 'y',
+            or a path string locating a data file.
+            If it is a dict, X should be array-like of shape [n_samples, sequence length (time steps), n_features],
+            which is time-series data for validating, can contain missing values, and y should be array-like of shape
+            [n_samples], which is classification labels of X.
+            If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
+            key-value pairs like a dict, and it has to include keys as 'X' and 'y'.
+
+        file_type : str
+            The type of the given file if test_set is a path string.
+
+        n_sampling_times:
+            The number of sampling times for the model to sample from the diffusion process.
+
+        Returns
+        -------
+        result_dict: dict
+            Prediction results in a Python Dictionary for the given samples.
+            It should be a dictionary including a key named 'imputation'.
+
+        """
         # Step 1: wrap the input data with classes Dataset and DataLoader
         self.model.eval()  # set the model as eval status to freeze it.
         test_set = DatasetForCSDI(test_set, return_labels=False, file_type=file_type)
