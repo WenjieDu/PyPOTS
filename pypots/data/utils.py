@@ -9,7 +9,7 @@ Data utils.
 from typing import Union
 
 import numpy as np
-import pycorruptor as corruptor
+import pygrinder
 import torch
 from tsdb import (
     pickle_load as _pickle_load,
@@ -34,7 +34,7 @@ def cal_missing_rate(X: Union[np.ndarray, torch.Tensor, list]) -> float:
         The missing rate of the given data.
 
     """
-    missing_rate = corruptor.cal_missing_rate(X)
+    missing_rate = pygrinder.cal_missing_rate(X)
     return missing_rate
 
 
@@ -62,33 +62,33 @@ def masked_fill(
         The filled data.
 
     """
-    filled_X = corruptor.masked_fill(X, mask, value)
+    filled_X = pygrinder.masked_fill(X, mask, value)
     return filled_X
 
 
 def mcar(
     X: Union[np.ndarray, torch.Tensor, list],
-    rate: float,
+    p: float,
     nan: float = 0,
 ) -> Union[np.ndarray, torch.Tensor]:
-    """Generate missing values in the given data with MCAR (Missing Completely At Random) mechanism.
+    """Create completely random missing values (MCAR case).
 
     Parameters
     ----------
-    X :
+    X : array,
         Data vector. If X has any missing values, they should be numpy.nan.
 
-    rate :
-        Artificially missing rate, rate of the observed values which will be artificially masked as missing.
+    p : float, in (0,1),
+        The probability that values may be masked as missing completely at random.
+        Note that the values are randomly selected no matter if they are originally missing or observed.
+        If the selected values are originally missing, they will be kept as missing.
+        If the selected values are originally observed, they will be masked as missing.
+        Therefore, if the given X already contains missing data, the final missing rate in the output X could be
+        in range [original_missing_rate, original_missing_rate+rate], but not strictly equal to
+        `original_missing_rate+rate`. Because the selected values to be artificially masked out may be originally
+        missing, and the masking operation on the values will do nothing.
 
-        Note that,
-        `rate` = (number of artificially missing values) / np.sum(~np.isnan(self.data)),
-        not (number of artificially missing values) / np.product(self.data.shape),
-        considering that the given data may already contain missing values,
-        the latter way may be confusing because if the original missing rate >= `rate`,
-        the function will do nothing, i.e. it won't play the role it has to be.
-
-    nan :
+    nan : int/float, optional, default=0
         Value used to fill NaN values.
 
     Returns
@@ -109,7 +109,7 @@ def mcar(
         The mask indicates the artificially-missing values in X, namely missing parts different from X_intact.
         In it, 1 indicates artificially missing values, and other values are indicated as 0.
     """
-    X = corruptor.mcar(X, rate, nan)
+    X = pygrinder.mcar(X, p, nan)
     return X
 
 
