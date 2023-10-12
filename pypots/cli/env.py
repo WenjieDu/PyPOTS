@@ -16,7 +16,7 @@ try:
     # import scipy
     # import h5py
     # import tsdb
-    # import pycorruptor
+    # import pygrinder
 except ImportError:
     raise ImportError(
         "Torch not installed. Using this tool supposes that you've already installed `pypots` "
