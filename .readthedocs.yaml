@@ -19,7 +19,7 @@ build:
       python: "3.10"
 
    jobs:
-      post-checkout:
+      post_checkout:
          - git clone https://github.com/WenjieDu/TSDB TSDB_repo --depth 1
          - mv TSDB_repo/tsdb .&& rm -rf TSDB_repo
          - git clone https://github.com/WenjieDu/PyGrinder PyGrinder_repo --depth 1
