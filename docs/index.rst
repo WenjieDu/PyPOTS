@@ -254,6 +254,8 @@ PyPOTS community is open, transparent, and surely friendly. Let's work together 
 
    model_api
    pypots
+   tsdb
+   pygrinder
 
 .. toctree::
    :maxdepth: 2

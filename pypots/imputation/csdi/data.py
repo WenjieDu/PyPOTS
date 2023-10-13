@@ -8,7 +8,7 @@
 from typing import Union, Iterable
 
 import torch
-from pycorruptor import mcar
+from pygrinder import mcar
 
 from ...data.base import BaseDataset
 
@@ -67,7 +67,7 @@ class DatasetForCSDI(BaseDataset):
                 The mask indicates artificially missing values in X.
         """
         X = self.X[idx].to(torch.float32)
-        X_intact, X, missing_mask, indicating_mask = mcar(X, rate=self.rate)
+        X_intact, X, missing_mask, indicating_mask = mcar(X, p=self.rate)
 
         observed_data = X_intact
         observed_mask = missing_mask + indicating_mask
@@ -120,7 +120,7 @@ class DatasetForCSDI(BaseDataset):
             self.file_handle = self._open_file_handle()
 
         X = torch.from_numpy(self.file_handle["X"][idx]).to(torch.float32)
-        X_intact, X, missing_mask, indicating_mask = mcar(X, rate=self.rate)
+        X_intact, X, missing_mask, indicating_mask = mcar(X, p=self.rate)
 
         observed_data = X_intact
         observed_mask = missing_mask + indicating_mask
