@@ -34,7 +34,7 @@ Required Dependencies
 * tensorboard
 * h5py
 * tsdb
-* pycorruptor
+* pygrinder
 
 
 Optional Dependencies
