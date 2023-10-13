@@ -10,12 +10,12 @@ from typing import Optional, Tuple
 
 import numpy as np
 import torch
+from pygrinder import mcar, masked_fill
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.utils import check_random_state
 
 from .load_specific_datasets import load_specific_dataset
-from .utils import mcar, masked_fill
 
 
 def gene_complete_random_walk(
