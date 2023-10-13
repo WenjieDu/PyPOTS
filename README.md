@@ -131,7 +131,8 @@ We present you a usage example of imputing missing values in time series with Py
 ``` python
 import numpy as np
 from sklearn.preprocessing import StandardScaler
-from pypots.data import load_specific_dataset, mcar, masked_fill
+from pygrinder import mcar, masked_fill
+from pypots.data import load_specific_dataset
 from pypots.imputation import SAITS
 from pypots.utils.metrics import cal_mae
 # Data preprocessing. Tedious, but PyPOTS can help.

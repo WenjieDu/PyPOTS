@@ -22,7 +22,8 @@ You can also find a simple and quick-start tutorial notebook on Google Colab wit
 
     import numpy as np
     from sklearn.preprocessing import StandardScaler
-    from pypots.data import load_specific_dataset, mcar, masked_fill
+    from pygrinder import mcar, masked_fill
+    from pypots.data import load_specific_dataset
     from pypots.imputation import SAITS
     from pypots.utils.metrics import cal_mae
 

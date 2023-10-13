@@ -17,13 +17,8 @@ from .load_specific_datasets import (
     list_supported_datasets,
     load_specific_dataset,
 )
-from .utils import (
-    masked_fill,
-    mcar,
-    pickle_load,
-    pickle_dump,
-)
 from .saving import save_dict_into_h5
+from .utils import parse_delta, sliding_window
 
 __all__ = [
     # datasets
@@ -38,10 +33,8 @@ __all__ = [
     "list_supported_datasets",
     "load_specific_dataset",
     # utils
-    "masked_fill",
-    "mcar",
-    "pickle_load",
-    "pickle_dump",
+    "parse_delta",
+    "sliding_window",
     # saving
     "save_dict_into_h5",
 ]
