@@ -10,7 +10,7 @@ from typing import Union, Iterable
 import torch
 
 from ...data.base import BaseDataset
-from ...data.utils import torch_parse_delta
+from ...data.utils import _parse_delta_torch
 
 
 class DatasetForBRITS(BaseDataset):
@@ -52,10 +52,10 @@ class DatasetForBRITS(BaseDataset):
             # calculate all delta here.
             forward_missing_mask = (~torch.isnan(self.X)).type(torch.float32)
             forward_X = torch.nan_to_num(self.X)
-            forward_delta = torch_parse_delta(forward_missing_mask)
+            forward_delta = _parse_delta_torch(forward_missing_mask)
             backward_X = torch.flip(forward_X, dims=[1])
             backward_missing_mask = torch.flip(forward_missing_mask, dims=[1])
-            backward_delta = torch_parse_delta(backward_missing_mask)
+            backward_delta = _parse_delta_torch(backward_missing_mask)
 
             self.processed_data = {
                 "forward": {
@@ -140,14 +140,14 @@ class DatasetForBRITS(BaseDataset):
         forward = {
             "X": X,
             "missing_mask": missing_mask,
-            "deltas": torch_parse_delta(missing_mask),
+            "deltas": _parse_delta_torch(missing_mask),
         }
 
         backward = {
             "X": torch.flip(forward["X"], dims=[0]),
             "missing_mask": torch.flip(forward["missing_mask"], dims=[0]),
         }
-        backward["deltas"] = torch_parse_delta(backward["missing_mask"])
+        backward["deltas"] = _parse_delta_torch(backward["missing_mask"])
 
         sample = [
             torch.tensor(idx),
