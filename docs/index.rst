@@ -88,7 +88,7 @@ if it helps with your research. This really means a lot to our open-source resea
    :align: left
    :target: https://github.com/WenjieDu/TSDB
 
-To make various open-source time-series datasets readily available to our users, PyPOTS gets supported by its sub-project `TSDB (Time-Series Data Base) <https://github.com/WenjieDu/TSDB>`_, a toolbox making loading time-series datasets super easy!
+To make various open-source time-series datasets readily available to our users, PyPOTS gets supported by its sub-project `TSDB (Time-Series Data Beans) <https://github.com/WenjieDu/TSDB>`_, a toolbox making loading time-series datasets super easy!
 
 Visit `TSDB <https://github.com/WenjieDu/TSDB>`_ right now to know more about this handy tool 🛠! It now supports a total of 168 open-source datasets.
 
