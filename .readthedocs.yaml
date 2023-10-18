@@ -28,8 +28,6 @@ build:
             - git clone https://github.com/WenjieDu/TSDB TSDB_repo --depth 1
             - git clone https://github.com/WenjieDu/PyGrinder PyGrinder_repo --depth 1
             - pip install ./TSDB_repo && pip install ./PyGrinder_repo && pip install .
-            - mv TSDB_repo/tsdb . && mv PyGrinder_repo/pygrinder .
-            - rm -rf TSDB_repo && rm -rf PyGrinder_repo
 
         post_install:
             - pip install docutils==0.20
