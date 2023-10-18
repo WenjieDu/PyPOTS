@@ -73,7 +73,7 @@ if it helps with your research. This really means a lot to our open-source resea
 </a>
 
 To make various open-source time-series datasets readily available to our users,
-PyPOTS gets supported by its subproject [TSDB (Time-Series Data Base)](https://github.com/WenjieDu/TSDB),
+PyPOTS gets supported by its subproject [TSDB (Time-Series Data Beans)](https://github.com/WenjieDu/TSDB),
 a toolbox making loading time-series datasets super easy!
 
 Visit [TSDB](https://github.com/WenjieDu/TSDB) right now to know more about this handy tool 🛠!
