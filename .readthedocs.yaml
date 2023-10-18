@@ -27,7 +27,7 @@ build:
             - pip install sphinx==6.2.1 docutils==0.19 sphinxcontrib-bibtex==2.1.4 sphinxcontrib-gtagjs sphinx-autodoc-typehints furo==2023.07.26
             - git clone https://github.com/WenjieDu/TSDB TSDB_repo --depth 1
             - git clone https://github.com/WenjieDu/PyGrinder PyGrinder_repo --depth 1
-            - pip install TSDB_repo && pip install PyGrinder_repo && pip install .
+            - pip install ./TSDB_repo && pip install ./PyGrinder_repo && pip install .
             - mv TSDB_repo/tsdb . && mv PyGrinder_repo/pygrinder .
             - rm -rf TSDB_repo && rm -rf PyGrinder_repo
 
