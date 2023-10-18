@@ -4,29 +4,32 @@
 version: 2
 
 formats:
-  - htmlzip
-  - pdf
-  - epub
+    - htmlzip
+    - pdf
+    - epub
 
 sphinx:
-   configuration: docs/conf.py
-   fail_on_warning: false
+    configuration: docs/conf.py
+    fail_on_warning: false
 
 build:
-   os: ubuntu-22.04
+    os: ubuntu-22.04
 
-   tools:
-      python: "3.10"
+    tools:
+        python: "3.10"
 
-   jobs:
-      pre_install:
-         - python -m pip install --upgrade pip
-         - pip install torch==1.13.1 -f https://download.pytorch.org/whl/cpu
-         - pip install torch-geometric==2.3.1 torch-scatter==2.1.1 torch-sparse==0.6.17 -f "https://data.pyg.org/whl/torch-1.13.1+cpu.html"
-         - pip install pypots
-         - pip install sphinx==6.2.1 docutils==0.19 sphinxcontrib-bibtex==2.1.4 sphinxcontrib-gtagjs sphinx-autodoc-typehints furo==2023.07.26
+    jobs:
+        pre_install:
+            - python -m pip install --upgrade pip
+            - pip install torch==1.13.1 -f https://download.pytorch.org/whl/cpu
+            - pip install torch-geometric==2.3.1 torch-scatter==2.1.1 torch-sparse==0.6.17 -f "https://data.pyg.org/whl/torch-1.13.1+cpu.html"
+            - pip install pypots
+            - pip install sphinx==6.2.1 docutils==0.19 sphinxcontrib-bibtex==2.1.4 sphinxcontrib-gtagjs sphinx-autodoc-typehints furo==2023.07.26
+            - git clone https://github.com/WenjieDu/TSDB TSDB_repo --depth 1
+            - git clone https://github.com/WenjieDu/PyGrinder PyGrinder_repo --depth 1
+            - pip install ./TSDB_repo && pip install ./PyGrinder_repo && pip install .
 
-      post_install:
-         - pip install docutils==0.20
-           # this version fixes issue#102, put it in post_install to avoid being
-           # overwritten by other versions (like 0.19) while installing other packages
+        post_install:
+            - pip install docutils==0.20
+            # this version fixes issue#102, put it in post_install to avoid being
+            # overwritten by other versions (like 0.19) while installing other packages
