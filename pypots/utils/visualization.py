@@ -40,7 +40,7 @@ def get_cluster_members(
 
 
 def clusters_for_plotting(
-    cluster_members: dict[int, np.ndarray],
+    cluster_members: Dict[int, np.ndarray],
 ) -> Dict[int, dict]:
     """
     Organize clustered arrays into format ready for plotting.
@@ -94,7 +94,7 @@ def clusters_for_plotting(
     return dict_to_plot
 
 
-def plot_clusters(dict_to_plot: dict[int, dict]) -> None:
+def plot_clusters(dict_to_plot: Dict[int, dict]) -> None:
     """
     Generate line plots of all cluster members per time series variable per cluster.
 
@@ -133,7 +133,7 @@ def plot_clusters(dict_to_plot: dict[int, dict]) -> None:
             plt.show()
 
 
-def get_cluster_means(dict_to_plot: dict[int, dict]) -> Dict[int, dict]:
+def get_cluster_means(dict_to_plot: Dict[int, dict]) -> Dict[int, dict]:
     """
     Get time series variables' mean values and 95% confidence intervals at each time point per cluster.
 
@@ -215,7 +215,7 @@ def get_cluster_means(dict_to_plot: dict[int, dict]) -> Dict[int, dict]:
     return cluster_means
 
 
-def plot_cluster_means(cluster_means: dict[int, dict]) -> None:
+def plot_cluster_means(cluster_means: Dict[int, dict]) -> None:
     """
     Generate line plots of cluster means and 95% confidence intervals for each time series variable.
 
