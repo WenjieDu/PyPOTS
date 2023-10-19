@@ -14,7 +14,8 @@ import scipy.stats as st
 
 def get_cluster_members(
     test_data: np.ndarray, class_predictions: np.ndarray
-) -> dict[int, np.ndarray]:
+) #-> dict[int, np.ndarray]
+:
     """
     Subset time series array using predicted cluster membership.
 
