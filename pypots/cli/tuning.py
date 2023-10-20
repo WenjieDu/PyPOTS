@@ -11,6 +11,7 @@ from argparse import ArgumentParser, Namespace
 
 from .base import BaseCommand
 from ..utils.logging import logger
+from ..optim import Adam
 
 try:
     import nni
@@ -109,6 +110,7 @@ class TuningCommand(BaseCommand):
         """Execute the given command."""
         if os.getenv("enable_tuning", False):
             tuner_params = nni.get_next_parameter()
+            tuner_params["optimizer"] = Adam(lr=tuner_params["lr"])
 
             model = MODELS[self._model](**tuner_params)
             model.fit(train_set=self._train_set, val_set=self._val_set)
