@@ -25,6 +25,8 @@ PyPOTS package.
 __version__ = "0.1.4"
 
 
+from . import imputation, classification, clustering, forecasting, optim, data, utils
+
 __all__ = [
     "imputation",
     "classification",
