@@ -53,7 +53,7 @@ class TuningCommand(BaseCommand):
 
     Examples
     --------
-    $ pypots-cli tuning --model pypots.imputation.saits --searching_config SAITS_searching_space.json
+    $ pypots-cli tuning --model pypots.imputation.SAITS --train_set path_to_the_train_set --val_set path_to_the_val_set
 
     """
 
@@ -107,11 +107,15 @@ class TuningCommand(BaseCommand):
         self._train_set = train_set
         self._val_set = val_set
 
+    def checkup(self):
+        """Run some checks on the arguments to avoid error usages"""
+        pass
+
     def run(self):
         """Execute the given command."""
         if os.getenv("enable_tuning", False):
             tuner_params = nni.get_next_parameter()
-            tuner_params["optimizer"] = Adam(lr=tuner_params["lr"])
+            tuner_params["optimizer"] = Adam(lr=tuner_params.pop("lr"))
 
             model = MODELS[self._model](**tuner_params)
             model.fit(train_set=self._train_set, val_set=self._val_set)
