@@ -38,7 +38,8 @@ MODELS = {
 def env_command_factory(args: Namespace):
     return TuningCommand(
         args.model,
-        args.searching_config,
+        args.train_set,
+        args.val_set,
     )
 
 
