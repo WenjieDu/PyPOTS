@@ -10,8 +10,11 @@ import os
 from argparse import ArgumentParser, Namespace
 
 from .base import BaseCommand
-from ..utils.logging import logger
+from ..classification import Raindrop, GRUD, BRITS
+from ..clustering import CRLI, VaDER
+from ..imputation import SAITS, Transformer, CSDI, USGAN, GPVAE, MRNN
 from ..optim import Adam
+from ..utils.logging import logger
 
 try:
     import nni
@@ -22,9 +25,8 @@ except ImportError:
     )
 
 
-from ..imputation import SAITS, Transformer, CSDI, USGAN, GPVAE, BRITS, MRNN
-
-MODELS = {
+NN_MODELS = {
+    # imputation models
     "pypots.imputation.SAITS": SAITS,
     "pypots.imputation.Transformer": Transformer,
     "pypots.imputation.CSDI": CSDI,
@@ -32,6 +34,13 @@ MODELS = {
     "pypots.imputation.GP_VAE": GPVAE,
     "pypots.imputation.BRITS": BRITS,
     "pypots.imputation.MRNN": MRNN,
+    # classification models
+    "pypots.classification.GRUD": GRUD,
+    "pypots.classification.BRITS": BRITS,
+    "pypots.classification.Raindrop": Raindrop,
+    # clustering models
+    "pypots.clustering.CRLI": CRLI,
+    "pypots.clustering.VaDER": VaDER,
 }
 
 
@@ -114,10 +123,25 @@ class TuningCommand(BaseCommand):
     def run(self):
         """Execute the given command."""
         if os.getenv("enable_tuning", False):
+            # fetch the next set of hyperparameters from NNI tuner
             tuner_params = nni.get_next_parameter()
-            tuner_params["optimizer"] = Adam(lr=tuner_params.pop("lr"))
+            # get the specified NN class
+            model_class = NN_MODELS[self._model]
+            # pop out the learning rate
+            lr = tuner_params.pop("lr")
 
-            model = MODELS[self._model](**tuner_params)
+            # if tuning a GAN model, we need two optimizers
+            if "G_optimizer" in model_class.__init__.__annotations__.keys():
+                # optimizer for the generator
+                tuner_params["G_optimizer"] = Adam(lr=lr)
+                # optimizer for the discriminator
+                tuner_params["D_optimizer"] = Adam(lr=lr)
+            else:
+                tuner_params["optimizer"] = Adam(lr=lr)
+
+            # init an instance with the given hyperparameters for the model class
+            model = model_class(**tuner_params)
+            # train the model and report to NNI
             model.fit(train_set=self._train_set, val_set=self._val_set)
         else:
             logger.error("Argument `enable_tuning` is not set. Aborting...")
