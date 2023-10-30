@@ -6,6 +6,7 @@ The base classes for PyPOTS clustering models.
 # License: GPL-v3
 
 
+import os
 from abc import abstractmethod
 from typing import Union, Optional
 

@@ -11,6 +11,7 @@ Deep learning for clustering of multivariate clinical patient trajectories with 
 # License: GLP-v3
 
 
+import os
 from typing import Tuple, Union, Optional
 
 import numpy as np
