@@ -82,23 +82,55 @@ Welcome to PyPOTS docs!
 **Please** properly `cite PyPOTS <https://docs.pypots.com/en/latest/milestones.html#citing-pypots>`_ in your publications
 if it helps with your research. This really means a lot to our open-source research. Thank you!
 
-.. image:: https://pypots.com/figs/pypots_logos/TSDB_logo_FFBG.svg?sanitize=true
-   :width: 170
-   :alt: TSDB
+The rest of this readme file is organized as follows:
+`❖ PyPOTS Ecosystem <#id1>`_,
+`❖ Installation <#id2>`_,
+`❖ Usage <#id4>`_,
+`❖ Available Algorithms <#id6>`_,
+`❖ Citing PyPOTS <#id19>`_,
+`❖ Contribution <#id20>`_,
+`❖ Community <#id21>`_.
+
+
+❖ PyPOTS Ecosystem
+^^^^^^^^^^^^^^^^^^^
+At PyPOTS, time series datasets are taken as coffee beans, and POTS datasets are incomplete coffee beans with missing parts that have their own meanings.
+As you can see, there is a coffee pot in the PyPOTS logo.
+
+.. image:: https://pypots.com/figs/pypots_logos/TSDB_logo_FFBG.svg
+   :width: 130
+   :alt: TSDB logo
    :align: left
    :target: https://github.com/WenjieDu/TSDB
 
-To make various open-source time-series datasets readily available to our users, PyPOTS gets supported by its sub-project `TSDB (Time-Series Data Beans) <https://github.com/WenjieDu/TSDB>`_, a toolbox making loading time-series datasets super easy!
+👈 To make various open-source time-series datasets readily available to our users,
+PyPOTS gets supported by its ecosystem library <i>Time Series Data Beans (TSDB)</i>, a toolbox making loading time-series datasets super easy!
+Visit `TSDB <https://github.com/WenjieDu/TSDB>`_ right now to know more about this handy tool 🛠, and it now supports a total of 168 open-source datasets!
 
-Visit `TSDB <https://github.com/WenjieDu/TSDB>`_ right now to know more about this handy tool 🛠! It now supports a total of 168 open-source datasets.
+.. image:: https://pypots.com/figs/pypots_logos/PyGrinder_logo_FFBG.svg
+   :width: 130
+   :alt: PyGrinder logo
+   :align: right
+   :target: https://github.com/WenjieDu/PyGrinder
 
-The rest of this readme file is organized as follows:
-`❖ Installation <#id1>`_,
-`❖ Usage <#id3>`_,
-`❖ Available Algorithms <#id4>`_,
-`❖ Citing PyPOTS <#id14>`_,
-`❖ Contribution <#id15>`_,
-`❖ Community <#id16>`_.
+👉 To simulate the real-world data beans with missingness, the ecosystem library `PyGrinder <https://github.com/WenjieDu/PyGrinder>`_,
+a toolkit helping grind your coffee beans into incomplete ones, is created. Missing patterns fall into three categories according to Robin's theory:cite:`rubin1976missing`:
+MCAR (missing completely at random), MAR (missing at random), and MNAR (missing not at random).
+PyGrinder supports all of them and additional functionalities related to missingness.
+With PyGrinder, you can introduce synthetic missing values into your datasets with a single line of code.
+
+.. image:: https://pypots.com/figs/pypots_logos/BrewPOTS_logo_FFBG.svg
+   :width: 130
+   :alt: BrewPOTS logo
+   :align: left
+   :target: https://github.com/WenjieDu/BrewPOTS
+
+👈 Now we have the beans, the grinder, and the pot, how to brew us a cup of coffee? Tutorials are necessary!
+Considering the future workload, PyPOTS tutorials is released in a single repo,
+and you can find them in `BrewPOTS <https://github.com/WenjieDu/BrewPOTS>`_.
+Take a look at it now, and learn how to brew your POTS datasets!
+
+☕️ Enjoy it and have fun!
 
 
 ❖ Installation
@@ -110,18 +142,12 @@ Refer to the page `Installation <install.html>`_ to see different ways of instal
 
 ❖ Usage
 ^^^^^^^^
-.. image:: https://pypots.com/figs/pypots_logos/BrewPOTS_logo_FFBG.svg?sanitize=true
-   :width: 160
-   :alt: BrewPOTS logo
-   :align: left
-   :target: https://github.com/WenjieDu/BrewPOTS
+Besides `BrewPOTS <https://github.com/WenjieDu/BrewPOTS>`_, you can also find a simple and quick-start tutorial notebook
+on Google Colab with `this link <https://colab.research.google.com/drive/1HEFjylEy05-r47jRy0H9jiS_WhD0UWmQ?usp=sharing>`_.
+You can also `raise an issue <https://github.com/WenjieDu/PyPOTS/issues>`_ or `ask in our community <#id21>`_.
 
-PyPOTS tutorials have been released. Considering the future workload, I separate the tutorials into a single repo,
-and you can find them in `BrewPOTS <https://github.com/WenjieDu/BrewPOTS>`_.
-Take a look at it now, and brew your POTS dataset into a cup of coffee!
-
-If you have further questions, please refer to PyPOTS documentation `docs.pypots.com <https://docs.pypots.com>`_.
-Besides, you can also `raise an issue <https://github.com/WenjieDu/PyPOTS/issues>`_ or `ask in our community <#id14>`_.
+Additionally, we present you a usage example of imputing missing values in time series with PyPOTS in
+`Section Quick-start Examples <https://docs.pypots.com/en/latest/examples.html>`_, you can click it to view.
 
 
 ❖ Available Algorithms
