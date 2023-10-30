@@ -5,7 +5,7 @@ The base classes for PyPOTS forecasting models.
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: GPL-v3
 
-
+import os
 from abc import abstractmethod
 from typing import Optional, Union
 

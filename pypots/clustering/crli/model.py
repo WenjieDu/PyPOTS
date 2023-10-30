@@ -10,6 +10,7 @@ Learning Representations for Incomplete Time Series Clustering. AAAI 2021."
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: GLP-v3
 
+import os
 from typing import Union, Optional, Tuple
 
 import numpy as np
