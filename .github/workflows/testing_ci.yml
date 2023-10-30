@@ -57,7 +57,7 @@ jobs:
 
             - name: Install other dependencies
               run: |
-                  pip install -e ".[basic]"
+                  pip install -r requirements.txt
                   pip install torch-geometric==2.3.1 torch-scatter==2.1.1 torch-sparse==0.6.17 -f "https://data.pyg.org/whl/torch-${{ matrix.torch-version }}+cpu.html"
                   pip install -e ".[dev]"
 
