@@ -4,7 +4,7 @@
 
 <h2 align="center">Welcome to PyPOTS</h2>
 
-<p align="center"><i>a Python toolbox for data mining on Partially-Observed Time Series</i></p>
+<p align="center"><i>a Python toolbox for machine learning on Partially-Observed Time Series</i></p>
 
 <p align="center">
     <a href="https://docs.pypots.com/en/latest/install.html#reasons-of-version-limitations-on-dependencies">
@@ -55,12 +55,12 @@
 ⦿ `Motivation`: Due to all kinds of reasons like failure of collection sensors, communication error,
 and unexpected malfunction, missing values are common to see in time series from the real-world environment.
 This makes partially-observed time series (POTS) a pervasive problem in open-world modeling and prevents advanced
-data analysis. Although this problem is important, the area of data mining on POTS still lacks a dedicated toolkit.
+data analysis. Although this problem is important, the area of machine learning on POTS still lacks a dedicated toolkit.
 PyPOTS is created to fill in this blank.
 
-⦿ `Mission`: PyPOTS (pronounced "Pie Pots") is born to become a handy toolbox that is going to make data mining on POTS easy rather than
+⦿ `Mission`: PyPOTS (pronounced "Pie Pots") is born to become a handy toolbox that is going to make machine learning on POTS easy rather than
 tedious, to help engineers and researchers focus more on the core problems in their hands rather than on how to deal
-with the missing parts in their data. PyPOTS will keep integrating classical and the latest state-of-the-art data mining
+with the missing parts in their data. PyPOTS will keep integrating classical and the latest state-of-the-art machine learning
 algorithms for partially-observed multivariate time series. For sure, besides various algorithms, PyPOTS is going to
 have unified APIs together with detailed documentation and interactive examples across algorithms as tutorials.
 
@@ -68,25 +68,48 @@ have unified APIs together with detailed documentation and interactive examples 
 **Please** properly [cite PyPOTS](https://github.com/WenjieDu/PyPOTS#-citing-pypots) in your publications
 if it helps with your research. This really means a lot to our open-source research. Thank you!
 
-<a href="https://github.com/WenjieDu/TSDB">
-    <img src="https://pypots.com/figs/pypots_logos/TSDB_logo_FFBG.svg?sanitize=true" align="left" width="160" alt="TSDB logo"/>
-</a>
-
-To make various open-source time-series datasets readily available to our users,
-PyPOTS gets supported by its subproject [TSDB (Time-Series Data Beans)](https://github.com/WenjieDu/TSDB),
-a toolbox making loading time-series datasets super easy!
-
-Visit [TSDB](https://github.com/WenjieDu/TSDB) right now to know more about this handy tool 🛠!
-It now supports a total of 168 open-source datasets.
-<br clear="left">
-
 The rest of this readme file is organized as follows:
+[**❖ PyPOTS Ecosystem**](#-pypots-ecosystem),
 [**❖ Installation**](#-installation),
 [**❖ Usage**](#-usage),
 [**❖ Available Algorithms**](#-available-algorithms),
 [**❖ Citing PyPOTS**](#-citing-pypots),
 [**❖ Contribution**](#-contribution),
 [**❖ Community**](#-community).
+
+
+## ❖ PyPOTS Ecosystem
+At PyPOTS, time series datasets are taken as coffee beans, and POTS datasets are incomplete coffee beans with missing parts that have their own meanings.
+As you can see, there is a coffee pot in the PyPOTS logo.
+
+<a href="https://github.com/WenjieDu/TSDB">
+    <img src="https://pypots.com/figs/pypots_logos/TSDB_logo_FFBG.svg" align="left" width="130" alt="TSDB logo"/>
+</a>
+
+👈 To make various open-source time-series datasets readily available to our users,
+PyPOTS gets supported by its ecosystem library <i>Time Series Data Beans (TSDB)</i>, a toolbox making loading time-series datasets super easy!
+Visit [TSDB](https://github.com/WenjieDu/TSDB) right now to know more about this handy tool 🛠, and it now supports a total of 168 open-source datasets!
+
+<a href="https://github.com/WenjieDu/PyGrinder">
+    <img src="https://pypots.com/figs/pypots_logos/PyGrinder_logo_FFBG.svg" align="right" width="130" alt="PyGrinder logo"/>
+</a>
+
+👉 To simulate the real-world data beans with missingness, the ecosystem library [PyGrinder](https://github.com/WenjieDu/PyGrinder), 
+a toolkit helping grind your coffee beans into incomplete ones, is created. Missing patterns fall into three categories according to Robin's theory[^13]: 
+MCAR (missing completely at random), MAR (missing at random), and MNAR (missing not at random). 
+PyGrinder supports all of them and additional functionalities related to missingness. 
+With PyGrinder, you can introduce synthetic missing values into your datasets with a single line of code.
+
+<a href="https://github.com/WenjieDu/BrewPOTS">
+    <img src="https://pypots.com/figs/pypots_logos/BrewPOTS_logo_FFBG.svg" align="left" width="130" alt="BrewPOTS logo"/>
+</a>
+
+👈 Now we have the beans, the grinder, and the pot, how to brew us a cup of coffee? Tutorials are necessary!
+Considering the future workload, PyPOTS tutorials is released in a single repo,
+and you can find them in [BrewPOTS](https://github.com/WenjieDu/BrewPOTS).
+Take a look at it now, and learn how to brew your POTS datasets!
+
+☕️ Enjoy it and have fun!
 
 
 ## ❖ Installation
@@ -108,24 +131,15 @@ conda update  -c conda-forge pypots  # update pypots to the latest version
 Alternatively, you can install from the latest source code with the latest features but may be not officially released yet:
 > pip install https://github.com/WenjieDu/PyPOTS/archive/main.zip
 
-
 ## ❖ Usage
-<a href="https://github.com/WenjieDu/BrewPOTS">
-    <img src="https://pypots.com/figs/pypots_logos/BrewPOTS_logo_FFBG.svg?sanitize=true" align="left" width="160" alt="BrewPOTS logo"/>
-</a>
-
-PyPOTS tutorials have been released. Considering the future workload, I separate the tutorials into a single repo,
-and you can find them in [BrewPOTS](https://github.com/WenjieDu/BrewPOTS).
-Take a look at it now, and learn how to brew your POTS datasets!
-
-You can also find a simple and quick-start tutorial notebook on Google Colab with
-[this link](https://colab.research.google.com/drive/1HEFjylEy05-r47jRy0H9jiS_WhD0UWmQ?usp=sharing).
+Besides [BrewPOTS](https://github.com/WenjieDu/BrewPOTS), you can also find a simple and quick-start tutorial notebook 
+on Google Colab with [this link](https://colab.research.google.com/drive/1HEFjylEy05-r47jRy0H9jiS_WhD0UWmQ?usp=sharing).
 If you have further questions, please refer to PyPOTS documentation [docs.pypots.com](https://docs.pypots.com).
-Besides, you can also [raise an issue](https://github.com/WenjieDu/PyPOTS/issues) or [ask in our community](#-community).
+You can also [raise an issue](https://github.com/WenjieDu/PyPOTS/issues) or [ask in our community](#-community).
 
 We present you a usage example of imputing missing values in time series with PyPOTS below, you can click it to view.
 
-<details>
+<details open>
 <summary><b>Click here to see an example applying SAITS on PhysioNet2012 for imputation:</b></summary>
 
 ``` python
@@ -198,7 +212,7 @@ Here is [an incomplete list of them](https://scholar.google.com/scholar?as_ylo=2
 
 ``` bibtex
 @article{du2023PyPOTS,
-title={{PyPOTS: a Python toolbox for data mining on Partially-Observed Time Series}},
+title={{PyPOTS: a Python toolbox for machine learning on Partially-Observed Time Series}},
 author={Wenjie Du},
 year={2023},
 eprint={2305.18811},
@@ -210,14 +224,14 @@ doi={10.48550/arXiv.2305.18811},
 ```
 
 > Wenjie Du. (2023).
-> PyPOTS: a Python toolbox for data mining on Partially-Observed Time Series.
+> PyPOTS: a Python toolbox for machine learning on Partially-Observed Time Series.
 > arXiv, abs/2305.18811.https://arxiv.org/abs/2305.18811
 
 or
 
 ``` bibtex
 @inproceedings{du2023PyPOTS,
-title={{PyPOTS: a Python toolbox for data mining on Partially-Observed Time Series}},
+title={{PyPOTS: a Python toolbox for machine learning on Partially-Observed Time Series}},
 booktitle={9th SIGKDD workshop on Mining and Learning from Time Series (MiLeTS'23)},
 author={Wenjie Du},
 year={2023},
@@ -226,7 +240,7 @@ url={https://arxiv.org/abs/2305.18811},
 ```
 
 > Wenjie Du. (2023).
-> PyPOTS: a Python toolbox for data mining on Partially-Observed Time Series.
+> PyPOTS: a Python toolbox for machine learning on Partially-Observed Time Series.
 > In *9th SIGKDD workshop on Mining and Learning from Time Series (MiLeTS'23)*. https://arxiv.org/abs/2305.18811
 
 
@@ -288,6 +302,7 @@ PyPOTS community is open, transparent, and surely friendly. Let's work together 
 [^10]: Miao, X., Wu, Y., Wang, J., Gao, Y., Mao, X., & Yin, J. (2021). [Generative Semi-supervised Learning for Multivariate Time Series Imputation](https://ojs.aaai.org/index.php/AAAI/article/view/17086). *AAAI 2021*.
 [^11]: Fortuin, V., Baranchuk, D., Raetsch, G. & Mandt, S. (2020). [GP-VAE: Deep Probabilistic Time Series Imputation](https://proceedings.mlr.press/v108/fortuin20a.html). *AISTATS 2020*.
 [^12]: Tashiro, Y., Song, J., Song, Y., & Ermon, S. (2021). [CSDI: Conditional Score-based Diffusion Models for Probabilistic Time Series Imputation](https://proceedings.neurips.cc/paper/2021/hash/cfe8504bda37b575c70ee1a8276f3486-Abstract.html). *NeurIPS 2021*.
+[^13]: Rubin, D. B. (1976). [Inference and missing data](https://academic.oup.com/biomet/article-abstract/63/3/581/270932). *Biometrika*, 63(3), 581-592.
 
 
 <details>

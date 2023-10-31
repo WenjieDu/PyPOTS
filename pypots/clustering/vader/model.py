@@ -11,6 +11,7 @@ Deep learning for clustering of multivariate clinical patient trajectories with 
 # License: GLP-v3
 
 
+import os
 from typing import Tuple, Union, Optional
 
 import numpy as np
@@ -25,6 +26,11 @@ from ..base import BaseNNClusterer
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
 from ...utils.logging import logger
+
+try:
+    import nni
+except ImportError:
+    pass
 
 
 class VaDER(BaseNNClusterer):
@@ -314,11 +320,18 @@ class VaDER(BaseNNClusterer):
                     )
                 else:
                     self.patience -= 1
-                    if self.patience == 0:
-                        logger.info(
-                            "Exceeded the training patience. Terminating the training procedure..."
-                        )
-                        break
+
+                if os.getenv("enable_tuning", False):
+                    nni.report_intermediate_result(mean_loss)
+                    if epoch == self.epochs - 1 or self.patience == 0:
+                        nni.report_final_result(self.best_loss)
+
+                if self.patience == 0:
+                    logger.info(
+                        "Exceeded the training patience. Terminating the training procedure..."
+                    )
+                    break
+
         except Exception as e:
             logger.error(f"Exception: {e}")
             if self.best_model_dict is None:

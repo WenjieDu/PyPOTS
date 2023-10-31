@@ -6,6 +6,7 @@ The base classes for PyPOTS clustering models.
 # License: GPL-v3
 
 
+import os
 from abc import abstractmethod
 from typing import Union, Optional
 
@@ -15,6 +16,11 @@ from torch.utils.data import DataLoader
 
 from ..base import BaseModel, BaseNNModel
 from ..utils.logging import logger
+
+try:
+    import nni
+except ImportError:
+    pass
 
 
 class BaseClusterer(BaseModel):
@@ -326,11 +332,18 @@ class BaseNNClusterer(BaseNNModel):
                     self.patience = self.original_patience
                 else:
                     self.patience -= 1
-                    if self.patience == 0:
-                        logger.info(
-                            "Exceeded the training patience. Terminating the training procedure..."
-                        )
-                        break
+
+                if os.getenv("enable_tuning", False):
+                    nni.report_intermediate_result(mean_loss)
+                    if epoch == self.epochs - 1 or self.patience == 0:
+                        nni.report_final_result(self.best_loss)
+
+                if self.patience == 0:
+                    logger.info(
+                        "Exceeded the training patience. Terminating the training procedure..."
+                    )
+                    break
+
         except Exception as e:
             logger.error(f"Exception: {e}")
             if self.best_model_dict is None:

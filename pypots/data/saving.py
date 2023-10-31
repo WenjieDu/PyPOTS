@@ -10,8 +10,8 @@ import os
 
 import h5py
 
-from pypots.utils.file import create_dir_if_not_exist
-from pypots.utils.logging import logger
+from ..utils.file import create_dir_if_not_exist
+from ..utils.logging import logger
 
 
 def save_dict_into_h5(
