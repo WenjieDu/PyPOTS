@@ -46,5 +46,7 @@ dependencies:
     - conda-forge::jupyterlab
 
     - pip:
-          # doc
-          - sphinxcontrib-gtagjs
+        # doc
+        - sphinxcontrib-gtagjs
+        # hyperparameter tuning
+        - nni

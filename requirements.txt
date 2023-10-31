@@ -1,0 +1,12 @@
+# This requirements.txt file only include the basic dependencies for PyPOTS.
+# Please refer to setup.cfg for more dependency details.
+
+numpy
+scikit-learn
+scipy
+torch>=1.10.0
+tensorboard
+pandas<2.0.0
+pygrinder
+tsdb
+h5py
