@@ -51,7 +51,7 @@ jobs:
               run: |
                   which python
                   which pip
-                  python -m pip install --upgrade pip
+                  pip install --upgrade pip
                   pip install torch==${{ matrix.torch-version }} -f https://download.pytorch.org/whl/cpu
                   python -c "import torch; print('PyTorch:', torch.__version__)"
 
@@ -59,6 +59,9 @@ jobs:
               run: |
                   pip install -r requirements.txt
                   pip install torch-geometric==2.3.1 torch-scatter==2.1.1 torch-sparse==0.6.17 -f "https://data.pyg.org/whl/torch-${{ matrix.torch-version }}+cpu.html"
+
+            - name: Install development dependencies
+              run: |
                   pip install -e ".[dev]"
 
             - name: Fetch the test environment details
