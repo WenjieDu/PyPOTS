@@ -10,6 +10,7 @@ from argparse import ArgumentParser
 from .dev import DevCommand
 from .doc import DocCommand
 from .env import EnvCommand
+from .tuning import TuningCommand
 
 
 def main():
@@ -22,6 +23,7 @@ def main():
     DevCommand.register_subcommand(commands_parser)
     DocCommand.register_subcommand(commands_parser)
     EnvCommand.register_subcommand(commands_parser)
+    TuningCommand.register_subcommand(commands_parser)
 
     # parse all arguments
     args = parser.parse_args()
