@@ -104,7 +104,7 @@ As you can see, there is a coffee pot in the PyPOTS logo.
    :target: https://github.com/WenjieDu/TSDB
 
 👈 To make various open-source time-series datasets readily available to our users,
-PyPOTS gets supported by its ecosystem library <i>Time Series Data Beans (TSDB)</i>, a toolbox making loading time-series datasets super easy!
+PyPOTS gets supported by its ecosystem library *Time Series Data Beans (TSDB)*, a toolbox making loading time-series datasets super easy!
 Visit `TSDB <https://github.com/WenjieDu/TSDB>`_ right now to know more about this handy tool 🛠, and it now supports a total of 168 open-source datasets!
 
 .. image:: https://pypots.com/figs/pypots_logos/PyGrinder_logo_FFBG.svg

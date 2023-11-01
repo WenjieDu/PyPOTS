@@ -105,7 +105,7 @@ With PyGrinder, you can introduce synthetic missing values into your datasets wi
 </a>
 
 👈 Now we have the beans, the grinder, and the pot, how to brew us a cup of coffee? Tutorials are necessary!
-Considering the future workload, PyPOTS tutorials is released in a single repo,
+Considering the future workload, PyPOTS tutorials are released in a single repo,
 and you can find them in [BrewPOTS](https://github.com/WenjieDu/BrewPOTS).
 Take a look at it now, and learn how to brew your POTS datasets!
 
@@ -130,6 +130,7 @@ conda update  -c conda-forge pypots  # update pypots to the latest version
 
 Alternatively, you can install from the latest source code with the latest features but may be not officially released yet:
 > pip install https://github.com/WenjieDu/PyPOTS/archive/main.zip
+
 
 ## ❖ Usage
 Besides [BrewPOTS](https://github.com/WenjieDu/BrewPOTS), you can also find a simple and quick-start tutorial notebook 
@@ -278,6 +279,7 @@ Your star is your recognition to PyPOTS, and it matters!
 
 👀 Check out a full list of our users' affiliations [on PyPOTS website here](https://pypots.com/users/)!
 
+
 ## ❖ Community
 We care about the feedback from our users, so we're building PyPOTS community on
 
@@ -288,6 +290,7 @@ We care about the feedback from our users, so we're building PyPOTS community on
 
 If you have any suggestions or want to contribute ideas or share time-series related papers, join us and tell.
 PyPOTS community is open, transparent, and surely friendly. Let's work together to build and improve PyPOTS!
+
 
 [//]: # (Use APA reference style below)
 [^1]: Du, W., Cote, D., & Liu, Y. (2023). [SAITS: Self-Attention-based Imputation for Time Series](https://doi.org/10.1016/j.eswa.2023.119619). *Expert systems with applications*.
@@ -302,7 +305,7 @@ PyPOTS community is open, transparent, and surely friendly. Let's work together 
 [^10]: Miao, X., Wu, Y., Wang, J., Gao, Y., Mao, X., & Yin, J. (2021). [Generative Semi-supervised Learning for Multivariate Time Series Imputation](https://ojs.aaai.org/index.php/AAAI/article/view/17086). *AAAI 2021*.
 [^11]: Fortuin, V., Baranchuk, D., Raetsch, G. & Mandt, S. (2020). [GP-VAE: Deep Probabilistic Time Series Imputation](https://proceedings.mlr.press/v108/fortuin20a.html). *AISTATS 2020*.
 [^12]: Tashiro, Y., Song, J., Song, Y., & Ermon, S. (2021). [CSDI: Conditional Score-based Diffusion Models for Probabilistic Time Series Imputation](https://proceedings.neurips.cc/paper/2021/hash/cfe8504bda37b575c70ee1a8276f3486-Abstract.html). *NeurIPS 2021*.
-[^13]: Rubin, D. B. (1976). [Inference and missing data](https://academic.oup.com/biomet/article-abstract/63/3/581/270932). *Biometrika*, 63(3), 581-592.
+[^13]: Rubin, D. B. (1976). [Inference and missing data](https://academic.oup.com/biomet/article-abstract/63/3/581/270932). *Biometrika*.
 
 
 <details>
