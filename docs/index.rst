@@ -154,22 +154,23 @@ Additionally, we present you a usage example of imputing missing values in time 
 ^^^^^^^^^^^^^^^^^^^^^^^
 PyPOTS supports imputation, classification, clustering, and forecasting tasks on multivariate time series with missing values. The currently available algorithms of four tasks are cataloged in the following table with four partitions. The paper references are all listed at the bottom of this readme file. Please refer to them if you want more details.
 
-============================== ================ =========================================================================  ====== =========
-Task                           Type             Algorithm                                                                  Year   Reference
-============================== ================ =========================================================================  ====== =========
-Imputation                     Neural Network   SAITS (Self-Attention-based Imputation for Time Series)                    2022   :cite:`du2023SAITS`
-Imputation                     Neural Network   Transformer                                                                2017   :cite:`vaswani2017Transformer`, :cite:`du2023SAITS`
-Imputation                     Neural Network   US-GAN                                                                     2021   :cite:`miao2021SSGAN`
-Imputation                     Neural Network   GP-VAE                                                                     2020   :cite:`fortuin2020GPVAEDeep`
-Imputation, Classification     Neural Network   BRITS (Bidirectional Recurrent Imputation for Time Series)                 2018   :cite:`cao2018BRITS`
-Imputation                     Neural Network   M-RNN (Multi-directional Recurrent Neural Network)                         2019   :cite:`yoon2019MRNN`
-Imputation                     Naive            LOCF (Last Observation Carried Forward)                                    /      /
-Classification                 Neural Network   GRU-D                                                                      2018   :cite:`che2018GRUD`
-Classification                 Neural Network   Raindrop                                                                   2022   :cite:`zhang2022Raindrop`
-Clustering                     Neural Network   CRLI (Clustering Representation Learning on Incomplete time-series data)   2021   :cite:`ma2021CRLI`
-Clustering                     Neural Network   VaDER (Variational Deep Embedding with Recurrence)                         2019   :cite:`dejong2019VaDER`
-Forecasting                    Probabilistic    BTTF (Bayesian Temporal Tensor Factorization)                              2021   :cite:`chen2021BTMF`
-============================== ================ =========================================================================  ====== =========
+============================== ================ ======================================================================================== ====== =========
+Task                           Type             Algorithm                                                                                Year   Reference
+============================== ================ ======================================================================================== ====== =========
+Imputation                     Neural Net       SAITS (Self-Attention-based Imputation for Time Series)                                  2022   :cite:`du2023SAITS`
+Imputation                     Neural Net       Transformer                                                                              2017   :cite:`vaswani2017Transformer`, :cite:`du2023SAITS`
+Imputation                     Neural Net       US-GAN (Unsupervised GAN for Multivariate Time Series Imputation)                        2021   :cite:`miao2021SSGAN`
+Imputation                     Neural Net       CSDI (Conditional Score-based Diffusion Models for Probabilistic Time Series Imputation) 2021   :cite:`tashiro2021csdi`
+Imputation                     Neural Net       GP-VAE (Gaussian Process Variational Autoencoder)                                        2020   :cite:`fortuin2020GPVAEDeep`
+Imputation, Classification     Neural Net       BRITS (Bidirectional Recurrent Imputation for Time Series)                               2018   :cite:`cao2018BRITS`
+Imputation                     Neural Net       M-RNN (Multi-directional Recurrent Neural Network)                                       2019   :cite:`yoon2019MRNN`
+Imputation                     Naive            LOCF (Last Observation Carried Forward)                                                  /      /
+Classification                 Neural Net       GRU-D                                                                                    2018   :cite:`che2018GRUD`
+Classification                 Neural Net       Raindrop                                                                                 2022   :cite:`zhang2022Raindrop`
+Clustering                     Neural Net       CRLI (Clustering Representation Learning on Incomplete time-series data)                 2021   :cite:`ma2021CRLI`
+Clustering                     Neural Net       VaDER (Variational Deep Embedding with Recurrence)                                       2019   :cite:`dejong2019VaDER`
+Forecasting                    Probabilistic    BTTF (Bayesian Temporal Tensor Factorization)                                            2021   :cite:`chen2021BTMF`
+============================== ================ ======================================================================================== ====== =========
 
 
 ❖ Citing PyPOTS
@@ -276,7 +277,7 @@ PyPOTS community is open, transparent, and surely friendly. Let's work together 
 .. toctree::
    :maxdepth: 4
    :hidden:
-   :caption: Code Documentation
+   :caption: Docs of PyPOTS Ecosystem
 
    model_api
    pypots

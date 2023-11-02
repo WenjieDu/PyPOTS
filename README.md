@@ -163,7 +163,8 @@ dataset = {"X": X}
 print(dataset["X"].shape)  # (11988, 48, 37), 11988 samples, 48 time steps, 37 features
 # Model training. This is PyPOTS showtime.
 saits = SAITS(n_steps=48, n_features=37, n_layers=2, d_model=256, d_inner=128, n_heads=4, d_k=64, d_v=64, dropout=0.1, epochs=10)
-saits.fit(dataset)  # train the model. Here I use the whole dataset as the training set, because ground truth is not visible to the model.
+# Here I use the whole dataset as the training set because ground truth is not visible to the model, you can also split it into train/val/test sets
+saits.fit(dataset)
 imputation = saits.impute(dataset)  # impute the originally-missing values and artificially-missing values
 mae = cal_mae(imputation, X_intact, indicating_mask)  # calculate mean absolute error on the ground truth (artificially-missing values)
 ```
@@ -175,12 +176,12 @@ PyPOTS supports imputation, classification, clustering, and forecasting tasks on
 
 |   ***`Imputation`***   |     🚥      |                                                                                        🚥                                                                                         |    🚥    |
 |:----------------------:|:-----------:|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------:|:--------:|
-|        **Type**        |  **Abbr.**  |                                                                    **Full name of the algorithm/model/paper**                                                                     | **Year** |
+|        **Type**        |  **Abbr.**  |                                                                       **Full name of the algorithm/model**                                                                        | **Year** |
 |       Neural Net       |    SAITS    |                                                               Self-Attention-based Imputation for Time Series [^1]                                                                |   2023   |
 |       Neural Net       | Transformer | Attention is All you Need [^2];<br>Self-Attention-based Imputation for Time Series [^1];<br><sub>Note: proposed in [^2], and re-implemented as an imputation model in [^1].</sub> |   2017   |
 |       Neural Net       |    CSDI     |                                              Conditional Score-based Diffusion Models for Probabilistic Time Series Imputation [^12]                                              |   2021   |
-|       Neural Net       |   US-GAN    |                                                 Generative Semi-supervised Learning for Multivariate Time Series Imputation [^10]                                                 |   2021   |
-|       Neural Net       |   GP-VAE    |                                                              GP-VAE: Deep Probabilistic Time Series Imputation [^11]                                                              |   2020   |
+|       Neural Net       |   US-GAN    |                                                          Unsupervised GAN for Multivariate Time Series Imputation [^10]                                                           |   2021   |
+|       Neural Net       |   GP-VAE    |                                                                   Gaussian Process Variational Autoencoder [^11]                                                                  |   2020   |
 |       Neural Net       |    BRITS    |                                                              Bidirectional Recurrent Imputation for Time Series [^3]                                                              |   2018   |
 |       Neural Net       |    M-RNN    |                                                                  Multi-directional Recurrent Neural Network [^9]                                                                  |   2019   |
 |         Naive          |    LOCF     |                                                                         Last Observation Carried Forward                                                                          |    -     |
@@ -269,11 +270,11 @@ Your star is your recognition to PyPOTS, and it matters!
     </i></b>
 </summary>
 <a href="https://github.com/WenjieDu/PyPOTS/stargazers">
-    <img alt="PyPOTS stargazers" src="https://reporoster.com/stars/dark/WenjieDu/PyPOTS">
+    <img alt="PyPOTS stargazers" src="http://reporoster.com/stars/dark/WenjieDu/PyPOTS">
 </a>
 <br>
 <a href="https://github.com/WenjieDu/PyPOTS/network/members">
-    <img alt="PyPOTS forkers" src="https://reporoster.com/forks/dark/WenjieDu/PyPOTS">
+    <img alt="PyPOTS forkers" src="http://reporoster.com/forks/dark/WenjieDu/PyPOTS">
 </a>
 </details>
 
