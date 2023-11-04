@@ -5,7 +5,7 @@ The base classes for PyPOTS forecasting models.
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: GPL-v3
 
-
+import os
 from abc import abstractmethod
 from typing import Optional, Union
 
@@ -15,6 +15,11 @@ from torch.utils.data import DataLoader
 
 from ..base import BaseModel, BaseNNModel
 from ..utils.logging import logger
+
+try:
+    import nni
+except ImportError:
+    pass
 
 
 class BaseForecaster(BaseModel):
@@ -89,6 +94,14 @@ class BaseForecaster(BaseModel):
         raise NotImplementedError
 
     @abstractmethod
+    def predict(
+        self,
+        test_set: Union[dict, str],
+        file_type: str = "h5py",
+    ) -> dict:
+        raise NotImplementedError
+
+    @abstractmethod
     def forecast(
         self,
         X: dict or str,
@@ -109,6 +122,8 @@ class BaseForecaster(BaseModel):
         array-like, shape [n_samples, prediction_horizon, n_features],
             Forecasting results.
         """
+        # this is for old API compatibility, will be removed in the future.
+        # Please implement predict() instead.
         raise NotImplementedError
 
 
@@ -303,11 +318,18 @@ class BaseNNForecaster(BaseNNModel):
                     self.patience = self.original_patience
                 else:
                     self.patience -= 1
-                    if self.patience == 0:
-                        logger.info(
-                            "Exceeded the training patience. Terminating the training procedure..."
-                        )
-                        break
+
+                if os.getenv("enable_tuning", False):
+                    nni.report_intermediate_result(mean_loss)
+                    if epoch == self.epochs - 1 or self.patience == 0:
+                        nni.report_final_result(self.best_loss)
+
+                if self.patience == 0:
+                    logger.info(
+                        "Exceeded the training patience. Terminating the training procedure..."
+                    )
+                    break
+
         except Exception as e:
             logger.error(f"Exception: {e}")
             if self.best_model_dict is None:
@@ -360,6 +382,14 @@ class BaseNNForecaster(BaseNNModel):
         raise NotImplementedError
 
     @abstractmethod
+    def predict(
+        self,
+        test_set: Union[dict, str],
+        file_type: str = "h5py",
+    ) -> dict:
+        raise NotImplementedError
+
+    @abstractmethod
     def forecast(
         self,
         X: dict or str,
@@ -380,4 +410,6 @@ class BaseNNForecaster(BaseNNModel):
         array-like, shape [n_samples, prediction_horizon, n_features],
             Forecasting results.
         """
+        # this is for old API compatibility, will be removed in the future.
+        # Please implement predict() instead.
         raise NotImplementedError

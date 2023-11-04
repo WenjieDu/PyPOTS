@@ -1,31 +1,10 @@
 pypots.forecasting package
 ==========================
 
-Subpackages
------------
-
-.. toctree::
-   :maxdepth: 4
-
-   pypots.forecasting.bttf
-   pypots.forecasting.template
-
-Submodules
-----------
-
-pypots.forecasting.base module
+pypots.forecasting.bttf
 ------------------------------
 
-.. automodule:: pypots.forecasting.base
-   :members:
-   :undoc-members:
-   :show-inheritance:
-   :inherited-members:
-
-Module contents
----------------
-
-.. automodule:: pypots.forecasting
+.. automodule:: pypots.forecasting.bttf
    :members:
    :undoc-members:
    :show-inheritance:

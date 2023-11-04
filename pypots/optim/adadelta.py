@@ -6,30 +6,33 @@ The optimizer wrapper for PyTorch Adadelta.
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: GLP-v3
 
-from typing import Iterable
+from typing import Iterable, Optional
 
 from torch.optim import Adadelta as torch_Adadelta
 
 from .base import Optimizer
+from .lr_scheduler.base import LRScheduler
 
 
 class Adadelta(Optimizer):
-    """The optimizer wrapper for PyTorch Adadelta.
-    https://pytorch.org/docs/stable/generated/torch.optim.Adadelta.html#torch.optim.Adadelta
+    """The optimizer wrapper for PyTorch Adadelta :class:`torch.optim.Adadelta`.
 
     Parameters
     ----------
-    lr :
+    lr : float
         The learning rate of the optimizer.
 
-    rho :
+    rho : float
         Coefficient used for computing a running average of squared gradients.
 
-    eps :
+    eps : float
         Term added to the denominator to improve numerical stability.
 
-    weight_decay :
+    weight_decay : float
         Weight decay (L2 penalty).
+
+    lr_scheduler : pypots.optim.lr_scheduler.base.LRScheduler
+        The learning rate scheduler of the optimizer.
 
     """
 
@@ -39,8 +42,9 @@ class Adadelta(Optimizer):
         rho: float = 0.9,
         eps: float = 1e-08,
         weight_decay: float = 0.01,
+        lr_scheduler: Optional[LRScheduler] = None,
     ):
-        super().__init__(lr)
+        super().__init__(lr, lr_scheduler)
         self.rho = rho
         self.eps = eps
         self.weight_decay = weight_decay
@@ -61,3 +65,6 @@ class Adadelta(Optimizer):
             eps=self.eps,
             weight_decay=self.weight_decay,
         )
+
+        if self.lr_scheduler is not None:
+            self.lr_scheduler.init_scheduler(self.torch_optimizer)

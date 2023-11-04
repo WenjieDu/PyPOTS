@@ -6,6 +6,7 @@ The base classes for PyPOTS clustering models.
 # License: GPL-v3
 
 
+import os
 from abc import abstractmethod
 from typing import Union, Optional
 
@@ -15,6 +16,11 @@ from torch.utils.data import DataLoader
 
 from ..base import BaseModel, BaseNNModel
 from ..utils.logging import logger
+
+try:
+    import nni
+except ImportError:
+    pass
 
 
 class BaseClusterer(BaseModel):
@@ -64,6 +70,7 @@ class BaseClusterer(BaseModel):
     def fit(
         self,
         train_set: Union[dict, str],
+        val_set: Union[dict, str] = None,
         file_type: str = "h5py",
     ) -> None:
         """Train the cluster.
@@ -78,9 +85,27 @@ class BaseClusterer(BaseModel):
             If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
             key-value pairs like a dict, and it has to include the key 'X'.
 
+        val_set :
+            The dataset for model validating, should be a dictionary including keys as 'X' and 'y',
+            or a path string locating a data file.
+            If it is a dict, X should be array-like of shape [n_samples, sequence length (time steps), n_features],
+            which is time-series data for validating, can contain missing values, and y should be array-like of shape
+            [n_samples], which is classification labels of X.
+            If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
+            key-value pairs like a dict, and it has to include keys as 'X' and 'y'.
+
         file_type :
-            The type of the given file if train_set is a path string.
+            The type of the given file if train_set and val_set are path strings.
+
         """
+        raise NotImplementedError
+
+    @abstractmethod
+    def predict(
+        self,
+        test_set: Union[dict, str],
+        file_type: str = "h5py",
+    ) -> dict:
         raise NotImplementedError
 
     @abstractmethod
@@ -105,6 +130,8 @@ class BaseClusterer(BaseModel):
         array-like,
             Clustering results.
         """
+        # this is for old API compatibility, will be removed in the future.
+        # Please implement predict() instead.
         raise NotImplementedError
 
 
@@ -305,11 +332,18 @@ class BaseNNClusterer(BaseNNModel):
                     self.patience = self.original_patience
                 else:
                     self.patience -= 1
-                    if self.patience == 0:
-                        logger.info(
-                            "Exceeded the training patience. Terminating the training procedure..."
-                        )
-                        break
+
+                if os.getenv("enable_tuning", False):
+                    nni.report_intermediate_result(mean_loss)
+                    if epoch == self.epochs - 1 or self.patience == 0:
+                        nni.report_final_result(self.best_loss)
+
+                if self.patience == 0:
+                    logger.info(
+                        "Exceeded the training patience. Terminating the training procedure..."
+                    )
+                    break
+
         except Exception as e:
             logger.error(f"Exception: {e}")
             if self.best_model_dict is None:
@@ -332,7 +366,7 @@ class BaseNNClusterer(BaseNNModel):
     def fit(
         self,
         train_set: Union[dict, str],
-        val_set: Union[dict, str],
+        val_set: Union[dict, str] = None,
         file_type: str = "h5py",
     ) -> None:
         """Train the cluster.
@@ -347,9 +381,27 @@ class BaseNNClusterer(BaseNNModel):
             If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
             key-value pairs like a dict, and it has to include the key 'X'.
 
+        val_set :
+            The dataset for model validating, should be a dictionary including keys as 'X' and 'y',
+            or a path string locating a data file.
+            If it is a dict, X should be array-like of shape [n_samples, sequence length (time steps), n_features],
+            which is time-series data for validating, can contain missing values, and y should be array-like of shape
+            [n_samples], which is classification labels of X.
+            If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
+            key-value pairs like a dict, and it has to include keys as 'X' and 'y'.
+
         file_type :
-            The type of the given file if train_set is a path string.
+            The type of the given file if train_set and val_set are path strings.
+
         """
+        raise NotImplementedError
+
+    @abstractmethod
+    def predict(
+        self,
+        test_set: Union[dict, str],
+        file_type: str = "h5py",
+    ) -> dict:
         raise NotImplementedError
 
     @abstractmethod
@@ -374,4 +426,6 @@ class BaseNNClusterer(BaseNNModel):
         array-like,
             Clustering results.
         """
+        # this is for old API compatibility, will be removed in the future.
+        # Please implement predict() instead.
         raise NotImplementedError

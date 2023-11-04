@@ -6,33 +6,37 @@ The optimizer wrapper for PyTorch AdamW.
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: GLP-v3
 
-from typing import Iterable, Tuple
+from typing import Iterable, Tuple, Optional
 
 from torch.optim import AdamW as torch_AdamW
 
 from .base import Optimizer
+from .lr_scheduler.base import LRScheduler
 
 
 class AdamW(Optimizer):
-    """The optimizer wrapper for PyTorch AdamW.
-    https://pytorch.org/docs/stable/generated/torch.optim.AdamW.html#torch.optim.AdamW
+    """The optimizer wrapper for PyTorch AdamW :class:`torch.optim.AdamW`.
 
     Parameters
     ----------
-    lr :
+    lr : float
         The learning rate of the optimizer.
 
-    betas :
+    betas : Tuple[float, float]
         Coefficients used for computing running averages of gradient and its square.
 
-    eps :
+    eps : float
         Term added to the denominator to improve numerical stability.
 
-    weight_decay :
+    weight_decay : float
         Weight decay (L2 penalty).
 
-    amsgrad :
+    amsgrad : bool
         Whether to use the AMSGrad variant of this algorithm from the paper :cite:`reddi2018OnTheConvergence`.
+
+    lr_scheduler : pypots.optim.lr_scheduler.base.LRScheduler
+        The learning rate scheduler of the optimizer.
+
     """
 
     def __init__(
@@ -42,8 +46,9 @@ class AdamW(Optimizer):
         eps: float = 1e-08,
         weight_decay: float = 0.01,
         amsgrad: bool = False,
+        lr_scheduler: Optional[LRScheduler] = None,
     ):
-        super().__init__(lr)
+        super().__init__(lr, lr_scheduler)
         self.betas = betas
         self.eps = eps
         self.weight_decay = weight_decay
@@ -66,3 +71,6 @@ class AdamW(Optimizer):
             weight_decay=self.weight_decay,
             amsgrad=self.amsgrad,
         )
+
+        if self.lr_scheduler is not None:
+            self.lr_scheduler.init_scheduler(self.torch_optimizer)

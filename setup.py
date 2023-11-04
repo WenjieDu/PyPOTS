@@ -50,7 +50,7 @@ setup(
         "torch>=1.10.0",
         "tensorboard",
         "pandas<2.0.0",
-        "pycorruptor",
+        "pygrinder",
         "tsdb",
         "h5py",
     ],

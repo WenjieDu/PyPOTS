@@ -10,111 +10,25 @@ Learning Representations for Incomplete Time Series Clustering. AAAI 2021."
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: GLP-v3
 
-from typing import Union, Optional
+import os
+from typing import Union, Optional, Tuple
 
 import h5py
 import numpy as np
 import torch
-import torch.nn as nn
-import torch.nn.functional as F
-from sklearn.cluster import KMeans
 from torch.utils.data import DataLoader
 
 from .data import DatasetForCRLI
-from .modules import Generator, Decoder, Discriminator
+from .modules import _CRLI
 from ..base import BaseNNClusterer
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
 from ...utils.logging import logger
-from ...utils.metrics import cal_mse
 
-
-class _CRLI(nn.Module):
-    def __init__(
-        self,
-        n_steps: int,
-        n_features: int,
-        n_clusters: int,
-        n_generator_layers: int,
-        rnn_hidden_size: int,
-        decoder_fcn_output_dims: Optional[list],
-        lambda_kmeans: float,
-        rnn_cell_type: str = "GRU",
-        device: Union[str, torch.device] = "cpu",
-    ):
-        super().__init__()
-        self.generator = Generator(
-            n_generator_layers, n_features, rnn_hidden_size, rnn_cell_type, device
-        )
-        self.discriminator = Discriminator(rnn_cell_type, n_features, device)
-        self.decoder = Decoder(
-            n_steps, rnn_hidden_size * 2, n_features, decoder_fcn_output_dims, device
-        )  # fully connected network is included in Decoder
-        self.kmeans = KMeans(
-            n_clusters=n_clusters,
-            n_init=10,  # FutureWarning: The default value of `n_init` will change from 10 to 'auto' in 1.4. Set the
-            # value of `n_init` explicitly to suppress the warning.
-        )
-        self.term_F = None
-        self.counter_for_updating_F = 0
-
-        self.n_clusters = n_clusters
-        self.lambda_kmeans = lambda_kmeans
-        self.device = device
-
-    def forward(
-        self,
-        inputs: dict,
-        training_object: str = "generator",
-    ) -> dict:
-        assert training_object in [
-            "generator",
-            "discriminator",
-        ], 'training_object should be "generator" or "discriminator"'
-
-        X = inputs["X"]
-        missing_mask = inputs["missing_mask"]
-        batch_size, n_steps, n_features = X.shape
-        results = {}
-
-        estimation, generator_fb_hidden_states = self.generator(inputs)
-        inputs["generator_fb_hidden_states"] = generator_fb_hidden_states
-        imputed_X = inputs["X"] * inputs["missing_mask"] + estimation * (
-            1 - inputs["missing_mask"]
-        )
-        inputs["imputed_X"] = imputed_X
-        discrimination = self.discriminator(inputs)
-        reconstruction, fcn_latent = self.decoder(inputs)
-
-        if training_object == "discriminator":
-            l_D = F.binary_cross_entropy_with_logits(discrimination, missing_mask)
-            results["discrimination_loss"] = l_D
-        else:
-            discrimination = discrimination.detach()
-            l_G = F.binary_cross_entropy_with_logits(
-                discrimination, 1 - missing_mask, weight=1 - missing_mask
-            )
-            l_pre = cal_mse(estimation, X, missing_mask)
-            l_rec = cal_mse(reconstruction, X, missing_mask)
-
-            HTH = torch.matmul(fcn_latent, fcn_latent.permute(1, 0))
-            if (
-                self.counter_for_updating_F == 0
-                or self.counter_for_updating_F % 10 == 0
-            ):
-                U, s, V = torch.linalg.svd(fcn_latent)
-                self.term_F = U[:, : self.n_clusters]
-
-            FTHTHF = torch.matmul(
-                torch.matmul(self.term_F.permute(1, 0), HTH), self.term_F
-            )
-            l_kmeans = torch.trace(HTH) - torch.trace(FTHTHF)  # k-means loss
-            loss_gene = l_G + l_pre + l_rec + l_kmeans * self.lambda_kmeans
-            results["generation_loss"] = loss_gene
-
-        results["imputation"] = imputed_X
-        results["fcn_latent"] = fcn_latent
-        return results
+try:
+    import nni
+except ImportError:
+    pass
 
 
 class CRLI(BaseNNClusterer):
@@ -195,13 +109,13 @@ class CRLI(BaseNNClusterer):
         The "better" strategy will automatically save the model during training whenever the model performs
         better than in previous epochs.
 
-    Attributes
+    References
     ----------
-    model : :class:`torch.nn.Module`
-        The underlying CRLI model.
-
-    optimizer : :class:`pypots.optim.Optimizer`
-        The optimizer for model training.
+    .. [1] `Ma, Qianli, Chuxin Chen, Sen Li, and Garrison W. Cottrell. 2021.
+        "Learning Representations for Incomplete Time Series Clustering".
+        Proceedings of the AAAI Conference on Artificial Intelligence 35 (10):8837-46.
+        https://doi.org/10.1609/aaai.v35i10.17070.
+        <https://ojs.aaai.org/index.php/AAAI/article/view/17070>`_
 
     """
 
@@ -347,9 +261,9 @@ class CRLI(BaseNNClusterer):
                         self._save_log_into_tb_file(
                             training_step, "training", loss_results
                         )
+
                 mean_epoch_train_D_loss = np.mean(epoch_train_loss_D_collector)
                 mean_epoch_train_G_loss = np.mean(epoch_train_loss_G_collector)
-                mean_train_loss = mean_epoch_train_G_loss
 
                 if val_loader is not None:
                     self.model.eval()
@@ -357,34 +271,31 @@ class CRLI(BaseNNClusterer):
                     with torch.no_grad():
                         for idx, data in enumerate(val_loader):
                             inputs = self._assemble_input_for_validating(data)
-                            results = self.model.forward(inputs)
+                            results = self.model.forward(inputs, return_loss=True)
                             epoch_val_loss_G_collector.append(
                                 results["generation_loss"].sum().item()
                             )
-
-                    mean_val_loss = np.mean(epoch_val_loss_G_collector)
-
+                    mean_val_G_loss = np.mean(epoch_val_loss_G_collector)
                     # save validating loss logs into the tensorboard file for every epoch if in need
                     if self.summary_writer is not None:
                         val_loss_dict = {
-                            "generation_loss": mean_val_loss,
+                            "generation_loss": mean_val_G_loss,
                         }
                         self._save_log_into_tb_file(epoch, "validating", val_loss_dict)
-
                     logger.info(
                         f"epoch {epoch}: "
                         f"training loss_generator {mean_epoch_train_G_loss:.4f}, "
-                        f"train loss_discriminator {mean_epoch_train_D_loss:.4f}, "
-                        f"validating loss {mean_val_loss:.4f}"
+                        f"training loss_discriminator {mean_epoch_train_D_loss:.4f}, "
+                        f"validating loss_generator {mean_val_G_loss:.4f}"
                     )
-                    mean_loss = mean_val_loss
+                    mean_loss = mean_val_G_loss
                 else:
                     logger.info(
                         f"epoch {epoch}: "
                         f"training loss_generator {mean_epoch_train_G_loss:.4f}, "
-                        f"train loss_discriminator {mean_epoch_train_D_loss:.4f}"
+                        f"training loss_discriminator {mean_epoch_train_D_loss:.4f}"
                     )
-                    mean_loss = mean_train_loss
+                    mean_loss = mean_epoch_train_G_loss
 
                 if mean_loss < self.best_loss:
                     self.best_loss = mean_loss
@@ -397,11 +308,18 @@ class CRLI(BaseNNClusterer):
                     )
                 else:
                     self.patience -= 1
-                    if self.patience == 0:
-                        logger.info(
-                            "Exceeded the training patience. Terminating the training procedure..."
-                        )
-                        break
+
+                if os.getenv("enable_tuning", False):
+                    nni.report_intermediate_result(mean_loss)
+                    if epoch == self.epochs - 1 or self.patience == 0:
+                        nni.report_final_result(self.best_loss)
+
+                if self.patience == 0:
+                    logger.info(
+                        "Exceeded the training patience. Terminating the training procedure..."
+                    )
+                    break
+
         except Exception as e:
             logger.error(f"Exception: {e}")
             if self.best_model_dict is None:
@@ -423,7 +341,7 @@ class CRLI(BaseNNClusterer):
     def fit(
         self,
         train_set: Union[dict, str],
-        val_set: Union[dict, str],
+        val_set: Optional[Union[dict, str]] = None,
         file_type: str = "h5py",
     ) -> None:
         # Step 1: wrap the input data with classes Dataset and DataLoader
@@ -458,6 +376,16 @@ class CRLI(BaseNNClusterer):
                 num_workers=self.num_workers,
             )
 
+        val_loader = None
+        if val_set is not None:
+            val_set = DatasetForCRLI(val_set, return_labels=False, file_type=file_type)
+            val_loader = DataLoader(
+                val_set,
+                batch_size=self.batch_size,
+                shuffle=False,
+                num_workers=self.num_workers,
+            )
+
         # Step 2: train the model and freeze it
         self._train_model(training_loader, val_loader)
         self.model.load_state_dict(self.best_model_dict)
@@ -466,28 +394,61 @@ class CRLI(BaseNNClusterer):
         # Step 3: save the model if necessary
         self._auto_save_model_if_necessary(training_finished=True)
 
-    def cluster(
+    def predict(
         self,
-        X: Union[dict, str],
+        test_set: Union[dict, str],
         file_type: str = "h5py",
-    ) -> np.ndarray:
+        return_latent: bool = False,
+    ) -> dict:
         self.model.eval()  # set the model as eval status to freeze it.
-        test_set = DatasetForCRLI(X, return_labels=False, file_type=file_type)
+        test_set = DatasetForCRLI(test_set, return_labels=False, file_type=file_type)
         test_loader = DataLoader(
             test_set,
             batch_size=self.batch_size,
             shuffle=False,
             num_workers=self.num_workers,
         )
-        latent_collector = []
+        clustering_latent_collector = []
+        imputation_collector = []
 
         with torch.no_grad():
             for idx, data in enumerate(test_loader):
                 inputs = self._assemble_input_for_testing(data)
-                results = self.model.forward(inputs)
-                latent_collector.append(results["fcn_latent"])
+                inputs = self.model.forward(inputs, return_loss=False)
+                clustering_latent_collector.append(inputs["fcn_latent"])
+                imputation_collector.append(inputs["imputation_latent"])
 
-        latent_collector = torch.cat(latent_collector).cpu().detach().numpy()
-        clustering = self.model.kmeans.fit_predict(latent_collector)
+        imputation = torch.cat(imputation_collector).cpu().detach().numpy()
+        clustering_latent = (
+            torch.cat(clustering_latent_collector).cpu().detach().numpy()
+        )
+        clustering = self.model.kmeans.fit_predict(clustering_latent)
+        latent_collector = {
+            "clustering_latent": clustering_latent,
+            "imputation_latent": imputation,
+        }
 
-        return clustering
+        result_dict = {
+            "clustering": clustering,
+        }
+
+        if return_latent:
+            result_dict["latent"] = latent_collector
+
+        return result_dict
+
+    def cluster(
+        self,
+        X: Union[dict, str],
+        file_type: str = "h5py",
+        return_latent: bool = False,
+    ) -> Union[np.ndarray, Tuple[np.ndarray, dict]]:
+        logger.warning(
+            "🚨DeprecationWarning: The method cluster is deprecated. Please use `predict` instead."
+        )
+
+        result_dict = self.predict(X, file_type, return_latent)
+        if return_latent:
+            return result_dict["clustering"], result_dict["latent"]
+
+        return result_dict["clustering"]

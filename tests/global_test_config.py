@@ -9,12 +9,18 @@ import os
 
 import torch
 
-from pypots.data.generating import gene_incomplete_random_walk_dataset
+from pypots.data.generating import gene_random_walk
 from pypots.utils.logging import logger
 
 # Generate the unified data for testing and cache it first, DATA here is a singleton
 # Otherwise, file lock will cause bug if running test parallely with pytest-xdist.
-DATA = gene_incomplete_random_walk_dataset()
+DATA = gene_random_walk(
+    n_steps=24,
+    n_features=10,
+    n_classes=2,
+    n_samples_each_class=1000,
+    missing_rate=0.1,
+)
 
 # The directory for saving the dataset into files for testing
 DATA_SAVING_DIR = "h5data_for_tests"

@@ -1,7 +1,7 @@
 pypots.optim package
 ====================
 
-pypots.optim.adam module
+pypots.optim.adam
 ------------------------
 
 .. automodule:: pypots.optim.adam
@@ -10,7 +10,7 @@ pypots.optim.adam module
    :show-inheritance:
    :inherited-members:
 
-pypots.optim.adamw module
+pypots.optim.adamw
 -------------------------
 
 .. automodule:: pypots.optim.adamw
@@ -19,7 +19,7 @@ pypots.optim.adamw module
    :show-inheritance:
    :inherited-members:
 
-pypots.optim.adagrad module
+pypots.optim.adagrad
 ---------------------------
 
 .. automodule:: pypots.optim.adagrad
@@ -28,7 +28,7 @@ pypots.optim.adagrad module
    :show-inheritance:
    :inherited-members:
 
-pypots.optim.rmsprop module
+pypots.optim.rmsprop
 ---------------------------
 
 .. automodule:: pypots.optim.rmsprop
@@ -37,7 +37,7 @@ pypots.optim.rmsprop module
    :show-inheritance:
    :inherited-members:
 
-pypots.optim.sgd module
+pypots.optim.sgd
 -----------------------
 
 .. automodule:: pypots.optim.sgd
@@ -46,10 +46,19 @@ pypots.optim.sgd module
    :show-inheritance:
    :inherited-members:
 
-pypots.optim.base module
+pypots.optim.base
 ------------------------
 
 .. automodule:: pypots.optim.base
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+
+pypots.optim.lr_scheduler
+------------------------------
+
+.. automodule:: pypots.optim.lr_scheduler
    :members:
    :undoc-members:
    :show-inheritance:

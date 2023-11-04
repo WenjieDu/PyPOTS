@@ -14,236 +14,69 @@ from typing import Union, Optional
 import h5py
 import numpy as np
 import torch
-import torch.nn as nn
-import torch.nn.functional as F
 from torch.utils.data import DataLoader
 
 from .data import DatasetForUSGAN
+from .modules import _USGAN
 from ..base import BaseNNImputer
-from ..brits.model import _BRITS
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
 from ...utils.logging import logger
 
 
-class Discriminator(nn.Module):
-    """model Discriminator: built on BiRNN
-
-    Parameters
-    ----------
-    n_features :
-        the feature dimension of the input
-
-    rnn_hidden_size :
-        the hidden size of the RNN cell
-
-    hint_rate :
-        the hint rate for the input imputed_data
-
-    dropout_rate :
-        the dropout rate for the output layer
-
-    device :
-        specify running the model on which device, CPU/GPU
-
-    """
-
-    def __init__(
-        self,
-        n_features: int,
-        rnn_hidden_size: int,
-        hint_rate: float = 0.7,
-        dropout_rate: float = 0.0,
-        device: Union[str, torch.device] = "cpu",
-    ):
-        super().__init__()
-        self.hint_rate = hint_rate
-        self.device = device
-        self.biRNN = nn.GRU(
-            n_features * 2, rnn_hidden_size, bidirectional=True, batch_first=True
-        ).to(device)
-        self.dropout = nn.Dropout(dropout_rate).to(device)
-        self.read_out = nn.Linear(rnn_hidden_size * 2, n_features).to(device)
-
-    def forward(
-        self,
-        imputed_X: torch.Tensor,
-        missing_mask: torch.Tensor,
-    ) -> torch.Tensor:
-        """Forward processing of USGAN Discriminator.
-
-        Parameters
-        ----------
-        imputed_X : torch.Tensor,
-            The original X with missing parts already imputed.
-
-        missing_mask : torch.Tensor,
-            The missing mask of X.
-
-        Returns
-        -------
-        logits : torch.Tensor,
-            the logits of the probability of being the true value.
-
-        """
-
-        hint = (
-            torch.rand_like(missing_mask, dtype=torch.float, device=self.device)
-            < self.hint_rate
-        )
-        hint = hint.int()
-        h = hint * missing_mask + (1 - hint) * 0.5
-        x_in = torch.cat([imputed_X, h], dim=-1)
-
-        out, _ = self.biRNN(x_in)
-        logits = self.read_out(self.dropout(out))
-        return logits
-
-
-class _USGAN(nn.Module):
-    """model USGAN:
-    USGAN consists of a generator, a discriminator,  which are all built on bidirectional recurrent neural networks.
-
-    Attributes
-    ----------
-    n_steps :
-        sequence length (number of time steps)
-
-    n_features :
-        number of features (input dimensions)
-
-    rnn_hidden_size :
-        the hidden size of the RNN cell
-
-    lambda_mse :
-        the weigth of the reconstruction loss
-
-    hint_rate :
-        the hint rate for the discriminator
-
-    dropout_rate :
-        the dropout rate for the last layer in Discriminator
-
-    device :
-        specify running the model on which device, CPU/GPU
-
-    """
-
-    def __init__(
-        self,
-        n_steps: int,
-        n_features: int,
-        rnn_hidden_size: int,
-        lambda_mse: float,
-        hint_rate: float = 0.7,
-        dropout_rate: float = 0.0,
-        device: Union[str, torch.device] = "cpu",
-    ):
-        super().__init__()
-        self.generator = _BRITS(n_steps, n_features, rnn_hidden_size, device)
-        self.discriminator = Discriminator(
-            n_features,
-            rnn_hidden_size,
-            hint_rate=hint_rate,
-            dropout_rate=dropout_rate,
-            device=device,
-        )
-
-        self.lambda_mse = lambda_mse
-        self.device = device
-
-    def forward(
-        self,
-        inputs: dict,
-        training_object: str = "generator",
-        training: bool = True,
-    ) -> dict:
-        assert training_object in [
-            "generator",
-            "discriminator",
-        ], 'training_object should be "generator" or "discriminator"'
-
-        forward_X = inputs["forward"]["X"]
-        forward_missing_mask = inputs["forward"]["missing_mask"]
-        losses = {}
-        results = self.generator(inputs, training=training)
-        inputs["discrimination"] = self.discriminator(forward_X, forward_missing_mask)
-        if not training:
-            # if only run imputation operation, then no need to calculate loss
-            return results
-
-        if training_object == "discriminator":
-            l_D = F.binary_cross_entropy_with_logits(
-                inputs["discrimination"], forward_missing_mask
-            )
-            losses["discrimination_loss"] = l_D
-        else:
-            inputs["discrimination"] = inputs["discrimination"].detach()
-            l_G = F.binary_cross_entropy_with_logits(
-                inputs["discrimination"],
-                1 - forward_missing_mask,
-                weight=1 - forward_missing_mask,
-            )
-            loss_gene = l_G + self.lambda_mse * results["loss"]
-            losses["generation_loss"] = loss_gene
-
-        losses["imputed_data"] = results["imputed_data"]
-        return losses
-
-
 class USGAN(BaseNNImputer):
-    """The PyTorch implementation of the CRLI model :cite:`ma2021CRLI`.
+    """The PyTorch implementation of the USGAN model. Refer to :cite:`miao2021SSGAN`.
 
     Parameters
     ----------
-    n_steps :
+    n_steps : int
         The number of time steps in the time-series data sample.
 
-    n_features :
+    n_features : int
         The number of features in the time-series data sample.
 
-    rnn_hidden_size :
-        the hidden size of the RNN cell
+    rnn_hidden_size : int
+        The hidden size of the RNN cell
 
-    lambda_mse :
-        the weight of the reconstruction loss
+    lambda_mse : float
+        The weight of the reconstruction loss
 
-    hint_rate :
-        the hint rate for the discriminator
+    hint_rate : float
+        The hint rate for the discriminator
 
-    dropout_rate :
-        the dropout rate for the last layer in Discriminator
+    dropout_rate : float
+        The dropout rate for the last layer in Discriminator
 
-    G_steps :
+    G_steps : int
         The number of steps to train the generator in each iteration.
 
-    D_steps :
+    D_steps : int
         The number of steps to train the discriminator in each iteration.
 
-    batch_size :
+    batch_size : int
         The batch size for training and evaluating the model.
 
-    epochs :
+    epochs : int
         The number of epochs for training the model.
 
-    patience :
+    patience : int
         The patience for the early-stopping mechanism. Given a positive integer, the training process will be
         stopped when the model does not perform better after that number of epochs.
         Leaving it default as None will disable the early-stopping.
 
-    G_optimizer :
+    G_optimizer : :class:`pypots.optim.Optimizer`
         The optimizer for the generator training.
         If not given, will use a default Adam optimizer.
 
-    D_optimizer :
+    D_optimizer : :class:`pypots.optim.Optimizer`
         The optimizer for the discriminator training.
         If not given, will use a default Adam optimizer.
 
-    num_workers :
+    num_workers : int
         The number of subprocesses to use for data loading.
         `0` means data loading will be in the main process, i.e. there won't be subprocesses.
 
-    device :
+    device : Union[str, torch.device, list]
         The device for the model to run on. It can be a string, a :class:`torch.device` object, or a list of them.
         If not given, will try to use CUDA devices first (will use the default CUDA device if there are multiple),
         then CPUs, considering CUDA and CPU are so far the main devices for people to train ML models.
@@ -251,24 +84,23 @@ class USGAN(BaseNNImputer):
         model will be parallely trained on the multiple devices (so far only support parallel training on CUDA devices).
         Other devices like Google TPU and Apple Silicon accelerator MPS may be added in the future.
 
-    saving_path :
+    saving_path : str
         The path for automatically saving model checkpoints and tensorboard files (i.e. loss values recorded during
         training into a tensorboard file). Will not save if not given.
 
-    model_saving_strategy :
+    model_saving_strategy : str
         The strategy to save model checkpoints. It has to be one of [None, "best", "better"].
         No model will be saved when it is set as None.
         The "best" strategy will only automatically save the best model after the training finished.
         The "better" strategy will automatically save the model during training whenever the model performs
         better than in previous epochs.
 
-    Attributes
+    References
     ----------
-    model : :class:`torch.nn.Module`
-        The underlying CRLI model.
-
-    optimizer : :class:`pypots.optim.Optimizer`
-        The optimizer for model training.
+    .. [1] `Miao, Xiaoye, Yangyang Wu, Jun Wang, Yunjun Gao, Xudong Mao, and Jianwei Yin. 2021.
+       "Generative Semi-Supervised Learning for Multivariate Time Series Imputation".
+       Proceedings of the AAAI Conference on Artificial Intelligence 35 (10):8983-91.
+       <https://doi.org/10.1609/aaai.v35i10.17086>`_
 
     """
 
@@ -513,13 +345,13 @@ class USGAN(BaseNNImputer):
         # Step 3: save the model if necessary
         self._auto_save_model_if_necessary(training_finished=True)
 
-    def impute(
+    def predict(
         self,
-        X: Union[dict, str],
+        test_set: Union[dict, str],
         file_type="h5py",
-    ) -> np.ndarray:
+    ) -> dict:
         self.model.eval()  # set the model as eval status to freeze it.
-        test_set = DatasetForUSGAN(X, return_labels=False, file_type=file_type)
+        test_set = DatasetForUSGAN(test_set, return_labels=False, file_type=file_type)
         test_loader = DataLoader(
             test_set,
             batch_size=self.batch_size,
@@ -535,5 +367,19 @@ class USGAN(BaseNNImputer):
                 imputed_data = results["imputed_data"]
                 imputation_collector.append(imputed_data)
 
-        imputation_collector = torch.cat(imputation_collector)
-        return imputation_collector.cpu().detach().numpy()
+        imputation = torch.cat(imputation_collector).cpu().detach().numpy()
+        result_dict = {
+            "imputation": imputation,
+        }
+        return result_dict
+
+    def impute(
+        self,
+        X: Union[dict, str],
+        file_type="h5py",
+    ) -> np.ndarray:
+        logger.warning(
+            "🚨DeprecationWarning: The method impute is deprecated. Please use `predict` instead."
+        )
+        results_dict = self.predict(X, file_type=file_type)
+        return results_dict["imputation"]

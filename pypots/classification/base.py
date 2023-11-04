@@ -6,6 +6,7 @@ The base classes for PyPOTS classification models.
 # License: GPL-v3
 
 
+import os
 from abc import abstractmethod
 from typing import Optional, Union
 
@@ -15,6 +16,11 @@ from torch.utils.data import DataLoader
 
 from ..base import BaseModel, BaseNNModel
 from ..utils.logging import logger
+
+try:
+    import nni
+except ImportError:
+    pass
 
 
 class BaseClassifier(BaseModel):
@@ -96,6 +102,14 @@ class BaseClassifier(BaseModel):
         raise NotImplementedError
 
     @abstractmethod
+    def predict(
+        self,
+        test_set: Union[dict, str],
+        file_type: str = "h5py",
+    ) -> dict:
+        raise NotImplementedError
+
+    @abstractmethod
     def classify(
         self,
         X: Union[dict, str],
@@ -117,6 +131,8 @@ class BaseClassifier(BaseModel):
         array-like, shape [n_samples],
             Classification results of the given samples.
         """
+        # this is for old API compatibility, will be removed in the future.
+        # Please implement predict() instead.
         raise NotImplementedError
 
 
@@ -322,11 +338,18 @@ class BaseNNClassifier(BaseNNModel):
                     )
                 else:
                     self.patience -= 1
-                    if self.patience == 0:
-                        logger.info(
-                            "Exceeded the training patience. Terminating the training procedure..."
-                        )
-                        break
+
+                if os.getenv("enable_tuning", False):
+                    nni.report_intermediate_result(mean_loss)
+                    if epoch == self.epochs - 1 or self.patience == 0:
+                        nni.report_final_result(self.best_loss)
+
+                if self.patience == 0:
+                    logger.info(
+                        "Exceeded the training patience. Terminating the training procedure..."
+                    )
+                    break
+
         except Exception as e:
             logger.error(f"Exception: {e}")
             if self.best_model_dict is None:
@@ -381,6 +404,14 @@ class BaseNNClassifier(BaseNNModel):
         raise NotImplementedError
 
     @abstractmethod
+    def predict(
+        self,
+        test_set: Union[dict, str],
+        file_type: str = "h5py",
+    ) -> dict:
+        raise NotImplementedError
+
+    @abstractmethod
     def classify(
         self,
         X: Union[dict, str],
@@ -402,4 +433,6 @@ class BaseNNClassifier(BaseNNModel):
         array-like, shape [n_samples],
             Classification results of the given samples.
         """
+        # this is for old API compatibility, will be removed in the future.
+        # Please implement predict() instead.
         raise NotImplementedError
