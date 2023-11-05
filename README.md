@@ -107,7 +107,7 @@ With PyGrinder, you can introduce synthetic missing values into your datasets wi
 </a>
 
 👈 Now we have the beans, the grinder, and the pot, how to brew us a cup of coffee? Tutorials are necessary!
-Considering the future workload, PyPOTS tutorials is released in a single repo,
+Considering the future workload, PyPOTS tutorials are released in a single repo,
 and you can find them in [BrewPOTS](https://github.com/WenjieDu/BrewPOTS).
 Take a look at it now, and learn how to brew your POTS datasets!
 
@@ -132,6 +132,7 @@ conda update  -c conda-forge pypots  # update pypots to the latest version
 
 Alternatively, you can install from the latest source code with the latest features but may be not officially released yet:
 > pip install https://github.com/WenjieDu/PyPOTS/archive/main.zip
+
 
 ## ❖ Usage
 Besides [BrewPOTS](https://github.com/WenjieDu/BrewPOTS), you can also find a simple and quick-start tutorial notebook
@@ -164,7 +165,8 @@ dataset = {"X": X}
 print(dataset["X"].shape)  # (11988, 48, 37), 11988 samples, 48 time steps, 37 features
 # Model training. This is PyPOTS showtime.
 saits = SAITS(n_steps=48, n_features=37, n_layers=2, d_model=256, d_inner=128, n_heads=4, d_k=64, d_v=64, dropout=0.1, epochs=10)
-saits.fit(dataset)  # train the model. Here I use the whole dataset as the training set, because ground truth is not visible to the model.
+# Here I use the whole dataset as the training set because ground truth is not visible to the model, you can also split it into train/val/test sets
+saits.fit(dataset)
 imputation = saits.impute(dataset)  # impute the originally-missing values and artificially-missing values
 mae = cal_mae(imputation, X_intact, indicating_mask)  # calculate mean absolute error on the ground truth (artificially-missing values)
 ```
@@ -176,12 +178,12 @@ PyPOTS supports imputation, classification, clustering, and forecasting tasks on
 
 |   ***`Imputation`***   |     🚥      |                                                                                        🚥                                                                                         |    🚥    |
 |:----------------------:|:-----------:|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------:|:--------:|
-|        **Type**        |  **Abbr.**  |                                                                    **Full name of the algorithm/model/paper**                                                                     | **Year** |
+|        **Type**        |  **Abbr.**  |                                                                       **Full name of the algorithm/model**                                                                        | **Year** |
 |       Neural Net       |    SAITS    |                                                               Self-Attention-based Imputation for Time Series [^1]                                                                |   2023   |
 |       Neural Net       | Transformer | Attention is All you Need [^2];<br>Self-Attention-based Imputation for Time Series [^1];<br><sub>Note: proposed in [^2], and re-implemented as an imputation model in [^1].</sub> |   2017   |
 |       Neural Net       |    CSDI     |                                              Conditional Score-based Diffusion Models for Probabilistic Time Series Imputation [^12]                                              |   2021   |
-|       Neural Net       |   US-GAN    |                                                 Generative Semi-supervised Learning for Multivariate Time Series Imputation [^10]                                                 |   2021   |
-|       Neural Net       |   GP-VAE    |                                                              GP-VAE: Deep Probabilistic Time Series Imputation [^11]                                                              |   2020   |
+|       Neural Net       |   US-GAN    |                                                          Unsupervised GAN for Multivariate Time Series Imputation [^10]                                                           |   2021   |
+|       Neural Net       |   GP-VAE    |                                                                   Gaussian Process Variational Autoencoder [^11]                                                                  |   2020   |
 |       Neural Net       |    BRITS    |                                                              Bidirectional Recurrent Imputation for Time Series [^3]                                                              |   2018   |
 |       Neural Net       |    M-RNN    |                                                                  Multi-directional Recurrent Neural Network [^9]                                                                  |   2019   |
 |         Naive          |    LOCF     |                                                                         Last Observation Carried Forward                                                                          |    -     |
@@ -270,15 +272,16 @@ Your star is your recognition to PyPOTS, and it matters!
     </i></b>
 </summary>
 <a href="https://github.com/WenjieDu/PyPOTS/stargazers">
-    <img alt="PyPOTS stargazers" src="https://reporoster.com/stars/dark/WenjieDu/PyPOTS">
+    <img alt="PyPOTS stargazers" src="http://reporoster.com/stars/dark/WenjieDu/PyPOTS">
 </a>
 <br>
 <a href="https://github.com/WenjieDu/PyPOTS/network/members">
-    <img alt="PyPOTS forkers" src="https://reporoster.com/forks/dark/WenjieDu/PyPOTS">
+    <img alt="PyPOTS forkers" src="http://reporoster.com/forks/dark/WenjieDu/PyPOTS">
 </a>
 </details>
 
 👀 Check out a full list of our users' affiliations [on PyPOTS website here](https://pypots.com/users/)!
+
 
 ## ❖ Community
 We care about the feedback from our users, so we're building PyPOTS community on
@@ -290,6 +293,7 @@ We care about the feedback from our users, so we're building PyPOTS community on
 
 If you have any suggestions or want to contribute ideas or share time-series related papers, join us and tell.
 PyPOTS community is open, transparent, and surely friendly. Let's work together to build and improve PyPOTS!
+
 
 [//]: # (Use APA reference style below)
 [^1]: Du, W., Cote, D., & Liu, Y. (2023). [SAITS: Self-Attention-based Imputation for Time Series](https://doi.org/10.1016/j.eswa.2023.119619). *Expert systems with applications*.
@@ -304,7 +308,7 @@ PyPOTS community is open, transparent, and surely friendly. Let's work together 
 [^10]: Miao, X., Wu, Y., Wang, J., Gao, Y., Mao, X., & Yin, J. (2021). [Generative Semi-supervised Learning for Multivariate Time Series Imputation](https://ojs.aaai.org/index.php/AAAI/article/view/17086). *AAAI 2021*.
 [^11]: Fortuin, V., Baranchuk, D., Raetsch, G. & Mandt, S. (2020). [GP-VAE: Deep Probabilistic Time Series Imputation](https://proceedings.mlr.press/v108/fortuin20a.html). *AISTATS 2020*.
 [^12]: Tashiro, Y., Song, J., Song, Y., & Ermon, S. (2021). [CSDI: Conditional Score-based Diffusion Models for Probabilistic Time Series Imputation](https://proceedings.neurips.cc/paper/2021/hash/cfe8504bda37b575c70ee1a8276f3486-Abstract.html). *NeurIPS 2021*.
-[^13]: Rubin, D. B. (1976). [Inference and missing data](https://academic.oup.com/biomet/article-abstract/63/3/581/270932). *Biometrika*, 63(3), 581-592.
+[^13]: Rubin, D. B. (1976). [Inference and missing data](https://academic.oup.com/biomet/article-abstract/63/3/581/270932). *Biometrika*.
 
 
 <details>
