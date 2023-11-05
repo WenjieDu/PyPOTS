@@ -355,28 +355,7 @@ class CRLI(BaseNNClusterer):
             num_workers=self.num_workers,
         )
         val_loader = None
-        if val_set is not None:
-            if isinstance(val_set, str):
-                with h5py.File(val_set, "r") as hf:
-                    # Here we read the whole validation set from the file to mask a portion for validation.
-                    # In PyPOTS, using a file usually because the data is too big. However, the validation set is
-                    # generally shouldn't be too large. For example, we have 1 billion samples for model training.
-                    # We won't take 20% of them as the validation set because we want as much as possible data for the
-                    # training stage to enhance the model's generalization ability. Therefore, 100,000 representative
-                    # samples will be enough to validate the model.
-                    val_set = {
-                        "X": hf["X"][:],
-                    }
 
-            val_set = DatasetForCRLI(val_set, return_labels=False, file_type=file_type)
-            val_loader = DataLoader(
-                val_set,
-                batch_size=self.batch_size,
-                shuffle=False,
-                num_workers=self.num_workers,
-            )
-
-        val_loader = None
         if val_set is not None:
             val_set = DatasetForCRLI(val_set, return_labels=False, file_type=file_type)
             val_loader = DataLoader(
