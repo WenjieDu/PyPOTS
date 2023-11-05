@@ -13,7 +13,6 @@ Learning Representations for Incomplete Time Series Clustering. AAAI 2021."
 import os
 from typing import Union, Optional, Tuple
 
-import h5py
 import numpy as np
 import torch
 from torch.utils.data import DataLoader
