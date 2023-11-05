@@ -7,7 +7,7 @@ Recurrent Neural Networks for Multivariate Time Series with Missing Values. Scie
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
-# License: GLP-v3
+# License: BSD-3-Clause
 
 
 from typing import Union

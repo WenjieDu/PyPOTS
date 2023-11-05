@@ -4,7 +4,7 @@ The optimizer wrapper for PyTorch RMSprop.
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
-# License: GLP-v3
+# License: BSD-3-Clause
 
 from typing import Iterable, Optional
 

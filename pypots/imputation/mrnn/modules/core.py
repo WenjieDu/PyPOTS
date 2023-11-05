@@ -5,7 +5,7 @@ Some part of the code is from https://github.com/WenjieDu/SAITS.
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
-# License: GLP-v3
+# License: BSD-3-Clause
 
 
 import torch

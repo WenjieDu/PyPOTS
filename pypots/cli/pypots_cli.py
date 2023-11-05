@@ -3,7 +3,7 @@ PyPOTS CLI (Command Line Interface) tool
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
-# License: GLP-v3
+# License: BSD-3-Clause
 
 from argparse import ArgumentParser
 

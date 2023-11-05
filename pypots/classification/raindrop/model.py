@@ -8,7 +8,7 @@ Graph-Guided Network for Irregularly Sampled Multivariate Time Series. ICLR 2022
 
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
-# License: GLP-v3
+# License: BSD-3-Clause
 
 
 from typing import Union, Optional

@@ -1,6 +1,6 @@
 .. PyPOTS documentation index page
    Created by Wenjie Du <wenjay.du@gmail.com>
-   License: GPL-v3
+   License: BSD-3-Clause
 
 Welcome to PyPOTS docs!
 ===============================
@@ -24,8 +24,8 @@ Welcome to PyPOTS docs!
    :alt: the latest release version
    :target: https://github.com/WenjieDu/PyPOTS/releases
 
-.. image:: https://img.shields.io/badge/License-GPL--v3-E9BB41?logo=opensourceinitiative&logoColor=white
-   :alt: GPL-v3 license
+.. image:: https://img.shields.io/badge/License-BSD--3-E9BB41?logo=opensourceinitiative&logoColor=white
+   :alt: BSD-3 license
    :target: https://github.com/WenjieDu/PyPOTS/blob/main/LICENSE
 
 .. image:: https://img.shields.io/badge/join_us-community!-C8A062
