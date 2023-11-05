@@ -79,29 +79,31 @@ The rest of this readme file is organized as follows:
 
 
 ## ❖ PyPOTS Ecosystem
-At PyPOTS, time series datasets are taken as coffee beans, and POTS datasets are incomplete coffee beans with missing parts that have their own meanings.
+At PyPOTS, things are related to coffee, which we're familiar with. Yes, this is a coffee universe!
 As you can see, there is a coffee pot in the PyPOTS logo.
+And what else? Please read on ;-)
 
 <a href="https://github.com/WenjieDu/TSDB">
-    <img src="https://pypots.com/figs/pypots_logos/TSDB_logo_FFBG.svg" align="left" width="130" alt="TSDB logo"/>
+    <img src="https://pypots.com/figs/pypots_logos/TSDB_logo_FFBG.svg" align="left" width="140" alt="TSDB logo"/>
 </a>
 
-👈 To make various open-source time-series datasets readily available to our users,
-PyPOTS gets supported by its ecosystem library <i>Time Series Data Beans (TSDB)</i>, a toolbox making loading time-series datasets super easy!
+👈 Time series datasets are taken as coffee beans at PyPOTS, and POTS datasets are incomplete coffee beans with missing parts that have their own meanings.
+To make various public time-series datasets readily available to users,
+<i>Time Series Data Beans (TSDB)</i> is created to make loading time-series datasets super easy!
 Visit [TSDB](https://github.com/WenjieDu/TSDB) right now to know more about this handy tool 🛠, and it now supports a total of 168 open-source datasets!
 
 <a href="https://github.com/WenjieDu/PyGrinder">
-    <img src="https://pypots.com/figs/pypots_logos/PyGrinder_logo_FFBG.svg" align="right" width="130" alt="PyGrinder logo"/>
+    <img src="https://pypots.com/figs/pypots_logos/PyGrinder_logo_FFBG.svg" align="right" width="140" alt="PyGrinder logo"/>
 </a>
 
-👉 To simulate the real-world data beans with missingness, the ecosystem library [PyGrinder](https://github.com/WenjieDu/PyGrinder), 
-a toolkit helping grind your coffee beans into incomplete ones, is created. Missing patterns fall into three categories according to Robin's theory[^13]: 
-MCAR (missing completely at random), MAR (missing at random), and MNAR (missing not at random). 
-PyGrinder supports all of them and additional functionalities related to missingness. 
+👉 To simulate the real-world data beans with missingness, the ecosystem library [PyGrinder](https://github.com/WenjieDu/PyGrinder),
+a toolkit helping grind your coffee beans into incomplete ones, is created. Missing patterns fall into three categories according to Robin's theory[^13]:
+MCAR (missing completely at random), MAR (missing at random), and MNAR (missing not at random).
+PyGrinder supports all of them and additional functionalities related to missingness.
 With PyGrinder, you can introduce synthetic missing values into your datasets with a single line of code.
 
 <a href="https://github.com/WenjieDu/BrewPOTS">
-    <img src="https://pypots.com/figs/pypots_logos/BrewPOTS_logo_FFBG.svg" align="left" width="130" alt="BrewPOTS logo"/>
+    <img src="https://pypots.com/figs/pypots_logos/BrewPOTS_logo_FFBG.svg" align="left" width="140" alt="BrewPOTS logo"/>
 </a>
 
 👈 Now we have the beans, the grinder, and the pot, how to brew us a cup of coffee? Tutorials are necessary!
@@ -109,7 +111,7 @@ Considering the future workload, PyPOTS tutorials is released in a single repo,
 and you can find them in [BrewPOTS](https://github.com/WenjieDu/BrewPOTS).
 Take a look at it now, and learn how to brew your POTS datasets!
 
-☕️ Enjoy it and have fun!
+☕️ Welcome to the universe of PyPOTS. Enjoy it and have fun!
 
 
 ## ❖ Installation
@@ -132,7 +134,7 @@ Alternatively, you can install from the latest source code with the latest featu
 > pip install https://github.com/WenjieDu/PyPOTS/archive/main.zip
 
 ## ❖ Usage
-Besides [BrewPOTS](https://github.com/WenjieDu/BrewPOTS), you can also find a simple and quick-start tutorial notebook 
+Besides [BrewPOTS](https://github.com/WenjieDu/BrewPOTS), you can also find a simple and quick-start tutorial notebook
 on Google Colab with [this link](https://colab.research.google.com/drive/1HEFjylEy05-r47jRy0H9jiS_WhD0UWmQ?usp=sharing).
 If you have further questions, please refer to PyPOTS documentation [docs.pypots.com](https://docs.pypots.com).
 You can also [raise an issue](https://github.com/WenjieDu/PyPOTS/issues) or [ask in our community](#-community).
@@ -212,7 +214,7 @@ Here is [an incomplete list of them](https://scholar.google.com/scholar?as_ylo=2
 
 ``` bibtex
 @article{du2023PyPOTS,
-title={{PyPOTS: a Python toolbox for machine learning on Partially-Observed Time Series}},
+title={{PyPOTS: a Python toolbox for data mining on Partially-Observed Time Series}},
 author={Wenjie Du},
 year={2023},
 eprint={2305.18811},
@@ -224,14 +226,14 @@ doi={10.48550/arXiv.2305.18811},
 ```
 
 > Wenjie Du. (2023).
-> PyPOTS: a Python toolbox for machine learning on Partially-Observed Time Series.
+> PyPOTS: a Python toolbox for data mining on Partially-Observed Time Series.
 > arXiv, abs/2305.18811.https://arxiv.org/abs/2305.18811
 
 or
 
 ``` bibtex
 @inproceedings{du2023PyPOTS,
-title={{PyPOTS: a Python toolbox for machine learning on Partially-Observed Time Series}},
+title={{PyPOTS: a Python toolbox for data mining on Partially-Observed Time Series}},
 booktitle={9th SIGKDD workshop on Mining and Learning from Time Series (MiLeTS'23)},
 author={Wenjie Du},
 year={2023},
@@ -240,7 +242,7 @@ url={https://arxiv.org/abs/2305.18811},
 ```
 
 > Wenjie Du. (2023).
-> PyPOTS: a Python toolbox for machine learning on Partially-Observed Time Series.
+> PyPOTS: a Python toolbox for data mining on Partially-Observed Time Series.
 > In *9th SIGKDD workshop on Mining and Learning from Time Series (MiLeTS'23)*. https://arxiv.org/abs/2305.18811
 
 
