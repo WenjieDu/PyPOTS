@@ -7,6 +7,6 @@ scipy
 torch>=1.10.0
 tensorboard
 pandas<2.0.0
-pygrinder
-tsdb
+pygrinder>=0.2
+tsdb>=0.2
 h5py
