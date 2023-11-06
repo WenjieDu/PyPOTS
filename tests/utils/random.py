@@ -3,7 +3,7 @@ Test cases for the functions and classes in package `pypots.utils.random`.
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
-# License: GPL-v3
+# License: BSD-3-Clause
 
 import unittest
 

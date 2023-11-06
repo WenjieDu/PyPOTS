@@ -3,7 +3,7 @@ Dataset class for self-attention models trained with MIT (masked imputation task
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
-# License: GLP-v3
+# License: BSD-3-Clause
 
 from typing import Union
 

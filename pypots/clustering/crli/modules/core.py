@@ -8,7 +8,7 @@ Learning Representations for Incomplete Time Series Clustering. AAAI 2021."
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
-# License: GLP-v3
+# License: BSD-3-Clause
 
 from typing import Union, Optional
 
@@ -47,6 +47,8 @@ class _CRLI(nn.Module):
             n_init=10,  # FutureWarning: The default value of `n_init` will change from 10 to 'auto' in 1.4. Set the
             # value of `n_init` explicitly to suppress the warning.
         )
+        self.term_F = None
+        self.counter_for_updating_F = 0
 
         self.n_clusters = n_clusters
         self.lambda_kmeans = lambda_kmeans
@@ -60,7 +62,6 @@ class _CRLI(nn.Module):
     ) -> dict:
         X = inputs["X"]
         missing_mask = inputs["missing_mask"]
-        batch_size, n_steps, n_features = X.shape
         losses = {}
 
         # concat final states from generator and input it as the initial state of decoder
@@ -91,10 +92,17 @@ class _CRLI(nn.Module):
             l_pre = cal_mse(inputs["imputation_latent"], X, missing_mask)
             l_rec = cal_mse(inputs["reconstruction"], X, missing_mask)
             HTH = torch.matmul(inputs["fcn_latent"], inputs["fcn_latent"].permute(1, 0))
-            term_F = torch.nn.init.orthogonal_(
-                torch.randn(batch_size, self.n_clusters, device=self.device), gain=1
+
+            if (
+                self.counter_for_updating_F == 0
+                or self.counter_for_updating_F % 10 == 0
+            ):
+                U, s, V = torch.linalg.svd(fcn_latent)
+                self.term_F = U[:, : self.n_clusters]
+
+            FTHTHF = torch.matmul(
+                torch.matmul(self.term_F.permute(1, 0), HTH), self.term_F
             )
-            FTHTHF = torch.matmul(torch.matmul(term_F.permute(1, 0), HTH), term_F)
             l_kmeans = torch.trace(HTH) - torch.trace(FTHTHF)  # k-means loss
             loss_gene = l_G + l_pre + l_rec + l_kmeans * self.lambda_kmeans
             losses["generation_loss"] = loss_gene

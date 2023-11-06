@@ -8,7 +8,7 @@ Learning Representations for Incomplete Time Series Clustering. AAAI 2021."
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
-# License: GLP-v3
+# License: BSD-3-Clause
 
 import os
 from typing import Union, Optional, Tuple
@@ -229,7 +229,7 @@ class CRLI(BaseNNClusterer):
                         results["discrimination_loss"].backward(retain_graph=True)
                         self.D_optimizer.step()
                         step_train_loss_D_collector.append(
-                            results["discrimination_loss"].item()
+                            results["discrimination_loss"].sum().item()
                         )
 
                     for _ in range(self.G_steps):
@@ -240,7 +240,7 @@ class CRLI(BaseNNClusterer):
                         results["generation_loss"].backward()
                         self.G_optimizer.step()
                         step_train_loss_G_collector.append(
-                            results["generation_loss"].item()
+                            results["generation_loss"].sum().item()
                         )
 
                     mean_step_train_D_loss = np.mean(step_train_loss_D_collector)
@@ -289,7 +289,6 @@ class CRLI(BaseNNClusterer):
                     )
                     mean_loss = mean_val_G_loss
                 else:
-
                     logger.info(
                         f"epoch {epoch}: "
                         f"training loss_generator {mean_epoch_train_G_loss:.4f}, "
@@ -354,8 +353,8 @@ class CRLI(BaseNNClusterer):
             shuffle=True,
             num_workers=self.num_workers,
         )
-
         val_loader = None
+
         if val_set is not None:
             val_set = DatasetForCRLI(val_set, return_labels=False, file_type=file_type)
             val_loader = DataLoader(

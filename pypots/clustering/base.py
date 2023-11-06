@@ -3,7 +3,7 @@ The base classes for PyPOTS clustering models.
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
-# License: GPL-v3
+# License: BSD-3-Clause
 
 
 import os

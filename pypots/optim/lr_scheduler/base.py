@@ -4,7 +4,7 @@ please refer to torch.optim.lr_scheduler for more details.
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
-# License: GLP-v3
+# License: BSD-3-Clause
 
 import weakref
 from abc import ABC, abstractmethod
