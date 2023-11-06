@@ -13,7 +13,7 @@ in one place, which could result in a mess and be not readable;
 
 """
 # Created by Wenjie Du <wenjay.du@gmail.com>
-# License: GLP-v3
+# License: BSD-3-Clause
 
 
 from abc import ABC, abstractmethod

@@ -3,7 +3,7 @@ Dataset class for model GP-VAE.
 """
 
 # Created by Jun Wang <jwangfx@connect.ust.hk> and Wenjie Du <wenjay.du@gmail.com>
-# License: GLP-v3
+# License: BSD-3-Clause
 
 from typing import Union, Iterable
 

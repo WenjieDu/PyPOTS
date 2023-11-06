@@ -4,7 +4,7 @@ The implementation of LOCF (Last Observed Carried Forward) for the partially-obs
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
-# License: GLP-v3
+# License: BSD-3-Clause
 
 import warnings
 from typing import Union, Optional

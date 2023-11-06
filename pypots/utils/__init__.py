@@ -3,7 +3,7 @@ Utility functions and classes are stored in this package.
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
-# License: GPL-v3
+# License: BSD-3-Clause
 
 
 __all__ = [
