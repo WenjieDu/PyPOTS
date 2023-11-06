@@ -3,4 +3,4 @@ Frequently-used modules like self-attention modules of vanilla Transformer are p
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
-# License: GLP-v3
+# License: BSD-3-Clause

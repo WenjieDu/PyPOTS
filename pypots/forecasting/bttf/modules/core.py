@@ -13,7 +13,7 @@ This numpy implementation is the same with the official one from https://github.
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
-# License: GLP-v3
+# License: BSD-3-Clause
 
 import numpy as np
 from numpy.linalg import inv as inv

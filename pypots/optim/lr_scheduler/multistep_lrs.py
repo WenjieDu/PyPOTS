@@ -3,7 +3,7 @@ Multistep learning rate scheduler.
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
-# License: GLP-v3
+# License: BSD-3-Clause
 
 from bisect import bisect_right
 from collections import Counter

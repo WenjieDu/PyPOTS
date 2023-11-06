@@ -7,7 +7,7 @@ to initialize schedulers together with optimizers.
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
-# License: GLP-v3
+# License: BSD-3-Clause
 
 from .lambda_lrs import LambdaLR
 from .multiplicative_lrs import MultiplicativeLR

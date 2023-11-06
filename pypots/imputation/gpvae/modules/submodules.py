@@ -8,7 +8,7 @@ GP-VAE: Deep probabilistic time series imputation. AISTATS. PMLR, 2020: 1651-166
 """
 
 # Created by Jun Wang <jwangfx@connect.ust.hk> and Wenjie Du <wenjay.du@gmail.com>
-# License: GPL-v3
+# License: BSD-3-Clause
 
 import numpy as np
 import torch
