@@ -3,7 +3,7 @@ Functions to load supported open-source time-series datasets.
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
-# License: GLP-v3
+# License: BSD-3-Clause
 
 
 import tsdb

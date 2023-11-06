@@ -3,7 +3,7 @@ Expose all time-series classification models.
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
-# License: GPL-v3
+# License: BSD-3-Clause
 
 from .brits import BRITS
 from .grud import GRUD
