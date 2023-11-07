@@ -94,33 +94,35 @@ The rest of this readme file is organized as follows:
 
 ❖ PyPOTS Ecosystem
 ^^^^^^^^^^^^^^^^^^^
-At PyPOTS, time series datasets are taken as coffee beans, and POTS datasets are incomplete coffee beans with missing parts that have their own meanings.
+At PyPOTS, things are related to coffee, which we're familiar with. Yes, this is a coffee universe!
 As you can see, there is a coffee pot in the PyPOTS logo.
+And what else? Please read on ;-)
 
 .. image:: https://pypots.com/figs/pypots_logos/TSDB_logo_FFBG.svg
-   :width: 130
+   :width: 150
    :alt: TSDB logo
    :align: left
    :target: https://github.com/WenjieDu/TSDB
 
-👈 To make various open-source time-series datasets readily available to our users,
-PyPOTS gets supported by its ecosystem library *Time Series Data Beans (TSDB)*, a toolbox making loading time-series datasets super easy!
+👈 Time series datasets are taken as coffee beans at PyPOTS, and POTS datasets are incomplete coffee beans with missing parts that have their own meanings.
+To make various public time-series datasets readily available to users,
+*Time Series Data Beans (TSDB)* is created to make loading time-series datasets super easy!
 Visit `TSDB <https://github.com/WenjieDu/TSDB>`_ right now to know more about this handy tool 🛠, and it now supports a total of 168 open-source datasets!
 
 .. image:: https://pypots.com/figs/pypots_logos/PyGrinder_logo_FFBG.svg
-   :width: 130
+   :width: 150
    :alt: PyGrinder logo
    :align: right
    :target: https://github.com/WenjieDu/PyGrinder
 
 👉 To simulate the real-world data beans with missingness, the ecosystem library `PyGrinder <https://github.com/WenjieDu/PyGrinder>`_,
-a toolkit helping grind your coffee beans into incomplete ones, is created. Missing patterns fall into three categories according to Robin's theory:cite:`rubin1976missing`:
+a toolkit helping grind your coffee beans into incomplete ones, is created. Missing patterns fall into three categories according to Robin's theory :cite:`rubin1976missing`:
 MCAR (missing completely at random), MAR (missing at random), and MNAR (missing not at random).
 PyGrinder supports all of them and additional functionalities related to missingness.
 With PyGrinder, you can introduce synthetic missing values into your datasets with a single line of code.
 
 .. image:: https://pypots.com/figs/pypots_logos/BrewPOTS_logo_FFBG.svg
-   :width: 130
+   :width: 150
    :alt: BrewPOTS logo
    :align: left
    :target: https://github.com/WenjieDu/BrewPOTS
@@ -130,7 +132,7 @@ Considering the future workload, PyPOTS tutorials is released in a single repo,
 and you can find them in `BrewPOTS <https://github.com/WenjieDu/BrewPOTS>`_.
 Take a look at it now, and learn how to brew your POTS datasets!
 
-☕️ Enjoy it and have fun!
+☕️ Welcome to the universe of PyPOTS. Enjoy it and have fun!
 
 
 ❖ Installation
@@ -153,6 +155,10 @@ Additionally, we present you a usage example of imputing missing values in time 
 ❖ Available Algorithms
 ^^^^^^^^^^^^^^^^^^^^^^^
 PyPOTS supports imputation, classification, clustering, and forecasting tasks on multivariate time series with missing values. The currently available algorithms of four tasks are cataloged in the following table with four partitions. The paper references are all listed at the bottom of this readme file. Please refer to them if you want more details.
+
+
+🌟 Since **v0.2**, all neural-network models in PyPOTS has got hyperparameter-optimization support.
+This functionality is implemented with the `Microsoft NNI <https://github.com/microsoft/nni>`_ framework.
 
 ============================== ================ ======================================================================================== ====== =========
 Task                           Type             Algorithm                                                                                Year   Reference
