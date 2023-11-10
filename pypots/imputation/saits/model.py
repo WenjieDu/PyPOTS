@@ -265,6 +265,15 @@ class SAITS(BaseNNImputer):
                         "indicating_mask": hf["indicating_mask"][:],
                     }
 
+            # check if X_intact contains missing values
+            if np.isnan(val_set["X_intact"]).any():
+                val_set["X_intact"] = np.nan_to_num(val_set["X_intact"], nan=0)
+                logger.warning(
+                    "X_intact shouldn't contain missing data but has NaN values. "
+                    "PyPOTS has imputed them with zeros by default to start the training for now.\n"
+                    "Please double-check your data if you have concerns over this operation."
+                )
+
             val_set = BaseDataset(val_set, return_labels=False, file_type=file_type)
             val_loader = DataLoader(
                 val_set,
