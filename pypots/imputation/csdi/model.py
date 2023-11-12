@@ -15,6 +15,7 @@ Partial implementation uses code from the official implementation https://github
 
 from typing import Union, Optional
 
+import h5py
 import numpy as np
 import torch
 from torch.utils.data import DataLoader
