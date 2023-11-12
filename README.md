@@ -174,7 +174,12 @@ mae = cal_mae(imputation, X_intact, indicating_mask)  # calculate mean absolute 
 
 
 ## ❖ Available Algorithms
-PyPOTS supports imputation, classification, clustering, and forecasting tasks on multivariate time series with missing values. The currently available algorithms of four tasks are cataloged in the following table with four partitions. The paper references are all listed at the bottom of this readme file. Please refer to them if you want more details.
+PyPOTS supports imputation, classification, clustering, and forecasting tasks on multivariate time series with missing values.
+The currently available algorithms of four tasks are cataloged in the following table with four partitions.
+The paper references are all listed at the bottom of this readme file. Please refer to them if you want more details.
+
+🌟 Since **v0.2**, all neural-network models in PyPOTS has got hyperparameter-optimization support.
+This functionality is implemented with the [Microsoft NNI](https://github.com/microsoft/nni) framework.
 
 |   ***`Imputation`***   |     🚥      |                                                                                        🚥                                                                                         |    🚥    |
 |:----------------------:|:-----------:|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------:|:--------:|
@@ -183,7 +188,7 @@ PyPOTS supports imputation, classification, clustering, and forecasting tasks on
 |       Neural Net       | Transformer | Attention is All you Need [^2];<br>Self-Attention-based Imputation for Time Series [^1];<br><sub>Note: proposed in [^2], and re-implemented as an imputation model in [^1].</sub> |   2017   |
 |       Neural Net       |    CSDI     |                                              Conditional Score-based Diffusion Models for Probabilistic Time Series Imputation [^12]                                              |   2021   |
 |       Neural Net       |   US-GAN    |                                                          Unsupervised GAN for Multivariate Time Series Imputation [^10]                                                           |   2021   |
-|       Neural Net       |   GP-VAE    |                                                                   Gaussian Process Variational Autoencoder [^11]                                                                  |   2020   |
+|       Neural Net       |   GP-VAE    |                                                                  Gaussian Process Variational Autoencoder [^11]                                                                   |   2020   |
 |       Neural Net       |    BRITS    |                                                              Bidirectional Recurrent Imputation for Time Series [^3]                                                              |   2018   |
 |       Neural Net       |    M-RNN    |                                                                  Multi-directional Recurrent Neural Network [^9]                                                                  |   2019   |
 |         Naive          |    LOCF     |                                                                         Last Observation Carried Forward                                                                          |    -     |
