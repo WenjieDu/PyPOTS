@@ -15,6 +15,7 @@ Partial implementation uses code from the official implementation https://github
 
 from typing import Union, Optional
 
+import h5py
 import numpy as np
 import torch
 from torch.utils.data import DataLoader
@@ -223,6 +224,29 @@ class CSDI(BaseNNImputer):
         )
         val_loader = None
         if val_set is not None:
+            if isinstance(val_set, str):
+                with h5py.File(val_set, "r") as hf:
+                    # Here we read the whole validation set from the file to mask a portion for validation.
+                    # In PyPOTS, using a file usually because the data is too big. However, the validation set is
+                    # generally shouldn't be too large. For example, we have 1 billion samples for model training.
+                    # We won't take 20% of them as the validation set because we want as much as possible data for the
+                    # training stage to enhance the model's generalization ability. Therefore, 100,000 representative
+                    # samples will be enough to validate the model.
+                    val_set = {
+                        "X": hf["X"][:],
+                        "X_intact": hf["X_intact"][:],
+                        "indicating_mask": hf["indicating_mask"][:],
+                    }
+
+            # check if X_intact contains missing values
+            if np.isnan(val_set["X_intact"]).any():
+                val_set["X_intact"] = np.nan_to_num(val_set["X_intact"], nan=0)
+                logger.warning(
+                    "X_intact shouldn't contain missing data but has NaN values. "
+                    "PyPOTS has imputed them with zeros by default to start the training for now. "
+                    "Please double-check your data if you have concerns over this operation."
+                )
+
             val_set = DatasetForCSDI(val_set, return_labels=False, file_type=file_type)
             val_loader = DataLoader(
                 val_set,

@@ -10,9 +10,10 @@ import os
 from argparse import ArgumentParser, Namespace
 
 from .base import BaseCommand
-from ..classification import Raindrop, GRUD, BRITS
+from ..classification import BRITS as BRITS_classification
+from ..classification import Raindrop, GRUD
 from ..clustering import CRLI, VaDER
-from ..imputation import SAITS, Transformer, CSDI, USGAN, GPVAE, MRNN
+from ..imputation import SAITS, Transformer, CSDI, USGAN, GPVAE, MRNN, BRITS
 from ..optim import Adam
 from ..utils.logging import logger
 
@@ -23,7 +24,6 @@ except ImportError:
         "Hyperparameter tuning mode needs NNI (https://github.com/microsoft/nni) installed, "
         "but is missing in the current environment."
     )
-
 
 NN_MODELS = {
     # imputation models
@@ -36,7 +36,7 @@ NN_MODELS = {
     "pypots.imputation.MRNN": MRNN,
     # classification models
     "pypots.classification.GRUD": GRUD,
-    "pypots.classification.BRITS": BRITS,
+    "pypots.classification.BRITS": BRITS_classification,
     "pypots.classification.Raindrop": Raindrop,
     # clustering models
     "pypots.clustering.CRLI": CRLI,
@@ -123,15 +123,33 @@ class TuningCommand(BaseCommand):
     def run(self):
         """Execute the given command."""
         if os.getenv("enable_tuning", False):
-            # fetch the next set of hyperparameters from NNI tuner
+            # fetch a new set of hyperparameters from NNI tuner
             tuner_params = nni.get_next_parameter()
-            # get the specified NN class
+            # get the specified model class
             model_class = NN_MODELS[self._model]
             # pop out the learning rate
             lr = tuner_params.pop("lr")
 
+            # check if hyperparameters match
+            model_all_arguments = model_class.__init__.__annotations__.keys()
+            tuner_params_set = set(tuner_params.keys())
+            model_arguments_set = set(model_all_arguments)
+            if_hyperparameter_match = tuner_params_set.issubset(model_arguments_set)
+            if not if_hyperparameter_match:  # raise runtime error if mismatch
+                hyperparameter_intersection = tuner_params_set.intersection(
+                    model_arguments_set
+                )
+                mismatched = tuner_params_set.difference(
+                    set(hyperparameter_intersection)
+                )
+                raise RuntimeError(
+                    f"Hyperparameters do not match. Mismatched hyperparameters "
+                    f"(in the tuning configuration but not in the given model's arguments): {list(mismatched)}"
+                )
+
+            # initializing optimizer and model
             # if tuning a GAN model, we need two optimizers
-            if "G_optimizer" in model_class.__init__.__annotations__.keys():
+            if "G_optimizer" in model_all_arguments:
                 # optimizer for the generator
                 tuner_params["G_optimizer"] = Adam(lr=lr)
                 # optimizer for the discriminator
@@ -144,4 +162,4 @@ class TuningCommand(BaseCommand):
             # train the model and report to NNI
             model.fit(train_set=self._train_set, val_set=self._val_set)
         else:
-            logger.error("Argument `enable_tuning` is not set. Aborting...")
+            raise RuntimeError("Argument `enable_tuning` is not set. Aborting...")
