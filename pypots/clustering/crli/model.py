@@ -282,19 +282,24 @@ class CRLI(BaseNNClusterer):
                         }
                         self._save_log_into_tb_file(epoch, "validating", val_loss_dict)
                     logger.info(
-                        f"epoch {epoch}: "
-                        f"training loss_generator {mean_epoch_train_G_loss:.4f}, "
-                        f"training loss_discriminator {mean_epoch_train_D_loss:.4f}, "
-                        f"validating loss_generator {mean_val_G_loss:.4f}"
+                        f"Epoch {epoch} - "
+                        f"generator training loss: {mean_epoch_train_G_loss:.4f}, "
+                        f"discriminator training loss: {mean_epoch_train_D_loss:.4f}, "
+                        f"generator validating loss: {mean_val_G_loss:.4f}"
                     )
                     mean_loss = mean_val_G_loss
                 else:
                     logger.info(
-                        f"epoch {epoch}: "
-                        f"training loss_generator {mean_epoch_train_G_loss:.4f}, "
-                        f"training loss_discriminator {mean_epoch_train_D_loss:.4f}"
+                        f"Epoch {epoch} - "
+                        f"generator training loss: {mean_epoch_train_G_loss:.4f}, "
+                        f"discriminator training loss: {mean_epoch_train_D_loss:.4f}"
                     )
                     mean_loss = mean_epoch_train_G_loss
+
+                if np.isnan(mean_loss):
+                    logger.warning(
+                        f"‼️ Attention: got NaN loss in Epoch {epoch}. This may lead to unexpected errors."
+                    )
 
                 if mean_loss < self.best_loss:
                     self.best_loss = mean_loss
@@ -332,7 +337,7 @@ class CRLI(BaseNNClusterer):
                     "If you don't want it, please try fit() again."
                 )
 
-        if np.equal(self.best_loss, float("inf")):
+        if np.isnan(self.best_loss):
             raise ValueError("Something is wrong. best_loss is Nan after training.")
 
         logger.info("Finished training.")

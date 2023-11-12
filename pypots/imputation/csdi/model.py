@@ -243,7 +243,7 @@ class CSDI(BaseNNImputer):
                 val_set["X_intact"] = np.nan_to_num(val_set["X_intact"], nan=0)
                 logger.warning(
                     "X_intact shouldn't contain missing data but has NaN values. "
-                    "PyPOTS has imputed them with zeros by default to start the training for now.\n"
+                    "PyPOTS has imputed them with zeros by default to start the training for now. "
                     "Please double-check your data if you have concerns over this operation."
                 )
 
