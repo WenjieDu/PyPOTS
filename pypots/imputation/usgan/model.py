@@ -9,6 +9,7 @@ Generative Semi-supervised Learning for Multivariate Time Series Imputation. AAA
 # Created by Jun Wang <jwangfx@connect.ust.hk> and Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
+import os
 from typing import Union, Optional
 
 import h5py
@@ -22,6 +23,11 @@ from ..base import BaseNNImputer
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
 from ...utils.logging import logger
+
+try:
+    import nni
+except ImportError:
+    pass
 
 
 class USGAN(BaseNNImputer):
@@ -257,12 +263,43 @@ class USGAN(BaseNNImputer):
                         )
                 mean_epoch_train_D_loss = np.mean(epoch_train_loss_D_collector)
                 mean_epoch_train_G_loss = np.mean(epoch_train_loss_G_collector)
-                logger.info(
-                    f"epoch {epoch}: "
-                    f"training loss_generator {mean_epoch_train_G_loss:.4f}, "
-                    f"train loss_discriminator {mean_epoch_train_D_loss:.4f}"
-                )
-                mean_loss = mean_epoch_train_G_loss
+
+                if val_loader is not None:
+                    self.model.eval()
+                    epoch_val_loss_G_collector = []
+                    with torch.no_grad():
+                        for idx, data in enumerate(val_loader):
+                            inputs = self._assemble_input_for_validating(data)
+                            results = self.model.forward(inputs, training=True)
+                            epoch_val_loss_G_collector.append(
+                                results["generation_loss"].sum().item()
+                            )
+                    mean_val_G_loss = np.mean(epoch_val_loss_G_collector)
+                    # save validating loss logs into the tensorboard file for every epoch if in need
+                    if self.summary_writer is not None:
+                        val_loss_dict = {
+                            "generation_loss": mean_val_G_loss,
+                        }
+                        self._save_log_into_tb_file(epoch, "validating", val_loss_dict)
+                    logger.info(
+                        f"Epoch {epoch} - "
+                        f"generator training loss: {mean_epoch_train_G_loss:.4f}, "
+                        f"discriminator training loss: {mean_epoch_train_D_loss:.4f}, "
+                        f"generator validating loss: {mean_val_G_loss:.4f}"
+                    )
+                    mean_loss = mean_val_G_loss
+                else:
+                    logger.info(
+                        f"Epoch {epoch} - "
+                        f"generator training loss: {mean_epoch_train_G_loss:.4f}, "
+                        f"discriminator training loss: {mean_epoch_train_D_loss:.4f}"
+                    )
+                    mean_loss = mean_epoch_train_G_loss
+
+                if np.isnan(mean_loss):
+                    logger.warning(
+                        f"‼️ Attention: got NaN loss in Epoch {epoch}. This may lead to unexpected errors."
+                    )
 
                 if mean_loss < self.best_loss:
                     self.best_loss = mean_loss
@@ -275,11 +312,18 @@ class USGAN(BaseNNImputer):
                     )
                 else:
                     self.patience -= 1
-                    if self.patience == 0:
-                        logger.info(
-                            "Exceeded the training patience. Terminating the training procedure..."
-                        )
-                        break
+
+                if os.getenv("enable_tuning", False):
+                    nni.report_intermediate_result(mean_loss)
+                    if epoch == self.epochs - 1 or self.patience == 0:
+                        nni.report_final_result(self.best_loss)
+
+                if self.patience == 0:
+                    logger.info(
+                        "Exceeded the training patience. Terminating the training procedure..."
+                    )
+                    break
+
         except Exception as e:
             logger.error(f"Exception: {e}")
             if self.best_model_dict is None:
@@ -293,7 +337,7 @@ class USGAN(BaseNNImputer):
                     "If you don't want it, please try fit() again."
                 )
 
-        if np.equal(self.best_loss, float("inf")):
+        if np.isnan(self.best_loss):
             raise ValueError("Something is wrong. best_loss is Nan after training.")
 
         logger.info("Finished training.")
@@ -335,7 +379,7 @@ class USGAN(BaseNNImputer):
                 val_set["X_intact"] = np.nan_to_num(val_set["X_intact"], nan=0)
                 logger.warning(
                     "X_intact shouldn't contain missing data but has NaN values. "
-                    "PyPOTS has imputed them with zeros by default to start the training for now.\n"
+                    "PyPOTS has imputed them with zeros by default to start the training for now. "
                     "Please double-check your data if you have concerns over this operation."
                 )
 

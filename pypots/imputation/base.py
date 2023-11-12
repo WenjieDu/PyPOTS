@@ -314,14 +314,19 @@ class BaseNNImputer(BaseNNModel):
                         self._save_log_into_tb_file(epoch, "validating", val_loss_dict)
 
                     logger.info(
-                        f"epoch {epoch}: "
-                        f"training loss {mean_train_loss:.4f}, "
-                        f"validating loss {mean_val_loss:.4f}"
+                        f"Epoch {epoch} - "
+                        f"training loss: {mean_train_loss:.4f}, "
+                        f"validating loss: {mean_val_loss:.4f}"
                     )
                     mean_loss = mean_val_loss
                 else:
-                    logger.info(f"epoch {epoch}: training loss {mean_train_loss:.4f}")
+                    logger.info(f"Epoch {epoch} - training loss: {mean_train_loss:.4f}")
                     mean_loss = mean_train_loss
+
+                if np.isnan(mean_loss):
+                    logger.warning(
+                        f"‼️ Attention: got NaN loss in Epoch {epoch}. This may lead to unexpected errors."
+                    )
 
                 if mean_loss < self.best_loss:
                     self.best_loss = mean_loss
@@ -359,7 +364,7 @@ class BaseNNImputer(BaseNNModel):
                     "If you don't want it, please try fit() again."
                 )
 
-        if np.equal(self.best_loss.item(), float("inf")):
+        if np.isnan(self.best_loss):
             raise ValueError("Something is wrong. best_loss is Nan after training.")
 
         logger.info("Finished training.")
