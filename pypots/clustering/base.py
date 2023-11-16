@@ -417,6 +417,10 @@ class BaseNNClusterer(BaseNNModel):
     ) -> np.ndarray:
         """Cluster the input with the trained model.
 
+        Warnings
+        --------
+        The method cluster is deprecated. Please use `predict()` instead.
+
         Parameters
         ----------
         X :
