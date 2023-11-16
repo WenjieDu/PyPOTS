@@ -394,8 +394,33 @@ class VaDER(BaseNNClusterer):
         self,
         test_set: Union[dict, str],
         file_type: str = "h5py",
-        return_latent: bool = False,
+        return_latent_vars: bool = False,
     ) -> dict:
+        """Make predictions for the input data with the trained model.
+
+        Parameters
+        ----------
+        test_set : dict or str
+            The dataset for model validating, should be a dictionary including keys as 'X',
+            or a path string locating a data file supported by PyPOTS (e.g. h5 file).
+            If it is a dict, X should be array-like of shape [n_samples, sequence length (time steps), n_features],
+            which is time-series data for validating, can contain missing values, and y should be array-like of shape
+            [n_samples], which is classification labels of X.
+            If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
+            key-value pairs like a dict, and it has to include keys as 'X' and 'y'.
+
+        file_type : str
+            The type of the given file if test_set is a path string.
+
+        return_latent_vars : bool
+            Whether to return the latent variables in VaDER, e.g. mu and phi, etc.
+
+        Returns
+        -------
+        result_dict : dict,
+            The dictionary containing the clustering results and latent variables if necessary.
+
+        """
         self.model.eval()  # set the model as eval status to freeze it.
         test_set = DatasetForVaDER(test_set, return_labels=False, file_type=file_type)
         test_loader = DataLoader(
@@ -418,21 +443,6 @@ class VaDER(BaseNNClusterer):
                 inputs = self._assemble_input_for_testing(data)
                 results = self.model.forward(inputs, training=False)
 
-                mu_tilde = results["mu_tilde"].cpu().numpy()
-                mu_tilde_collector.append(mu_tilde)
-                stddev_tilde = results["stddev_tilde"].cpu().numpy()
-                stddev_tilde_collector.append(stddev_tilde)
-                mu = results["mu"].cpu().numpy()
-                mu_collector.append(mu)
-                var = results["var"].cpu().numpy()
-                var_collector.append(var)
-                phi = results["phi"].cpu().numpy()
-                phi_collector.append(phi)
-                z = results["z"].cpu().numpy()
-                z_collector.append(z)
-                imputation_latent = results["imputation_latent"].cpu().numpy()
-                imputation_latent_collector.append(imputation_latent)
-
                 def func_to_apply(
                     mu_t_: np.ndarray,
                     mu_: np.ndarray,
@@ -454,23 +464,38 @@ class VaDER(BaseNNClusterer):
                 clustering_results = np.argmax(p, axis=0)
                 clustering_results_collector.append(clustering_results)
 
-        clustering = np.concatenate(clustering_results_collector)
-        latent_collector = {
-            "mu_tilde": np.concatenate(mu_tilde_collector),
-            "stddev_tilde": np.concatenate(stddev_tilde_collector),
-            "mu": np.concatenate(mu_collector),
-            "var": np.concatenate(var_collector),
-            "phi": np.concatenate(phi_collector),
-            "z": np.concatenate(z_collector),
-            "imputation_latent": np.concatenate(imputation_latent_collector),
-        }
+                if return_latent_vars:
+                    mu_tilde = results["mu_tilde"].cpu().numpy()
+                    mu_tilde_collector.append(mu_tilde)
+                    stddev_tilde = results["stddev_tilde"].cpu().numpy()
+                    stddev_tilde_collector.append(stddev_tilde)
+                    mu = results["mu"].cpu().numpy()
+                    mu_collector.append(mu)
+                    var = results["var"].cpu().numpy()
+                    var_collector.append(var)
+                    phi = results["phi"].cpu().numpy()
+                    phi_collector.append(phi)
+                    z = results["z"].cpu().numpy()
+                    z_collector.append(z)
+                    imputation_latent = results["imputation_latent"].cpu().numpy()
+                    imputation_latent_collector.append(imputation_latent)
 
+        clustering = np.concatenate(clustering_results_collector)
         result_dict = {
             "clustering": clustering,
         }
 
-        if return_latent:
-            result_dict["latent"] = latent_collector
+        if return_latent_vars:
+            latent_var_collector = {
+                "mu_tilde": np.concatenate(mu_tilde_collector),
+                "stddev_tilde": np.concatenate(stddev_tilde_collector),
+                "mu": np.concatenate(mu_collector),
+                "var": np.concatenate(var_collector),
+                "phi": np.concatenate(phi_collector),
+                "z": np.concatenate(z_collector),
+                "imputation_latent": np.concatenate(imputation_latent_collector),
+            }
+            result_dict["latent_vars"] = latent_var_collector
 
         return result_dict
 
@@ -478,14 +503,31 @@ class VaDER(BaseNNClusterer):
         self,
         X: Union[dict, str],
         file_type: str = "h5py",
-        return_latent: bool = False,
-    ) -> Union[np.ndarray, Tuple[np.ndarray, dict]]:
+    ) -> Union[np.ndarray]:
+        """Cluster the input with the trained model.
+
+        Warnings
+        --------
+        The method cluster is deprecated. Please use `predict()` instead.
+
+        Parameters
+        ----------
+        X :
+            The data samples for testing, should be array-like of shape [n_samples, sequence length (time steps),
+            n_features], or a path string locating a data file, e.g. h5 file.
+
+        file_type :
+            The type of the given file if X is a path string.
+
+        Returns
+        -------
+        array-like,
+            Clustering results.
+
+        """
         logger.warning(
             "🚨DeprecationWarning: The method cluster is deprecated. Please use `predict` instead."
         )
 
-        result_dict = self.predict(X, file_type, return_latent)
-        if return_latent:
-            return result_dict["clustering"], result_dict["latent"]
-
+        result_dict = self.predict(X, file_type)
         return result_dict["clustering"]

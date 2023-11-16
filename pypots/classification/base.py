@@ -424,6 +424,10 @@ class BaseNNClassifier(BaseNNModel):
     ) -> np.ndarray:
         """Classify the input data with the trained model.
 
+        Warnings
+        --------
+        The method classify is deprecated. Please use `predict()` instead.
+
         Parameters
         ----------
         X :
