@@ -295,7 +295,37 @@ class SAITS(BaseNNImputer):
         test_set: Union[dict, str],
         file_type: str = "h5py",
         diagonal_attention_mask: bool = True,
+        return_latent_vars: bool = False,
     ) -> dict:
+        """Make predictions for the input data with the trained model.
+
+        Parameters
+        ----------
+        test_set : dict or str
+            The dataset for model validating, should be a dictionary including keys as 'X',
+            or a path string locating a data file supported by PyPOTS (e.g. h5 file).
+            If it is a dict, X should be array-like of shape [n_samples, sequence length (time steps), n_features],
+            which is time-series data for validating, can contain missing values, and y should be array-like of shape
+            [n_samples], which is classification labels of X.
+            If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
+            key-value pairs like a dict, and it has to include keys as 'X' and 'y'.
+
+        file_type : str
+            The type of the given file if test_set is a path string.
+
+        diagonal_attention_mask : bool
+            Whether to apply a diagonal attention mask to the self-attention mechanism in the testing stage.
+
+        return_latent_vars : bool
+            Whether to return the latent variables in SAITS, e.g. attention weights of two DMSA blocks and
+            the weight matrix from the combination block, etc.
+
+        Returns
+        -------
+        result_dict : dict,
+            The dictionary containing the clustering results and latent variables if necessary.
+
+        """
         # Step 1: wrap the input data with classes Dataset and DataLoader
         self.model.eval()  # set the model as eval status to freeze it.
         test_set = BaseDataset(test_set, return_labels=False, file_type=file_type)
@@ -306,6 +336,9 @@ class SAITS(BaseNNImputer):
             num_workers=self.num_workers,
         )
         imputation_collector = []
+        first_DMSA_attn_weights_collector = []
+        second_DMSA_attn_weights_collector = []
+        combining_weights_collector = []
 
         # Step 2: process the data with the model
         with torch.no_grad():
@@ -317,11 +350,37 @@ class SAITS(BaseNNImputer):
                 imputed_data = results["imputed_data"]
                 imputation_collector.append(imputed_data)
 
+                if return_latent_vars:
+                    first_DMSA_attn_weights = (
+                        results["first_DMSA_attn_weights"].cpu().numpy()
+                    )
+                    second_DMSA_attn_weights = (
+                        results["second_DMSA_attn_weights"].cpu().numpy()
+                    )
+                    combining_weights = results["combining_weights"].cpu().numpy()
+
+                    first_DMSA_attn_weights_collector.append(first_DMSA_attn_weights)
+                    second_DMSA_attn_weights_collector.append(second_DMSA_attn_weights)
+                    combining_weights_collector.append(combining_weights)
+
         # Step 3: output collection and return
         imputation = torch.cat(imputation_collector).cpu().detach().numpy()
         result_dict = {
             "imputation": imputation,
         }
+
+        if return_latent_vars:
+            latent_var_collector = {
+                "first_DMSA_attn_weights": np.concatenate(
+                    first_DMSA_attn_weights_collector
+                ),
+                "second_DMSA_attn_weights": np.concatenate(
+                    second_DMSA_attn_weights_collector
+                ),
+                "combining_weights": np.concatenate(combining_weights_collector),
+            }
+            result_dict["latent_vars"] = latent_var_collector
+
         return result_dict
 
     def impute(

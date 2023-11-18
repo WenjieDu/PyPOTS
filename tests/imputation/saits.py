@@ -63,12 +63,18 @@ class TestSAITS(unittest.TestCase):
 
     @pytest.mark.xdist_group(name="imputation-saits")
     def test_1_impute(self):
-        imputed_X = self.saits.impute(TEST_SET)
+        imputation_results = self.saits.predict(TEST_SET, return_latent_vars=True)
         assert not np.isnan(
-            imputed_X
+            imputation_results["imputation"]
         ).any(), "Output still has missing values after running impute()."
+        assert (
+            "latent_vars" in imputation_results.keys()
+        ), "Latent variables are not returned thought `return_latent_vars` is set as True."
+
         test_MAE = cal_mae(
-            imputed_X, DATA["test_X_intact"], DATA["test_X_indicating_mask"]
+            imputation_results["imputation"],
+            DATA["test_X_intact"],
+            DATA["test_X_indicating_mask"],
         )
         logger.info(f"SAITS test_MAE: {test_MAE}")
 
