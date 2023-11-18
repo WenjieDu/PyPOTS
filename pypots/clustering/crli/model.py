@@ -11,7 +11,7 @@ Learning Representations for Incomplete Time Series Clustering. AAAI 2021."
 # License: BSD-3-Clause
 
 import os
-from typing import Union, Optional, Tuple
+from typing import Union, Optional
 
 import numpy as np
 import torch

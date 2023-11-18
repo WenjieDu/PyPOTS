@@ -12,7 +12,7 @@ Deep learning for clustering of multivariate clinical patient trajectories with 
 
 
 import os
-from typing import Tuple, Union, Optional
+from typing import Union, Optional
 
 import numpy as np
 import torch
@@ -443,6 +443,15 @@ class VaDER(BaseNNClusterer):
                 inputs = self._assemble_input_for_testing(data)
                 results = self.model.forward(inputs, training=False)
 
+                mu_tilde = results["mu_tilde"].cpu().numpy()
+                mu_tilde_collector.append(mu_tilde)
+                mu = results["mu"].cpu().numpy()
+                mu_collector.append(mu)
+                var = results["var"].cpu().numpy()
+                var_collector.append(var)
+                phi = results["phi"].cpu().numpy()
+                phi_collector.append(phi)
+
                 def func_to_apply(
                     mu_t_: np.ndarray,
                     mu_: np.ndarray,
@@ -465,16 +474,8 @@ class VaDER(BaseNNClusterer):
                 clustering_results_collector.append(clustering_results)
 
                 if return_latent_vars:
-                    mu_tilde = results["mu_tilde"].cpu().numpy()
-                    mu_tilde_collector.append(mu_tilde)
                     stddev_tilde = results["stddev_tilde"].cpu().numpy()
                     stddev_tilde_collector.append(stddev_tilde)
-                    mu = results["mu"].cpu().numpy()
-                    mu_collector.append(mu)
-                    var = results["var"].cpu().numpy()
-                    var_collector.append(var)
-                    phi = results["phi"].cpu().numpy()
-                    phi_collector.append(phi)
                     z = results["z"].cpu().numpy()
                     z_collector.append(z)
                     imputation_latent = results["imputation_latent"].cpu().numpy()
