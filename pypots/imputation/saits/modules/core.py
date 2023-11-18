@@ -96,7 +96,7 @@ class _SAITS(nn.Module):
         self,
         inputs: dict,
         diagonal_attention_mask: Optional[torch.Tensor] = None,
-    ) -> Tuple[torch.Tensor, list]:
+    ) -> Tuple[torch.Tensor, list, list]:
         X, masks = inputs["X"], inputs["missing_mask"]
 
         # first DMSA block
@@ -105,8 +105,11 @@ class _SAITS(nn.Module):
         enc_output = self.dropout(
             self.position_enc(input_X_for_first)
         )  # namely, term e in the math equation
+        first_DMSA_attn_weights = None
         for encoder_layer in self.layer_stack_for_first_block:
-            enc_output, _ = encoder_layer(enc_output, diagonal_attention_mask)
+            enc_output, first_DMSA_attn_weights = encoder_layer(
+                enc_output, diagonal_attention_mask
+            )
 
         X_tilde_1 = self.reduce_dim_z(enc_output)
         X_prime = masks * X + (1 - masks) * X_tilde_1
@@ -117,30 +120,39 @@ class _SAITS(nn.Module):
         enc_output = self.position_enc(
             input_X_for_second
         )  # namely term alpha in math algo
-        attn_weights = None
+        second_DMSA_attn_weights = None
         for encoder_layer in self.layer_stack_for_second_block:
-            enc_output, attn_weights = encoder_layer(enc_output)
+            enc_output, second_DMSA_attn_weights = encoder_layer(
+                enc_output, diagonal_attention_mask
+            )
 
         X_tilde_2 = self.reduce_dim_gamma(F.relu(self.reduce_dim_beta(enc_output)))
 
         # attention-weighted combine
-        attn_weights = attn_weights.squeeze(dim=1)  # namely term A_hat in Eq.
-        if len(attn_weights.shape) == 4:
+        copy_second_DMSA_weights = second_DMSA_attn_weights.clone()
+        copy_second_DMSA_weights = copy_second_DMSA_weights.squeeze(
+            dim=1
+        )  # namely term A_hat in Eq.
+        if len(copy_second_DMSA_weights.shape) == 4:
             # if having more than 1 head, then average attention weights from all heads
-            attn_weights = torch.transpose(attn_weights, 1, 3)
-            attn_weights = attn_weights.mean(dim=3)
-            attn_weights = torch.transpose(attn_weights, 1, 2)
+            copy_second_DMSA_weights = torch.transpose(copy_second_DMSA_weights, 1, 3)
+            copy_second_DMSA_weights = copy_second_DMSA_weights.mean(dim=3)
+            copy_second_DMSA_weights = torch.transpose(copy_second_DMSA_weights, 1, 2)
 
         # namely term eta
         combining_weights = torch.sigmoid(
-            self.weight_combine(torch.cat([masks, attn_weights], dim=2))
+            self.weight_combine(torch.cat([masks, copy_second_DMSA_weights], dim=2))
         )
         # combine X_tilde_1 and X_tilde_2
         X_tilde_3 = (1 - combining_weights) * X_tilde_2 + combining_weights * X_tilde_1
         # replace non-missing part with original data
         X_c = masks * X + (1 - masks) * X_tilde_3
 
-        return X_c, [X_tilde_1, X_tilde_2, X_tilde_3]
+        return (
+            X_c,
+            [X_tilde_1, X_tilde_2, X_tilde_3],
+            [first_DMSA_attn_weights, second_DMSA_attn_weights, combining_weights],
+        )
 
     def forward(
         self, inputs: dict, diagonal_attention_mask: bool = False, training: bool = True
@@ -156,9 +168,11 @@ class _SAITS(nn.Module):
         else:
             diagonal_attention_mask = None
 
-        imputed_data, [X_tilde_1, X_tilde_2, X_tilde_3] = self._process(
-            inputs, diagonal_attention_mask
-        )
+        (
+            imputed_data,
+            [X_tilde_1, X_tilde_2, X_tilde_3],
+            [first_DMSA_attn_weights, second_DMSA_attn_weights, combining_weights],
+        ) = self._process(inputs, diagonal_attention_mask)
 
         if not training:
             # if not in training mode, return the classification result only
@@ -180,6 +194,9 @@ class _SAITS(nn.Module):
         loss = self.ORT_weight * ORT_loss + self.MIT_weight * MIT_loss
 
         results = {
+            "first_DMSA_attn_weights": first_DMSA_attn_weights,
+            "second_DMSA_attn_weights": second_DMSA_attn_weights,
+            "combining_weights": combining_weights,
             "imputed_data": imputed_data,
             "ORT_loss": ORT_loss,
             "MIT_loss": MIT_loss,
