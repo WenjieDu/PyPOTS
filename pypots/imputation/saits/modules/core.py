@@ -174,11 +174,15 @@ class _SAITS(nn.Module):
             [first_DMSA_attn_weights, second_DMSA_attn_weights, combining_weights],
         ) = self._process(inputs, diagonal_attention_mask)
 
+        results = {
+            "first_DMSA_attn_weights": first_DMSA_attn_weights,
+            "second_DMSA_attn_weights": second_DMSA_attn_weights,
+            "combining_weights": combining_weights,
+            "imputed_data": imputed_data,
+        }
         if not training:
             # if not in training mode, return the classification result only
-            return {
-                "imputed_data": imputed_data,
-            }
+            return results
 
         ORT_loss = 0
         ORT_loss += self.customized_loss_func(X_tilde_1, X, masks)
@@ -193,13 +197,10 @@ class _SAITS(nn.Module):
         # `loss` is always the item for backward propagating to update the model
         loss = self.ORT_weight * ORT_loss + self.MIT_weight * MIT_loss
 
-        results = {
-            "first_DMSA_attn_weights": first_DMSA_attn_weights,
-            "second_DMSA_attn_weights": second_DMSA_attn_weights,
-            "combining_weights": combining_weights,
-            "imputed_data": imputed_data,
-            "ORT_loss": ORT_loss,
-            "MIT_loss": MIT_loss,
-            "loss": loss,  # will be used for backward propagating to update the model
-        }
+        results["ORT_loss"] = ORT_loss
+        results["MIT_loss"] = MIT_loss
+
+        # will be used for backward propagating to update the model
+        results["loss"] = loss
+
         return results
