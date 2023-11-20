@@ -347,21 +347,18 @@ class SAITS(BaseNNImputer):
                 results = self.model.forward(
                     inputs, diagonal_attention_mask, training=False
                 )
-                imputed_data = results["imputed_data"]
-                imputation_collector.append(imputed_data)
+                imputation_collector.append(results["imputed_data"])
 
                 if return_latent_vars:
-                    first_DMSA_attn_weights = (
+                    first_DMSA_attn_weights_collector.append(
                         results["first_DMSA_attn_weights"].cpu().numpy()
                     )
-                    second_DMSA_attn_weights = (
+                    second_DMSA_attn_weights_collector.append(
                         results["second_DMSA_attn_weights"].cpu().numpy()
                     )
-                    combining_weights = results["combining_weights"].cpu().numpy()
-
-                    first_DMSA_attn_weights_collector.append(first_DMSA_attn_weights)
-                    second_DMSA_attn_weights_collector.append(second_DMSA_attn_weights)
-                    combining_weights_collector.append(combining_weights)
+                    combining_weights_collector.append(
+                        results["combining_weights"].cpu().numpy()
+                    )
 
         # Step 3: output collection and return
         imputation = torch.cat(imputation_collector).cpu().detach().numpy()
