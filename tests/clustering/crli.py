@@ -124,27 +124,23 @@ class TestCRLI(unittest.TestCase):
     @pytest.mark.xdist_group(name="clustering-crli")
     def test_2_cluster(self):
         # GRU cell
-        clustering, latent_collector = self.crli_gru.cluster(
-            TEST_SET, return_latent=True
-        )
+        clustering_results = self.crli_gru.predict(TEST_SET, return_latent_vars=True)
         external_metrics = cal_external_cluster_validation_metrics(
-            clustering, DATA["test_y"]
+            clustering_results["clustering"], DATA["test_y"]
         )
         internal_metrics = cal_internal_cluster_validation_metrics(
-            latent_collector["clustering_latent"], DATA["test_y"]
+            clustering_results["latent_vars"]["clustering_latent"], DATA["test_y"]
         )
         logger.info(f"CRLI-GRU: {external_metrics}")
         logger.info(f"CRLI-GRU:{internal_metrics}")
 
         # LSTM cell
-        clustering, latent_collector = self.crli_lstm.cluster(
-            TEST_SET, return_latent=True
-        )
+        clustering_results = self.crli_lstm.predict(TEST_SET, return_latent_vars=True)
         external_metrics = cal_external_cluster_validation_metrics(
-            clustering, DATA["test_y"]
+            clustering_results["clustering"], DATA["test_y"]
         )
         internal_metrics = cal_internal_cluster_validation_metrics(
-            latent_collector["clustering_latent"], DATA["test_y"]
+            clustering_results["latent_vars"]["clustering_latent"], DATA["test_y"]
         )
         logger.info(f"CRLI-LSTM: {external_metrics}")
         logger.info(f"CRLI-LSTM: {internal_metrics}")

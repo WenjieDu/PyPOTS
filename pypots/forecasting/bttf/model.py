@@ -149,6 +149,25 @@ class BTTF(BaseForecaster):
         X: Union[dict, str],
         file_type: str = "h5py",
     ) -> np.ndarray:
+        """Forecast the future the input with the trained model.
+
+        Warnings
+        --------
+        The method forecast is deprecated. Please use `predict()` instead.
+
+        Parameters
+        ----------
+        X :
+            Time-series data containing missing values. Shape [n_samples, sequence length (time steps), n_features].
+
+        file_type :
+            The type of the given file if X is a path string.
+
+        Returns
+        -------
+        array-like, shape [n_samples, prediction_horizon, n_features],
+            Forecasting results.
+        """
         logger.warning(
             "🚨DeprecationWarning: The method forecast is deprecated. Please use `predict` instead."
         )

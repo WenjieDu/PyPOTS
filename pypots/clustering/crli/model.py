@@ -11,7 +11,7 @@ Learning Representations for Incomplete Time Series Clustering. AAAI 2021."
 # License: BSD-3-Clause
 
 import os
-from typing import Union, Optional, Tuple
+from typing import Union, Optional
 
 import numpy as np
 import torch
@@ -381,8 +381,35 @@ class CRLI(BaseNNClusterer):
         self,
         test_set: Union[dict, str],
         file_type: str = "h5py",
-        return_latent: bool = False,
+        return_latent_vars: bool = False,
     ) -> dict:
+        """Make predictions for the input data with the trained model.
+
+        Parameters
+        ----------
+        test_set : dict or str
+            The dataset for model validating, should be a dictionary including keys as 'X',
+            or a path string locating a data file supported by PyPOTS (e.g. h5 file).
+            If it is a dict, X should be array-like of shape [n_samples, sequence length (time steps), n_features],
+            which is time-series data for validating, can contain missing values, and y should be array-like of shape
+            [n_samples], which is classification labels of X.
+            If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
+            key-value pairs like a dict, and it has to include keys as 'X' and 'y'.
+
+        file_type : str
+            The type of the given file if test_set is a path string.
+
+        return_latent_vars : bool
+            Whether to return the latent variables in CRLI, e.g. latent representation from the fully connected network
+            in CRLI, etc.
+
+        Returns
+        -------
+        result_dict : dict,
+            The dictionary containing the clustering results and latent variables if necessary.
+
+        """
+
         self.model.eval()  # set the model as eval status to freeze it.
         test_set = DatasetForCRLI(test_set, return_labels=False, file_type=file_type)
         test_loader = DataLoader(
@@ -399,24 +426,25 @@ class CRLI(BaseNNClusterer):
                 inputs = self._assemble_input_for_testing(data)
                 inputs = self.model.forward(inputs, return_loss=False)
                 clustering_latent_collector.append(inputs["fcn_latent"])
-                imputation_collector.append(inputs["imputation_latent"])
+                if return_latent_vars:
+                    imputation_collector.append(inputs["imputation_latent"])
 
-        imputation = torch.cat(imputation_collector).cpu().detach().numpy()
         clustering_latent = (
             torch.cat(clustering_latent_collector).cpu().detach().numpy()
         )
         clustering = self.model.kmeans.fit_predict(clustering_latent)
-        latent_collector = {
-            "clustering_latent": clustering_latent,
-            "imputation_latent": imputation,
-        }
 
         result_dict = {
             "clustering": clustering,
         }
 
-        if return_latent:
-            result_dict["latent"] = latent_collector
+        if return_latent_vars:
+            imputation = torch.cat(imputation_collector).cpu().detach().numpy()
+            latent_var_collector = {
+                "clustering_latent": clustering_latent,
+                "imputation_latent": imputation,
+            }
+            result_dict["latent_vars"] = latent_var_collector
 
         return result_dict
 
@@ -424,14 +452,31 @@ class CRLI(BaseNNClusterer):
         self,
         X: Union[dict, str],
         file_type: str = "h5py",
-        return_latent: bool = False,
-    ) -> Union[np.ndarray, Tuple[np.ndarray, dict]]:
+    ) -> np.ndarray:
+        """Cluster the input with the trained model.
+
+        Warnings
+        --------
+        The method cluster is deprecated. Please use `predict()` instead.
+
+        Parameters
+        ----------
+        X :
+            The data samples for testing, should be array-like of shape [n_samples, sequence length (time steps),
+            n_features], or a path string locating a data file, e.g. h5 file.
+
+        file_type :
+            The type of the given file if X is a path string.
+
+        Returns
+        -------
+        array-like,
+            Clustering results.
+
+        """
         logger.warning(
             "🚨DeprecationWarning: The method cluster is deprecated. Please use `predict` instead."
         )
 
-        result_dict = self.predict(X, file_type, return_latent)
-        if return_latent:
-            return result_dict["clustering"], result_dict["latent"]
-
+        result_dict = self.predict(X, file_type)
         return result_dict["clustering"]
