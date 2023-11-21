@@ -402,6 +402,10 @@ class BaseNNForecaster(BaseNNModel):
     ) -> np.ndarray:
         """Forecast the future the input with the trained model.
 
+        Warnings
+        --------
+        The method forecast is deprecated. Please use `predict()` instead.
+
         Parameters
         ----------
         X :

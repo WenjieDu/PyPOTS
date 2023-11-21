@@ -418,6 +418,10 @@ class BaseNNImputer(BaseNNModel):
     ) -> np.ndarray:
         """Impute missing values in the given data with the trained model.
 
+        Warnings
+        --------
+        The method impute is deprecated. Please use `predict()` instead.
+
         Parameters
         ----------
         X :

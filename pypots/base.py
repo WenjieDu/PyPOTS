@@ -330,8 +330,8 @@ class BaseModel(ABC):
         Parameters
         ----------
         train_set : dict or str
-            The dataset for model training, should be a dictionary including keys as 'X' and 'y',
-            or a path string locating a data file.
+            The dataset for model training, should be a dictionary including keys as 'X',
+            or a path string locating a data file supported by PyPOTS (e.g. h5 file).
             If it is a dict, X should be array-like of shape [n_samples, sequence length (time steps), n_features],
             which is time-series data for training, can contain missing values, and y should be array-like of shape
             [n_samples], which is classification labels of X.
@@ -339,8 +339,8 @@ class BaseModel(ABC):
             key-value pairs like a dict, and it has to include keys as 'X' and 'y'.
 
         val_set : dict or str
-            The dataset for model validating, should be a dictionary including keys as 'X' and 'y',
-            or a path string locating a data file.
+            The dataset for model validating, should be a dictionary including keys as 'X',
+            or a path string locating a data file supported by PyPOTS (e.g. h5 file).
             If it is a dict, X should be array-like of shape [n_samples, sequence length (time steps), n_features],
             which is time-series data for validating, can contain missing values, and y should be array-like of shape
             [n_samples], which is classification labels of X.
@@ -364,8 +364,8 @@ class BaseModel(ABC):
         Parameters
         ----------
         test_set : dict or str
-            The dataset for model validating, should be a dictionary including keys as 'X' and 'y',
-            or a path string locating a data file.
+            The dataset for model validating, should be a dictionary including keys as 'X',
+            or a path string locating a data file supported by PyPOTS (e.g. h5 file).
             If it is a dict, X should be array-like of shape [n_samples, sequence length (time steps), n_features],
             which is time-series data for validating, can contain missing values, and y should be array-like of shape
             [n_samples], which is classification labels of X.

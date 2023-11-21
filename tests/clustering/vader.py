@@ -64,14 +64,12 @@ class TestVaDER(unittest.TestCase):
     @pytest.mark.xdist_group(name="clustering-vader")
     def test_1_cluster(self):
         try:
-            clustering, latent_collector = self.vader.cluster(
-                TEST_SET, return_latent=True
-            )
+            clustering_results = self.vader.predict(TEST_SET, return_latent_vars=True)
             external_metrics = cal_external_cluster_validation_metrics(
-                clustering, DATA["test_y"]
+                clustering_results["clustering"], DATA["test_y"]
             )
             internal_metrics = cal_internal_cluster_validation_metrics(
-                latent_collector["z"], DATA["test_y"]
+                clustering_results["latent_vars"]["z"], DATA["test_y"]
             )
             logger.info(f"{external_metrics}")
             logger.info(f"{internal_metrics}")
