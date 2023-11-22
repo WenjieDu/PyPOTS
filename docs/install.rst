@@ -7,13 +7,13 @@ It is recommended to use **pip** or **conda** for PyPOTS installation as shown b
 
 .. code-block:: bash
 
-    # by pip
+    # via pip
     pip install pypots            # the first time installation
     pip install pypots --upgrade  # update pypots to the latest version
 
 .. code-block:: bash
 
-    # by conda
+    # via conda
     conda install -c conda-forge pypots  # the first time installation
     conda update  -c conda-forge pypots  # update pypots to the latest version
 
@@ -33,8 +33,8 @@ Required Dependencies
 * torch >=1.10.0
 * tensorboard
 * h5py
-* tsdb
-* pygrinder
+* tsdb >=0.2
+* pygrinder >=0.2
 
 
 Optional Dependencies
@@ -61,6 +61,9 @@ see https://stackoverflow.com/questions/75953279/modulenotfounderror-no-module-n
 
 Because of pytorch_sparse, please refer to https://github.com/rusty1s/pytorch_sparse/issues/207#issuecomment-1065549338.
 
+* **Why we need TSDB and PyGrinder >=0.2?**
+Since v0.2, all libraries in PyPOTS ecosystem switch their licenses from GPL-v3-only to BSD-3-Clause, which has less constraints for users.
+Please refer to the discussion in issue `PyPOTS#227 <https://github.com/WenjieDu/PyPOTS/issues/227>`_ for details.
 
 Acceleration
 """"""""""""
