@@ -26,10 +26,10 @@
         <img alt="GitHub contributors" src="https://img.shields.io/github/contributors/wenjiedu/pypots?color=D8E699&label=Contributors&logo=GitHub">
     </a>
     <a href="https://star-history.com/#wenjiedu/pypots">
-        <img alt="GitHub Repo stars" src="https://img.shields.io/github/stars/wenjiedu/pypots?logo=Github&color=6BB392&label=Stars">
+        <img alt="GitHub Repo stars" src="https://img.shields.io/github/stars/wenjiedu/pypots?color=6BB392&label=%E2%AD%90%20Stars">
     </a>
     <a href="https://github.com/WenjieDu/PyPOTS/network/members">
-        <img alt="GitHub Repo forks" src="https://img.shields.io/github/forks/wenjiedu/pypots?logo=Github&color=91B821&label=Forks">
+        <img alt="GitHub Repo forks" src="https://img.shields.io/github/forks/wenjiedu/pypots?logo=forgejo&logoColor=white&color=91B821&label=Forks">
     </a>
     <a href="https://codeclimate.com/github/WenjieDu/PyPOTS">
         <img alt="Code Climate maintainability" src="https://img.shields.io/codeclimate/maintainability-percentage/WenjieDu/PyPOTS?color=3C7699&label=Maintainability&logo=codeclimate">
@@ -38,7 +38,7 @@
         <img alt="Coveralls coverage" src="https://img.shields.io/coverallsCoverage/github/WenjieDu/PyPOTS?branch=main&logo=coveralls&color=75C1C4&label=Coverage">
     </a>
     <a href="https://github.com/WenjieDu/PyPOTS/actions/workflows/testing_ci.yml">
-        <img alt="GitHub Testing" src="https://img.shields.io/github/actions/workflow/status/wenjiedu/pypots/testing_ci.yml?logo=github&color=C8D8E1&label=CI">
+        <img alt="GitHub Testing" src="https://img.shields.io/github/actions/workflow/status/wenjiedu/pypots/testing_ci.yml?logo=circleci&color=C8D8E1&label=CI">
     </a>
     <a href="https://arxiv.org/abs/2305.18811">
         <img alt="arXiv DOI" src="https://img.shields.io/badge/DOI-10.48550/arXiv.2305.18811-F8F7F0">
@@ -121,11 +121,11 @@ PyPOTS is available on both [PyPI](https://pypi.python.org/pypi/pypots) and [Ana
 You can install PyPOTS as shown below:
 
 ``` bash
-# by pip
+# via pip
 pip install pypots            # the first time installation
 pip install pypots --upgrade  # update pypots to the latest version
 
-# by conda
+# via conda
 conda install -c conda-forge pypots  # the first time installation
 conda update  -c conda-forge pypots  # update pypots to the latest version
 ````
@@ -152,6 +152,7 @@ from pygrinder import mcar, masked_fill
 from pypots.data import load_specific_dataset
 from pypots.imputation import SAITS
 from pypots.utils.metrics import cal_mae
+
 # Data preprocessing. Tedious, but PyPOTS can help.
 data = load_specific_dataset('physionet_2012')  # PyPOTS will automatically download and extract it.
 X = data['X']
@@ -163,6 +164,7 @@ X_intact, X, missing_mask, indicating_mask = mcar(X, 0.1) # hold out 10% observe
 X = masked_fill(X, 1 - missing_mask, np.nan)
 dataset = {"X": X}
 print(dataset["X"].shape)  # (11988, 48, 37), 11988 samples, 48 time steps, 37 features
+
 # Model training. This is PyPOTS showtime.
 saits = SAITS(n_steps=48, n_features=37, n_layers=2, d_model=256, d_inner=128, n_heads=4, d_k=64, d_v=64, dropout=0.1, epochs=10)
 # Here I use the whole dataset as the training set because ground truth is not visible to the model, you can also split it into train/val/test sets

@@ -36,11 +36,11 @@ Welcome to PyPOTS docs!
    :alt: GitHub Contributors
    :target: https://github.com/WenjieDu/PyPOTS/graphs/contributors
 
-.. image:: https://img.shields.io/github/stars/wenjiedu/pypots?logo=Github&color=6BB392&label=Stars
+.. image:: https://img.shields.io/github/stars/wenjiedu/pypots?color=6BB392&label=%E2%AD%90%20Stars
    :alt: GitHub Repo stars
    :target: https://star-history.com/#wenjiedu/pypots
 
-.. image:: https://img.shields.io/github/forks/wenjiedu/pypots?logo=Github&color=91B821&label=Forks
+.. image:: https://img.shields.io/github/forks/wenjiedu/pypots?logo=forgejo&logoColor=white&color=91B821&label=Forks
    :alt: GitHub Repo forks
    :target: https://github.com/WenjieDu/PyPOTS/network/members
 
@@ -52,7 +52,7 @@ Welcome to PyPOTS docs!
    :alt: Coveralls coverage
    :target: https://coveralls.io/github/WenjieDu/PyPOTS
 
-.. image:: https://img.shields.io/github/actions/workflow/status/wenjiedu/pypots/testing_ci.yml?logo=github&color=C8D8E1&label=CI
+.. image:: https://img.shields.io/github/actions/workflow/status/wenjiedu/pypots/testing_ci.yml?logo=circleci&color=C8D8E1&label=CI
    :alt: GitHub Testing
    :target: https://github.com/WenjieDu/PyPOTS/actions/workflows/testing_ci.yml
 
@@ -250,10 +250,10 @@ Your star is your recognition to PyPOTS, and it matters!
 
 The lists of PyPOTS stargazers and forkers are shown below, and we're so proud to have more and more awesome users, as well as more bright ✨stars:
 
-.. image:: https://reporoster.com/stars/dark/WenjieDu/PyPOTS
+.. image:: http://reporoster.com/stars/dark/WenjieDu/PyPOTS
    :alt: PyPOTS stargazers
    :target: https://github.com/WenjieDu/PyPOTS/stargazers
-.. image:: https://reporoster.com/forks/dark/WenjieDu/PyPOTS
+.. image:: http://reporoster.com/forks/dark/WenjieDu/PyPOTS
    :alt: PyPOTS forkers
    :target: https://github.com/WenjieDu/PyPOTS/network/members
 
