@@ -39,7 +39,7 @@ jobs:
               uses: haya14busa/action-cond@v1
               id: determine_pyg_vers
               with:
-                cond: ${{ matrix.torch-version == 1.13.1 }}
+                cond: ${{ steps.determine_pytorch_ver.outputs.value == "1.13.1" }}
                 if_true: "torch-geometric torch-scatter==2.1.1 torch-sparse==0.6.17"
                 if_false: "torch-geometric torch-scatter==2.1.2 torch-sparse==0.6.18"
 
