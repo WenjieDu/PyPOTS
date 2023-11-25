@@ -14,11 +14,11 @@ Note this exception only applies if you commit to the maintenance of your model 
 
 Join PyPOTS
 ^^^^^^^^^^^
-.. _becoming-a-maintainer:
+.. _becoming-a-volunteer:
 
-Becoming a Maintainer
-"""""""""""""""""""""
-To join the team and become a maintainer of PyPOTS, you should
+Becoming a Volunteer Developer
+""""""""""""""""""""""""""""""
+To become a member of PyPOTS volunteer development team, you should
 
 1. love open-source science and be active on GitHub;
 2. be familiar with the PyPOTS codebase and have made at least one pull request merged into branch ``main`` of PyPOTS,
@@ -28,21 +28,14 @@ To join the team and become a maintainer of PyPOTS, you should
    and become a member of the channel ``#dev-team``. ``#dev-team`` currently is a public channel, and you don't need an invitation to join it;
 5. commit to constantly maintain PyPOTS project and obey our development principles;
 
-After meeting up with the above conditions,
-you can propose to get a maintainer role by dropping an email to `team@pypots.com <mailto:team@pypots.com>`_.
-We will review your request and reply to you as soon as possible.
 Once you obtain the role, you'll be listed as a member on the ``About Us`` pages of
 `PyPOTS main site <https://pypots.com/about/>`_
 and
 `PyPOTS docs site <https://docs.pypots.com/en/latest/about_us.html>`_.
 
-**NOTE**: The maintainer role is not permanent. The role is called "maintainer" because it actively maintains the project.
-You can take a leave of absence from the role with notice at any time.
-But if you're inactive for a long time (more than three months. With reasons, a longer period is allowed for sure), your role may be deactivated.
-
 Becoming a Lead
 """""""""""""""
-To become a lead at PyPOTS, surely you have to already obtain a maintainer role first, i.e. you've met all requirements in the section :ref:`becoming-a-maintainer`.
+To become a lead at PyPOTS, surely you have to already be a volunteer developer first, i.e. you've met all requirements in the section :ref:`becoming-a-volunteer`.
 Your research should be highly related to data mining/machine learning on POTS data, and
 you need to prove that you're capable of proposing a research plan solely and conducting it.
 You're willing to take developing PyPOTS as your responsibility and commit to constantly and regularly
