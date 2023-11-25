@@ -38,7 +38,7 @@ jobs:
             - name: Set up Python
               uses: actions/setup-python@v4
               with:
-                python-version: ${{ steps.determine_pytorch_ver.outputs.value }}
+                python-version: ${{ matrix.python-version }}
                 check-latest: true
                 cache: pip
                 cache-dependency-path: |
