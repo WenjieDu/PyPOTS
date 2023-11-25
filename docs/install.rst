@@ -25,7 +25,7 @@ Alternatively, you can install from the latest source code which may be not offi
 
 Required Dependencies
 """""""""""""""""""""
-* Python >=3.7, <=3.10
+* Python >=3.7, <=3.11
 * numpy
 * scipy
 * scikit-learn
@@ -49,8 +49,13 @@ Reasons of Version Limitations on Dependencies
 * **Why we need python >=3.7?**
 
 Python v3.6 and before versions have no longer been supported officially (check out `status of Python versions here <https://devguide.python.org/versions/>`_).
-Besides, PyG (torch-geometric) is available starting from Python v3.7, please refer to https://pytorch-geometric.readthedocs.io/en/latest/install/installation.html#installation-via-anaconda.
+Besides, PyG (torch-geometric) is available for Python v3.7 to v3.11 (refer to https://pytorch-geometric.readthedocs.io/en/latest/install/installation.html#installation-via-anaconda ),
+and this is also why we need Python version to be lower than 3.12 so far.
 Although torch-geometric is an optional dependency, we hope things go smoothly when our users opt to install it.
+
+In addition, note that Python v.3.7 has also been in the end-of-life status since 2023-06-27.
+Hence, we will raise the minimum support Python version to v3.8 in the future.
+Please use Python v3.8 or above if possible also for the security of your development environment.
 
 * **Why we need pandas <2.0.0?**
 

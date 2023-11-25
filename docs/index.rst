@@ -12,7 +12,7 @@ Welcome to PyPOTS docs!
 
 **A Python Toolbox for Data Mining on Partially-Observed Time Series**
 
-.. image:: https://img.shields.io/badge/Python-v3.7--3.10-E97040?logo=python&logoColor=white
+.. image:: https://img.shields.io/badge/Python-v3.7--3.11-E97040?logo=python&logoColor=white
    :alt: Python version
    :target: https://docs.pypots.com/en/latest/install.html#reasons-of-version-limitations-on-dependencies
 

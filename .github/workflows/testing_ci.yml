@@ -20,45 +20,43 @@ jobs:
             fail-fast: false
             matrix:
                 os: [ubuntu-latest, windows-latest, macOS-latest]
-                python-version: ["3.7", "3.10"]
-                torch-version: ["1.13.1"]
+                python-version: ["3.7", "3.10", "3.11"]
 
         steps:
             - name: Check out the repo code
               uses: actions/checkout@v3
 
-            - name: Determine the Python version
+            - name: Determine the PyTorch version
               uses: haya14busa/action-cond@v1
-              id: condval
+              id: determine_pytorch_ver
               with:
-                cond: ${{ matrix.python-version == 3.7 && matrix.os == 'macOS-latest' }}
-                # Note: the latest 3.7 subversion 3.7.17 for MacOS has "ModuleNotFoundError: No module named '_bz2'"
-                if_true: "3.7.16"
-                if_false: ${{ matrix.python-version }}
+                cond: ${{ matrix.python-version == 3.7 }}
+                if_true: "1.13.1"
+                if_false: "2.1.0"
 
             - name: Set up Python
               uses: actions/setup-python@v4
               with:
-                python-version: ${{ steps.condval.outputs.value }}
+                python-version: ${{ matrix.python-version }}
                 check-latest: true
                 cache: pip
                 cache-dependency-path: |
                   setup.cfg
 
-            - name: Install PyTorch ${{ matrix.torch-version }}+cpu
+            - name: Install PyTorch ${{ steps.determine_pytorch_ver.outputs.value }}+cpu
               # we have to install torch in advance because torch_sparse needs it for compilation,
               # refer to https://github.com/rusty1s/pytorch_sparse/issues/156#issuecomment-1304869772 for details
               run: |
                   which python
                   which pip
                   pip install --upgrade pip
-                  pip install torch==${{ matrix.torch-version }} -f https://download.pytorch.org/whl/cpu
+                  pip install torch==${{ steps.determine_pytorch_ver.outputs.value }} -f https://download.pytorch.org/whl/cpu
                   python -c "import torch; print('PyTorch:', torch.__version__)"
 
             - name: Install other dependencies
               run: |
                   pip install -r requirements.txt
-                  pip install torch-geometric==2.3.1 torch-scatter==2.1.1 torch-sparse==0.6.17 -f "https://data.pyg.org/whl/torch-${{ matrix.torch-version }}+cpu.html"
+                  pip install torch-geometric torch-scatter torch-sparse -f "https://data.pyg.org/whl/torch-${{ steps.determine_pytorch_ver.outputs.value }}+cpu.html"
                   pip install pypots[dev]
 
             - name: Fetch the test environment details
