@@ -27,19 +27,26 @@ jobs:
             - name: Check out the repo code
               uses: actions/checkout@v3
 
-            - name: Determine the Python version
+            - name: Determine the PyTorch version
               uses: haya14busa/action-cond@v1
-              id: condval
+              id: determine_pytorch_ver
               with:
-                cond: ${{ matrix.python-version == 3.7 && matrix.os == 'macOS-latest' }}
-                # Note: the latest 3.7 subversion 3.7.17 for MacOS has "ModuleNotFoundError: No module named '_bz2'"
-                if_true: "3.7.16"
-                if_false: ${{ matrix.python-version }}
+                cond: ${{ matrix.python-version == 3.7 }}
+                if_true: "1.13.1"
+                if_false: ${{ matrix.torch-version }}
+
+            - name: Determine torch-geometric libs' versions
+              uses: haya14busa/action-cond@v1
+              id: determine_pyg_vers
+              with:
+                cond: ${{ matrix.torch-version == 1.13.1 }}
+                if_true: "torch-geometric torch-scatter==2.1.1 torch-sparse==0.6.17"
+                if_false: "torch-geometric torch-scatter==2.1.2 torch-sparse==0.6.18"
 
             - name: Set up Python
               uses: actions/setup-python@v4
               with:
-                python-version: ${{ steps.condval.outputs.value }}
+                python-version: ${{ steps.determine_pytorch_ver.outputs.value }}
                 check-latest: true
                 cache: pip
                 cache-dependency-path: |
@@ -58,7 +65,7 @@ jobs:
             - name: Install other dependencies
               run: |
                   pip install -r requirements.txt
-                  pip install torch-geometric torch-scatter==2.1.2 torch-sparse==0.6.18 -f "https://data.pyg.org/whl/torch-${{ matrix.torch-version }}+cpu.html"
+                  pip install ${{ steps.determine_pyg_vers.outputs.value }} -f "https://data.pyg.org/whl/torch-${{ matrix.torch-version }}+cpu.html"
                   pip install pypots[dev]
 
             - name: Fetch the test environment details
