@@ -20,7 +20,7 @@ jobs:
             fail-fast: false
             matrix:
                 os: [ubuntu-latest, windows-latest, macOS-latest]
-                python-version: ["3.11"]
+                python-version: ["3.7", "3.10", "3.11"]
                 torch-version: ["2.1.0"]
 
         steps:
@@ -58,7 +58,7 @@ jobs:
             - name: Install other dependencies
               run: |
                   pip install -r requirements.txt
-                  pip install pyg-lib==0.3 torch-scatter==2.1.2 torch-sparse==0.6.18 -f "https://data.pyg.org/whl/torch-${{ matrix.torch-version }}+cpu.html"
+                  pip install torch-geometric torch-scatter==2.1.2 torch-sparse==0.6.18 -f "https://data.pyg.org/whl/torch-${{ matrix.torch-version }}+cpu.html"
                   pip install pypots[dev]
 
             - name: Fetch the test environment details
