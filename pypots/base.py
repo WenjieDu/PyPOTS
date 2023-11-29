@@ -214,7 +214,7 @@ class BaseModel(ABC):
         self,
         training_finished: bool = True,
         saving_name: str = None,
-    ):
+    ) -> None:
         """Automatically save the current model into a file if in need.
 
         Parameters
@@ -230,17 +230,17 @@ class BaseModel(ABC):
         """
         if self.saving_path is not None and self.model_saving_strategy is not None:
             name = self.__class__.__name__ if saving_name is None else saving_name
+            saving_path = os.path.join(self.saving_path, name)
             if not training_finished and self.model_saving_strategy == "better":
-                self.save_model(self.saving_path, name)
+                self.save(saving_path)
             elif training_finished and self.model_saving_strategy == "best":
-                self.save_model(self.saving_path, name)
-        else:
-            return
+                self.save(saving_path)
+            else:
+                pass
 
-    def save_model(
+    def save(
         self,
-        saving_dir: str,
-        file_name: str,
+        saving_path: str,
         overwrite: bool = False,
     ) -> None:
         """Save the model with current parameters to a disk file.
@@ -251,20 +251,20 @@ class BaseModel(ABC):
 
         Parameters
         ----------
-        saving_dir :
-            The given directory to save the model.
-
-        file_name :
-            The file name of the model to be saved.
+        saving_path :
+            The given path to save the model. The directory will be created if it does not exist.
 
         overwrite :
             Whether to overwrite the model file if the path already exists.
 
         """
-        file_name = (
-            file_name + ".pypots" if file_name.split(".")[-1] != "pypots" else file_name
-        )
-        saving_path = os.path.join(saving_dir, file_name)
+        # split the saving dir and file name from the given path
+        saving_dir, file_name = os.path.split(saving_path)
+        # add the suffix ".pypots" if not given
+        if file_name.split(".")[-1] != "pypots":
+            file_name += ".pypots"
+        # rejoin the path for saving the model
+        saving_path = os.path.join(saving_path, file_name)
 
         if os.path.exists(saving_path):
             if overwrite:
@@ -274,7 +274,7 @@ class BaseModel(ABC):
             else:
                 logger.error(f"File {saving_path} exists. Saving operation aborted.")
         try:
-            create_dir_if_not_exist(saving_dir)
+            create_dir_if_not_exist(saving_path)
             if isinstance(self.device, list):
                 # to save a DataParallel model generically, save the model.module.state_dict()
                 torch.save(self.model.module, saving_path)
@@ -286,13 +286,13 @@ class BaseModel(ABC):
                 f'Failed to save the model to "{saving_path}" because of the below error! \n{e}'
             )
 
-    def load_model(self, model_path: str) -> None:
+    def load(self, path: str) -> None:
         """Load the saved model from a disk file.
 
         Parameters
         ----------
-        model_path :
-            Local path to a disk file saving trained model.
+        path :
+            The local path to a disk file saving the trained model.
 
         Notes
         -----
@@ -300,13 +300,13 @@ class BaseModel(ABC):
         you can load the model directly with torch.load(model_path).
 
         """
-        assert os.path.exists(model_path), f"Model file {model_path} does not exist."
+        assert os.path.exists(path), f"Model file {path} does not exist."
 
         try:
             if isinstance(self.device, torch.device):
-                loaded_model = torch.load(model_path, map_location=self.device)
+                loaded_model = torch.load(path, map_location=self.device)
             else:
-                loaded_model = torch.load(model_path)
+                loaded_model = torch.load(path)
             if isinstance(loaded_model, torch.nn.Module):
                 if isinstance(self.device, torch.device):
                     self.model.load_state_dict(loaded_model.state_dict())
@@ -316,7 +316,57 @@ class BaseModel(ABC):
                 self.model = loaded_model.model
         except Exception as e:
             raise e
-        logger.info(f"Model loaded successfully from {model_path}.")
+        logger.info(f"Model loaded successfully from {path}.")
+
+    def save_model(
+        self,
+        saving_path: str,
+        overwrite: bool = False,
+    ) -> None:
+        """Save the model with current parameters to a disk file.
+
+        A ``.pypots`` extension will be appended to the filename if it does not already have one.
+        Please note that such an extension is not necessary, but to indicate the saved model is from PyPOTS framework
+        so people can distinguish.
+
+        Parameters
+        ----------
+        saving_path :
+            The given path to save the model. The directory will be created if it does not exist.
+
+        overwrite :
+            Whether to overwrite the model file if the path already exists.
+
+        Warnings
+        --------
+        The method save_model is deprecated. Please use `save()` instead.
+        """
+        logger.warning(
+            "🚨DeprecationWarning: The method save_model is deprecated. Please use `save()` instead."
+        )
+        self.save(saving_path, overwrite)
+
+    def load_model(self, path: str) -> None:
+        """Load the saved model from a disk file.
+
+        Parameters
+        ----------
+        path :
+            The local path to a disk file saving the trained model.
+
+        Notes
+        -----
+        If the training environment and the deploying/test environment use the same type of device (GPU/CPU),
+        you can load the model directly with torch.load(model_path).
+
+        Warnings
+        --------
+        The method load_model is deprecated. Please use `load()` instead.
+        """
+        logger.warning(
+            "🚨DeprecationWarning: The method load_model is deprecated. Please use `load()` instead."
+        )
+        self.load(path)
 
     @abstractmethod
     def fit(

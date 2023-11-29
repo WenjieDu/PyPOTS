@@ -103,13 +103,11 @@ class TestSAITS(unittest.TestCase):
         check_tb_and_model_checkpoints_existence(self.saits)
 
         # save the trained model into file, and check if the path exists
-        self.saits.save_model(
-            saving_dir=self.saving_path, file_name=self.model_save_name
-        )
+        saved_model_path = os.path.join(self.saving_path, self.model_save_name)
+        self.saits.save(saved_model_path)
 
         # test loading the saved model, not necessary, but need to test
-        saved_model_path = os.path.join(self.saving_path, self.model_save_name)
-        self.saits.load_model(saved_model_path)
+        self.saits.load(saved_model_path)
 
 
 if __name__ == "__main__":
