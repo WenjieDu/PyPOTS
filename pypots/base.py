@@ -9,7 +9,7 @@ import os
 from abc import ABC
 from abc import abstractmethod
 from datetime import datetime
-from typing import Optional, Union
+from typing import Optional, Union, Iterable
 
 import torch
 from torch.utils.tensorboard import SummaryWriter
@@ -69,8 +69,8 @@ class BaseModel(ABC):
             model_saving_strategy in saving_strategies
         ), f"saving_strategy must be one of {saving_strategies}, but got f{model_saving_strategy}."
 
-        self.device = None
-        self.saving_path = saving_path
+        self.device = None  # set up with _setup_device() below
+        self.saving_path = None  # set up with _setup_path() below
         self.model_saving_strategy = model_saving_strategy
 
         self.model = None
@@ -82,7 +82,7 @@ class BaseModel(ABC):
         # set up saving_path to save the trained model and training logs
         self._setup_path(saving_path)
 
-    def _setup_device(self, device: Union[None, str, torch.device, list]):
+    def _setup_device(self, device: Union[None, str, torch.device, list]) -> None:
         if device is None:
             # if it is None, then use the first cuda device if cuda is available, otherwise use cpu
             if torch.cuda.is_available() and torch.cuda.device_count() > 0:
@@ -105,7 +105,6 @@ class BaseModel(ABC):
                 # parallely training on multiple CUDA devices
 
                 # ensure the list is not empty
-
                 device_list = []
                 for idx, d in enumerate(device):
                     if isinstance(d, str):
@@ -141,7 +140,7 @@ class BaseModel(ABC):
                 torch.cuda.is_available() and torch.cuda.device_count() > 0
             ), "You are trying to use CUDA for model training, but CUDA is not available in your environment."
 
-    def _setup_path(self, saving_path):
+    def _setup_path(self, saving_path) -> None:
         if isinstance(saving_path, str):
             # get the current time to append to saving_path,
             # so you can use the same saving_path to run multiple times
@@ -164,7 +163,7 @@ class BaseModel(ABC):
                 "saving_path not given. Model files and tensorboard file will not be saved."
             )
 
-    def _send_model_to_given_device(self):
+    def _send_model_to_given_device(self) -> None:
         if isinstance(self.device, list):
             # parallely training on multiple devices
             self.model = torch.nn.DataParallel(self.model, device_ids=self.device)
@@ -175,7 +174,7 @@ class BaseModel(ABC):
         else:
             self.model = self.model.to(self.device)
 
-    def _send_data_to_given_device(self, data):
+    def _send_data_to_given_device(self, data) -> Iterable:
         if isinstance(self.device, torch.device):  # single device
             data = map(lambda x: x.to(self.device), data)
         else:  # parallely training on multiple devices
@@ -264,7 +263,7 @@ class BaseModel(ABC):
         if file_name.split(".")[-1] != "pypots":
             file_name += ".pypots"
         # rejoin the path for saving the model
-        saving_path = os.path.join(saving_path, file_name)
+        saving_path = os.path.join(saving_dir, file_name)
 
         if os.path.exists(saving_path):
             if overwrite:
