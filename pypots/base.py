@@ -9,7 +9,7 @@ import os
 from abc import ABC
 from abc import abstractmethod
 from datetime import datetime
-from typing import Optional, Union
+from typing import Optional, Union, Iterable
 
 import torch
 from torch.utils.tensorboard import SummaryWriter
@@ -69,8 +69,8 @@ class BaseModel(ABC):
             model_saving_strategy in saving_strategies
         ), f"saving_strategy must be one of {saving_strategies}, but got f{model_saving_strategy}."
 
-        self.device = None
-        self.saving_path = saving_path
+        self.device = None  # set up with _setup_device() below
+        self.saving_path = None  # set up with _setup_path() below
         self.model_saving_strategy = model_saving_strategy
 
         self.model = None
@@ -82,7 +82,7 @@ class BaseModel(ABC):
         # set up saving_path to save the trained model and training logs
         self._setup_path(saving_path)
 
-    def _setup_device(self, device: Union[None, str, torch.device, list]):
+    def _setup_device(self, device: Union[None, str, torch.device, list]) -> None:
         if device is None:
             # if it is None, then use the first cuda device if cuda is available, otherwise use cpu
             if torch.cuda.is_available() and torch.cuda.device_count() > 0:
@@ -105,7 +105,6 @@ class BaseModel(ABC):
                 # parallely training on multiple CUDA devices
 
                 # ensure the list is not empty
-
                 device_list = []
                 for idx, d in enumerate(device):
                     if isinstance(d, str):
@@ -141,7 +140,7 @@ class BaseModel(ABC):
                 torch.cuda.is_available() and torch.cuda.device_count() > 0
             ), "You are trying to use CUDA for model training, but CUDA is not available in your environment."
 
-    def _setup_path(self, saving_path):
+    def _setup_path(self, saving_path) -> None:
         if isinstance(saving_path, str):
             # get the current time to append to saving_path,
             # so you can use the same saving_path to run multiple times
@@ -164,7 +163,7 @@ class BaseModel(ABC):
                 "saving_path not given. Model files and tensorboard file will not be saved."
             )
 
-    def _send_model_to_given_device(self):
+    def _send_model_to_given_device(self) -> None:
         if isinstance(self.device, list):
             # parallely training on multiple devices
             self.model = torch.nn.DataParallel(self.model, device_ids=self.device)
@@ -175,7 +174,7 @@ class BaseModel(ABC):
         else:
             self.model = self.model.to(self.device)
 
-    def _send_data_to_given_device(self, data):
+    def _send_data_to_given_device(self, data) -> Iterable:
         if isinstance(self.device, torch.device):  # single device
             data = map(lambda x: x.to(self.device), data)
         else:  # parallely training on multiple devices
@@ -214,7 +213,7 @@ class BaseModel(ABC):
         self,
         training_finished: bool = True,
         saving_name: str = None,
-    ):
+    ) -> None:
         """Automatically save the current model into a file if in need.
 
         Parameters
@@ -230,17 +229,17 @@ class BaseModel(ABC):
         """
         if self.saving_path is not None and self.model_saving_strategy is not None:
             name = self.__class__.__name__ if saving_name is None else saving_name
+            saving_path = os.path.join(self.saving_path, name)
             if not training_finished and self.model_saving_strategy == "better":
-                self.save_model(self.saving_path, name)
+                self.save(saving_path)
             elif training_finished and self.model_saving_strategy == "best":
-                self.save_model(self.saving_path, name)
-        else:
-            return
+                self.save(saving_path)
+            else:
+                pass
 
-    def save_model(
+    def save(
         self,
-        saving_dir: str,
-        file_name: str,
+        saving_path: str,
         overwrite: bool = False,
     ) -> None:
         """Save the model with current parameters to a disk file.
@@ -251,19 +250,19 @@ class BaseModel(ABC):
 
         Parameters
         ----------
-        saving_dir :
-            The given directory to save the model.
-
-        file_name :
-            The file name of the model to be saved.
+        saving_path :
+            The given path to save the model. The directory will be created if it does not exist.
 
         overwrite :
             Whether to overwrite the model file if the path already exists.
 
         """
-        file_name = (
-            file_name + ".pypots" if file_name.split(".")[-1] != "pypots" else file_name
-        )
+        # split the saving dir and file name from the given path
+        saving_dir, file_name = os.path.split(saving_path)
+        # add the suffix ".pypots" if not given
+        if file_name.split(".")[-1] != "pypots":
+            file_name += ".pypots"
+        # rejoin the path for saving the model
         saving_path = os.path.join(saving_dir, file_name)
 
         if os.path.exists(saving_path):
@@ -273,6 +272,7 @@ class BaseModel(ABC):
                 )
             else:
                 logger.error(f"File {saving_path} exists. Saving operation aborted.")
+
         try:
             create_dir_if_not_exist(saving_dir)
             if isinstance(self.device, list):
@@ -286,13 +286,13 @@ class BaseModel(ABC):
                 f'Failed to save the model to "{saving_path}" because of the below error! \n{e}'
             )
 
-    def load_model(self, model_path: str) -> None:
+    def load(self, path: str) -> None:
         """Load the saved model from a disk file.
 
         Parameters
         ----------
-        model_path :
-            Local path to a disk file saving trained model.
+        path :
+            The local path to a disk file saving the trained model.
 
         Notes
         -----
@@ -300,13 +300,13 @@ class BaseModel(ABC):
         you can load the model directly with torch.load(model_path).
 
         """
-        assert os.path.exists(model_path), f"Model file {model_path} does not exist."
+        assert os.path.exists(path), f"Model file {path} does not exist."
 
         try:
             if isinstance(self.device, torch.device):
-                loaded_model = torch.load(model_path, map_location=self.device)
+                loaded_model = torch.load(path, map_location=self.device)
             else:
-                loaded_model = torch.load(model_path)
+                loaded_model = torch.load(path)
             if isinstance(loaded_model, torch.nn.Module):
                 if isinstance(self.device, torch.device):
                     self.model.load_state_dict(loaded_model.state_dict())
@@ -316,7 +316,57 @@ class BaseModel(ABC):
                 self.model = loaded_model.model
         except Exception as e:
             raise e
-        logger.info(f"Model loaded successfully from {model_path}.")
+        logger.info(f"Model loaded successfully from {path}.")
+
+    def save_model(
+        self,
+        saving_path: str,
+        overwrite: bool = False,
+    ) -> None:
+        """Save the model with current parameters to a disk file.
+
+        A ``.pypots`` extension will be appended to the filename if it does not already have one.
+        Please note that such an extension is not necessary, but to indicate the saved model is from PyPOTS framework
+        so people can distinguish.
+
+        Parameters
+        ----------
+        saving_path :
+            The given path to save the model. The directory will be created if it does not exist.
+
+        overwrite :
+            Whether to overwrite the model file if the path already exists.
+
+        Warnings
+        --------
+        The method save_model is deprecated. Please use `save()` instead.
+        """
+        logger.warning(
+            "🚨DeprecationWarning: The method save_model is deprecated. Please use `save()` instead."
+        )
+        self.save(saving_path, overwrite)
+
+    def load_model(self, path: str) -> None:
+        """Load the saved model from a disk file.
+
+        Parameters
+        ----------
+        path :
+            The local path to a disk file saving the trained model.
+
+        Notes
+        -----
+        If the training environment and the deploying/test environment use the same type of device (GPU/CPU),
+        you can load the model directly with torch.load(model_path).
+
+        Warnings
+        --------
+        The method load_model is deprecated. Please use `load()` instead.
+        """
+        logger.warning(
+            "🚨DeprecationWarning: The method load_model is deprecated. Please use `load()` instead."
+        )
+        self.load(path)
 
     @abstractmethod
     def fit(
