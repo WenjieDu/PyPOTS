@@ -12,7 +12,7 @@ Welcome to PyPOTS docs!
 
 **A Python Toolbox for Data Mining on Partially-Observed Time Series**
 
-.. image:: https://img.shields.io/badge/Python-v3.7--3.11-E97040?logo=python&logoColor=white
+.. image:: https://img.shields.io/badge/Python->=v3.7-E97040?logo=python&logoColor=white
    :alt: Python version
    :target: https://docs.pypots.com/en/latest/install.html#reasons-of-version-limitations-on-dependencies
 
@@ -56,9 +56,9 @@ Welcome to PyPOTS docs!
    :alt: GitHub Testing
    :target: https://github.com/WenjieDu/PyPOTS/actions/workflows/testing_ci.yml
 
-.. image:: https://img.shields.io/badge/DOI-10.48550/arXiv.2305.18811-F8F7F0
-   :alt: arXiv DOI
-   :target: https://arxiv.org/abs/2305.18811
+.. image:: https://img.shields.io/readthedocs/pypots?logo=readthedocs&label=Docs&logoColor=white&color=395260
+   :alt: Docs building
+   :target: https://readthedocs.org/projects/pypots/builds
 
 .. image:: https://img.shields.io/endpoint?url=https://pypots.com/figs/downloads_badges/conda_pypots_downloads.json
    :alt: Conda downloads
@@ -67,6 +67,10 @@ Welcome to PyPOTS docs!
 .. image:: https://img.shields.io/endpoint?url=https://pypots.com/figs/downloads_badges/pypi_pypots_downloads.json
    :alt: PyPI downloads
    :target: https://pepy.tech/project/pypots
+
+.. image:: https://img.shields.io/badge/DOI-10.48550/arXiv.2305.18811-F8F7F0
+   :alt: arXiv DOI
+   :target: https://arxiv.org/abs/2305.18811
 
 .. image:: https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2FPyPOTS%2FPyPOTS&count_bg=%23009A0A&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=Visits%20since%20May%202022&edge_flat=false
    :alt: Visiting number
@@ -209,26 +213,6 @@ please cite it as below and 🌟star `PyPOTS repository <https://github.com/Wenj
    Wenjie Du. (2023).
    PyPOTS: a Python toolbox for data mining on Partially-Observed Time Series.
    arXiv, abs/2305.18811. https://doi.org/10.48550/arXiv.2305.18811
-
-or
-
-.. code-block:: bibtex
-   :linenos:
-
-   @inproceedings{du2023PyPOTS,
-   title={{PyPOTS: a Python toolbox for data mining on Partially-Observed Time Series}},
-   booktitle={9th SIGKDD workshop on Mining and Learning from Time Series (MiLeTS'23)},
-   author={Wenjie Du},
-   year={2023},
-   url={https://arxiv.org/abs/2305.18811},
-   }
-
-..
-
-   Wenjie Du. (2023).
-   PyPOTS: a Python toolbox for data mining on Partially-Observed Time Series.
-   In *9th SIGKDD workshop on Mining and Learning from Time Series (MiLeTS'23)*. https://arxiv.org/abs/2305.18811
-
 
 
 ❖ Contribution

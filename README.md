@@ -8,7 +8,7 @@
 
 <p align="center">
     <a href="https://docs.pypots.com/en/latest/install.html#reasons-of-version-limitations-on-dependencies">
-       <img alt="Python version" src="https://img.shields.io/badge/Python-v3.7--3.11-E97040?logo=python&logoColor=white">
+       <img alt="Python version" src="https://img.shields.io/badge/Python->=v3.7-E97040?logo=python&logoColor=white">
     </a>
     <a href="https://github.com/WenjieDu/PyPOTS">
         <img alt="powered by Pytorch" src="https://img.shields.io/badge/PyTorch-❤️-F8C6B5?logo=pytorch&logoColor=white">
@@ -40,8 +40,8 @@
     <a href="https://github.com/WenjieDu/PyPOTS/actions/workflows/testing_ci.yml">
         <img alt="GitHub Testing" src="https://img.shields.io/github/actions/workflow/status/wenjiedu/pypots/testing_ci.yml?logo=circleci&color=C8D8E1&label=CI">
     </a>
-    <a href="https://arxiv.org/abs/2305.18811">
-        <img alt="arXiv DOI" src="https://img.shields.io/badge/DOI-10.48550/arXiv.2305.18811-F8F7F0">
+    <a href="https://readthedocs.org/projects/pypots/builds">
+        <img alt="Docs building" src="https://img.shields.io/readthedocs/pypots?logo=readthedocs&label=Docs&logoColor=white&color=395260">
     </a>
     <a href="https://anaconda.org/conda-forge/pypots">
         <img alt="Conda downloads" src="https://img.shields.io/endpoint?url=https://pypots.com/figs/downloads_badges/conda_pypots_downloads.json">
@@ -49,7 +49,9 @@
     <a href="https://pepy.tech/project/pypots">
         <img alt="PyPI downloads" src="https://img.shields.io/endpoint?url=https://pypots.com/figs/downloads_badges/pypi_pypots_downloads.json">
     </a>
-
+    <a href="https://arxiv.org/abs/2305.18811">
+        <img alt="arXiv DOI" src="https://img.shields.io/badge/DOI-10.48550/arXiv.2305.18811-F8F7F0">
+    </a>
 </p>
 
 ⦿ `Motivation`: Due to all kinds of reasons like failure of collection sensors, communication error,
@@ -237,22 +239,6 @@ doi={10.48550/arXiv.2305.18811},
 > Wenjie Du. (2023).
 > PyPOTS: a Python toolbox for data mining on Partially-Observed Time Series.
 > arXiv, abs/2305.18811.https://arxiv.org/abs/2305.18811
-
-or
-
-``` bibtex
-@inproceedings{du2023PyPOTS,
-title={{PyPOTS: a Python toolbox for data mining on Partially-Observed Time Series}},
-booktitle={9th SIGKDD workshop on Mining and Learning from Time Series (MiLeTS'23)},
-author={Wenjie Du},
-year={2023},
-url={https://arxiv.org/abs/2305.18811},
-}
-```
-
-> Wenjie Du. (2023).
-> PyPOTS: a Python toolbox for data mining on Partially-Observed Time Series.
-> In *9th SIGKDD workshop on Mining and Learning from Time Series (MiLeTS'23)*. https://arxiv.org/abs/2305.18811
 
 
 ## ❖ Contribution
