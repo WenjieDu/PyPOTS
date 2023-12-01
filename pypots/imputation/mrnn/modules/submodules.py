@@ -38,7 +38,7 @@ class FCN_Regression(nn.Module):
         self.beta.data.uniform_(-stdv, stdv)
 
     def forward(self, x_t, m_t, target):
-        h_t = F.tanh(
+        h_t = torch.tanh(
             F.linear(x_t, self.U * self.m)
             + F.linear(target, self.V1 * self.m)
             + F.linear(m_t, self.V2)

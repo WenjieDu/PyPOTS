@@ -83,24 +83,20 @@ class _TransformerEncoder(nn.Module):
         X, masks = inputs["X"], inputs["missing_mask"]
         imputed_data, learned_presentation = self._process(inputs)
 
-        if not training:
-            # if not in training mode, return the classification result only
-            return {
-                "imputed_data": imputed_data,
-            }
-
-        ORT_loss = cal_mae(learned_presentation, X, masks)
-        MIT_loss = cal_mae(
-            learned_presentation, inputs["X_intact"], inputs["indicating_mask"]
-        )
-
-        # `loss` is always the item for backward propagating to update the model
-        loss = self.ORT_weight * ORT_loss + self.MIT_weight * MIT_loss
-
         results = {
             "imputed_data": imputed_data,
-            "ORT_loss": ORT_loss,
-            "MIT_loss": MIT_loss,
-            "loss": loss,
         }
+
+        # if in training mode, return results with losses
+        if training:
+            ORT_loss = cal_mae(learned_presentation, X, masks)
+            MIT_loss = cal_mae(
+                learned_presentation, inputs["X_intact"], inputs["indicating_mask"]
+            )
+            results["ORT_loss"] = ORT_loss
+            results["MIT_loss"] = MIT_loss
+            # `loss` is always the item for backward propagating to update the model
+            loss = self.ORT_weight * ORT_loss + self.MIT_weight * MIT_loss
+            results["loss"] = loss
+
         return results

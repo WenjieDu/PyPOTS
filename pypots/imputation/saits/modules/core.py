@@ -180,27 +180,23 @@ class _SAITS(nn.Module):
             "combining_weights": combining_weights,
             "imputed_data": imputed_data,
         }
-        if not training:
-            # if not in training mode, return the classification result only
-            return results
 
-        ORT_loss = 0
-        ORT_loss += self.customized_loss_func(X_tilde_1, X, masks)
-        ORT_loss += self.customized_loss_func(X_tilde_2, X, masks)
-        ORT_loss += self.customized_loss_func(X_tilde_3, X, masks)
-        ORT_loss /= 3
+        # if in training mode, return results with losses
+        if training:
+            ORT_loss = 0
+            ORT_loss += self.customized_loss_func(X_tilde_1, X, masks)
+            ORT_loss += self.customized_loss_func(X_tilde_2, X, masks)
+            ORT_loss += self.customized_loss_func(X_tilde_3, X, masks)
+            ORT_loss /= 3
 
-        MIT_loss = self.customized_loss_func(
-            X_tilde_3, inputs["X_intact"], inputs["indicating_mask"]
-        )
+            MIT_loss = self.customized_loss_func(
+                X_tilde_3, inputs["X_intact"], inputs["indicating_mask"]
+            )
 
-        # `loss` is always the item for backward propagating to update the model
-        loss = self.ORT_weight * ORT_loss + self.MIT_weight * MIT_loss
-
-        results["ORT_loss"] = ORT_loss
-        results["MIT_loss"] = MIT_loss
-
-        # will be used for backward propagating to update the model
-        results["loss"] = loss
+            results["ORT_loss"] = ORT_loss
+            results["MIT_loss"] = MIT_loss
+            # `loss` is always the item for backward propagating to update the model
+            loss = self.ORT_weight * ORT_loss + self.MIT_weight * MIT_loss
+            results["loss"] = loss
 
         return results
