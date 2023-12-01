@@ -65,6 +65,10 @@ class _CSDI(nn.Module):
             )
         elif schedule == "linear":
             self.beta = np.linspace(beta_start, beta_end, self.n_diffusion_steps)
+        else:
+            raise ValueError(
+                f"The argument schedule should be 'quad' or 'linear', but got {schedule}"
+            )
 
         self.alpha_hat = 1 - self.beta
         self.alpha = np.cumprod(self.alpha_hat)
@@ -72,7 +76,8 @@ class _CSDI(nn.Module):
             "alpha_torch", torch.tensor(self.alpha).float().unsqueeze(1).unsqueeze(1)
         )
 
-    def time_embedding(self, pos, d_model=128):
+    @staticmethod
+    def time_embedding(pos, d_model=128):
         pe = torch.zeros(pos.shape[0], pos.shape[1], d_model).to(pos.device)
         position = pos.unsqueeze(2)
         div_term = 1 / torch.pow(
@@ -82,7 +87,8 @@ class _CSDI(nn.Module):
         pe[:, :, 1::2] = torch.cos(position * div_term)
         return pe
 
-    def get_randmask(self, observed_mask):
+    @staticmethod
+    def get_rand_mask(observed_mask):
         rand_for_mask = torch.rand_like(observed_mask) * observed_mask
         rand_for_mask = rand_for_mask.reshape(len(rand_for_mask), -1)
         for i in range(len(observed_mask)):
@@ -97,14 +103,14 @@ class _CSDI(nn.Module):
         if for_pattern_mask is None:
             for_pattern_mask = observed_mask
         if self.target_strategy == "mix":
-            rand_mask = self.get_randmask(observed_mask)
+            rand_mask = self.get_rand_mask(observed_mask)
 
         cond_mask = observed_mask.clone()
         for i in range(len(cond_mask)):
             mask_choice = np.random.rand()
             if self.target_strategy == "mix" and mask_choice > 0.5:
                 cond_mask[i] = rand_mask[i]
-            else:  # draw another sample for histmask (i-1 corresponds to another sample)
+            else:  # draw another sample for hist mask (i-1 corresponds to another sample)
                 cond_mask[i] = cond_mask[i] * for_pattern_mask[i - 1]
         return cond_mask
 
@@ -241,23 +247,22 @@ class _CSDI(nn.Module):
                 observed_mask, for_pattern_mask=for_pattern_mask
             )
         else:
-            cond_mask = self.get_randmask(observed_mask)
+            cond_mask = self.get_rand_mask(observed_mask)
 
         side_info = self.get_side_info(observed_tp, cond_mask)
 
-        loss_func = self.calc_loss if training == 1 else self.calc_loss_valid
+        loss_func = self.calc_loss if training else self.calc_loss_valid
 
         # `loss` is always the item for backward propagating to update the model
         loss = loss_func(observed_data, cond_mask, observed_mask, side_info, training)
+        results = {"loss": loss}
 
-        results = {
-            "loss": loss,  # will be used for backward propagating to update the model
-        }
         if not training:
             samples = self.impute(
                 observed_data, cond_mask, side_info, n_sampling_times
-            )  # (B,nsample,K,L)
+            )  # (B,bz,K,L)
             imputation = samples.mean(dim=1)  # (B,K,L)
             imputed_data = observed_data + imputation * (1 - gt_mask)
             results["imputed_data"] = imputed_data.permute(0, 2, 1)  # (B,L,K)
+
         return results
