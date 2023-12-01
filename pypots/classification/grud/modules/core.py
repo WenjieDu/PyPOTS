@@ -91,18 +91,14 @@ class _GRUD(nn.Module):
 
         logits = self.classifier(hidden_state)
         classification_pred = torch.softmax(logits, dim=1)
+        results = {"classification_pred": classification_pred}
 
-        if not training:
-            # if not in training mode, return the classification result only
-            return {"classification_pred": classification_pred}
+        # if in training mode, return results with losses
+        if training:
+            torch.log(classification_pred)
+            classification_loss = F.nll_loss(
+                torch.log(classification_pred), inputs["label"]
+            )
+            results["loss"] = classification_loss
 
-        torch.log(classification_pred)
-        classification_loss = F.nll_loss(
-            torch.log(classification_pred), inputs["label"]
-        )
-
-        results = {
-            "classification_pred": classification_pred,
-            "loss": classification_loss,
-        }
         return results

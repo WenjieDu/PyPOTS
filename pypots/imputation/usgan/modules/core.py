@@ -56,29 +56,30 @@ class _USGAN(nn.Module):
             "discriminator",
         ], 'training_object should be "generator" or "discriminator"'
 
-        forward_X = inputs["forward"]["X"]
-        forward_missing_mask = inputs["forward"]["missing_mask"]
-        losses = {}
         results = self.generator(inputs, training=training)
-        inputs["discrimination"] = self.discriminator(forward_X, forward_missing_mask)
-        if not training:
-            # if only run imputation operation, then no need to calculate loss
-            return results
 
-        if training_object == "discriminator":
-            l_D = F.binary_cross_entropy_with_logits(
-                inputs["discrimination"], forward_missing_mask
-            )
-            losses["discrimination_loss"] = l_D
-        else:
-            inputs["discrimination"] = inputs["discrimination"].detach()
-            l_G = F.binary_cross_entropy_with_logits(
-                inputs["discrimination"],
-                1 - forward_missing_mask,
-                weight=1 - forward_missing_mask,
-            )
-            loss_gene = l_G + self.lambda_mse * results["loss"]
-            losses["generation_loss"] = loss_gene
+        # if in training mode, return results with losses
+        if training:
+            forward_X = inputs["forward"]["X"]
+            forward_missing_mask = inputs["forward"]["missing_mask"]
 
-        losses["imputed_data"] = results["imputed_data"]
-        return losses
+            inputs["discrimination"] = self.discriminator(
+                forward_X, forward_missing_mask
+            )
+
+            if training_object == "discriminator":
+                l_D = F.binary_cross_entropy_with_logits(
+                    inputs["discrimination"], forward_missing_mask
+                )
+                results["discrimination_loss"] = l_D
+            else:
+                inputs["discrimination"] = inputs["discrimination"].detach()
+                l_G = F.binary_cross_entropy_with_logits(
+                    inputs["discrimination"],
+                    1 - forward_missing_mask,
+                    weight=1 - forward_missing_mask,
+                )
+                loss_gene = l_G + self.lambda_mse * results["loss"]
+                results["generation_loss"] = loss_gene
+
+        return results
