@@ -18,7 +18,7 @@ from typing import Tuple
 import torch
 import torch.nn as nn
 
-from ....modules.self_attention import EncoderLayer, PositionalEncoding
+from ....modules.transformer import EncoderLayer, PositionalEncoding
 from ....utils.metrics import cal_mae
 
 
@@ -60,7 +60,7 @@ class _TransformerEncoder(nn.Module):
         )
 
         self.embedding = nn.Linear(actual_d_feature, d_model)
-        self.position_enc = PositionalEncoding(d_model, n_position=d_time)
+        self.position_enc = PositionalEncoding(d_model, n_positions=d_time)
         self.dropout = nn.Dropout(p=dropout)
         self.reduce_dim = nn.Linear(d_model, d_feature)
 

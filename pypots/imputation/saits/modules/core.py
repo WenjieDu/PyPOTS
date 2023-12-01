@@ -19,7 +19,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from ....modules.self_attention import EncoderLayer, PositionalEncoding
+from ....modules.transformer import EncoderLayer, PositionalEncoding
 from ....utils.metrics import cal_mae
 
 
@@ -81,7 +81,7 @@ class _SAITS(nn.Module):
         )
 
         self.dropout = nn.Dropout(p=dropout)
-        self.position_enc = PositionalEncoding(d_model, n_position=n_steps)
+        self.position_enc = PositionalEncoding(d_model, n_positions=n_steps)
         # for the 1st block
         self.embedding_1 = nn.Linear(actual_n_features, d_model)
         self.reduce_dim_z = nn.Linear(d_model, n_features)
