@@ -167,8 +167,9 @@ This functionality is implemented with the `Microsoft NNI <https://github.com/mi
 ============================== ================ ======================================================================================== ====== =========
 Task                           Type             Algorithm                                                                                Year   Reference
 ============================== ================ ======================================================================================== ====== =========
-Imputation                     Neural Net       SAITS (Self-Attention-based Imputation for Time Series)                                  2022   :cite:`du2023SAITS`
+Imputation                     Neural Net       SAITS (Self-Attention-based Imputation for Time Series)                                  2023   :cite:`du2023SAITS`
 Imputation                     Neural Net       Transformer                                                                              2017   :cite:`vaswani2017Transformer`, :cite:`du2023SAITS`
+Imputation                     Neural Net       TimesNet                                                                                 2023   :cite:`wu2023timesnet`
 Imputation                     Neural Net       US-GAN (Unsupervised GAN for Multivariate Time Series Imputation)                        2021   :cite:`miao2021SSGAN`
 Imputation                     Neural Net       CSDI (Conditional Score-based Diffusion Models for Probabilistic Time Series Imputation) 2021   :cite:`tashiro2021csdi`
 Imputation                     Neural Net       GP-VAE (Gaussian Process Variational Autoencoder)                                        2020   :cite:`fortuin2020GPVAEDeep`

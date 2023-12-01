@@ -262,18 +262,13 @@ class _Raindrop(nn.Module):
 
     def forward(self, inputs, training=True):
         classification_pred = self.classify(inputs)
-        if not training:
-            # if not in training mode, return the classification result only
-            return {"classification_pred": classification_pred}
+        results = {"classification_pred": classification_pred}
 
-        classification_loss = F.nll_loss(
-            torch.log(classification_pred), inputs["label"]
-        )
-
-        results = {
-            "prediction": classification_pred,
-            "loss": classification_loss
-            # 'distance': distance,
-        }
+        # if in training mode, return results with losses
+        if training:
+            classification_loss = F.nll_loss(
+                torch.log(classification_pred), inputs["label"]
+            )
+            results["loss"] = classification_loss
 
         return results

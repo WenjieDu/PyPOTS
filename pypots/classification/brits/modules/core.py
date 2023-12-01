@@ -89,37 +89,36 @@ class _BRITS(imputation_BRITS, nn.Module):
         ret_b = self._reverse(self.rits_b(inputs, "backward"))
 
         classification_pred = (ret_f["prediction"] + ret_b["prediction"]) / 2
-        if not training:
-            # if not in training mode, return the classification result only
-            return {"classification_pred": classification_pred}
+        results = {"classification_pred": classification_pred}
 
-        ret_f["classification_loss"] = F.nll_loss(
-            torch.log(ret_f["prediction"]), inputs["label"]
-        )
-        ret_b["classification_loss"] = F.nll_loss(
-            torch.log(ret_b["prediction"]), inputs["label"]
-        )
-        consistency_loss = self._get_consistency_loss(
-            ret_f["imputed_data"], ret_b["imputed_data"]
-        )
-        classification_loss = (
-            ret_f["classification_loss"] + ret_b["classification_loss"]
-        ) / 2
-        reconstruction_loss = (
-            ret_f["reconstruction_loss"] + ret_b["reconstruction_loss"]
-        ) / 2
+        # if in training mode, return results with losses
+        if training:
+            ret_f["classification_loss"] = F.nll_loss(
+                torch.log(ret_f["prediction"]), inputs["label"]
+            )
+            ret_b["classification_loss"] = F.nll_loss(
+                torch.log(ret_b["prediction"]), inputs["label"]
+            )
+            consistency_loss = self._get_consistency_loss(
+                ret_f["imputed_data"], ret_b["imputed_data"]
+            )
+            classification_loss = (
+                ret_f["classification_loss"] + ret_b["classification_loss"]
+            ) / 2
+            reconstruction_loss = (
+                ret_f["reconstruction_loss"] + ret_b["reconstruction_loss"]
+            ) / 2
 
-        loss = (
-            consistency_loss
-            + reconstruction_loss * self.reconstruction_weight
-            + classification_loss * self.classification_weight
-        )
+            results["consistency_loss"] = consistency_loss
+            results["classification_loss"] = classification_loss
+            results["reconstruction_loss"] = reconstruction_loss
 
-        results = {
-            "classification_pred": classification_pred,
-            "consistency_loss": consistency_loss,
-            "classification_loss": classification_loss,
-            "reconstruction_loss": reconstruction_loss,
-            "loss": loss,
-        }
+            # `loss` is always the item for backward propagating to update the model
+            loss = (
+                consistency_loss
+                + reconstruction_loss * self.reconstruction_weight
+                + classification_loss * self.classification_weight
+            )
+            results["loss"] = loss
+
         return results

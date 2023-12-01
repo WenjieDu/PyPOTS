@@ -19,7 +19,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from ....modules.self_attention import EncoderLayer, PositionalEncoding
+from ....modules.transformer import EncoderLayer, PositionalEncoding
 from ....utils.metrics import cal_mae
 
 
@@ -81,7 +81,7 @@ class _SAITS(nn.Module):
         )
 
         self.dropout = nn.Dropout(p=dropout)
-        self.position_enc = PositionalEncoding(d_model, n_position=n_steps)
+        self.position_enc = PositionalEncoding(d_model, n_positions=n_steps)
         # for the 1st block
         self.embedding_1 = nn.Linear(actual_n_features, d_model)
         self.reduce_dim_z = nn.Linear(d_model, n_features)
@@ -180,27 +180,23 @@ class _SAITS(nn.Module):
             "combining_weights": combining_weights,
             "imputed_data": imputed_data,
         }
-        if not training:
-            # if not in training mode, return the classification result only
-            return results
 
-        ORT_loss = 0
-        ORT_loss += self.customized_loss_func(X_tilde_1, X, masks)
-        ORT_loss += self.customized_loss_func(X_tilde_2, X, masks)
-        ORT_loss += self.customized_loss_func(X_tilde_3, X, masks)
-        ORT_loss /= 3
+        # if in training mode, return results with losses
+        if training:
+            ORT_loss = 0
+            ORT_loss += self.customized_loss_func(X_tilde_1, X, masks)
+            ORT_loss += self.customized_loss_func(X_tilde_2, X, masks)
+            ORT_loss += self.customized_loss_func(X_tilde_3, X, masks)
+            ORT_loss /= 3
 
-        MIT_loss = self.customized_loss_func(
-            X_tilde_3, inputs["X_intact"], inputs["indicating_mask"]
-        )
+            MIT_loss = self.customized_loss_func(
+                X_tilde_3, inputs["X_intact"], inputs["indicating_mask"]
+            )
 
-        # `loss` is always the item for backward propagating to update the model
-        loss = self.ORT_weight * ORT_loss + self.MIT_weight * MIT_loss
-
-        results["ORT_loss"] = ORT_loss
-        results["MIT_loss"] = MIT_loss
-
-        # will be used for backward propagating to update the model
-        results["loss"] = loss
+            results["ORT_loss"] = ORT_loss
+            results["MIT_loss"] = MIT_loss
+            # `loss` is always the item for backward propagating to update the model
+            loss = self.ORT_weight * ORT_loss + self.MIT_weight * MIT_loss
+            results["loss"] = loss
 
         return results

@@ -190,6 +190,7 @@ This functionality is implemented with the [Microsoft NNI](https://github.com/mi
 |        **Type**        |  **Abbr.**  |                                                                       **Full name of the algorithm/model**                                                                        | **Year** |
 |       Neural Net       |    SAITS    |                                                               Self-Attention-based Imputation for Time Series [^1]                                                                |   2023   |
 |       Neural Net       | Transformer | Attention is All you Need [^2];<br>Self-Attention-based Imputation for Time Series [^1];<br><sub>Note: proposed in [^2], and re-implemented as an imputation model in [^1].</sub> |   2017   |
+|       Neural Net       |  TimesNet   |                                                       Temporal 2D-Variation Modeling for General Time Series Analysis [^14]                                                       |   2023   |
 |       Neural Net       |    CSDI     |                                              Conditional Score-based Diffusion Models for Probabilistic Time Series Imputation [^12]                                              |   2021   |
 |       Neural Net       |   US-GAN    |                                                          Unsupervised GAN for Multivariate Time Series Imputation [^10]                                                           |   2021   |
 |       Neural Net       |   GP-VAE    |                                                                  Gaussian Process Variational Autoencoder [^11]                                                                   |   2020   |
@@ -302,6 +303,7 @@ PyPOTS community is open, transparent, and surely friendly. Let's work together 
 [^11]: Fortuin, V., Baranchuk, D., Raetsch, G. & Mandt, S. (2020). [GP-VAE: Deep Probabilistic Time Series Imputation](https://proceedings.mlr.press/v108/fortuin20a.html). *AISTATS 2020*.
 [^12]: Tashiro, Y., Song, J., Song, Y., & Ermon, S. (2021). [CSDI: Conditional Score-based Diffusion Models for Probabilistic Time Series Imputation](https://proceedings.neurips.cc/paper/2021/hash/cfe8504bda37b575c70ee1a8276f3486-Abstract.html). *NeurIPS 2021*.
 [^13]: Rubin, D. B. (1976). [Inference and missing data](https://academic.oup.com/biomet/article-abstract/63/3/581/270932). *Biometrika*.
+[^14]: Wu, H., Hu, T., Liu, Y., Zhou, H., Wang, J., & Long, M. (2023). [TimesNet: Temporal 2d-variation modeling for general time series analysis](https://openreview.net/forum?id=ju_Uqw384Oq). *ICLR 2023*
 
 
 <details>
