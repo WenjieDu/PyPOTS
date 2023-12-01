@@ -19,7 +19,7 @@ def get_torch_trans(heads=8, layers=1, channels=64):
     return nn.TransformerEncoder(encoder_layer, num_layers=layers)
 
 
-def Conv1d_with_init(in_channels, out_channels, kernel_size):
+def conv1d_with_init(in_channels, out_channels, kernel_size):
     layer = nn.Conv1d(in_channels, out_channels, kernel_size)
     nn.init.kaiming_normal_(layer.weight)
     return layer
@@ -46,7 +46,8 @@ class DiffusionEmbedding(nn.Module):
         x = F.silu(x)
         return x
 
-    def _build_embedding(self, n_steps, d_embedding=64):
+    @staticmethod
+    def _build_embedding(n_steps, d_embedding=64):
         steps = torch.arange(n_steps).unsqueeze(1)  # (T,1)
         frequencies = 10.0 ** (
             torch.arange(d_embedding) / (d_embedding - 1) * 4.0
@@ -62,9 +63,9 @@ class ResidualBlock(nn.Module):
     def __init__(self, d_side, n_channels, diffusion_embedding_dim, nheads):
         super().__init__()
         self.diffusion_projection = nn.Linear(diffusion_embedding_dim, n_channels)
-        self.cond_projection = Conv1d_with_init(d_side, 2 * n_channels, 1)
-        self.mid_projection = Conv1d_with_init(n_channels, 2 * n_channels, 1)
-        self.output_projection = Conv1d_with_init(n_channels, 2 * n_channels, 1)
+        self.cond_projection = conv1d_with_init(d_side, 2 * n_channels, 1)
+        self.mid_projection = conv1d_with_init(n_channels, 2 * n_channels, 1)
+        self.output_projection = conv1d_with_init(n_channels, 2 * n_channels, 1)
 
         self.time_layer = get_torch_trans(heads=nheads, layers=1, channels=n_channels)
         self.feature_layer = get_torch_trans(
@@ -135,9 +136,9 @@ class DiffusionModel(nn.Module):
             n_diffusion_steps=n_diffusion_steps,
             d_embedding=d_diffusion_embedding,
         )
-        self.input_projection = Conv1d_with_init(d_input, n_channels, 1)
-        self.output_projection1 = Conv1d_with_init(n_channels, n_channels, 1)
-        self.output_projection2 = Conv1d_with_init(n_channels, 1, 1)
+        self.input_projection = conv1d_with_init(d_input, n_channels, 1)
+        self.output_projection1 = conv1d_with_init(n_channels, n_channels, 1)
+        self.output_projection2 = conv1d_with_init(n_channels, 1, 1)
         nn.init.zeros_(self.output_projection2.weight)
 
         self.residual_layers = nn.ModuleList(

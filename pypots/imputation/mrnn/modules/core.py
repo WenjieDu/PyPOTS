@@ -52,7 +52,7 @@ class _MRNN(nn.Module):
             hidden_states_collector.append(hidden_state)
         return hidden_states_collector
 
-    def forward(self, inputs, training=True):
+    def forward(self, inputs: dict, training: bool = True) -> dict:
         hidden_states_f = self.gene_hidden_states(inputs, "forward")
         hidden_states_b = self.gene_hidden_states(inputs, "backward")[::-1]
 
@@ -82,16 +82,13 @@ class _MRNN(nn.Module):
         estimations = torch.cat(estimations, dim=1)
         imputed_data = masks * X + (1 - masks) * estimations
 
-        if not training:
-            # if not in training mode, return the classification result only
-            return {
-                "imputed_data": imputed_data,
-            }
-
-        reconstruction_loss /= self.seq_len
-
-        ret_dict = {
-            "loss": reconstruction_loss,
+        results = {
             "imputed_data": imputed_data,
         }
-        return ret_dict
+
+        # if in training mode, return results with losses
+        if training:
+            reconstruction_loss /= self.seq_len
+            results["loss"] = reconstruction_loss
+
+        return results

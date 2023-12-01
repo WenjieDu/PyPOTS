@@ -18,7 +18,7 @@ from typing import Tuple
 import torch
 import torch.nn as nn
 
-from ....modules.self_attention import EncoderLayer, PositionalEncoding
+from ....modules.transformer import EncoderLayer, PositionalEncoding
 from ....utils.metrics import cal_mae
 
 
@@ -60,7 +60,7 @@ class _TransformerEncoder(nn.Module):
         )
 
         self.embedding = nn.Linear(actual_d_feature, d_model)
-        self.position_enc = PositionalEncoding(d_model, n_position=d_time)
+        self.position_enc = PositionalEncoding(d_model, n_positions=d_time)
         self.dropout = nn.Dropout(p=dropout)
         self.reduce_dim = nn.Linear(d_model, d_feature)
 
@@ -83,24 +83,20 @@ class _TransformerEncoder(nn.Module):
         X, masks = inputs["X"], inputs["missing_mask"]
         imputed_data, learned_presentation = self._process(inputs)
 
-        if not training:
-            # if not in training mode, return the classification result only
-            return {
-                "imputed_data": imputed_data,
-            }
-
-        ORT_loss = cal_mae(learned_presentation, X, masks)
-        MIT_loss = cal_mae(
-            learned_presentation, inputs["X_intact"], inputs["indicating_mask"]
-        )
-
-        # `loss` is always the item for backward propagating to update the model
-        loss = self.ORT_weight * ORT_loss + self.MIT_weight * MIT_loss
-
         results = {
             "imputed_data": imputed_data,
-            "ORT_loss": ORT_loss,
-            "MIT_loss": MIT_loss,
-            "loss": loss,
         }
+
+        # if in training mode, return results with losses
+        if training:
+            ORT_loss = cal_mae(learned_presentation, X, masks)
+            MIT_loss = cal_mae(
+                learned_presentation, inputs["X_intact"], inputs["indicating_mask"]
+            )
+            results["ORT_loss"] = ORT_loss
+            results["MIT_loss"] = MIT_loss
+            # `loss` is always the item for backward propagating to update the model
+            loss = self.ORT_weight * ORT_loss + self.MIT_weight * MIT_loss
+            results["loss"] = loss
+
         return results
