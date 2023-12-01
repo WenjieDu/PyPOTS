@@ -270,7 +270,7 @@ class CRLI(BaseNNClusterer):
                     with torch.no_grad():
                         for idx, data in enumerate(val_loader):
                             inputs = self._assemble_input_for_validating(data)
-                            results = self.model.forward(inputs, return_loss=True)
+                            results = self.model.forward(inputs, training=True)
                             epoch_val_loss_G_collector.append(
                                 results["generation_loss"].sum().item()
                             )
@@ -424,7 +424,7 @@ class CRLI(BaseNNClusterer):
         with torch.no_grad():
             for idx, data in enumerate(test_loader):
                 inputs = self._assemble_input_for_testing(data)
-                inputs = self.model.forward(inputs, return_loss=False)
+                inputs = self.model.forward(inputs, training=False)
                 clustering_latent_collector.append(inputs["fcn_latent"])
                 if return_latent_vars:
                     imputation_collector.append(inputs["imputation_latent"])

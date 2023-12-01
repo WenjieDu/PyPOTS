@@ -109,61 +109,6 @@ class _GPVAE(nn.Module):
         assert num_dim > 2
         return self.decoder(torch.transpose(z, num_dim - 1, num_dim - 2))
 
-    def forward(self, inputs, training=True):
-        x = inputs["X"]
-        m_mask = inputs["missing_mask"]
-        x = x.repeat(self.M * self.K, 1, 1)
-
-        if self.prior is None:
-            self.prior = self._init_prior(device=x.device)
-
-        if m_mask is not None:
-            m_mask = m_mask.repeat(self.M * self.K, 1, 1)
-            m_mask = m_mask.type(torch.bool)
-
-        # pz = self.prior()
-        qz_x = self.encode(x)
-        z = qz_x.rsample()
-        px_z = self.decode(z)
-
-        nll = -px_z.log_prob(x)
-        nll = torch.where(torch.isfinite(nll), nll, torch.zeros_like(nll))
-        if m_mask is not None:
-            nll = torch.where(m_mask, nll, torch.zeros_like(nll))
-        nll = nll.sum(dim=(1, 2))
-
-        if self.K > 1:
-            kl = qz_x.log_prob(z) - self.prior.log_prob(z)
-            kl = torch.where(torch.isfinite(kl), kl, torch.zeros_like(kl))
-            kl = kl.sum(1)
-
-            weights = -nll - kl
-            weights = torch.reshape(weights, [self.M, self.K, -1])
-
-            elbo = torch.logsumexp(weights, dim=1)
-            elbo = elbo.mean()
-        else:
-            kl = self.kl_divergence(qz_x, self.prior)
-            kl = torch.where(torch.isfinite(kl), kl, torch.zeros_like(kl))
-            kl = kl.sum(1)
-
-            elbo = -nll - self.beta * kl
-            elbo = elbo.mean()
-
-        imputed_data = self.decode(self.encode(x).mean).mean * ~m_mask + x * m_mask
-
-        if not training:
-            # if not in training mode, return the classification result only
-            return {
-                "imputed_data": imputed_data,
-            }
-
-        results = {
-            "loss": -elbo.mean(),
-            "imputed_data": imputed_data,
-        }
-        return results
-
     @staticmethod
     def kl_divergence(a, b):
         return torch.distributions.kl.kl_divergence(a, b)
@@ -209,5 +154,56 @@ class _GPVAE(nn.Module):
             loc=torch.zeros(self.latent_dim, self.time_length, device=device),
             covariance_matrix=kernel_matrix_tiled.to(device),
         )
-
         return prior
+
+    def forward(self, inputs, training=True):
+        x = inputs["X"]
+        m_mask = inputs["missing_mask"]
+        x = x.repeat(self.M * self.K, 1, 1)
+
+        if self.prior is None:
+            self.prior = self._init_prior(device=x.device)
+
+        if m_mask is not None:
+            m_mask = m_mask.repeat(self.M * self.K, 1, 1)
+            m_mask = m_mask.type(torch.bool)
+
+        # pz = self.prior()
+        qz_x = self.encode(x)
+        z = qz_x.rsample()
+        px_z = self.decode(z)
+
+        nll = -px_z.log_prob(x)
+        nll = torch.where(torch.isfinite(nll), nll, torch.zeros_like(nll))
+        if m_mask is not None:
+            nll = torch.where(m_mask, nll, torch.zeros_like(nll))
+        nll = nll.sum(dim=(1, 2))
+
+        if self.K > 1:
+            kl = qz_x.log_prob(z) - self.prior.log_prob(z)
+            kl = torch.where(torch.isfinite(kl), kl, torch.zeros_like(kl))
+            kl = kl.sum(1)
+
+            weights = -nll - kl
+            weights = torch.reshape(weights, [self.M, self.K, -1])
+
+            elbo = torch.logsumexp(weights, dim=1)
+            elbo = elbo.mean()
+        else:
+            kl = self.kl_divergence(qz_x, self.prior)
+            kl = torch.where(torch.isfinite(kl), kl, torch.zeros_like(kl))
+            kl = kl.sum(1)
+
+            elbo = -nll - self.beta * kl
+            elbo = elbo.mean()
+
+        imputed_data = self.decode(self.encode(x).mean).mean * ~m_mask + x * m_mask
+        results = {
+            "imputed_data": imputed_data,
+        }
+
+        # if in training mode, return results with losses
+        if training:
+            results["loss"] = -elbo.mean()
+
+        return results

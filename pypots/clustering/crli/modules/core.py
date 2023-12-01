@@ -58,7 +58,7 @@ class _CRLI(nn.Module):
         self,
         inputs: dict,
         training_object: str = "generator",
-        return_loss: bool = True,
+        training: bool = True,
     ) -> dict:
         X = inputs["X"]
         missing_mask = inputs["missing_mask"]
@@ -76,7 +76,7 @@ class _CRLI(nn.Module):
         inputs["fcn_latent"] = fcn_latent
 
         # return results directly, skip loss calculation to reduce inference time
-        if not return_loss:
+        if not training:
             return inputs
 
         if training_object == "discriminator":
@@ -106,4 +106,5 @@ class _CRLI(nn.Module):
             l_kmeans = torch.trace(HTH) - torch.trace(FTHTHF)  # k-means loss
             loss_gene = l_G + l_pre + l_rec + l_kmeans * self.lambda_kmeans
             losses["generation_loss"] = loss_gene
+
         return losses

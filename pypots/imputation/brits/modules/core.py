@@ -316,27 +316,23 @@ class _BRITS(nn.Module):
 
         imputed_data = (ret_f["imputed_data"] + ret_b["imputed_data"]) / 2
 
-        if not training:
-            # if not in training mode, return the classification result only
-            return {
-                "imputed_data": imputed_data,
-            }
-
-        consistency_loss = self._get_consistency_loss(
-            ret_f["imputed_data"], ret_b["imputed_data"]
-        )
-
-        # `loss` is always the item for backward propagating to update the model
-        loss = (
-            consistency_loss
-            + ret_f["reconstruction_loss"]
-            + ret_b["reconstruction_loss"]
-        )
-
         results = {
             "imputed_data": imputed_data,
-            "consistency_loss": consistency_loss,
-            "loss": loss,  # will be used for backward propagating to update the model
         }
+
+        # if in training mode, return results with losses
+        if training:
+            consistency_loss = self._get_consistency_loss(
+                ret_f["imputed_data"], ret_b["imputed_data"]
+            )
+
+            # `loss` is always the item for backward propagating to update the model
+            loss = (
+                consistency_loss
+                + ret_f["reconstruction_loss"]
+                + ret_b["reconstruction_loss"]
+            )
+            results["consistency_loss"] = consistency_loss
+            results["loss"] = loss
 
         return results
