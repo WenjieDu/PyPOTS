@@ -76,7 +76,7 @@ class DatasetForCSDI(BaseDataset):
             if self.time_points is None
             else self.time_points[idx].to(torch.float32)
         )
-        gt_mask = indicating_mask
+        gt_mask = missing_mask
         for_pattern_mask = (
             gt_mask if self.for_pattern_mask is None else self.for_pattern_mask[idx]
         )
