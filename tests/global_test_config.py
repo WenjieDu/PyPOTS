@@ -11,6 +11,9 @@ import torch
 
 from pypots.data.generating import gene_random_walk
 from pypots.utils.logging import logger
+from pypots.utils.random import set_random_seed
+
+set_random_seed(2023)
 
 # Generate the unified data for testing and cache it first, DATA here is a singleton
 # Otherwise, file lock will cause bug if running test parallely with pytest-xdist.
