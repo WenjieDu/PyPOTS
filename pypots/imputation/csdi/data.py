@@ -69,14 +69,14 @@ class DatasetForCSDI(BaseDataset):
         X = self.X[idx].to(torch.float32)
         X_intact, X, missing_mask, indicating_mask = mcar(X, p=self.rate)
 
-        observed_data = X_intact
-        observed_mask = missing_mask + indicating_mask
+        observed_data = X_intact  # i.e. originally observed data
+        observed_mask = missing_mask + indicating_mask  # i.e. originally missing masks
         observed_tp = (
             torch.arange(0, self.n_steps, dtype=torch.float32)
             if self.time_points is None
             else self.time_points[idx].to(torch.float32)
         )
-        gt_mask = indicating_mask
+        gt_mask = missing_mask  # missing mask with ground truth masked for validation
         for_pattern_mask = (
             gt_mask if self.for_pattern_mask is None else self.for_pattern_mask[idx]
         )

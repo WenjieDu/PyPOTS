@@ -127,7 +127,9 @@ class _CSDI(nn.Module):
         )  # (K,emb)
         feature_embed = feature_embed.unsqueeze(0).unsqueeze(0).expand(B, L, -1, -1)
 
-        side_info = torch.cat([time_embed, feature_embed], dim=-1)  # (B,L,K,*)
+        side_info = torch.cat(
+            [time_embed, feature_embed], dim=-1
+        )  # (B,L,K,emb+d_feature_embedding)
         side_info = side_info.permute(0, 3, 2, 1)  # (B,*,K,L)
 
         if not self.is_unconditional:
