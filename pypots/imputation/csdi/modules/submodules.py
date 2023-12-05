@@ -38,14 +38,6 @@ class DiffusionEmbedding(nn.Module):
         self.projection1 = nn.Linear(d_embedding, d_projection)
         self.projection2 = nn.Linear(d_projection, d_projection)
 
-    def forward(self, diffusion_step):
-        x = self.embedding[diffusion_step]
-        x = self.projection1(x)
-        x = F.silu(x)
-        x = self.projection2(x)
-        x = F.silu(x)
-        return x
-
     @staticmethod
     def _build_embedding(n_steps, d_embedding=64):
         steps = torch.arange(n_steps).unsqueeze(1)  # (T,1)
@@ -57,6 +49,14 @@ class DiffusionEmbedding(nn.Module):
         table = steps * frequencies  # (T,dim)
         table = torch.cat([torch.sin(table), torch.cos(table)], dim=1)  # (T,dim*2)
         return table
+
+    def forward(self, diffusion_step: int):
+        x = self.embedding[diffusion_step]
+        x = self.projection1(x)
+        x = F.silu(x)
+        x = self.projection2(x)
+        x = F.silu(x)
+        return x
 
 
 class ResidualBlock(nn.Module):
@@ -73,7 +73,7 @@ class ResidualBlock(nn.Module):
         )
 
     def forward_time(self, y, base_shape):
-        B, channel, K, L = base_shape
+        B, channel, K, L = base_shape  # bz, 2, n_features, n_steps
         if L == 1:
             return y
         y = y.reshape(B, channel, K, L).permute(0, 2, 1, 3).reshape(B * K, channel, L)
@@ -82,7 +82,7 @@ class ResidualBlock(nn.Module):
         return y
 
     def forward_feature(self, y, base_shape):
-        B, channel, K, L = base_shape
+        B, channel, K, L = base_shape  # bz, 2, n_features, n_steps
         if K == 1:
             return y
         y = y.reshape(B, channel, K, L).permute(0, 3, 1, 2).reshape(B * L, channel, K)
@@ -98,8 +98,8 @@ class ResidualBlock(nn.Module):
         diffusion_emb = self.diffusion_projection(diffusion_emb).unsqueeze(
             -1
         )  # (B,channel,1)
-        y = x + diffusion_emb
 
+        y = x + diffusion_emb
         y = self.forward_time(y, base_shape)
         y = self.forward_feature(y, base_shape)  # (B,channel,K*L)
         y = self.mid_projection(y)  # (B,2*channel,K*L)
@@ -155,12 +155,12 @@ class DiffusionModel(nn.Module):
         self.n_channels = n_channels
 
     def forward(self, x, cond_info, diffusion_step):
-        B, input_dim, K, L = x.shape
+        B, input_dim, K, L = x.shape  # bz, 2, n_features, n_steps
 
         x = x.reshape(B, input_dim, K * L)
-        x = self.input_projection(x)
+        x = self.input_projection(x)  # bz, n_channels, n_features*n_steps
         x = F.relu(x)
-        x = x.reshape(B, self.n_channels, K, L)
+        x = x.reshape(B, self.n_channels, K, L)  # bz, n_channels, n_features, n_steps
 
         diffusion_emb = self.diffusion_embedding(diffusion_step)
 
