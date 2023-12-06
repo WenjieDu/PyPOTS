@@ -7,6 +7,7 @@ The global configurations for test cases.
 
 import os
 
+import numpy as np
 import torch
 
 from pypots.data.generating import gene_random_walk
@@ -33,10 +34,11 @@ RESULT_SAVING_DIR = "testing_results"
 
 
 # set DEVICES to None if no cuda device is available, to avoid initialization failed while importing test classes
-cuda_devices = [torch.device(i) for i in range(torch.cuda.device_count())]
-if len(cuda_devices) > 2:
+n_cuda_devices = torch.cuda.device_count()
+cuda_devices = [torch.device(i) for i in range(n_cuda_devices)]
+if n_cuda_devices > 1:
     logger.info("❗️Detected multiple cuda devices, using all of them to run testing.")
-    DEVICE = cuda_devices
+    DEVICE = cuda_devices[np.random.randint(n_cuda_devices)]
 else:
     # if having no multiple cuda devices, leave it as None to use the default device
     DEVICE = None
