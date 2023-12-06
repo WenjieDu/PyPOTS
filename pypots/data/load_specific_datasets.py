@@ -57,7 +57,7 @@ def load_specific_dataset(dataset_name: str, use_cache: bool = True) -> dict:
 
     """
     logger.info(
-        f"Loading the dataset {dataset_name} with TSDB (https://github.com/WenjieDu/Time_Series_Database)..."
+        f"Loading the dataset {dataset_name} with TSDB (https://github.com/WenjieDu/Time_Series_Data_Beans)..."
     )
     assert dataset_name in SUPPORTED_DATASETS, (
         f"Dataset {dataset_name} is not supported. "
