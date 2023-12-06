@@ -1,13 +1,13 @@
 """
 Learning rate schedulers available in PyPOTS. Their functionalities are the same with those in PyTorch,
 the only difference that is also why we implement them is that you don't have to pass according optimizers
-into them immediately while initializing them. Instead, you can pass them into pypots.optim.Optimizer
-after initialization and call their `init_scheduler()` method in pypots.optim.Optimizer.init_optimizer() to initialize
-schedulers together with optimizers.
+into them immediately while initializing them. Instead, you can pass them into :class:`pypots.optim.base.Optimizer`
+after initialization and call their `init_scheduler()` method in :class:`pypots.optim.base.Optimizer.init_optimizer()`
+to initialize schedulers together with optimizers.
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
-# License: GLP-v3
+# License: BSD-3-Clause
 
 from .lambda_lrs import LambdaLR
 from .multiplicative_lrs import MultiplicativeLR

@@ -1,10 +1,10 @@
 """
-The optimizer wrapper for PyTorch SGD.
+The optimizer wrapper for PyTorch SGD :class:`torch.optim.SGD`.
 
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
-# License: GLP-v3
+# License: BSD-3-Clause
 
 from typing import Iterable, Optional
 
@@ -15,25 +15,27 @@ from .lr_scheduler.base import LRScheduler
 
 
 class SGD(Optimizer):
-    """The optimizer wrapper for PyTorch SGD.
-    https://pytorch.org/docs/stable/generated/torch.optim.SGD.html#torch.optim.SGD
+    """The optimizer wrapper for PyTorch SGD :class:`torch.optim.SGD`.
 
     Parameters
     ----------
-    lr :
+    lr : float
         The learning rate of the optimizer.
 
-    momentum :
+    momentum : float
         Momentum factor.
 
-    weight_decay :
+    weight_decay : float
         Weight decay (L2 penalty).
 
-    dampening :
+    dampening : float
         Dampening for momentum.
 
-    nesterov :
+    nesterov : bool
         Whether to enable Nesterov momentum.
+
+    lr_scheduler : pypots.optim.lr_scheduler.base.LRScheduler
+        The learning rate scheduler of the optimizer.
 
     """
 

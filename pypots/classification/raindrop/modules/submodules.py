@@ -7,7 +7,7 @@ Graph-Guided Network for Irregularly Sampled Multivariate Time Series. ICLR 2022
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
-# License: GLP-v3
+# License: BSD-3-Clause
 
 
 import math
@@ -22,7 +22,7 @@ from torch.nn import Linear
 from torch.nn import init
 from torch.nn.parameter import Parameter
 
-from ...utils.logging import logger
+from ....utils.logging import logger
 
 try:
     from torch_geometric.nn.conv import MessagePassing

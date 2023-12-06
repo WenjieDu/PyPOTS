@@ -7,13 +7,13 @@ It is recommended to use **pip** or **conda** for PyPOTS installation as shown b
 
 .. code-block:: bash
 
-    # by pip
+    # via pip
     pip install pypots            # the first time installation
     pip install pypots --upgrade  # update pypots to the latest version
 
 .. code-block:: bash
 
-    # by conda
+    # via conda
     conda install -c conda-forge pypots  # the first time installation
     conda update  -c conda-forge pypots  # update pypots to the latest version
 
@@ -25,7 +25,7 @@ Alternatively, you can install from the latest source code which may be not offi
 
 Required Dependencies
 """""""""""""""""""""
-* Python >=3.7, <=3.10
+* Python >=3.7
 * numpy
 * scipy
 * scikit-learn
@@ -33,8 +33,8 @@ Required Dependencies
 * torch >=1.10.0
 * tensorboard
 * h5py
-* tsdb
-* pycorruptor
+* tsdb >=0.2
+* pygrinder >=0.2
 
 
 Optional Dependencies
@@ -49,8 +49,12 @@ Reasons of Version Limitations on Dependencies
 * **Why we need python >=3.7?**
 
 Python v3.6 and before versions have no longer been supported officially (check out `status of Python versions here <https://devguide.python.org/versions/>`_).
-Besides, PyG (torch-geometric) is available starting from Python v3.7, please refer to https://pytorch-geometric.readthedocs.io/en/latest/install/installation.html#installation-via-anaconda.
+Besides, PyG (torch-geometric) is available for Python >= v3.7 (refer to https://pytorch-geometric.readthedocs.io/en/latest/install/installation.html#installation-via-anaconda ).
 Although torch-geometric is an optional dependency, we hope things go smoothly when our users opt to install it.
+
+In addition, note that Python v.3.7 has also been in the end-of-life status since 2023-06-27.
+Hence, we will raise the minimum support Python version to v3.8 in the future.
+Please use Python v3.8 or above if possible also for the security of your development environment.
 
 * **Why we need pandas <2.0.0?**
 
@@ -61,6 +65,9 @@ see https://stackoverflow.com/questions/75953279/modulenotfounderror-no-module-n
 
 Because of pytorch_sparse, please refer to https://github.com/rusty1s/pytorch_sparse/issues/207#issuecomment-1065549338.
 
+* **Why we need TSDB and PyGrinder >=0.2?**
+Since v0.2, all libraries in PyPOTS ecosystem switch their licenses from GPL-v3-only to BSD-3-Clause, which has less constraints for users.
+Please refer to the discussion in issue `PyPOTS#227 <https://github.com/WenjieDu/PyPOTS/issues/227>`_ for details.
 
 Acceleration
 """"""""""""

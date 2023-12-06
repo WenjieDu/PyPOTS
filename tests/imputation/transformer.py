@@ -3,7 +3,7 @@ Test cases for Transformer imputation model.
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
-# License: GPL-v3
+# License: BSD-3-Clause
 
 
 import os.path
@@ -100,13 +100,11 @@ class TestTransformer(unittest.TestCase):
         check_tb_and_model_checkpoints_existence(self.transformer)
 
         # save the trained model into file, and check if the path exists
-        self.transformer.save_model(
-            saving_dir=self.saving_path, file_name=self.model_save_name
-        )
+        saved_model_path = os.path.join(self.saving_path, self.model_save_name)
+        self.transformer.save(saved_model_path)
 
         # test loading the saved model, not necessary, but need to test
-        saved_model_path = os.path.join(self.saving_path, self.model_save_name)
-        self.transformer.load_model(saved_model_path)
+        self.transformer.load(saved_model_path)
 
 
 if __name__ == "__main__":

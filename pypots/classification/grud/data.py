@@ -3,7 +3,7 @@ Dataset class for model GRU-D.
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
-# License: GLP-v3
+# License: BSD-3-Clause
 
 
 from typing import Union, Iterable
@@ -11,7 +11,7 @@ from typing import Union, Iterable
 import torch
 
 from ...data.base import BaseDataset
-from ...data.utils import torch_parse_delta
+from ...data.utils import _parse_delta_torch
 from ...imputation.locf import LOCF
 
 
@@ -55,7 +55,7 @@ class DatasetForGRUD(BaseDataset):
             self.missing_mask = (~torch.isnan(self.X)).to(torch.float32)
             self.X_filledLOCF = self.locf._locf_torch(self.X)
             self.X = torch.nan_to_num(self.X)
-            self.deltas = torch_parse_delta(self.missing_mask)
+            self.deltas = _parse_delta_torch(self.missing_mask)
             self.empirical_mean = torch.sum(
                 self.missing_mask * self.X, dim=[0, 1]
             ) / torch.sum(self.missing_mask, dim=[0, 1])
@@ -127,7 +127,7 @@ class DatasetForGRUD(BaseDataset):
         missing_mask = (~torch.isnan(X)).to(torch.float32)
         X_filledLOCF = self.locf._locf_torch(X.unsqueeze(dim=0)).squeeze()
         X = torch.nan_to_num(X)
-        deltas = torch_parse_delta(missing_mask)
+        deltas = _parse_delta_torch(missing_mask)
         empirical_mean = torch.sum(missing_mask * X, dim=[0]) / torch.sum(
             missing_mask, dim=[0]
         )

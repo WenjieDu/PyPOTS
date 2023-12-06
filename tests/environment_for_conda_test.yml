@@ -16,8 +16,8 @@ dependencies:
     - conda-forge::pandas <2.0.0
     - conda-forge::h5py
     - conda-forge::tensorboard
-    - conda-forge::pycorruptor
-    - conda-forge::tsdb
+    - conda-forge::pygrinder >=0.2
+    - conda-forge::tsdb >=0.2
     - conda-forge::protobuf <=4.21.12
     - pytorch::pytorch >=1.10.0
 

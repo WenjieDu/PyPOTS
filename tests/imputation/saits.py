@@ -3,7 +3,7 @@ Test cases for SAITS imputation model.
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
-# License: GPL-v3
+# License: BSD-3-Clause
 
 
 import os.path
@@ -63,12 +63,18 @@ class TestSAITS(unittest.TestCase):
 
     @pytest.mark.xdist_group(name="imputation-saits")
     def test_1_impute(self):
-        imputed_X = self.saits.impute(TEST_SET)
+        imputation_results = self.saits.predict(TEST_SET, return_latent_vars=True)
         assert not np.isnan(
-            imputed_X
+            imputation_results["imputation"]
         ).any(), "Output still has missing values after running impute()."
+        assert (
+            "latent_vars" in imputation_results.keys()
+        ), "Latent variables are not returned thought `return_latent_vars` is set as True."
+
         test_MAE = cal_mae(
-            imputed_X, DATA["test_X_intact"], DATA["test_X_indicating_mask"]
+            imputation_results["imputation"],
+            DATA["test_X_intact"],
+            DATA["test_X_indicating_mask"],
         )
         logger.info(f"SAITS test_MAE: {test_MAE}")
 
@@ -97,13 +103,11 @@ class TestSAITS(unittest.TestCase):
         check_tb_and_model_checkpoints_existence(self.saits)
 
         # save the trained model into file, and check if the path exists
-        self.saits.save_model(
-            saving_dir=self.saving_path, file_name=self.model_save_name
-        )
+        saved_model_path = os.path.join(self.saving_path, self.model_save_name)
+        self.saits.save(saved_model_path)
 
         # test loading the saved model, not necessary, but need to test
-        saved_model_path = os.path.join(self.saving_path, self.model_save_name)
-        self.saits.load_model(saved_model_path)
+        self.saits.load(saved_model_path)
 
 
 if __name__ == "__main__":

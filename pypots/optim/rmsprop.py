@@ -4,7 +4,7 @@ The optimizer wrapper for PyTorch RMSprop.
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
-# License: GLP-v3
+# License: BSD-3-Clause
 
 from typing import Iterable, Optional
 
@@ -15,28 +15,30 @@ from .lr_scheduler.base import LRScheduler
 
 
 class RMSprop(Optimizer):
-    """The optimizer wrapper for PyTorch RMSprop.
-    https://pytorch.org/docs/stable/generated/torch.optim.RMSprop.html#torch.optim.RMSprop
+    """The optimizer wrapper for PyTorch RMSprop :class:`torch.optim.RMSprop`.
 
     Parameters
     ----------
-    lr :
+    lr : float
         The learning rate of the optimizer.
 
-    momentum :
+    momentum : float
         Momentum factor.
 
-    alpha :
+    alpha : float
         Smoothing constant.
 
-    eps :
+    eps : float
         Term added to the denominator to improve numerical stability.
 
-    centered :
+    centered : bool
         If True, compute the centered RMSProp, the gradient is normalized by an estimation of its variance
 
-    weight_decay :
+    weight_decay : float
         Weight decay (L2 penalty).
+
+    lr_scheduler : pypots.optim.lr_scheduler.base.LRScheduler
+        The learning rate scheduler of the optimizer.
 
     """
 

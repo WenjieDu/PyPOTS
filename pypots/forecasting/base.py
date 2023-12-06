@@ -3,9 +3,9 @@ The base classes for PyPOTS forecasting models.
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
-# License: GPL-v3
+# License: BSD-3-Clause
 
-
+import os
 from abc import abstractmethod
 from typing import Optional, Union
 
@@ -15,6 +15,11 @@ from torch.utils.data import DataLoader
 
 from ..base import BaseModel, BaseNNModel
 from ..utils.logging import logger
+
+try:
+    import nni
+except ImportError:
+    pass
 
 
 class BaseForecaster(BaseModel):
@@ -89,6 +94,14 @@ class BaseForecaster(BaseModel):
         raise NotImplementedError
 
     @abstractmethod
+    def predict(
+        self,
+        test_set: Union[dict, str],
+        file_type: str = "h5py",
+    ) -> dict:
+        raise NotImplementedError
+
+    @abstractmethod
     def forecast(
         self,
         X: dict or str,
@@ -109,6 +122,8 @@ class BaseForecaster(BaseModel):
         array-like, shape [n_samples, prediction_horizon, n_features],
             Forecasting results.
         """
+        # this is for old API compatibility, will be removed in the future.
+        # Please implement predict() instead.
         raise NotImplementedError
 
 
@@ -288,14 +303,19 @@ class BaseNNForecaster(BaseNNModel):
                         self._save_log_into_tb_file(epoch, "validating", val_loss_dict)
 
                     logger.info(
-                        f"epoch {epoch}: "
-                        f"training loss {mean_train_loss:.4f}, "
-                        f"validating loss {mean_val_loss:.4f}"
+                        f"Epoch {epoch} - "
+                        f"training loss: {mean_train_loss:.4f}, "
+                        f"validating loss: {mean_val_loss:.4f}"
                     )
                     mean_loss = mean_val_loss
                 else:
-                    logger.info(f"epoch {epoch}: training loss {mean_train_loss:.4f}")
+                    logger.info(f"Epoch {epoch} - training loss: {mean_train_loss:.4f}")
                     mean_loss = mean_train_loss
+
+                if np.isnan(mean_loss):
+                    logger.warning(
+                        f"‼️ Attention: got NaN loss in Epoch {epoch}. This may lead to unexpected errors."
+                    )
 
                 if mean_loss < self.best_loss:
                     self.best_loss = mean_loss
@@ -303,11 +323,18 @@ class BaseNNForecaster(BaseNNModel):
                     self.patience = self.original_patience
                 else:
                     self.patience -= 1
-                    if self.patience == 0:
-                        logger.info(
-                            "Exceeded the training patience. Terminating the training procedure..."
-                        )
-                        break
+
+                if os.getenv("enable_tuning", False):
+                    nni.report_intermediate_result(mean_loss)
+                    if epoch == self.epochs - 1 or self.patience == 0:
+                        nni.report_final_result(self.best_loss)
+
+                if self.patience == 0:
+                    logger.info(
+                        "Exceeded the training patience. Terminating the training procedure..."
+                    )
+                    break
+
         except Exception as e:
             logger.error(f"Exception: {e}")
             if self.best_model_dict is None:
@@ -321,7 +348,7 @@ class BaseNNForecaster(BaseNNModel):
                     "If you don't want it, please try fit() again."
                 )
 
-        if np.equal(self.best_loss, float("inf")):
+        if np.isnan(self.best_loss):
             raise ValueError("Something is wrong. best_loss is Nan after training.")
 
         logger.info("Finished training.")
@@ -360,12 +387,24 @@ class BaseNNForecaster(BaseNNModel):
         raise NotImplementedError
 
     @abstractmethod
+    def predict(
+        self,
+        test_set: Union[dict, str],
+        file_type: str = "h5py",
+    ) -> dict:
+        raise NotImplementedError
+
+    @abstractmethod
     def forecast(
         self,
         X: dict or str,
         file_type: str = "h5py",
     ) -> np.ndarray:
         """Forecast the future the input with the trained model.
+
+        Warnings
+        --------
+        The method forecast is deprecated. Please use `predict()` instead.
 
         Parameters
         ----------
@@ -380,4 +419,6 @@ class BaseNNForecaster(BaseNNModel):
         array-like, shape [n_samples, prediction_horizon, n_features],
             Forecasting results.
         """
+        # this is for old API compatibility, will be removed in the future.
+        # Please implement predict() instead.
         raise NotImplementedError

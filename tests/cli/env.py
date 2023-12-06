@@ -3,7 +3,7 @@ Test cases for the functions and classes in package `pypots.cli.env`.
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
-# License: GLP-v3
+# License: BSD-3-Clause
 
 import os
 import unittest

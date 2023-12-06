@@ -7,7 +7,7 @@ GP-VAE: Deep probabilistic time series imputation. AISTATS. PMLR, 2020: 1651-166
 """
 
 # Created by Jun Wang <jwangfx@connect.ust.hk> and Wenjie Du <wenjay.du@gmail.com>
-# License: GPL-v3
+# License: BSD-3-Clause
 
 
 from typing import Union, Optional
@@ -15,243 +15,47 @@ from typing import Union, Optional
 import h5py
 import numpy as np
 import torch
-import torch.nn as nn
 from torch.utils.data import DataLoader
 
 from .data import DatasetForGPVAE
-from .modules import (
-    Encoder,
-    rbf_kernel,
-    diffusion_kernel,
-    matern_kernel,
-    cauchy_kernel,
-    Decoder,
-)
+from .modules import _GPVAE
 from ..base import BaseNNImputer
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
-
-
-class _GPVAE(nn.Module):
-    """model GPVAE with Gaussian Process prior
-
-    Parameters
-    ----------
-    input_dim : int,
-        the feature dimension of the input
-
-    time_length : int,
-        the length of each time series
-
-    latent_dim : int,
-        the feature dimension of the latent embedding
-
-    encoder_sizes : tuple,
-        the tuple of the network size in encoder
-
-    decoder_sizes : tuple,
-        the tuple of the network size in decoder
-
-    beta : float,
-        the weight of the KL divergence
-
-    M : int,
-        the number of Monte Carlo samples for ELBO estimation
-
-    K : int,
-        the number of importance weights for IWAE model
-
-    kernel : str,
-        the Gaussian Process kernel ["cauchy", "diffusion", "rbf", "matern"]
-
-    sigma : float,
-        the scale parameter for a kernel function
-
-    length_scale : float,
-        the length scale parameter for a kernel function
-
-    kernel_scales : int,
-        the number of different length scales over latent space dimensions
-    """
-
-    def __init__(
-        self,
-        input_dim,
-        time_length,
-        latent_dim,
-        encoder_sizes=(64, 64),
-        decoder_sizes=(64, 64),
-        beta=1,
-        M=1,
-        K=1,
-        kernel="cauchy",
-        sigma=1.0,
-        length_scale=7.0,
-        kernel_scales=1,
-        window_size=24,
-    ):
-        super().__init__()
-        self.kernel = kernel
-        self.sigma = sigma
-        self.length_scale = length_scale
-        self.kernel_scales = kernel_scales
-
-        self.input_dim = input_dim
-        self.time_length = time_length
-        self.latent_dim = latent_dim
-        self.beta = beta
-        self.encoder = Encoder(input_dim, latent_dim, encoder_sizes, window_size)
-        self.decoder = Decoder(latent_dim, input_dim, decoder_sizes)
-        self.M = M
-        self.K = K
-
-        # Precomputed KL components for efficiency
-        self.prior = self._init_prior()
-        # self.pz_scale_inv = None
-        # self.pz_scale_log_abs_determinant = None
-
-    def encode(self, x):
-        return self.encoder(x)
-
-    def decode(self, z):
-        if not torch.is_tensor(z):
-            z = torch.tensor(z).float()
-        num_dim = len(z.shape)
-        assert num_dim > 2
-        return self.decoder(torch.transpose(z, num_dim - 1, num_dim - 2))
-
-    def forward(self, inputs, training=True):
-        x = inputs["X"]
-        m_mask = inputs["missing_mask"]
-        x = x.repeat(self.M * self.K, 1, 1)
-        if m_mask is not None:
-            m_mask = m_mask.repeat(self.M * self.K, 1, 1)
-            m_mask = m_mask.type(torch.bool)
-
-        # pz = self.prior()
-        qz_x = self.encode(x)
-        z = qz_x.rsample()
-        px_z = self.decode(z)
-
-        nll = -px_z.log_prob(x)
-        nll = torch.where(torch.isfinite(nll), nll, torch.zeros_like(nll))
-        if m_mask is not None:
-            nll = torch.where(m_mask, nll, torch.zeros_like(nll))
-        nll = nll.sum(dim=(1, 2))
-
-        if self.K > 1:
-            kl = qz_x.log_prob(z) - self.prior.log_prob(z)
-            kl = torch.where(torch.isfinite(kl), kl, torch.zeros_like(kl))
-            kl = kl.sum(1)
-
-            weights = -nll - kl
-            weights = torch.reshape(weights, [self.M, self.K, -1])
-
-            elbo = torch.logsumexp(weights, dim=1)
-            elbo = elbo.mean()
-        else:
-            kl = self.kl_divergence(qz_x, self.prior)
-            kl = torch.where(torch.isfinite(kl), kl, torch.zeros_like(kl))
-            kl = kl.sum(1)
-
-            elbo = -nll - self.beta * kl
-            elbo = elbo.mean()
-
-        imputed_data = self.decode(self.encode(x).mean).mean * ~m_mask + x * m_mask
-
-        if not training:
-            # if not in training mode, return the classification result only
-            return {
-                "imputed_data": imputed_data,
-            }
-
-        results = {
-            "loss": -elbo.mean(),
-            "imputed_data": imputed_data,
-        }
-        return results
-
-    @staticmethod
-    def kl_divergence(a, b):
-        # TODO: different from the author's implementation
-        return torch.distributions.kl.kl_divergence(a, b)
-
-    def _init_prior(self):
-        # Compute kernel matrices for each latent dimension
-        kernel_matrices = []
-        for i in range(self.kernel_scales):
-            if self.kernel == "rbf":
-                kernel_matrices.append(
-                    rbf_kernel(self.time_length, self.length_scale / 2**i)
-                )
-            elif self.kernel == "diffusion":
-                kernel_matrices.append(
-                    diffusion_kernel(self.time_length, self.length_scale / 2**i)
-                )
-            elif self.kernel == "matern":
-                kernel_matrices.append(
-                    matern_kernel(self.time_length, self.length_scale / 2**i)
-                )
-            elif self.kernel == "cauchy":
-                kernel_matrices.append(
-                    cauchy_kernel(
-                        self.time_length, self.sigma, self.length_scale / 2**i
-                    )
-                )
-
-        # Combine kernel matrices for each latent dimension
-        tiled_matrices = []
-        total = 0
-        for i in range(self.kernel_scales):
-            if i == self.kernel_scales - 1:
-                multiplier = self.latent_dim - total
-            else:
-                multiplier = int(np.ceil(self.latent_dim / self.kernel_scales))
-                total += multiplier
-            tiled_matrices.append(
-                torch.unsqueeze(kernel_matrices[i], 0).repeat(multiplier, 1, 1)
-            )
-        kernel_matrix_tiled = torch.cat(tiled_matrices)
-        assert len(kernel_matrix_tiled) == self.latent_dim
-        prior = torch.distributions.MultivariateNormal(
-            loc=torch.zeros(self.latent_dim, self.time_length),
-            covariance_matrix=kernel_matrix_tiled,
-        )
-
-        return prior
+from ...utils.logging import logger
 
 
 class GPVAE(BaseNNImputer):
-    """The PyTorch implementation of the GPVAE model :cite:``.
+    """The PyTorch implementation of the GPVAE model :cite:`fortuin2020GPVAEDeep`.
 
     Parameters
     ----------
-    beta:
+    beta: float
         The weight of KL divergence in EBLO.
 
-    kernel:
+    kernel: str
         The type of kernel function chosen in the Gaussain Process Proir. ["cauchy", "diffusion", "rbf", "matern"]
 
-    batch_size :
+    batch_size : int
         The batch size for training and evaluating the model.
 
-    epochs :
+    epochs : int
         The number of epochs for training the model.
 
-    patience :
+    patience : int
         The patience for the early-stopping mechanism. Given a positive integer, the training process will be
         stopped when the model does not perform better after that number of epochs.
         Leaving it default as None will disable the early-stopping.
 
-    optimizer :
+    optimizer : pypots.optim.base.Optimizer
         The optimizer for model training.
         If not given, will use a default Adam optimizer.
 
-    num_workers :
+    num_workers : int
         The number of subprocesses to use for data loading.
         `0` means data loading will be in the main process, i.e. there won't be subprocesses.
 
-    device :
+    device : :class:`torch.device` or list
         The device for the model to run on. It can be a string, a :class:`torch.device` object, or a list of them.
         If not given, will try to use CUDA devices first (will use the default CUDA device if there are multiple),
         then CPUs, considering CUDA and CPU are so far the main devices for people to train ML models.
@@ -259,24 +63,24 @@ class GPVAE(BaseNNImputer):
         model will be parallely trained on the multiple devices (so far only support parallel training on CUDA devices).
         Other devices like Google TPU and Apple Silicon accelerator MPS may be added in the future.
 
-    saving_path :
+    saving_path : str
         The path for automatically saving model checkpoints and tensorboard files (i.e. loss values recorded during
         training into a tensorboard file). Will not save if not given.
 
-    model_saving_strategy :
+    model_saving_strategy : str
         The strategy to save model checkpoints. It has to be one of [None, "best", "better"].
         No model will be saved when it is set as None.
         The "best" strategy will only automatically save the best model after the training finished.
         The "better" strategy will automatically save the model during training whenever the model performs
         better than in previous epochs.
 
-    Attributes
+    References
     ----------
-    model : :class:`torch.nn.Module`
-        The underlying GPVAE model.
-
-    optimizer : :class:`pypots.optim.Optimizer`
-        The optimizer for model training.
+    .. [1] `Fortuin, V., Baranchuk, D., Raetsch, G. &amp; Mandt, S.. (2020).
+        "GP-VAE: Deep Probabilistic Time Series Imputation".
+        <i>Proceedings of the Twenty Third International Conference on Artificial Intelligence and Statistics</i>,
+        in <i>Proceedings of Machine Learning Research</i> 108:1651-1661
+        <https://proceedings.mlr.press/v108/fortuin20a.html>`_
 
     """
 
@@ -404,6 +208,16 @@ class GPVAE(BaseNNImputer):
                         "X_intact": hf["X_intact"][:],
                         "indicating_mask": hf["indicating_mask"][:],
                     }
+
+            # check if X_intact contains missing values
+            if np.isnan(val_set["X_intact"]).any():
+                val_set["X_intact"] = np.nan_to_num(val_set["X_intact"], nan=0)
+                logger.warning(
+                    "X_intact shouldn't contain missing data but has NaN values. "
+                    "PyPOTS has imputed them with zeros by default to start the training for now. "
+                    "Please double-check your data if you have concerns over this operation."
+                )
+
             val_set = DatasetForGPVAE(val_set, return_labels=False, file_type=file_type)
             val_loader = DataLoader(
                 val_set,
@@ -420,13 +234,13 @@ class GPVAE(BaseNNImputer):
         # Step 3: save the model if necessary
         self._auto_save_model_if_necessary(training_finished=True)
 
-    def impute(
+    def predict(
         self,
-        X: Union[dict, str],
+        test_set: Union[dict, str],
         file_type="h5py",
-    ) -> np.ndarray:
+    ) -> dict:
         self.model.eval()  # set the model as eval status to freeze it.
-        test_set = DatasetForGPVAE(X, return_labels=False, file_type=file_type)
+        test_set = DatasetForGPVAE(test_set, return_labels=False, file_type=file_type)
         test_loader = DataLoader(
             test_set,
             batch_size=self.batch_size,
@@ -442,5 +256,39 @@ class GPVAE(BaseNNImputer):
                 imputed_data = results["imputed_data"]
                 imputation_collector.append(imputed_data)
 
-        imputation_collector = torch.cat(imputation_collector)
-        return imputation_collector.cpu().detach().numpy()
+        imputation = torch.cat(imputation_collector).cpu().detach().numpy()
+        result_dict = {
+            "imputation": imputation,
+        }
+        return result_dict
+
+    def impute(
+        self,
+        X: Union[dict, str],
+        file_type="h5py",
+    ) -> np.ndarray:
+        """Impute missing values in the given data with the trained model.
+
+        Warnings
+        --------
+        The method impute is deprecated. Please use `predict()` instead.
+
+        Parameters
+        ----------
+        X :
+            The data samples for testing, should be array-like of shape [n_samples, sequence length (time steps),
+            n_features], or a path string locating a data file, e.g. h5 file.
+
+        file_type :
+            The type of the given file if X is a path string.
+
+        Returns
+        -------
+        array-like, shape [n_samples, sequence length (time steps), n_features],
+            Imputed data.
+        """
+        logger.warning(
+            "🚨DeprecationWarning: The method impute is deprecated. Please use `predict` instead."
+        )
+        results_dict = self.predict(X, file_type=file_type)
+        return results_dict["imputation"]

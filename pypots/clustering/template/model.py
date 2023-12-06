@@ -6,7 +6,7 @@ Refer to the paper "Your paper citation".
 """
 
 # Created by Your Name <Your contact email> TODO: modify the author information.
-# License: GLP-v3
+# License: BSD-3-Clause
 
 from typing import Union, Optional
 
@@ -101,5 +101,9 @@ class YourNewModel(BaseNNClusterer):
     ) -> None:
         raise NotImplementedError
 
-    def cluster(self, X: Union[dict, str], file_type: str = "h5py") -> np.ndarray:
+    def predict(
+        self,
+        test_set: Union[dict, str],
+        file_type: str = "h5py",
+    ) -> dict:
         raise NotImplementedError

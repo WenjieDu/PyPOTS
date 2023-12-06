@@ -4,7 +4,7 @@ The optimizer wrapper for PyTorch Adagrad.
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
-# License: GLP-v3
+# License: BSD-3-Clause
 
 from typing import Iterable, Optional
 
@@ -15,25 +15,27 @@ from .lr_scheduler.base import LRScheduler
 
 
 class Adagrad(Optimizer):
-    """The optimizer wrapper for PyTorch Adagrad.
-    https://pytorch.org/docs/stable/generated/torch.optim.Adagrad.html#torch.optim.Adagrad
+    """The optimizer wrapper for PyTorch Adagrad :class:`torch.optim.Adagrad`.
 
     Parameters
     ----------
-    lr :
+    lr : float
         The learning rate of the optimizer.
 
-    lr_decay :
+    lr_decay : float
         Learning rate decay.
 
-    weight_decay :
+    weight_decay : float
         Weight decay (L2 penalty).
 
-    eps :
+    eps : float
         Term added to the denominator to improve numerical stability.
 
-    initial_accumulator_value :
+    initial_accumulator_value : float
         A floating point value. Starting value for the accumulators, must be positive.
+
+    lr_scheduler : pypots.optim.lr_scheduler.base.LRScheduler
+        The learning rate scheduler of the optimizer.
 
     """
 

@@ -3,7 +3,7 @@ Test cases for VaDER clustering model.
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
-# License: GLP-v3
+# License: BSD-3-Clause
 
 
 import os
@@ -22,6 +22,7 @@ from pypots.utils.metrics import (
 from tests.clustering.config import (
     EPOCHS,
     TRAIN_SET,
+    VAL_SET,
     TEST_SET,
     RESULT_SAVING_DIR_FOR_CLUSTERING,
 )
@@ -58,19 +59,17 @@ class TestVaDER(unittest.TestCase):
 
     @pytest.mark.xdist_group(name="clustering-vader")
     def test_0_fit(self):
-        self.vader.fit(TRAIN_SET)
+        self.vader.fit(TRAIN_SET, VAL_SET)
 
     @pytest.mark.xdist_group(name="clustering-vader")
     def test_1_cluster(self):
         try:
-            clustering, latent_collector = self.vader.cluster(
-                TEST_SET, return_latent=True
-            )
+            clustering_results = self.vader.predict(TEST_SET, return_latent_vars=True)
             external_metrics = cal_external_cluster_validation_metrics(
-                clustering, DATA["test_y"]
+                clustering_results["clustering"], DATA["test_y"]
             )
             internal_metrics = cal_internal_cluster_validation_metrics(
-                latent_collector["z"], DATA["test_y"]
+                clustering_results["latent_vars"]["z"], DATA["test_y"]
             )
             logger.info(f"{external_metrics}")
             logger.info(f"{internal_metrics}")
@@ -105,13 +104,11 @@ class TestVaDER(unittest.TestCase):
         check_tb_and_model_checkpoints_existence(self.vader)
 
         # save the trained model into file, and check if the path exists
-        self.vader.save_model(
-            saving_dir=self.saving_path, file_name=self.model_save_name
-        )
+        saved_model_path = os.path.join(self.saving_path, self.model_save_name)
+        self.vader.save(saved_model_path)
 
         # test loading the saved model, not necessary, but need to test
-        saved_model_path = os.path.join(self.saving_path, self.model_save_name)
-        self.vader.load_model(saved_model_path)
+        self.vader.load(saved_model_path)
 
 
 if __name__ == "__main__":

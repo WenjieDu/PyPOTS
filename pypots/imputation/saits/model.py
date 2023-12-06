@@ -11,185 +11,23 @@ Partial implementation uses code from https://github.com/WenjieDu/SAITS.
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
-# License: GPL-v3
+# License: BSD-3-Clause
 
-from typing import Tuple, Union, Optional
+from typing import Union, Optional, Callable
 
 import h5py
 import numpy as np
 import torch
-import torch.nn as nn
-import torch.nn.functional as F
 from torch.utils.data import DataLoader
 
 from .data import DatasetForSAITS
+from .modules import _SAITS
 from ..base import BaseNNImputer
 from ...data.base import BaseDataset
-from ...modules.self_attention import EncoderLayer, PositionalEncoding
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
+from ...utils.logging import logger
 from ...utils.metrics import cal_mae
-
-
-class _SAITS(nn.Module):
-    def __init__(
-        self,
-        n_layers: int,
-        n_steps: int,
-        n_features: int,
-        d_model: int,
-        d_inner: int,
-        n_heads: int,
-        d_k: int,
-        d_v: int,
-        dropout: float,
-        attn_dropout: float,
-        diagonal_attention_mask: bool = True,
-        ORT_weight: float = 1,
-        MIT_weight: float = 1,
-    ):
-        super().__init__()
-        self.n_layers = n_layers
-        self.n_steps = n_steps
-        # concatenate the feature vector and missing mask, hence double the number of features
-        actual_n_features = n_features * 2
-        self.diagonal_attention_mask = diagonal_attention_mask
-        self.ORT_weight = ORT_weight
-        self.MIT_weight = MIT_weight
-
-        self.layer_stack_for_first_block = nn.ModuleList(
-            [
-                EncoderLayer(
-                    d_model,
-                    d_inner,
-                    n_heads,
-                    d_k,
-                    d_v,
-                    dropout,
-                    attn_dropout,
-                )
-                for _ in range(n_layers)
-            ]
-        )
-        self.layer_stack_for_second_block = nn.ModuleList(
-            [
-                EncoderLayer(
-                    d_model,
-                    d_inner,
-                    n_heads,
-                    d_k,
-                    d_v,
-                    dropout,
-                    attn_dropout,
-                )
-                for _ in range(n_layers)
-            ]
-        )
-
-        self.dropout = nn.Dropout(p=dropout)
-        self.position_enc = PositionalEncoding(d_model, n_position=n_steps)
-        # for the 1st block
-        self.embedding_1 = nn.Linear(actual_n_features, d_model)
-        self.reduce_dim_z = nn.Linear(d_model, n_features)
-        # for the 2nd block
-        self.embedding_2 = nn.Linear(actual_n_features, d_model)
-        self.reduce_dim_beta = nn.Linear(d_model, n_features)
-        self.reduce_dim_gamma = nn.Linear(n_features, n_features)
-        # for delta decay factor
-        self.weight_combine = nn.Linear(n_features + n_steps, n_features)
-
-    def _process(
-        self,
-        inputs: dict,
-        diagonal_attention_mask: Optional[torch.Tensor] = None,
-    ) -> Tuple[torch.Tensor, list]:
-        X, masks = inputs["X"], inputs["missing_mask"]
-
-        # first DMSA block
-        input_X_for_first = torch.cat([X, masks], dim=2)
-        input_X_for_first = self.embedding_1(input_X_for_first)
-        enc_output = self.dropout(
-            self.position_enc(input_X_for_first)
-        )  # namely, term e in the math equation
-        for encoder_layer in self.layer_stack_for_first_block:
-            enc_output, _ = encoder_layer(enc_output, diagonal_attention_mask)
-
-        X_tilde_1 = self.reduce_dim_z(enc_output)
-        X_prime = masks * X + (1 - masks) * X_tilde_1
-
-        # second DMSA block
-        input_X_for_second = torch.cat([X_prime, masks], dim=2)
-        input_X_for_second = self.embedding_2(input_X_for_second)
-        enc_output = self.position_enc(
-            input_X_for_second
-        )  # namely term alpha in math algo
-        attn_weights = None
-        for encoder_layer in self.layer_stack_for_second_block:
-            enc_output, attn_weights = encoder_layer(enc_output)
-
-        X_tilde_2 = self.reduce_dim_gamma(F.relu(self.reduce_dim_beta(enc_output)))
-
-        # attention-weighted combine
-        attn_weights = attn_weights.squeeze(dim=1)  # namely term A_hat in Eq.
-        if len(attn_weights.shape) == 4:
-            # if having more than 1 head, then average attention weights from all heads
-            attn_weights = torch.transpose(attn_weights, 1, 3)
-            attn_weights = attn_weights.mean(dim=3)
-            attn_weights = torch.transpose(attn_weights, 1, 2)
-
-        # namely term eta
-        combining_weights = torch.sigmoid(
-            self.weight_combine(torch.cat([masks, attn_weights], dim=2))
-        )
-        # combine X_tilde_1 and X_tilde_2
-        X_tilde_3 = (1 - combining_weights) * X_tilde_2 + combining_weights * X_tilde_1
-        # replace non-missing part with original data
-        X_c = masks * X + (1 - masks) * X_tilde_3
-
-        return X_c, [X_tilde_1, X_tilde_2, X_tilde_3]
-
-    def forward(
-        self, inputs: dict, diagonal_attention_mask: bool = False, training: bool = True
-    ) -> dict:
-        X, masks = inputs["X"], inputs["missing_mask"]
-
-        if (training and self.diagonal_attention_mask) or (
-            (not training) and diagonal_attention_mask
-        ):
-            diagonal_attention_mask = (1 - torch.eye(self.n_steps)).to(X.device)
-            # then broadcast on the batch axis
-            diagonal_attention_mask = diagonal_attention_mask.unsqueeze(0)
-        else:
-            diagonal_attention_mask = None
-
-        imputed_data, [X_tilde_1, X_tilde_2, X_tilde_3] = self._process(
-            inputs, diagonal_attention_mask
-        )
-
-        if not training:
-            # if not in training mode, return the classification result only
-            return {
-                "imputed_data": imputed_data,
-            }
-
-        ORT_loss = 0
-        ORT_loss += cal_mae(X_tilde_1, X, masks)
-        ORT_loss += cal_mae(X_tilde_2, X, masks)
-        ORT_loss += cal_mae(X_tilde_3, X, masks)
-        ORT_loss /= 3
-
-        MIT_loss = cal_mae(X_tilde_3, inputs["X_intact"], inputs["indicating_mask"])
-
-        # `loss` is always the item for backward propagating to update the model
-        loss = self.ORT_weight * ORT_loss + self.MIT_weight * MIT_loss
-
-        results = {
-            "imputed_data": imputed_data,
-            "ORT_loss": ORT_loss,
-            "MIT_loss": MIT_loss,
-            "loss": loss,  # will be used for backward propagating to update the model
-        }
-        return results
 
 
 class SAITS(BaseNNImputer):
@@ -280,13 +118,12 @@ class SAITS(BaseNNImputer):
         The "better" strategy will automatically save the model during training whenever the model performs
         better than in previous epochs.
 
-    Attributes
+    References
     ----------
-    model : :class:`torch.nn.Module`
-        The underlying SAITS model.
-
-    optimizer : :class:`pypots.optim.Optimizer`
-        The optimizer for model training.
+    .. [1] `Du, Wenjie, David Côté, and Yan Liu.
+        "Saits: Self-attention-based imputation for time series".
+        Expert Systems with Applications 219 (2023): 119619.
+        <https://arxiv.org/pdf/2202.08516>`_
 
     """
 
@@ -308,6 +145,7 @@ class SAITS(BaseNNImputer):
         batch_size: int = 32,
         epochs: int = 100,
         patience: Optional[int] = None,
+        customized_loss_func: Callable = cal_mae,
         optimizer: Optional[Optimizer] = Adam(),
         num_workers: int = 0,
         device: Optional[Union[str, torch.device, list]] = None,
@@ -357,6 +195,9 @@ class SAITS(BaseNNImputer):
         )
         self._print_model_size()
         self._send_model_to_given_device()
+
+        # set up the loss function
+        self.customized_loss_func = customized_loss_func
 
         # set up the optimizer
         self.optimizer = optimizer
@@ -424,6 +265,15 @@ class SAITS(BaseNNImputer):
                         "indicating_mask": hf["indicating_mask"][:],
                     }
 
+            # check if X_intact contains missing values
+            if np.isnan(val_set["X_intact"]).any():
+                val_set["X_intact"] = np.nan_to_num(val_set["X_intact"], nan=0)
+                logger.warning(
+                    "X_intact shouldn't contain missing data but has NaN values. "
+                    "PyPOTS has imputed them with zeros by default to start the training for now. "
+                    "Please double-check your data if you have concerns over this operation."
+                )
+
             val_set = BaseDataset(val_set, return_labels=False, file_type=file_type)
             val_loader = DataLoader(
                 val_set,
@@ -440,15 +290,45 @@ class SAITS(BaseNNImputer):
         # Step 3: save the model if necessary
         self._auto_save_model_if_necessary(training_finished=True)
 
-    def impute(
+    def predict(
         self,
-        X: Union[dict, str],
+        test_set: Union[dict, str],
         file_type: str = "h5py",
         diagonal_attention_mask: bool = True,
-    ) -> np.ndarray:
+        return_latent_vars: bool = False,
+    ) -> dict:
+        """Make predictions for the input data with the trained model.
+
+        Parameters
+        ----------
+        test_set : dict or str
+            The dataset for model validating, should be a dictionary including keys as 'X',
+            or a path string locating a data file supported by PyPOTS (e.g. h5 file).
+            If it is a dict, X should be array-like of shape [n_samples, sequence length (time steps), n_features],
+            which is time-series data for validating, can contain missing values, and y should be array-like of shape
+            [n_samples], which is classification labels of X.
+            If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
+            key-value pairs like a dict, and it has to include keys as 'X' and 'y'.
+
+        file_type : str
+            The type of the given file if test_set is a path string.
+
+        diagonal_attention_mask : bool
+            Whether to apply a diagonal attention mask to the self-attention mechanism in the testing stage.
+
+        return_latent_vars : bool
+            Whether to return the latent variables in SAITS, e.g. attention weights of two DMSA blocks and
+            the weight matrix from the combination block, etc.
+
+        Returns
+        -------
+        result_dict : dict,
+            The dictionary containing the clustering results and latent variables if necessary.
+
+        """
         # Step 1: wrap the input data with classes Dataset and DataLoader
         self.model.eval()  # set the model as eval status to freeze it.
-        test_set = BaseDataset(X, return_labels=False, file_type=file_type)
+        test_set = BaseDataset(test_set, return_labels=False, file_type=file_type)
         test_loader = DataLoader(
             test_set,
             batch_size=self.batch_size,
@@ -456,6 +336,9 @@ class SAITS(BaseNNImputer):
             num_workers=self.num_workers,
         )
         imputation_collector = []
+        first_DMSA_attn_weights_collector = []
+        second_DMSA_attn_weights_collector = []
+        combining_weights_collector = []
 
         # Step 2: process the data with the model
         with torch.no_grad():
@@ -464,10 +347,67 @@ class SAITS(BaseNNImputer):
                 results = self.model.forward(
                     inputs, diagonal_attention_mask, training=False
                 )
-                imputed_data = results["imputed_data"]
-                imputation_collector.append(imputed_data)
+                imputation_collector.append(results["imputed_data"])
+
+                if return_latent_vars:
+                    first_DMSA_attn_weights_collector.append(
+                        results["first_DMSA_attn_weights"].cpu().numpy()
+                    )
+                    second_DMSA_attn_weights_collector.append(
+                        results["second_DMSA_attn_weights"].cpu().numpy()
+                    )
+                    combining_weights_collector.append(
+                        results["combining_weights"].cpu().numpy()
+                    )
 
         # Step 3: output collection and return
-        imputation_collector = torch.cat(imputation_collector)
-        imputed_data = imputation_collector.cpu().detach().numpy()
-        return imputed_data
+        imputation = torch.cat(imputation_collector).cpu().detach().numpy()
+        result_dict = {
+            "imputation": imputation,
+        }
+
+        if return_latent_vars:
+            latent_var_collector = {
+                "first_DMSA_attn_weights": np.concatenate(
+                    first_DMSA_attn_weights_collector
+                ),
+                "second_DMSA_attn_weights": np.concatenate(
+                    second_DMSA_attn_weights_collector
+                ),
+                "combining_weights": np.concatenate(combining_weights_collector),
+            }
+            result_dict["latent_vars"] = latent_var_collector
+
+        return result_dict
+
+    def impute(
+        self,
+        X: Union[dict, str],
+        file_type="h5py",
+    ) -> np.ndarray:
+        """Impute missing values in the given data with the trained model.
+
+        Warnings
+        --------
+        The method impute is deprecated. Please use `predict()` instead.
+
+        Parameters
+        ----------
+        X :
+            The data samples for testing, should be array-like of shape [n_samples, sequence length (time steps),
+            n_features], or a path string locating a data file, e.g. h5 file.
+
+        file_type :
+            The type of the given file if X is a path string.
+
+        Returns
+        -------
+        array-like, shape [n_samples, sequence length (time steps), n_features],
+            Imputed data.
+        """
+        logger.warning(
+            "🚨DeprecationWarning: The method impute is deprecated. Please use `predict` instead."
+        )
+
+        results_dict = self.predict(X, file_type=file_type)
+        return results_dict["imputation"]

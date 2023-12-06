@@ -3,7 +3,7 @@
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
-# License: GLP-v3
+# License: BSD-3-Clause
 
 
 import math
@@ -13,7 +13,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.nn.parameter import Parameter
 
-from ...imputation.brits.modules import FeatureRegression
+from ...brits.modules import FeatureRegression
 
 
 class FCN_Regression(nn.Module):
@@ -38,7 +38,7 @@ class FCN_Regression(nn.Module):
         self.beta.data.uniform_(-stdv, stdv)
 
     def forward(self, x_t, m_t, target):
-        h_t = F.tanh(
+        h_t = torch.tanh(
             F.linear(x_t, self.U * self.m)
             + F.linear(target, self.V1 * self.m)
             + F.linear(m_t, self.V2)

@@ -29,7 +29,7 @@ PyPOTS exists thanks to all the nice people (sorted by contribution time) who co
 `PyPOTS <https://github.com/WenjieDu/PyPOTS/graphs/contributors>`_,
 `BrewPOTS <https://github.com/WenjieDu/BrewPOTS/graphs/contributors>`_,
 `TSDB <https://github.com/WenjieDu/TSDB/graphs/contributors>`_,
-`PyCorruptor <https://github.com/WenjieDu/PyCorruptor/graphs/contributors>`_):
+`PyGrinder <https://github.com/WenjieDu/PyGrinder/graphs/contributors>`_):
 
 .. raw:: html
 

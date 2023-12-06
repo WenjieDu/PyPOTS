@@ -3,7 +3,7 @@ The base class for PyPOTS imputation models.
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
-# License: GPL-v3
+# License: BSD-3-Clause
 
 
 import os
@@ -96,6 +96,14 @@ class BaseImputer(BaseModel):
         raise NotImplementedError
 
     @abstractmethod
+    def predict(
+        self,
+        test_set: Union[dict, str],
+        file_type: str = "h5py",
+    ) -> dict:
+        raise NotImplementedError
+
+    @abstractmethod
     def impute(
         self,
         X: Union[dict, str],
@@ -117,6 +125,8 @@ class BaseImputer(BaseModel):
         array-like, shape [n_samples, sequence length (time steps), n_features],
             Imputed data.
         """
+        # this is for old API compatibility, will be removed in the future.
+        # Please implement predict() instead.
         raise NotImplementedError
 
 
@@ -304,14 +314,19 @@ class BaseNNImputer(BaseNNModel):
                         self._save_log_into_tb_file(epoch, "validating", val_loss_dict)
 
                     logger.info(
-                        f"epoch {epoch}: "
-                        f"training loss {mean_train_loss:.4f}, "
-                        f"validating loss {mean_val_loss:.4f}"
+                        f"Epoch {epoch} - "
+                        f"training loss: {mean_train_loss:.4f}, "
+                        f"validating loss: {mean_val_loss:.4f}"
                     )
                     mean_loss = mean_val_loss
                 else:
-                    logger.info(f"epoch {epoch}: training loss {mean_train_loss:.4f}")
+                    logger.info(f"Epoch {epoch} - training loss: {mean_train_loss:.4f}")
                     mean_loss = mean_train_loss
+
+                if np.isnan(mean_loss):
+                    logger.warning(
+                        f"‼️ Attention: got NaN loss in Epoch {epoch}. This may lead to unexpected errors."
+                    )
 
                 if mean_loss < self.best_loss:
                     self.best_loss = mean_loss
@@ -325,7 +340,7 @@ class BaseNNImputer(BaseNNModel):
                 else:
                     self.patience -= 1
 
-                if os.getenv("enable_nni", False):
+                if os.getenv("enable_tuning", False):
                     nni.report_intermediate_result(mean_loss)
                     if epoch == self.epochs - 1 or self.patience == 0:
                         nni.report_final_result(self.best_loss)
@@ -349,7 +364,7 @@ class BaseNNImputer(BaseNNModel):
                     "If you don't want it, please try fit() again."
                 )
 
-        if np.equal(self.best_loss.item(), float("inf")):
+        if np.isnan(self.best_loss):
             raise ValueError("Something is wrong. best_loss is Nan after training.")
 
         logger.info("Finished training.")
@@ -388,12 +403,24 @@ class BaseNNImputer(BaseNNModel):
         raise NotImplementedError
 
     @abstractmethod
+    def predict(
+        self,
+        test_set: Union[dict, str],
+        file_type: str = "h5py",
+    ) -> dict:
+        raise NotImplementedError
+
+    @abstractmethod
     def impute(
         self,
         X: Union[dict, str],
         file_type: str = "h5py",
     ) -> np.ndarray:
         """Impute missing values in the given data with the trained model.
+
+        Warnings
+        --------
+        The method impute is deprecated. Please use `predict()` instead.
 
         Parameters
         ----------
@@ -409,4 +436,6 @@ class BaseNNImputer(BaseNNModel):
         array-like, shape [n_samples, sequence length (time steps), n_features],
             Imputed data.
         """
+        # this is for old API compatibility, will be removed in the future.
+        # Please implement predict() instead.
         raise NotImplementedError
