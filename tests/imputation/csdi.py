@@ -63,6 +63,7 @@ class TestCSDI(unittest.TestCase):
     @pytest.mark.xdist_group(name="imputation-csdi")
     def test_1_impute(self):
         imputed_X = self.csdi.predict(TEST_SET)["imputation"]
+        imputed_X = imputed_X.mean(axis=1)  # mean over sampling times
         assert not np.isnan(
             imputed_X
         ).any(), "Output still has missing values after running impute()."
