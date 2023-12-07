@@ -13,6 +13,7 @@ Partial implementation uses code from the official implementation https://github
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
+import os
 from typing import Union, Optional
 
 import h5py
@@ -20,12 +21,18 @@ import numpy as np
 import torch
 from torch.utils.data import DataLoader
 
+try:
+    import nni
+except ImportError:
+    pass
+
 from .data import DatasetForCSDI
 from .modules import _CSDI
 from ..base import BaseNNImputer
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
 from ...utils.logging import logger
+from ...utils.metrics import cal_mse
 
 
 class CSDI(BaseNNImputer):
@@ -204,6 +211,120 @@ class CSDI(BaseNNImputer):
 
     def _assemble_input_for_testing(self, data) -> dict:
         return self._assemble_input_for_validating(data)
+
+    def _train_model(
+        self,
+        training_loader: DataLoader,
+        val_loader: DataLoader = None,
+    ) -> None:
+        # each training starts from the very beginning, so reset the loss and model dict here
+        self.best_loss = float("inf")
+        self.best_model_dict = None
+
+        try:
+            training_step = 0
+            for epoch in range(self.epochs):
+                self.model.train()
+                epoch_train_loss_collector = []
+                for idx, data in enumerate(training_loader):
+                    training_step += 1
+                    inputs = self._assemble_input_for_training(data)
+                    self.optimizer.zero_grad()
+                    results = self.model.forward(inputs)
+                    # use sum() before backward() in case of multi-gpu training
+                    results["loss"].sum().backward()
+                    self.optimizer.step()
+                    epoch_train_loss_collector.append(results["loss"].sum().item())
+
+                    # save training loss logs into the tensorboard file for every step if in need
+                    if self.summary_writer is not None:
+                        self._save_log_into_tb_file(training_step, "training", results)
+
+                # mean training loss of the current epoch
+                mean_train_loss = np.mean(epoch_train_loss_collector)
+
+                if val_loader is not None:
+                    self.model.eval()
+                    imputation_collector = []
+                    with torch.no_grad():
+                        for idx, data in enumerate(val_loader):
+                            inputs = self._assemble_input_for_validating(data)
+                            results = self.model.forward(inputs, training=False)
+                            imputed_data = results["imputed_data"].mean(axis=1)
+                            imputation_collector.append(imputed_data)
+
+                    imputation_collector = torch.cat(imputation_collector)
+                    imputation_collector = imputation_collector.cpu().detach().numpy()
+
+                    mean_val_loss = cal_mse(
+                        imputation_collector,
+                        val_loader.dataset.data["X_intact"],
+                        val_loader.dataset.data["indicating_mask"],
+                        # the above val_loader.dataset.data is a dict containing the validation dataset
+                    )
+
+                    # save validating loss logs into the tensorboard file for every epoch if in need
+                    if self.summary_writer is not None:
+                        val_loss_dict = {
+                            "imputation_loss": mean_val_loss,
+                        }
+                        self._save_log_into_tb_file(epoch, "validating", val_loss_dict)
+
+                    logger.info(
+                        f"Epoch {epoch} - "
+                        f"training loss: {mean_train_loss:.4f}, "
+                        f"validating loss: {mean_val_loss:.4f}"
+                    )
+                    mean_loss = mean_val_loss
+                else:
+                    logger.info(f"Epoch {epoch} - training loss: {mean_train_loss:.4f}")
+                    mean_loss = mean_train_loss
+
+                if np.isnan(mean_loss):
+                    logger.warning(
+                        f"‼️ Attention: got NaN loss in Epoch {epoch}. This may lead to unexpected errors."
+                    )
+
+                if mean_loss < self.best_loss:
+                    self.best_loss = mean_loss
+                    self.best_model_dict = self.model.state_dict()
+                    self.patience = self.original_patience
+                    # save the model if necessary
+                    self._auto_save_model_if_necessary(
+                        training_finished=False,
+                        saving_name=f"{self.__class__.__name__}_epoch{epoch}_loss{mean_loss}",
+                    )
+                else:
+                    self.patience -= 1
+
+                if os.getenv("enable_tuning", False):
+                    nni.report_intermediate_result(mean_loss)
+                    if epoch == self.epochs - 1 or self.patience == 0:
+                        nni.report_final_result(self.best_loss)
+
+                if self.patience == 0:
+                    logger.info(
+                        "Exceeded the training patience. Terminating the training procedure..."
+                    )
+                    break
+
+        except Exception as e:
+            logger.error(f"Exception: {e}")
+            if self.best_model_dict is None:
+                raise RuntimeError(
+                    "Training got interrupted. Model was not trained. Please investigate the error printed above."
+                )
+            else:
+                RuntimeWarning(
+                    "Training got interrupted. Please investigate the error printed above.\n"
+                    "Model got trained and will load the best checkpoint so far for testing.\n"
+                    "If you don't want it, please try fit() again."
+                )
+
+        if np.isnan(self.best_loss):
+            raise ValueError("Something is wrong. best_loss is Nan after training.")
+
+        logger.info("Finished training.")
 
     def fit(
         self,
