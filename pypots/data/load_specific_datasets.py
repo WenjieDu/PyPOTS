@@ -66,6 +66,6 @@ def load_specific_dataset(dataset_name: str, use_cache: bool = True) -> dict:
         f"https://github.com/WenjieDu/PyPOTS/issues"
     )
     logger.info(f"Starting preprocessing {dataset_name}...")
-    data = tsdb.load_dataset(dataset_name, use_cache)
+    data = tsdb.load(dataset_name, use_cache)
     data = PREPROCESSING_FUNC[dataset_name](data)
     return data
