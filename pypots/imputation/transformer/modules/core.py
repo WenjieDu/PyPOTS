@@ -19,7 +19,7 @@ import torch
 import torch.nn as nn
 
 from ....modules.transformer import EncoderLayer, PositionalEncoding
-from ....utils.metrics import cal_mae
+from ....utils.metrics import calc_mae
 
 
 class _TransformerEncoder(nn.Module):
@@ -89,8 +89,8 @@ class _TransformerEncoder(nn.Module):
 
         # if in training mode, return results with losses
         if training:
-            ORT_loss = cal_mae(learned_presentation, X, masks)
-            MIT_loss = cal_mae(
+            ORT_loss = calc_mae(learned_presentation, X, masks)
+            MIT_loss = calc_mae(
                 learned_presentation, inputs["X_intact"], inputs["indicating_mask"]
             )
             results["ORT_loss"] = ORT_loss

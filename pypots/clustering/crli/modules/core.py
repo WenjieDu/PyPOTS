@@ -18,7 +18,7 @@ import torch.nn.functional as F
 from sklearn.cluster import KMeans
 
 from .submodules import Generator, Decoder, Discriminator
-from ....utils.metrics import cal_mse
+from ....utils.metrics import calc_mse
 
 
 class _CRLI(nn.Module):
@@ -89,8 +89,8 @@ class _CRLI(nn.Module):
             l_G = F.binary_cross_entropy_with_logits(
                 inputs["discrimination"], 1 - missing_mask, weight=1 - missing_mask
             )
-            l_pre = cal_mse(inputs["imputation_latent"], X, missing_mask)
-            l_rec = cal_mse(inputs["reconstruction"], X, missing_mask)
+            l_pre = calc_mse(inputs["imputation_latent"], X, missing_mask)
+            l_rec = calc_mse(inputs["reconstruction"], X, missing_mask)
             HTH = torch.matmul(inputs["fcn_latent"], inputs["fcn_latent"].permute(1, 0))
 
             if (

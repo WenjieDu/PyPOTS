@@ -21,7 +21,7 @@ from .submodules import (
     PeepholeLSTMCell,
     ImplicitImputation,
 )
-from ....utils.metrics import cal_mse
+from ....utils.metrics import calc_mse
 
 
 class _VaDER(nn.Module):
@@ -184,7 +184,7 @@ class _VaDER(nn.Module):
         }
 
         # calculate the reconstruction loss
-        unscaled_reconstruction_loss = cal_mse(X_reconstructed, X, missing_mask)
+        unscaled_reconstruction_loss = calc_mse(X_reconstructed, X, missing_mask)
         reconstruction_loss = (
             unscaled_reconstruction_loss
             * self.n_steps
