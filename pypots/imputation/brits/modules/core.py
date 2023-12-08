@@ -21,7 +21,7 @@ import torch.nn as nn
 
 from .submodules import FeatureRegression
 from ....modules.rnn import TemporalDecay
-from ....utils.metrics import cal_mae
+from ....utils.metrics import calc_mae
 
 
 class RITS(nn.Module):
@@ -150,17 +150,17 @@ class RITS(nn.Module):
 
             hidden_states = hidden_states * gamma_h  # decay hidden states
             x_h = self.hist_reg(hidden_states)
-            reconstruction_loss += cal_mae(x_h, x, m)
+            reconstruction_loss += calc_mae(x_h, x, m)
 
             x_c = m * x + (1 - m) * x_h
 
             z_h = self.feat_reg(x_c)
-            reconstruction_loss += cal_mae(z_h, x, m)
+            reconstruction_loss += calc_mae(z_h, x, m)
 
             alpha = torch.sigmoid(self.combining_weight(torch.cat([gamma_x, m], dim=1)))
 
             c_h = alpha * z_h + (1 - alpha) * x_h
-            reconstruction_loss += cal_mae(c_h, x, m)
+            reconstruction_loss += calc_mae(c_h, x, m)
 
             c_c = m * x + (1 - m) * c_h
             estimations.append(c_h.unsqueeze(dim=1))

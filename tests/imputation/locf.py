@@ -14,7 +14,7 @@ import torch
 
 from pypots.imputation import LOCF
 from pypots.utils.logging import logger
-from pypots.utils.metrics import cal_mae
+from pypots.utils.metrics import calc_mae
 from tests.global_test_config import (
     DATA,
 )
@@ -37,7 +37,7 @@ class TestLOCF(unittest.TestCase):
         assert not np.isnan(
             test_X_imputed_zero
         ).any(), "Output still has missing values after running impute()."
-        test_MAE = cal_mae(
+        test_MAE = calc_mae(
             test_X_imputed_zero, DATA["test_X_intact"], DATA["test_X_indicating_mask"]
         )
         logger.info(f"LOCF (zero) test_MAE: {test_MAE}")
@@ -46,7 +46,7 @@ class TestLOCF(unittest.TestCase):
         assert not np.isnan(
             test_X_imputed_backward
         ).any(), "Output still has missing values after running impute()."
-        test_MAE = cal_mae(
+        test_MAE = calc_mae(
             test_X_imputed_backward,
             DATA["test_X_intact"],
             DATA["test_X_indicating_mask"],
@@ -57,7 +57,7 @@ class TestLOCF(unittest.TestCase):
         assert not np.isnan(
             test_X_imputed_mean
         ).any(), "Output still has missing values after running impute()."
-        test_MAE = cal_mae(
+        test_MAE = calc_mae(
             test_X_imputed_mean,
             DATA["test_X_intact"],
             DATA["test_X_indicating_mask"],
@@ -80,14 +80,14 @@ class TestLOCF(unittest.TestCase):
         assert not torch.isnan(
             test_X_imputed_zero
         ).any(), "Output still has missing values after running impute()."
-        test_MAE = cal_mae(test_X_imputed_zero, test_X_intact, test_X_indicating_mask)
+        test_MAE = calc_mae(test_X_imputed_zero, test_X_intact, test_X_indicating_mask)
         logger.info(f"LOCF (zero) test_MAE: {test_MAE}")
 
         test_X_imputed_backward = self.locf_backward.predict({"X": X})["imputation"]
         assert not torch.isnan(
             test_X_imputed_backward
         ).any(), "Output still has missing values after running impute()."
-        test_MAE = cal_mae(
+        test_MAE = calc_mae(
             test_X_imputed_backward,
             test_X_intact,
             test_X_indicating_mask,
@@ -98,7 +98,7 @@ class TestLOCF(unittest.TestCase):
         assert not torch.isnan(
             test_X_imputed_mean
         ).any(), "Output still has missing values after running impute()."
-        test_MAE = cal_mae(
+        test_MAE = calc_mae(
             test_X_imputed_mean,
             test_X_intact,
             test_X_indicating_mask,

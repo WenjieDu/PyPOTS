@@ -10,8 +10,10 @@ from typing import Union, Optional
 import numpy as np
 import torch
 
+from ..logging import logger
 
-def cal_mae(
+
+def calc_mae(
     predictions: Union[np.ndarray, torch.Tensor, list],
     targets: Union[np.ndarray, torch.Tensor, list],
     masks: Optional[Union[np.ndarray, torch.Tensor, list]] = None,
@@ -36,10 +38,10 @@ def cal_mae(
     --------
 
     >>> import numpy as np
-    >>> from pypots.utils.metrics import cal_mae
+    >>> from pypots.utils.metrics import calc_mae
     >>> targets = np.array([1, 2, 3, 4, 5])
     >>> predictions = np.array([1, 2, 1, 4, 6])
-    >>> mae = cal_mae(predictions, targets)
+    >>> mae = calc_mae(predictions, targets)
 
     mae = 0.6 here, the error is from the 3rd and 5th elements and is :math:`|3-1|+|5-6|=3`, so the result is 3/5=0.6.
 
@@ -47,7 +49,7 @@ def cal_mae(
     we can use ``masks`` to filter out them:
 
     >>> masks = np.array([0, 0, 0, 1, 1])
-    >>> mae = cal_mae(predictions, targets, masks)
+    >>> mae = calc_mae(predictions, targets, masks)
 
     mae = 0.5 here, the first three elements are ignored, the error is from the 5th element and is :math:`|5-6|=1`,
     so the result is 1/2=0.5.
@@ -66,7 +68,7 @@ def cal_mae(
         return lib.mean(lib.abs(predictions - targets))
 
 
-def cal_mse(
+def calc_mse(
     predictions: Union[np.ndarray, torch.Tensor, list],
     targets: Union[np.ndarray, torch.Tensor, list],
     masks: Optional[Union[np.ndarray, torch.Tensor, list]] = None,
@@ -91,10 +93,10 @@ def cal_mse(
     --------
 
     >>> import numpy as np
-    >>> from pypots.utils.metrics import cal_mse
+    >>> from pypots.utils.metrics import calc_mse
     >>> targets = np.array([1, 2, 3, 4, 5])
     >>> predictions = np.array([1, 2, 1, 4, 6])
-    >>> mse = cal_mse(predictions, targets)
+    >>> mse = calc_mse(predictions, targets)
 
     mse = 1 here, the error is from the 3rd and 5th elements and is :math:`|3-1|^2+|5-6|^2=5`, so the result is 5/5=1.
 
@@ -102,7 +104,7 @@ def cal_mse(
     we can use ``masks`` to filter out them:
 
     >>> masks = np.array([0, 0, 0, 1, 1])
-    >>> mse = cal_mse(predictions, targets, masks)
+    >>> mse = calc_mse(predictions, targets, masks)
 
     mse = 0.5 here, the first three elements are ignored, the error is from the 5th element and is :math:`|5-6|^2=1`,
     so the result is 1/2=0.5.
@@ -122,7 +124,7 @@ def cal_mse(
         return lib.mean(lib.square(predictions - targets))
 
 
-def cal_rmse(
+def calc_rmse(
     predictions: Union[np.ndarray, torch.Tensor, list],
     targets: Union[np.ndarray, torch.Tensor, list],
     masks: Optional[Union[np.ndarray, torch.Tensor, list]] = None,
@@ -147,10 +149,10 @@ def cal_rmse(
     --------
 
     >>> import numpy as np
-    >>> from pypots.utils.metrics import cal_rmse
+    >>> from pypots.utils.metrics import calc_rmse
     >>> targets = np.array([1, 2, 3, 4, 5])
     >>> predictions = np.array([1, 2, 1, 4, 6])
-    >>> rmse = cal_rmse(predictions, targets)
+    >>> rmse = calc_rmse(predictions, targets)
 
     rmse = 1 here, the error is from the 3rd and 5th elements and is :math:`|3-1|^2+|5-6|^2=5`,
     so the result is :math:`\\sqrt{5/5}=1`.
@@ -159,7 +161,7 @@ def cal_rmse(
     we can use ``masks`` to filter out them:
 
     >>> masks = np.array([0, 0, 0, 1, 1])
-    >>> rmse = cal_rmse(predictions, targets, masks)
+    >>> rmse = calc_rmse(predictions, targets, masks)
 
     rmse = 0.707 here, the first three elements are ignored, the error is from the 5th element and is :math:`|5-6|^2=1`,
     so the result is :math:`\\sqrt{1/2}=0.5`.
@@ -170,10 +172,10 @@ def cal_rmse(
         f"type(inputs)={type(predictions)}, type(target)={type(targets)}"
     )
     lib = np if isinstance(predictions, np.ndarray) else torch
-    return lib.sqrt(cal_mse(predictions, targets, masks))
+    return lib.sqrt(calc_mse(predictions, targets, masks))
 
 
-def cal_mre(
+def calc_mre(
     predictions: Union[np.ndarray, torch.Tensor, list],
     targets: Union[np.ndarray, torch.Tensor, list],
     masks: Optional[Union[np.ndarray, torch.Tensor, list]] = None,
@@ -198,10 +200,10 @@ def cal_mre(
     --------
 
     >>> import numpy as np
-    >>> from pypots.utils.metrics import cal_mre
+    >>> from pypots.utils.metrics import calc_mre
     >>> targets = np.array([1, 2, 3, 4, 5])
     >>> predictions = np.array([1, 2, 1, 4, 6])
-    >>> mre = cal_mre(predictions, targets)
+    >>> mre = calc_mre(predictions, targets)
 
     mre = 0.2 here, the error is from the 3rd and 5th elements and is :math:`|3-1|+|5-6|=3`,
     so the result is :math:`\\sqrt{3/(1+2+3+4+5)}=1`.
@@ -210,7 +212,7 @@ def cal_mre(
     we can use ``masks`` to filter out them:
 
     >>> masks = np.array([0, 0, 0, 1, 1])
-    >>> mre = cal_mre(predictions, targets, masks)
+    >>> mre = calc_mre(predictions, targets, masks)
 
     mre = 0.111 here, the first three elements are ignored, the error is from the 5th element and is :math:`|5-6|^2=1`,
     so the result is :math:`\\sqrt{1/2}=0.5`.
@@ -229,3 +231,86 @@ def cal_mre(
         return lib.sum(lib.abs(predictions - targets)) / (
             lib.sum(lib.abs(targets)) + 1e-12
         )
+
+
+def calc_quantile_loss(predictions, targets, q: float, eval_points) -> float:
+    quantile_loss = 2 * torch.sum(
+        torch.abs(
+            (predictions - targets) * eval_points * ((targets <= predictions) * 1.0 - q)
+        )
+    )
+    return quantile_loss
+
+
+def calc_quantile_crps(predictions, targets, eval_points, mean_scaler=0, scaler=1):
+    """Continuous rank probability score for distributional predictions."""
+    if isinstance(predictions, np.ndarray):
+        predictions = torch.from_numpy(predictions)
+    if isinstance(targets, np.ndarray):
+        targets = torch.from_numpy(targets)
+    if isinstance(eval_points, np.ndarray):
+        eval_points = torch.from_numpy(eval_points)
+
+    targets = targets * scaler + mean_scaler
+    predictions = predictions * scaler + mean_scaler
+
+    quantiles = np.arange(0.05, 1.0, 0.05)
+    denominator = torch.sum(torch.abs(targets * eval_points))
+    CRPS = 0
+    for i in range(len(quantiles)):
+        q_pred = []
+        for j in range(len(predictions)):
+            q_pred.append(torch.quantile(predictions[j : j + 1], quantiles[i], dim=1))
+        q_pred = torch.cat(q_pred, 0)
+        q_loss = calc_quantile_loss(targets, q_pred, quantiles[i], eval_points)
+        CRPS += q_loss / denominator
+    return CRPS.item() / len(quantiles)
+
+
+def calc_quantile_crps_sum(predictions, targets, eval_points, mean_scaler=0, scaler=1):
+    """Continuous rank probability score for distributional predictions."""
+    if isinstance(predictions, np.ndarray):
+        predictions = torch.from_numpy(predictions)
+    if isinstance(targets, np.ndarray):
+        targets = torch.from_numpy(targets)
+    if isinstance(eval_points, np.ndarray):
+        eval_points = torch.from_numpy(eval_points)
+
+    eval_points = eval_points.mean(-1)
+    targets = targets * scaler + mean_scaler
+    targets = targets.sum(-1)
+    predictions = predictions * scaler + mean_scaler
+
+    quantiles = np.arange(0.05, 1.0, 0.05)
+    denominator = torch.sum(torch.abs(targets * eval_points))
+    CRPS = 0
+    for i in range(len(quantiles)):
+        q_pred = torch.quantile(predictions.sum(-1), quantiles[i], dim=1)
+        q_loss = calc_quantile_loss(targets, q_pred, quantiles[i], eval_points)
+        CRPS += q_loss / denominator
+    return CRPS.item() / len(quantiles)
+
+
+########################################################################################################################
+# Deprecated functions
+########################################################################################################################
+
+
+def cal_mae(**kwargs):
+    logger.warning("🚨 cal_mae() is deprecated, use calc_mae() instead.")
+    return calc_mae(**kwargs)
+
+
+def cal_rmse(**kwargs):
+    logger.warning("🚨 cal_rmse() is deprecated, use calc_rmse() instead.")
+    return calc_rmse(**kwargs)
+
+
+def cal_mse(**kwargs):
+    logger.warning("🚨 cal_mse() is deprecated, use calc_mse() instead.")
+    return calc_mse(**kwargs)
+
+
+def cal_mre(**kwargs):
+    logger.warning("🚨 cal_mre() is deprecated, use calc_mre() instead.")
+    return calc_mre(**kwargs)
