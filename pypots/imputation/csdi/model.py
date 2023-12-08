@@ -32,7 +32,7 @@ from ..base import BaseNNImputer
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
 from ...utils.logging import logger
-from ...utils.metrics import cal_mse
+from ...utils.metrics import calc_mse
 
 
 class CSDI(BaseNNImputer):
@@ -256,7 +256,7 @@ class CSDI(BaseNNImputer):
                     imputation_collector = torch.cat(imputation_collector)
                     imputation_collector = imputation_collector.cpu().detach().numpy()
 
-                    mean_val_loss = cal_mse(
+                    mean_val_loss = calc_mse(
                         imputation_collector,
                         val_loader.dataset.data["X_intact"],
                         val_loader.dataset.data["indicating_mask"],
