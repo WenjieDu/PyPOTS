@@ -154,7 +154,10 @@ def calc_cluster_purity(
     return cluster_purity
 
 
-def calc_external_cluster_validation_metrics(class_predictions, targets):
+def calc_external_cluster_validation_metrics(
+    class_predictions: np.ndarray,
+    targets: np.ndarray,
+) -> dict:
     """Computer all external cluster validation metrics available in PyPOTS and return as a dictionary.
 
     Parameters
@@ -270,7 +273,9 @@ def calc_dbs(X: np.ndarray, predicted_labels: np.ndarray) -> float:
     return davies_bouldin_score
 
 
-def calc_internal_cluster_validation_metrics(X, predicted_labels):
+def calc_internal_cluster_validation_metrics(
+    X: np.ndarray, predicted_labels: np.ndarray
+) -> dict:
     """Computer all internal cluster validation metrics available in PyPOTS and return as a dictionary.
 
     Parameters
@@ -304,52 +309,52 @@ def calc_internal_cluster_validation_metrics(X, predicted_labels):
 ########################################################################################################################
 
 
-def cal_rand_index(**kwargs):
+def cal_rand_index(*args):
     logger.warning("🚨 Deprecated function, please use `calc_rand_index` instead.")
-    return calc_rand_index(**kwargs)
+    return calc_rand_index(*args)
 
 
-def cal_adjusted_rand_index(**kwargs):
+def cal_adjusted_rand_index(*args):
     logger.warning(
         "🚨 Deprecated function, please use `calc_adjusted_rand_index` instead."
     )
-    return calc_adjusted_rand_index(**kwargs)
+    return calc_adjusted_rand_index(*args)
 
 
-def cal_nmi(**kwargs):
+def cal_nmi(*args):
     logger.warning("🚨 Deprecated function, please use `calc_nmi` instead.")
-    return calc_nmi(**kwargs)
+    return calc_nmi(*args)
 
 
-def cal_cluster_purity(**kwargs):
+def cal_cluster_purity(*args):
     logger.warning("🚨 Deprecated function, please use `calc_cluster_purity` instead.")
-    return calc_cluster_purity(**kwargs)
+    return calc_cluster_purity(*args)
 
 
-def cal_external_cluster_validation_metrics(**kwargs):
+def cal_external_cluster_validation_metrics(*args):
     logger.warning(
         "🚨 Deprecated function, please use `calc_external_cluster_validation_metrics` instead."
     )
-    return calc_external_cluster_validation_metrics(**kwargs)
+    return calc_external_cluster_validation_metrics(*args)
 
 
-def cal_silhouette(**kwargs):
+def cal_silhouette(*args):
     logger.warning("🚨 Deprecated function, please use `calc_silhouette` instead.")
-    return calc_silhouette(**kwargs)
+    return calc_silhouette(*args)
 
 
-def cal_chs(**kwargs):
+def cal_chs(*args):
     logger.warning("🚨 Deprecated function, please use `calc_chs` instead.")
-    return calc_chs(**kwargs)
+    return calc_chs(*args)
 
 
-def cal_dbs(**kwargs):
+def cal_dbs(*args):
     logger.warning("🚨 Deprecated function, please use `calc_dbs` instead.")
-    return calc_dbs(**kwargs)
+    return calc_dbs(*args)
 
 
-def cal_internal_cluster_validation_metrics(**kwargs):
+def cal_internal_cluster_validation_metrics(*args):
     logger.warning(
         "🚨 Deprecated function, please use `calc_internal_cluster_validation_metrics` instead."
     )
-    return calc_internal_cluster_validation_metrics(**kwargs)
+    return calc_internal_cluster_validation_metrics(*args)
