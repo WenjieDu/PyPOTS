@@ -15,7 +15,7 @@ import pytest
 from pypots.imputation import SAITS
 from pypots.optim import Adam
 from pypots.utils.logging import logger
-from pypots.utils.metrics import cal_mae
+from pypots.utils.metrics import calc_mae
 from tests.global_test_config import (
     DATA,
     DEVICE,
@@ -71,7 +71,7 @@ class TestSAITS(unittest.TestCase):
             "latent_vars" in imputation_results.keys()
         ), "Latent variables are not returned thought `return_latent_vars` is set as True."
 
-        test_MAE = cal_mae(
+        test_MAE = calc_mae(
             imputation_results["imputation"],
             DATA["test_X_intact"],
             DATA["test_X_indicating_mask"],

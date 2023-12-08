@@ -9,7 +9,7 @@ import unittest
 
 import torch
 
-from pypots.utils.random import set_random_seed
+from pypots.utils.random import set_random_seed, get_random_seed
 
 
 class TestRandom(unittest.TestCase):
@@ -30,6 +30,16 @@ class TestRandom(unittest.TestCase):
         assert torch.equal(
             random_state1, random_state2
         ), "The random seed has been set, two random states are not the same."
+
+        current_seed = get_random_seed()
+        assert (
+            not current_seed == 32
+        ), "The random seed has been set to 26, not equal to 32."
+        set_random_seed(32)
+        current_seed = get_random_seed()
+        assert (
+            current_seed == 32
+        ), "The random seed has been set to 32, should be equal."
 
 
 if __name__ == "__main__":
