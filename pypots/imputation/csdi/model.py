@@ -32,7 +32,6 @@ from ..base import BaseNNImputer
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
 from ...utils.logging import logger
-from ...utils.metrics import calc_mse
 
 
 class CSDI(BaseNNImputer):
@@ -245,23 +244,16 @@ class CSDI(BaseNNImputer):
 
                 if val_loader is not None:
                     self.model.eval()
-                    imputation_collector = []
+                    val_loss_collector = []
                     with torch.no_grad():
                         for idx, data in enumerate(val_loader):
                             inputs = self._assemble_input_for_validating(data)
-                            results = self.model.forward(inputs, training=False)
-                            imputed_data = results["imputed_data"].mean(axis=1)
-                            imputation_collector.append(imputed_data)
+                            results = self.model.forward(
+                                inputs, training=False, n_sampling_times=0
+                            )
+                            val_loss_collector.append(results["loss"].item())
 
-                    imputation_collector = torch.cat(imputation_collector)
-                    imputation_collector = imputation_collector.cpu().detach().numpy()
-
-                    mean_val_loss = calc_mse(
-                        imputation_collector,
-                        val_loader.dataset.data["X_intact"],
-                        val_loader.dataset.data["indicating_mask"],
-                        # the above val_loader.dataset.data is a dict containing the validation dataset
-                    )
+                    mean_val_loss = np.asarray(val_loss_collector).mean()
 
                     # save validating loss logs into the tensorboard file for every epoch if in need
                     if self.summary_writer is not None:
