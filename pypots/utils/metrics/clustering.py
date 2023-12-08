@@ -8,8 +8,10 @@ Evaluation metrics related to clustering.
 import numpy as np
 from sklearn import metrics
 
+from ..logging import logger
 
-def cal_rand_index(
+
+def calc_rand_index(
     class_predictions: np.ndarray,
     targets: np.ndarray,
 ) -> float:
@@ -60,7 +62,7 @@ def cal_rand_index(
     return RI
 
 
-def cal_adjusted_rand_index(
+def calc_adjusted_rand_index(
     class_predictions: np.ndarray,
     targets: np.ndarray,
 ) -> float:
@@ -96,7 +98,7 @@ def cal_adjusted_rand_index(
     return aRI
 
 
-def cal_nmi(
+def calc_nmi(
     class_predictions: np.ndarray,
     targets: np.ndarray,
 ) -> float:
@@ -121,7 +123,7 @@ def cal_nmi(
     return NMI
 
 
-def cal_cluster_purity(
+def calc_cluster_purity(
     class_predictions: np.ndarray,
     targets: np.ndarray,
 ) -> float:
@@ -152,7 +154,10 @@ def cal_cluster_purity(
     return cluster_purity
 
 
-def cal_external_cluster_validation_metrics(class_predictions, targets):
+def calc_external_cluster_validation_metrics(
+    class_predictions: np.ndarray,
+    targets: np.ndarray,
+) -> dict:
     """Computer all external cluster validation metrics available in PyPOTS and return as a dictionary.
 
     Parameters
@@ -169,10 +174,10 @@ def cal_external_cluster_validation_metrics(class_predictions, targets):
         A dictionary contains all external cluster validation metrics available in PyPOTS.
     """
 
-    ri = cal_rand_index(class_predictions, targets)
-    ari = cal_adjusted_rand_index(class_predictions, targets)
-    nmi = cal_nmi(class_predictions, targets)
-    cp = cal_cluster_purity(class_predictions, targets)
+    ri = calc_rand_index(class_predictions, targets)
+    ari = calc_adjusted_rand_index(class_predictions, targets)
+    nmi = calc_nmi(class_predictions, targets)
+    cp = calc_cluster_purity(class_predictions, targets)
 
     external_cluster_validation_metrics = {
         "rand_index": ri,
@@ -183,7 +188,7 @@ def cal_external_cluster_validation_metrics(class_predictions, targets):
     return external_cluster_validation_metrics
 
 
-def cal_silhouette(X: np.ndarray, predicted_labels: np.ndarray) -> float:
+def calc_silhouette(X: np.ndarray, predicted_labels: np.ndarray) -> float:
     """Compute the mean Silhouette Coefficient of all samples.
 
     Parameters
@@ -214,7 +219,7 @@ def cal_silhouette(X: np.ndarray, predicted_labels: np.ndarray) -> float:
     return silhouette_score
 
 
-def cal_chs(X: np.ndarray, predicted_labels: np.ndarray) -> float:
+def calc_chs(X: np.ndarray, predicted_labels: np.ndarray) -> float:
     """Compute the Calinski and Harabasz score (also known as the Variance Ratio Criterion).
 
     X : array-like of shape (n_samples_a, n_features)
@@ -239,7 +244,7 @@ def cal_chs(X: np.ndarray, predicted_labels: np.ndarray) -> float:
     return calinski_harabasz_score
 
 
-def cal_dbs(X: np.ndarray, predicted_labels: np.ndarray) -> float:
+def calc_dbs(X: np.ndarray, predicted_labels: np.ndarray) -> float:
     """Compute the Davies-Bouldin score.
 
     Parameters
@@ -268,7 +273,9 @@ def cal_dbs(X: np.ndarray, predicted_labels: np.ndarray) -> float:
     return davies_bouldin_score
 
 
-def cal_internal_cluster_validation_metrics(X, predicted_labels):
+def calc_internal_cluster_validation_metrics(
+    X: np.ndarray, predicted_labels: np.ndarray
+) -> dict:
     """Computer all internal cluster validation metrics available in PyPOTS and return as a dictionary.
 
     Parameters
@@ -285,9 +292,9 @@ def cal_internal_cluster_validation_metrics(X, predicted_labels):
         A dictionary contains all internal cluster validation metrics available in PyPOTS.
     """
 
-    silhouette_score = cal_silhouette(X, predicted_labels)
-    calinski_harabasz_score = cal_chs(X, predicted_labels)
-    davies_bouldin_score = cal_dbs(X, predicted_labels)
+    silhouette_score = calc_silhouette(X, predicted_labels)
+    calinski_harabasz_score = calc_chs(X, predicted_labels)
+    davies_bouldin_score = calc_dbs(X, predicted_labels)
 
     internal_cluster_validation_metrics = {
         "silhouette_score": silhouette_score,
@@ -295,3 +302,59 @@ def cal_internal_cluster_validation_metrics(X, predicted_labels):
         "davies_bouldin_score": davies_bouldin_score,
     }
     return internal_cluster_validation_metrics
+
+
+########################################################################################################################
+# Deprecated functions
+########################################################################################################################
+
+
+def cal_rand_index(*args):
+    logger.warning("🚨 Deprecated function, please use `calc_rand_index` instead.")
+    return calc_rand_index(*args)
+
+
+def cal_adjusted_rand_index(*args):
+    logger.warning(
+        "🚨 Deprecated function, please use `calc_adjusted_rand_index` instead."
+    )
+    return calc_adjusted_rand_index(*args)
+
+
+def cal_nmi(*args):
+    logger.warning("🚨 Deprecated function, please use `calc_nmi` instead.")
+    return calc_nmi(*args)
+
+
+def cal_cluster_purity(*args):
+    logger.warning("🚨 Deprecated function, please use `calc_cluster_purity` instead.")
+    return calc_cluster_purity(*args)
+
+
+def cal_external_cluster_validation_metrics(*args):
+    logger.warning(
+        "🚨 Deprecated function, please use `calc_external_cluster_validation_metrics` instead."
+    )
+    return calc_external_cluster_validation_metrics(*args)
+
+
+def cal_silhouette(*args):
+    logger.warning("🚨 Deprecated function, please use `calc_silhouette` instead.")
+    return calc_silhouette(*args)
+
+
+def cal_chs(*args):
+    logger.warning("🚨 Deprecated function, please use `calc_chs` instead.")
+    return calc_chs(*args)
+
+
+def cal_dbs(*args):
+    logger.warning("🚨 Deprecated function, please use `calc_dbs` instead.")
+    return calc_dbs(*args)
+
+
+def cal_internal_cluster_validation_metrics(*args):
+    logger.warning(
+        "🚨 Deprecated function, please use `calc_internal_cluster_validation_metrics` instead."
+    )
+    return calc_internal_cluster_validation_metrics(*args)
