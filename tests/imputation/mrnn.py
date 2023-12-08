@@ -15,7 +15,7 @@ import pytest
 from pypots.imputation import MRNN
 from pypots.optim import Adam
 from pypots.utils.logging import logger
-from pypots.utils.metrics import cal_mae
+from pypots.utils.metrics import calc_mae
 from tests.global_test_config import (
     DATA,
     DEVICE,
@@ -61,7 +61,7 @@ class TestMRNN(unittest.TestCase):
         assert not np.isnan(
             imputed_X
         ).any(), "Output still has missing values after running impute()."
-        test_MAE = cal_mae(
+        test_MAE = calc_mae(
             imputed_X, DATA["test_X_intact"], DATA["test_X_indicating_mask"]
         )
         logger.info(f"MRNN test_MAE: {test_MAE}")

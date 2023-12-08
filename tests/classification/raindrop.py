@@ -12,7 +12,7 @@ import pytest
 
 from pypots.classification import Raindrop
 from pypots.utils.logging import logger
-from pypots.utils.metrics import cal_binary_classification_metrics
+from pypots.utils.metrics import calc_binary_classification_metrics
 from tests.classification.config import (
     EPOCHS,
     TRAIN_SET,
@@ -60,7 +60,7 @@ class TestRaindrop(unittest.TestCase):
     @pytest.mark.xdist_group(name="classification-raindrop")
     def test_1_classify(self):
         predictions = self.raindrop.classify(TEST_SET)
-        metrics = cal_binary_classification_metrics(predictions, DATA["test_y"])
+        metrics = calc_binary_classification_metrics(predictions, DATA["test_y"])
         logger.info(
             f'ROC_AUC: {metrics["roc_auc"]}, \n'
             f'PR_AUC: {metrics["pr_auc"]},\n'

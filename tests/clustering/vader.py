@@ -16,8 +16,8 @@ from pypots.clustering import VaDER
 from pypots.optim import Adam
 from pypots.utils.logging import logger
 from pypots.utils.metrics import (
-    cal_external_cluster_validation_metrics,
-    cal_internal_cluster_validation_metrics,
+    calc_external_cluster_validation_metrics,
+    calc_internal_cluster_validation_metrics,
 )
 from tests.clustering.config import (
     EPOCHS,
@@ -65,10 +65,10 @@ class TestVaDER(unittest.TestCase):
     def test_1_cluster(self):
         try:
             clustering_results = self.vader.predict(TEST_SET, return_latent_vars=True)
-            external_metrics = cal_external_cluster_validation_metrics(
+            external_metrics = calc_external_cluster_validation_metrics(
                 clustering_results["clustering"], DATA["test_y"]
             )
-            internal_metrics = cal_internal_cluster_validation_metrics(
+            internal_metrics = calc_internal_cluster_validation_metrics(
                 clustering_results["latent_vars"]["z"], DATA["test_y"]
             )
             logger.info(f"{external_metrics}")

@@ -11,7 +11,7 @@ import torch.nn as nn
 
 from .embedding import DataEmbedding
 from .layer import TimesBlock
-from ....utils.metrics import cal_mse
+from ....utils.metrics import calc_mse
 
 
 class _TimesNet(nn.Module):
@@ -88,7 +88,7 @@ class _TimesNet(nn.Module):
 
         if training:
             # `loss` is always the item for backward propagating to update the model
-            loss = cal_mse(dec_out, inputs["X_intact"], inputs["indicating_mask"])
+            loss = calc_mse(dec_out, inputs["X_intact"], inputs["indicating_mask"])
             results["loss"] = loss
 
         return results
