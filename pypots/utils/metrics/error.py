@@ -296,21 +296,21 @@ def calc_quantile_crps_sum(predictions, targets, eval_points, mean_scaler=0, sca
 ########################################################################################################################
 
 
-def cal_mae(**kwargs):
+def cal_mae(*args):
     logger.warning("🚨 cal_mae() is deprecated, use calc_mae() instead.")
-    return calc_mae(**kwargs)
+    return calc_mae(*args)
 
 
-def cal_rmse(**kwargs):
+def cal_rmse(*args):
     logger.warning("🚨 cal_rmse() is deprecated, use calc_rmse() instead.")
-    return calc_rmse(**kwargs)
+    return calc_rmse(*args)
 
 
-def cal_mse(**kwargs):
+def cal_mse(*args):
     logger.warning("🚨 cal_mse() is deprecated, use calc_mse() instead.")
-    return calc_mse(**kwargs)
+    return calc_mse(*args)
 
 
-def cal_mre(**kwargs):
+def cal_mre(*args):
     logger.warning("🚨 cal_mre() is deprecated, use calc_mre() instead.")
-    return calc_mre(**kwargs)
+    return calc_mre(*args)

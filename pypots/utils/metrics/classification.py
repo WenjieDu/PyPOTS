@@ -263,31 +263,31 @@ def calc_acc(class_predictions: np.ndarray, targets: np.ndarray) -> float:
 ########################################################################################################################
 
 
-def cal_binary_classification_metrics(**kwargs):
+def cal_binary_classification_metrics(*args):
     logger.warning(
         "🚨 cal_binary_classification_metrics() is deprecated, "
         "use calc_binary_classification_metrics() instead."
     )
-    return calc_binary_classification_metrics(**kwargs)
+    return calc_binary_classification_metrics(*args)
 
 
-def cal_precision_recall_f1(**kwargs):
+def cal_precision_recall_f1(*args):
     logger.warning(
         "🚨 cal_precision_recall_f1() is deprecated, use calc_precision_recall_f1() instead."
     )
-    return calc_precision_recall_f1(**kwargs)
+    return calc_precision_recall_f1(*args)
 
 
-def cal_pr_auc(**kwargs):
+def cal_pr_auc(*args):
     logger.warning("🚨 cal_pr_auc() is deprecated, use calc_pr_auc() instead.")
-    return calc_pr_auc(**kwargs)
+    return calc_pr_auc(*args)
 
 
-def cal_roc_auc(**kwargs):
+def cal_roc_auc(*args):
     logger.warning("🚨 cal_roc_auc() is deprecated, use calc_roc_auc() instead.")
-    return calc_roc_auc(**kwargs)
+    return calc_roc_auc(*args)
 
 
-def cal_acc(**kwargs):
+def cal_acc(*args):
     logger.warning("🚨 cal_acc() is deprecated, use calc_acc() instead.")
-    return calc_acc(**kwargs)
+    return calc_acc(*args)
