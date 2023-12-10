@@ -20,7 +20,7 @@ import numpy as np
 import torch
 from torch.utils.data import DataLoader
 
-from .data import DatasetForSAITS
+from .data import DatasetForTransformer
 from .modules import _TransformerEncoder
 from ..base import BaseNNImputer
 from ...data.base import BaseDataset
@@ -189,6 +189,7 @@ class Transformer(BaseNNImputer):
             self.d_k,
             self.d_v,
             self.dropout,
+            self.attn_dropout,
             self.ORT_weight,
             self.MIT_weight,
         )
@@ -237,7 +238,7 @@ class Transformer(BaseNNImputer):
         file_type: str = "h5py",
     ) -> None:
         # Step 1: wrap the input data with classes Dataset and DataLoader
-        training_set = DatasetForSAITS(
+        training_set = DatasetForTransformer(
             train_set, return_labels=False, file_type=file_type
         )
         training_loader = DataLoader(
