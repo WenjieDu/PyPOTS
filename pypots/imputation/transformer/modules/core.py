@@ -18,7 +18,7 @@ from typing import Tuple
 import torch
 import torch.nn as nn
 
-from ....modules.transformer import EncoderLayer, PositionalEncoding
+from ....nn.modules.transformer import EncoderLayer, PositionalEncoding
 from ....utils.metrics import calc_mae
 
 

@@ -11,7 +11,7 @@ import torch
 import torch.fft
 import torch.nn as nn
 
-from ....modules.transformer import PositionalEncoding
+from ....nn.modules.transformer import PositionalEncoding
 
 
 class TokenEmbedding(nn.Module):

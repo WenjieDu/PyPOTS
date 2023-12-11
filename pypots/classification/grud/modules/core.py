@@ -16,7 +16,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from ....modules.rnn import TemporalDecay
+from ....nn.modules.rnn import TemporalDecay
 
 
 class _GRUD(nn.Module):
