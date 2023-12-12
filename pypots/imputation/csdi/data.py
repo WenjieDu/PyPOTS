@@ -24,18 +24,6 @@ class DatasetForCSDI(BaseDataset):
         rate: float = 0.1,
     ):
         super().__init__(data, return_labels, file_type)
-        self.time_points = (
-            None if "time_points" not in data.keys() else data["time_points"]
-        )
-        # _, self.time_points = self._check_input(self.X, time_points)
-        self.for_pattern_mask = (
-            None if "for_pattern_mask" not in data.keys() else data["for_pattern_mask"]
-        )
-        # _, self.for_pattern_mask = self._check_input(self.X, for_pattern_mask)
-        self.cut_length = (
-            None if "cut_length" not in data.keys() else data["cut_length"]
-        )
-        # _, self.cut_length = self._check_input(self.X, cut_length)
         self.rate = rate
 
     def _fetch_data_from_array(self, idx: int) -> Iterable:
@@ -69,21 +57,23 @@ class DatasetForCSDI(BaseDataset):
         X = self.X[idx].to(torch.float32)
         X_intact, X, missing_mask, indicating_mask = mcar(X, p=self.rate)
 
-        observed_data = X_intact  # i.e. originally observed data
-        observed_mask = missing_mask + indicating_mask  # i.e. originally missing masks
+        observed_data = X_intact
+        observed_mask = missing_mask + indicating_mask
+        gt_mask = missing_mask
         observed_tp = (
             torch.arange(0, self.n_steps, dtype=torch.float32)
-            if self.time_points is None
-            else self.time_points[idx].to(torch.float32)
+            if "time_points" not in self.data.keys()
+            else torch.from_numpy(self.data["time_points"][idx]).to(torch.float32)
         )
-        gt_mask = missing_mask  # missing mask with ground truth masked for validation
         for_pattern_mask = (
-            gt_mask if self.for_pattern_mask is None else self.for_pattern_mask[idx]
+            gt_mask
+            if "for_pattern_mask" not in self.data.keys()
+            else torch.from_numpy(self.data["for_pattern_mask"][idx]).to(torch.float32)
         )
         cut_length = (
             torch.zeros(len(observed_data)).long()
-            if self.cut_length is None
-            else self.cut_length[idx]
+            if "cut_length" not in self.data.keys()
+            else torch.from_numpy(self.data["cut_length"][idx]).to(torch.float32)
         )
 
         sample = [
@@ -124,15 +114,25 @@ class DatasetForCSDI(BaseDataset):
 
         observed_data = X_intact
         observed_mask = missing_mask + indicating_mask
-        observed_tp = self.time_points[idx].to(torch.float32)
         gt_mask = indicating_mask
+        observed_tp = (
+            torch.arange(0, self.n_steps, dtype=torch.float32)
+            if "time_points" not in self.file_handle.keys()
+            else torch.from_numpy(self.file_handle["time_points"][idx]).to(
+                torch.float32
+            )
+        )
         for_pattern_mask = (
-            gt_mask if self.for_pattern_mask is None else self.for_pattern_mask[idx]
+            gt_mask
+            if "for_pattern_mask" not in self.file_handle.keys()
+            else torch.from_numpy(self.file_handle["for_pattern_mask"][idx]).to(
+                torch.float32
+            )
         )
         cut_length = (
             torch.zeros(len(observed_data)).long()
-            if self.cut_length is None
-            else self.cut_length[idx]
+            if "cut_length" not in self.file_handle.keys()
+            else torch.from_numpy(self.file_handle["cut_length"][idx]).to(torch.float32)
         )
 
         sample = [

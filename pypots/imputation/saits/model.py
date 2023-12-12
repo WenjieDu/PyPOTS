@@ -27,7 +27,7 @@ from ...data.base import BaseDataset
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
 from ...utils.logging import logger
-from ...utils.metrics import cal_mae
+from ...utils.metrics import calc_mae
 
 
 class SAITS(BaseNNImputer):
@@ -145,7 +145,7 @@ class SAITS(BaseNNImputer):
         batch_size: int = 32,
         epochs: int = 100,
         patience: Optional[int] = None,
-        customized_loss_func: Callable = cal_mae,
+        customized_loss_func: Callable = calc_mae,
         optimizer: Optional[Optimizer] = Adam(),
         num_workers: int = 0,
         device: Optional[Union[str, torch.device, list]] = None,

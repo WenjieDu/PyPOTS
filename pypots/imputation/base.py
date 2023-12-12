@@ -16,7 +16,7 @@ from torch.utils.data import DataLoader
 
 from ..base import BaseModel, BaseNNModel
 from ..utils.logging import logger
-from ..utils.metrics import cal_mae
+from ..utils.metrics import calc_mse
 
 try:
     import nni
@@ -299,7 +299,7 @@ class BaseNNImputer(BaseNNModel):
                     imputation_collector = torch.cat(imputation_collector)
                     imputation_collector = imputation_collector.cpu().detach().numpy()
 
-                    mean_val_loss = cal_mae(
+                    mean_val_loss = calc_mse(
                         imputation_collector,
                         val_loader.dataset.data["X_intact"],
                         val_loader.dataset.data["indicating_mask"],

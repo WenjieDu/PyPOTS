@@ -12,7 +12,7 @@ import torch
 import torch.nn as nn
 
 from .submodules import FCN_Regression
-from ....utils.metrics import cal_rmse
+from ....utils.metrics import calc_rmse
 
 
 class _MRNN(nn.Module):
@@ -74,7 +74,7 @@ class _MRNN(nn.Module):
             FCN_estimation = self.fcn_regression(
                 x, m, RNN_imputed_data
             )  # FCN estimation is output estimation
-            reconstruction_loss += cal_rmse(FCN_estimation, x, m) + cal_rmse(
+            reconstruction_loss += calc_rmse(FCN_estimation, x, m) + calc_rmse(
                 RNN_estimation, x, m
             )
             estimations.append(FCN_estimation.unsqueeze(dim=1))

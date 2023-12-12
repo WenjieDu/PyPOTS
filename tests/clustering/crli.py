@@ -15,8 +15,8 @@ from pypots.clustering import CRLI
 from pypots.optim import Adam
 from pypots.utils.logging import logger
 from pypots.utils.metrics import (
-    cal_external_cluster_validation_metrics,
-    cal_internal_cluster_validation_metrics,
+    calc_external_cluster_validation_metrics,
+    calc_internal_cluster_validation_metrics,
 )
 from tests.clustering.config import (
     EPOCHS,
@@ -125,10 +125,10 @@ class TestCRLI(unittest.TestCase):
     def test_2_cluster(self):
         # GRU cell
         clustering_results = self.crli_gru.predict(TEST_SET, return_latent_vars=True)
-        external_metrics = cal_external_cluster_validation_metrics(
+        external_metrics = calc_external_cluster_validation_metrics(
             clustering_results["clustering"], DATA["test_y"]
         )
-        internal_metrics = cal_internal_cluster_validation_metrics(
+        internal_metrics = calc_internal_cluster_validation_metrics(
             clustering_results["latent_vars"]["clustering_latent"], DATA["test_y"]
         )
         logger.info(f"CRLI-GRU: {external_metrics}")
@@ -136,10 +136,10 @@ class TestCRLI(unittest.TestCase):
 
         # LSTM cell
         clustering_results = self.crli_lstm.predict(TEST_SET, return_latent_vars=True)
-        external_metrics = cal_external_cluster_validation_metrics(
+        external_metrics = calc_external_cluster_validation_metrics(
             clustering_results["clustering"], DATA["test_y"]
         )
-        internal_metrics = cal_internal_cluster_validation_metrics(
+        internal_metrics = calc_internal_cluster_validation_metrics(
             clustering_results["latent_vars"]["clustering_latent"], DATA["test_y"]
         )
         logger.info(f"CRLI-LSTM: {external_metrics}")

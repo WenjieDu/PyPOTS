@@ -259,12 +259,16 @@ class _CSDI(nn.Module):
         loss = loss_func(observed_data, cond_mask, observed_mask, side_info, training)
         results = {"loss": loss}
 
-        if not training:
+        if not training and n_sampling_times > 0:
             samples = self.impute(
                 observed_data, cond_mask, side_info, n_sampling_times
-            )  # (B,bz,K,L)
-            imputation = samples.mean(dim=1)  # (B,K,L)
-            imputed_data = observed_data + imputation * (1 - gt_mask)
-            results["imputed_data"] = imputed_data.permute(0, 2, 1)  # (B,L,K)
+            )  # (bz,n_sampling,K,L)
+            repeated_obs = observed_data.unsqueeze(1).repeat(1, n_sampling_times, 1, 1)
+            repeated_mask = gt_mask.unsqueeze(1).repeat(1, n_sampling_times, 1, 1)
+            imputed_data = repeated_obs + samples * (1 - repeated_mask)
+
+            results["imputed_data"] = imputed_data.permute(
+                0, 1, 3, 2
+            )  # (bz,n_sampling,L,K)
 
         return results

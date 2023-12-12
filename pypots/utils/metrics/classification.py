@@ -10,8 +10,10 @@ from typing import Tuple
 import numpy as np
 from sklearn import metrics
 
+from ..logging import logger
 
-def cal_binary_classification_metrics(
+
+def calc_binary_classification_metrics(
     prob_predictions: np.ndarray,
     targets: np.ndarray,
     pos_label: int = 1,
@@ -85,7 +87,7 @@ def cal_binary_classification_metrics(
         raise f"predictions dimensions should be 1 or 2, but got predictions.shape: {prob_predictions.shape}"
 
     # accuracy score doesn't have to be of binary classification
-    acc_score = cal_acc(prediction_categories, targets)
+    acc_score = calc_acc(prediction_categories, targets)
 
     # turn targets into binary targets
     mask_val = -1 if pos_label == 0 else 0
@@ -93,13 +95,13 @@ def cal_binary_classification_metrics(
     binary_targets = np.copy(targets)
     binary_targets[~mask] = mask_val
 
-    precision, recall, f1 = cal_precision_recall_f1(
+    precision, recall, f1 = calc_precision_recall_f1(
         binary_prediction_categories, binary_targets, pos_label
     )
-    pr_auc, precisions, recalls, _ = cal_pr_auc(
+    pr_auc, precisions, recalls, _ = calc_pr_auc(
         binary_predictions, binary_targets, pos_label
     )
-    ROC_AUC, fprs, tprs, _ = cal_roc_auc(binary_predictions, binary_targets, pos_label)
+    ROC_AUC, fprs, tprs, _ = calc_roc_auc(binary_predictions, binary_targets, pos_label)
     PR_AUC = metrics.auc(recalls, precisions)
     classification_metrics = {
         "predictions": prediction_categories,
@@ -117,7 +119,7 @@ def cal_binary_classification_metrics(
     return classification_metrics
 
 
-def cal_precision_recall_f1(
+def calc_precision_recall_f1(
     prob_predictions: np.ndarray,
     targets: np.ndarray,
     pos_label: int = 1,
@@ -154,7 +156,7 @@ def cal_precision_recall_f1(
     return precision, recall, f1
 
 
-def cal_pr_auc(
+def calc_pr_auc(
     prob_predictions: np.ndarray,
     targets: np.ndarray,
     pos_label: int = 1,
@@ -195,7 +197,7 @@ def cal_pr_auc(
     return pr_auc, precisions, recalls, thresholds
 
 
-def cal_roc_auc(
+def calc_roc_auc(
     prob_predictions: np.ndarray,
     targets: np.ndarray,
     pos_label: int = 1,
@@ -235,7 +237,7 @@ def cal_roc_auc(
     return roc_auc, fprs, tprs, thresholds
 
 
-def cal_acc(class_predictions: np.ndarray, targets: np.ndarray) -> float:
+def calc_acc(class_predictions: np.ndarray, targets: np.ndarray) -> float:
     """Calculate accuracy score of model predictions.
 
     Parameters
@@ -254,3 +256,38 @@ def cal_acc(class_predictions: np.ndarray, targets: np.ndarray) -> float:
     """
     acc_score = metrics.accuracy_score(targets, class_predictions)
     return acc_score
+
+
+########################################################################################################################
+# Deprecated functions
+########################################################################################################################
+
+
+def cal_binary_classification_metrics(*args):
+    logger.warning(
+        "🚨 cal_binary_classification_metrics() is deprecated, "
+        "use calc_binary_classification_metrics() instead."
+    )
+    return calc_binary_classification_metrics(*args)
+
+
+def cal_precision_recall_f1(*args):
+    logger.warning(
+        "🚨 cal_precision_recall_f1() is deprecated, use calc_precision_recall_f1() instead."
+    )
+    return calc_precision_recall_f1(*args)
+
+
+def cal_pr_auc(*args):
+    logger.warning("🚨 cal_pr_auc() is deprecated, use calc_pr_auc() instead.")
+    return calc_pr_auc(*args)
+
+
+def cal_roc_auc(*args):
+    logger.warning("🚨 cal_roc_auc() is deprecated, use calc_roc_auc() instead.")
+    return calc_roc_auc(*args)
+
+
+def cal_acc(*args):
+    logger.warning("🚨 cal_acc() is deprecated, use calc_acc() instead.")
+    return calc_acc(*args)
