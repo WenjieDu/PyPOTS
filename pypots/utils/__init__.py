@@ -8,7 +8,7 @@ Utility functions and classes are stored in this package.
 
 __all__ = [
     # content files in this package
-    "file.py",
+    "file",
     "logging",
     "metrics",
     "random",

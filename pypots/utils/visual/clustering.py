@@ -1,16 +1,16 @@
 """
-Utilities for clustering visualization
+Utilities for clustering visualization.
 """
 
-# Created by Bhargav Vemuri <vemuri.bhargav@gmail.com>
-# License: GPL-v3
+# Created by Bhargav Vemuri <vemuri.bhargav@gmail.com> and Wenjie Du <wenjay.du@gmail.com>
+# License: BSD-3-Clause
 
 from typing import Dict
 
+import matplotlib.lines as mlines
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
-import matplotlib.lines as mlines
 import scipy.stats as st
 
 
