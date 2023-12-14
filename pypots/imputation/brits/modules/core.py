@@ -20,7 +20,7 @@ import torch
 import torch.nn as nn
 
 from .submodules import FeatureRegression
-from ....modules.rnn import TemporalDecay
+from ....nn.modules.rnn import TemporalDecay
 from ....utils.metrics import calc_mae
 
 
