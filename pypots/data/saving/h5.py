@@ -1,5 +1,5 @@
 """
-Data saving utilities.
+Data saving utilities with HDF5.
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
@@ -9,11 +9,10 @@ Data saving utilities.
 import os
 from typing import Optional
 
-import dill as pickle
 import h5py
 
-from ..utils.file import extract_parent_dir, create_dir_if_not_exist
-from ..utils.logging import logger
+from pypots.utils.file import extract_parent_dir, create_dir_if_not_exist
+from pypots.utils.logging import logger
 
 
 def save_dict_into_h5(
@@ -85,53 +84,3 @@ def save_dict_into_h5(
             save_set(hf, k, v)
 
     logger.info(f"Successfully saved the given data into {saving_path}.")
-
-
-def pickle_dump(data: object, path: str) -> Optional[str]:
-    """Pickle the given object.
-
-    Parameters
-    ----------
-    data:
-        The object to be pickled.
-
-    path:
-        Saving path.
-
-    Returns
-    -------
-    `path` if succeed else None
-
-    """
-    try:
-        with open(path, "wb") as f:
-            pickle.dump(data, f, protocol=pickle.HIGHEST_PROTOCOL)
-    except pickle.PicklingError:
-        logger.error("❌ Pickling failed. No cache data saved.")
-        return None
-    logger.info(f"Successfully saved to {path}")
-    return path
-
-
-def pickle_load(path: str) -> object:
-    """Load pickled object from file.
-
-    Parameters
-    ----------
-    path :
-        Local path of the pickled object.
-
-    Returns
-    -------
-    Object
-        Pickled object.
-
-    """
-    try:
-        with open(path, "rb") as f:
-            data = pickle.load(f)
-    except pickle.UnpicklingError as e:
-        logger.error(
-            "❌ Data file corrupted. Operation aborted. See info below:\n" f"{e}"
-        )
-    return data
