@@ -19,8 +19,8 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from ....modules.transformer import EncoderLayer, PositionalEncoding
-from ....utils.metrics import cal_mae
+from ....nn.modules.transformer import EncoderLayer, PositionalEncoding
+from ....utils.metrics import calc_mae
 
 
 class _SAITS(nn.Module):
@@ -39,7 +39,7 @@ class _SAITS(nn.Module):
         diagonal_attention_mask: bool = True,
         ORT_weight: float = 1,
         MIT_weight: float = 1,
-        customized_loss_func: Callable = cal_mae,
+        customized_loss_func: Callable = calc_mae,
     ):
         super().__init__()
         self.n_layers = n_layers
