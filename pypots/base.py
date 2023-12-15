@@ -141,6 +141,13 @@ class BaseModel(ABC):
             ), "You are trying to use CUDA for model training, but CUDA is not available in your environment."
 
     def _setup_path(self, saving_path) -> None:
+        MODEL_NO_NEED_TO_SAVE = [
+            "LOCF",
+        ]
+        # if the model is no need to save (e.g. LOCF), then skip the following steps
+        if self.__class__.__name__ in MODEL_NO_NEED_TO_SAVE:
+            return
+
         if isinstance(saving_path, str):
             # get the current time to append to saving_path,
             # so you can use the same saving_path to run multiple times
