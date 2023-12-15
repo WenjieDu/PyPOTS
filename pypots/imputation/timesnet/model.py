@@ -21,12 +21,12 @@ import torch
 from torch.utils.data import DataLoader
 
 from .data import DatasetForTimesNet
-from ...utils.logging import logger
 from .modules.core import _TimesNet
 from ..base import BaseNNImputer
 from ...data.base import BaseDataset
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
+from ...utils.logging import logger
 
 
 class TimesNet(BaseNNImputer):
@@ -58,6 +58,11 @@ class TimesNet(BaseNNImputer):
 
     dropout :
         The dropout rate for the model.
+
+    apply_nonstationary_norm :
+        Whether to apply non-stationary normalization to the input data for TimesNet.
+        Please refer to :cite:`liu2022nonstationary` for details about non-stationary normalization,
+        which is not the idea of the original TimesNet paper. Hence, we make it optional and default not to use here.
 
     batch_size :
         The batch size for training and evaluating the model.
@@ -117,6 +122,7 @@ class TimesNet(BaseNNImputer):
         d_ffn: int,
         n_kernels: int,
         dropout: float = 0,
+        apply_nonstationary_norm: bool = False,
         batch_size: int = 32,
         epochs: int = 100,
         patience: int = None,
@@ -145,6 +151,7 @@ class TimesNet(BaseNNImputer):
         self.d_ffn = d_ffn
         self.n_kernels = n_kernels
         self.dropout = dropout
+        self.apply_nonstationary_norm = apply_nonstationary_norm
 
         # set up the model
         self.model = _TimesNet(
@@ -156,6 +163,7 @@ class TimesNet(BaseNNImputer):
             self.d_ffn,
             self.n_kernels,
             self.dropout,
+            self.apply_nonstationary_norm,
         )
         self._send_model_to_given_device()
         self._print_model_size()
