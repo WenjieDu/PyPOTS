@@ -1,10 +1,9 @@
 """
-Test cases for data saving utils.
+Test cases for saving data into HDF5 files.
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
-
 
 import os
 import unittest
