@@ -298,17 +298,6 @@ class _BRITS(nn.Module):
         return ret
 
     def forward(self, inputs: dict, training: bool = True) -> dict:
-        """Forward processing of BRITS.
-
-        Parameters
-        ----------
-        inputs :
-            The input data.
-
-        Returns
-        -------
-        dict, A dictionary includes all results.
-        """
         # Results from the forward RITS.
         ret_f = self.rits_f(inputs, "forward")
         # Results from the backward RITS.
@@ -325,14 +314,14 @@ class _BRITS(nn.Module):
             consistency_loss = self._get_consistency_loss(
                 ret_f["imputed_data"], ret_b["imputed_data"]
             )
-
-            # `loss` is always the item for backward propagating to update the model
+            results["consistency_loss"] = consistency_loss
             loss = (
                 consistency_loss
                 + ret_f["reconstruction_loss"]
                 + ret_b["reconstruction_loss"]
             )
-            results["consistency_loss"] = consistency_loss
+
+            # `loss` is always the item for backward propagating to update the model
             results["loss"] = loss
 
         return results

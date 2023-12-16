@@ -40,7 +40,8 @@ class DatasetForMRNN(DatasetForBRITS):
     def __init__(
         self,
         data: Union[dict, str],
-        return_labels: bool = True,
+        return_X_intact: bool,
+        return_labels: bool,
         file_type: str = "h5py",
     ):
-        super().__init__(data, return_labels, file_type)
+        super().__init__(data, return_X_intact, return_labels, file_type)

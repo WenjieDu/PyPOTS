@@ -94,7 +94,6 @@ class TestLazyLoadingClasses(unittest.TestCase):
                 {
                     "X": DATA["val_X"],
                     "X_intact": DATA["val_X_intact"],
-                    "indicating_mask": DATA["val_X_indicating_mask"],
                 },
                 DATA_SAVING_DIR,
                 IMPUTATION_VAL_SET_NAME,
@@ -104,8 +103,6 @@ class TestLazyLoadingClasses(unittest.TestCase):
             save_dict_into_h5(
                 {
                     "X": DATA["test_X"],
-                    "X_intact": DATA["test_X_intact"],
-                    "indicating_mask": DATA["test_X_indicating_mask"],
                 },
                 DATA_SAVING_DIR,
                 TEST_SET_NAME,

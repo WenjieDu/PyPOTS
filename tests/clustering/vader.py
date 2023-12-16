@@ -19,16 +19,17 @@ from pypots.utils.metrics import (
     calc_external_cluster_validation_metrics,
     calc_internal_cluster_validation_metrics,
 )
-from tests.clustering.config import (
+from tests.global_test_config import (
+    DATA,
     EPOCHS,
+    DEVICE,
     TRAIN_SET,
     VAL_SET,
     TEST_SET,
+    H5_TRAIN_SET_PATH,
+    H5_VAL_SET_PATH,
+    H5_TEST_SET_PATH,
     RESULT_SAVING_DIR_FOR_CLUSTERING,
-)
-from tests.global_test_config import (
-    DATA,
-    DEVICE,
     check_tb_and_model_checkpoints_existence,
 )
 
@@ -71,8 +72,8 @@ class TestVaDER(unittest.TestCase):
             internal_metrics = calc_internal_cluster_validation_metrics(
                 clustering_results["latent_vars"]["z"], DATA["test_y"]
             )
-            logger.info(f"{external_metrics}")
-            logger.info(f"{internal_metrics}")
+            logger.info(f"VaDER external_metrics: {external_metrics}")
+            logger.info(f"VaDER internal_metrics: {internal_metrics}")
         except np.linalg.LinAlgError as e:
             logger.error(
                 f"{e}\n"
@@ -109,6 +110,21 @@ class TestVaDER(unittest.TestCase):
 
         # test loading the saved model, not necessary, but need to test
         self.vader.load(saved_model_path)
+
+    @pytest.mark.xdist_group(name="clustering-vader")
+    def test_4_lazy_loading(self):
+        self.vader.fit(H5_TRAIN_SET_PATH, H5_VAL_SET_PATH)
+        clustering_results = self.vader.predict(
+            H5_TEST_SET_PATH, return_latent_vars=True
+        )
+        external_metrics = calc_external_cluster_validation_metrics(
+            clustering_results["clustering"], DATA["test_y"]
+        )
+        internal_metrics = calc_internal_cluster_validation_metrics(
+            clustering_results["latent_vars"]["z"], DATA["test_y"]
+        )
+        logger.info(f"Lazy-loading VaDER external_metrics: {external_metrics}")
+        logger.info(f"Lazy-loading VaDER internal_metrics: {internal_metrics}")
 
 
 if __name__ == "__main__":
