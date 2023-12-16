@@ -58,7 +58,6 @@ jobs:
                   pip install -r requirements.txt
                   pip install torch-geometric torch-scatter torch-sparse -f "https://data.pyg.org/whl/torch-${{ steps.determine_pytorch_ver.outputs.value }}+cpu.html"
                   pip install pypots[dev]
-                  pip install .
 
             - name: Fetch the test environment details
               run: |
