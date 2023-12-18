@@ -34,12 +34,12 @@ TRAIN_SET = {
 }
 VAL_SET = {
     "X": DATA["val_X"],
-    "X_intact": DATA["val_X_intact"],
+    "X_ori": DATA["val_X_ori"],
     "y": DATA["val_y"].astype(float),
 }
 TEST_SET = {
     "X": DATA["test_X"],
-    "X_intact": DATA["test_X_intact"],
+    "X_ori": DATA["test_X_ori"],
     "y": DATA["test_y"].astype(float),
 }
 
@@ -99,7 +99,7 @@ if __name__ == "__main__":
         save_dict_into_h5(
             {
                 "X": DATA["val_X"],
-                "X_intact": DATA["val_X_intact"],
+                "X_ori": DATA["val_X_ori"],
                 "y": DATA["val_y"].astype(float),
             },
             H5_VAL_SET_PATH,
@@ -109,7 +109,7 @@ if __name__ == "__main__":
         save_dict_into_h5(
             {
                 "X": DATA["test_X"],
-                "X_intact": DATA["test_X_intact"],
+                "X_ori": DATA["test_X_ori"],
                 "y": DATA["test_y"].astype(float),
             },
             H5_TEST_SET_PATH,

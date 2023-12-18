@@ -19,7 +19,7 @@ from torch.utils.data import DataLoader
 from .data import DatasetForGPVAE
 from .modules import _GPVAE
 from ..base import BaseNNImputer
-from ...data.checking import check_x_intact_in_val_set
+from ...data.checking import check_X_ori_in_val_set
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
 from ...utils.logging import logger
@@ -177,7 +177,7 @@ class GPVAE(BaseNNImputer):
             indices,
             X,
             missing_mask,
-            X_intact,
+            X_ori,
             indicating_mask,
         ) = self._send_data_to_given_device(data)
 
@@ -186,7 +186,7 @@ class GPVAE(BaseNNImputer):
             "indices": indices,
             "X": X,
             "missing_mask": missing_mask,
-            "X_intact": X_intact,
+            "X_ori": X_ori,
             "indicating_mask": indicating_mask,
         }
 
@@ -203,7 +203,7 @@ class GPVAE(BaseNNImputer):
     ) -> None:
         # Step 1: wrap the input data with classes Dataset and DataLoader
         training_set = DatasetForGPVAE(
-            train_set, return_X_intact=False, return_labels=False, file_type=file_type
+            train_set, return_X_ori=False, return_labels=False, file_type=file_type
         )
         training_loader = DataLoader(
             training_set,
@@ -213,12 +213,10 @@ class GPVAE(BaseNNImputer):
         )
         val_loader = None
         if val_set is not None:
-            if not check_x_intact_in_val_set(val_set):
-                raise ValueError(
-                    "val_set must contain 'X_intact' for model validation."
-                )
+            if not check_X_ori_in_val_set(val_set):
+                raise ValueError("val_set must contain 'X_ori' for model validation.")
             val_set = DatasetForGPVAE(
-                val_set, return_X_intact=True, return_labels=False, file_type=file_type
+                val_set, return_X_ori=True, return_labels=False, file_type=file_type
             )
             val_loader = DataLoader(
                 val_set,
@@ -242,7 +240,7 @@ class GPVAE(BaseNNImputer):
     ) -> dict:
         self.model.eval()  # set the model as eval status to freeze it.
         test_set = DatasetForGPVAE(
-            test_set, return_X_intact=False, return_labels=False, file_type=file_type
+            test_set, return_X_ori=False, return_labels=False, file_type=file_type
         )
         test_loader = DataLoader(
             test_set,

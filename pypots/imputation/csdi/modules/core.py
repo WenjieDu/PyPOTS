@@ -208,7 +208,7 @@ class _CSDI(nn.Module):
         results = {}
         if training:  # for training
             (observed_data, indicating_mask, cond_mask, observed_tp) = (
-                inputs["X_intact"],
+                inputs["X_ori"],
                 inputs["indicating_mask"],
                 inputs["cond_mask"],
                 inputs["observed_tp"],
@@ -220,7 +220,7 @@ class _CSDI(nn.Module):
             results["loss"] = training_loss
         elif not training and n_sampling_times == 0:  # for validating
             (observed_data, indicating_mask, cond_mask, observed_tp) = (
-                inputs["X_intact"],
+                inputs["X_ori"],
                 inputs["indicating_mask"],
                 inputs["cond_mask"],
                 inputs["observed_tp"],

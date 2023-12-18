@@ -19,10 +19,10 @@ class TestVisual(unittest.TestCase):
     imputed_test_set = locf.predict(TEST_SET)
     imputed_X = imputed_test_set["imputation"]
     X_with_missingness = TEST_SET["X"]
-    X_intact = TEST_SET["X_intact"]
+    X_ori = TEST_SET["X_ori"]
 
     def test_plot_data(self):
-        plot_data(self.X_with_missingness, self.X_intact, self.imputed_X, sample_idx=10)
+        plot_data(self.X_with_missingness, self.X_ori, self.imputed_X, sample_idx=10)
 
     def test_plot_missingness(self):
         plot_missingness(self.X_with_missingness, max_step=24, sample_idx=10)

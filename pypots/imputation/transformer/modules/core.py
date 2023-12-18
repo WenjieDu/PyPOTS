@@ -91,7 +91,7 @@ class _TransformerEncoder(nn.Module):
         if training:
             ORT_loss = calc_mae(learned_presentation, X, masks)
             MIT_loss = calc_mae(
-                learned_presentation, inputs["X_intact"], inputs["indicating_mask"]
+                learned_presentation, inputs["X_ori"], inputs["indicating_mask"]
             )
             results["ORT_loss"] = ORT_loss
             results["MIT_loss"] = MIT_loss

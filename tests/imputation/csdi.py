@@ -65,14 +65,14 @@ class TestCSDI(unittest.TestCase):
     def test_1_impute(self):
         imputed_X = self.csdi.predict(TEST_SET)["imputation"]
         test_CRPS = calc_quantile_crps(
-            imputed_X, DATA["test_X_intact"], DATA["test_X_indicating_mask"]
+            imputed_X, DATA["test_X_ori"], DATA["test_X_indicating_mask"]
         )
         imputed_X = imputed_X.mean(axis=1)  # mean over sampling times
         assert not np.isnan(
             imputed_X
         ).any(), "Output still has missing values after running impute()."
         test_MAE = calc_mae(
-            imputed_X, DATA["test_X_intact"], DATA["test_X_indicating_mask"]
+            imputed_X, DATA["test_X_ori"], DATA["test_X_indicating_mask"]
         )
         logger.info(f"CSDI test_MAE: {test_MAE}, test_CRPS: {test_CRPS}")
 
@@ -113,7 +113,7 @@ class TestCSDI(unittest.TestCase):
         imputation_results = self.csdi.predict(H5_TEST_SET_PATH)
         imputed_X = imputation_results["imputation"]
         test_CRPS = calc_quantile_crps(
-            imputed_X, DATA["test_X_intact"], DATA["test_X_indicating_mask"]
+            imputed_X, DATA["test_X_ori"], DATA["test_X_indicating_mask"]
         )
         imputed_X = imputed_X.mean(axis=1)  # mean over sampling times
         assert not np.isnan(
@@ -121,7 +121,7 @@ class TestCSDI(unittest.TestCase):
         ).any(), "Output still has missing values after running impute()."
 
         test_MAE = calc_mae(
-            imputed_X, DATA["test_X_intact"], DATA["test_X_indicating_mask"]
+            imputed_X, DATA["test_X_ori"], DATA["test_X_indicating_mask"]
         )
         logger.info(f"Lazy-loading CSDI test_MAE: {test_MAE}, test_CRPS: {test_CRPS}")
 
