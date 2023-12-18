@@ -8,6 +8,7 @@ Dataset class for model BRITS.
 from typing import Union, Iterable
 
 import torch
+from pygrinder import fill_and_get_mask_torch
 
 from ...data.base import BaseDataset
 from ...data.utils import _parse_delta_torch
@@ -43,15 +44,20 @@ class DatasetForBRITS(BaseDataset):
     def __init__(
         self,
         data: Union[dict, str],
-        return_labels: bool = True,
+        return_X_ori: bool,
+        return_labels: bool,
         file_type: str = "h5py",
     ):
-        super().__init__(data, return_labels, file_type)
+        super().__init__(data, return_X_ori, return_labels, file_type)
 
         if not isinstance(self.data, str):
             # calculate all delta here.
-            forward_missing_mask = (~torch.isnan(self.X)).type(torch.float32)
-            forward_X = torch.nan_to_num(self.X)
+            if self.X_ori is None:
+                forward_X, forward_missing_mask = fill_and_get_mask_torch(self.X)
+            else:
+                forward_missing_mask = self.missing_mask
+                forward_X = self.X
+
             forward_delta = _parse_delta_torch(forward_missing_mask)
             backward_X = torch.flip(forward_X, dims=[1])
             backward_missing_mask = torch.flip(forward_missing_mask, dims=[1])
@@ -110,6 +116,9 @@ class DatasetForBRITS(BaseDataset):
             self.processed_data["backward"]["delta"][idx],
         ]
 
+        if self.X_ori is not None and self.return_X_ori:
+            sample.extend([self.X_ori[idx], self.indicating_mask[idx]])
+
         if self.y is not None and self.return_labels:
             sample.append(self.y[idx].to(torch.long))
 
@@ -134,8 +143,7 @@ class DatasetForBRITS(BaseDataset):
             self.file_handle = self._open_file_handle()
 
         X = torch.from_numpy(self.file_handle["X"][idx]).to(torch.float32)
-        missing_mask = (~torch.isnan(X)).to(torch.float32)
-        X = torch.nan_to_num(X)
+        X, missing_mask = fill_and_get_mask_torch(X)
 
         forward = {
             "X": X,
@@ -160,6 +168,11 @@ class DatasetForBRITS(BaseDataset):
             backward["missing_mask"],
             backward["deltas"],
         ]
+
+        if "X_ori" in self.file_handle.keys() and self.return_X_ori:
+            X_ori = torch.from_numpy(self.file_handle["X_ori"][idx]).to(torch.float32)
+            X_ori, indicating_mask = fill_and_get_mask_torch(X_ori)
+            sample.extend([X_ori, indicating_mask])
 
         # if the dataset has labels and is for training, then fetch it from the file
         if "y" in self.file_handle.keys() and self.return_labels:

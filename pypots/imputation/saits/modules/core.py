@@ -155,7 +155,10 @@ class _SAITS(nn.Module):
         )
 
     def forward(
-        self, inputs: dict, diagonal_attention_mask: bool = False, training: bool = True
+        self,
+        inputs: dict,
+        diagonal_attention_mask: bool = False,
+        training: bool = True,
     ) -> dict:
         X, masks = inputs["X"], inputs["missing_mask"]
 
@@ -190,7 +193,7 @@ class _SAITS(nn.Module):
             ORT_loss /= 3
 
             MIT_loss = self.customized_loss_func(
-                X_tilde_3, inputs["X_intact"], inputs["indicating_mask"]
+                X_tilde_3, inputs["X_ori"], inputs["indicating_mask"]
             )
 
             results["ORT_loss"] = ORT_loss

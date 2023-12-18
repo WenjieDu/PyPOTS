@@ -6,8 +6,28 @@ Data utils.
 # License: BSD-3-Clause
 
 from typing import Union
+
 import numpy as np
 import torch
+
+
+def turn_data_into_specified_dtype(
+    data: Union[np.ndarray, torch.Tensor, list],
+    dtype: str = "tensor",
+) -> Union[np.ndarray, torch.Tensor]:
+    """Turn the given data into the specified data type."""
+
+    if isinstance(data, torch.Tensor):
+        data = data if dtype == "tensor" else data.numpy()
+    elif isinstance(data, list):
+        data = torch.tensor(data) if dtype == "tensor" else np.asarray(data)
+    elif isinstance(data, np.ndarray):
+        data = torch.from_numpy(data) if dtype == "tensor" else data
+    else:
+        raise TypeError(
+            f"data should be an instance of list/np.ndarray/torch.Tensor, but got {type(data)}"
+        )
+    return data
 
 
 def _parse_delta_torch(missing_mask: torch.Tensor) -> torch.Tensor:

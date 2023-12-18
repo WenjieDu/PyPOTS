@@ -8,7 +8,7 @@ Dataset class for self-attention models trained with MIT (masked imputation task
 from typing import Union, Iterable
 
 import torch
-from pygrinder import mcar
+from pygrinder import mcar, fill_and_get_mask_torch
 
 from ...data.base import BaseDataset
 
@@ -53,11 +53,12 @@ class DatasetForSAITS(BaseDataset):
     def __init__(
         self,
         data: Union[dict, str],
-        return_labels: bool = True,
+        return_X_ori: bool,
+        return_labels: bool,
         file_type: str = "h5py",
         rate: float = 0.2,
     ):
-        super().__init__(data, return_labels, file_type)
+        super().__init__(data, return_X_ori, return_labels, file_type)
         self.rate = rate
 
     def _fetch_data_from_array(self, idx: int) -> Iterable:
@@ -76,7 +77,7 @@ class DatasetForSAITS(BaseDataset):
             index : int tensor,
                 The index of the sample.
 
-            X_intact : tensor,
+            X_ori : tensor,
                 Original time-series for calculating mask imputation loss.
 
             X : tensor,
@@ -88,14 +89,24 @@ class DatasetForSAITS(BaseDataset):
             indicating_mask : tensor.
                 The mask indicates artificially missing values in X.
         """
-        X = self.X[idx].to(torch.float32)
-        X_intact, X, missing_mask, indicating_mask = mcar(X, p=self.rate)
+
+        if self.X_ori is not None and self.return_X_ori:
+            X = self.X[idx]
+            X_ori = self.X_ori[idx]
+            missing_mask = self.missing_mask[idx]
+            indicating_mask = self.indicating_mask[idx]
+        else:
+            X_ori = self.X[idx]
+            X = mcar(X_ori, p=self.rate)
+            X, missing_mask = fill_and_get_mask_torch(X)
+            X_ori, X_ori_missing_mask = fill_and_get_mask_torch(X_ori)
+            indicating_mask = (X_ori_missing_mask - missing_mask).to(torch.float32)
 
         sample = [
             torch.tensor(idx),
-            X_intact,
             X,
             missing_mask,
+            X_ori,
             indicating_mask,
         ]
 
@@ -122,16 +133,20 @@ class DatasetForSAITS(BaseDataset):
         if self.file_handle is None:
             self.file_handle = self._open_file_handle()
 
-        X = torch.from_numpy(self.file_handle["X"][idx]).to(torch.float32)
-        X_intact, X, missing_mask, indicating_mask = mcar(X, p=self.rate)
+        if "X_ori" in self.file_handle.keys() and self.return_X_ori:
+            X = torch.from_numpy(self.file_handle["X"][idx]).to(torch.float32)
+            X_ori = torch.from_numpy(self.file_handle["X_ori"][idx]).to(torch.float32)
+            X_ori, X_ori_missing_mask = fill_and_get_mask_torch(X_ori)
+            X, missing_mask = fill_and_get_mask_torch(X)
+            indicating_mask = (X_ori_missing_mask - missing_mask).to(torch.float32)
+        else:
+            X_ori = torch.from_numpy(self.file_handle["X"][idx]).to(torch.float32)
+            X = mcar(X_ori, p=self.rate)
+            X_ori, X_ori_missing_mask = fill_and_get_mask_torch(X_ori)
+            X, missing_mask = fill_and_get_mask_torch(X)
+            indicating_mask = (X_ori_missing_mask - missing_mask).to(torch.float32)
 
-        sample = [
-            torch.tensor(idx),
-            X_intact,
-            X,
-            missing_mask,
-            indicating_mask,
-        ]
+        sample = [torch.tensor(idx), X, missing_mask, X_ori, indicating_mask]
 
         # if the dataset has labels and is for training, then fetch it from the file
         if "y" in self.file_handle.keys() and self.return_labels:

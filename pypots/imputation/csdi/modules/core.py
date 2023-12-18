@@ -19,7 +19,6 @@ class _CSDI(nn.Module):
         d_feature_embedding,
         d_diffusion_embedding,
         is_unconditional,
-        target_strategy,
         n_diffusion_steps,
         schedule,
         beta_start,
@@ -31,7 +30,6 @@ class _CSDI(nn.Module):
         self.d_time_embedding = d_time_embedding
         self.d_feature_embedding = d_feature_embedding
         self.is_unconditional = is_unconditional
-        self.target_strategy = target_strategy
         self.n_channels = n_channels
         self.n_diffusion_steps = n_diffusion_steps
 
@@ -87,33 +85,6 @@ class _CSDI(nn.Module):
         pe[:, :, 1::2] = torch.cos(position * div_term)
         return pe
 
-    @staticmethod
-    def get_rand_mask(observed_mask):
-        rand_for_mask = torch.rand_like(observed_mask) * observed_mask
-        rand_for_mask = rand_for_mask.reshape(len(rand_for_mask), -1)
-        for i in range(len(observed_mask)):
-            sample_ratio = np.random.rand()  # missing ratio
-            num_observed = observed_mask[i].sum().item()
-            num_masked = round(num_observed * sample_ratio)
-            rand_for_mask[i][rand_for_mask[i].topk(num_masked).indices] = -1
-        cond_mask = (rand_for_mask > 0).reshape(observed_mask.shape).float()
-        return cond_mask
-
-    def get_hist_mask(self, observed_mask, for_pattern_mask=None):
-        if for_pattern_mask is None:
-            for_pattern_mask = observed_mask
-        if self.target_strategy == "mix":
-            rand_mask = self.get_rand_mask(observed_mask)
-
-        cond_mask = observed_mask.clone()
-        for i in range(len(cond_mask)):
-            mask_choice = np.random.rand()
-            if self.target_strategy == "mix" and mask_choice > 0.5:
-                cond_mask[i] = rand_mask[i]
-            else:  # draw another sample for hist mask (i-1 corresponds to another sample)
-                cond_mask[i] = cond_mask[i] * for_pattern_mask[i - 1]
-        return cond_mask
-
     def get_side_info(self, observed_tp, cond_mask):
         B, K, L = cond_mask.shape
         device = observed_tp.device
@@ -139,18 +110,18 @@ class _CSDI(nn.Module):
         return side_info
 
     def calc_loss_valid(
-        self, observed_data, cond_mask, observed_mask, side_info, is_train
+        self, observed_data, cond_mask, indicating_mask, side_info, is_train
     ):
         loss_sum = 0
         for t in range(self.n_diffusion_steps):  # calculate loss for all t
             loss = self.calc_loss(
-                observed_data, cond_mask, observed_mask, side_info, is_train, set_t=t
+                observed_data, cond_mask, indicating_mask, side_info, is_train, set_t=t
             )
             loss_sum += loss.detach()
         return loss_sum / self.n_diffusion_steps
 
     def calc_loss(
-        self, observed_data, cond_mask, observed_mask, side_info, is_train, set_t=-1
+        self, observed_data, cond_mask, indicating_mask, side_info, is_train, set_t=-1
     ):
         B, K, L = observed_data.shape
         device = observed_data.device
@@ -169,7 +140,7 @@ class _CSDI(nn.Module):
 
         predicted = self.diff_model(total_input, side_info, t)  # (B,K,L)
 
-        target_mask = observed_mask - cond_mask
+        target_mask = indicating_mask
         residual = (noise - predicted) * target_mask
         num_eval = target_mask.sum()
         loss = (residual**2).sum() / (num_eval if num_eval > 0 else 1)
@@ -234,37 +205,43 @@ class _CSDI(nn.Module):
         return imputed_samples
 
     def forward(self, inputs, training=True, n_sampling_times=1):
-        (observed_data, observed_mask, observed_tp, gt_mask, for_pattern_mask,) = (
-            inputs["observed_data"],
-            inputs["observed_mask"],
-            inputs["observed_tp"],
-            inputs["gt_mask"],
-            inputs["for_pattern_mask"],
-        )
-
-        if not training:
-            cond_mask = gt_mask
-        elif self.target_strategy != "random":
-            cond_mask = self.get_hist_mask(
-                observed_mask, for_pattern_mask=for_pattern_mask
+        results = {}
+        if training:  # for training
+            (observed_data, indicating_mask, cond_mask, observed_tp) = (
+                inputs["X_ori"],
+                inputs["indicating_mask"],
+                inputs["cond_mask"],
+                inputs["observed_tp"],
             )
-        else:
-            cond_mask = self.get_rand_mask(observed_mask)
-
-        side_info = self.get_side_info(observed_tp, cond_mask)
-
-        loss_func = self.calc_loss if training else self.calc_loss_valid
-
-        # `loss` is always the item for backward propagating to update the model
-        loss = loss_func(observed_data, cond_mask, observed_mask, side_info, training)
-        results = {"loss": loss}
-
-        if not training and n_sampling_times > 0:
+            side_info = self.get_side_info(observed_tp, cond_mask)
+            training_loss = self.calc_loss(
+                observed_data, cond_mask, indicating_mask, side_info, training
+            )
+            results["loss"] = training_loss
+        elif not training and n_sampling_times == 0:  # for validating
+            (observed_data, indicating_mask, cond_mask, observed_tp) = (
+                inputs["X_ori"],
+                inputs["indicating_mask"],
+                inputs["cond_mask"],
+                inputs["observed_tp"],
+            )
+            side_info = self.get_side_info(observed_tp, cond_mask)
+            validating_loss = self.calc_loss_valid(
+                observed_data, cond_mask, indicating_mask, side_info, training
+            )
+            results["loss"] = validating_loss
+        elif not training and n_sampling_times > 0:  # for testing
+            observed_data, cond_mask, observed_tp = (
+                inputs["X"],
+                inputs["con_mask"],
+                inputs["observed_tp"],
+            )
+            side_info = self.get_side_info(observed_tp, cond_mask)
             samples = self.impute(
                 observed_data, cond_mask, side_info, n_sampling_times
             )  # (bz,n_sampling,K,L)
             repeated_obs = observed_data.unsqueeze(1).repeat(1, n_sampling_times, 1, 1)
-            repeated_mask = gt_mask.unsqueeze(1).repeat(1, n_sampling_times, 1, 1)
+            repeated_mask = cond_mask.unsqueeze(1).repeat(1, n_sampling_times, 1, 1)
             imputed_data = repeated_obs + samples * (1 - repeated_mask)
 
             results["imputed_data"] = imputed_data.permute(

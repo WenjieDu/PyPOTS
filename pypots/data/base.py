@@ -11,7 +11,10 @@ from typing import Union, Optional, Tuple, Iterable
 import h5py
 import numpy as np
 import torch
+from pygrinder import fill_and_get_mask_torch
 from torch.utils.data import Dataset
+
+from .utils import turn_data_into_specified_dtype
 
 # Currently we only support h5 files
 SUPPORTED_DATASET_FILE_TYPE = ["h5py"]
@@ -48,7 +51,8 @@ class BaseDataset(Dataset):
     def __init__(
         self,
         data: Union[dict, str],
-        return_labels: bool = True,
+        return_X_ori: bool,
+        return_labels: bool,
         file_type: str = "h5py",
     ):
         super().__init__()
@@ -56,13 +60,14 @@ class BaseDataset(Dataset):
         # So they are safe to use here. No need to check again.
 
         self.data = data
+        self.return_X_ori = return_X_ori
         self.return_labels = return_labels
+
         if isinstance(self.data, str):  # data from file
             # check if the given file type is supported
             assert (
                 file_type in SUPPORTED_DATASET_FILE_TYPE
             ), f"file_type should be one of {SUPPORTED_DATASET_FILE_TYPE}, but got {file_type}"
-
             self.file_type = file_type
 
             # open the file handle
@@ -74,8 +79,23 @@ class BaseDataset(Dataset):
 
         else:  # data from array
             X = data["X"]
+            X_ori = None if "X_ori" not in data.keys() else data["X_ori"]
             y = None if "y" not in data.keys() else data["y"]
-            self.X, self.y = self._check_input(X, y)
+            self.X, self.X_ori, self.y = self._check_array_input(X, X_ori, y)
+
+            if self.X_ori is not None and self.return_X_ori:
+                # Only when X_ori is given and fixed, we fill the missing values in X here in advance.
+                # Otherwise, we may need original X with missing values to generate X_ori, e.g. in DatasetForSAITS.
+                self.X, self.missing_mask = fill_and_get_mask_torch(self.X)
+
+                self.X_ori, X_ori_missing_mask = fill_and_get_mask_torch(self.X_ori)
+                indicating_mask = X_ori_missing_mask - self.missing_mask
+                self.indicating_mask = indicating_mask.to(torch.float32)
+            else:
+                self.missing_mask = None
+                self.indicating_mask = None
+                # if return_X_ori is false, set X_ori to None as well
+                self.X_ori = None
 
         self.n_samples, self.n_steps, self.n_features = self._get_data_sizes()
 
@@ -112,12 +132,14 @@ class BaseDataset(Dataset):
         return self.n_samples
 
     @staticmethod
-    def _check_input(
+    def _check_array_input(
         X: Union[np.ndarray, torch.Tensor, list],
+        X_ori: Union[np.ndarray, torch.Tensor, list],
         y: Optional[Union[np.ndarray, torch.Tensor, list]] = None,
         out_dtype: str = "tensor",
     ) -> Tuple[
-        Union[np.ndarray, torch.Tensor, list],
+        Union[np.ndarray, torch.Tensor],
+        Union[np.ndarray, torch.Tensor],
         Optional[Union[np.ndarray, torch.Tensor, list]],
     ]:
         """Check value type and shape of input X and y
@@ -126,6 +148,10 @@ class BaseDataset(Dataset):
         ----------
         X :
             Time-series data that must have a shape like [n_samples, expected_n_steps, expected_n_features].
+
+        X_ori :
+            If X is with artificial missingness, X_ori is the original X without artificial missing values.
+            It must have the same shape as X. If X_ori is with original missing values, should be left as NaN.
 
         y :
             Labels of time-series samples (X) that must have a shape like [n_samples] or [n_samples, n_classes].
@@ -137,6 +163,8 @@ class BaseDataset(Dataset):
         -------
         X :
 
+        X_ori :
+
         y :
 
         """
@@ -145,55 +173,29 @@ class BaseDataset(Dataset):
             "ndarray",
         ], f'out_dtype should be "tensor" or "ndarray", but got {out_dtype}'
 
-        is_list = isinstance(X, list)
-        is_array = isinstance(X, np.ndarray)
-        is_tensor = isinstance(X, torch.Tensor)
-        assert is_tensor or is_array or is_list, TypeError(
-            "X should be an instance of list/np.ndarray/torch.Tensor, "
-            f"but got {type(X)}"
-        )
-
-        # convert the data type if in need
-        if out_dtype == "tensor":
-            if is_list:
-                X = torch.tensor(X)
-            elif is_array:
-                X = torch.from_numpy(X)
-            else:  # is tensor
-                pass
-        else:  # out_dtype is ndarray
-            # convert to np.ndarray first for shape check
-            if is_list:
-                X = np.asarray(X)
-            elif is_tensor:
-                X = X.numpy()
-            else:  # is ndarray
-                pass
+        # change the data type of X
+        X = turn_data_into_specified_dtype(X, out_dtype)
+        X = X.to(torch.float32)
 
         # check the shape of X here
         X_shape = X.shape
         assert len(X_shape) == 3, (
             f"input should have 3 dimensions [n_samples, seq_len, n_features],"
-            f"but got shape={X_shape}"
+            f"but got X: {X_shape}"
         )
-
+        if X_ori is not None:
+            X_ori = turn_data_into_specified_dtype(X_ori, out_dtype)
+            X_ori = X_ori.to(torch.float32)
+            assert (
+                X_shape == X_ori.shape
+            ), f"X and X_ori must have matched shape, but got X: f{X.shape} and X_ori: {X_ori.shape}"
         if y is not None:
             assert len(X) == len(y), (
                 f"lengths of X and y must match, " f"but got f{len(X)} and {len(y)}"
             )
-            if isinstance(y, torch.Tensor):
-                y = y if out_dtype == "tensor" else y.numpy()
-            elif isinstance(y, list):
-                y = torch.tensor(y) if out_dtype == "tensor" else np.asarray(y)
-            elif isinstance(y, np.ndarray):
-                y = torch.from_numpy(y) if out_dtype == "tensor" else y
-            else:
-                raise TypeError(
-                    "y should be an instance of list/np.ndarray/torch.Tensor, "
-                    f"but got {type(y)}"
-                )
+            y = turn_data_into_specified_dtype(y, out_dtype)
 
-        return X, y
+        return X, X_ori, y
 
     @abstractmethod
     def _fetch_data_from_array(self, idx: int) -> Iterable:
@@ -210,14 +212,23 @@ class BaseDataset(Dataset):
             The collated data sample, a list including all necessary sample info.
         """
 
-        X = self.X[idx].to(torch.float32)
-        missing_mask = (~torch.isnan(X)).to(torch.float32)
-        X = torch.nan_to_num(X)
+        if self.X_ori is None:
+            X = self.X[idx]
+            X, missing_mask = fill_and_get_mask_torch(X)
+        else:
+            X = self.X[idx]
+            missing_mask = self.missing_mask[idx]
+
         sample = [
             torch.tensor(idx),
             X,
             missing_mask,
         ]
+
+        if self.X_ori is not None and self.return_X_ori:
+            X_ori = self.X_ori[idx]
+            indicating_mask = self.indicating_mask[idx]
+            sample.extend([X_ori, indicating_mask])
 
         if self.y is not None and self.return_labels:
             sample.append(self.y[idx].to(torch.long))
@@ -286,13 +297,18 @@ class BaseDataset(Dataset):
             self.file_handle = self._open_file_handle()
 
         X = torch.from_numpy(self.file_handle["X"][idx]).to(torch.float32)
-        missing_mask = (~torch.isnan(X)).to(torch.float32)
-        X = torch.nan_to_num(X)
+        X, missing_mask = fill_and_get_mask_torch(X)
         sample = [
             torch.tensor(idx),
             X,
             missing_mask,
         ]
+
+        if "X_ori" in self.file_handle.keys() and self.return_X_ori:
+            X_ori = torch.from_numpy(self.file_handle["X_ori"][idx]).to(torch.float32)
+            X_ori, X_ori_missing_mask = fill_and_get_mask_torch(X_ori)
+            indicating_mask = (X_ori_missing_mask - missing_mask).to(torch.float32)
+            sample.extend([X_ori, indicating_mask])
 
         # if the dataset has labels and is for training, then fetch it from the file
         if "y" in self.file_handle.keys() and self.return_labels:

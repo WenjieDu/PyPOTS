@@ -46,11 +46,12 @@ setup(
     install_requires=[
         "numpy",
         "scikit-learn",
+        "matplotlib",
         "scipy",
         "torch>=1.10.0",
         "tensorboard",
         "pandas<2.0.0",
-        "pygrinder>=0.2",
+        "pygrinder>=0.4",
         "tsdb>=0.2",
         "h5py",
     ],
