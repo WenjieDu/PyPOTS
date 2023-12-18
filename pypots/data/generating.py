@@ -9,8 +9,7 @@ import math
 from typing import Optional, Tuple
 
 import numpy as np
-import torch
-from pygrinder import mcar, masked_fill
+from pygrinder import mcar
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.utils import check_random_state
@@ -273,10 +272,8 @@ def gene_random_walk(
 
     if missing_rate > 0:
         # create random missing values
-        _, train_X, missing_mask, _ = mcar(train_X, missing_rate)
-        train_X = masked_fill(train_X, 1 - missing_mask, torch.nan)
-        _, val_X, missing_mask, _ = mcar(val_X, missing_rate)
-        val_X = masked_fill(val_X, 1 - missing_mask, torch.nan)
+        train_X = mcar(train_X, missing_rate)
+        val_X = mcar(val_X, missing_rate)
         # test set is left to mask after normalization
 
     train_X = train_X.reshape(-1, n_features)
@@ -306,23 +303,22 @@ def gene_random_walk(
 
     if missing_rate > 0:
         # mask values in the validation set as ground truth
-        val_X_intact, val_X, val_X_missing_mask, val_X_indicating_mask = mcar(
-            val_X, missing_rate
-        )
-        val_X = masked_fill(val_X, 1 - val_X_missing_mask, torch.nan)
+        val_X_ori = val_X
+        val_X = mcar(val_X, missing_rate)
 
         # mask values in the test set as ground truth
-        test_X_intact, test_X, test_X_missing_mask, test_X_indicating_mask = mcar(
-            test_X, 0.3
-        )
-        test_X = masked_fill(test_X, 1 - test_X_missing_mask, torch.nan)
+        test_X_ori = test_X
+        test_X = mcar(test_X, 0.3)
 
         data["val_X"] = val_X
-        data["val_X_intact"] = val_X_intact
-        data["val_X_indicating_mask"] = val_X_indicating_mask
+        data["val_X_ori"] = val_X_ori
+
+        # test_X is for model input
         data["test_X"] = test_X
-        data["test_X_intact"] = test_X_intact
-        data["test_X_indicating_mask"] = test_X_indicating_mask
+        # test_X_ori is for error calc, not for model input, hence mustn't have NaNs
+        data["test_X_ori"] = np.nan_to_num(test_X_ori)
+        data["test_X_indicating_mask"] = ~np.isnan(test_X_ori) ^ ~np.isnan(test_X)
+
     return data
 
 
@@ -414,22 +410,19 @@ def gene_physionet2012(artificially_missing_rate: float = 0.1):
 
     if artificially_missing_rate > 0:
         # mask values in the validation set as ground truth
-        val_X_intact, val_X, val_X_missing_mask, val_X_indicating_mask = mcar(
-            val_X, artificially_missing_rate
-        )
-        val_X = masked_fill(val_X, 1 - val_X_missing_mask, torch.nan)
-
+        val_X_ori = val_X
+        val_X = mcar(val_X, artificially_missing_rate)
         # mask values in the test set as ground truth
-        test_X_intact, test_X, test_X_missing_mask, test_X_indicating_mask = mcar(
-            test_X, artificially_missing_rate
-        )
-        test_X = masked_fill(test_X, 1 - test_X_missing_mask, torch.nan)
+        test_X_ori = test_X
+        test_X = mcar(test_X, artificially_missing_rate)
 
         data["val_X"] = val_X
+        data["val_X_ori"] = val_X_ori
+
+        # test_X is for model input
         data["test_X"] = test_X
-        data["test_X_intact"] = test_X_intact
-        data["test_X_indicating_mask"] = test_X_indicating_mask
-        data["val_X_intact"] = val_X_intact
-        data["val_X_indicating_mask"] = val_X_indicating_mask
+        # test_X_ori is for error calc, not for model input, hence mustn't have NaNs
+        data["test_X_ori"] = np.nan_to_num(test_X_ori)
+        data["test_X_indicating_mask"] = ~np.isnan(test_X_ori) ^ ~np.isnan(test_X)
 
     return data

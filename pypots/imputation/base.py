@@ -288,23 +288,24 @@ class BaseNNImputer(BaseNNModel):
 
                 if val_loader is not None:
                     self.model.eval()
-                    imputation_collector = []
+                    imputation_loss_collector = []
                     with torch.no_grad():
                         for idx, data in enumerate(val_loader):
                             inputs = self._assemble_input_for_validating(data)
                             results = self.model.forward(inputs, training=False)
-                            imputed_data = results["imputed_data"]
-                            imputation_collector.append(imputed_data)
+                            imputation_mse = (
+                                calc_mse(
+                                    results["imputed_data"],
+                                    inputs["X_ori"],
+                                    inputs["indicating_mask"],
+                                )
+                                .sum()
+                                .detach()
+                                .item()
+                            )
+                            imputation_loss_collector.append(imputation_mse)
 
-                    imputation_collector = torch.cat(imputation_collector)
-                    imputation_collector = imputation_collector.cpu().detach().numpy()
-
-                    mean_val_loss = calc_mse(
-                        imputation_collector,
-                        val_loader.dataset.data["X_intact"],
-                        val_loader.dataset.data["indicating_mask"],
-                        # the above val_loader.dataset.data is a dict containing the validation dataset
-                    )
+                    mean_val_loss = np.mean(imputation_loss_collector)
 
                     # save validating loss logs into the tensorboard file for every epoch if in need
                     if self.summary_writer is not None:

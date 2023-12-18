@@ -18,15 +18,16 @@ from pypots.utils.logging import logger
 from pypots.utils.metrics import calc_mae
 from tests.global_test_config import (
     DATA,
+    EPOCHS,
     DEVICE,
-    check_tb_and_model_checkpoints_existence,
-)
-from tests.imputation.config import (
     TRAIN_SET,
     VAL_SET,
     TEST_SET,
+    H5_TRAIN_SET_PATH,
+    H5_VAL_SET_PATH,
+    H5_TEST_SET_PATH,
     RESULT_SAVING_DIR_FOR_IMPUTATION,
-    EPOCHS,
+    check_tb_and_model_checkpoints_existence,
 )
 
 
@@ -42,7 +43,7 @@ class TestUSGAN(unittest.TestCase):
     D_optimizer = Adam(lr=0.001, weight_decay=1e-5)
 
     # initialize a US-GAN model
-    us_gan = USGAN(
+    usgan = USGAN(
         DATA["n_steps"],
         DATA["n_features"],
         256,
@@ -55,36 +56,32 @@ class TestUSGAN(unittest.TestCase):
 
     @pytest.mark.xdist_group(name="imputation-usgan")
     def test_0_fit(self):
-        self.us_gan.fit(TRAIN_SET, VAL_SET)
+        self.usgan.fit(TRAIN_SET, VAL_SET)
 
     @pytest.mark.xdist_group(name="imputation-usgan")
     def test_1_impute(self):
-        imputed_X = self.us_gan.impute(TEST_SET)
+        imputed_X = self.usgan.impute(TEST_SET)
         assert not np.isnan(
             imputed_X
         ).any(), "Output still has missing values after running impute()."
         test_MAE = calc_mae(
-            imputed_X, DATA["test_X_intact"], DATA["test_X_indicating_mask"]
+            imputed_X, DATA["test_X_ori"], DATA["test_X_indicating_mask"]
         )
         logger.info(f"US-GAN test_MAE: {test_MAE}")
 
     @pytest.mark.xdist_group(name="imputation-usgan")
     def test_2_parameters(self):
-        assert hasattr(self.us_gan, "model") and self.us_gan.model is not None
+        assert hasattr(self.usgan, "model") and self.usgan.model is not None
+
+        assert hasattr(self.usgan, "G_optimizer") and self.usgan.G_optimizer is not None
+        assert hasattr(self.usgan, "D_optimizer") and self.usgan.D_optimizer is not None
+
+        assert hasattr(self.usgan, "best_loss")
+        self.assertNotEqual(self.usgan.best_loss, float("inf"))
 
         assert (
-            hasattr(self.us_gan, "G_optimizer") and self.us_gan.G_optimizer is not None
-        )
-        assert (
-            hasattr(self.us_gan, "D_optimizer") and self.us_gan.D_optimizer is not None
-        )
-
-        assert hasattr(self.us_gan, "best_loss")
-        self.assertNotEqual(self.us_gan.best_loss, float("inf"))
-
-        assert (
-            hasattr(self.us_gan, "best_model_dict")
-            and self.us_gan.best_model_dict is not None
+            hasattr(self.usgan, "best_model_dict")
+            and self.usgan.best_model_dict is not None
         )
 
     @pytest.mark.xdist_group(name="imputation-usgan")
@@ -95,14 +92,29 @@ class TestUSGAN(unittest.TestCase):
         ), f"file {self.saving_path} does not exist"
 
         # check if the tensorboard file and model checkpoints exist
-        check_tb_and_model_checkpoints_existence(self.us_gan)
+        check_tb_and_model_checkpoints_existence(self.usgan)
 
         # save the trained model into file, and check if the path exists
         saved_model_path = os.path.join(self.saving_path, self.model_save_name)
-        self.us_gan.save(saved_model_path)
+        self.usgan.save(saved_model_path)
 
         # test loading the saved model, not necessary, but need to test
-        self.us_gan.load(saved_model_path)
+        self.usgan.load(saved_model_path)
+
+    @pytest.mark.xdist_group(name="imputation-usgan")
+    def test_4_lazy_loading(self):
+        self.usgan.fit(H5_TRAIN_SET_PATH, H5_VAL_SET_PATH)
+        imputation_results = self.usgan.predict(H5_TEST_SET_PATH)
+        assert not np.isnan(
+            imputation_results["imputation"]
+        ).any(), "Output still has missing values after running impute()."
+
+        test_MAE = calc_mae(
+            imputation_results["imputation"],
+            DATA["test_X_ori"],
+            DATA["test_X_indicating_mask"],
+        )
+        logger.info(f"Lazy-loading US-GAN test_MAE: {test_MAE}")
 
 
 if __name__ == "__main__":

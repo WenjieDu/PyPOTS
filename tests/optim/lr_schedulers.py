@@ -75,7 +75,7 @@ class TestLRSchedulers(unittest.TestCase):
             imputed_X
         ).any(), "Output still has missing values after running impute()."
         test_MAE = calc_mae(
-            imputed_X, DATA["test_X_intact"], DATA["test_X_indicating_mask"]
+            imputed_X, DATA["test_X_ori"], DATA["test_X_indicating_mask"]
         )
         logger.info(f"SAITS test_MAE: {test_MAE}")
 
@@ -103,7 +103,7 @@ class TestLRSchedulers(unittest.TestCase):
             imputed_X
         ).any(), "Output still has missing values after running impute()."
         test_MAE = calc_mae(
-            imputed_X, DATA["test_X_intact"], DATA["test_X_indicating_mask"]
+            imputed_X, DATA["test_X_ori"], DATA["test_X_indicating_mask"]
         )
         logger.info(f"SAITS test_MAE: {test_MAE}")
 
@@ -131,7 +131,7 @@ class TestLRSchedulers(unittest.TestCase):
             imputed_X
         ).any(), "Output still has missing values after running impute()."
         test_MAE = calc_mae(
-            imputed_X, DATA["test_X_intact"], DATA["test_X_indicating_mask"]
+            imputed_X, DATA["test_X_ori"], DATA["test_X_indicating_mask"]
         )
         logger.info(f"SAITS test_MAE: {test_MAE}")
 
@@ -159,7 +159,7 @@ class TestLRSchedulers(unittest.TestCase):
             imputed_X
         ).any(), "Output still has missing values after running impute()."
         test_MAE = calc_mae(
-            imputed_X, DATA["test_X_intact"], DATA["test_X_indicating_mask"]
+            imputed_X, DATA["test_X_ori"], DATA["test_X_indicating_mask"]
         )
         logger.info(f"SAITS test_MAE: {test_MAE}")
 
@@ -188,7 +188,7 @@ class TestLRSchedulers(unittest.TestCase):
             imputed_X
         ).any(), "Output still has missing values after running impute()."
         test_MAE = calc_mae(
-            imputed_X, DATA["test_X_intact"], DATA["test_X_indicating_mask"]
+            imputed_X, DATA["test_X_ori"], DATA["test_X_indicating_mask"]
         )
         logger.info(f"SAITS test_MAE: {test_MAE}")
 
@@ -216,7 +216,7 @@ class TestLRSchedulers(unittest.TestCase):
             imputed_X
         ).any(), "Output still has missing values after running impute()."
         test_MAE = calc_mae(
-            imputed_X, DATA["test_X_intact"], DATA["test_X_indicating_mask"]
+            imputed_X, DATA["test_X_ori"], DATA["test_X_indicating_mask"]
         )
         logger.info(f"SAITS test_MAE: {test_MAE}")
 
@@ -244,6 +244,6 @@ class TestLRSchedulers(unittest.TestCase):
             imputed_X
         ).any(), "Output still has missing values after running impute()."
         test_MAE = calc_mae(
-            imputed_X, DATA["test_X_intact"], DATA["test_X_indicating_mask"]
+            imputed_X, DATA["test_X_ori"], DATA["test_X_indicating_mask"]
         )
         logger.info(f"SAITS test_MAE: {test_MAE}")

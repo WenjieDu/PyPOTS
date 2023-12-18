@@ -11,6 +11,7 @@ import numpy as np
 import torch
 
 from pypots.data.generating import gene_random_walk
+from pypots.data.saving import save_dict_into_h5
 from pypots.utils.logging import logger
 from pypots.utils.random import set_random_seed
 
@@ -25,13 +26,32 @@ DATA = gene_random_walk(
     n_samples_each_class=1000,
     missing_rate=0.1,
 )
+# DATA = gene_physionet2012()
 
-# The directory for saving the dataset into files for testing
-DATA_SAVING_DIR = "h5data_for_tests"
+TRAIN_SET = {
+    "X": DATA["train_X"],
+    "y": DATA["train_y"].astype(float),
+}
+VAL_SET = {
+    "X": DATA["val_X"],
+    "X_ori": DATA["val_X_ori"],
+    "y": DATA["val_y"].astype(float),
+}
+TEST_SET = {
+    "X": DATA["test_X"],
+    "X_ori": DATA["test_X_ori"],
+    "y": DATA["test_y"].astype(float),
+}
 
 # tensorboard and model files saving directory
 RESULT_SAVING_DIR = "testing_results"
+RESULT_SAVING_DIR_FOR_IMPUTATION = os.path.join(RESULT_SAVING_DIR, "imputation")
+RESULT_SAVING_DIR_FOR_CLASSIFICATION = os.path.join(RESULT_SAVING_DIR, "classification")
+RESULT_SAVING_DIR_FOR_CLUSTERING = os.path.join(RESULT_SAVING_DIR, "clustering")
+RESULT_SAVING_DIR_FOR_FORECASTING = os.path.join(RESULT_SAVING_DIR, "forecasting")
 
+# set the number of epochs for all model training
+EPOCHS = 5
 
 # set DEVICES to None if no cuda device is available, to avoid initialization failed while importing test classes
 n_cuda_devices = torch.cuda.device_count()
@@ -45,6 +65,12 @@ else:
     # if having no multiple cuda devices, leave it as None to use the default device
     DEVICE = None
 
+# save the generated dataset into files for testing the lazy-loading strategy
+DATA_SAVING_DIR = "h5data_for_tests"
+H5_TRAIN_SET_PATH = f"{DATA_SAVING_DIR}/train_set.h5"
+H5_VAL_SET_PATH = f"{DATA_SAVING_DIR}/val_set.h5"
+H5_TEST_SET_PATH = f"{DATA_SAVING_DIR}/test_set.h5"
+
 
 def check_tb_and_model_checkpoints_existence(model):
     # check the tensorboard file existence
@@ -57,3 +83,34 @@ def check_tb_and_model_checkpoints_existence(model):
     # check the model checkpoints existence
     saved_model_files = [i for i in saved_files if i.endswith(".pypots")]
     assert len(saved_model_files) > 0, "No model checkpoint saved."
+
+
+if __name__ == "__main__":
+    if not os.path.exists(H5_TRAIN_SET_PATH):
+        save_dict_into_h5(
+            {
+                "X": DATA["train_X"],
+                "y": DATA["train_y"].astype(float),
+            },
+            H5_TRAIN_SET_PATH,
+        )
+
+    if not os.path.exists(H5_VAL_SET_PATH):
+        save_dict_into_h5(
+            {
+                "X": DATA["val_X"],
+                "X_ori": DATA["val_X_ori"],
+                "y": DATA["val_y"].astype(float),
+            },
+            H5_VAL_SET_PATH,
+        )
+
+    if not os.path.exists(H5_TEST_SET_PATH):
+        save_dict_into_h5(
+            {
+                "X": DATA["test_X"],
+                "X_ori": DATA["test_X_ori"],
+                "y": DATA["test_y"].astype(float),
+            },
+            H5_TEST_SET_PATH,
+        )

@@ -14,8 +14,9 @@ class DatasetForTransformer(DatasetForSAITS):
     def __init__(
         self,
         data: Union[dict, str],
-        return_labels: bool = True,
+        return_X_ori: bool,
+        return_labels: bool,
         file_type: str = "h5py",
         rate: float = 0.2,
     ):
-        super().__init__(data, return_labels, file_type, rate)
+        super().__init__(data, return_X_ori, return_labels, file_type, rate)
