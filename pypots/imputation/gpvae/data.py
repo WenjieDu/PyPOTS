@@ -42,11 +42,11 @@ class DatasetForGPVAE(BaseDataset):
     def __init__(
         self,
         data: Union[dict, str],
-        return_X_intact: bool,
+        return_X_ori: bool,
         return_labels: bool,
         file_type: str = "h5py",
     ):
-        super().__init__(data, return_X_intact, return_labels, file_type)
+        super().__init__(data, return_X_ori, return_labels, file_type)
 
     def _fetch_data_from_array(self, idx: int) -> Iterable:
         """Fetch data from self.X if it is given.
@@ -78,12 +78,12 @@ class DatasetForGPVAE(BaseDataset):
         """
         X = self.X[idx]
 
-        if self.X_intact is not None and self.return_X_intact:
+        if self.X_ori is not None and self.return_X_ori:
             X = self.X[idx]
             missing_mask = self.missing_mask[idx]
-            X_intact = self.X_intact[idx]
+            X_ori = self.X_ori[idx]
             indicating_mask = self.indicating_mask[idx]
-            sample = [torch.tensor(idx), X, missing_mask, X_intact, indicating_mask]
+            sample = [torch.tensor(idx), X, missing_mask, X_ori, indicating_mask]
         else:
             X, missing_mask = fill_and_get_mask_torch(X)
             sample = [torch.tensor(idx), X, missing_mask]
@@ -111,15 +111,13 @@ class DatasetForGPVAE(BaseDataset):
         if self.file_handle is None:
             self.file_handle = self._open_file_handle()
 
-        if "X_intact" in self.file_handle.keys() and self.return_X_intact:
+        if "X_ori" in self.file_handle.keys() and self.return_X_ori:
             X = torch.from_numpy(self.file_handle["X"][idx]).to(torch.float32)
-            X_intact = torch.from_numpy(self.file_handle["X_intact"][idx]).to(
-                torch.float32
-            )
-            X_intact, X_intact_missing_mask = fill_and_get_mask_torch(X_intact)
+            X_ori = torch.from_numpy(self.file_handle["X_ori"][idx]).to(torch.float32)
+            X_ori, X_ori_missing_mask = fill_and_get_mask_torch(X_ori)
             X, missing_mask = fill_and_get_mask_torch(X)
-            indicating_mask = (X_intact_missing_mask - missing_mask).to(torch.float32)
-            sample = [torch.tensor(idx), X, missing_mask, X_intact, indicating_mask]
+            indicating_mask = (X_ori_missing_mask - missing_mask).to(torch.float32)
+            sample = [torch.tensor(idx), X, missing_mask, X_ori, indicating_mask]
         else:
             X = torch.from_numpy(self.file_handle["X"][idx]).to(torch.float32)
             X, missing_mask = fill_and_get_mask_torch(X)

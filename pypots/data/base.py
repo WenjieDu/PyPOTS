@@ -51,7 +51,7 @@ class BaseDataset(Dataset):
     def __init__(
         self,
         data: Union[dict, str],
-        return_X_intact: bool,
+        return_X_ori: bool,
         return_labels: bool,
         file_type: str = "h5py",
     ):
@@ -60,7 +60,7 @@ class BaseDataset(Dataset):
         # So they are safe to use here. No need to check again.
 
         self.data = data
-        self.return_X_intact = return_X_intact
+        self.return_X_ori = return_X_ori
         self.return_labels = return_labels
 
         if isinstance(self.data, str):  # data from file
@@ -79,25 +79,23 @@ class BaseDataset(Dataset):
 
         else:  # data from array
             X = data["X"]
-            X_intact = None if "X_intact" not in data.keys() else data["X_intact"]
+            X_ori = None if "X_ori" not in data.keys() else data["X_ori"]
             y = None if "y" not in data.keys() else data["y"]
-            self.X, self.X_intact, self.y = self._check_array_input(X, X_intact, y)
+            self.X, self.X_ori, self.y = self._check_array_input(X, X_ori, y)
 
-            if self.X_intact is not None and self.return_X_intact:
-                # Only when X_intact is given and fixed, we fill the missing values in X here in advance.
-                # Otherwise, we may need original X with missing values to generate X_intact, e.g. in DatasetForSAITS.
+            if self.X_ori is not None and self.return_X_ori:
+                # Only when X_ori is given and fixed, we fill the missing values in X here in advance.
+                # Otherwise, we may need original X with missing values to generate X_ori, e.g. in DatasetForSAITS.
                 self.X, self.missing_mask = fill_and_get_mask_torch(self.X)
 
-                self.X_intact, X_intact_missing_mask = fill_and_get_mask_torch(
-                    self.X_intact
-                )
-                indicating_mask = X_intact_missing_mask - self.missing_mask
+                self.X_ori, X_ori_missing_mask = fill_and_get_mask_torch(self.X_ori)
+                indicating_mask = X_ori_missing_mask - self.missing_mask
                 self.indicating_mask = indicating_mask.to(torch.float32)
             else:
                 self.missing_mask = None
                 self.indicating_mask = None
-                # if return_X_intact is false, set X_intact to None as well
-                self.X_intact = None
+                # if return_X_ori is false, set X_ori to None as well
+                self.X_ori = None
 
         self.n_samples, self.n_steps, self.n_features = self._get_data_sizes()
 
@@ -136,7 +134,7 @@ class BaseDataset(Dataset):
     @staticmethod
     def _check_array_input(
         X: Union[np.ndarray, torch.Tensor, list],
-        X_intact: Union[np.ndarray, torch.Tensor, list],
+        X_ori: Union[np.ndarray, torch.Tensor, list],
         y: Optional[Union[np.ndarray, torch.Tensor, list]] = None,
         out_dtype: str = "tensor",
     ) -> Tuple[
@@ -151,9 +149,9 @@ class BaseDataset(Dataset):
         X :
             Time-series data that must have a shape like [n_samples, expected_n_steps, expected_n_features].
 
-        X_intact :
-            If X is with artificial missingness, X_intact is the original X without artificial missing values.
-            It must have the same shape as X. If X_intact is with original missing values, should be left as NaN.
+        X_ori :
+            If X is with artificial missingness, X_ori is the original X without artificial missing values.
+            It must have the same shape as X. If X_ori is with original missing values, should be left as NaN.
 
         y :
             Labels of time-series samples (X) that must have a shape like [n_samples] or [n_samples, n_classes].
@@ -165,7 +163,7 @@ class BaseDataset(Dataset):
         -------
         X :
 
-        X_intact :
+        X_ori :
 
         y :
 
@@ -185,19 +183,19 @@ class BaseDataset(Dataset):
             f"input should have 3 dimensions [n_samples, seq_len, n_features],"
             f"but got X: {X_shape}"
         )
-        if X_intact is not None:
-            X_intact = turn_data_into_specified_dtype(X_intact, out_dtype)
-            X_intact = X_intact.to(torch.float32)
+        if X_ori is not None:
+            X_ori = turn_data_into_specified_dtype(X_ori, out_dtype)
+            X_ori = X_ori.to(torch.float32)
             assert (
-                X_shape == X_intact.shape
-            ), f"X and X_intact must have matched shape, but got X: f{X.shape} and X_intact: {X_intact.shape}"
+                X_shape == X_ori.shape
+            ), f"X and X_ori must have matched shape, but got X: f{X.shape} and X_ori: {X_ori.shape}"
         if y is not None:
             assert len(X) == len(y), (
                 f"lengths of X and y must match, " f"but got f{len(X)} and {len(y)}"
             )
             y = turn_data_into_specified_dtype(y, out_dtype)
 
-        return X, X_intact, y
+        return X, X_ori, y
 
     @abstractmethod
     def _fetch_data_from_array(self, idx: int) -> Iterable:
@@ -214,7 +212,7 @@ class BaseDataset(Dataset):
             The collated data sample, a list including all necessary sample info.
         """
 
-        if self.X_intact is None:
+        if self.X_ori is None:
             X = self.X[idx]
             X, missing_mask = fill_and_get_mask_torch(X)
         else:
@@ -227,10 +225,10 @@ class BaseDataset(Dataset):
             missing_mask,
         ]
 
-        if self.X_intact is not None and self.return_X_intact:
-            X_intact = self.X_intact[idx]
+        if self.X_ori is not None and self.return_X_ori:
+            X_ori = self.X_ori[idx]
             indicating_mask = self.indicating_mask[idx]
-            sample.extend([X_intact, indicating_mask])
+            sample.extend([X_ori, indicating_mask])
 
         if self.y is not None and self.return_labels:
             sample.append(self.y[idx].to(torch.long))
@@ -306,13 +304,11 @@ class BaseDataset(Dataset):
             missing_mask,
         ]
 
-        if "X_intact" in self.file_handle.keys() and self.return_X_intact:
-            X_intact = torch.from_numpy(self.file_handle["X_intact"][idx]).to(
-                torch.float32
-            )
-            X_intact, X_intact_missing_mask = fill_and_get_mask_torch(X_intact)
-            indicating_mask = (X_intact_missing_mask - missing_mask).to(torch.float32)
-            sample.extend([X_intact, indicating_mask])
+        if "X_ori" in self.file_handle.keys() and self.return_X_ori:
+            X_ori = torch.from_numpy(self.file_handle["X_ori"][idx]).to(torch.float32)
+            X_ori, X_ori_missing_mask = fill_and_get_mask_torch(X_ori)
+            indicating_mask = (X_ori_missing_mask - missing_mask).to(torch.float32)
+            sample.extend([X_ori, indicating_mask])
 
         # if the dataset has labels and is for training, then fetch it from the file
         if "y" in self.file_handle.keys() and self.return_labels:

@@ -44,15 +44,15 @@ class DatasetForBRITS(BaseDataset):
     def __init__(
         self,
         data: Union[dict, str],
-        return_X_intact: bool,
+        return_X_ori: bool,
         return_labels: bool,
         file_type: str = "h5py",
     ):
-        super().__init__(data, return_X_intact, return_labels, file_type)
+        super().__init__(data, return_X_ori, return_labels, file_type)
 
         if not isinstance(self.data, str):
             # calculate all delta here.
-            if self.X_intact is None:
+            if self.X_ori is None:
                 forward_X, forward_missing_mask = fill_and_get_mask_torch(self.X)
             else:
                 forward_missing_mask = self.missing_mask
@@ -116,8 +116,8 @@ class DatasetForBRITS(BaseDataset):
             self.processed_data["backward"]["delta"][idx],
         ]
 
-        if self.X_intact is not None and self.return_X_intact:
-            sample.extend([self.X_intact[idx], self.indicating_mask[idx]])
+        if self.X_ori is not None and self.return_X_ori:
+            sample.extend([self.X_ori[idx], self.indicating_mask[idx]])
 
         if self.y is not None and self.return_labels:
             sample.append(self.y[idx].to(torch.long))
@@ -169,12 +169,10 @@ class DatasetForBRITS(BaseDataset):
             backward["deltas"],
         ]
 
-        if "X_intact" in self.file_handle.keys() and self.return_X_intact:
-            X_intact = torch.from_numpy(self.file_handle["X_intact"][idx]).to(
-                torch.float32
-            )
-            X_intact, indicating_mask = fill_and_get_mask_torch(X_intact)
-            sample.extend([X_intact, indicating_mask])
+        if "X_ori" in self.file_handle.keys() and self.return_X_ori:
+            X_ori = torch.from_numpy(self.file_handle["X_ori"][idx]).to(torch.float32)
+            X_ori, indicating_mask = fill_and_get_mask_torch(X_ori)
+            sample.extend([X_ori, indicating_mask])
 
         # if the dataset has labels and is for training, then fetch it from the file
         if "y" in self.file_handle.keys() and self.return_labels:
