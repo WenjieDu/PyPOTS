@@ -16,8 +16,9 @@ dependencies:
     #- conda-forge::pandas <2.0.0
     #- conda-forge::h5py
     #- conda-forge::tensorboard
-    #- conda-forge::pygrinder >=0.2
+    #- conda-forge::pygrinder >=0.4
     #- conda-forge::tsdb >=0.2
+    #- conda-forge::matplotlib
     #- pytorch::pytorch >=1.10.0
     ## Below we install the latest pypots because we need pypots-cli in it for development.
     ## PyPOTS itself already includes all basic dependencies.

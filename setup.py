@@ -46,6 +46,7 @@ setup(
     install_requires=[
         "numpy",
         "scikit-learn",
+        "matplotlib",
         "scipy",
         "torch>=1.10.0",
         "tensorboard",

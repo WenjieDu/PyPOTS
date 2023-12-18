@@ -70,7 +70,7 @@ class TestTimesNet(unittest.TestCase):
 
         test_MAE = calc_mae(
             imputation_results["imputation"],
-            DATA["test_X_intact"],
+            DATA["test_X_ori"],
             DATA["test_X_indicating_mask"],
         )
         logger.info(f"TimesNet test_MAE: {test_MAE}")
@@ -118,7 +118,7 @@ class TestTimesNet(unittest.TestCase):
 
         test_MAE = calc_mae(
             imputation_results["imputation"],
-            DATA["test_X_intact"],
+            DATA["test_X_ori"],
             DATA["test_X_indicating_mask"],
         )
         logger.info(f"Lazy-loading TimesNet test_MAE: {test_MAE}")

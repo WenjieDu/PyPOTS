@@ -21,11 +21,11 @@ class DatasetForCSDI(BaseDataset):
         self,
         data: Union[dict, str],
         target_strategy: str,
-        return_X_intact: bool,
+        return_X_ori: bool,
         return_labels: bool,
         file_type: str = "h5py",
     ):
-        super().__init__(data, return_X_intact, return_labels, file_type)
+        super().__init__(data, return_X_ori, return_labels, file_type)
         self.target_strategy = target_strategy
 
     @staticmethod
@@ -65,7 +65,7 @@ class DatasetForCSDI(BaseDataset):
             index : int tensor,
                 The index of the sample.
 
-            X_intact : tensor,
+            X_ori : tensor,
                 Original time-series for calculating mask imputation loss.
 
             X : tensor,
@@ -78,8 +78,8 @@ class DatasetForCSDI(BaseDataset):
                 The mask indicates artificially missing values in X.
         """
 
-        if self.X_intact is not None and self.return_X_intact:
-            observed_data = self.X_intact[idx]
+        if self.X_ori is not None and self.return_X_ori:
+            observed_data = self.X_ori[idx]
             cond_mask = self.missing_mask[idx]
             indicating_mask = self.indicating_mask[idx]
         else:
@@ -138,8 +138,8 @@ class DatasetForCSDI(BaseDataset):
         if self.file_handle is None:
             self.file_handle = self._open_file_handle()
 
-        if "X_intact" in self.file_handle.keys() and self.return_X_intact:
-            observed_data = torch.from_numpy(self.file_handle["X_intact"][idx]).to(
+        if "X_ori" in self.file_handle.keys() and self.return_X_ori:
+            observed_data = torch.from_numpy(self.file_handle["X_ori"][idx]).to(
                 torch.float32
             )
             observed_data, observed_mask = fill_and_get_mask_torch(observed_data)
@@ -197,11 +197,11 @@ class TestDatasetForCSDI(DatasetForCSDI):
     def __init__(
         self,
         data: Union[dict, str],
-        return_X_intact: bool,
+        return_X_ori: bool,
         return_labels: bool,
         file_type: str = "h5py",
     ):
-        super().__init__(data, "random", return_X_intact, return_labels, file_type)
+        super().__init__(data, "random", return_X_ori, return_labels, file_type)
 
     def _fetch_data_from_array(self, idx: int) -> Iterable:
         """Fetch data according to index.
@@ -219,7 +219,7 @@ class TestDatasetForCSDI(DatasetForCSDI):
             index : int tensor,
                 The index of the sample.
 
-            X_intact : tensor,
+            X_ori : tensor,
                 Original time-series for calculating mask imputation loss.
 
             X : tensor,

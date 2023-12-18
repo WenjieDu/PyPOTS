@@ -16,7 +16,7 @@ from ..logging import logger
 
 def plot_data(
     X: np.ndarray,
-    X_intact: np.ndarray,
+    X_ori: np.ndarray,
     X_imputed: np.ndarray,
     sample_idx: Optional[int] = None,
     n_rows: int = 10,
@@ -32,7 +32,7 @@ def plot_data(
     X : ndarray,
         The observed values
 
-    X_intact : ndarray,
+    X_ori : ndarray,
         The evaluated values
 
     X_imputed : ndarray,
@@ -78,7 +78,7 @@ def plot_data(
     for k in range(K):
         df = pd.DataFrame({"x": np.arange(0, L), "val": X_imputed[sample_idx, :, k]})
         df1 = pd.DataFrame({"x": np.arange(0, L), "val": X[sample_idx, :, k]})
-        df2 = pd.DataFrame({"x": np.arange(0, L), "val": X_intact[sample_idx, :, k]})
+        df2 = pd.DataFrame({"x": np.arange(0, L), "val": X_ori[sample_idx, :, k]})
         row = k // n_cols
         col = k % n_cols
         axes[row][col].plot(df1.x, df1.val, color="r", marker="x", linestyle="None")

@@ -77,7 +77,7 @@ class _TimesNet(nn.Module):
 
         if training:
             # `loss` is always the item for backward propagating to update the model
-            loss = calc_mse(dec_out, inputs["X_intact"], inputs["indicating_mask"])
+            loss = calc_mse(dec_out, inputs["X_ori"], inputs["indicating_mask"])
             results["loss"] = loss
 
         return results
