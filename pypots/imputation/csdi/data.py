@@ -7,8 +7,9 @@
 
 from typing import Union, Iterable
 
+import numpy as np
 import torch
-from pygrinder import mcar
+from pygrinder import fill_and_get_mask_torch
 
 from ...data.base import BaseDataset
 
@@ -19,12 +20,34 @@ class DatasetForCSDI(BaseDataset):
     def __init__(
         self,
         data: Union[dict, str],
-        return_labels: bool = True,
+        target_strategy: str,
+        return_X_intact: bool,
+        return_labels: bool,
         file_type: str = "h5py",
-        rate: float = 0.1,
     ):
-        super().__init__(data, return_labels, file_type)
-        self.rate = rate
+        super().__init__(data, return_X_intact, return_labels, file_type)
+        self.target_strategy = target_strategy
+
+    @staticmethod
+    def get_rand_mask(observed_mask):
+        rand_for_mask = torch.rand_like(observed_mask) * observed_mask
+        rand_for_mask = rand_for_mask.reshape(-1)
+        sample_ratio = np.random.rand()  # missing ratio
+        num_observed = observed_mask.sum().item()
+        num_masked = round(num_observed * sample_ratio)
+        rand_for_mask[rand_for_mask.topk(num_masked).indices] = -1
+        cond_mask = (rand_for_mask > 0).reshape(observed_mask.shape).float()
+        return cond_mask
+
+    def get_hist_mask(self, observed_mask, for_pattern_mask):
+        cond_mask = observed_mask.clone()
+        mask_choice = np.random.rand()
+        if self.target_strategy == "mix" and mask_choice > 0.5:
+            rand_mask = self.get_rand_mask(observed_mask)
+            cond_mask = rand_mask
+        else:
+            cond_mask = cond_mask * for_pattern_mask
+        return cond_mask
 
     def _fetch_data_from_array(self, idx: int) -> Iterable:
         """Fetch data according to index.
@@ -54,36 +77,42 @@ class DatasetForCSDI(BaseDataset):
             indicating_mask : tensor.
                 The mask indicates artificially missing values in X.
         """
-        X = self.X[idx].to(torch.float32)
-        X_intact, X, missing_mask, indicating_mask = mcar(X, p=self.rate)
 
-        observed_data = X_intact
-        observed_mask = missing_mask + indicating_mask
-        gt_mask = missing_mask
+        if self.X_intact is not None and self.return_X_intact:
+            observed_data = self.X_intact[idx]
+            cond_mask = self.missing_mask[idx]
+            indicating_mask = self.indicating_mask[idx]
+        else:
+            observed_data = self.X[idx]
+            observed_data, observed_mask = fill_and_get_mask_torch(observed_data)
+            if self.target_strategy == "random":
+                cond_mask = self.get_rand_mask(observed_mask)
+            else:
+                if "for_pattern_mask" in self.data.keys():
+                    for_pattern_mask = torch.from_numpy(
+                        self.data["for_pattern_mask"][idx]
+                    ).to(torch.float32)
+                else:
+                    previous_sample = self.X[idx - 1]
+                    for_pattern_mask = (~torch.isnan(previous_sample)).to(torch.float32)
+
+                cond_mask = self.get_hist_mask(
+                    observed_mask, for_pattern_mask=for_pattern_mask
+                )
+            indicating_mask = observed_mask - cond_mask
+
         observed_tp = (
             torch.arange(0, self.n_steps, dtype=torch.float32)
             if "time_points" not in self.data.keys()
             else torch.from_numpy(self.data["time_points"][idx]).to(torch.float32)
         )
-        for_pattern_mask = (
-            gt_mask
-            if "for_pattern_mask" not in self.data.keys()
-            else torch.from_numpy(self.data["for_pattern_mask"][idx]).to(torch.float32)
-        )
-        cut_length = (
-            torch.zeros(len(observed_data)).long()
-            if "cut_length" not in self.data.keys()
-            else torch.from_numpy(self.data["cut_length"][idx]).to(torch.float32)
-        )
 
         sample = [
             torch.tensor(idx),
             observed_data,
-            observed_mask,
+            indicating_mask,
+            cond_mask,
             observed_tp,
-            gt_mask,
-            for_pattern_mask,
-            cut_length,
         ]
 
         if self.y is not None and self.return_labels:
@@ -109,12 +138,37 @@ class DatasetForCSDI(BaseDataset):
         if self.file_handle is None:
             self.file_handle = self._open_file_handle()
 
-        X = torch.from_numpy(self.file_handle["X"][idx]).to(torch.float32)
-        X_intact, X, missing_mask, indicating_mask = mcar(X, p=self.rate)
+        if "X_intact" in self.file_handle.keys() and self.return_X_intact:
+            observed_data = torch.from_numpy(self.file_handle["X_intact"][idx]).to(
+                torch.float32
+            )
+            observed_data, observed_mask = fill_and_get_mask_torch(observed_data)
+            X = torch.from_numpy(self.file_handle["X"][idx]).to(torch.float32)
+            _, cond_mask = fill_and_get_mask_torch(X)
+            indicating_mask = observed_mask - cond_mask
+        else:
+            observed_data = torch.from_numpy(self.file_handle["X"][idx]).to(
+                torch.float32
+            )
+            observed_data, observed_mask = fill_and_get_mask_torch(observed_data)
+            if self.target_strategy == "random":
+                cond_mask = self.get_rand_mask(observed_mask)
+            else:
+                if "for_pattern_mask" in self.data.keys():
+                    for_pattern_mask = torch.from_numpy(
+                        self.file_handle["for_pattern_mask"][idx]
+                    ).to(torch.float32)
+                else:
+                    previous_sample = torch.from_numpy(
+                        self.file_handle["X"][idx - 1]
+                    ).to(torch.float32)
+                    for_pattern_mask = (~torch.isnan(previous_sample)).to(torch.float32)
 
-        observed_data = X_intact
-        observed_mask = missing_mask + indicating_mask
-        gt_mask = indicating_mask
+                cond_mask = self.get_hist_mask(
+                    observed_mask, for_pattern_mask=for_pattern_mask
+                )
+            indicating_mask = observed_mask - cond_mask
+
         observed_tp = (
             torch.arange(0, self.n_steps, dtype=torch.float32)
             if "time_points" not in self.file_handle.keys()
@@ -122,30 +176,121 @@ class DatasetForCSDI(BaseDataset):
                 torch.float32
             )
         )
-        for_pattern_mask = (
-            gt_mask
-            if "for_pattern_mask" not in self.file_handle.keys()
-            else torch.from_numpy(self.file_handle["for_pattern_mask"][idx]).to(
-                torch.float32
-            )
-        )
-        cut_length = (
-            torch.zeros(len(observed_data)).long()
-            if "cut_length" not in self.file_handle.keys()
-            else torch.from_numpy(self.file_handle["cut_length"][idx]).to(torch.float32)
+
+        sample = [
+            torch.tensor(idx),
+            observed_data,
+            indicating_mask,
+            cond_mask,
+            observed_tp,
+        ]
+
+        if "y" in self.file_handle.keys() and self.return_labels:
+            sample.append(torch.tensor(self.file_handle["y"][idx], dtype=torch.long))
+
+        return sample
+
+
+class TestDatasetForCSDI(DatasetForCSDI):
+    """Test dataset for CSDI model."""
+
+    def __init__(
+        self,
+        data: Union[dict, str],
+        return_X_intact: bool,
+        return_labels: bool,
+        file_type: str = "h5py",
+    ):
+        super().__init__(data, "random", return_X_intact, return_labels, file_type)
+
+    def _fetch_data_from_array(self, idx: int) -> Iterable:
+        """Fetch data according to index.
+
+        Parameters
+        ----------
+        idx : int,
+            The index to fetch the specified sample.
+
+        Returns
+        -------
+        sample : list,
+            A list contains
+
+            index : int tensor,
+                The index of the sample.
+
+            X_intact : tensor,
+                Original time-series for calculating mask imputation loss.
+
+            X : tensor,
+                Time-series data with artificially missing values for model input.
+
+            missing_mask : tensor,
+                The mask records all missing values in X.
+
+            indicating_mask : tensor.
+                The mask indicates artificially missing values in X.
+        """
+
+        observed_data = self.X[idx]
+        observed_data, observed_mask = fill_and_get_mask_torch(observed_data)
+        cond_mask = observed_mask
+
+        observed_tp = (
+            torch.arange(0, self.n_steps, dtype=torch.float32)
+            if "time_points" not in self.data.keys()
+            else torch.from_numpy(self.data["time_points"][idx]).to(torch.float32)
         )
 
         sample = [
             torch.tensor(idx),
             observed_data,
-            observed_mask,
+            cond_mask,
             observed_tp,
-            gt_mask,
-            for_pattern_mask,
-            cut_length,
         ]
 
-        # if the dataset has labels and is for training, then fetch it from the file
+        if self.y is not None and self.return_labels:
+            sample.append(self.y[idx].to(torch.long))
+
+        return sample
+
+    def _fetch_data_from_file(self, idx: int) -> Iterable:
+        """Fetch data with the lazy-loading strategy, i.e. only loading data from the file while requesting for samples.
+        Here the opened file handle doesn't load the entire dataset into RAM but only load the currently accessed slice.
+
+        Parameters
+        ----------
+        idx : int,
+            The index of the sample to be return.
+
+        Returns
+        -------
+        sample : list,
+            The collated data sample, a list including all necessary sample info.
+        """
+
+        if self.file_handle is None:
+            self.file_handle = self._open_file_handle()
+
+        observed_data = torch.from_numpy(self.file_handle["X"][idx]).to(torch.float32)
+        observed_data, observed_mask = fill_and_get_mask_torch(observed_data)
+        cond_mask = observed_mask
+
+        observed_tp = (
+            torch.arange(0, self.n_steps, dtype=torch.float32)
+            if "time_points" not in self.file_handle.keys()
+            else torch.from_numpy(self.file_handle["time_points"][idx]).to(
+                torch.float32
+            )
+        )
+
+        sample = [
+            torch.tensor(idx),
+            observed_data,
+            cond_mask,
+            observed_tp,
+        ]
+
         if "y" in self.file_handle.keys() and self.return_labels:
             sample.append(torch.tensor(self.file_handle["y"][idx], dtype=torch.long))
 

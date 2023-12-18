@@ -16,7 +16,6 @@ are fixed here.
 
 from typing import Union, Optional
 
-import h5py
 import numpy as np
 import torch
 from torch.utils.data import DataLoader
@@ -24,6 +23,7 @@ from torch.utils.data import DataLoader
 from .data import DatasetForBRITS
 from .modules import _BRITS
 from ..base import BaseNNImputer
+from ...data.checking import check_x_intact_in_val_set
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
 from ...utils.logging import logger
@@ -156,10 +156,39 @@ class BRITS(BaseNNImputer):
         return inputs
 
     def _assemble_input_for_validating(self, data: list) -> dict:
-        return self._assemble_input_for_training(data)
+        # fetch data
+        (
+            indices,
+            X,
+            missing_mask,
+            deltas,
+            back_X,
+            back_missing_mask,
+            back_deltas,
+            X_intact,
+            indicating_mask,
+        ) = self._send_data_to_given_device(data)
+
+        # assemble input data
+        inputs = {
+            "indices": indices,
+            "forward": {
+                "X": X,
+                "missing_mask": missing_mask,
+                "deltas": deltas,
+            },
+            "backward": {
+                "X": back_X,
+                "missing_mask": back_missing_mask,
+                "deltas": back_deltas,
+            },
+            "X_intact": X_intact,
+            "indicating_mask": indicating_mask,
+        }
+        return inputs
 
     def _assemble_input_for_testing(self, data: list) -> dict:
-        return self._assemble_input_for_validating(data)
+        return self._assemble_input_for_training(data)
 
     def fit(
         self,
@@ -169,7 +198,7 @@ class BRITS(BaseNNImputer):
     ) -> None:
         # Step 1: wrap the input data with classes Dataset and DataLoader
         training_set = DatasetForBRITS(
-            train_set, return_labels=False, file_type=file_type
+            train_set, return_X_intact=False, return_labels=False, file_type=file_type
         )
         training_loader = DataLoader(
             training_set,
@@ -179,30 +208,13 @@ class BRITS(BaseNNImputer):
         )
         val_loader = None
         if val_set is not None:
-            if isinstance(val_set, str):
-                with h5py.File(val_set, "r") as hf:
-                    # Here we read the whole validation set from the file to mask a portion for validation.
-                    # In PyPOTS, using a file usually because the data is too big. However, the validation set is
-                    # generally shouldn't be too large. For example, we have 1 billion samples for model training.
-                    # We won't take 20% of them as the validation set because we want as much as possible data for the
-                    # training stage to enhance the model's generalization ability. Therefore, 100,000 representative
-                    # samples will be enough to validate the model.
-                    val_set = {
-                        "X": hf["X"][:],
-                        "X_intact": hf["X_intact"][:],
-                        "indicating_mask": hf["indicating_mask"][:],
-                    }
-
-            # check if X_intact contains missing values
-            if np.isnan(val_set["X_intact"]).any():
-                val_set["X_intact"] = np.nan_to_num(val_set["X_intact"], nan=0)
-                logger.warning(
-                    "X_intact shouldn't contain missing data but has NaN values. "
-                    "PyPOTS has imputed them with zeros by default to start the training for now. "
-                    "Please double-check your data if you have concerns over this operation."
+            if not check_x_intact_in_val_set(val_set):
+                raise ValueError(
+                    "val_set must contain 'X_intact' for model validation."
                 )
-
-            val_set = DatasetForBRITS(val_set, return_labels=False, file_type=file_type)
+            val_set = DatasetForBRITS(
+                val_set, return_X_intact=True, return_labels=False, file_type=file_type
+            )
             val_loader = DataLoader(
                 val_set,
                 batch_size=self.batch_size,
@@ -224,7 +236,9 @@ class BRITS(BaseNNImputer):
         file_type: str = "h5py",
     ) -> dict:
         self.model.eval()  # set the model as eval status to freeze it.
-        test_set = DatasetForBRITS(test_set, return_labels=False, file_type=file_type)
+        test_set = DatasetForBRITS(
+            test_set, return_X_intact=False, return_labels=False, file_type=file_type
+        )
         test_loader = DataLoader(
             test_set,
             batch_size=self.batch_size,

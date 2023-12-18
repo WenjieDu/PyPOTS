@@ -13,16 +13,17 @@ import pytest
 from pypots.classification import Raindrop
 from pypots.utils.logging import logger
 from pypots.utils.metrics import calc_binary_classification_metrics
-from tests.classification.config import (
+from tests.global_test_config import (
+    DATA,
     EPOCHS,
+    DEVICE,
     TRAIN_SET,
     VAL_SET,
     TEST_SET,
+    H5_TRAIN_SET_PATH,
+    H5_VAL_SET_PATH,
+    H5_TEST_SET_PATH,
     RESULT_SAVING_DIR_FOR_CLASSIFICATION,
-)
-from tests.global_test_config import (
-    DATA,
-    DEVICE,
     check_tb_and_model_checkpoints_existence,
 )
 
@@ -62,11 +63,11 @@ class TestRaindrop(unittest.TestCase):
         predictions = self.raindrop.classify(TEST_SET)
         metrics = calc_binary_classification_metrics(predictions, DATA["test_y"])
         logger.info(
-            f'ROC_AUC: {metrics["roc_auc"]}, \n'
-            f'PR_AUC: {metrics["pr_auc"]},\n'
-            f'F1: {metrics["f1"]},\n'
-            f'Precision: {metrics["precision"]},\n'
-            f'Recall: {metrics["recall"]},\n'
+            f'Lazy-loading Raindrop ROC_AUC: {metrics["roc_auc"]}, '
+            f'PR_AUC: {metrics["pr_auc"]}, '
+            f'F1: {metrics["f1"]}, '
+            f'Precision: {metrics["precision"]}, '
+            f'Recall: {metrics["recall"]}'
         )
         assert metrics["roc_auc"] >= 0.5, "ROC-AUC < 0.5"
 
@@ -102,6 +103,22 @@ class TestRaindrop(unittest.TestCase):
 
         # test loading the saved model, not necessary, but need to test
         self.raindrop.load(saved_model_path)
+
+    @pytest.mark.xdist_group(name="classification-raindrop")
+    def test_4_lazy_loading(self):
+        self.raindrop.fit(H5_TRAIN_SET_PATH, H5_VAL_SET_PATH)
+        results = self.raindrop.predict(H5_TEST_SET_PATH)
+        metrics = calc_binary_classification_metrics(
+            results["classification"], DATA["test_y"]
+        )
+        logger.info(
+            f'Lazy-loading Raindrop ROC_AUC: {metrics["roc_auc"]}, '
+            f'PR_AUC: {metrics["pr_auc"]}, '
+            f'F1: {metrics["f1"]}, '
+            f'Precision: {metrics["precision"]}, '
+            f'Recall: {metrics["recall"]}'
+        )
+        assert metrics["roc_auc"] >= 0.5, "ROC-AUC < 0.5"
 
 
 if __name__ == "__main__":

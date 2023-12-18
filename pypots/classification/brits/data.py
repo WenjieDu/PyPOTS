@@ -45,4 +45,4 @@ class DatasetForBRITS(DatasetForBRITS_Imputation):
         return_labels: bool = True,
         file_type: str = "h5py",
     ):
-        super().__init__(data, return_labels, file_type)
+        super().__init__(data, False, return_labels, file_type)
