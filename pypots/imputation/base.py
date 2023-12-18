@@ -296,7 +296,7 @@ class BaseNNImputer(BaseNNModel):
                             imputation_mse = (
                                 calc_mse(
                                     results["imputed_data"],
-                                    inputs["X_intact"],
+                                    inputs["X_ori"],
                                     inputs["indicating_mask"],
                                 )
                                 .sum()

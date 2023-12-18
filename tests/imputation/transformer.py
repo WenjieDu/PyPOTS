@@ -69,7 +69,7 @@ class TestTransformer(unittest.TestCase):
             imputed_X
         ).any(), "Output still has missing values after running impute()."
         test_MAE = calc_mae(
-            imputed_X, DATA["test_X_intact"], DATA["test_X_indicating_mask"]
+            imputed_X, DATA["test_X_ori"], DATA["test_X_indicating_mask"]
         )
         logger.info(f"Transformer test_MAE: {test_MAE}")
 
@@ -117,7 +117,7 @@ class TestTransformer(unittest.TestCase):
 
         test_MAE = calc_mae(
             imputation_results["imputation"],
-            DATA["test_X_intact"],
+            DATA["test_X_ori"],
             DATA["test_X_indicating_mask"],
         )
         logger.info(f"Lazy-loading Transformer test_MAE: {test_MAE}")

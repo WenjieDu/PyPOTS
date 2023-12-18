@@ -40,7 +40,7 @@ class TestLOCF(unittest.TestCase):
             test_X_imputed_zero
         ).any(), "Output still has missing values after running impute()."
         test_MAE = calc_mae(
-            test_X_imputed_zero, DATA["test_X_intact"], DATA["test_X_indicating_mask"]
+            test_X_imputed_zero, DATA["test_X_ori"], DATA["test_X_indicating_mask"]
         )
         logger.info(f"LOCF (zero) test_MAE: {test_MAE}")
 
@@ -50,7 +50,7 @@ class TestLOCF(unittest.TestCase):
         ).any(), "Output still has missing values after running impute()."
         test_MAE = calc_mae(
             test_X_imputed_backward,
-            DATA["test_X_intact"],
+            DATA["test_X_ori"],
             DATA["test_X_indicating_mask"],
         )
         logger.info(f"LOCF (backward) test_MAE: {test_MAE}")
@@ -61,7 +61,7 @@ class TestLOCF(unittest.TestCase):
         ).any(), "Output still has missing values after running impute()."
         test_MAE = calc_mae(
             test_X_imputed_mean,
-            DATA["test_X_intact"],
+            DATA["test_X_ori"],
             DATA["test_X_indicating_mask"],
         )
         logger.info(f"LOCF (mean) test_MAE: {test_MAE}")
@@ -73,7 +73,7 @@ class TestLOCF(unittest.TestCase):
 
         # if input data is torch tensor
         X = torch.from_numpy(np.copy(TEST_SET["X"]))
-        test_X_intact = torch.from_numpy(np.copy(DATA["test_X_intact"]))
+        test_X_ori = torch.from_numpy(np.copy(DATA["test_X_ori"]))
         test_X_indicating_mask = torch.from_numpy(
             np.copy(DATA["test_X_indicating_mask"])
         )
@@ -82,7 +82,7 @@ class TestLOCF(unittest.TestCase):
         assert not torch.isnan(
             test_X_imputed_zero
         ).any(), "Output still has missing values after running impute()."
-        test_MAE = calc_mae(test_X_imputed_zero, test_X_intact, test_X_indicating_mask)
+        test_MAE = calc_mae(test_X_imputed_zero, test_X_ori, test_X_indicating_mask)
         logger.info(f"LOCF (zero) test_MAE: {test_MAE}")
 
         test_X_imputed_backward = self.locf_backward.predict({"X": X})["imputation"]
@@ -91,7 +91,7 @@ class TestLOCF(unittest.TestCase):
         ).any(), "Output still has missing values after running impute()."
         test_MAE = calc_mae(
             test_X_imputed_backward,
-            test_X_intact,
+            test_X_ori,
             test_X_indicating_mask,
         )
         logger.info(f"LOCF (backward) test_MAE: {test_MAE}")
@@ -102,7 +102,7 @@ class TestLOCF(unittest.TestCase):
         ).any(), "Output still has missing values after running impute()."
         test_MAE = calc_mae(
             test_X_imputed_mean,
-            test_X_intact,
+            test_X_ori,
             test_X_indicating_mask,
         )
         logger.info(f"LOCF (mean) test_MAE: {test_MAE}")
@@ -122,7 +122,7 @@ class TestLOCF(unittest.TestCase):
 
         test_MAE = calc_mae(
             imputation_results["imputation"],
-            DATA["test_X_intact"],
+            DATA["test_X_ori"],
             DATA["test_X_indicating_mask"],
         )
         logger.info(f"Lazy-loading LOCF test_MAE: {test_MAE}")

@@ -74,7 +74,7 @@ class TestSAITS(unittest.TestCase):
 
         test_MAE = calc_mae(
             imputation_results["imputation"],
-            DATA["test_X_intact"],
+            DATA["test_X_ori"],
             DATA["test_X_indicating_mask"],
         )
         logger.info(f"SAITS test_MAE: {test_MAE}")
@@ -120,7 +120,7 @@ class TestSAITS(unittest.TestCase):
 
         test_MAE = calc_mae(
             imputation_results["imputation"],
-            DATA["test_X_intact"],
+            DATA["test_X_ori"],
             DATA["test_X_indicating_mask"],
         )
         logger.info(f"Lazy-loading SAITS test_MAE: {test_MAE}")
