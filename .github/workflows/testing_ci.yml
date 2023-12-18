@@ -59,8 +59,8 @@ jobs:
                   pip install pypots[dev]
                   python_site_path=`python -c "import site; print(site.getsitepackages()[0])"`
                   echo "python site-packages path: $python_site_path"
-                  rm -rf $python_site_path/pypots/*
-                  python -c "import distutils;import site;distutils.dir_util.copy_tree('pypots',site.getsitepackages()[0]+'/pypots')"
+                  rm -rf $python_site_path/pypots
+                  python -c "import shutil;import site;shutil.copytree('pypots',site.getsitepackages()[0]+'/pypots')"
 
             - name: Fetch the test environment details
               run: |
