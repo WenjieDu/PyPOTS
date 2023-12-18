@@ -66,9 +66,9 @@ jobs:
 
             - name: Test with pytest
               run: |
+                  python tests/global_test_config.py
                   rm -rf tests/__pycache__ && rm -rf tests/*/__pycache__
-                  python -m pytest -rA tests/generating_h5_datasets.py --cov=pypots --cov-config=.coveragerc
-                  python -m pytest -rA tests/*/* -n auto --cov=pypots --cov-append --dist=loadgroup --cov-config=.coveragerc
+                  python -m pytest -rA tests/*/* -n auto --cov=pypots --dist=loadgroup --cov-config=.coveragerc
 
             - name: Generate the LCOV report
               run: |

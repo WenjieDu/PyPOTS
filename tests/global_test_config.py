@@ -11,6 +11,7 @@ import numpy as np
 import torch
 
 from pypots.data.generating import gene_random_walk
+from pypots.data.saving import save_dict_into_h5
 from pypots.utils.logging import logger
 from pypots.utils.random import set_random_seed
 
@@ -82,3 +83,34 @@ def check_tb_and_model_checkpoints_existence(model):
     # check the model checkpoints existence
     saved_model_files = [i for i in saved_files if i.endswith(".pypots")]
     assert len(saved_model_files) > 0, "No model checkpoint saved."
+
+
+if __name__ == "__main__":
+    if not os.path.exists(H5_TRAIN_SET_PATH):
+        save_dict_into_h5(
+            {
+                "X": DATA["train_X"],
+                "y": DATA["train_y"].astype(float),
+            },
+            H5_TRAIN_SET_PATH,
+        )
+
+    if not os.path.exists(H5_VAL_SET_PATH):
+        save_dict_into_h5(
+            {
+                "X": DATA["val_X"],
+                "X_intact": DATA["val_X_intact"],
+                "y": DATA["val_y"].astype(float),
+            },
+            H5_VAL_SET_PATH,
+        )
+
+    if not os.path.exists(H5_TEST_SET_PATH):
+        save_dict_into_h5(
+            {
+                "X": DATA["test_X"],
+                "X_intact": DATA["test_X_intact"],
+                "y": DATA["test_y"].astype(float),
+            },
+            H5_TEST_SET_PATH,
+        )
