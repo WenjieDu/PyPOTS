@@ -57,7 +57,10 @@ jobs:
                   pip install -r requirements.txt
                   pip install torch-geometric torch-scatter torch-sparse -f "https://data.pyg.org/whl/torch-${{ steps.determine_pytorch_ver.outputs.value }}+cpu.html"
                   pip install pypots[dev]
-                  pip install . --no-deps
+                  python_site_path=`python -c "import site; print(site.getsitepackages()[0])"`
+                  echo "python site-packages path: $python_site_path"
+                  rm -rf $python_site_path/pypots/*
+                  python -c "import distutils;import site;distutils.dir_util.copy_tree('pypots',site.getsitepackages()[0]+'/pypots')"
 
             - name: Fetch the test environment details
               run: |
