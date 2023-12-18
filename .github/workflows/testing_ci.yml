@@ -49,14 +49,14 @@ jobs:
               run: |
                   which python
                   which pip
-                  pip install torch==${{ steps.determine_pytorch_ver.outputs.value }} -f https://download.pytorch.org/whl/cpu
+                  python -m pip install torch==${{ steps.determine_pytorch_ver.outputs.value }} -f https://download.pytorch.org/whl/cpu
                   python -c "import torch; print('PyTorch:', torch.__version__)"
 
             - name: Install other dependencies
               run: |
-                  pip install -r requirements.txt
-                  pip install torch-geometric torch-scatter torch-sparse -f "https://data.pyg.org/whl/torch-${{ steps.determine_pytorch_ver.outputs.value }}+cpu.html"
-                  pip install pypots[dev] && pip install . --no-deps
+                  python -m pip install -r requirements.txt
+                  python -m pip install torch-geometric torch-scatter torch-sparse -f "https://data.pyg.org/whl/torch-${{ steps.determine_pytorch_ver.outputs.value }}+cpu.html"
+                  python -m pip install pypots[dev] && python -m pip install . --no-deps
 
             - name: Fetch the test environment details
               run: |
