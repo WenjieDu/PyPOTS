@@ -18,15 +18,16 @@ from pypots.utils.logging import logger
 from pypots.utils.metrics import calc_mae
 from tests.global_test_config import (
     DATA,
+    EPOCHS,
     DEVICE,
-    check_tb_and_model_checkpoints_existence,
-)
-from tests.imputation.config import (
     TRAIN_SET,
     VAL_SET,
     TEST_SET,
+    H5_TRAIN_SET_PATH,
+    H5_VAL_SET_PATH,
+    H5_TEST_SET_PATH,
     RESULT_SAVING_DIR_FOR_IMPUTATION,
-    EPOCHS,
+    check_tb_and_model_checkpoints_existence,
 )
 
 
@@ -96,6 +97,21 @@ class TestBRITS(unittest.TestCase):
 
         # test loading the saved model, not necessary, but need to test
         self.brits.load(saved_model_path)
+
+    @pytest.mark.xdist_group(name="imputation-brits")
+    def test_4_lazy_loading(self):
+        self.brits.fit(H5_TRAIN_SET_PATH, H5_VAL_SET_PATH)
+        imputation_results = self.brits.predict(H5_TEST_SET_PATH)
+        assert not np.isnan(
+            imputation_results["imputation"]
+        ).any(), "Output still has missing values after running impute()."
+
+        test_MAE = calc_mae(
+            imputation_results["imputation"],
+            DATA["test_X_intact"],
+            DATA["test_X_indicating_mask"],
+        )
+        logger.info(f"Lazy-loading BRITS test_MAE: {test_MAE}")
 
 
 if __name__ == "__main__":

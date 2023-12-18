@@ -133,7 +133,7 @@ class GRUD(BaseNNClassifier):
         self.optimizer = optimizer
         self.optimizer.init_optimizer(self.model.parameters())
 
-    def _assemble_input_for_training(self, data: dict) -> dict:
+    def _assemble_input_for_training(self, data: list) -> dict:
         # fetch data
         (
             indices,
@@ -157,10 +157,10 @@ class GRUD(BaseNNClassifier):
         }
         return inputs
 
-    def _assemble_input_for_validating(self, data: dict) -> dict:
+    def _assemble_input_for_validating(self, data: list) -> dict:
         return self._assemble_input_for_training(data)
 
-    def _assemble_input_for_testing(self, data: dict) -> dict:
+    def _assemble_input_for_testing(self, data: list) -> dict:
         (
             indices,
             X,

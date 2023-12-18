@@ -44,7 +44,7 @@ class DatasetForVaDER(BaseDataset):
         return_labels: bool = True,
         file_type: str = "h5py",
     ):
-        super().__init__(data, return_labels, file_type)
+        super().__init__(data, False, return_labels, file_type)
 
     def _fetch_data_from_array(self, idx: int) -> Iterable:
         return super()._fetch_data_from_array(idx)

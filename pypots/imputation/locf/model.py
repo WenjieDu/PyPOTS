@@ -9,6 +9,7 @@ The implementation of LOCF (Last Observed Carried Forward) for the partially-obs
 import warnings
 from typing import Union, Optional
 
+import h5py
 import numpy as np
 import torch
 
@@ -199,8 +200,11 @@ class LOCF(BaseImputer):
             It should be a dictionary including keys as 'imputation', 'classification', 'clustering', and 'forecasting'.
             For sure, only the keys that relevant tasks are supported by the model will be returned.
         """
-        assert not isinstance(test_set, str)
-        X = test_set["X"]
+        if isinstance(test_set, str):
+            with h5py.File(test_set, "r") as f:
+                X = f["X"][:]
+        else:
+            X = test_set["X"]
 
         assert len(X.shape) == 3, (
             f"Input X should have 3 dimensions [n_samples, n_steps, n_features], "

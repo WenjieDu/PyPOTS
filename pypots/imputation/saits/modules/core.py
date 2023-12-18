@@ -155,7 +155,10 @@ class _SAITS(nn.Module):
         )
 
     def forward(
-        self, inputs: dict, diagonal_attention_mask: bool = False, training: bool = True
+        self,
+        inputs: dict,
+        diagonal_attention_mask: bool = False,
+        training: bool = True,
     ) -> dict:
         X, masks = inputs["X"], inputs["missing_mask"]
 
