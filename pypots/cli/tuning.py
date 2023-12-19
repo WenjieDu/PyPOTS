@@ -33,8 +33,8 @@ NN_MODELS = {
     "pypots.imputation.Transformer": Transformer,
     "pypots.imputation.TimesNet": TimesNet,
     "pypots.imputation.CSDI": CSDI,
-    "pypots.imputation.US_GAN": USGAN,
-    "pypots.imputation.GP_VAE": GPVAE,
+    "pypots.imputation.USGAN": USGAN,
+    "pypots.imputation.GPVAE": GPVAE,
     "pypots.imputation.BRITS": BRITS,
     "pypots.imputation.MRNN": MRNN,
     # classification models
@@ -131,7 +131,7 @@ class TuningCommand(BaseCommand):
             # get the specified model class
             if self._model not in NN_MODELS:
                 logger.info(
-                    f"The specified model {self._model} is not in PyPOTS. "
+                    f"The specified model {self._model} is not in PyPOTS. Available models are {NN_MODELS.keys()}. "
                     f"Trying to fetch it from the given model package {self._model_package_path}."
                 )
                 assert self._model_package_path is not None, (

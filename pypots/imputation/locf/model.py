@@ -32,8 +32,8 @@ class LOCF(BaseImputer):
         If 'zero', the missing values at the sequence beginning will be imputed with 0.
         If 'backward', the missing values at the beginning of the time-series sequence will be imputed with the
         first observed value in the sequence, i.e. the first observed value will be carried backward to impute
-        the missing values at the beginning of the sequence.
-        If 'mean', the missing values at the sequence beginning will be imputed with the overall mean
+        the missing values at the beginning of the sequence. This method is also known as NOCB (Next Observation
+        Carried Backward). If 'mean', the missing values at the sequence beginning will be imputed with the overall mean
         values of features in the dataset.
 
     """
