@@ -14,7 +14,6 @@ from pypots.utils.logging import logger
 from pypots.utils.metrics import calc_mae
 from tests.forecasting.config import (
     TEST_SET,
-    TEST_SET_INTACT,
     N_PRED_STEP,
 )
 from tests.global_test_config import DATA
@@ -37,8 +36,8 @@ class TestBTTF(unittest.TestCase):
 
     @pytest.mark.xdist_group(name="forecasting-bttf")
     def test_0_forecasting(self):
-        predictions = self.bttf.forecast(TEST_SET)
-        mae = calc_mae(predictions, TEST_SET_INTACT["X"][:, -N_PRED_STEP:])
+        predictions = self.bttf.predict(TEST_SET)["forecasting"]
+        mae = calc_mae(predictions, TEST_SET["X_ori"][:, -N_PRED_STEP:])
         logger.info(f"prediction MAE: {mae}")
 
 
