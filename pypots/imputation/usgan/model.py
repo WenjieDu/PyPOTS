@@ -23,6 +23,7 @@ from ...data.checking import check_X_ori_in_val_set
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
 from ...utils.logging import logger
+from ...utils.metrics import calc_mse
 
 try:
     import nni
@@ -50,7 +51,7 @@ class USGAN(BaseNNImputer):
     hint_rate : float
         The hint rate for the discriminator
 
-    dropout_rate : float
+    dropout : float
         The dropout rate for the last layer in Discriminator
 
     G_steps : int
@@ -117,7 +118,7 @@ class USGAN(BaseNNImputer):
         rnn_hidden_size: int,
         lambda_mse: float = 1,
         hint_rate: float = 0.7,
-        dropout_rate: float = 0.0,
+        dropout: float = 0.0,
         G_steps: int = 1,
         D_steps: int = 1,
         batch_size: int = 32,
@@ -153,7 +154,7 @@ class USGAN(BaseNNImputer):
             rnn_hidden_size,
             lambda_mse,
             hint_rate,
-            dropout_rate,
+            dropout,
             self.device,
         )
         self._send_model_to_given_device()
@@ -296,28 +297,37 @@ class USGAN(BaseNNImputer):
 
                 if val_loader is not None:
                     self.model.eval()
-                    epoch_val_loss_G_collector = []
+                    imputation_loss_collector = []
                     with torch.no_grad():
                         for idx, data in enumerate(val_loader):
                             inputs = self._assemble_input_for_validating(data)
-                            results = self.model.forward(inputs, training=True)
-                            epoch_val_loss_G_collector.append(
-                                results["generation_loss"].sum().item()
+                            results = self.model.forward(inputs, training=False)
+                            imputation_mse = (
+                                calc_mse(
+                                    results["imputed_data"],
+                                    inputs["X_ori"],
+                                    inputs["indicating_mask"],
+                                )
+                                .sum()
+                                .detach()
+                                .item()
                             )
-                    mean_val_G_loss = np.mean(epoch_val_loss_G_collector)
+                            imputation_loss_collector.append(imputation_mse)
+
+                    mean_val_loss = np.mean(imputation_loss_collector)
                     # save validating loss logs into the tensorboard file for every epoch if in need
                     if self.summary_writer is not None:
                         val_loss_dict = {
-                            "generation_loss": mean_val_G_loss,
+                            "validating_loss": mean_val_loss,
                         }
                         self._save_log_into_tb_file(epoch, "validating", val_loss_dict)
                     logger.info(
                         f"Epoch {epoch} - "
                         f"generator training loss: {mean_epoch_train_G_loss:.4f}, "
                         f"discriminator training loss: {mean_epoch_train_D_loss:.4f}, "
-                        f"generator validating loss: {mean_val_G_loss:.4f}"
+                        f"validating loss: {mean_val_loss:.4f}"
                     )
-                    mean_loss = mean_val_G_loss
+                    mean_loss = mean_val_loss
                 else:
                     logger.info(
                         f"Epoch {epoch} - "
