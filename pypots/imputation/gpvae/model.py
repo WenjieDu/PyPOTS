@@ -117,6 +117,10 @@ class GPVAE(BaseNNImputer):
             saving_path,
             model_saving_strategy,
         )
+        available_kernel_type = ["cauchy", "diffusion", "rbf", "matern"]
+        assert (
+            kernel in available_kernel_type
+        ), f"kernel should be one of {available_kernel_type}, but got {kernel}"
 
         self.n_steps = n_steps
         self.n_features = n_features
