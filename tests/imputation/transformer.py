@@ -15,7 +15,7 @@ import pytest
 from pypots.imputation import Transformer
 from pypots.optim import Adam
 from pypots.utils.logging import logger
-from pypots.utils.metrics import calc_mae
+from pypots.utils.metrics import calc_mse
 from tests.global_test_config import (
     DATA,
     EPOCHS,
@@ -68,10 +68,10 @@ class TestTransformer(unittest.TestCase):
         assert not np.isnan(
             imputed_X
         ).any(), "Output still has missing values after running impute()."
-        test_MAE = calc_mae(
+        test_MSE = calc_mse(
             imputed_X, DATA["test_X_ori"], DATA["test_X_indicating_mask"]
         )
-        logger.info(f"Transformer test_MAE: {test_MAE}")
+        logger.info(f"Transformer test_MSE: {test_MSE}")
 
     @pytest.mark.xdist_group(name="imputation-transformer")
     def test_2_parameters(self):
@@ -115,12 +115,12 @@ class TestTransformer(unittest.TestCase):
             imputation_results["imputation"]
         ).any(), "Output still has missing values after running impute()."
 
-        test_MAE = calc_mae(
+        test_MSE = calc_mse(
             imputation_results["imputation"],
             DATA["test_X_ori"],
             DATA["test_X_indicating_mask"],
         )
-        logger.info(f"Lazy-loading Transformer test_MAE: {test_MAE}")
+        logger.info(f"Lazy-loading Transformer test_MSE: {test_MSE}")
 
 
 if __name__ == "__main__":

@@ -14,7 +14,7 @@ import torch
 
 from pypots.imputation import LOCF
 from pypots.utils.logging import logger
-from pypots.utils.metrics import calc_mae
+from pypots.utils.metrics import calc_mse
 from tests.global_test_config import (
     DATA,
     DEVICE,
@@ -39,32 +39,32 @@ class TestLOCF(unittest.TestCase):
         assert not np.isnan(
             test_X_imputed_zero
         ).any(), "Output still has missing values after running impute()."
-        test_MAE = calc_mae(
+        test_MSE = calc_mse(
             test_X_imputed_zero, DATA["test_X_ori"], DATA["test_X_indicating_mask"]
         )
-        logger.info(f"LOCF (zero) test_MAE: {test_MAE}")
+        logger.info(f"LOCF (zero) test_MSE: {test_MSE}")
 
         test_X_imputed_backward = self.locf_backward.predict(TEST_SET)["imputation"]
         assert not np.isnan(
             test_X_imputed_backward
         ).any(), "Output still has missing values after running impute()."
-        test_MAE = calc_mae(
+        test_MSE = calc_mse(
             test_X_imputed_backward,
             DATA["test_X_ori"],
             DATA["test_X_indicating_mask"],
         )
-        logger.info(f"LOCF (backward) test_MAE: {test_MAE}")
+        logger.info(f"LOCF (backward) test_MSE: {test_MSE}")
 
         test_X_imputed_mean = self.locf_mean.predict(TEST_SET)["imputation"]
         assert not np.isnan(
             test_X_imputed_mean
         ).any(), "Output still has missing values after running impute()."
-        test_MAE = calc_mae(
+        test_MSE = calc_mse(
             test_X_imputed_mean,
             DATA["test_X_ori"],
             DATA["test_X_indicating_mask"],
         )
-        logger.info(f"LOCF (mean) test_MAE: {test_MAE}")
+        logger.info(f"LOCF (mean) test_MSE: {test_MSE}")
 
         test_X_imputed_nan = self.locf_nan.predict(TEST_SET)["imputation"]
         num_of_missing = np.isnan(test_X_imputed_nan).sum()
@@ -82,30 +82,30 @@ class TestLOCF(unittest.TestCase):
         assert not torch.isnan(
             test_X_imputed_zero
         ).any(), "Output still has missing values after running impute()."
-        test_MAE = calc_mae(test_X_imputed_zero, test_X_ori, test_X_indicating_mask)
-        logger.info(f"LOCF (zero) test_MAE: {test_MAE}")
+        test_MSE = calc_mse(test_X_imputed_zero, test_X_ori, test_X_indicating_mask)
+        logger.info(f"LOCF (zero) test_MSE: {test_MSE}")
 
         test_X_imputed_backward = self.locf_backward.predict({"X": X})["imputation"]
         assert not torch.isnan(
             test_X_imputed_backward
         ).any(), "Output still has missing values after running impute()."
-        test_MAE = calc_mae(
+        test_MSE = calc_mse(
             test_X_imputed_backward,
             test_X_ori,
             test_X_indicating_mask,
         )
-        logger.info(f"LOCF (backward) test_MAE: {test_MAE}")
+        logger.info(f"LOCF (backward) test_MSE: {test_MSE}")
 
         test_X_imputed_mean = self.locf_mean.predict({"X": X})["imputation"]
         assert not torch.isnan(
             test_X_imputed_mean
         ).any(), "Output still has missing values after running impute()."
-        test_MAE = calc_mae(
+        test_MSE = calc_mse(
             test_X_imputed_mean,
             test_X_ori,
             test_X_indicating_mask,
         )
-        logger.info(f"LOCF (mean) test_MAE: {test_MAE}")
+        logger.info(f"LOCF (mean) test_MSE: {test_MSE}")
 
         test_X_imputed_nan = self.locf_nan.predict({"X": X})["imputation"]
         num_of_missing = torch.isnan(test_X_imputed_nan).sum()
@@ -120,12 +120,12 @@ class TestLOCF(unittest.TestCase):
             imputation_results["imputation"]
         ).any(), "Output still has missing values after running impute()."
 
-        test_MAE = calc_mae(
+        test_MSE = calc_mse(
             imputation_results["imputation"],
             DATA["test_X_ori"],
             DATA["test_X_indicating_mask"],
         )
-        logger.info(f"Lazy-loading LOCF test_MAE: {test_MAE}")
+        logger.info(f"Lazy-loading LOCF test_MSE: {test_MSE}")
 
 
 if __name__ == "__main__":
