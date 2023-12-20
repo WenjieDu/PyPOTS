@@ -59,8 +59,19 @@ def calc_mae(
         f"types of inputs and target must match, but got"
         f"type(inputs)={type(predictions)}, type(target)={type(targets)}"
     )
+    prediction_shape = predictions.shape
+    target_shape = targets.shape
+    assert (
+        prediction_shape == target_shape
+    ), f"shape of predictions and targets must match, but got {prediction_shape} and {target_shape} "
+
     lib = np if isinstance(predictions, np.ndarray) else torch
     if masks is not None:
+        mask_shape = masks.shape
+        assert (
+            mask_shape == target_shape
+        ), f"shape of masks must match predictions' shape, but got {mask_shape} and {prediction_shape} "
+
         return lib.sum(lib.abs(predictions - targets) * masks) / (
             lib.sum(masks) + 1e-12
         )
@@ -115,8 +126,18 @@ def calc_mse(
         f"types of inputs and target must match, but got"
         f"type(inputs)={type(predictions)}, type(target)={type(targets)}"
     )
+    prediction_shape = predictions.shape
+    target_shape = targets.shape
+    assert (
+        prediction_shape == target_shape
+    ), f"shape of predictions and targets must match, but got {prediction_shape} and {target_shape} "
+
     lib = np if isinstance(predictions, np.ndarray) else torch
     if masks is not None:
+        mask_shape = masks.shape
+        assert (
+            mask_shape == target_shape
+        ), f"shape of masks must match predictions' shape, but got {mask_shape} and {prediction_shape} "
         return lib.sum(lib.square(predictions - targets) * masks) / (
             lib.sum(masks) + 1e-12
         )
@@ -222,8 +243,18 @@ def calc_mre(
         f"types of inputs and target must match, but got"
         f"type(inputs)={type(predictions)}, type(target)={type(targets)}"
     )
+    prediction_shape = predictions.shape
+    target_shape = targets.shape
+    assert (
+        prediction_shape == target_shape
+    ), f"shape of predictions and targets must match, but got {prediction_shape} and {target_shape} "
+
     lib = np if isinstance(predictions, np.ndarray) else torch
     if masks is not None:
+        mask_shape = masks.shape
+        assert (
+            mask_shape == target_shape
+        ), f"shape of masks must match predictions' shape, but got {mask_shape} and {prediction_shape} "
         return lib.sum(lib.abs(predictions - targets) * masks) / (
             lib.sum(lib.abs(targets * masks)) + 1e-12
         )
