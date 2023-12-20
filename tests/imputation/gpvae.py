@@ -102,13 +102,16 @@ class TestGPVAE(unittest.TestCase):
     @pytest.mark.xdist_group(name="imputation-gpvae")
     def test_4_lazy_loading(self):
         self.gp_vae.fit(H5_TRAIN_SET_PATH, H5_VAL_SET_PATH)
-        imputation_results = self.gp_vae.predict(H5_TEST_SET_PATH)
+        imputed_X = self.gp_vae.predict(H5_TEST_SET_PATH, n_sampling_times=2)[
+            "imputation"
+        ]
+        imputed_X = imputed_X.mean(axis=1)
         assert not np.isnan(
-            imputation_results["imputation"]
+            imputed_X
         ).any(), "Output still has missing values after running impute()."
 
         test_MSE = calc_mse(
-            imputation_results["imputation"],
+            imputed_X,
             DATA["test_X_ori"],
             DATA["test_X_indicating_mask"],
         )
