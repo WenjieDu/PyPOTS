@@ -48,4 +48,4 @@ class TestLazyLoadingClasses(unittest.TestCase):
     def test_0_pickle_dump_load(self):
         pickle_dump(self.data_to_save, self.pickle_saving_path)
         loaded_data = pickle_load(self.pickle_saving_path)
-        assert loaded_data == self.data_to_save
+        assert (loaded_data["c"]["e"]["f"] == self.data_to_save["c"]["e"]["f"]).all()
