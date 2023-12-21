@@ -17,26 +17,33 @@ def _check_inputs(
     predictions: Union[np.ndarray, torch.Tensor, list],
     targets: Union[np.ndarray, torch.Tensor, list],
     masks: Optional[Union[np.ndarray, torch.Tensor, list]] = None,
-) -> None:
-    # check shape
+):
+    # check type
     assert isinstance(predictions, type(targets)), (
         f"types of `predictions` and `targets` must match, but got"
         f"`predictions`: {type(predictions)}, `target`: {type(targets)}"
     )
+    lib = np if isinstance(predictions, np.ndarray) else torch
+    # check shape
     prediction_shape = predictions.shape
     target_shape = targets.shape
     assert (
         prediction_shape == target_shape
     ), f"shape of `predictions` and `targets` must match, but got {prediction_shape} and {target_shape}"
     # check NaN
-    assert not np.isnan(
+    assert not lib.isnan(
         predictions
     ).any(), "`predictions` mustn't contain NaN values, but detected NaN in it"
-    assert not np.isnan(
+    assert not lib.isnan(
         targets
     ).any(), "`targets` mustn't contain NaN values, but detected NaN in it"
 
     if masks is not None:
+        # check type
+        assert isinstance(masks, type(targets)), (
+            f"types of `masks`, `predictions`, and `targets` must match, but got"
+            f"`masks`: {type(masks)}, `targets`: {type(targets)}"
+        )
         # check shape
         mask_shape = masks.shape
         assert mask_shape == target_shape, (
@@ -44,9 +51,11 @@ def _check_inputs(
             f"but got `mask`: {mask_shape} that is different from {prediction_shape}"
         )
         # check NaN
-        assert not np.isnan(
+        assert not lib.isnan(
             masks
         ).any(), "`masks` mustn't contain NaN values, but detected NaN in it"
+
+    return lib
 
 
 def calc_mae(
@@ -92,9 +101,8 @@ def calc_mae(
 
     """
     # check shapes and values of inputs
-    _check_inputs(predictions, targets, masks)
+    lib = _check_inputs(predictions, targets, masks)
 
-    lib = np if isinstance(predictions, np.ndarray) else torch
     if masks is not None:
         return lib.sum(lib.abs(predictions - targets) * masks) / (
             lib.sum(masks) + 1e-12
@@ -146,9 +154,8 @@ def calc_mse(
 
     """
     # check shapes and values of inputs
-    _check_inputs(predictions, targets, masks)
+    lib = _check_inputs(predictions, targets, masks)
 
-    lib = np if isinstance(predictions, np.ndarray) else torch
     if masks is not None:
         return lib.sum(lib.square(predictions - targets) * masks) / (
             lib.sum(masks) + 1e-12
@@ -200,6 +207,7 @@ def calc_rmse(
     so the result is :math:`\\sqrt{1/2}=0.5`.
 
     """
+    # don't have to check types and NaN here, since calc_mse() will do it
     lib = np if isinstance(predictions, np.ndarray) else torch
     return lib.sqrt(calc_mse(predictions, targets, masks))
 
@@ -248,9 +256,8 @@ def calc_mre(
 
     """
     # check shapes and values of inputs
-    _check_inputs(predictions, targets, masks)
+    lib = _check_inputs(predictions, targets, masks)
 
-    lib = np if isinstance(predictions, np.ndarray) else torch
     if masks is not None:
         return lib.sum(lib.abs(predictions - targets) * masks) / (
             lib.sum(lib.abs(targets * masks)) + 1e-12
@@ -304,7 +311,7 @@ def calc_quantile_crps(
 
     """
     # check shapes and values of inputs
-    _check_inputs(predictions, targets, masks)
+    _ = _check_inputs(predictions, targets, masks)
 
     if isinstance(predictions, np.ndarray):
         predictions = torch.from_numpy(predictions)
@@ -363,7 +370,7 @@ def calc_quantile_crps_sum(
 
     """
     # check shapes and values of inputs
-    _check_inputs(predictions, targets, masks)
+    _ = _check_inputs(predictions, targets, masks)
 
     if isinstance(predictions, np.ndarray):
         predictions = torch.from_numpy(predictions)
