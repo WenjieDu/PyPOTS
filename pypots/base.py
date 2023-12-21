@@ -543,7 +543,8 @@ class BaseNNModel(BaseModel):
         """Print the number of trainable parameters in the initialized NN model."""
         num_params = sum(p.numel() for p in self.model.parameters() if p.requires_grad)
         logger.info(
-            f"Model initialized successfully with the number of trainable parameters: {num_params:,}"
+            f"A {self.__class__.__name__} model initialized with the given hyperparameters, "
+            f"the number of trainable parameters: {num_params:,}"
         )
 
     @abstractmethod

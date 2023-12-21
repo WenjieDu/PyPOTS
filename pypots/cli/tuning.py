@@ -8,12 +8,14 @@ CLI tools to help initialize environments for running and developing PyPOTS.
 
 import os
 from argparse import ArgumentParser, Namespace
+import torch
 
 from .base import BaseCommand
 from .utils import load_package_from_path
 from ..classification import BRITS as BRITS_classification
 from ..classification import Raindrop, GRUD
 from ..clustering import CRLI, VaDER
+from ..data.saving.h5 import load_dict_from_h5
 from ..imputation import SAITS, Transformer, CSDI, USGAN, GPVAE, MRNN, BRITS, TimesNet
 from ..optim import Adam
 from ..utils.logging import logger
@@ -26,15 +28,14 @@ except ImportError:
         "but is missing in the current environment."
     )
 
-
 NN_MODELS = {
     # imputation models
     "pypots.imputation.SAITS": SAITS,
     "pypots.imputation.Transformer": Transformer,
     "pypots.imputation.TimesNet": TimesNet,
     "pypots.imputation.CSDI": CSDI,
-    "pypots.imputation.US_GAN": USGAN,
-    "pypots.imputation.GP_VAE": GPVAE,
+    "pypots.imputation.USGAN": USGAN,
+    "pypots.imputation.GPVAE": GPVAE,
     "pypots.imputation.BRITS": BRITS,
     "pypots.imputation.MRNN": MRNN,
     # classification models
@@ -53,6 +54,8 @@ def env_command_factory(args: Namespace):
         args.model_package_path,
         args.train_set,
         args.val_set,
+        args.lazy_load,
+        args.torch_n_threads,
     )
 
 
@@ -105,6 +108,21 @@ class TuningCommand(BaseCommand):
             required=True,
             help="",
         )
+        sub_parser.add_argument(
+            "--lazy_load",
+            dest="lazy_load",
+            action="store_true",
+            help="Whether to use lazy loading for the dataset. If `True`, the dataset will be lazy loaded for model "
+            "training, i.e. only the current batch will be fetched from the file. Lazy loading needs less memory but "
+            "more time and CPU rate to read data each time.",
+        )
+        sub_parser.add_argument(
+            "--torch_n_threads",
+            dest="torch_n_threads",
+            type=int,
+            default=1,
+            help="The input value for torch.set_num_threads()",
+        )
         sub_parser.set_defaults(func=env_command_factory)
 
     def __init__(
@@ -113,11 +131,15 @@ class TuningCommand(BaseCommand):
         model_package_path: str,
         train_set: str,
         val_set: str,
+        lazy_load: bool = False,
+        torch_n_threads: int = 1,
     ):
         self._model = model
         self._model_package_path = model_package_path
         self._train_set = train_set
         self._val_set = val_set
+        self._lazy_load = lazy_load
+        self._torch_n_threads = torch_n_threads
 
     def checkup(self):
         """Run some checks on the arguments to avoid error usages"""
@@ -125,13 +147,17 @@ class TuningCommand(BaseCommand):
 
     def run(self):
         """Execute the given command."""
+
+        # set the number of threads for torch, avoid using too many CPU cores
+        torch.set_num_threads(self._torch_n_threads)
+
         if os.getenv("enable_tuning", False):
             # fetch a new set of hyperparameters from NNI tuner
             tuner_params = nni.get_next_parameter()
             # get the specified model class
             if self._model not in NN_MODELS:
                 logger.info(
-                    f"The specified model {self._model} is not in PyPOTS. "
+                    f"The specified model {self._model} is not in PyPOTS. Available models are {NN_MODELS.keys()}. "
                     f"Trying to fetch it from the given model package {self._model_package_path}."
                 )
                 assert self._model_package_path is not None, (
@@ -187,7 +213,18 @@ class TuningCommand(BaseCommand):
 
             # init an instance with the given hyperparameters for the model class
             model = model_class(**tuner_params)
+
+            # load the dataset
+            if self._lazy_load:
+                train_set, val_set = self._train_set, self._val_set
+            else:
+                logger.info(
+                    f"lazy loading {self._lazy_load}, loading all data from file..."
+                )
+                train_set = load_dict_from_h5(self._train_set)
+                val_set = load_dict_from_h5(self._val_set)
+
             # train the model and report to NNI
-            model.fit(train_set=self._train_set, val_set=self._val_set)
+            model.fit(train_set=train_set, val_set=val_set)
         else:
             raise RuntimeError("Argument `enable_tuning` is not set. Aborting...")
