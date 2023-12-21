@@ -15,7 +15,7 @@ import pytest
 from pypots.imputation import CSDI
 from pypots.optim import Adam
 from pypots.utils.logging import logger
-from pypots.utils.metrics import calc_mae, calc_quantile_crps
+from pypots.utils.metrics import calc_mse, calc_quantile_crps
 from tests.global_test_config import (
     DATA,
     EPOCHS,
@@ -63,7 +63,7 @@ class TestCSDI(unittest.TestCase):
 
     @pytest.mark.xdist_group(name="imputation-csdi")
     def test_1_impute(self):
-        imputed_X = self.csdi.predict(TEST_SET)["imputation"]
+        imputed_X = self.csdi.predict(TEST_SET, n_sampling_times=2)["imputation"]
         test_CRPS = calc_quantile_crps(
             imputed_X, DATA["test_X_ori"], DATA["test_X_indicating_mask"]
         )
@@ -71,10 +71,10 @@ class TestCSDI(unittest.TestCase):
         assert not np.isnan(
             imputed_X
         ).any(), "Output still has missing values after running impute()."
-        test_MAE = calc_mae(
+        test_MSE = calc_mse(
             imputed_X, DATA["test_X_ori"], DATA["test_X_indicating_mask"]
         )
-        logger.info(f"CSDI test_MAE: {test_MAE}, test_CRPS: {test_CRPS}")
+        logger.info(f"CSDI test_MSE: {test_MSE}, test_CRPS: {test_CRPS}")
 
     @pytest.mark.xdist_group(name="imputation-csdi")
     def test_2_parameters(self):
@@ -120,10 +120,10 @@ class TestCSDI(unittest.TestCase):
             imputed_X
         ).any(), "Output still has missing values after running impute()."
 
-        test_MAE = calc_mae(
+        test_MSE = calc_mse(
             imputed_X, DATA["test_X_ori"], DATA["test_X_indicating_mask"]
         )
-        logger.info(f"Lazy-loading CSDI test_MAE: {test_MAE}, test_CRPS: {test_CRPS}")
+        logger.info(f"Lazy-loading CSDI test_MSE: {test_MSE}, test_CRPS: {test_CRPS}")
 
 
 if __name__ == "__main__":

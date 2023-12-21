@@ -34,6 +34,12 @@ class BRITS(BaseNNImputer):
 
     Parameters
     ----------
+    n_steps :
+        The number of time steps in the time-series data sample.
+
+    n_features :
+        The number of features in the time-series data sample.
+
     rnn_hidden_size :
         The size of the RNN hidden state, also the number of hidden units in the RNN cell.
 
