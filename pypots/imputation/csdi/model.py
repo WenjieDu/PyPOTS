@@ -194,9 +194,9 @@ class CSDI(BaseNNImputer):
         ) = self._send_data_to_given_device(data)
 
         inputs = {
-            "X_ori": X_ori.permute(0, 2, 1),
-            "indicating_mask": indicating_mask.permute(0, 2, 1),
-            "cond_mask": cond_mask.permute(0, 2, 1),
+            "X_ori": X_ori.permute(0, 2, 1),  # ori observed part for model hint
+            "indicating_mask": indicating_mask.permute(0, 2, 1),  # for loss calc
+            "cond_mask": cond_mask.permute(0, 2, 1),  # for masking X_ori
             "observed_tp": observed_tp,
         }
         return inputs
@@ -208,13 +208,13 @@ class CSDI(BaseNNImputer):
         (
             indices,
             X,
-            con_mask,
+            cond_mask,
             observed_tp,
         ) = self._send_data_to_given_device(data)
 
         inputs = {
-            "X": X.permute(0, 2, 1),
-            "con_mask": con_mask.permute(0, 2, 1),
+            "X": X.permute(0, 2, 1),  # for model input
+            "cond_mask": cond_mask.permute(0, 2, 1),  # missing mask
             "observed_tp": observed_tp,
         }
         return inputs
@@ -259,14 +259,14 @@ class CSDI(BaseNNImputer):
                             results = self.model.forward(
                                 inputs, training=False, n_sampling_times=0
                             )
-                            val_loss_collector.append(results["loss"].item())
+                            val_loss_collector.append(results["loss"].sum().item())
 
                     mean_val_loss = np.asarray(val_loss_collector).mean()
 
                     # save validating loss logs into the tensorboard file for every epoch if in need
                     if self.summary_writer is not None:
                         val_loss_dict = {
-                            "imputation_loss": mean_val_loss,
+                            "validating_loss": mean_val_loss,
                         }
                         self._save_log_into_tb_file(epoch, "validating", val_loss_dict)
 
