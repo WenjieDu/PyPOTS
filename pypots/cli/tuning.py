@@ -219,7 +219,7 @@ class TuningCommand(BaseCommand):
                 train_set, val_set = self._train_set, self._val_set
             else:
                 logger.info(
-                    f"lazy loading {self._lazy_load}, loading all data from file..."
+                    "Option lazy_load is set as False, hence loading all data from file..."
                 )
                 train_set = load_dict_from_h5(self._train_set)
                 val_set = load_dict_from_h5(self._val_set)
