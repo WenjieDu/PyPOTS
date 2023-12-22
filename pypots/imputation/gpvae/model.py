@@ -428,6 +428,8 @@ class GPVAE(BaseNNImputer):
             It should be a dictionary including a key named 'imputation'.
 
         """
+        assert n_sampling_times > 0, "n_sampling_times should be greater than 0."
+
         self.model.eval()  # set the model as eval status to freeze it.
         test_set = DatasetForGPVAE(
             test_set, return_X_ori=False, return_labels=False, file_type=file_type

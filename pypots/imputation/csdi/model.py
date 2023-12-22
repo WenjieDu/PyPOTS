@@ -405,6 +405,8 @@ class CSDI(BaseNNImputer):
             It should be a dictionary including a key named 'imputation'.
 
         """
+        assert n_sampling_times > 0, "n_sampling_times should be greater than 0."
+
         # Step 1: wrap the input data with classes Dataset and DataLoader
         self.model.eval()  # set the model as eval status to freeze it.
         test_set = TestDatasetForCSDI(
