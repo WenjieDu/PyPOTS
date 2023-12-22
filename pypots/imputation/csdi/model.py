@@ -354,7 +354,7 @@ class CSDI(BaseNNImputer):
             val_set = DatasetForCSDI(
                 val_set,
                 self.target_strategy,
-                return_X_ori=False,
+                return_X_ori=True,
                 return_labels=False,
                 file_type=file_type,
             )
