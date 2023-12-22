@@ -315,13 +315,15 @@ class BaseNNImputer(BaseNNModel):
                         self._save_log_into_tb_file(epoch, "validating", val_loss_dict)
 
                     logger.info(
-                        f"Epoch {epoch} - "
+                        f"Epoch {epoch:4d} - "
                         f"training loss: {mean_train_loss:.4f}, "
                         f"validating loss: {mean_val_loss:.4f}"
                     )
                     mean_loss = mean_val_loss
                 else:
-                    logger.info(f"Epoch {epoch} - training loss: {mean_train_loss:.4f}")
+                    logger.info(
+                        f"Epoch {epoch:4d} - training loss: {mean_train_loss:.4f}"
+                    )
                     mean_loss = mean_train_loss
 
                 if np.isnan(mean_loss):

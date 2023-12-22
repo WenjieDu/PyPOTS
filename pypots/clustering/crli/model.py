@@ -282,7 +282,7 @@ class CRLI(BaseNNClusterer):
                         }
                         self._save_log_into_tb_file(epoch, "validating", val_loss_dict)
                     logger.info(
-                        f"Epoch {epoch} - "
+                        f"Epoch {epoch:4d} - "
                         f"generator training loss: {mean_epoch_train_G_loss:.4f}, "
                         f"discriminator training loss: {mean_epoch_train_D_loss:.4f}, "
                         f"generator validating loss: {mean_val_G_loss:.4f}"
@@ -290,7 +290,7 @@ class CRLI(BaseNNClusterer):
                     mean_loss = mean_val_G_loss
                 else:
                     logger.info(
-                        f"Epoch {epoch} - "
+                        f"Epoch {epoch:4d} - "
                         f"generator training loss: {mean_epoch_train_G_loss:.4f}, "
                         f"discriminator training loss: {mean_epoch_train_D_loss:.4f}"
                     )
