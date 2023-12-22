@@ -132,6 +132,8 @@ class BaseModel(ABC):
                     f"device should be str/torch.device/a list containing str or torch.device, but got {type(device)}"
                 )
 
+            logger.info(f"Using the given device: {self.device}")
+
         # check CUDA availability if using CUDA
         if (isinstance(self.device, list) and "cuda" in self.device[0].type) or (
             isinstance(self.device, torch.device) and "cuda" in self.device.type
@@ -323,7 +325,7 @@ class BaseModel(ABC):
                 self.model = loaded_model.model
         except Exception as e:
             raise e
-        logger.info(f"Model loaded successfully from {path}.")
+        logger.info(f"Model loaded successfully from {path}")
 
     def save_model(
         self,
