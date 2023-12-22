@@ -43,7 +43,6 @@ class LOCF(BaseImputer):
     def __init__(
         self,
         first_step_imputation: str = "backward",
-        keep_trying: bool = True,
         device: Optional[Union[str, torch.device, list]] = None,
     ):
         super().__init__(device=device)
@@ -72,7 +71,7 @@ class LOCF(BaseImputer):
     def _locf_numpy(
         self,
         X: np.ndarray,
-        first_step_imputation: str,
+        first_step_imputation: str = "backward",
     ) -> np.ndarray:
         """Numpy implementation of LOCF.
 
@@ -133,7 +132,7 @@ class LOCF(BaseImputer):
     def _locf_torch(
         self,
         X: torch.Tensor,
-        first_step_imputation: str,
+        first_step_imputation: str = "backward",
     ) -> torch.Tensor:
         """Torch implementation of LOCF.
 

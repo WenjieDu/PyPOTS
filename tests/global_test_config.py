@@ -24,7 +24,7 @@ DATA = gene_random_walk(
     n_features=10,
     n_classes=2,
     n_samples_each_class=1000,
-    missing_rate=0.98,
+    missing_rate=0.1,
 )
 # DATA = gene_physionet2012()
 
