@@ -317,14 +317,14 @@ class BaseNNClusterer(BaseNNModel):
 
                     mean_val_loss = np.mean(epoch_val_loss_collector)
                     logger.info(
-                        f"Epoch {epoch:4d} - "
+                        f"Epoch {epoch:03d} - "
                         f"training loss: {mean_train_loss:.4f}, "
                         f"validating loss: {mean_val_loss:.4f}"
                     )
                     mean_loss = mean_val_loss
                 else:
                     logger.info(
-                        f"Epoch {epoch:4d} - training loss: {mean_train_loss:.4f}"
+                        f"Epoch {epoch:03d} - training loss: {mean_train_loss:.4f}"
                     )
                     mean_loss = mean_train_loss
 

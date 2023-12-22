@@ -271,14 +271,14 @@ class CSDI(BaseNNImputer):
                         self._save_log_into_tb_file(epoch, "validating", val_loss_dict)
 
                     logger.info(
-                        f"Epoch {epoch:4d} - "
+                        f"Epoch {epoch:03d} - "
                         f"training loss: {mean_train_loss:.4f}, "
                         f"validating loss: {mean_val_loss:.4f}"
                     )
                     mean_loss = mean_val_loss
                 else:
                     logger.info(
-                        f"Epoch {epoch:4d} - training loss: {mean_train_loss:.4f}"
+                        f"Epoch {epoch:03d} - training loss: {mean_train_loss:.4f}"
                     )
                     mean_loss = mean_train_loss
 
