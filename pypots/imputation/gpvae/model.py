@@ -303,13 +303,15 @@ class GPVAE(BaseNNImputer):
                         self._save_log_into_tb_file(epoch, "validating", val_loss_dict)
 
                     logger.info(
-                        f"Epoch {epoch} - "
+                        f"Epoch {epoch:03d} - "
                         f"training loss: {mean_train_loss:.4f}, "
                         f"validating loss: {mean_val_loss:.4f}"
                     )
                     mean_loss = mean_val_loss
                 else:
-                    logger.info(f"Epoch {epoch} - training loss: {mean_train_loss:.4f}")
+                    logger.info(
+                        f"Epoch {epoch:03d} - training loss: {mean_train_loss:.4f}"
+                    )
                     mean_loss = mean_train_loss
 
                 if np.isnan(mean_loss):
@@ -428,6 +430,8 @@ class GPVAE(BaseNNImputer):
             It should be a dictionary including a key named 'imputation'.
 
         """
+        assert n_sampling_times > 0, "n_sampling_times should be greater than 0."
+
         self.model.eval()  # set the model as eval status to freeze it.
         test_set = DatasetForGPVAE(
             test_set, return_X_ori=False, return_labels=False, file_type=file_type
