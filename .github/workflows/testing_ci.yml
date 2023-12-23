@@ -71,7 +71,7 @@ jobs:
               run: |
                   python tests/global_test_config.py
                   rm -rf tests/__pycache__ && rm -rf tests/*/__pycache__
-                  python -m pytest -rA tests/*/* -n auto --cov=pypots --dist=loadgroup --cov-config=.coveragerc
+                  python -m pytest -rA tests/*/* -s -n auto --cov=pypots --dist=loadgroup --cov-config=.coveragerc
 
             - name: Generate the LCOV report
               run: |
