@@ -8,7 +8,8 @@ Data saving utilities with pickle.
 import pickle
 from typing import Optional
 
-from pypots.utils.logging import logger
+from ...utils.file import extract_parent_dir, create_dir_if_not_exist
+from ...utils.logging import logger
 
 
 def pickle_dump(data: object, path: str) -> Optional[str]:
@@ -28,10 +29,14 @@ def pickle_dump(data: object, path: str) -> Optional[str]:
 
     """
     try:
+        # help create the parent dir if not exist
+        create_dir_if_not_exist(extract_parent_dir(path))
         with open(path, "wb") as f:
             pickle.dump(data, f, protocol=pickle.HIGHEST_PROTOCOL)
-    except pickle.PicklingError:
-        logger.error("❌ Pickling failed. No cache data saved.")
+    except Exception as e:
+        logger.error(
+            f"❌ Pickling failed. No cache data saved. Please investigate the error below.\n{e}"
+        )
         return None
     logger.info(f"Successfully saved to {path}")
     return path
@@ -54,8 +59,6 @@ def pickle_load(path: str) -> object:
     try:
         with open(path, "rb") as f:
             data = pickle.load(f)
-    except pickle.UnpicklingError as e:
-        logger.error(
-            "❌ Data file corrupted. Operation aborted. See info below:\n" f"{e}"
-        )
+    except Exception as e:
+        logger.error(f"❌ Loading data failed. Operation aborted. See info below:\n{e}")
     return data
