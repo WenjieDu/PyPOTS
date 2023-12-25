@@ -89,9 +89,9 @@ class _MRNN(nn.Module):
 
         # if in training mode, return results with losses
         if training:
-            reconstruction_loss = calc_rmse(FCN_estimation, X, M) + calc_rmse(
-                RNN_estimation, X, M
-            )
+            reconstruction_loss = calc_rmse(
+                FCN_estimation, RNN_imputed_data
+            ) + calc_rmse(RNN_estimation, X, M)
             results["loss"] = reconstruction_loss
 
         return results
