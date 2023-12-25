@@ -1,5 +1,5 @@
 """
-
+The submodules of the MRNN model.
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
