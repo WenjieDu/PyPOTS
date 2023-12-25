@@ -36,11 +36,12 @@ class BaseModel(ABC):
         training into a tensorboard file). Will not save if not given.
 
     model_saving_strategy :
-        The strategy to save model checkpoints. It has to be one of [None, "best", "better"].
+        The strategy to save model checkpoints. It has to be one of [None, "best", "better", "all"].
         No model will be saved when it is set as None.
         The "best" strategy will only automatically save the best model after the training finished.
         The "better" strategy will automatically save the model during training whenever the model performs
         better than in previous epochs.
+        The "all" strategy will save every model after each epoch training.
 
     Attributes
     ----------
@@ -64,7 +65,7 @@ class BaseModel(ABC):
         saving_path: str = None,
         model_saving_strategy: Optional[str] = "best",
     ):
-        saving_strategies = [None, "best", "better"]
+        saving_strategies = [None, "best", "better", "all"]
         assert (
             model_saving_strategy in saving_strategies
         ), f"saving_strategy must be one of {saving_strategies}, but got f{model_saving_strategy}."
@@ -239,7 +240,9 @@ class BaseModel(ABC):
         if self.saving_path is not None and self.model_saving_strategy is not None:
             name = self.__class__.__name__ if saving_name is None else saving_name
             saving_path = os.path.join(self.saving_path, name)
-            if not training_finished and self.model_saving_strategy == "better":
+            if self.model_saving_strategy == "all":
+                self.save(saving_path)
+            elif not training_finished and self.model_saving_strategy == "better":
                 self.save(saving_path)
             elif training_finished and self.model_saving_strategy == "best":
                 self.save(saving_path)
@@ -477,11 +480,12 @@ class BaseNNModel(BaseModel):
         training into a tensorboard file). Will not save if not given.
 
     model_saving_strategy :
-        The strategy to save model checkpoints. It has to be one of [None, "best", "better"].
+        The strategy to save model checkpoints. It has to be one of [None, "best", "better", "all"].
         No model will be saved when it is set as None.
         The "best" strategy will only automatically save the best model after the training finished.
         The "better" strategy will automatically save the model during training whenever the model performs
         better than in previous epochs.
+        The "all" strategy will save every model after each epoch training.
 
 
     Attributes
