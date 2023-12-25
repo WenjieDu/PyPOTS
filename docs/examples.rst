@@ -22,10 +22,10 @@ You can also find a simple and quick-start tutorial notebook on Google Colab wit
 
     import numpy as np
     from sklearn.preprocessing import StandardScaler
-    from pygrinder import mcar, masked_fill
+    from pygrinder import mcar
     from pypots.data import load_specific_dataset
     from pypots.imputation import SAITS
-    from pypots.utils.metrics import cal_mae
+    from pypots.utils.metrics import calc_mae
 
     # Data preprocessing. Tedious, but PyPOTS can help. 🤓
     data = load_specific_dataset('physionet_2012')  # PyPOTS will automatically download and extract it.
@@ -34,10 +34,10 @@ You can also find a simple and quick-start tutorial notebook on Google Colab wit
     X = X.drop(['RecordID', 'Time'], axis = 1)
     X = StandardScaler().fit_transform(X.to_numpy())
     X = X.reshape(num_samples, 48, -1)
-    X_intact, X, missing_mask, indicating_mask = mcar(X, 0.1) # hold out 10% observed values as ground truth
-    X = masked_fill(X, 1 - missing_mask, np.nan)
-    dataset = {"X": X}
-    print(dataset["X"].shape)  # (11988, 48, 37), 11988 samples, 48 time steps, 37 features
+    X_ori = X  # keep X_ori for validation
+    X = mcar(X, 0.1)  # randomly hold out 10% observed values as ground truth
+    dataset = {"X": X}  # X for model input
+    print(X.shape)  # (11988, 48, 37), 11988 samples, 48 time steps, 37 features
 
     # initialize the model
     saits = SAITS(
@@ -60,7 +60,8 @@ You can also find a simple and quick-start tutorial notebook on Google Colab wit
     # impute the originally-missing values and artificially-missing values
     imputation = saits.impute(dataset)
     # calculate mean absolute error on the ground truth (artificially-missing values)
-    mae = cal_mae(imputation, X_intact, indicating_mask)
+    indicating_mask = np.isnan(X) ^ np.isnan(X_ori)  # indicating mask for imputation error calculation
+    mae = calc_mae(imputation, np.nan_to_num(X_ori), indicating_mask)  # calculate mean absolute error on the ground truth (artificially-missing values)
 
     # the best model has been already saved, but you can still manually save it with function save_model() as below
     saits.save_model(saving_dir="examples/saits",file_name="manually_saved_saits_model")

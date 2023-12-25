@@ -1,5 +1,5 @@
 """
-
+Modules for CSDI model.
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
@@ -155,12 +155,17 @@ class DiffusionModel(nn.Module):
         self.n_channels = n_channels
 
     def forward(self, x, cond_info, diffusion_step):
-        B, input_dim, K, L = x.shape  # bz, 2, n_features, n_steps
+        (
+            n_samples,
+            input_dim,
+            n_features,
+            n_steps,
+        ) = x.shape  # n_samples, 2, n_features, n_steps
 
-        x = x.reshape(B, input_dim, K * L)
-        x = self.input_projection(x)  # bz, n_channels, n_features*n_steps
+        x = x.reshape(n_samples, input_dim, n_features * n_steps)
+        x = self.input_projection(x)  # n_samples, n_channels, n_features*n_steps
         x = F.relu(x)
-        x = x.reshape(B, self.n_channels, K, L)  # bz, n_channels, n_features, n_steps
+        x = x.reshape(n_samples, self.n_channels, n_features, n_steps)
 
         diffusion_emb = self.diffusion_embedding(diffusion_step)
 
@@ -170,9 +175,9 @@ class DiffusionModel(nn.Module):
             skip.append(skip_connection)
 
         x = torch.sum(torch.stack(skip), dim=0) / math.sqrt(len(self.residual_layers))
-        x = x.reshape(B, self.n_channels, K * L)
-        x = self.output_projection1(x)  # (B,channel,K*L)
+        x = x.reshape(n_samples, self.n_channels, n_features * n_steps)
+        x = self.output_projection1(x)  # (n_samples, channel, n_features*n_steps)
         x = F.relu(x)
-        x = self.output_projection2(x)  # (B,1,K*L)
-        x = x.reshape(B, K, L)
+        x = self.output_projection2(x)  # (n_samples, 1, n_features*n_steps)
+        x = x.reshape(n_samples, n_features, n_steps)
         return x

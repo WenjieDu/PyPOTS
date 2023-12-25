@@ -1,7 +1,7 @@
 """
 PyTorch MRNN model for the time-series imputation task.
+This implementation is inspired by the official one https://github.com/jsyoon0823/MRNN.
 Some part of the code is from https://github.com/WenjieDu/SAITS.
-
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
@@ -29,7 +29,7 @@ class _MRNN(nn.Module):
         self.concated_hidden_project = nn.Linear(
             self.rnn_hidden_size * 2, self.feature_num
         )
-        self.fcn_regression = FCN_Regression(feature_num, rnn_hidden_size)
+        self.fcn_regression = FCN_Regression(feature_num)
 
     def gene_hidden_states(self, inputs, direction):
         X = inputs[direction]["X"]
@@ -74,9 +74,9 @@ class _MRNN(nn.Module):
             FCN_estimation = self.fcn_regression(
                 x, m, RNN_imputed_data
             )  # FCN estimation is output estimation
-            reconstruction_loss += calc_rmse(FCN_estimation, x, m) + calc_rmse(
-                RNN_estimation, x, m
-            )
+            reconstruction_loss += calc_rmse(
+                FCN_estimation, RNN_imputed_data
+            ) + calc_rmse(RNN_estimation, x, m)
             estimations.append(FCN_estimation.unsqueeze(dim=1))
 
         estimations = torch.cat(estimations, dim=1)

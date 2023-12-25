@@ -1,5 +1,7 @@
 """
 PyTorch MRNN model for the time-series imputation task.
+
+This implementation is inspired by the official one https://github.com/jsyoon0823/MRNN.
 Some part of the code is from https://github.com/WenjieDu/SAITS.
 
 """
@@ -69,11 +71,12 @@ class MRNN(BaseNNImputer):
         training into a tensorboard file). Will not save if not given.
 
     model_saving_strategy :
-        The strategy to save model checkpoints. It has to be one of [None, "best", "better"].
+        The strategy to save model checkpoints. It has to be one of [None, "best", "better", "all"].
         No model will be saved when it is set as None.
         The "best" strategy will only automatically save the best model after the training finished.
         The "better" strategy will automatically save the model during training whenever the model performs
         better than in previous epochs.
+        The "all" strategy will save every model after each epoch training.
 
     References
     ----------

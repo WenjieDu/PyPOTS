@@ -29,7 +29,7 @@ class TestLOCF(unittest.TestCase):
     logger.info("Running tests for an imputation model LOCF...")
     locf_zero = LOCF(first_step_imputation="zero", device=DEVICE)
     locf_backward = LOCF(first_step_imputation="backward", device=DEVICE)
-    locf_mean = LOCF(first_step_imputation="mean", device=DEVICE)
+    locf_median = LOCF(first_step_imputation="median", device=DEVICE)
     locf_nan = LOCF(first_step_imputation="nan", device=DEVICE)
 
     @pytest.mark.xdist_group(name="imputation-locf")
@@ -55,16 +55,16 @@ class TestLOCF(unittest.TestCase):
         )
         logger.info(f"LOCF (backward) test_MSE: {test_MSE}")
 
-        test_X_imputed_mean = self.locf_mean.predict(TEST_SET)["imputation"]
+        test_X_imputed_median = self.locf_median.predict(TEST_SET)["imputation"]
         assert not np.isnan(
-            test_X_imputed_mean
+            test_X_imputed_median
         ).any(), "Output still has missing values after running impute()."
         test_MSE = calc_mse(
-            test_X_imputed_mean,
+            test_X_imputed_median,
             DATA["test_X_ori"],
             DATA["test_X_indicating_mask"],
         )
-        logger.info(f"LOCF (mean) test_MSE: {test_MSE}")
+        logger.info(f"LOCF (median) test_MSE: {test_MSE}")
 
         test_X_imputed_nan = self.locf_nan.predict(TEST_SET)["imputation"]
         num_of_missing = np.isnan(test_X_imputed_nan).sum()
@@ -96,16 +96,16 @@ class TestLOCF(unittest.TestCase):
         )
         logger.info(f"LOCF (backward) test_MSE: {test_MSE}")
 
-        test_X_imputed_mean = self.locf_mean.predict({"X": X})["imputation"]
+        test_X_imputed_median = self.locf_median.predict({"X": X})["imputation"]
         assert not torch.isnan(
-            test_X_imputed_mean
+            test_X_imputed_median
         ).any(), "Output still has missing values after running impute()."
         test_MSE = calc_mse(
-            test_X_imputed_mean,
+            test_X_imputed_median,
             test_X_ori,
             test_X_indicating_mask,
         )
-        logger.info(f"LOCF (mean) test_MSE: {test_MSE}")
+        logger.info(f"LOCF (median) test_MSE: {test_MSE}")
 
         test_X_imputed_nan = self.locf_nan.predict({"X": X})["imputation"]
         num_of_missing = torch.isnan(test_X_imputed_nan).sum()

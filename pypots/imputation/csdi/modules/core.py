@@ -233,19 +233,19 @@ class _CSDI(nn.Module):
         elif not training and n_sampling_times > 0:  # for testing
             observed_data, cond_mask, observed_tp = (
                 inputs["X"],
-                inputs["con_mask"],
+                inputs["cond_mask"],
                 inputs["observed_tp"],
             )
             side_info = self.get_side_info(observed_tp, cond_mask)
             samples = self.impute(
                 observed_data, cond_mask, side_info, n_sampling_times
-            )  # (bz,n_sampling,K,L)
+            )  # (n_samples, n_sampling_times, n_features, n_steps)
             repeated_obs = observed_data.unsqueeze(1).repeat(1, n_sampling_times, 1, 1)
             repeated_mask = cond_mask.unsqueeze(1).repeat(1, n_sampling_times, 1, 1)
             imputed_data = repeated_obs + samples * (1 - repeated_mask)
 
             results["imputed_data"] = imputed_data.permute(
                 0, 1, 3, 2
-            )  # (bz,n_sampling,L,K)
+            )  # (n_samples, n_sampling_times, n_steps, n_features)
 
         return results

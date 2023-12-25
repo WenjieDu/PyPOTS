@@ -171,7 +171,8 @@ class DatasetForBRITS(BaseDataset):
 
         if "X_ori" in self.file_handle.keys() and self.return_X_ori:
             X_ori = torch.from_numpy(self.file_handle["X_ori"][idx]).to(torch.float32)
-            X_ori, indicating_mask = fill_and_get_mask_torch(X_ori)
+            X_ori, X_ori_missing_mask = fill_and_get_mask_torch(X_ori)
+            indicating_mask = X_ori_missing_mask - missing_mask
             sample.extend([X_ori, indicating_mask])
 
         # if the dataset has labels and is for training, then fetch it from the file
