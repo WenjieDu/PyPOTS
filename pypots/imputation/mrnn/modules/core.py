@@ -74,9 +74,9 @@ class _MRNN(nn.Module):
             FCN_estimation = self.fcn_regression(
                 x, m, RNN_imputed_data
             )  # FCN estimation is output estimation
-            reconstruction_loss += calc_rmse(FCN_estimation, x, m) + calc_rmse(
-                RNN_estimation, x, m
-            )
+            reconstruction_loss += calc_rmse(
+                FCN_estimation, RNN_imputed_data
+            ) + calc_rmse(RNN_estimation, x, m)
             estimations.append(FCN_estimation.unsqueeze(dim=1))
 
         estimations = torch.cat(estimations, dim=1)

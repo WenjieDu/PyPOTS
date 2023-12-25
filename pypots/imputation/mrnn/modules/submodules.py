@@ -35,11 +35,11 @@ class FCN_Regression(nn.Module):
         self.beta.data.uniform_(-stdv, stdv)
 
     def forward(self, x_t, m_t, target):
-        h_t = torch.tanh(
+        h_t = torch.sigmoid(
             F.linear(x_t, self.U * self.m)
             + F.linear(target, self.V1 * self.m)
             + F.linear(m_t, self.V2)
             + self.beta
         )
-        x_hat_t = self.final_linear(h_t)
+        x_hat_t = torch.sigmoid(self.final_linear(h_t))
         return x_hat_t
