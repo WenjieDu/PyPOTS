@@ -26,6 +26,7 @@ class DatasetForCSDI(BaseDataset):
         file_type: str = "h5py",
     ):
         super().__init__(data, return_X_ori, return_labels, file_type)
+        assert target_strategy in ["random", "hist", "mix"]
         self.target_strategy = target_strategy
 
     @staticmethod
@@ -65,17 +66,18 @@ class DatasetForCSDI(BaseDataset):
             index : int tensor,
                 The index of the sample.
 
-            X_ori : tensor,
-                Original time-series for calculating mask imputation loss.
+            observed_data : tensor,
+                Time-series data with all observed values for model input.
 
-            X : tensor,
-                Time-series data with artificially missing values for model input.
+            indicating_mask : tensor,
+                The mask records all artificially missing values to the model.
 
-            missing_mask : tensor,
-                The mask records all missing values in X.
+            cond_mask : tensor,
+                The mask records all originally and artificially missing values to the model.
 
-            indicating_mask : tensor.
-                The mask indicates artificially missing values in X.
+            observed_tp : tensor,
+                The time points (timestamp) of the observed data.
+
         """
 
         if self.X_ori is not None and self.return_X_ori:
@@ -132,7 +134,23 @@ class DatasetForCSDI(BaseDataset):
         Returns
         -------
         sample : list,
-            The collated data sample, a list including all necessary sample info.
+            A list contains
+
+            index : int tensor,
+                The index of the sample.
+
+            observed_data : tensor,
+                Time-series data with all observed values for model input.
+
+            indicating_mask : tensor,
+                The mask records all artificially missing values to the model.
+
+            cond_mask : tensor,
+                The mask records all originally and artificially missing values to the model.
+
+            observed_tp : tensor,
+                The time points (timestamp) of the observed data.
+
         """
 
         if self.file_handle is None:
@@ -219,17 +237,14 @@ class TestDatasetForCSDI(DatasetForCSDI):
             index : int tensor,
                 The index of the sample.
 
-            X_ori : tensor,
-                Original time-series for calculating mask imputation loss.
+            observed_data : tensor,
+                Time-series data with all observed values for model input.
 
-            X : tensor,
-                Time-series data with artificially missing values for model input.
+            cond_mask : tensor,
+                The mask records missing values to the model.
 
-            missing_mask : tensor,
-                The mask records all missing values in X.
-
-            indicating_mask : tensor.
-                The mask indicates artificially missing values in X.
+            observed_tp : tensor,
+                The time points (timestamp) of the observed data.
         """
 
         observed_data = self.X[idx]
@@ -266,7 +281,20 @@ class TestDatasetForCSDI(DatasetForCSDI):
         Returns
         -------
         sample : list,
-            The collated data sample, a list including all necessary sample info.
+            A list contains
+
+            index : int tensor,
+                The index of the sample.
+
+            observed_data : tensor,
+                Time-series data with all observed values for model input.
+
+            cond_mask : tensor,
+                The mask records missing values to the model.
+
+            observed_tp : tensor,
+                The time points (timestamp) of the observed data.
+
         """
 
         if self.file_handle is None:

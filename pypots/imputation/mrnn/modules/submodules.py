@@ -1,5 +1,5 @@
 """
-
+The submodules of the MRNN model.
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
@@ -13,13 +13,10 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.nn.parameter import Parameter
 
-from ...brits.modules import FeatureRegression
-
 
 class FCN_Regression(nn.Module):
-    def __init__(self, feature_num, rnn_hid_size):
+    def __init__(self, feature_num):
         super().__init__()
-        self.feat_reg = FeatureRegression(rnn_hid_size * 2)
         self.U = Parameter(torch.Tensor(feature_num, feature_num))
         self.V1 = Parameter(torch.Tensor(feature_num, feature_num))
         self.V2 = Parameter(torch.Tensor(feature_num, feature_num))
@@ -38,11 +35,11 @@ class FCN_Regression(nn.Module):
         self.beta.data.uniform_(-stdv, stdv)
 
     def forward(self, x_t, m_t, target):
-        h_t = torch.tanh(
+        h_t = torch.sigmoid(
             F.linear(x_t, self.U * self.m)
             + F.linear(target, self.V1 * self.m)
             + F.linear(m_t, self.V2)
             + self.beta
         )
-        x_hat_t = self.final_linear(h_t)
+        x_hat_t = torch.sigmoid(self.final_linear(h_t))
         return x_hat_t

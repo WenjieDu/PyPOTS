@@ -244,7 +244,7 @@ class USGAN(BaseNNImputer):
             training_step = 0
             epoch_train_loss_G_collector = []
             epoch_train_loss_D_collector = []
-            for epoch in range(self.epochs):
+            for epoch in range(1, self.epochs + 1):
                 self.model.train()
                 for idx, data in enumerate(training_loader):
                     training_step += 1
@@ -322,7 +322,7 @@ class USGAN(BaseNNImputer):
                         }
                         self._save_log_into_tb_file(epoch, "validating", val_loss_dict)
                     logger.info(
-                        f"Epoch {epoch} - "
+                        f"Epoch {epoch:03d} - "
                         f"generator training loss: {mean_epoch_train_G_loss:.4f}, "
                         f"discriminator training loss: {mean_epoch_train_D_loss:.4f}, "
                         f"validating loss: {mean_val_loss:.4f}"
@@ -330,7 +330,7 @@ class USGAN(BaseNNImputer):
                     mean_loss = mean_val_loss
                 else:
                     logger.info(
-                        f"Epoch {epoch} - "
+                        f"Epoch {epoch:03d} - "
                         f"generator training loss: {mean_epoch_train_G_loss:.4f}, "
                         f"discriminator training loss: {mean_epoch_train_D_loss:.4f}"
                     )

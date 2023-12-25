@@ -36,11 +36,12 @@ class BaseModel(ABC):
         training into a tensorboard file). Will not save if not given.
 
     model_saving_strategy :
-        The strategy to save model checkpoints. It has to be one of [None, "best", "better"].
+        The strategy to save model checkpoints. It has to be one of [None, "best", "better", "all"].
         No model will be saved when it is set as None.
         The "best" strategy will only automatically save the best model after the training finished.
         The "better" strategy will automatically save the model during training whenever the model performs
         better than in previous epochs.
+        The "all" strategy will save every model after each epoch training.
 
     Attributes
     ----------
@@ -64,7 +65,7 @@ class BaseModel(ABC):
         saving_path: str = None,
         model_saving_strategy: Optional[str] = "best",
     ):
-        saving_strategies = [None, "best", "better"]
+        saving_strategies = [None, "best", "better", "all"]
         assert (
             model_saving_strategy in saving_strategies
         ), f"saving_strategy must be one of {saving_strategies}, but got f{model_saving_strategy}."
@@ -131,6 +132,8 @@ class BaseModel(ABC):
                 raise TypeError(
                     f"device should be str/torch.device/a list containing str or torch.device, but got {type(device)}"
                 )
+
+            logger.info(f"Using the given device: {self.device}")
 
         # check CUDA availability if using CUDA
         if (isinstance(self.device, list) and "cuda" in self.device[0].type) or (
@@ -237,7 +240,9 @@ class BaseModel(ABC):
         if self.saving_path is not None and self.model_saving_strategy is not None:
             name = self.__class__.__name__ if saving_name is None else saving_name
             saving_path = os.path.join(self.saving_path, name)
-            if not training_finished and self.model_saving_strategy == "better":
+            if self.model_saving_strategy == "all":
+                self.save(saving_path)
+            elif not training_finished and self.model_saving_strategy == "better":
                 self.save(saving_path)
             elif training_finished and self.model_saving_strategy == "best":
                 self.save(saving_path)
@@ -287,7 +292,7 @@ class BaseModel(ABC):
                 torch.save(self.model.module, saving_path)
             else:
                 torch.save(self.model, saving_path)
-            logger.info(f"Saved the model to {saving_path}.")
+            logger.info(f"Saved the model to {saving_path}")
         except Exception as e:
             raise RuntimeError(
                 f'Failed to save the model to "{saving_path}" because of the below error! \n{e}'
@@ -323,7 +328,7 @@ class BaseModel(ABC):
                 self.model = loaded_model.model
         except Exception as e:
             raise e
-        logger.info(f"Model loaded successfully from {path}.")
+        logger.info(f"Model loaded successfully from {path}")
 
     def save_model(
         self,
@@ -475,11 +480,12 @@ class BaseNNModel(BaseModel):
         training into a tensorboard file). Will not save if not given.
 
     model_saving_strategy :
-        The strategy to save model checkpoints. It has to be one of [None, "best", "better"].
+        The strategy to save model checkpoints. It has to be one of [None, "best", "better", "all"].
         No model will be saved when it is set as None.
         The "best" strategy will only automatically save the best model after the training finished.
         The "better" strategy will automatically save the model during training whenever the model performs
         better than in previous epochs.
+        The "all" strategy will save every model after each epoch training.
 
 
     Attributes
@@ -543,7 +549,7 @@ class BaseNNModel(BaseModel):
         """Print the number of trainable parameters in the initialized NN model."""
         num_params = sum(p.numel() for p in self.model.parameters() if p.requires_grad)
         logger.info(
-            f"A {self.__class__.__name__} model initialized with the given hyperparameters, "
+            f"{self.__class__.__name__} initialized with the given hyperparameters, "
             f"the number of trainable parameters: {num_params:,}"
         )
 

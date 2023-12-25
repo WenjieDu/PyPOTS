@@ -110,11 +110,12 @@ class CSDI(BaseNNImputer):
         training into a tensorboard file). Will not save if not given.
 
     model_saving_strategy :
-        The strategy to save model checkpoints. It has to be one of [None, "best", "better"].
+        The strategy to save model checkpoints. It has to be one of [None, "best", "better", "all"].
         No model will be saved when it is set as None.
         The "best" strategy will only automatically save the best model after the training finished.
         The "better" strategy will automatically save the model during training whenever the model performs
         better than in previous epochs.
+        The "all" strategy will save every model after each epoch training.
 
     References
     ----------
@@ -194,9 +195,9 @@ class CSDI(BaseNNImputer):
         ) = self._send_data_to_given_device(data)
 
         inputs = {
-            "X_ori": X_ori.permute(0, 2, 1),
-            "indicating_mask": indicating_mask.permute(0, 2, 1),
-            "cond_mask": cond_mask.permute(0, 2, 1),
+            "X_ori": X_ori.permute(0, 2, 1),  # ori observed part for model hint
+            "indicating_mask": indicating_mask.permute(0, 2, 1),  # for loss calc
+            "cond_mask": cond_mask.permute(0, 2, 1),  # for masking X_ori
             "observed_tp": observed_tp,
         }
         return inputs
@@ -208,13 +209,13 @@ class CSDI(BaseNNImputer):
         (
             indices,
             X,
-            con_mask,
+            cond_mask,
             observed_tp,
         ) = self._send_data_to_given_device(data)
 
         inputs = {
-            "X": X.permute(0, 2, 1),
-            "con_mask": con_mask.permute(0, 2, 1),
+            "X": X.permute(0, 2, 1),  # for model input
+            "cond_mask": cond_mask.permute(0, 2, 1),  # missing mask
             "observed_tp": observed_tp,
         }
         return inputs
@@ -230,7 +231,7 @@ class CSDI(BaseNNImputer):
 
         try:
             training_step = 0
-            for epoch in range(self.epochs):
+            for epoch in range(1, self.epochs + 1):
                 self.model.train()
                 epoch_train_loss_collector = []
                 for idx, data in enumerate(training_loader):
@@ -259,25 +260,27 @@ class CSDI(BaseNNImputer):
                             results = self.model.forward(
                                 inputs, training=False, n_sampling_times=0
                             )
-                            val_loss_collector.append(results["loss"].item())
+                            val_loss_collector.append(results["loss"].sum().item())
 
                     mean_val_loss = np.asarray(val_loss_collector).mean()
 
                     # save validating loss logs into the tensorboard file for every epoch if in need
                     if self.summary_writer is not None:
                         val_loss_dict = {
-                            "imputation_loss": mean_val_loss,
+                            "validating_loss": mean_val_loss,
                         }
                         self._save_log_into_tb_file(epoch, "validating", val_loss_dict)
 
                     logger.info(
-                        f"Epoch {epoch} - "
+                        f"Epoch {epoch:03d} - "
                         f"training loss: {mean_train_loss:.4f}, "
                         f"validating loss: {mean_val_loss:.4f}"
                     )
                     mean_loss = mean_val_loss
                 else:
-                    logger.info(f"Epoch {epoch} - training loss: {mean_train_loss:.4f}")
+                    logger.info(
+                        f"Epoch {epoch:03d} - training loss: {mean_train_loss:.4f}"
+                    )
                     mean_loss = mean_train_loss
 
                 if np.isnan(mean_loss):
@@ -354,7 +357,7 @@ class CSDI(BaseNNImputer):
             val_set = DatasetForCSDI(
                 val_set,
                 self.target_strategy,
-                return_X_ori=False,
+                return_X_ori=True,
                 return_labels=False,
                 file_type=file_type,
             )
@@ -405,6 +408,8 @@ class CSDI(BaseNNImputer):
             It should be a dictionary including a key named 'imputation'.
 
         """
+        assert n_sampling_times > 0, "n_sampling_times should be greater than 0."
+
         # Step 1: wrap the input data with classes Dataset and DataLoader
         self.model.eval()  # set the model as eval status to freeze it.
         test_set = TestDatasetForCSDI(
