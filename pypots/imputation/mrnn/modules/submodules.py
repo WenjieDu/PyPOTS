@@ -34,11 +34,11 @@ class FCN_Regression(nn.Module):
         self.V2.data.uniform_(-stdv, stdv)
         self.beta.data.uniform_(-stdv, stdv)
 
-    def forward(self, x_t, m_t, target):
+    def forward(self, x, missing_mask, target):
         h_t = torch.sigmoid(
-            F.linear(x_t, self.U * self.m)
+            F.linear(x, self.U * self.m)
             + F.linear(target, self.V1 * self.m)
-            + F.linear(m_t, self.V2)
+            + F.linear(missing_mask, self.V2)
             + self.beta
         )
         x_hat_t = torch.sigmoid(self.final_linear(h_t))
