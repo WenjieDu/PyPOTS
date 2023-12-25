@@ -213,7 +213,7 @@ class CRLI(BaseNNClusterer):
             training_step = 0
             epoch_train_loss_G_collector = []
             epoch_train_loss_D_collector = []
-            for epoch in range(self.epochs):
+            for epoch in range(1, self.epochs + 1):
                 self.model.train()
                 for idx, data in enumerate(training_loader):
                     training_step += 1

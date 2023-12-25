@@ -29,7 +29,7 @@ class _MRNN(nn.Module):
         self.concated_hidden_project = nn.Linear(
             self.rnn_hidden_size * 2, self.feature_num
         )
-        self.fcn_regression = FCN_Regression(feature_num, rnn_hidden_size)
+        self.fcn_regression = FCN_Regression(feature_num)
 
     def gene_hidden_states(self, inputs, direction):
         X = inputs[direction]["X"]
