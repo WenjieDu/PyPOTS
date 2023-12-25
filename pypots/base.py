@@ -221,30 +221,30 @@ class BaseModel(ABC):
 
     def _auto_save_model_if_necessary(
         self,
-        training_finished: bool = True,
+        confirm_saving: bool = True,
         saving_name: str = None,
     ) -> None:
         """Automatically save the current model into a file if in need.
 
         Parameters
         ----------
-        training_finished :
-            Whether the training is already finished when invoke this function.
-            The saving_strategy "better" only works when training_finished is False.
-            The saving_strategy "best" only works when training_finished is True.
+        confirm_saving :
+            One more condition to confirm saving the model.
 
         saving_name :
             The file name of the saved model.
 
         """
         if self.saving_path is not None and self.model_saving_strategy is not None:
+            # construct the saving path
             name = self.__class__.__name__ if saving_name is None else saving_name
             saving_path = os.path.join(self.saving_path, name)
+
             if self.model_saving_strategy == "all":
                 self.save(saving_path)
-            elif not training_finished and self.model_saving_strategy == "better":
+            elif self.model_saving_strategy == "better" and confirm_saving:
                 self.save(saving_path)
-            elif training_finished and self.model_saving_strategy == "best":
+            elif self.model_saving_strategy == "best" and confirm_saving:
                 self.save(saving_path)
             else:
                 pass
