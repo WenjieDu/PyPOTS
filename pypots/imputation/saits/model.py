@@ -91,6 +91,10 @@ class SAITS(BaseNNImputer):
         stopped when the model does not perform better after that number of epochs.
         Leaving it default as None will disable the early-stopping.
 
+    customized_loss_func:
+        The customized loss function designed by users for the model to optimize.
+        If not given, will use the default MAE loss as claimed in the original paper.
+
     optimizer :
         The optimizer for model training.
         If not given, will use a default Adam optimizer.
