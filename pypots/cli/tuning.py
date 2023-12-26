@@ -24,7 +24,7 @@ try:
     import nni
 except ImportError:
     logger.error(
-        "Hyperparameter tuning mode needs NNI (https://github.com/microsoft/nni) installed, "
+        "❌ Hyperparameter tuning mode needs NNI (https://github.com/microsoft/nni) installed, "
         "but is missing in the current environment."
     )
 

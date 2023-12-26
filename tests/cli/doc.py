@@ -79,7 +79,7 @@ class TestPyPOTSCLIDoc(unittest.TestCase):
         try:
             doc_command_factory(args).run()
         except Exception as e:  # somehow we have some error when testing on Windows, so just print and pass below
-            logger.error(e)
+            logger.error(f"❌ Exception: {e}")
 
     @pytest.mark.xdist_group(name="cli-doc")
     @time_out(2, callback_func)  # wait for two seconds
@@ -90,7 +90,7 @@ class TestPyPOTSCLIDoc(unittest.TestCase):
         try:
             doc_command_factory(args).run()
         except Exception as e:  # somehow we have some error when testing on Windows, so just print and pass below
-            logger.error(e)
+            logger.error(f"❌ Exception: {e}")
 
     @pytest.mark.xdist_group(name="cli-doc")
     def test_3_cleanup(self):
