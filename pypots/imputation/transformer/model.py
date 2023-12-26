@@ -165,6 +165,16 @@ class Transformer(BaseNNImputer):
             model_saving_strategy,
         )
 
+        if d_model != n_heads * d_k:
+            logger.warning(
+                "‼️ d_model must = n_heads * d_k, it should be divisible by n_heads "
+                f"and the result should be equal to d_k, but got d_model={d_model}, n_heads={n_heads}, d_k={d_k}"
+            )
+            d_model = n_heads * d_k
+            logger.warning(
+                f"⚠️ d_model is reset to {d_model} = n_heads ({n_heads}) * d_k ({d_k})"
+            )
+
         self.n_steps = n_steps
         self.n_features = n_features
         # model hype-parameters
