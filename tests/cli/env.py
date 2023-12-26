@@ -36,7 +36,7 @@ class TestPyPOTSCLIEnv(unittest.TestCase):
         try:
             env_command_factory(args).run()
         except Exception as e:  # somehow we have some error when testing on Windows, so just print and pass below
-            logger.error(e)
+            logger.error(f"❌ Exception: {e}")
 
     @pytest.mark.xdist_group(name="cli-env")
     def test_1_install_with_pip(self):
@@ -46,4 +46,4 @@ class TestPyPOTSCLIEnv(unittest.TestCase):
         try:
             env_command_factory(args).run()
         except Exception as e:  # somehow we have some error when testing on Windows, so just print and pass below
-            logger.error(e)
+            logger.error(f"❌ Exception: {e}")
