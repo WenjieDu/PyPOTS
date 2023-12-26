@@ -313,7 +313,7 @@ class CSDI(BaseNNImputer):
                     break
 
         except Exception as e:
-            logger.error(f"Exception: {e}")
+            logger.error(f"❌ Exception: {e}")
             if self.best_model_dict is None:
                 raise RuntimeError(
                     "Training got interrupted. Model was not trained. Please investigate the error printed above."

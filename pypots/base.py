@@ -170,7 +170,7 @@ class BaseModel(ABC):
             logger.info(f"Tensorboard file will be saved to {tb_saving_path}")
         else:
             logger.warning(
-                "saving_path not given. Model files and tensorboard file will not be saved."
+                "‼️ saving_path not given. Model files and tensorboard file will not be saved."
             )
 
     def _send_model_to_given_device(self) -> None:
@@ -280,10 +280,10 @@ class BaseModel(ABC):
         if os.path.exists(saving_path):
             if overwrite:
                 logger.warning(
-                    f"File {saving_path} exists. Argument `overwrite` is True. Overwriting now..."
+                    f"‼️ File {saving_path} exists. Argument `overwrite` is True. Overwriting now..."
                 )
             else:
-                logger.error(f"File {saving_path} exists. Saving operation aborted.")
+                logger.error(f"❌ File {saving_path} exists. Saving operation aborted.")
 
         try:
             create_dir_if_not_exist(saving_dir)

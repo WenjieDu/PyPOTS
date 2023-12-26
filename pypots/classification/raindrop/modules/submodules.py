@@ -33,7 +33,7 @@ try:
     from torch_sparse import SparseTensor
 except ImportError as e:
     logger.error(
-        f"{e}\n"
+        f"❌ {e}\n"
         "Note torch_geometric is missing, please install it with "
         "'pip install torch_geometric torch_scatter torch_sparse' or "
         "'conda install -c pyg pyg pytorch-scatter pytorch-sparse'"

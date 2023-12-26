@@ -42,7 +42,7 @@ class LOCF(BaseImputer):
 
     def __init__(
         self,
-        first_step_imputation: str = "backward",
+        first_step_imputation: str = "zero",
         device: Optional[Union[str, torch.device, list]] = None,
     ):
         super().__init__(device=device)
