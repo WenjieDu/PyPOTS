@@ -165,6 +165,16 @@ class Transformer(BaseNNImputer):
             model_saving_strategy,
         )
 
+        if d_model != n_heads * d_k:
+            logger.warning(
+                "‼️ d_model must = n_heads * d_k, it should be divisible by n_heads "
+                f"and the result should be equal to d_k, but got d_model={d_model}, n_heads={n_heads}, d_k={d_k}"
+            )
+            d_model = n_heads * d_k
+            logger.warning(
+                f"⚠️ d_model is reset to {d_model} = n_heads ({n_heads}) * d_k ({d_k})"
+            )
+
         self.n_steps = n_steps
         self.n_features = n_features
         # model hype-parameters
@@ -268,7 +278,7 @@ class Transformer(BaseNNImputer):
         self.model.eval()  # set the model as eval status to freeze it.
 
         # Step 3: save the model if necessary
-        self._auto_save_model_if_necessary(training_finished=True)
+        self._auto_save_model_if_necessary(confirm_saving=True)
 
     def predict(
         self,

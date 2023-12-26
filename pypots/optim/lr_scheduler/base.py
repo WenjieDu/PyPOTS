@@ -122,7 +122,7 @@ class LRScheduler(ABC):
         if self._step_count == 1:
             if not hasattr(self.optimizer.step, "_with_counter"):
                 logger.warning(
-                    "Seems like `optimizer.step()` has been overridden after learning rate scheduler "
+                    "⚠️ Seems like `optimizer.step()` has been overridden after learning rate scheduler "
                     "initialization. Please, make sure to call `optimizer.step()` before "
                     "`lr_scheduler.step()`. See more details at "
                     "https://pytorch.org/docs/stable/optim.html#how-to-adjust-learning-rate",
@@ -130,8 +130,8 @@ class LRScheduler(ABC):
 
             # Just check if there were two first lr_scheduler.step() calls before optimizer.step()
             elif self.optimizer._step_count < 1:
-                logger.warning.warn(
-                    "Detected call of `lr_scheduler.step()` before `optimizer.step()`. "
+                logger.warning(
+                    "⚠️ Detected call of `lr_scheduler.step()` before `optimizer.step()`. "
                     "In PyTorch 1.1.0 and later, you should call them in the opposite order: "
                     "`optimizer.step()` before `lr_scheduler.step()`.  Failure to do this "
                     "will result in PyTorch skipping the first value of the learning rate schedule. "

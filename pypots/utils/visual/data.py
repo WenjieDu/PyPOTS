@@ -61,7 +61,7 @@ def plot_data(
     if sample_idx is None:
         sample_idx = np.random.randint(low=0, high=n_samples)
         logger.warning(
-            f"No sample index is specified, a random sample {sample_idx} is selected for visualization."
+            f"⚠️ No sample index is specified, a random sample {sample_idx} is selected for visualization."
         )
 
     if fig_size is None:
@@ -121,7 +121,7 @@ def plot_missingness(
         if sample_idx is None:
             sample_idx = np.random.randint(low=0, high=n_samples)
             logger.warning(
-                f"No sample index is specified, a random sample {sample_idx} is selected for visualization."
+                f"⚠️ No sample index is specified, a random sample {sample_idx} is selected for visualization."
             )
         mask_sample_for_vis = np.transpose(missing_mask[sample_idx], (1, 0))
     elif len(mask_shape) == 2:
