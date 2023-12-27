@@ -24,8 +24,8 @@ class _MRNN(nn.Module):
         self.rnn_hidden_size = rnn_hidden_size
         self.device = device
 
-        self.f_rnn = nn.GRUCell(3, self.rnn_hidden_size)
-        self.b_rnn = nn.GRUCell(3, self.rnn_hidden_size)
+        self.f_rnn = nn.GRU(3, self.rnn_hidden_size, batch_first=True)
+        self.b_rnn = nn.GRU(3, self.rnn_hidden_size, batch_first=True)
         self.concated_hidden_project = nn.Linear(self.rnn_hidden_size * 2, 1)
         self.fcn_regression = FCN_Regression(feature_num)
 
@@ -37,29 +37,18 @@ class _MRNN(nn.Module):
         M_b = inputs["backward"]["missing_mask"][:, :, feature_idx].unsqueeze(dim=2)
         D_b = inputs["backward"]["deltas"][:, :, feature_idx].unsqueeze(dim=2)
         device = X_f.device
+        batch_size = X_f.size()[0]
 
-        hidden_state_f = torch.zeros(
-            (X_f.size()[0], self.rnn_hidden_size), device=device
+        f_hidden_state_0 = torch.zeros(
+            (1, batch_size, self.rnn_hidden_size), device=device
         )
-        hidden_state_b = torch.zeros(
-            (X_f.size()[0], self.rnn_hidden_size), device=device
+        b_hidden_state_0 = torch.zeros(
+            (1, batch_size, self.rnn_hidden_size), device=device
         )
-
-        hidden_states_f_collector = []
-        hidden_states_b_collector = []
-        for t in range(self.seq_len):
-            x_f, m_f, d_f = X_f[:, t, :], M_f[:, t, :], D_f[:, t, :]
-            input_f = torch.cat([x_f, m_f, d_f], dim=1)
-            x_b, m_b, d_b = X_b[:, t, :], M_b[:, t, :], D_b[:, t, :]
-            input_b = torch.cat([x_b, m_b, d_b], dim=1)
-            hidden_state_f = self.f_rnn(input_f, hidden_state_f)
-            hidden_state_b = self.b_rnn(input_b, hidden_state_b)
-
-            hidden_states_f_collector.append(hidden_state_f)
-            hidden_states_b_collector.append(hidden_state_b)
-
-        hidden_states_f = torch.stack(hidden_states_f_collector, dim=1)
-        hidden_states_b = torch.stack(hidden_states_b_collector, dim=1)
+        f_input = torch.cat([X_f, M_f, D_f], dim=2)
+        b_input = torch.cat([X_b, M_b, D_b], dim=2)
+        hidden_states_f, _ = self.f_rnn(f_input, f_hidden_state_0)
+        hidden_states_b, _ = self.b_rnn(b_input, b_hidden_state_0)
         hidden_states_b = torch.flip(hidden_states_b, dims=[1])
 
         feature_estimation = self.concated_hidden_project(
@@ -89,9 +78,9 @@ class _MRNN(nn.Module):
 
         # if in training mode, return results with losses
         if training:
-            reconstruction_loss = calc_rmse(
-                FCN_estimation, RNN_imputed_data
-            ) + calc_rmse(RNN_estimation, X, M)
+            RNN_loss = calc_rmse(RNN_estimation, X, M)
+            FCN_loss = calc_rmse(FCN_estimation, RNN_imputed_data)
+            reconstruction_loss = RNN_loss + FCN_loss
             results["loss"] = reconstruction_loss
 
         return results
