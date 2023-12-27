@@ -24,71 +24,74 @@ class _MRNN(nn.Module):
         self.rnn_hidden_size = rnn_hidden_size
         self.device = device
 
-        self.f_rnn = nn.GRUCell(self.feature_num * 3, self.rnn_hidden_size)
-        self.b_rnn = nn.GRUCell(self.feature_num * 3, self.rnn_hidden_size)
-        self.concated_hidden_project = nn.Linear(
-            self.rnn_hidden_size * 2, self.feature_num
-        )
+        self.f_rnn = nn.GRUCell(3, self.rnn_hidden_size)
+        self.b_rnn = nn.GRUCell(3, self.rnn_hidden_size)
+        self.concated_hidden_project = nn.Linear(self.rnn_hidden_size * 2, 1)
         self.fcn_regression = FCN_Regression(feature_num)
 
-    def gene_hidden_states(self, inputs, direction):
-        X = inputs[direction]["X"]
-        masks = inputs[direction]["missing_mask"]
-        deltas = inputs[direction]["deltas"]
-        device = X.device
+    def gene_hidden_states(self, inputs, feature_idx):
+        X_f = inputs["forward"]["X"][:, :, feature_idx].unsqueeze(dim=2)
+        M_f = inputs["forward"]["missing_mask"][:, :, feature_idx].unsqueeze(dim=2)
+        D_f = inputs["forward"]["deltas"][:, :, feature_idx].unsqueeze(dim=2)
+        X_b = inputs["backward"]["X"][:, :, feature_idx].unsqueeze(dim=2)
+        M_b = inputs["backward"]["missing_mask"][:, :, feature_idx].unsqueeze(dim=2)
+        D_b = inputs["backward"]["deltas"][:, :, feature_idx].unsqueeze(dim=2)
+        device = X_f.device
 
-        hidden_states_collector = []
-        hidden_state = torch.zeros((X.size()[0], self.rnn_hidden_size), device=device)
+        hidden_state_f = torch.zeros(
+            (X_f.size()[0], self.rnn_hidden_size), device=device
+        )
+        hidden_state_b = torch.zeros(
+            (X_f.size()[0], self.rnn_hidden_size), device=device
+        )
 
+        hidden_states_f_collector = []
+        hidden_states_b_collector = []
         for t in range(self.seq_len):
-            x = X[:, t, :]
-            m = masks[:, t, :]
-            d = deltas[:, t, :]
-            inputs = torch.cat([x, m, d], dim=1)
-            if direction == "forward":
-                hidden_state = self.f_rnn(inputs, hidden_state)
-            else:
-                hidden_state = self.b_rnn(inputs, hidden_state)
-            hidden_states_collector.append(hidden_state)
-        return hidden_states_collector
+            x_f, m_f, d_f = X_f[:, t, :], M_f[:, t, :], D_f[:, t, :]
+            input_f = torch.cat([x_f, m_f, d_f], dim=1)
+            x_b, m_b, d_b = X_b[:, t, :], M_b[:, t, :], D_b[:, t, :]
+            input_b = torch.cat([x_b, m_b, d_b], dim=1)
+            hidden_state_f = self.f_rnn(input_f, hidden_state_f)
+            hidden_state_b = self.b_rnn(input_b, hidden_state_b)
+
+            hidden_states_f_collector.append(hidden_state_f)
+            hidden_states_b_collector.append(hidden_state_b)
+
+        hidden_states_f = torch.stack(hidden_states_f_collector, dim=1)
+        hidden_states_b = torch.stack(hidden_states_b_collector, dim=1)
+        hidden_states_b = torch.flip(hidden_states_b, dims=[1])
+
+        feature_estimation = self.concated_hidden_project(
+            torch.cat([hidden_states_f, hidden_states_b], dim=2)
+        )
+
+        return feature_estimation, hidden_states_f, hidden_states_b
 
     def forward(self, inputs: dict, training: bool = True) -> dict:
-        hidden_states_f = self.gene_hidden_states(inputs, "forward")
-        hidden_states_b = self.gene_hidden_states(inputs, "backward")[::-1]
-
         X = inputs["forward"]["X"]
-        masks = inputs["forward"]["missing_mask"]
+        M = inputs["forward"]["missing_mask"]
 
-        reconstruction_loss = 0
-        estimations = []
-        for i in range(
-            self.seq_len
-        ):  # calculating estimation loss for times can obtain better results than once
-            x = X[:, i, :]
-            m = masks[:, i, :]
-            h_f = hidden_states_f[i]
-            h_b = hidden_states_b[i]
-            h = torch.cat([h_f, h_b], dim=1)
-            RNN_estimation = self.concated_hidden_project(h)  # x̃_t
-            RNN_imputed_data = m * x + (1 - m) * RNN_estimation
-            FCN_estimation = self.fcn_regression(
-                x, m, RNN_imputed_data
-            )  # FCN estimation is output estimation
-            reconstruction_loss += calc_rmse(
-                FCN_estimation, RNN_imputed_data
-            ) + calc_rmse(RNN_estimation, x, m)
-            estimations.append(FCN_estimation.unsqueeze(dim=1))
+        feature_collector = []
+        for f in range(self.feature_num):
+            feat_estimation, hid_states_f, hid_states_b = self.gene_hidden_states(
+                inputs, f
+            )
+            feature_collector.append(feat_estimation)
+        RNN_estimation = torch.concat(feature_collector, dim=2)
+        RNN_imputed_data = M * X + (1 - M) * RNN_estimation
+        FCN_estimation = self.fcn_regression(X, M, RNN_imputed_data)
 
-        estimations = torch.cat(estimations, dim=1)
-        imputed_data = masks * X + (1 - masks) * estimations
-
+        imputed_data = M * X + (1 - M) * FCN_estimation
         results = {
             "imputed_data": imputed_data,
         }
 
         # if in training mode, return results with losses
         if training:
-            reconstruction_loss /= self.seq_len
+            reconstruction_loss = calc_rmse(
+                FCN_estimation, RNN_imputed_data
+            ) + calc_rmse(RNN_estimation, X, M)
             results["loss"] = reconstruction_loss
 
         return results
