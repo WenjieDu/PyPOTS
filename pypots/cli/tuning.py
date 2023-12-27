@@ -153,7 +153,7 @@ class TuningCommand(BaseCommand):
         # set with PyPOTS default random seed
         random_seed = os.getenv("random_seed", False)
         if random_seed:
-            set_random_seed(random_seed)
+            set_random_seed(int(random_seed))
         else:
             set_random_seed()
 
