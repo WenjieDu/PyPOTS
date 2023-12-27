@@ -76,7 +76,7 @@ class TestVaDER(unittest.TestCase):
             logger.info(f"VaDER internal_metrics: {internal_metrics}")
         except np.linalg.LinAlgError as e:
             logger.error(
-                f"{e}\n"
+                f"❌ Exception: {e}\n"
                 "Got singular matrix, please try to retrain the model to fix this"
             )
 

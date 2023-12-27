@@ -8,6 +8,7 @@ CLI tools to help initialize environments for running and developing PyPOTS.
 
 import os
 from argparse import ArgumentParser, Namespace
+
 import torch
 
 from .base import BaseCommand
@@ -19,12 +20,13 @@ from ..data.saving.h5 import load_dict_from_h5
 from ..imputation import SAITS, Transformer, CSDI, USGAN, GPVAE, MRNN, BRITS, TimesNet
 from ..optim import Adam
 from ..utils.logging import logger
+from ..utils.random import set_random_seed
 
 try:
     import nni
 except ImportError:
     logger.error(
-        "Hyperparameter tuning mode needs NNI (https://github.com/microsoft/nni) installed, "
+        "❌ Hyperparameter tuning mode needs NNI (https://github.com/microsoft/nni) installed, "
         "but is missing in the current environment."
     )
 
@@ -148,12 +150,20 @@ class TuningCommand(BaseCommand):
     def run(self):
         """Execute the given command."""
 
+        # set with PyPOTS default random seed
+        random_seed = os.getenv("random_seed", False)
+        if random_seed:
+            set_random_seed(random_seed)
+        else:
+            set_random_seed()
+
         # set the number of threads for torch, avoid using too many CPU cores
         torch.set_num_threads(self._torch_n_threads)
 
         if os.getenv("enable_tuning", False):
             # fetch a new set of hyperparameters from NNI tuner
             tuner_params = nni.get_next_parameter()
+            logger.info(f"The tunner assigns a new group of params: {tuner_params}")
             # get the specified model class
             if self._model not in NN_MODELS:
                 logger.info(
