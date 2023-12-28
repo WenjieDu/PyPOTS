@@ -311,7 +311,9 @@ class CRLI(BaseNNClusterer):
 
                 if os.getenv("enable_tuning", False):
                     nni.report_intermediate_result(mean_loss)
-                    if epoch == self.epochs - 1 or self.patience == 0:
+                    tuning_with_test_set = os.getenv("tuning_with_test_set") == "true"
+                    training_is_end = epoch == self.epochs - 1 or self.patience == 0
+                    if training_is_end and not tuning_with_test_set:
                         nni.report_final_result(self.best_loss)
 
                 # save the model if necessary

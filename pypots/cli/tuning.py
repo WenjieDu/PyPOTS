@@ -9,7 +9,9 @@ CLI tools to help initialize environments for running and developing PyPOTS.
 import os
 from argparse import ArgumentParser, Namespace
 
+import numpy as np
 import torch
+from ..utils.metrics.error import calc_mse
 
 from .base import BaseCommand
 from .utils import load_package_from_path
@@ -56,6 +58,7 @@ def env_command_factory(args: Namespace):
         args.model_package_path,
         args.train_set,
         args.val_set,
+        args.test_set,
         args.lazy_load,
         args.torch_n_threads,
     )
@@ -111,6 +114,13 @@ class TuningCommand(BaseCommand):
             help="",
         )
         sub_parser.add_argument(
+            "--test_set",
+            dest="test_set",
+            type=str,
+            required=False,
+            help="",
+        )
+        sub_parser.add_argument(
             "--lazy_load",
             dest="lazy_load",
             action="store_true",
@@ -133,6 +143,7 @@ class TuningCommand(BaseCommand):
         model_package_path: str,
         train_set: str,
         val_set: str,
+        test_set: str,
         lazy_load: bool = False,
         torch_n_threads: int = 1,
     ):
@@ -140,6 +151,7 @@ class TuningCommand(BaseCommand):
         self._model_package_path = model_package_path
         self._train_set = train_set
         self._val_set = val_set
+        self._test_set = test_set
         self._lazy_load = lazy_load
         self._torch_n_threads = torch_n_threads
 
@@ -226,7 +238,7 @@ class TuningCommand(BaseCommand):
 
             # load the dataset
             if self._lazy_load:
-                train_set, val_set = self._train_set, self._val_set
+                train_set, val_set = (self._train_set, self._val_set)
             else:
                 logger.info(
                     "Option lazy_load is set as False, hence loading all data from file..."
@@ -234,7 +246,44 @@ class TuningCommand(BaseCommand):
                 train_set = load_dict_from_h5(self._train_set)
                 val_set = load_dict_from_h5(self._val_set)
 
+            if self._test_set is None:
+                os.environ["tuning_with_test_set"] = "false"
+                test_set = None
+            else:
+                os.environ["tuning_with_test_set"] = "true"
+                test_set = load_dict_from_h5(self._test_set)
+
             # train the model and report to NNI
             model.fit(train_set=train_set, val_set=val_set)
+
+            if test_set is not None:
+                logger.info("test_set is given for tuning. Evaluating on test_set...")
+                task = self._model.split(".")[1]
+                results = model.predict(test_set)
+                prediction = results[task]
+                if len(prediction.shape) == 4:
+                    prediction = prediction.mean(axis=1)
+
+                test_result = 0
+                if task == "imputation":
+                    test_X = test_set["X"]
+                    test_X_ori = test_set["X_ori"]
+                    test_indicating_mask = np.isnan(test_X) ^ np.isnan(test_X_ori)
+                    test_result = calc_mse(
+                        prediction, np.nan_to_num(test_X_ori), test_indicating_mask
+                    )
+                elif task == "classification":
+                    test_Y = test_set["Y"]
+                    test_result = model.evaluate(prediction, test_Y)
+                elif task == "clustering":
+                    test_result = model.evaluate(prediction)
+                elif task == "forecasting":
+                    test_result = model.evaluate(prediction)
+                else:
+                    logger.error("❌ Unknown task type. Aborting...")
+
+                nni.report_final_result(test_result)
+                logger.info(f"Final testing result: {test_result}")
+
         else:
             raise RuntimeError("Argument `enable_tuning` is not set. Aborting...")
