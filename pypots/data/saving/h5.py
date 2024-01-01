@@ -11,7 +11,6 @@ from datetime import datetime
 from typing import Optional
 
 import h5py
-import yaml
 
 from ...utils.file import extract_parent_dir, create_dir_if_not_exist
 from ...utils.logging import logger
@@ -93,6 +92,10 @@ def load_dict_from_h5(
 ) -> dict:
     """Load the data from the given h5 file and return as a Python dictionary.
 
+    Notes
+    -----
+    This implementation was inspired by https://github.com/SiggiGue/hdfdict/blob/master/hdfdict/hdfdict.py#L93
+
     Parameters
     ----------
     file_path : str,
@@ -117,13 +120,12 @@ def load_dict_from_h5(
             elif isinstance(item, h5py.Dataset):
                 value = item[()]
                 if "_type_" in item.attrs:
+                    # in case that datetime type of data was saved as timestamps
                     if item.attrs["_type_"].astype(str) == "datetime":
                         if hasattr(value, "__iter__"):
                             value = [datetime.fromtimestamp(ts) for ts in value]
                         else:
                             value = datetime.fromtimestamp(value)
-                    elif item.attrs["_type_"].astype(str) == "yaml":
-                        value = yaml.safe_load(value.decode())
                 datadict[key] = value
 
         return datadict
