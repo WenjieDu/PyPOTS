@@ -65,7 +65,7 @@ class LOCF(BaseImputer):
         """
         warnings.warn(
             "LOCF (Last Observed Carried Forward) imputation class has no parameter to train. "
-            "Please run func impute(X) directly."
+            "Please run func `predict()` directly."
         )
 
     def _locf_numpy(
