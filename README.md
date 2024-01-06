@@ -1,5 +1,5 @@
 <a href="https://github.com/WenjieDu/PyPOTS">
-    <img src="https://pypots.com/figs/pypots_logos/PyPOTS_logo_FFBG.svg?sanitize=true" width="200" align="right">
+    <img src="https://pypots.com/figs/pypots_logos/PyPOTS/logo_FFBG.svg" width="200" align="right">
 </a>
 
 <h2 align="center">Welcome to PyPOTS</h2>
@@ -26,7 +26,7 @@
         <img alt="GitHub contributors" src="https://img.shields.io/github/contributors/wenjiedu/pypots?color=D8E699&label=Contributors&logo=GitHub">
     </a>
     <a href="https://star-history.com/#wenjiedu/pypots">
-        <img alt="GitHub Repo stars" src="https://img.shields.io/github/stars/wenjiedu/pypots?logo=None&color=6BB392&label=%E2%AD%90%20Stars">
+        <img alt="GitHub Repo stars" src="https://img.shields.io/github/stars/wenjiedu/pypots?logo=None&color=6BB392&label=%E2%98%85%20Stars">
     </a>
     <a href="https://github.com/WenjieDu/PyPOTS/network/members">
         <img alt="GitHub Repo forks" src="https://img.shields.io/github/forks/wenjiedu/pypots?logo=forgejo&logoColor=black&label=Forks">
@@ -86,7 +86,7 @@ As you can see, there is a coffee pot in the PyPOTS logo.
 And what else? Please read on ;-)
 
 <a href="https://github.com/WenjieDu/TSDB">
-    <img src="https://pypots.com/figs/pypots_logos/TSDB_logo_FFBG.svg" align="left" width="140" alt="TSDB logo"/>
+    <img src="https://pypots.com/figs/pypots_logos/TSDB/logo_FFBG.svg" align="left" width="140" alt="TSDB logo"/>
 </a>
 
 👈 Time series datasets are taken as coffee beans at PyPOTS, and POTS datasets are incomplete coffee beans with missing parts that have their own meanings.
@@ -95,7 +95,7 @@ To make various public time-series datasets readily available to users,
 Visit [TSDB](https://github.com/WenjieDu/TSDB) right now to know more about this handy tool 🛠, and it now supports a total of 168 open-source datasets!
 
 <a href="https://github.com/WenjieDu/PyGrinder">
-    <img src="https://pypots.com/figs/pypots_logos/PyGrinder_logo_FFBG.svg" align="right" width="140" alt="PyGrinder logo"/>
+    <img src="https://pypots.com/figs/pypots_logos/PyGrinder/logo_FFBG.svg" align="right" width="140" alt="PyGrinder logo"/>
 </a>
 
 👉 To simulate the real-world data beans with missingness, the ecosystem library [PyGrinder](https://github.com/WenjieDu/PyGrinder),
@@ -105,7 +105,7 @@ PyGrinder supports all of them and additional functionalities related to missing
 With PyGrinder, you can introduce synthetic missing values into your datasets with a single line of code.
 
 <a href="https://github.com/WenjieDu/BrewPOTS">
-    <img src="https://pypots.com/figs/pypots_logos/BrewPOTS_logo_FFBG.svg" align="left" width="140" alt="BrewPOTS logo"/>
+    <img src="https://pypots.com/figs/pypots_logos/BrewPOTS/logo_FFBG.svg" align="left" width="140" alt="BrewPOTS logo"/>
 </a>
 
 👈 Now we have the beans, the grinder, and the pot, how to brew us a cup of coffee? Tutorials are necessary!
