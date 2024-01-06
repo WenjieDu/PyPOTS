@@ -106,7 +106,7 @@ html_context = {
 
 html_favicon = (
     "https://raw.githubusercontent.com/"
-    "PyPOTS/pypots.github.io/main/static/figs/pypots_logos/PyPOTS_logo_FFBG.svg"
+    "PyPOTS/pypots.github.io/main/static/figs/pypots_logos/PyPOTS/logo_FFBG.svg"
 )
 
 html_sidebars = {

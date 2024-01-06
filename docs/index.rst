@@ -4,8 +4,8 @@
 
 Welcome to PyPOTS docs!
 ===============================
-.. image:: https://pypots.com/figs/pypots_logos/PyPOTS_logo_FFBG.svg?sanitize=true
-   :height: 168
+.. image:: https://pypots.com/figs/pypots_logos/PyPOTS/logo_FFBG.svg?sanitize=true
+   :height: 180
    :align: right
    :target: https://github.com/WenjieDu/PyPOTS
    :alt: PyPOTS logo
@@ -36,11 +36,11 @@ Welcome to PyPOTS docs!
    :alt: GitHub Contributors
    :target: https://github.com/WenjieDu/PyPOTS/graphs/contributors
 
-.. image:: https://img.shields.io/github/stars/wenjiedu/pypots?color=6BB392&label=%E2%AD%90%20Stars
+.. image:: https://img.shields.io/github/stars/wenjiedu/pypots?logo=None&color=6BB392&label=%E2%98%85%20Stars
    :alt: GitHub Repo stars
    :target: https://star-history.com/#wenjiedu/pypots
 
-.. image:: https://img.shields.io/github/forks/wenjiedu/pypots?logo=forgejo&logoColor=white&color=91B821&label=Forks
+.. image:: https://img.shields.io/github/forks/wenjiedu/pypots?logo=forgejo&logoColor=black&label=Forks
    :alt: GitHub Repo forks
    :target: https://github.com/WenjieDu/PyPOTS/network/members
 
@@ -102,7 +102,7 @@ At PyPOTS, things are related to coffee, which we're familiar with. Yes, this is
 As you can see, there is a coffee pot in the PyPOTS logo.
 And what else? Please read on ;-)
 
-.. image:: https://pypots.com/figs/pypots_logos/TSDB_logo_FFBG.svg
+.. image:: https://pypots.com/figs/pypots_logos/TSDB/logo_FFBG.svg
    :width: 150
    :alt: TSDB logo
    :align: left
@@ -113,7 +113,7 @@ To make various public time-series datasets readily available to users,
 *Time Series Data Beans (TSDB)* is created to make loading time-series datasets super easy!
 Visit `TSDB <https://github.com/WenjieDu/TSDB>`_ right now to know more about this handy tool 🛠, and it now supports a total of 168 open-source datasets!
 
-.. image:: https://pypots.com/figs/pypots_logos/PyGrinder_logo_FFBG.svg
+.. image:: https://pypots.com/figs/pypots_logos/PyGrinder/logo_FFBG.svg
    :width: 150
    :alt: PyGrinder logo
    :align: right
@@ -125,7 +125,7 @@ MCAR (missing completely at random), MAR (missing at random), and MNAR (missing 
 PyGrinder supports all of them and additional functionalities related to missingness.
 With PyGrinder, you can introduce synthetic missing values into your datasets with a single line of code.
 
-.. image:: https://pypots.com/figs/pypots_logos/BrewPOTS_logo_FFBG.svg
+.. image:: https://pypots.com/figs/pypots_logos/BrewPOTS/logo_FFBG.svg
    :width: 150
    :alt: BrewPOTS logo
    :align: left
