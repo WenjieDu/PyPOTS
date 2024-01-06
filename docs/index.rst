@@ -4,8 +4,8 @@
 
 Welcome to PyPOTS docs!
 ===============================
-.. image:: https://pypots.com/figs/pypots_logos/PyPOTS/logo_FFBG.svg
-   :height: 168
+.. image:: https://pypots.com/figs/pypots_logos/PyPOTS/logo_FFBG.svg?sanitize=true
+   :height: 180
    :align: right
    :target: https://github.com/WenjieDu/PyPOTS
    :alt: PyPOTS logo
