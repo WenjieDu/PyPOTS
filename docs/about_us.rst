@@ -33,5 +33,5 @@ PyPOTS exists thanks to all the nice people (sorted by contribution time) who co
 
 .. raw:: html
 
-    <object data="https://pypots.com/figs/pypots_logos/PyPOTS_contributors.svg">
+    <object data="https://pypots.com/figs/pypots_logos/publicity/PyPOTS_contributors.svg">
     </object>
