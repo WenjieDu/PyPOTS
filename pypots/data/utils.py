@@ -62,7 +62,8 @@ def _parse_delta_torch(missing_mask: torch.Tensor) -> torch.Tensor:
                 d.append(torch.zeros(1, n_features, device=device))
             else:
                 d.append(
-                    torch.ones(1, n_features, device=device) + (1 - mask[step]) * d[-1]
+                    torch.ones(1, n_features, device=device)
+                    + (1 - mask[step - 1]) * d[-1]
                 )
         d = torch.concat(d, dim=0)
         return d
@@ -113,7 +114,7 @@ def _parse_delta_numpy(missing_mask: np.ndarray) -> np.ndarray:
             if step == 0:
                 d.append(np.zeros(n_features))
             else:
-                d.append(np.ones(n_features) + (1 - mask[step]) * d[-1])
+                d.append(np.ones(n_features) + (1 - mask[step - 1]) * d[-1])
         d = np.asarray(d)
         return d
 

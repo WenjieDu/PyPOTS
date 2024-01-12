@@ -42,7 +42,8 @@ def mrnn_parse_delta_torch(missing_mask: torch.Tensor) -> torch.Tensor:
                 d.append(torch.ones(1, n_features, device=device))
             else:
                 d.append(
-                    torch.ones(1, n_features, device=device) + (1 - mask[step]) * d[-1]
+                    torch.ones(1, n_features, device=device)
+                    + (1 - mask[step - 1]) * d[-1]
                 )
         d = torch.concat(d, dim=0)
         return d
