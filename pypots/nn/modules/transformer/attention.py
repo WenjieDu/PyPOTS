@@ -177,7 +177,7 @@ class MultiHeadAttention(nn.Module):
 
         # keep useful variables
         batch_size, n_steps = q.size(0), q.size(1)
-        residual = q
+        residual = v
 
         # now separate the last dimension of q, k, v into different heads -> [batch_size, n_steps, n_heads, d_k or d_v]
         q = self.w_qs(q).view(batch_size, n_steps, self.n_heads, self.d_k)
