@@ -36,14 +36,13 @@ def mrnn_parse_delta_torch(missing_mask: torch.Tensor) -> torch.Tensor:
 
     def cal_delta_for_single_sample(mask: torch.Tensor) -> torch.Tensor:
         """calculate single sample's delta. The sample's shape is [n_steps, n_features]."""
-        d = []
-        for step in range(n_steps):
-            if step == 0:
-                d.append(torch.ones(1, n_features, device=device))
-            else:
-                d.append(
-                    torch.ones(1, n_features, device=device) + (1 - mask[step]) * d[-1]
-                )
+        # the first step in the delta matrix is all 0
+        d = [torch.ones(1, n_features, device=device)]
+
+        for step in range(1, n_steps):
+            d.append(
+                torch.ones(1, n_features, device=device) + (1 - mask[step - 1]) * d[-1]
+            )
         d = torch.concat(d, dim=0)
         return d
 

@@ -257,9 +257,12 @@ class BaseDataset(Dataset):
             raise ImportError(
                 "h5py is missing and cannot be imported. Please install it first."
             )
+        except FileNotFoundError as e:
+            raise FileNotFoundError(f"{e}")
         except OSError as e:
             raise TypeError(
-                f"{e} This probably is caused by file type error. "
+                f"{e}\n"
+                f"Check out the above error log. This probably is caused by file type error. "
                 f"Please confirm that the given file {data_file_path} is an h5 file."
             )
         except Exception as e:
