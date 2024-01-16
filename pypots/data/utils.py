@@ -56,15 +56,13 @@ def _parse_delta_torch(missing_mask: torch.Tensor) -> torch.Tensor:
 
     def cal_delta_for_single_sample(mask: torch.Tensor) -> torch.Tensor:
         """calculate single sample's delta. The sample's shape is [n_steps, n_features]."""
-        d = []
-        for step in range(n_steps):
-            if step == 0:
-                d.append(torch.zeros(1, n_features, device=device))
-            else:
-                d.append(
-                    torch.ones(1, n_features, device=device)
-                    + (1 - mask[step - 1]) * d[-1]
-                )
+        # the first step in the delta matrix is all 0
+        d = [torch.zeros(1, n_features, device=device)]
+
+        for step in range(1, n_steps):
+            d.append(
+                torch.ones(1, n_features, device=device) + (1 - mask[step - 1]) * d[-1]
+            )
         d = torch.concat(d, dim=0)
         return d
 
@@ -109,12 +107,11 @@ def _parse_delta_numpy(missing_mask: np.ndarray) -> np.ndarray:
 
     def cal_delta_for_single_sample(mask: np.ndarray) -> np.ndarray:
         """calculate single sample's delta. The sample's shape is [n_steps, n_features]."""
-        d = []
-        for step in range(seq_len):
-            if step == 0:
-                d.append(np.zeros(n_features))
-            else:
-                d.append(np.ones(n_features) + (1 - mask[step - 1]) * d[-1])
+        # the first step in the delta matrix is all 0
+        d = [np.zeros(n_features)]
+
+        for step in range(1, seq_len):
+            d.append(np.ones(n_features) + (1 - mask[step - 1]) * d[-1])
         d = np.asarray(d)
         return d
 
