@@ -1,17 +1,17 @@
-import seaborn as sns
-import matplotlib as mpl
 import matplotlib.pyplot as plt
+import numpy as np
+import seaborn as sns
 from numpy.typing import ArrayLike
-import numppy as np
 
 
-def visualizeAttention(timeSteps: ArrayLike, attention: np.ndarray):
-    """Visualize the attention matrix
+def visualize_attention(timeSteps: ArrayLike, attention: np.ndarray):
+    """Visualize the map of attention weights from Transformer-based models
 
     Parameters
     ---------------
     timeSteps: 1D array-like object, preferable list of strings
-        A vector containing the time steps of the input. The time steps will be converted to a list of strings if they are not already.
+        A vector containing the time steps of the input. 
+        The time steps will be converted to a list of strings if they are not already.
 
     attention: 2D array-like object
         A 2D matrix representing the attention weights
@@ -24,7 +24,7 @@ def visualizeAttention(timeSteps: ArrayLike, attention: np.ndarray):
     """
 
     if not all(isinstance(ele, str) for ele in timeSteps):
-        timeSteps = [str(timeSteps) for step in timeSteps]
+        timeSteps = [str(timeSteps) for _ in timeSteps]
 
     fig, ax = plt.subplots()
     ax.tickparams(left=True, bottom=True, labelsize=10)
