@@ -235,10 +235,10 @@ Your star is your recognition to PyPOTS, and it matters!
 
 The lists of PyPOTS stargazers and forkers are shown below, and we're so proud to have more and more awesome users, as well as more bright ✨stars:
 
-.. image:: http://reporoster.com/stars/dark/WenjieDu/PyPOTS
+.. image:: https://bytecrank.com/nastyox/reporoster/php/stargazersSVG.php?theme=dark&user=WenjieDu&repo=PyPOTS
    :alt: PyPOTS stargazers
    :target: https://github.com/WenjieDu/PyPOTS/stargazers
-.. image:: http://reporoster.com/forks/dark/WenjieDu/PyPOTS
+.. image:: https://bytecrank.com/nastyox/reporoster/php/forkersSVG.php?theme=dark&user=WenjieDu&repo=PyPOTS
    :alt: PyPOTS forkers
    :target: https://github.com/WenjieDu/PyPOTS/network/members
 
