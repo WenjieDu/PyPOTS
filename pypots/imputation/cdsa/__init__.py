@@ -1,16 +1,17 @@
 """
-The package of the partially-observed time-series imputation model Transformer.
+The package of the partially-observed time-series imputation model CDSA.
 
-Refer to the paper "Du, W., Cote, D., & Liu, Y. (2023). SAITS: Self-Attention-based Imputation for Time Series.
-Expert systems with applications."
+Refer to the paper "Ma, J., Shou, Z., Zareian, A., Mansour, H., Vetro, A., & Chang, S. F. (2019).
+CDSA: cross-dimensional self-attention for multivariate, geo-tagged time series imputation.
+arXiv preprint arXiv:1905.09904."
 
 """
 
-# Created by Wenjie Du <wenjay.du@gmail.com>
+# Created by Weixuan Chen <wx_chan@qq.com> and Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
 
-from .model import Transformer
+from .model import CDSA
 
 __all__ = [
     "CDSA",

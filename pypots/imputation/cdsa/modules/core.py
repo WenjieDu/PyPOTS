@@ -1,3 +1,4 @@
+# Created by Weixuan Chen <wx_chan@qq.com> and Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
 from typing import Tuple
@@ -5,11 +6,12 @@ from typing import Tuple
 import torch
 import torch.nn as nn
 
-from .layers import EncoderLayer, PositionalEncoding
+from .layers import EncoderLayer
+from ....nn.modules.transformer import PositionalEncoding
 from ....utils.metrics import calc_mae
 
 
-class _CDSAEncoder(nn.Module):
+class _CDSA(nn.Module):
     def __init__(
         self,
         n_layers: int,
@@ -22,7 +24,7 @@ class _CDSAEncoder(nn.Module):
         d_v: int,
         dropout: float,
         attn_dropout: float,
-        loss_task: String,
+        loss_task: str,
     ):
         super().__init__()
         self.n_layers = n_layers
@@ -80,12 +82,14 @@ class _CDSAEncoder(nn.Module):
             )
 
             # `loss` is always the item for backward propagating to update the model
-            if self.loss_task == 'MIT':
+            if self.loss_task == "MIT":
                 loss = MIT_loss
-            elif self.loss_task == 'ORT':
+            elif self.loss_task == "ORT":
                 loss = ORT_loss
             else:
-                raise ValueError(f"Unknown loss_task: {self.loss_task}, loss_task should be 'MIT' or 'ORT'")
+                raise ValueError(
+                    f"Unknown loss_task: {self.loss_task}, loss_task should be 'MIT' or 'ORT'"
+                )
 
             results["loss"] = loss
 

@@ -2,7 +2,7 @@
 Dataset class for self-attention models trained with MIT (masked imputation task) task.
 """
 
-# Created by Wenjie Du <wenjay.du@gmail.com>
+# Created by Weixuan Chen <wx_chan@qq.com> and Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
 from typing import Union
@@ -10,7 +10,7 @@ from typing import Union
 from ..saits.data import DatasetForSAITS
 
 
-class DatasetForTransformer(DatasetForSAITS):
+class DatasetForCDSA(DatasetForSAITS):
     def __init__(
         self,
         data: Union[dict, str],
