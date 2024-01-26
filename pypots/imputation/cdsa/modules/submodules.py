@@ -1,3 +1,4 @@
+# Created by Weixuan Chen <wx_chan@qq.com> and Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
 from typing import Tuple, Optional
@@ -7,8 +8,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 
-class ScaledDotProductAttention(nn.Module):
-    """Scaled dot-product attention.
+class CrossDimensionalSelfAttention(nn.Module):
+    """Cross Dimensional Self-Attention
 
     Parameters
     ----------
@@ -70,8 +71,12 @@ class ScaledDotProductAttention(nn.Module):
         # d_tensor could be d_q, d_k, d_v
 
         # dot product q with k.T to obtain similarity
-        attn_time = torch.matmul(q_time / self.temperature, k_time.transpose(2, 3))  #[batch_size, n_heads, n_steps, n_steps]
-        attn_feature = torch.matmul(q_feature.transpose(2, 3) / self.temperature, k_feature)  #[batch_size, n_heads, d_v, d_v]
+        attn_time = torch.matmul(
+            q_time / self.temperature, k_time.transpose(2, 3)
+        )  # [batch_size, n_heads, n_steps, n_steps]
+        attn_feature = torch.matmul(
+            q_feature.transpose(2, 3) / self.temperature, k_feature
+        )  # [batch_size, n_heads, d_v, d_v]
 
         # apply masking on the attention map, this is optional
         if attn_mask is not None:
@@ -90,8 +95,8 @@ class ScaledDotProductAttention(nn.Module):
         return output, attn_time, attn_feature
 
 
-class MultiHeadAttention(nn.Module):
-    """Transformer multi-head attention module.
+class MultiHeadCDSA(nn.Module):
+    """Multi-head Cross-Dimensional Self-Attention module.
 
     Parameters
     ----------
@@ -141,12 +146,11 @@ class MultiHeadAttention(nn.Module):
 
         self.w_vs = nn.Linear(d_model, n_heads * d_v, bias=False)
 
-        self.attention = ScaledDotProductAttention(d_k**0.5, attn_dropout)
+        self.attention = CrossDimensionalSelfAttention(d_k**0.5, attn_dropout)
         self.fc = nn.Linear(n_heads * d_v, d_model, bias=False)
 
         self.dropout = nn.Dropout(dropout)
         self.layer_norm = nn.LayerNorm(d_model, eps=1e-6)
-
 
     def forward(
         self,
@@ -199,18 +203,30 @@ class MultiHeadAttention(nn.Module):
         # now separate the last dimension of q, k, v into different heads -> [batch_size, n_steps, n_heads, d_k or d_v]
         q_time = self.w_qs(q_time).view(batch_size, n_steps, self.n_heads, self.d_k)
         k_time = self.w_ks(k_time).view(batch_size, n_steps, self.n_heads, self.d_k)
-        q_feature = self.w_qs(q_feature).view(batch_size, n_steps, self.n_heads, self.d_v)
-        k_feature = self.w_ks(k_feature).view(batch_size, n_steps, self.n_heads, self.d_v)
+        q_feature = self.w_qs(q_feature).view(
+            batch_size, n_steps, self.n_heads, self.d_v
+        )
+        k_feature = self.w_ks(k_feature).view(
+            batch_size, n_steps, self.n_heads, self.d_v
+        )
         v = self.w_vs(v).view(batch_size, n_steps, self.n_heads, self.d_v)
 
         # transpose for self-attention calculation -> [batch_size, n_steps, d_k or d_v, n_heads]
-        q_time, k_time, q_feature, k_feature, v = q_time.transpose(1, 2), k_time.transpose(1, 2), q_feature.transpose(1, 2), k_feature.transpose(1, 2), v.transpose(1, 2)
+        q_time, k_time, q_feature, k_feature, v = (
+            q_time.transpose(1, 2),
+            k_time.transpose(1, 2),
+            q_feature.transpose(1, 2),
+            k_feature.transpose(1, 2),
+            v.transpose(1, 2),
+        )
 
         if attn_mask is not None:
             # broadcasting on the head axis
             attn_mask = attn_mask.unsqueeze(1)
 
-        v, attn_weights_time, attn_weights_feature = self.attention(q_time, k_time, q_feature, k_feature, v, attn_mask)
+        v, attn_weights_time, attn_weights_feature = self.attention(
+            q_time, k_time, q_feature, k_feature, v, attn_mask
+        )
 
         # transpose back -> [batch_size, n_steps, n_heads, d_v]
         # then merge the last two dimensions to combine all the heads -> [batch_size, n_steps, n_heads*d_v]

@@ -1,8 +1,8 @@
 """
 The implementation of CDSA for the partially-observed time-series imputation task.
-Preliminary implementation, not yet perfected
 """
 
+# Created by Weixuan Chen <wx_chan@qq.com> and Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
 from typing import Union, Optional
@@ -11,8 +11,8 @@ import numpy as np
 import torch
 from torch.utils.data import DataLoader
 
-from .data import DatasetForTransformer
-from .modules import _CDSAEncoder
+from .data import DatasetForCDSA
+from .modules import _CDSA
 from ..base import BaseNNImputer
 from ...data.base import BaseDataset
 from ...data.checking import check_X_ori_in_val_set
@@ -33,7 +33,7 @@ class CDSA(BaseNNImputer):
         The number of features in the time-series data sample.
 
     n_layers :
-        The number of layers in the 1st and 2nd DMSA blocks in the SAITS model.
+        The number of encoder layers in the CDSA model.
 
     d_model :
         The dimension of the model's backbone.
@@ -63,8 +63,8 @@ class CDSA(BaseNNImputer):
         The dropout rate for DMSA.
 
     loss_task :
-        The task for loss calculation.
-        Since the original CDSA was trained on complete data, we use "MIT" or "ORT" for loss calculation to adapt to POTS.
+        The task for loss calculation. Since the original CDSA was trained on complete data,
+        we use "MIT" or "ORT" for loss calculation to adapt to POTS.
 
     batch_size :
         The batch size for training and evaluating the model.
@@ -107,11 +107,10 @@ class CDSA(BaseNNImputer):
 
     References
     ----------
-    .. [1] `Vaswani, Ashish, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones, Aidan N. Gomez, Łukasz Kaiser,
-        and Illia Polosukhin.
-        "Attention is all you need."
-        Advances in neural information processing systems 30 (2017).
-        <https://proceedings.neurips.cc/paper/2017/file/3f5ee243547dee91fbd053c1c4a845aa-Paper.pdf>`_
+    .. [1] `Ma, Jiawei, Zheng Shou, Alireza Zareian, Hassan Mansour, Anthony Vetro, and Shih-Fu Chang.
+        "CDSA: cross-dimensional self-attention for multivariate, geo-tagged time series imputation."
+        arXiv preprint arXiv:1905.09904 (2019).
+        <https://arxiv.org/pdf/1905.09904>`_
 
     """
 
@@ -127,7 +126,7 @@ class CDSA(BaseNNImputer):
         d_v: int,
         dropout: float = 0,
         attn_dropout: float = 0,
-        loss_task = "MIT",
+        loss_task="MIT",
         batch_size: int = 32,
         epochs: int = 100,
         patience: Optional[int] = None,
@@ -171,7 +170,7 @@ class CDSA(BaseNNImputer):
         self.loss_task = loss_task
 
         # set up the model
-        self.model = _CDSAEncoder(
+        self.model = _CDSA(
             self.n_layers,
             self.n_steps,
             self.n_features,
@@ -229,7 +228,7 @@ class CDSA(BaseNNImputer):
         file_type: str = "h5py",
     ) -> None:
         # Step 1: wrap the input data with classes Dataset and DataLoader
-        training_set = DatasetForTransformer(
+        training_set = DatasetForCDSA(
             train_set, return_X_ori=False, return_labels=False, file_type=file_type
         )
         training_loader = DataLoader(
@@ -242,7 +241,7 @@ class CDSA(BaseNNImputer):
         if val_set is not None:
             if not check_X_ori_in_val_set(val_set):
                 raise ValueError("val_set must contain 'X_ori' for model validation.")
-            val_set = DatasetForTransformer(
+            val_set = DatasetForCDSA(
                 val_set, return_X_ori=True, return_labels=False, file_type=file_type
             )
             val_loader = DataLoader(
