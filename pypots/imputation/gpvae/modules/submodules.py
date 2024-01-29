@@ -106,14 +106,14 @@ class CustomConv1d(torch.nn.Conv1d):
         if len(x.shape) > 2:
             shape = list(np.arange(len(x.shape)))
             new_shape = [0, shape[-1]] + shape[1:-1]
-            out = super(CustomConv1d, self).forward(x.permute(*new_shape))
+            out = super().forward(x.permute(*new_shape))
             shape = list(np.arange(len(out.shape)))
             new_shape = [0, shape[-1]] + shape[1:-1]
             if self.kernel_size[0] % 2 == 0:
                 out = F.pad(out, (0, -1), "constant", 0)
             return out.permute(new_shape)
 
-        return super(CustomConv1d, self).forward(x)
+        return super().forward(x)
 
 
 def make_cnn(input_size, output_size, hidden_sizes, kernel_size=3):
