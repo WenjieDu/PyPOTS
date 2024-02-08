@@ -2,7 +2,7 @@
     <img src="https://pypots.com/figs/pypots_logos/PyPOTS/logo_FFBG.svg" width="200" align="right">
 </a>
 
-<h2 align="center">Welcome to PyPOTS</h2>
+<h3 align="center">Welcome to PyPOTS</h3>
 
 <p align="center"><i>a Python toolbox for machine learning on Partially-Observed Time Series</i></p>
 
@@ -213,10 +213,6 @@ This functionality is implemented with the [Microsoft NNI](https://github.com/mi
 
 
 ## ❖ Citing PyPOTS
-**[Updates in Jun 2023]** 🎉A short version of the PyPOTS paper is accepted by the 9th SIGKDD international workshop on
-Mining and Learning from Time Series ([MiLeTS'23](https://kdd-milets.github.io/milets2023/))).
-Besides, PyPOTS has been included as a [PyTorch Ecosystem](https://pytorch.org/ecosystem/) project.
-
 The paper introducing PyPOTS is available on arXiv at [this URL](https://arxiv.org/abs/2305.18811),
 and we are pursuing to publish it in prestigious academic venues, e.g. JMLR (track for
 [Machine Learning Open Source Software](https://www.jmlr.org/mloss/)). If you use PyPOTS in your work,
@@ -241,6 +237,17 @@ doi={10.48550/arXiv.2305.18811},
 > Wenjie Du. (2023).
 > PyPOTS: a Python toolbox for data mining on Partially-Observed Time Series.
 > arXiv, abs/2305.18811.https://arxiv.org/abs/2305.18811
+
+
+> [!TIP]
+> **[Updates in Feb 2024]** 😎 Our survey paper [Deep Learning for Multivariate Time Series Imputation: A Survey](https://arxiv.org/abs/2402.04059) has been released on arXiv.
+The code is open source in the GitHub repo [Awesome_Imputation](https://github.com/WenjieDu/Awesome_Imputation).
+We comprehensively review the literature of the state-of-the-art deep-learning imputation methods for time series, 
+provide a taxonomy for them, and discuss the challenges and future directions in this field.
+> 
+> **[Updates in Jun 2023]** 🎉 A short version of the PyPOTS paper is accepted by the 9th SIGKDD international workshop on
+Mining and Learning from Time Series ([MiLeTS'23](https://kdd-milets.github.io/milets2023/))).
+Besides, PyPOTS has been included as a [PyTorch Ecosystem](https://pytorch.org/ecosystem/) project.
 
 
 ## ❖ Contribution
