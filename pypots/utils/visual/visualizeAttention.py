@@ -29,7 +29,7 @@ def visualize_attention(timeSteps: ArrayLike, attention: np.ndarray, fontscale =
     if not all(isinstance(ele, str) for ele in timeSteps):
         timeSteps = [str(step) for step in timeSteps]
 
-    if font_scale is not None:
+    if fontscale is not None:
         sns.set_theme(font_scale = fontscale)
 
     fig, ax = plt.subplots()
