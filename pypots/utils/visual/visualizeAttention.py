@@ -4,7 +4,7 @@ import seaborn as sns
 from numpy.typing import ArrayLike
 
 
-def visualize_attention(timeSteps: ArrayLike, attention: np.ndarray):
+def visualize_attention(timeSteps: ArrayLike, attention: np.ndarray, fontscale = None):
     """Visualize the map of attention weights from Transformer-based models
 
     Parameters
@@ -16,6 +16,9 @@ def visualize_attention(timeSteps: ArrayLike, attention: np.ndarray):
     attention: 2D array-like object
         A 2D matrix representing the attention weights
 
+    fontscale: float/int
+        Sets the scale for fonts in the Seaborn heatmap (applied to sns.set_theme(font_scale = _)
+
 
     Return
     ---------------
@@ -24,10 +27,13 @@ def visualize_attention(timeSteps: ArrayLike, attention: np.ndarray):
     """
 
     if not all(isinstance(ele, str) for ele in timeSteps):
-        timeSteps = [str(timeSteps) for _ in timeSteps]
+        timeSteps = [str(step) for step in timeSteps]
+
+    if font_scale is not None:
+        sns.set_theme(font_scale = fontscale)
 
     fig, ax = plt.subplots()
-    ax.tickparams(left=True, bottom=True, labelsize=10)
+    ax.tick_params(left=True, bottom=True, labelsize=10)
     ax.set_xticks(ax.get_xticks()[::2])
     ax.set_yticks(ax.get_yticks()[::2])
 
@@ -43,4 +49,4 @@ def visualize_attention(timeSteps: ArrayLike, attention: np.ndarray):
     cb = ax.collections[0].colorbar
     cb.ax.tick_params(labelsize=10)
 
-    return ax
+    return fig
