@@ -49,4 +49,6 @@ body:
       required: true
     attributes:
       label: 4. Expected behavior
-      description: "A clear and concise description of what error you would expect to happen."
+      description: | 
+        A clear and concise description of what error you would expect to happen.
+        Please provide the whole "Traceback" of the error message printed in the console.
