@@ -88,7 +88,10 @@ def plot_data(
             plt.setp(axes[row, 0], ylabel="value")
         if row == -1:
             plt.setp(axes[-1, col], xlabel="time")
-    plt.show()
+
+    logger.info(
+        "Plotting finished. Please invoke matplotlib.pyplot.show() to display the plot."
+    )
 
 
 def plot_missingness(
@@ -166,4 +169,7 @@ def plot_missingness(
     axes[1].set_xlabel(r"Sequence length", fontsize=7)
     axes[1].set_ylabel("Frequency", fontsize=7)
     axes[1].tick_params(axis="both", labelsize=7)
-    plt.show()
+
+    logger.info(
+        "Plotting finished. Please invoke matplotlib.pyplot.show() to display the plot."
+    )
