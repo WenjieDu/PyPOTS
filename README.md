@@ -113,7 +113,13 @@ Considering the future workload, PyPOTS tutorials are released in a single repo,
 and you can find them in [BrewPOTS](https://github.com/WenjieDu/BrewPOTS).
 Take a look at it now, and learn how to brew your POTS datasets!
 
-☕️ Welcome to the universe of PyPOTS. Enjoy it and have fun!
+<p align="center">
+<a href="https://pypots.com/ecosystem/">
+    <img src="https://pypots.com/figs/pypots_logos/Ecosystem/PyPOTS_Ecosystem_Pipeline.png" width="95%"/>
+</a>
+<br>
+<b> ☕️ Welcome to the universe of PyPOTS. Enjoy it and have fun!</b>
+</p>
 
 
 ## ❖ Installation
