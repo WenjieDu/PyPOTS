@@ -26,13 +26,14 @@ Alternatively, you can install from the latest source code which may be not offi
 Required Dependencies
 """""""""""""""""""""
 * Python >=3.7
+* h5py
 * numpy
 * scipy
-* scikit-learn
-* pandas <2.0.0
-* torch >=1.10.0
+* pandas
+* matplotlib
 * tensorboard
-* h5py
+* scikit-learn
+* torch >=1.10.0
 * tsdb >=0.2
 * pygrinder >=0.2
 
@@ -55,11 +56,6 @@ Although torch-geometric is an optional dependency, we hope things go smoothly w
 In addition, note that Python v.3.7 has also been in the end-of-life status since 2023-06-27.
 Hence, we will raise the minimum support Python version to v3.8 in the future.
 Please use Python v3.8 or above if possible also for the security of your development environment.
-
-* **Why we need pandas <2.0.0?**
-
-Because v2 may cause ``ModuleNotFoundError: No module named 'pandas.core.indexes.numeric'``,
-see https://stackoverflow.com/questions/75953279/modulenotfounderror-no-module-named-pandas-core-indexes-numeric-using-metaflo.
 
 * **Why we need PyTorch >=1.10?**
 
