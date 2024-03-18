@@ -19,6 +19,15 @@ pypots.imputation.transformer
    :show-inheritance:
    :inherited-members:
 
+pypots.imputation.timesnet
+------------------------------
+
+.. automodule:: pypots.imputation.timesnet
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+
 pypots.imputation.csdi
 ------------------------------
 

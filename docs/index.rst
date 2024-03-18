@@ -30,7 +30,7 @@ Welcome to PyPOTS docs!
 
 .. image:: https://img.shields.io/badge/join_us-community!-C8A062
    :alt: Community
-   :target: #id17
+   :target: https://github.com/WenjieDu/PyPOTS#-community
 
 .. image:: https://img.shields.io/github/contributors/wenjiedu/pypots?color=D8E699&label=Contributors&logo=GitHub
    :alt: GitHub Contributors
