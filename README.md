@@ -19,7 +19,7 @@
     <a href="https://github.com/WenjieDu/PyPOTS/blob/main/LICENSE">
         <img alt="BSD-3 license" src="https://img.shields.io/badge/License-BSD--3-E9BB41?logo=opensourceinitiative&logoColor=white">
     </a>
-    <a href="https://github.com/WenjieDu/PyPOTS/blob/main/README.md#-community">
+    <a href="https://github.com/WenjieDu/PyPOTS#-community">
         <img alt="Community" src="https://img.shields.io/badge/join_us-community!-C8A062">
     </a>
     <a href="https://github.com/WenjieDu/PyPOTS/graphs/contributors">
@@ -40,7 +40,7 @@
     <a href="https://github.com/WenjieDu/PyPOTS/actions/workflows/testing_ci.yml">
         <img alt="GitHub Testing" src="https://img.shields.io/github/actions/workflow/status/wenjiedu/pypots/testing_ci.yml?logo=circleci&color=C8D8E1&label=CI">
     </a>
-    <a href="https://readthedocs.org/projects/pypots/builds">
+    <a href="https://docs.pypots.com">
         <img alt="Docs building" src="https://img.shields.io/readthedocs/pypots?logo=readthedocs&label=Docs&logoColor=white&color=395260">
     </a>
     <a href="https://anaconda.org/conda-forge/pypots">
@@ -222,9 +222,9 @@ This functionality is implemented with the [Microsoft NNI](https://github.com/mi
 > [!TIP]
 > **[Updates in Feb 2024]** 😎 Our survey paper [Deep Learning for Multivariate Time Series Imputation: A Survey](https://arxiv.org/abs/2402.04059) has been released on arXiv.
 The code is open source in the GitHub repo [Awesome_Imputation](https://github.com/WenjieDu/Awesome_Imputation).
-We comprehensively review the literature of the state-of-the-art deep-learning imputation methods for time series, 
+We comprehensively review the literature of the state-of-the-art deep-learning imputation methods for time series,
 provide a taxonomy for them, and discuss the challenges and future directions in this field.
-> 
+>
 > **[Updates in Jun 2023]** 🎉 A short version of the PyPOTS paper is accepted by the 9th SIGKDD international workshop on
 Mining and Learning from Time Series ([MiLeTS'23](https://kdd-milets.github.io/milets2023/))).
 **Additionally**, PyPOTS has been included as a [PyTorch Ecosystem](https://pytorch.org/ecosystem/) project.
