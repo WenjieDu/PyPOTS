@@ -146,6 +146,8 @@ class BaseModel(ABC):
     def _setup_path(self, saving_path) -> None:
         MODEL_NO_NEED_TO_SAVE = [
             "LOCF",
+            "Median",
+            "Mean",
         ]
         # if the model is no need to save (e.g. LOCF), then skip the following steps
         if self.__class__.__name__ in MODEL_NO_NEED_TO_SAVE:
