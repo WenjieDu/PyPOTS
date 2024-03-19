@@ -12,7 +12,7 @@ Welcome to PyPOTS docs!
 
 **A Python Toolbox for Data Mining on Partially-Observed Time Series**
 
-.. image:: https://img.shields.io/badge/Python->=v3.7-E97040?logo=python&logoColor=white
+.. image:: https://img.shields.io/badge/Python-v3.7+-E97040?logo=python&logoColor=white
    :alt: Python version
    :target: https://docs.pypots.com/en/latest/install.html#reasons-of-version-limitations-on-dependencies
 
@@ -88,12 +88,12 @@ if it helps with your research. This really means a lot to our open-source resea
 
 The rest of this readme file is organized as follows:
 `❖ PyPOTS Ecosystem <#id1>`_,
-`❖ Installation <#id2>`_,
-`❖ Usage <#id4>`_,
-`❖ Available Algorithms <#id6>`_,
-`❖ Citing PyPOTS <#id19>`_,
-`❖ Contribution <#id20>`_,
-`❖ Community <#id21>`_.
+`❖ Installation <#id3>`_,
+`❖ Usage <#id5>`_,
+`❖ Available Algorithms <#id7>`_,
+`❖ Citing PyPOTS <#id22>`_,
+`❖ Contribution <#id23>`_,
+`❖ Community <#id24>`_.
 
 
 ❖ PyPOTS Ecosystem
@@ -136,7 +136,13 @@ Considering the future workload, PyPOTS tutorials is released in a single repo,
 and you can find them in `BrewPOTS <https://github.com/WenjieDu/BrewPOTS>`_.
 Take a look at it now, and learn how to brew your POTS datasets!
 
-☕️ Welcome to the universe of PyPOTS. Enjoy it and have fun!
+**☕️ Welcome to the universe of PyPOTS. Enjoy it and have fun!**
+
+.. image:: https://pypots.com/figs/pypots_logos/Ecosystem/PyPOTS_Ecosystem_Pipeline.png
+   :width: 95%
+   :alt: BrewPOTS logo
+   :align: center
+   :target: https://pypots.com/ecosystem/
 
 
 ❖ Installation
@@ -149,7 +155,7 @@ Refer to the page `Installation <install.html>`_ to see different ways of instal
 ❖ Usage
 ^^^^^^^^
 Besides `BrewPOTS <https://github.com/WenjieDu/BrewPOTS>`_, you can also find a simple and quick-start tutorial notebook
-on Google Colab with `this link <https://colab.research.google.com/drive/1HEFjylEy05-r47jRy0H9jiS_WhD0UWmQ?usp=sharing>`_.
+on Google Colab with `this link <https://colab.research.google.com/drive/1HEFjylEy05-r47jRy0H9jiS_WhD0UWmQ>`_.
 You can also `raise an issue <https://github.com/WenjieDu/PyPOTS/issues>`_ or `ask in our community <#id21>`_.
 
 Additionally, we present you a usage example of imputing missing values in time series with PyPOTS in
@@ -227,7 +233,8 @@ By committing your code, you'll
    Take a look at our `inclusion criteria <https://docs.pypots.com/en/latest/faq.html#inclusion-criteria>`_.
    You can utilize the ``template`` folder in each task package (e.g.
    `pypots/imputation/template <https://github.com/WenjieDu/PyPOTS/tree/main/pypots/imputation/template>`_) to quickly start;
-2. be listed as one of `PyPOTS contributors <https://github.com/WenjieDu/PyPOTS/graphs/contributors>`_:
+2. become one of `PyPOTS contributors <https://github.com/WenjieDu/PyPOTS/graphs/contributors>`_ and
+   be listed as a volunteer developer `on the PyPOTS website <https://pypots.com/about/#volunteer-developers>`_;
 3. get mentioned in our `release notes <https://github.com/WenjieDu/PyPOTS/releases>`_;
 
 You can also contribute to PyPOTS by simply staring🌟 this repo to help more people notice it.
