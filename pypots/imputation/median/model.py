@@ -97,7 +97,7 @@ class Median(BaseImputer):
             imputed_data = X_imputed_reshaped.reshape(n_samples, n_steps, n_features)
         elif isinstance(X, torch.Tensor):
             X_imputed_reshaped = torch.clone(X).reshape(-1, n_features)
-            median_values = torch.nanmedian(X_imputed_reshaped, dim=0).numpy()
+            median_values = torch.nanmedian(X_imputed_reshaped, dim=0).values.numpy()
             for i, v in enumerate(median_values):
                 X_imputed_reshaped[:, i] = torch.nan_to_num(
                     X_imputed_reshaped[:, i], nan=v
