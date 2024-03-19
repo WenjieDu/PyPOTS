@@ -8,7 +8,7 @@
 
 <p align="center">
     <a href="https://docs.pypots.com/en/latest/install.html#reasons-of-version-limitations-on-dependencies">
-       <img alt="Python version" src="https://img.shields.io/badge/Python->=v3.7-E97040?logo=python&logoColor=white">
+       <img alt="Python version" src="https://img.shields.io/badge/Python-v3.7+-E97040?logo=python&logoColor=white">
     </a>
     <a href="https://github.com/WenjieDu/PyPOTS">
         <img alt="powered by Pytorch" src="https://img.shields.io/badge/PyTorch-❤️-F8C6B5?logo=pytorch&logoColor=white">
@@ -144,7 +144,7 @@ Alternatively, you can install from the latest source code with the latest featu
 
 ## ❖ Usage
 Besides [BrewPOTS](https://github.com/WenjieDu/BrewPOTS), you can also find a simple and quick-start tutorial notebook
-on Google Colab with [this link](https://colab.research.google.com/drive/1HEFjylEy05-r47jRy0H9jiS_WhD0UWmQ?usp=sharing).
+on Google Colab <a href="https://colab.research.google.com/drive/1HEFjylEy05-r47jRy0H9jiS_WhD0UWmQ"><img src="https://img.shields.io/badge/GoogleColab-PyPOTS_Tutorials-F9AB00?logo=googlecolab&logoColor=white" alt="Colab tutorials" align="center"/></a>.
 If you have further questions, please refer to PyPOTS documentation [docs.pypots.com](https://docs.pypots.com).
 You can also [raise an issue](https://github.com/WenjieDu/PyPOTS/issues) or [ask in our community](#-community).
 
@@ -265,7 +265,8 @@ By committing your code, you'll
    Take a look at our [inclusion criteria](https://docs.pypots.com/en/latest/faq.html#inclusion-criteria).
    You can utilize the `template` folder in each task package (e.g.
    [pypots/imputation/template](https://github.com/WenjieDu/PyPOTS/tree/main/pypots/imputation/template)) to quickly start;
-2. be listed as one of [PyPOTS contributors](https://pypots.com/about/#all-contributors);
+2. become one of [PyPOTS contributors](https://github.com/WenjieDu/PyPOTS/graphs/contributors) and
+   be listed as a volunteer developer [on the PyPOTS website](https://pypots.com/about/#volunteer-developers);
 3. get mentioned in our [release notes](https://github.com/WenjieDu/PyPOTS/releases);
 
 You can also contribute to PyPOTS by simply staring🌟 this repo to help more people notice it.
