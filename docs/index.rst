@@ -204,7 +204,7 @@ please cite it as below and 🌟star `PyPOTS repository <https://github.com/Wenj
 .. code-block:: bibtex
    :linenos:
 
-   @article{du2023PyPOTS,
+   @article{du2023pypots,
    title={{PyPOTS: a Python toolbox for data mining on Partially-Observed Time Series}},
    author={Wenjie Du},
    year={2023},
@@ -214,6 +214,8 @@ please cite it as below and 🌟star `PyPOTS repository <https://github.com/Wenj
    url={https://arxiv.org/abs/2305.18811},
    doi={10.48550/arXiv.2305.18811},
    }
+
+or
 
 ..
 

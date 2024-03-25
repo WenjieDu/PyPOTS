@@ -132,20 +132,20 @@ You can install PyPOTS as shown below:
 # via pip
 pip install pypots            # the first time installation
 pip install pypots --upgrade  # update pypots to the latest version
+# install from the latest source code with the latest features but may be not officially released yet
+pip install https://github.com/WenjieDu/PyPOTS/archive/main.zip
 
 # via conda
 conda install -c conda-forge pypots  # the first time installation
 conda update  -c conda-forge pypots  # update pypots to the latest version
-````
-
-Alternatively, you can install from the latest source code with the latest features but may be not officially released yet:
-> pip install https://github.com/WenjieDu/PyPOTS/archive/main.zip
+```
 
 
 ## ❖ Usage
-Besides [BrewPOTS](https://github.com/WenjieDu/BrewPOTS), you can also find a simple and quick-start tutorial notebook
-on Google Colab <a href="https://colab.research.google.com/drive/1HEFjylEy05-r47jRy0H9jiS_WhD0UWmQ"><img src="https://img.shields.io/badge/GoogleColab-PyPOTS_Tutorials-F9AB00?logo=googlecolab&logoColor=white" alt="Colab tutorials" align="center"/></a>.
-If you have further questions, please refer to PyPOTS documentation [docs.pypots.com](https://docs.pypots.com).
+Besides [BrewPOTS](https://github.com/WenjieDu/BrewPOTS), you can also find a simple and quick-start tutorial notebook on Google Colab 
+<a href="https://colab.research.google.com/drive/1HEFjylEy05-r47jRy0H9jiS_WhD0UWmQ">
+<img src="https://img.shields.io/badge/GoogleColab-PyPOTS_Tutorials-F9AB00?logo=googlecolab&logoColor=white" alt="Colab tutorials" align="center"/>
+</a>. If you have further questions, please refer to PyPOTS documentation [docs.pypots.com](https://docs.pypots.com).
 You can also [raise an issue](https://github.com/WenjieDu/PyPOTS/issues) or [ask in our community](#-community).
 
 We present you a usage example of imputing missing values in time series with PyPOTS below, you can click it to view.
@@ -249,7 +249,7 @@ url={https://arxiv.org/abs/2305.18811},
 doi={10.48550/arXiv.2305.18811},
 }
 ```
-
+or
 > Wenjie Du. (2023).
 > PyPOTS: a Python toolbox for data mining on Partially-Observed Time Series.
 > arXiv, abs/2305.18811.https://arxiv.org/abs/2305.18811

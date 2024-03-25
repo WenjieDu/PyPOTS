@@ -264,7 +264,7 @@ class CSDI(BaseNNImputer):
 
                     mean_val_loss = np.asarray(val_loss_collector).mean()
 
-                    # save validating loss logs into the tensorboard file for every epoch if in need
+                    # save validation loss logs into the tensorboard file for every epoch if in need
                     if self.summary_writer is not None:
                         val_loss_dict = {
                             "validating_loss": mean_val_loss,
@@ -274,7 +274,7 @@ class CSDI(BaseNNImputer):
                     logger.info(
                         f"Epoch {epoch:03d} - "
                         f"training loss: {mean_train_loss:.4f}, "
-                        f"validating loss: {mean_val_loss:.4f}"
+                        f"validation loss: {mean_val_loss:.4f}"
                     )
                     mean_loss = mean_val_loss
                 else:

@@ -315,7 +315,7 @@ class USGAN(BaseNNImputer):
                             imputation_loss_collector.append(imputation_mse)
 
                     mean_val_loss = np.mean(imputation_loss_collector)
-                    # save validating loss logs into the tensorboard file for every epoch if in need
+                    # save validation loss logs into the tensorboard file for every epoch if in need
                     if self.summary_writer is not None:
                         val_loss_dict = {
                             "validating_loss": mean_val_loss,
@@ -325,7 +325,7 @@ class USGAN(BaseNNImputer):
                         f"Epoch {epoch:03d} - "
                         f"generator training loss: {mean_epoch_train_G_loss:.4f}, "
                         f"discriminator training loss: {mean_epoch_train_D_loss:.4f}, "
-                        f"validating loss: {mean_val_loss:.4f}"
+                        f"validation loss: {mean_val_loss:.4f}"
                     )
                     mean_loss = mean_val_loss
                 else:
