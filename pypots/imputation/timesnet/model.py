@@ -42,7 +42,7 @@ class TimesNet(BaseNNImputer):
         The number of features in the time-series data sample.
 
     n_layers :
-        The number of layers in the 1st and 2nd DMSA blocks in the SAITS model.
+        The number of layers in the TimesNet model.
 
     top_k :
         The number of top-k amplitude values to be selected to  obtain the most significant frequencies.

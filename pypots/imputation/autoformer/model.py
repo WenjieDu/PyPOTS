@@ -42,13 +42,22 @@ class Autoformer(BaseNNImputer):
         The number of features in the time-series data sample.
 
     n_layers :
-        The number of layers in the 1st and 2nd DMSA blocks in the SAITS model.
+        The number of layers in the Autoformer model.
+
+    n_heads :
+        The number of heads in each layer of Autoformer.
 
     d_model :
         The dimension of the model.
 
     d_ffn :
         The dimension of the feed-forward network.
+
+    factor :
+        The factor of the auto correlation mechanism for the Autoformer model.
+
+    moving_avg_kernel_size :
+        The window size of moving average.
 
     dropout :
         The dropout rate for the model.

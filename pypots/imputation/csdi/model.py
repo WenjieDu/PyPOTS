@@ -43,7 +43,7 @@ class CSDI(BaseNNImputer):
         The number of features in the time-series data sample.
 
     n_layers :
-        The number of layers in the 1st and 2nd DMSA blocks in the SAITS model.
+        The number of layers in the CSDI model.
 
     n_heads :
         The number of heads in the multi-head attention mechanism.
