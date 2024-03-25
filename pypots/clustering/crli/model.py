@@ -276,7 +276,7 @@ class CRLI(BaseNNClusterer):
                                 results["generation_loss"].sum().item()
                             )
                     mean_val_G_loss = np.mean(epoch_val_loss_G_collector)
-                    # save validating loss logs into the tensorboard file for every epoch if in need
+                    # save validation loss logs into the tensorboard file for every epoch if in need
                     if self.summary_writer is not None:
                         val_loss_dict = {
                             "generation_loss": mean_val_G_loss,
@@ -286,7 +286,7 @@ class CRLI(BaseNNClusterer):
                         f"Epoch {epoch:03d} - "
                         f"generator training loss: {mean_epoch_train_G_loss:.4f}, "
                         f"discriminator training loss: {mean_epoch_train_D_loss:.4f}, "
-                        f"generator validating loss: {mean_val_G_loss:.4f}"
+                        f"generator validation loss: {mean_val_G_loss:.4f}"
                     )
                     mean_loss = mean_val_G_loss
                 else:
