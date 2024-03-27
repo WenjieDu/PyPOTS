@@ -1,12 +1,12 @@
 """
-The implementation of TimesNet for the partially-observed time-series imputation task.
+The implementation of Transformer for the partially-observed time-series imputation task.
 
-Refer to the paper "Wu, H., Hu, T., Liu, Y., Zhou, H., Wang, J., & Long, M. (2023).
-TimesNet: Temporal 2d-variation modeling for general time series analysis. ICLR 2023."
+Refer to the paper "Wu, H., Xu, J., Wang, J., & Long, M. (2021).
+Autoformer: Decomposition transformers with auto-correlation for long-term series forecasting. NeurIPS 2021.".
 
 Notes
 -----
-Partial implementation uses code from https://github.com/thuml/Time-Series-Library.
+Partial implementation uses code from https://github.com/thuml/Time-Series-Library
 
 """
 
@@ -19,8 +19,8 @@ import numpy as np
 import torch
 from torch.utils.data import DataLoader
 
-from .data import DatasetForTimesNet
-from .modules.core import _TimesNet
+from .data import DatasetForAutoformer
+from .modules.core import _Autoformer
 from ..base import BaseNNImputer
 from ...data.base import BaseDataset
 from ...data.checking import check_X_ori_in_val_set
@@ -29,9 +29,9 @@ from ...optim.base import Optimizer
 from ...utils.logging import logger
 
 
-class TimesNet(BaseNNImputer):
-    """The PyTorch implementation of the TimesNet model.
-    TimesNet is originally proposed by Wu et al. in :cite:`wu2023timesnet`.
+class Autoformer(BaseNNImputer):
+    """The PyTorch implementation of the Autoformer model.
+    TimesNet is originally proposed by Wu et al. in :cite:`wu2021autoformer`.
 
     Parameters
     ----------
@@ -42,10 +42,10 @@ class TimesNet(BaseNNImputer):
         The number of features in the time-series data sample.
 
     n_layers :
-        The number of layers in the TimesNet model.
+        The number of layers in the Autoformer model.
 
-    top_k :
-        The number of top-k amplitude values to be selected to  obtain the most significant frequencies.
+    n_heads :
+        The number of heads in each layer of Autoformer.
 
     d_model :
         The dimension of the model.
@@ -53,16 +53,14 @@ class TimesNet(BaseNNImputer):
     d_ffn :
         The dimension of the feed-forward network.
 
-    n_kernels :
-        The number of 2D kernels (2D convolutional layers) to use in the submodule InceptionBlockV1.
+    factor :
+        The factor of the auto correlation mechanism for the Autoformer model.
+
+    moving_avg_kernel_size :
+        The window size of moving average.
 
     dropout :
         The dropout rate for the model.
-
-    apply_nonstationary_norm :
-        Whether to apply non-stationary normalization to the input data for TimesNet.
-        Please refer to :cite:`liu2022nonstationary` for details about non-stationary normalization,
-        which is not the idea of the original TimesNet paper. Hence, we make it optional and default not to use here.
 
     batch_size :
         The batch size for training and evaluating the model.
@@ -118,12 +116,12 @@ class TimesNet(BaseNNImputer):
         n_steps: int,
         n_features: int,
         n_layers: int,
-        top_k: int,
+        n_heads: int,
         d_model: int,
         d_ffn: int,
-        n_kernels: int,
+        factor: int,
+        moving_avg_kernel_size: int,
         dropout: float = 0,
-        apply_nonstationary_norm: bool = False,
         batch_size: int = 32,
         epochs: int = 100,
         patience: int = None,
@@ -146,25 +144,25 @@ class TimesNet(BaseNNImputer):
         self.n_steps = n_steps
         self.n_features = n_features
         # model hype-parameters
+        self.n_heads = n_heads
         self.n_layers = n_layers
-        self.top_k = top_k
         self.d_model = d_model
         self.d_ffn = d_ffn
-        self.n_kernels = n_kernels
+        self.factor = factor
+        self.moving_avg_kernel_size = moving_avg_kernel_size
         self.dropout = dropout
-        self.apply_nonstationary_norm = apply_nonstationary_norm
 
         # set up the model
-        self.model = _TimesNet(
-            self.n_layers,
+        self.model = _Autoformer(
             self.n_steps,
             self.n_features,
-            self.top_k,
+            self.n_layers,
+            self.n_heads,
             self.d_model,
             self.d_ffn,
-            self.n_kernels,
+            self.factor,
+            self.moving_avg_kernel_size,
             self.dropout,
-            self.apply_nonstationary_norm,
         )
         self._send_model_to_given_device()
         self._print_model_size()
@@ -211,7 +209,7 @@ class TimesNet(BaseNNImputer):
         file_type: str = "h5py",
     ) -> None:
         # Step 1: wrap the input data with classes Dataset and DataLoader
-        training_set = DatasetForTimesNet(
+        training_set = DatasetForAutoformer(
             train_set, return_X_ori=False, return_labels=False, file_type=file_type
         )
         training_loader = DataLoader(
@@ -224,7 +222,7 @@ class TimesNet(BaseNNImputer):
         if val_set is not None:
             if not check_X_ori_in_val_set(val_set):
                 raise ValueError("val_set must contain 'X_ori' for model validation.")
-            val_set = DatasetForTimesNet(
+            val_set = DatasetForAutoformer(
                 val_set, return_X_ori=True, return_labels=False, file_type=file_type
             )
             val_loader = DataLoader(
