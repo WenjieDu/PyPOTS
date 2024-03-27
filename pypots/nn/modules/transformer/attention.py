@@ -106,11 +106,11 @@ class MultiHeadAttention(nn.Module):
     d_v:
         The dimension of the value tensor.
 
-    dropout:
-        The dropout rate.
-
     attn_dropout:
         The dropout rate for the attention map.
+
+    attn_temperature:
+        The temperature for scaling. Default is None, which means d_k**0.5 will be applied.
 
     """
 
@@ -120,10 +120,12 @@ class MultiHeadAttention(nn.Module):
         d_model: int,
         d_k: int,
         d_v: int,
-        dropout: float,
         attn_dropout: float,
+        attn_temperature: float = None,
     ):
         super().__init__()
+
+        attn_temperature = d_k**0.5 if attn_temperature is None else attn_temperature
 
         self.n_heads = n_heads
         self.d_k = d_k
@@ -133,11 +135,8 @@ class MultiHeadAttention(nn.Module):
         self.w_ks = nn.Linear(d_model, n_heads * d_k, bias=False)
         self.w_vs = nn.Linear(d_model, n_heads * d_v, bias=False)
 
-        self.attention = ScaledDotProductAttention(d_k**0.5, attn_dropout)
+        self.attention = ScaledDotProductAttention(attn_temperature, attn_dropout)
         self.fc = nn.Linear(n_heads * d_v, d_model, bias=False)
-
-        self.dropout = nn.Dropout(dropout)
-        self.layer_norm = nn.LayerNorm(d_model, eps=1e-6)
 
     def forward(
         self,
@@ -177,7 +176,6 @@ class MultiHeadAttention(nn.Module):
 
         # keep useful variables
         batch_size, n_steps = q.size(0), q.size(1)
-        residual = v
 
         # now separate the last dimension of q, k, v into different heads -> [batch_size, n_steps, n_heads, d_k or d_v]
         q = self.w_qs(q).view(batch_size, n_steps, self.n_heads, self.d_k)
@@ -197,12 +195,5 @@ class MultiHeadAttention(nn.Module):
         # then merge the last two dimensions to combine all the heads -> [batch_size, n_steps, n_heads*d_v]
         v = v.transpose(1, 2).contiguous().view(batch_size, n_steps, -1)
         v = self.fc(v)
-
-        # apply dropout and residual connection
-        v = self.dropout(v)
-        v += residual
-
-        # apply layer-norm
-        v = self.layer_norm(v)
 
         return v, attn_weights
