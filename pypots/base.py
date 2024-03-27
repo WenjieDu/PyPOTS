@@ -332,56 +332,6 @@ class BaseModel(ABC):
             raise e
         logger.info(f"Model loaded successfully from {path}")
 
-    def save_model(
-        self,
-        saving_path: str,
-        overwrite: bool = False,
-    ) -> None:
-        """Save the model with current parameters to a disk file.
-
-        A ``.pypots`` extension will be appended to the filename if it does not already have one.
-        Please note that such an extension is not necessary, but to indicate the saved model is from PyPOTS framework
-        so people can distinguish.
-
-        Parameters
-        ----------
-        saving_path :
-            The given path to save the model. The directory will be created if it does not exist.
-
-        overwrite :
-            Whether to overwrite the model file if the path already exists.
-
-        Warnings
-        --------
-        The method save_model is deprecated. Please use `save()` instead.
-        """
-        logger.warning(
-            "🚨DeprecationWarning: The method save_model is deprecated. Please use `save()` instead."
-        )
-        self.save(saving_path, overwrite)
-
-    def load_model(self, path: str) -> None:
-        """Load the saved model from a disk file.
-
-        Parameters
-        ----------
-        path :
-            The local path to a disk file saving the trained model.
-
-        Notes
-        -----
-        If the training environment and the deploying/test environment use the same type of device (GPU/CPU),
-        you can load the model directly with torch.load(model_path).
-
-        Warnings
-        --------
-        The method load_model is deprecated. Please use `load()` instead.
-        """
-        logger.warning(
-            "🚨DeprecationWarning: The method load_model is deprecated. Please use `load()` instead."
-        )
-        self.load(path)
-
     @abstractmethod
     def fit(
         self,

@@ -10,18 +10,13 @@ It is recommended to use **pip** or **conda** for PyPOTS installation as shown b
     # via pip
     pip install pypots            # the first time installation
     pip install pypots --upgrade  # update pypots to the latest version
-
-.. code-block:: bash
+    # install from the latest source code with the latest features but may be not officially released yet
+    pip install https://github.com/WenjieDu/PyPOTS/archive/main.zip
 
     # via conda
     conda install -c conda-forge pypots  # the first time installation
     conda update  -c conda-forge pypots  # update pypots to the latest version
 
-Alternatively, you can install from the latest source code which may be not officially released yet:
-
-.. code-block:: bash
-
-   pip install https://github.com/WenjieDu/PyPOTS/archive/main.zip
 
 Required Dependencies
 """""""""""""""""""""
@@ -35,7 +30,7 @@ Required Dependencies
 * scikit-learn
 * torch >=1.10.0
 * tsdb >=0.2
-* pygrinder >=0.2
+* pygrinder >=0.4
 
 
 Optional Dependencies
@@ -61,8 +56,8 @@ Please use Python v3.8 or above if possible also for the security of your develo
 
 Because of pytorch_sparse, please refer to https://github.com/rusty1s/pytorch_sparse/issues/207#issuecomment-1065549338.
 
-* **Why we need TSDB and PyGrinder >=0.2?**
-Since v0.2, all libraries in PyPOTS ecosystem switch their licenses from GPL-v3-only to BSD-3-Clause, which has less constraints for users.
+* **Why we need TSDB >=0.2 and PyGrinder >=0.4?**
+Since v0.2, all libraries in PyPOTS Ecosystem switch their licenses from GPL-v3-only to BSD-3-Clause, which has less constraints for users.
 Please refer to the discussion in issue `PyPOTS#227 <https://github.com/WenjieDu/PyPOTS/issues/227>`_ for details.
 
 Acceleration

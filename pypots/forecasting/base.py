@@ -306,7 +306,7 @@ class BaseNNForecaster(BaseNNModel):
 
                     mean_val_loss = np.mean(forecasting_loss_collector)
 
-                    # save validating loss logs into the tensorboard file for every epoch if in need
+                    # save validation loss logs into the tensorboard file for every epoch if in need
                     if self.summary_writer is not None:
                         val_loss_dict = {
                             "forecasting_loss": mean_val_loss,
@@ -316,7 +316,7 @@ class BaseNNForecaster(BaseNNModel):
                     logger.info(
                         f"Epoch {epoch:03d} - "
                         f"training loss: {mean_train_loss:.4f}, "
-                        f"validating loss: {mean_val_loss:.4f}"
+                        f"validation loss: {mean_val_loss:.4f}"
                     )
                     mean_loss = mean_val_loss
                 else:
