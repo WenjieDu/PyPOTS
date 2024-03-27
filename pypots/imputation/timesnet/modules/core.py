@@ -8,7 +8,7 @@
 import torch.nn as nn
 
 from .embedding import DataEmbedding
-from .layer import TimesBlock
+from .submodules import TimesBlock
 from ....nn.functional import nonstationary_norm, nonstationary_denorm
 from ....utils.metrics import calc_mse
 

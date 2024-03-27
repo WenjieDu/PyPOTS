@@ -1,12 +1,12 @@
 """
-The implementation of Transformer for the partially-observed time-series imputation task.
+The implementation of TimesNet for the partially-observed time-series imputation task.
 
-Refer to the paper "Du, W., Cote, D., & Liu, Y. (2023). SAITS: Self-Attention-based Imputation for Time Series.
-Expert systems with applications."
+Refer to the paper "Wu, H., Hu, T., Liu, Y., Zhou, H., Wang, J., & Long, M. (2023).
+TimesNet: Temporal 2d-variation modeling for general time series analysis. ICLR 2023."
 
 Notes
 -----
-Partial implementation uses code from https://github.com/WenjieDu/SAITS.
+Partial implementation uses code from https://github.com/thuml/Time-Series-Library.
 
 """
 
@@ -42,7 +42,7 @@ class TimesNet(BaseNNImputer):
         The number of features in the time-series data sample.
 
     n_layers :
-        The number of layers in the 1st and 2nd DMSA blocks in the SAITS model.
+        The number of layers in the TimesNet model.
 
     top_k :
         The number of top-k amplitude values to be selected to  obtain the most significant frequencies.
