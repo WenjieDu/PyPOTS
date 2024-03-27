@@ -11,8 +11,9 @@ from .csdi import CSDI
 from .gpvae import GPVAE
 from .mrnn import MRNN
 from .saits import SAITS
-from .timesnet import TimesNet
 from .transformer import Transformer
+from .timesnet import TimesNet
+from .autoformer import Autoformer
 from .usgan import USGAN
 
 # naive imputation methods
@@ -25,6 +26,7 @@ __all__ = [
     "SAITS",
     "Transformer",
     "TimesNet",
+    "Autoformer",
     "BRITS",
     "MRNN",
     "GPVAE",
