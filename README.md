@@ -142,7 +142,7 @@ conda update  -c conda-forge pypots  # update pypots to the latest version
 
 
 ## ❖ Usage
-Besides [BrewPOTS](https://github.com/WenjieDu/BrewPOTS), you can also find a simple and quick-start tutorial notebook on Google Colab 
+Besides [BrewPOTS](https://github.com/WenjieDu/BrewPOTS), you can also find a simple and quick-start tutorial notebook on Google Colab
 <a href="https://colab.research.google.com/drive/1HEFjylEy05-r47jRy0H9jiS_WhD0UWmQ">
 <img src="https://img.shields.io/badge/GoogleColab-PyPOTS_Tutorials-F9AB00?logo=googlecolab&logoColor=white" alt="Colab tutorials" align="center"/>
 </a>. If you have further questions, please refer to PyPOTS documentation [docs.pypots.com](https://docs.pypots.com).
@@ -198,6 +198,7 @@ This functionality is implemented with the [Microsoft NNI](https://github.com/mi
 |       Neural Net       |    SAITS    |                                                               Self-Attention-based Imputation for Time Series [^1]                                                                |   2023   |
 |       Neural Net       | Transformer | Attention is All you Need [^2];<br>Self-Attention-based Imputation for Time Series [^1];<br><sub>Note: proposed in [^2], and re-implemented as an imputation model in [^1].</sub> |   2017   |
 |       Neural Net       |  TimesNet   |                                                       Temporal 2D-Variation Modeling for General Time Series Analysis [^14]                                                       |   2023   |
+|       Neural Net       | Autoformer  |                                              Decomposition transformers with auto-correlation for long-term series forecasting [^15]                                              |   2021   |
 |       Neural Net       |    CSDI     |                                              Conditional Score-based Diffusion Models for Probabilistic Time Series Imputation [^12]                                              |   2021   |
 |       Neural Net       |   US-GAN    |                                                          Unsupervised GAN for Multivariate Time Series Imputation [^10]                                                           |   2021   |
 |       Neural Net       |   GP-VAE    |                                                                  Gaussian Process Variational Autoencoder [^11]                                                                   |   2020   |
@@ -318,6 +319,7 @@ PyPOTS community is open, transparent, and surely friendly. Let's work together 
 [^12]: Tashiro, Y., Song, J., Song, Y., & Ermon, S. (2021). [CSDI: Conditional Score-based Diffusion Models for Probabilistic Time Series Imputation](https://proceedings.neurips.cc/paper/2021/hash/cfe8504bda37b575c70ee1a8276f3486-Abstract.html). *NeurIPS 2021*.
 [^13]: Rubin, D. B. (1976). [Inference and missing data](https://academic.oup.com/biomet/article-abstract/63/3/581/270932). *Biometrika*.
 [^14]: Wu, H., Hu, T., Liu, Y., Zhou, H., Wang, J., & Long, M. (2023). [TimesNet: Temporal 2d-variation modeling for general time series analysis](https://openreview.net/forum?id=ju_Uqw384Oq). *ICLR 2023*
+[^15]: Wu, H., Xu, J., Wang, J., & Long, M. (2021). [Autoformer: Decomposition transformers with auto-correlation for long-term series forecasting](https://proceedings.neurips.cc/paper/2021/hash/bcc0d400288793e8bdcd7c19a8ac0c2b-Abstract.html). *NeurIPS 2021*.
 
 
 <details>

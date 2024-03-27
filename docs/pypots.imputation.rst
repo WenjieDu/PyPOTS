@@ -28,6 +28,15 @@ pypots.imputation.timesnet
    :show-inheritance:
    :inherited-members:
 
+pypots.imputation.autoformer
+------------------------------
+
+.. automodule:: pypots.imputation.autoformer
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+
 pypots.imputation.csdi
 ------------------------------
 
