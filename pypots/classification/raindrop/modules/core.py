@@ -44,7 +44,7 @@ class _Raindrop(nn.Module):
         n_features,
         n_layers,
         d_model,
-        d_inner,
+        d_ffn,
         n_heads,
         n_classes,
         dropout=0.3,
@@ -59,7 +59,7 @@ class _Raindrop(nn.Module):
         self.n_layers = n_layers
         self.n_features = n_features
         self.d_model = d_model
-        self.d_inner = d_inner
+        self.d_ffn = d_ffn
         self.n_heads = n_heads
         self.n_classes = n_classes
         self.dropout = dropout
@@ -84,13 +84,13 @@ class _Raindrop(nn.Module):
             dim_check = n_features * (self.d_ob + d_pe)
             assert dim_check % n_heads == 0, "dim_check must be divisible by n_heads"
             encoder_layers = TransformerEncoderLayer(
-                n_features * (self.d_ob + d_pe), n_heads, d_inner, dropout
+                n_features * (self.d_ob + d_pe), n_heads, d_ffn, dropout
             )
         else:
             dim_check = d_model + d_pe
             assert dim_check % n_heads == 0, "dim_check must be divisible by n_heads"
             encoder_layers = TransformerEncoderLayer(
-                d_model + d_pe, n_heads, d_inner, dropout
+                d_model + d_pe, n_heads, d_ffn, dropout
             )
         self.transformer_encoder = TransformerEncoder(encoder_layers, n_layers)
 

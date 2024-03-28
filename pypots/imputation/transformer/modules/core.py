@@ -29,7 +29,7 @@ class _TransformerEncoder(nn.Module):
         d_time: int,
         d_feature: int,
         d_model: int,
-        d_inner: int,
+        d_ffn: int,
         n_heads: int,
         d_k: int,
         d_v: int,
@@ -48,7 +48,7 @@ class _TransformerEncoder(nn.Module):
             [
                 EncoderLayer(
                     d_model,
-                    d_inner,
+                    d_ffn,
                     n_heads,
                     d_k,
                     d_v,

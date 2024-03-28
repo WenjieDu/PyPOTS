@@ -47,7 +47,7 @@ class TestSAITS(unittest.TestCase):
         DATA["n_features"],
         n_layers=2,
         d_model=256,
-        d_inner=128,
+        d_ffn=128,
         n_heads=4,
         d_k=64,
         d_v=64,

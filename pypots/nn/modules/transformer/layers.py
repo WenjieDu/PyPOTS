@@ -73,7 +73,7 @@ class EncoderLayer(nn.Module):
     d_model:
         The dimension of the input tensor.
 
-    d_inner:
+    d_ffn:
         The dimension of the hidden layer.
 
     n_heads:
@@ -95,7 +95,7 @@ class EncoderLayer(nn.Module):
     def __init__(
         self,
         d_model: int,
-        d_inner: int,
+        d_ffn: int,
         n_heads: int,
         d_k: int,
         d_v: int,
@@ -106,7 +106,7 @@ class EncoderLayer(nn.Module):
         self.slf_attn = MultiHeadAttention(n_heads, d_model, d_k, d_v, attn_dropout)
         self.dropout = nn.Dropout(dropout)
         self.layer_norm = nn.LayerNorm(d_model, eps=1e-6)
-        self.pos_ffn = PositionWiseFeedForward(d_model, d_inner, dropout)
+        self.pos_ffn = PositionWiseFeedForward(d_model, d_ffn, dropout)
 
     def forward(
         self,
@@ -158,7 +158,7 @@ class DecoderLayer(nn.Module):
     d_model:
         The dimension of the input tensor.
 
-    d_inner:
+    d_ffn:
         The dimension of the hidden layer.
 
     n_heads:
@@ -181,7 +181,7 @@ class DecoderLayer(nn.Module):
     def __init__(
         self,
         d_model: int,
-        d_inner: int,
+        d_ffn: int,
         n_heads: int,
         d_k: int,
         d_v: int,
@@ -191,7 +191,7 @@ class DecoderLayer(nn.Module):
         super().__init__()
         self.slf_attn = MultiHeadAttention(n_heads, d_model, d_k, d_v, attn_dropout)
         self.enc_attn = MultiHeadAttention(n_heads, d_model, d_k, d_v, attn_dropout)
-        self.pos_ffn = PositionWiseFeedForward(d_model, d_inner, dropout)
+        self.pos_ffn = PositionWiseFeedForward(d_model, d_ffn, dropout)
 
     def forward(
         self,
