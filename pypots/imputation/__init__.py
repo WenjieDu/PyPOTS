@@ -14,6 +14,7 @@ from .saits import SAITS
 from .transformer import Transformer
 from .timesnet import TimesNet
 from .autoformer import Autoformer
+from .patchtst import PatchTST
 from .usgan import USGAN
 
 # naive imputation methods
@@ -26,6 +27,7 @@ __all__ = [
     "SAITS",
     "Transformer",
     "TimesNet",
+    "PatchTST",
     "Autoformer",
     "BRITS",
     "MRNN",

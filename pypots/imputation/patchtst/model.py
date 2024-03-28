@@ -1,12 +1,13 @@
 """
-The implementation of Autoformer for the partially-observed time-series imputation task.
+The implementation of PatchTST for the partially-observed time-series imputation task.
 
-Refer to the paper "Wu, H., Xu, J., Wang, J., & Long, M. (2021).
-Autoformer: Decomposition transformers with auto-correlation for long-term series forecasting. NeurIPS 2021.".
+Refer to the paper "Nie, Y., Nguyen, N. H., Sinthong, P., & Kalagnanam, J. (2023).
+A time series is worth 64 words: Long-term forecasting with transformers. ICLR 2023".
 
 Notes
 -----
-Partial implementation uses code from https://github.com/thuml/Time-Series-Library
+Partial implementation uses code from
+https://github.com/yuqinie98/PatchTST and https://github.com/thuml/Time-Series-Library
 
 """
 
@@ -19,8 +20,8 @@ import numpy as np
 import torch
 from torch.utils.data import DataLoader
 
-from .data import DatasetForAutoformer
-from .modules.core import _Autoformer
+from .data import DatasetForPatchTST
+from .modules.core import _PatchTST
 from ..base import BaseNNImputer
 from ...data.base import BaseDataset
 from ...data.checking import check_X_ori_in_val_set
@@ -29,9 +30,9 @@ from ...optim.base import Optimizer
 from ...utils.logging import logger
 
 
-class Autoformer(BaseNNImputer):
-    """The PyTorch implementation of the Autoformer model.
-    Autoformer is originally proposed by Wu et al. in :cite:`wu2021autoformer`.
+class PatchTST(BaseNNImputer):
+    """The PyTorch implementation of the PatchTST model.
+    TimesNet is originally proposed by Wu et al. in :cite:`nie2023patchtst`.
 
     Parameters
     ----------
@@ -41,23 +42,32 @@ class Autoformer(BaseNNImputer):
     n_features :
         The number of features in the time-series data sample.
 
+    patch_len :
+        The patch length for patch embedding.
+
+    stride :
+        The stride for patch embedding.
+
     n_layers :
-        The number of layers in the Autoformer model.
+        The number of layers in the PatchTST model.
 
     n_heads :
-        The number of heads in each layer of Autoformer.
+        The number of heads in each layer of PatchTST.
+
+    d_k :
+        The dimension of the `keys` (K) and the `queries` (Q) in the DMSA mechanism.
+        ``d_k`` should be the result of ``d_model`` divided by ``n_heads``. Although ``d_k`` can be directly calculated
+        with given ``d_model`` and ``n_heads``, we want it be explicitly given together with ``d_v`` by users to ensure
+        users be aware of them and to avoid any potential mistakes.
+
+    d_v :
+        The dimension of the `values` (V) in the DMSA mechanism.
 
     d_model :
         The dimension of the model.
 
     d_ffn :
         The dimension of the feed-forward network.
-
-    factor :
-        The factor of the auto correlation mechanism for the Autoformer model.
-
-    moving_avg_window_size :
-        The window size of moving average.
 
     dropout :
         The dropout rate for the model.
@@ -115,13 +125,16 @@ class Autoformer(BaseNNImputer):
         self,
         n_steps: int,
         n_features: int,
+        patch_len: int,
+        stride: int,
         n_layers: int,
         n_heads: int,
+        d_k: int,
+        d_v: int,
         d_model: int,
         d_ffn: int,
-        factor: int,
-        moving_avg_window_size: int,
-        dropout: float = 0,
+        dropout: float,
+        attn_dropout: float,
         batch_size: int = 32,
         epochs: int = 100,
         patience: int = None,
@@ -140,29 +153,46 @@ class Autoformer(BaseNNImputer):
             saving_path,
             model_saving_strategy,
         )
+        if d_model != n_heads * d_k:
+            logger.warning(
+                "‼️ d_model must = n_heads * d_k, it should be divisible by n_heads "
+                f"and the result should be equal to d_k, but got d_model={d_model}, n_heads={n_heads}, d_k={d_k}"
+            )
+            d_model = n_heads * d_k
+            logger.warning(
+                f"⚠️ d_model is reset to {d_model} = n_heads ({n_heads}) * d_k ({d_k})"
+            )
 
         self.n_steps = n_steps
         self.n_features = n_features
         # model hype-parameters
-        self.n_heads = n_heads
+        self.patch_len = patch_len
+        self.stride = stride
+        self.head_nf = d_model * int((n_steps - patch_len) / stride + 2)
         self.n_layers = n_layers
+        self.n_heads = n_heads
+        self.d_k = d_k
+        self.d_v = d_v
         self.d_model = d_model
         self.d_ffn = d_ffn
-        self.factor = factor
-        self.moving_avg_window_size = moving_avg_window_size
         self.dropout = dropout
+        self.attn_dropout = attn_dropout
 
         # set up the model
-        self.model = _Autoformer(
+        self.model = _PatchTST(
             self.n_steps,
             self.n_features,
             self.n_layers,
             self.n_heads,
             self.d_model,
             self.d_ffn,
-            self.factor,
-            self.moving_avg_window_size,
+            self.d_k,
+            self.d_v,
+            self.patch_len,
+            self.stride,
+            self.head_nf,
             self.dropout,
+            self.attn_dropout,
         )
         self._send_model_to_given_device()
         self._print_model_size()
@@ -209,7 +239,7 @@ class Autoformer(BaseNNImputer):
         file_type: str = "h5py",
     ) -> None:
         # Step 1: wrap the input data with classes Dataset and DataLoader
-        training_set = DatasetForAutoformer(
+        training_set = DatasetForPatchTST(
             train_set, return_X_ori=False, return_labels=False, file_type=file_type
         )
         training_loader = DataLoader(
@@ -222,7 +252,7 @@ class Autoformer(BaseNNImputer):
         if val_set is not None:
             if not check_X_ori_in_val_set(val_set):
                 raise ValueError("val_set must contain 'X_ori' for model validation.")
-            val_set = DatasetForAutoformer(
+            val_set = DatasetForPatchTST(
                 val_set, return_X_ori=True, return_labels=False, file_type=file_type
             )
             val_loader = DataLoader(

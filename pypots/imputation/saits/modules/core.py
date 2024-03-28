@@ -30,7 +30,7 @@ class _SAITS(nn.Module):
         n_steps: int,
         n_features: int,
         d_model: int,
-        d_inner: int,
+        d_ffn: int,
         n_heads: int,
         d_k: int,
         d_v: int,
@@ -55,7 +55,7 @@ class _SAITS(nn.Module):
             [
                 EncoderLayer(
                     d_model,
-                    d_inner,
+                    d_ffn,
                     n_heads,
                     d_k,
                     d_v,
@@ -69,7 +69,7 @@ class _SAITS(nn.Module):
             [
                 EncoderLayer(
                     d_model,
-                    d_inner,
+                    d_ffn,
                     n_heads,
                     d_k,
                     d_v,

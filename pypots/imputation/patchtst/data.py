@@ -1,5 +1,5 @@
 """
-Dataset class for Autoformer.
+Dataset class for PatchTST.
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
@@ -10,8 +10,8 @@ from typing import Union
 from ..saits.data import DatasetForSAITS
 
 
-class DatasetForAutoformer(DatasetForSAITS):
-    """Actually Autoformer uses the same data strategy as SAITS, needs MIT for training."""
+class DatasetForPatchTST(DatasetForSAITS):
+    """Actually PatchTST uses the same data strategy as SAITS, needs MIT for training."""
 
     def __init__(
         self,

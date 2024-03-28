@@ -73,7 +73,7 @@ class EncoderLayer(nn.Module):
     d_model:
         The dimension of the input tensor.
 
-    d_inner:
+    d_ffn:
         The dimension of the hidden layer.
 
     n_heads:
@@ -95,7 +95,7 @@ class EncoderLayer(nn.Module):
     def __init__(
         self,
         d_model: int,
-        d_inner: int,
+        d_ffn: int,
         n_heads: int,
         d_k: int,
         d_v: int,
@@ -103,10 +103,10 @@ class EncoderLayer(nn.Module):
         attn_dropout: float = 0.1,
     ):
         super().__init__()
-        self.slf_attn = MultiHeadAttention(
-            n_heads, d_model, d_k, d_v, dropout, attn_dropout
-        )
-        self.pos_ffn = PositionWiseFeedForward(d_model, d_inner, dropout)
+        self.slf_attn = MultiHeadAttention(n_heads, d_model, d_k, d_v, attn_dropout)
+        self.dropout = nn.Dropout(dropout)
+        self.layer_norm = nn.LayerNorm(d_model, eps=1e-6)
+        self.pos_ffn = PositionWiseFeedForward(d_model, d_ffn, dropout)
 
     def forward(
         self,
@@ -138,6 +138,14 @@ class EncoderLayer(nn.Module):
             enc_input,
             attn_mask=src_mask,
         )
+
+        # apply dropout and residual connection
+        enc_output = self.dropout(enc_output)
+        enc_output += enc_input
+
+        # apply layer-norm
+        enc_output = self.layer_norm(enc_output)
+
         enc_output = self.pos_ffn(enc_output)
         return enc_output, attn_weights
 
@@ -150,7 +158,7 @@ class DecoderLayer(nn.Module):
     d_model:
         The dimension of the input tensor.
 
-    d_inner:
+    d_ffn:
         The dimension of the hidden layer.
 
     n_heads:
@@ -173,7 +181,7 @@ class DecoderLayer(nn.Module):
     def __init__(
         self,
         d_model: int,
-        d_inner: int,
+        d_ffn: int,
         n_heads: int,
         d_k: int,
         d_v: int,
@@ -181,13 +189,9 @@ class DecoderLayer(nn.Module):
         attn_dropout: float = 0.1,
     ):
         super().__init__()
-        self.slf_attn = MultiHeadAttention(
-            n_heads, d_model, d_k, d_v, dropout, attn_dropout
-        )
-        self.enc_attn = MultiHeadAttention(
-            n_heads, d_model, d_k, d_v, dropout, attn_dropout
-        )
-        self.pos_ffn = PositionWiseFeedForward(d_model, d_inner, dropout)
+        self.slf_attn = MultiHeadAttention(n_heads, d_model, d_k, d_v, attn_dropout)
+        self.enc_attn = MultiHeadAttention(n_heads, d_model, d_k, d_v, attn_dropout)
+        self.pos_ffn = PositionWiseFeedForward(d_model, d_ffn, dropout)
 
     def forward(
         self,

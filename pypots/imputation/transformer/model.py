@@ -50,7 +50,7 @@ class Transformer(BaseNNImputer):
         The dimension of the model's backbone.
         It is the input dimension of the multi-head self-attention layers.
 
-    d_inner :
+    d_ffn :
         The dimension of the layer in the Feed-Forward Networks (FFN).
 
     n_heads :
@@ -138,7 +138,7 @@ class Transformer(BaseNNImputer):
         n_features: int,
         n_layers: int,
         d_model: int,
-        d_inner: int,
+        d_ffn: int,
         n_heads: int,
         d_k: int,
         d_v: int,
@@ -180,7 +180,7 @@ class Transformer(BaseNNImputer):
         # model hype-parameters
         self.n_layers = n_layers
         self.d_model = d_model
-        self.d_inner = d_inner
+        self.d_ffn = d_ffn
         self.n_heads = n_heads
         self.d_k = d_k
         self.d_v = d_v
@@ -195,7 +195,7 @@ class Transformer(BaseNNImputer):
             self.n_steps,
             self.n_features,
             self.d_model,
-            self.d_inner,
+            self.d_ffn,
             self.n_heads,
             self.d_k,
             self.d_v,
