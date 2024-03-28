@@ -1,5 +1,5 @@
 """
-Test cases for Autoformer imputation model.
+Test cases for PatchTST imputation model.
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
@@ -12,7 +12,7 @@ import unittest
 import numpy as np
 import pytest
 
-from pypots.imputation import Autoformer
+from pypots.imputation import PatchTST
 from pypots.optim import Adam
 from pypots.utils.logging import logger
 from pypots.utils.metrics import calc_mse
@@ -31,40 +31,43 @@ from tests.global_test_config import (
 )
 
 
-class TestAutoformer(unittest.TestCase):
-    logger.info("Running tests for an imputation model Autoformer...")
+class TestPatchTST(unittest.TestCase):
+    logger.info("Running tests for an imputation model PatchTST...")
 
     # set the log and model saving path
-    saving_path = os.path.join(RESULT_SAVING_DIR_FOR_IMPUTATION, "Autoformer")
-    model_save_name = "saved_autoformer_model.pypots"
+    saving_path = os.path.join(RESULT_SAVING_DIR_FOR_IMPUTATION, "PatchTST")
+    model_save_name = "saved_patchtst_model.pypots"
 
     # initialize an Adam optimizer
     optimizer = Adam(lr=0.001, weight_decay=1e-5)
 
-    # initialize a Autoformer model
-    autoformer = Autoformer(
+    # initialize a PatchTST model
+    patchtst = PatchTST(
         DATA["n_steps"],
         DATA["n_features"],
         n_layers=2,
-        n_heads=2,
-        d_model=128,
-        d_ffn=256,
-        factor=3,
-        moving_avg_window_size=3,
-        dropout=0,
+        d_model=256,
+        d_ffn=128,
+        n_heads=4,
+        d_k=64,
+        d_v=64,
+        patch_len=16,
+        stride=8,
+        dropout=0.1,
+        attn_dropout=0,
         epochs=EPOCHS,
         saving_path=saving_path,
         optimizer=optimizer,
         device=DEVICE,
     )
 
-    @pytest.mark.xdist_group(name="imputation-autoformer")
+    @pytest.mark.xdist_group(name="imputation-patchtst")
     def test_0_fit(self):
-        self.autoformer.fit(TRAIN_SET, VAL_SET)
+        self.patchtst.fit(TRAIN_SET, VAL_SET)
 
-    @pytest.mark.xdist_group(name="imputation-autoformer")
+    @pytest.mark.xdist_group(name="imputation-patchtst")
     def test_1_impute(self):
-        imputation_results = self.autoformer.predict(TEST_SET)
+        imputation_results = self.patchtst.predict(TEST_SET)
         assert not np.isnan(
             imputation_results["imputation"]
         ).any(), "Output still has missing values after running impute()."
@@ -74,26 +77,25 @@ class TestAutoformer(unittest.TestCase):
             DATA["test_X_ori"],
             DATA["test_X_indicating_mask"],
         )
-        logger.info(f"Autoformer test_MSE: {test_MSE}")
+        logger.info(f"PatchTST test_MSE: {test_MSE}")
 
-    @pytest.mark.xdist_group(name="imputation-autoformer")
+    @pytest.mark.xdist_group(name="imputation-patchtst")
     def test_2_parameters(self):
-        assert hasattr(self.autoformer, "model") and self.autoformer.model is not None
+        assert hasattr(self.patchtst, "model") and self.patchtst.model is not None
 
         assert (
-            hasattr(self.autoformer, "optimizer")
-            and self.autoformer.optimizer is not None
+            hasattr(self.patchtst, "optimizer") and self.patchtst.optimizer is not None
         )
 
-        assert hasattr(self.autoformer, "best_loss")
-        self.assertNotEqual(self.autoformer.best_loss, float("inf"))
+        assert hasattr(self.patchtst, "best_loss")
+        self.assertNotEqual(self.patchtst.best_loss, float("inf"))
 
         assert (
-            hasattr(self.autoformer, "best_model_dict")
-            and self.autoformer.best_model_dict is not None
+            hasattr(self.patchtst, "best_model_dict")
+            and self.patchtst.best_model_dict is not None
         )
 
-    @pytest.mark.xdist_group(name="imputation-autoformer")
+    @pytest.mark.xdist_group(name="imputation-patchtst")
     def test_3_saving_path(self):
         # whether the root saving dir exists, which should be created by save_log_into_tb_file
         assert os.path.exists(
@@ -101,19 +103,19 @@ class TestAutoformer(unittest.TestCase):
         ), f"file {self.saving_path} does not exist"
 
         # check if the tensorboard file and model checkpoints exist
-        check_tb_and_model_checkpoints_existence(self.autoformer)
+        check_tb_and_model_checkpoints_existence(self.patchtst)
 
         # save the trained model into file, and check if the path exists
         saved_model_path = os.path.join(self.saving_path, self.model_save_name)
-        self.autoformer.save(saved_model_path)
+        self.patchtst.save(saved_model_path)
 
         # test loading the saved model, not necessary, but need to test
-        self.autoformer.load(saved_model_path)
+        self.patchtst.load(saved_model_path)
 
-    @pytest.mark.xdist_group(name="imputation-autoformer")
+    @pytest.mark.xdist_group(name="imputation-patchtst")
     def test_4_lazy_loading(self):
-        self.autoformer.fit(H5_TRAIN_SET_PATH, H5_VAL_SET_PATH)
-        imputation_results = self.autoformer.predict(H5_TEST_SET_PATH)
+        self.patchtst.fit(H5_TRAIN_SET_PATH, H5_VAL_SET_PATH)
+        imputation_results = self.patchtst.predict(H5_TEST_SET_PATH)
         assert not np.isnan(
             imputation_results["imputation"]
         ).any(), "Output still has missing values after running impute()."
@@ -123,7 +125,7 @@ class TestAutoformer(unittest.TestCase):
             DATA["test_X_ori"],
             DATA["test_X_indicating_mask"],
         )
-        logger.info(f"Lazy-loading Autoformer test_MSE: {test_MSE}")
+        logger.info(f"Lazy-loading PatchTST test_MSE: {test_MSE}")
 
 
 if __name__ == "__main__":
