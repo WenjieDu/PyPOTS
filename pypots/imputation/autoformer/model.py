@@ -1,5 +1,5 @@
 """
-The implementation of Transformer for the partially-observed time-series imputation task.
+The implementation of Autoformer for the partially-observed time-series imputation task.
 
 Refer to the paper "Wu, H., Xu, J., Wang, J., & Long, M. (2021).
 Autoformer: Decomposition transformers with auto-correlation for long-term series forecasting. NeurIPS 2021.".
@@ -31,7 +31,7 @@ from ...utils.logging import logger
 
 class Autoformer(BaseNNImputer):
     """The PyTorch implementation of the Autoformer model.
-    TimesNet is originally proposed by Wu et al. in :cite:`wu2021autoformer`.
+    Autoformer is originally proposed by Wu et al. in :cite:`wu2021autoformer`.
 
     Parameters
     ----------
@@ -56,7 +56,7 @@ class Autoformer(BaseNNImputer):
     factor :
         The factor of the auto correlation mechanism for the Autoformer model.
 
-    moving_avg_kernel_size :
+    moving_avg_window_size :
         The window size of moving average.
 
     dropout :
@@ -120,7 +120,7 @@ class Autoformer(BaseNNImputer):
         d_model: int,
         d_ffn: int,
         factor: int,
-        moving_avg_kernel_size: int,
+        moving_avg_window_size: int,
         dropout: float = 0,
         batch_size: int = 32,
         epochs: int = 100,
@@ -149,7 +149,7 @@ class Autoformer(BaseNNImputer):
         self.d_model = d_model
         self.d_ffn = d_ffn
         self.factor = factor
-        self.moving_avg_kernel_size = moving_avg_kernel_size
+        self.moving_avg_window_size = moving_avg_window_size
         self.dropout = dropout
 
         # set up the model
@@ -161,7 +161,7 @@ class Autoformer(BaseNNImputer):
             self.d_model,
             self.d_ffn,
             self.factor,
-            self.moving_avg_kernel_size,
+            self.moving_avg_window_size,
             self.dropout,
         )
         self._send_model_to_given_device()

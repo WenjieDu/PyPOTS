@@ -1,5 +1,5 @@
 """
-Dataset class for TimesNet.
+Dataset class for Autoformer.
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>

@@ -50,7 +50,7 @@ class TestAutoformer(unittest.TestCase):
         d_model=128,
         d_ffn=256,
         factor=3,
-        moving_avg_kernel_size=3,
+        moving_avg_window_size=3,
         dropout=0,
         epochs=EPOCHS,
         saving_path=saving_path,
