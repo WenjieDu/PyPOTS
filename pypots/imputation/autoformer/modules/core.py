@@ -29,7 +29,7 @@ class _Autoformer(nn.Module):
         d_model,
         d_ffn,
         factor,
-        moving_avg_kernel_size,
+        moving_avg_window_size,
         dropout,
         activation="relu",
         output_attention=False,
@@ -38,7 +38,7 @@ class _Autoformer(nn.Module):
 
         self.seq_len = n_steps
         self.n_layers = n_layers
-        self.series_decomp = SeriesDecompositionBlock(moving_avg_kernel_size)
+        self.series_decomp = SeriesDecompositionBlock(moving_avg_window_size)
         self.enc_embedding = DataEmbedding_wo_Pos(
             n_features,
             d_model,
@@ -54,7 +54,7 @@ class _Autoformer(nn.Module):
                     ),
                     d_model,
                     d_ffn,
-                    moving_avg_kernel_size,
+                    moving_avg_window_size,
                     dropout,
                     activation,
                 )
