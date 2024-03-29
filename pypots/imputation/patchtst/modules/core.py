@@ -60,6 +60,11 @@ class _PatchTST(nn.Module):
     def forward(self, inputs: dict, training: bool = True) -> dict:
         X, masks = inputs["X"], inputs["missing_mask"]
 
+        # TODO: the imputation process is the same as the implementation of Time-Series_Library from THU,
+        #       but it doesn't take the missing mask into account, which means, in the process, the model doesn't
+        #       know which part of the input data is missing, and this may hurt the model's imputation performance.
+        #       Hence, we may need to make PatchTST take the missing mask as a part of input.
+
         # do patching and embedding
         x_enc = X.permute(0, 2, 1)
         # u: [bs * n_features x patch_num x d_model]

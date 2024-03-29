@@ -5,9 +5,9 @@
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
+import torch
 import torch.nn as nn
 
-from ....utils.metrics import calc_mse
 from .submodules import (
     DataEmbedding_wo_Pos,
     SeriesDecompositionBlock,
@@ -17,6 +17,7 @@ from .submodules import (
     AutoCorrelation,
     AutoCorrelationLayer,
 )
+from ....utils.metrics import calc_mse
 
 
 class _Autoformer(nn.Module):
@@ -40,7 +41,7 @@ class _Autoformer(nn.Module):
         self.n_layers = n_layers
         self.series_decomp = SeriesDecompositionBlock(moving_avg_window_size)
         self.enc_embedding = DataEmbedding_wo_Pos(
-            n_features,
+            n_features * 2,  # input dim is doubled due to the missing mask
             d_model,
             dropout=dropout,
         )
@@ -58,7 +59,7 @@ class _Autoformer(nn.Module):
                     dropout,
                     activation,
                 )
-                for i in range(n_layers)
+                for _ in range(n_layers)
             ],
             norm_layer=SeasonalLayerNorm(d_model),
         )
@@ -70,7 +71,8 @@ class _Autoformer(nn.Module):
         X, masks = inputs["X"], inputs["missing_mask"]
 
         # embedding
-        enc_out = self.enc_embedding(X)  # [B,T,C]
+        input_X = torch.cat([X, masks], dim=2)
+        enc_out = self.enc_embedding(input_X)  # [B,T,C]
 
         # Autoformer encoder processing
         enc_out, attns = self.encoder(enc_out)

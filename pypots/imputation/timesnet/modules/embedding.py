@@ -117,13 +117,9 @@ class DataEmbedding(nn.Module):
 
     def forward(self, x, x_timestamp=None):
         if x_timestamp is None:
-            x = self.value_embedding(x) + self.position_embedding(
-                x, return_only_pos=True
-            )
+            x = self.value_embedding(x)
+            x = self.position_embedding(x)
         else:
-            x = (
-                self.value_embedding(x)
-                + self.temporal_embedding(x_timestamp)
-                + self.position_embedding(x, return_only_pos=True)
-            )
+            x = self.value_embedding(x) + self.temporal_embedding(x_timestamp)
+            x = self.position_embedding(x)
         return self.dropout(x)
