@@ -7,16 +7,15 @@
 
 import torch.nn as nn
 
-from ....utils.metrics import calc_mse
 from .submodules import (
     DataEmbedding_wo_Pos,
-    SeriesDecompositionBlock,
     SeasonalLayerNorm,
     AutoformerEncoderLayer,
     AutoformerEncoder,
     AutoCorrelation,
     AutoCorrelationLayer,
 )
+from ....utils.metrics import calc_mse
 
 
 class _Autoformer(nn.Module):
@@ -38,7 +37,6 @@ class _Autoformer(nn.Module):
 
         self.seq_len = n_steps
         self.n_layers = n_layers
-        self.series_decomp = SeriesDecompositionBlock(moving_avg_window_size)
         self.enc_embedding = DataEmbedding_wo_Pos(
             n_features,
             d_model,
@@ -58,7 +56,7 @@ class _Autoformer(nn.Module):
                     dropout,
                     activation,
                 )
-                for i in range(n_layers)
+                for _ in range(n_layers)
             ],
             norm_layer=SeasonalLayerNorm(d_model),
         )
