@@ -168,7 +168,6 @@ class PatchTST(BaseNNImputer):
         # model hype-parameters
         self.patch_len = patch_len
         self.stride = stride
-        self.head_nf = d_model * int((n_steps - patch_len) / stride + 2)
         self.n_layers = n_layers
         self.n_heads = n_heads
         self.d_k = d_k
@@ -190,7 +189,6 @@ class PatchTST(BaseNNImputer):
             self.d_v,
             self.patch_len,
             self.stride,
-            self.head_nf,
             self.dropout,
             self.attn_dropout,
         )
