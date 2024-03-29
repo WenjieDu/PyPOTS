@@ -101,13 +101,12 @@ class Autoformer(BaseNNImputer):
         better than in previous epochs.
         The "all" strategy will save every model after each epoch training.
 
-    Attributes
+    References
     ----------
-    model : :class:`torch.nn.Module`
-        The underlying Transformer model.
-
-    optimizer : :class:`pypots.optim.Optimizer`
-        The optimizer for model training.
+    .. [1] `Wu, Haixu, Jiehui Xu, Jianmin Wang, and Mingsheng Long.
+        "Autoformer: Decomposition transformers with auto-correlation for long-term series forecasting".
+        Advances in neural information processing systems 34 (2021): 22419-22430.
+        <https://proceedings.neurips.cc/paper/2021/file/bcc0d400288793e8bdcd7c19a8ac0c2b-Paper.pdf>`_
 
     """
 
