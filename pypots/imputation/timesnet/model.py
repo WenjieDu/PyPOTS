@@ -103,13 +103,12 @@ class TimesNet(BaseNNImputer):
         better than in previous epochs.
         The "all" strategy will save every model after each epoch training.
 
-    Attributes
+    References
     ----------
-    model : :class:`torch.nn.Module`
-        The underlying Transformer model.
-
-    optimizer : :class:`pypots.optim.Optimizer`
-        The optimizer for model training.
+    .. [1] `Wu, Haixu, Tengge Hu, Yong Liu, Hang Zhou, Jianmin Wang, and Mingsheng Long.
+        "TimesNet: Temporal 2d-variation modeling for general time series analysis".
+        ICLR 2022.
+        <https://openreview.net/pdf?id=ju_Uqw384Oq>`_
 
     """
 

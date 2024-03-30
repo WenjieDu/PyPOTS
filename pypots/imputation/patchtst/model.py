@@ -111,13 +111,12 @@ class PatchTST(BaseNNImputer):
         better than in previous epochs.
         The "all" strategy will save every model after each epoch training.
 
-    Attributes
+    References
     ----------
-    model : :class:`torch.nn.Module`
-        The underlying Transformer model.
-
-    optimizer : :class:`pypots.optim.Optimizer`
-        The optimizer for model training.
+    .. [1] `Nie, Yuqi, Nam H. Nguyen, Phanwadee Sinthong, and Jayant Kalagnanam.
+        "A time series is worth 64 words: Long-term forecasting with transformers".
+        ICLR 2023.
+        <https://openreview.net/pdf?id=Jbdc0vTOcol>`_
 
     """
 
