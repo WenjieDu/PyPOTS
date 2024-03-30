@@ -14,6 +14,7 @@ from .saits import SAITS
 from .transformer import Transformer
 from .timesnet import TimesNet
 from .autoformer import Autoformer
+from .dlinear import DLinear
 from .patchtst import PatchTST
 from .usgan import USGAN
 
@@ -28,6 +29,7 @@ __all__ = [
     "Transformer",
     "TimesNet",
     "PatchTST",
+    "DLinear",
     "Autoformer",
     "BRITS",
     "MRNN",
