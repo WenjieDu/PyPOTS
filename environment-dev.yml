@@ -13,6 +13,7 @@ dependencies:
     - conda-forge::numpy
     - conda-forge::scipy
     - conda-forge::python
+    - conda-forge::einops
     - conda-forge::pandas
     - conda-forge::matplotlib
     - conda-forge::tensorboard

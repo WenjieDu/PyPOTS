@@ -13,7 +13,8 @@ dependencies:
     - conda-forge::scipy
     - conda-forge::numpy
     - conda-forge::scikit-learn
-    - conda-forge::pandas <2.0.0
+    - conda-forge::einops
+    - conda-forge::pandas
     - conda-forge::h5py
     - conda-forge::tensorboard
     - conda-forge::pygrinder >=0.4
