@@ -5,6 +5,7 @@
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
+import torch
 import torch.nn as nn
 
 from .submodules import (
@@ -36,7 +37,7 @@ class _ETSformer(nn.Module):
         self.n_steps = n_steps
 
         self.enc_embedding = DataEmbedding(
-            n_features,
+            n_features * 2,
             d_model,
             dropout=dropout,
         )
@@ -77,7 +78,8 @@ class _ETSformer(nn.Module):
         X, masks = inputs["X"], inputs["missing_mask"]
 
         # embedding
-        res = self.enc_embedding(X)
+        input_X = torch.cat([X, masks], dim=2)
+        res = self.enc_embedding(input_X)
 
         # ETSformer encoder processing
         level, growths, seasons = self.encoder(res, X, attn_mask=None)
