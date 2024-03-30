@@ -170,24 +170,33 @@ PyPOTS supports imputation, classification, clustering, and forecasting tasks on
 🌟 Since **v0.2**, all neural-network models in PyPOTS has got hyperparameter-optimization support.
 This functionality is implemented with the `Microsoft NNI <https://github.com/microsoft/nni>`_ framework.
 
-============================== ================ ======================================================================================== ====== =========
-Task                           Type             Algorithm                                                                                Year   Reference
-============================== ================ ======================================================================================== ====== =========
-Imputation                     Neural Net       SAITS (Self-Attention-based Imputation for Time Series)                                  2023   :cite:`du2023SAITS`
-Imputation                     Neural Net       Transformer                                                                              2017   :cite:`vaswani2017Transformer`, :cite:`du2023SAITS`
-Imputation                     Neural Net       TimesNet                                                                                 2023   :cite:`wu2023timesnet`
-Imputation                     Neural Net       US-GAN (Unsupervised GAN for Multivariate Time Series Imputation)                        2021   :cite:`miao2021SSGAN`
-Imputation                     Neural Net       CSDI (Conditional Score-based Diffusion Models for Probabilistic Time Series Imputation) 2021   :cite:`tashiro2021csdi`
-Imputation                     Neural Net       GP-VAE (Gaussian Process Variational Autoencoder)                                        2020   :cite:`fortuin2020GPVAEDeep`
-Imputation, Classification     Neural Net       BRITS (Bidirectional Recurrent Imputation for Time Series)                               2018   :cite:`cao2018BRITS`
-Imputation                     Neural Net       M-RNN (Multi-directional Recurrent Neural Network)                                       2019   :cite:`yoon2019MRNN`
-Imputation                     Naive            LOCF (Last Observation Carried Forward)                                                  /      /
-Classification                 Neural Net       GRU-D                                                                                    2018   :cite:`che2018GRUD`
-Classification                 Neural Net       Raindrop                                                                                 2022   :cite:`zhang2022Raindrop`
-Clustering                     Neural Net       CRLI (Clustering Representation Learning on Incomplete time-series data)                 2021   :cite:`ma2021CRLI`
-Clustering                     Neural Net       VaDER (Variational Deep Embedding with Recurrence)                                       2019   :cite:`dejong2019VaDER`
-Forecasting                    Probabilistic    BTTF (Bayesian Temporal Tensor Factorization)                                            2021   :cite:`chen2021BTMF`
-============================== ================ ======================================================================================== ====== =========
+============================== ================ ========================================================================================================= ====== =========
+Task                           Type             Algorithm                                                                                                 Year   Reference
+============================== ================ ========================================================================================================= ====== =========
+Imputation                     Neural Net       SAITS (Self-Attention-based Imputation for Time Series)                                                   2023   :cite:`du2023SAITS`
+Imputation                     Neural Net       Transformer                                                                                               2017   :cite:`vaswani2017Transformer`, :cite:`du2023SAITS`
+Imputation                     Neural Net       Crossformer (Transformer Utilizing Cross-Dimension Dependency for Multivariate Time Series Forecasting)   2023   :cite:`nie2023patchtst`
+Imputation                     Neural Net       TimesNet (Temporal 2D-Variation Modeling for General Time Series Analysis)                                2023   :cite:`wu2023timesnet`
+Imputation                     Neural Net       PatchTST (A Time Series is Worth 64 Words: Long-Term Forecasting with Transformers)                       2023   :cite:`nie2023patchtst`
+Imputation                     Neural Net       DLinear (Are transformers effective for time series forecasting?)                                         2023   :cite:`zeng2023dlinear`
+Imputation                     Neural Net       ETSformer (Exponential Smoothing Transformers for Time-series Forecasting)                                2023   :cite:`woo2023etsformer`
+Imputation                     Neural Net       FEDformer (Frequency Enhanced Decomposed Transformer for Long-term Series Forecasting)                    2022   :cite:`zhou2022fedformer`
+Imputation                     Neural Net       Autoformer (Decomposition Transformers with Auto-Correlation for Long-Term Series Forecasting)            2021   :cite:`wu2021autoformer`
+Imputation                     Neural Net       US-GAN (Unsupervised GAN for Multivariate Time Series Imputation)                                         2021   :cite:`miao2021SSGAN`
+Imputation                     Neural Net       CSDI (Conditional Score-based Diffusion Models for Probabilistic Time Series Imputation)                  2021   :cite:`tashiro2021csdi`
+Imputation                     Neural Net       GP-VAE (Gaussian Process Variational Autoencoder)                                                         2020   :cite:`fortuin2020GPVAEDeep`
+Imputation, Classification     Neural Net       BRITS (Bidirectional Recurrent Imputation for Time Series)                                                2018   :cite:`cao2018BRITS`
+Imputation                     Neural Net       M-RNN (Multi-directional Recurrent Neural Network)                                                        2019   :cite:`yoon2019MRNN`
+Imputation                     Naive            LOCF (Last Observation Carried Forward)                                                                   /      /
+Imputation                     Naive            NOCB (Next Observation Carried Backward)                                                                  /      /
+Imputation                     Naive            Median (Median Value Imputation)                                                                          /      /
+Imputation                     Naive            Mean (Mean Value Imputation)                                                                              /      /
+Classification                 Neural Net       GRU-D                                                                                                     2018   :cite:`che2018GRUD`
+Classification                 Neural Net       Raindrop                                                                                                  2022   :cite:`zhang2022Raindrop`
+Clustering                     Neural Net       CRLI (Clustering Representation Learning on Incomplete time-series data)                                  2021   :cite:`ma2021CRLI`
+Clustering                     Neural Net       VaDER (Variational Deep Embedding with Recurrence)                                                        2019   :cite:`dejong2019VaDER`
+Forecasting                    Probabilistic    BTTF (Bayesian Temporal Tensor Factorization)                                                             2021   :cite:`chen2021BTMF`
+============================== ================ ========================================================================================================= ====== =========
 
 
 ❖ Citing PyPOTS
