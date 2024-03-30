@@ -174,7 +174,7 @@ dataset = {"X": X}  # X for model input
 print(X.shape)  # (11988, 48, 37), 11988 samples and each sample has 48 time steps, 37 features
 
 # Model training. This is PyPOTS showtime.
-saits = SAITS(n_steps=48, n_features=37, n_layers=2, d_model=256, d_inner=128, n_heads=4, d_k=64, d_v=64, dropout=0.1, epochs=10)
+saits = SAITS(n_steps=48, n_features=37, n_layers=2, d_model=256, d_ffn=128, n_heads=4, d_k=64, d_v=64, dropout=0.1, epochs=10)
 # Here I use the whole dataset as the training set because ground truth is not visible to the model, you can also split it into train/val/test sets
 saits.fit(dataset)
 imputation = saits.impute(dataset)  # impute the originally-missing values and artificially-missing values
@@ -197,14 +197,21 @@ This functionality is implemented with the [Microsoft NNI](https://github.com/mi
 |        **Type**        |  **Abbr.**  |                                                                       **Full name of the algorithm/model**                                                                        | **Year** |
 |       Neural Net       |    SAITS    |                                                               Self-Attention-based Imputation for Time Series [^1]                                                                |   2023   |
 |       Neural Net       | Transformer | Attention is All you Need [^2];<br>Self-Attention-based Imputation for Time Series [^1];<br><sub>Note: proposed in [^2], and re-implemented as an imputation model in [^1].</sub> |   2017   |
+|       Neural Net       | Crossformer |                                          Transformer Utilizing Cross-Dimension Dependency for Multivariate Time Series Forecasting [^16]                                          |   2023   |
 |       Neural Net       |  TimesNet   |                                                       Temporal 2D-Variation Modeling for General Time Series Analysis [^14]                                                       |   2023   |
-|       Neural Net       | Autoformer  |                                              Decomposition transformers with auto-correlation for long-term series forecasting [^15]                                              |   2021   |
+|       Neural Net       |  PatchTST   |                                                  A Time Series is Worth 64 Words: Long-Term Forecasting with Transformers [^18]                                                   |   2023   |
+|       Neural Net       |   DLinear   |                                                           Are Transformers Effective for Time Series Forecasting? [^17]                                                           |   2023   |
+|       Neural Net       |  ETSformer  |                                                       Exponential Smoothing Transformers for Time-series Forecasting [^19]                                                        |   2023   |
+|       Neural Net       |  FEDformer  |                                                 Frequency Enhanced Decomposed Transformer for Long-term Series Forecasting [^20]                                                  |   2022   |
+|       Neural Net       | Autoformer  |                                              Decomposition Transformers with Auto-Correlation for Long-Term Series Forecasting [^15]                                              |   2021   |
 |       Neural Net       |    CSDI     |                                              Conditional Score-based Diffusion Models for Probabilistic Time Series Imputation [^12]                                              |   2021   |
 |       Neural Net       |   US-GAN    |                                                          Unsupervised GAN for Multivariate Time Series Imputation [^10]                                                           |   2021   |
 |       Neural Net       |   GP-VAE    |                                                                  Gaussian Process Variational Autoencoder [^11]                                                                   |   2020   |
 |       Neural Net       |    BRITS    |                                                              Bidirectional Recurrent Imputation for Time Series [^3]                                                              |   2018   |
 |       Neural Net       |    M-RNN    |                                                                  Multi-directional Recurrent Neural Network [^9]                                                                  |   2019   |
-|         Naive          |    LOCF     |                                                                         Last Observation Carried Forward                                                                          |    -     |
+|         Naive          |  LOCF/NOCB  |                                                       Last Observation Carried Forward / Next Observation Carried Backward                                                        |    -     |
+|         Naive          |   Median    |                                                                              Median Value Imputation                                                                              |    -     |
+|         Naive          |    Mean     |                                                                               Mean Value Imputation                                                                               |    -     |
 | ***`Classification`*** |     🚥      |                                                                                        🚥                                                                                         |    🚥    |
 |        **Type**        |  **Abbr.**  |                                                                    **Full name of the algorithm/model/paper**                                                                     | **Year** |
 |       Neural Net       |    BRITS    |                                                              Bidirectional Recurrent Imputation for Time Series [^3]                                                              |   2018   |
@@ -320,6 +327,11 @@ PyPOTS community is open, transparent, and surely friendly. Let's work together 
 [^13]: Rubin, D. B. (1976). [Inference and missing data](https://academic.oup.com/biomet/article-abstract/63/3/581/270932). *Biometrika*.
 [^14]: Wu, H., Hu, T., Liu, Y., Zhou, H., Wang, J., & Long, M. (2023). [TimesNet: Temporal 2d-variation modeling for general time series analysis](https://openreview.net/forum?id=ju_Uqw384Oq). *ICLR 2023*
 [^15]: Wu, H., Xu, J., Wang, J., & Long, M. (2021). [Autoformer: Decomposition transformers with auto-correlation for long-term series forecasting](https://proceedings.neurips.cc/paper/2021/hash/bcc0d400288793e8bdcd7c19a8ac0c2b-Abstract.html). *NeurIPS 2021*.
+[^16]: Zhang, Y., & Yan, J. (2023). [Crossformer: Transformer utilizing cross-dimension dependency for multivariate time series forecasting](https://openreview.net/forum?id=vSVLM2j9eie). *ICLR 2023*.
+[^17]: Zeng, A., Chen, M., Zhang, L., & Xu, Q. (2023). [Are transformers effective for time series forecasting?](https://ojs.aaai.org/index.php/AAAI/article/view/26317). *AAAI 2023*
+[^18]: Nie, Y., Nguyen, N. H., Sinthong, P., & Kalagnanam, J. (2023). [A time series is worth 64 words: Long-term forecasting with transformers](https://openreview.net/forum?id=Jbdc0vTOcol). *ICLR 2023*
+[^19]: Woo, G., Liu, C., Sahoo, D., Kumar, A., & Hoi, S. (2023). [ETSformer: Exponential Smoothing Transformers for Time-series Forecasting](https://openreview.net/forum?id=5m_3whfo483).  *ICLR 2023*
+[^20]: Zhou, T., Ma, Z., Wen, Q., Wang, X., Sun, L., & Jin, R. (2022). [FEDformer: Frequency enhanced decomposed transformer for long-term series forecasting](https://proceedings.mlr.press/v162/zhou22g.html). *ICML 2022*.
 
 
 <details>
