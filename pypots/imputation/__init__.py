@@ -13,6 +13,7 @@ from .mrnn import MRNN
 from .saits import SAITS
 from .transformer import Transformer
 from .timesnet import TimesNet
+from .etsformer import ETSformer
 from .autoformer import Autoformer
 from .dlinear import DLinear
 from .patchtst import PatchTST
@@ -27,6 +28,7 @@ __all__ = [
     # neural network imputation methods
     "SAITS",
     "Transformer",
+    "ETSformer",
     "TimesNet",
     "PatchTST",
     "DLinear",
