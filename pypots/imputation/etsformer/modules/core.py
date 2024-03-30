@@ -8,7 +8,6 @@
 import torch.nn as nn
 
 from .submodules import (
-    Transform,
     ETSformerEncoderLayer,
     ETSformerEncoder,
     ETSformerDecoderLayer,
@@ -72,10 +71,7 @@ class _ETSformer(nn.Module):
                 for _ in range(n_d_layers)
             ],
         )
-        self.transform = Transform(sigma=0.2)
-
-        # for the imputation task, the output dim is the same as input dim
-        self.projection = nn.Linear(d_model, n_features)
+        # self.transform = Transform(sigma=0.2)  # for forecasting
 
     def forward(self, inputs: dict, training: bool = True) -> dict:
         X, masks = inputs["X"], inputs["missing_mask"]

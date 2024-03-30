@@ -56,6 +56,8 @@ class ETSformer(BaseNNImputer):
     d_ffn :
         The dimension of the feed-forward network.
 
+    top_k :
+        Top-K Fourier bases.
 
     dropout :
         The dropout rate for the model.
