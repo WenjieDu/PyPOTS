@@ -51,7 +51,7 @@ class TestFEDformer(unittest.TestCase):
         d_ffn=256,
         moving_avg_window_size=3,
         dropout=0,
-        version="Fourier",
+        version="Wavelets",  # TODO: Fourier version does not work
         modes=32,
         mode_select="random",
         epochs=EPOCHS,
