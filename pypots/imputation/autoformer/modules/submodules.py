@@ -12,34 +12,6 @@ import torch.fft
 import torch.nn as nn
 import torch.nn.functional as F
 
-from ...timesnet.modules.embedding import (
-    TokenEmbedding,
-    TemporalEmbedding,
-    TimeFeatureEmbedding,
-)
-from ....nn.modules.transformer import PositionalEncoding
-
-
-class DataEmbedding_wo_Pos(nn.Module):
-    def __init__(self, c_in, d_model, embed_type="fixed", freq="h", dropout=0.1):
-        super().__init__()
-
-        self.value_embedding = TokenEmbedding(c_in=c_in, d_model=d_model)
-        self.position_embedding = PositionalEncoding(d_model)
-        self.temporal_embedding = (
-            TemporalEmbedding(d_model=d_model, embed_type=embed_type, freq=freq)
-            if embed_type != "timeF"
-            else TimeFeatureEmbedding(d_model=d_model, freq=freq)
-        )
-        self.dropout = nn.Dropout(p=dropout)
-
-    def forward(self, x, x_timestamp=None):
-        if x_timestamp is None:
-            x = self.value_embedding(x)
-        else:
-            x = self.value_embedding(x) + self.temporal_embedding(x_timestamp)
-        return self.dropout(x)
-
 
 class AutoCorrelation(nn.Module):
     """
@@ -313,35 +285,6 @@ class AutoformerEncoderLayer(nn.Module):
         return res, attn
 
 
-class AutoformerEncoder(nn.Module):
-    def __init__(self, attn_layers, conv_layers=None, norm_layer=None):
-        super().__init__()
-        self.attn_layers = nn.ModuleList(attn_layers)
-        self.conv_layers = (
-            nn.ModuleList(conv_layers) if conv_layers is not None else None
-        )
-        self.norm = norm_layer
-
-    def forward(self, x, attn_mask=None):
-        attns = []
-        if self.conv_layers is not None:
-            for attn_layer, conv_layer in zip(self.attn_layers, self.conv_layers):
-                x, attn = attn_layer(x, attn_mask=attn_mask)
-                x = conv_layer(x)
-                attns.append(attn)
-            x, attn = self.attn_layers[-1](x)
-            attns.append(attn)
-        else:
-            for attn_layer in self.attn_layers:
-                x, attn = attn_layer(x, attn_mask=attn_mask)
-                attns.append(attn)
-
-        if self.norm is not None:
-            x = self.norm(x)
-
-        return x, attns
-
-
 class AutoformerDecoderLayer(nn.Module):
     """
     Autoformer decoder layer with the progressive decomposition architecture
@@ -400,23 +343,3 @@ class AutoformerDecoderLayer(nn.Module):
             1, 2
         )
         return x, residual_trend
-
-
-class AutoformerDecoder(nn.Module):
-    def __init__(self, layers, norm_layer=None, projection=None):
-        super().__init__()
-        self.layers = nn.ModuleList(layers)
-        self.norm = norm_layer
-        self.projection = projection
-
-    def forward(self, x, cross, x_mask=None, cross_mask=None, trend=None):
-        for layer in self.layers:
-            x, residual_trend = layer(x, cross, x_mask=x_mask, cross_mask=cross_mask)
-            trend = trend + residual_trend
-
-        if self.norm is not None:
-            x = self.norm(x)
-
-        if self.projection is not None:
-            x = self.projection(x)
-        return x, trend

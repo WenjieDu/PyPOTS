@@ -10,12 +10,12 @@ import torch.nn as nn
 
 from .submodules import MultiWaveletTransform, FourierBlock
 from ...autoformer.modules.submodules import (
-    AutoformerEncoder,
     AutoformerEncoderLayer,
     AutoCorrelationLayer,
     SeasonalLayerNorm,
 )
-from ...timesnet.modules.embedding import DataEmbedding
+from ...informer.modules.submodules import InformerEncoder
+from ....nn.modules.transformer.embedding import DataEmbedding
 from ....utils.metrics import calc_mse
 
 
@@ -58,7 +58,7 @@ class _FEDformer(nn.Module):
                 f"Unsupported version: {version}. Please choose from ['Wavelets', 'Fourier']."
             )
 
-        self.encoder = AutoformerEncoder(
+        self.encoder = InformerEncoder(
             [
                 AutoformerEncoderLayer(
                     AutoCorrelationLayer(

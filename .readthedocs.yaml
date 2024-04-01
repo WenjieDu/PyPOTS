@@ -23,6 +23,7 @@ build:
             - python -m pip install --upgrade pip
             - pip install torch==1.13.1 -f https://download.pytorch.org/whl/cpu
             - pip install torch-geometric==2.3.1 torch-scatter==2.1.1 torch-sparse==0.6.17 -f "https://data.pyg.org/whl/torch-1.13.1+cpu.html"
+            - pip install -r requirements.txt
             - pip install pypots
             - pip install sphinx==6.2.1 docutils==0.19 sphinxcontrib-bibtex==2.1.4 sphinxcontrib-gtagjs sphinx-autodoc-typehints furo==2023.07.26
             - git clone https://github.com/WenjieDu/TSDB TSDB_repo --depth 1

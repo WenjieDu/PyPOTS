@@ -9,14 +9,13 @@ import torch
 import torch.nn as nn
 
 from .submodules import (
-    DataEmbedding_wo_Pos,
-    SeriesDecompositionBlock,
     SeasonalLayerNorm,
     AutoformerEncoderLayer,
-    AutoformerEncoder,
     AutoCorrelation,
     AutoCorrelationLayer,
 )
+from ...informer.modules.submodules import InformerEncoder
+from ....nn.modules.transformer.embedding import DataEmbedding
 from ....utils.metrics import calc_mse
 
 
@@ -39,13 +38,13 @@ class _Autoformer(nn.Module):
 
         self.seq_len = n_steps
         self.n_layers = n_layers
-        self.series_decomp = SeriesDecompositionBlock(moving_avg_window_size)
-        self.enc_embedding = DataEmbedding_wo_Pos(
-            n_features * 2,  # input dim is doubled due to the missing mask
+        self.enc_embedding = DataEmbedding(
+            n_features,
             d_model,
             dropout=dropout,
+            with_pos=False,
         )
-        self.encoder = AutoformerEncoder(
+        self.encoder = InformerEncoder(
             [
                 AutoformerEncoderLayer(
                     AutoCorrelationLayer(

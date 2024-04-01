@@ -203,6 +203,7 @@ This functionality is implemented with the [Microsoft NNI](https://github.com/mi
 |       Neural Net       |   DLinear   |                                                           Are Transformers Effective for Time Series Forecasting? [^17]                                                           |   2023   |
 |       Neural Net       |  ETSformer  |                                                       Exponential Smoothing Transformers for Time-series Forecasting [^19]                                                        |   2023   |
 |       Neural Net       |  FEDformer  |                                                 Frequency Enhanced Decomposed Transformer for Long-term Series Forecasting [^20]                                                  |   2022   |
+|       Neural Net       |  Informer   |                                                   Beyond Efficient Transformer for Long Sequence Time-Series Forecasting [^21]                                                    |   2021   |
 |       Neural Net       | Autoformer  |                                              Decomposition Transformers with Auto-Correlation for Long-Term Series Forecasting [^15]                                              |   2021   |
 |       Neural Net       |    CSDI     |                                              Conditional Score-based Diffusion Models for Probabilistic Time Series Imputation [^12]                                              |   2021   |
 |       Neural Net       |   US-GAN    |                                                          Unsupervised GAN for Multivariate Time Series Imputation [^10]                                                           |   2021   |
@@ -332,6 +333,8 @@ PyPOTS community is open, transparent, and surely friendly. Let's work together 
 [^18]: Nie, Y., Nguyen, N. H., Sinthong, P., & Kalagnanam, J. (2023). [A time series is worth 64 words: Long-term forecasting with transformers](https://openreview.net/forum?id=Jbdc0vTOcol). *ICLR 2023*
 [^19]: Woo, G., Liu, C., Sahoo, D., Kumar, A., & Hoi, S. (2023). [ETSformer: Exponential Smoothing Transformers for Time-series Forecasting](https://openreview.net/forum?id=5m_3whfo483).  *ICLR 2023*
 [^20]: Zhou, T., Ma, Z., Wen, Q., Wang, X., Sun, L., & Jin, R. (2022). [FEDformer: Frequency enhanced decomposed transformer for long-term series forecasting](https://proceedings.mlr.press/v162/zhou22g.html). *ICML 2022*.
+[^21]: Zhou, H., Zhang, S., Peng, J., Zhang, S., Li, J., Xiong, H., & Zhang, W. (2021). [Informer: Beyond efficient transformer for long sequence time-series forecasting](https://ojs.aaai.org/index.php/AAAI/article/view/17325). *AAAI 2021*.
+
 
 
 <details>

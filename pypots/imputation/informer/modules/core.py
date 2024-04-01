@@ -5,47 +5,58 @@
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-import torch
 import torch.nn as nn
 
-from .submodules import TimesBlock
-from ....nn.functional import nonstationary_norm, nonstationary_denorm
+from .submodules import ProbAttention, ConvLayer, InformerEncoderLayer, InformerEncoder
 from ....nn.modules.transformer.embedding import DataEmbedding
+from ....nn.modules.transformer import MultiHeadAttention
 from ....utils.metrics import calc_mse
 
 
-class _TimesNet(nn.Module):
+class _Informer(nn.Module):
     def __init__(
         self,
-        n_layers,
         n_steps,
         n_features,
-        top_k,
+        n_layers,
+        n_heads,
         d_model,
         d_ffn,
-        n_kernels,
+        factor,
         dropout,
-        apply_nonstationary_norm,
+        distil=False,
+        activation="relu",
+        output_attention=False,
     ):
         super().__init__()
 
         self.seq_len = n_steps
         self.n_layers = n_layers
-        self.apply_nonstationary_norm = apply_nonstationary_norm
-
-        self.pred_len = 0  # for the imputation task, the pred_len is always 0
-        self.model = nn.ModuleList(
-            [
-                TimesBlock(n_steps, self.pred_len, top_k, d_model, d_ffn, n_kernels)
-                for _ in range(n_layers)
-            ]
-        )
         self.enc_embedding = DataEmbedding(
             n_features * 2,
             d_model,
             dropout=dropout,
         )
-        self.layer_norm = nn.LayerNorm(d_model)
+        self.encoder = InformerEncoder(
+            [
+                InformerEncoderLayer(
+                    MultiHeadAttention(
+                        n_heads,
+                        d_model,
+                        d_model // n_heads,
+                        d_model // n_heads,
+                        ProbAttention(False, factor, dropout, output_attention),
+                    ),
+                    d_model,
+                    d_ffn,
+                    dropout,
+                    activation,
+                )
+                for _ in range(n_layers)
+            ],
+            [ConvLayer(d_model) for _ in range(n_layers - 1)] if distil else None,
+            norm_layer=nn.LayerNorm(d_model),
+        )
 
         # for the imputation task, the output dim is the same as input dim
         self.projection = nn.Linear(d_model, n_features)
@@ -53,23 +64,14 @@ class _TimesNet(nn.Module):
     def forward(self, inputs: dict, training: bool = True) -> dict:
         X, masks = inputs["X"], inputs["missing_mask"]
 
-        if self.apply_nonstationary_norm:
-            # Normalization from Non-stationary Transformer
-            X, means, stdev = nonstationary_norm(X, masks)
-
         # embedding
-        input_X = torch.cat([X, masks], dim=2)
-        enc_out = self.enc_embedding(input_X)  # [B,T,C]
-        # TimesNet
-        for i in range(self.n_layers):
-            enc_out = self.layer_norm(self.model[i](enc_out))
+        enc_out = self.enc_embedding(X)
+
+        # Informer encoder processing
+        enc_out, attns = self.encoder(enc_out)
 
         # project back the original data space
         dec_out = self.projection(enc_out)
-
-        if self.apply_nonstationary_norm:
-            # De-Normalization from Non-stationary Transformer
-            dec_out = nonstationary_denorm(dec_out, means, stdev)
 
         imputed_data = masks * X + (1 - masks) * dec_out
         results = {

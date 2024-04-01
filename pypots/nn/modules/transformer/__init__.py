@@ -7,8 +7,8 @@
 
 from .attention import ScaledDotProductAttention, MultiHeadAttention
 from .auto_encoder import Encoder, Decoder
+from .embedding import PositionalEncoding
 from .layers import EncoderLayer, DecoderLayer, PositionWiseFeedForward
-from .pos_enc import PositionalEncoding
 
 __all__ = [
     "ScaledDotProductAttention",
