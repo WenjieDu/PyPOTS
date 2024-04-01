@@ -14,6 +14,7 @@ from .saits import SAITS
 from .transformer import Transformer
 from .timesnet import TimesNet
 from .etsformer import ETSformer
+from .fedformer import FEDformer
 from .crossformer import Crossformer
 from .autoformer import Autoformer
 from .dlinear import DLinear
@@ -30,6 +31,7 @@ __all__ = [
     "SAITS",
     "Transformer",
     "ETSformer",
+    "FEDformer",
     "Crossformer",
     "TimesNet",
     "PatchTST",
