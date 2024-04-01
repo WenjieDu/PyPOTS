@@ -8,7 +8,6 @@
 import torch.nn as nn
 
 from .submodules import (
-    SeriesDecompositionBlock,
     SeasonalLayerNorm,
     AutoformerEncoderLayer,
     AutoformerEncoder,
@@ -38,7 +37,6 @@ class _Autoformer(nn.Module):
 
         self.seq_len = n_steps
         self.n_layers = n_layers
-        self.series_decomp = SeriesDecompositionBlock(moving_avg_window_size)
         self.enc_embedding = DataEmbedding(
             n_features,
             d_model,
@@ -59,7 +57,7 @@ class _Autoformer(nn.Module):
                     dropout,
                     activation,
                 )
-                for i in range(n_layers)
+                for _ in range(n_layers)
             ],
             norm_layer=SeasonalLayerNorm(d_model),
         )
