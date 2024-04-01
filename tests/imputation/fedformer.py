@@ -45,10 +45,10 @@ class TestFEDformer(unittest.TestCase):
     fedformer = FEDformer(
         DATA["n_steps"],
         DATA["n_features"],
-        n_layers=2,
+        n_layers=1,
         n_heads=2,
-        d_model=128,
-        d_ffn=256,
+        d_model=64,
+        d_ffn=64,
         moving_avg_window_size=3,
         dropout=0,
         version="Wavelets",  # TODO: Fourier version does not work
