@@ -12,34 +12,6 @@ import torch.fft
 import torch.nn as nn
 import torch.nn.functional as F
 
-from ...timesnet.modules.embedding import (
-    TokenEmbedding,
-    TemporalEmbedding,
-    TimeFeatureEmbedding,
-)
-from ....nn.modules.transformer import PositionalEncoding
-
-
-class DataEmbedding_wo_Pos(nn.Module):
-    def __init__(self, c_in, d_model, embed_type="fixed", freq="h", dropout=0.1):
-        super().__init__()
-
-        self.value_embedding = TokenEmbedding(c_in=c_in, d_model=d_model)
-        self.position_embedding = PositionalEncoding(d_model)
-        self.temporal_embedding = (
-            TemporalEmbedding(d_model=d_model, embed_type=embed_type, freq=freq)
-            if embed_type != "timeF"
-            else TimeFeatureEmbedding(d_model=d_model, freq=freq)
-        )
-        self.dropout = nn.Dropout(p=dropout)
-
-    def forward(self, x, x_timestamp=None):
-        if x_timestamp is None:
-            x = self.value_embedding(x)
-        else:
-            x = self.value_embedding(x) + self.temporal_embedding(x_timestamp)
-        return self.dropout(x)
-
 
 class AutoCorrelation(nn.Module):
     """
