@@ -19,10 +19,55 @@ pypots.imputation.transformer
    :show-inheritance:
    :inherited-members:
 
+pypots.imputation.crossformer
+------------------------------
+
+.. automodule:: pypots.imputation.crossformer
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+
 pypots.imputation.timesnet
 ------------------------------
 
 .. automodule:: pypots.imputation.timesnet
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+
+pypots.imputation.patchtst
+------------------------------
+
+.. automodule:: pypots.imputation.patchtst
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+
+pypots.imputation.dlinear
+------------------------------
+
+.. automodule:: pypots.imputation.dlinear
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+
+pypots.imputation.etsformer
+------------------------------
+
+.. automodule:: pypots.imputation.etsformer
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+
+pypots.imputation.fedformer
+------------------------------
+
+.. automodule:: pypots.imputation.fedformer
    :members:
    :undoc-members:
    :show-inheritance:
