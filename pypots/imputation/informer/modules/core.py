@@ -5,11 +5,12 @@
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
+import torch
 import torch.nn as nn
 
 from .submodules import ProbAttention, ConvLayer, InformerEncoderLayer, InformerEncoder
-from ....nn.modules.transformer.embedding import DataEmbedding
 from ....nn.modules.transformer import MultiHeadAttention
+from ....nn.modules.transformer.embedding import DataEmbedding
 from ....utils.metrics import calc_mse
 
 
@@ -65,7 +66,8 @@ class _Informer(nn.Module):
         X, masks = inputs["X"], inputs["missing_mask"]
 
         # embedding
-        enc_out = self.enc_embedding(X)
+        input_X = torch.cat([X, masks], dim=2)
+        enc_out = self.enc_embedding(input_X)
 
         # Informer encoder processing
         enc_out, attns = self.encoder(enc_out)
