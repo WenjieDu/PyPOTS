@@ -60,6 +60,7 @@ Because of pytorch_sparse, please refer to https://github.com/rusty1s/pytorch_sp
 Since v0.2, all libraries in PyPOTS Ecosystem switch their licenses from GPL-v3-only to BSD-3-Clause, which has less constraints for users.
 Please refer to the discussion in issue `PyPOTS#227 <https://github.com/WenjieDu/PyPOTS/issues/227>`_ for details.
 
+
 Acceleration
 """"""""""""
 GPU Acceleration
