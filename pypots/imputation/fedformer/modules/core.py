@@ -5,6 +5,7 @@
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
+import torch
 import torch.nn as nn
 
 from .submodules import MultiWaveletTransform, FourierBlock
@@ -37,7 +38,7 @@ class _FEDformer(nn.Module):
         super().__init__()
 
         self.enc_embedding = DataEmbedding(
-            n_features,
+            n_features * 2,
             d_model,
             dropout=dropout,
         )
@@ -81,7 +82,8 @@ class _FEDformer(nn.Module):
         X, masks = inputs["X"], inputs["missing_mask"]
 
         # embedding
-        enc_out = self.enc_embedding(X)
+        input_X = torch.cat([X, masks], dim=2)
+        enc_out = self.enc_embedding(input_X)
 
         # FEDformer encoder processing
         enc_out, attns = self.encoder(enc_out)
