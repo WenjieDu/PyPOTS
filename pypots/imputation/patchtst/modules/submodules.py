@@ -7,7 +7,7 @@
 
 import torch.nn as nn
 
-from ....nn.modules.transformer.pos_enc import PositionalEncoding
+from ....nn.modules.transformer.embedding import PositionalEncoding
 
 
 class PatchEmbedding(nn.Module):
