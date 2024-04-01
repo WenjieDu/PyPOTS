@@ -7,18 +7,13 @@
 
 import torch.nn as nn
 
-from .submodules import (
-    SeasonalLayerNorm,
-    AutoformerEncoderLayer,
-    AutoCorrelation,
-    AutoCorrelationLayer,
-)
-from ...informer.modules.submodules import InformerEncoder
+from .submodules import ProbAttention, ConvLayer, InformerEncoderLayer, InformerEncoder
 from ....nn.modules.transformer.embedding import DataEmbedding
+from ....nn.modules.transformer import MultiHeadAttention
 from ....utils.metrics import calc_mse
 
 
-class _Autoformer(nn.Module):
+class _Informer(nn.Module):
     def __init__(
         self,
         n_steps,
@@ -28,8 +23,8 @@ class _Autoformer(nn.Module):
         d_model,
         d_ffn,
         factor,
-        moving_avg_window_size,
         dropout,
+        distil=False,
         activation="relu",
         output_attention=False,
     ):
@@ -38,28 +33,29 @@ class _Autoformer(nn.Module):
         self.seq_len = n_steps
         self.n_layers = n_layers
         self.enc_embedding = DataEmbedding(
-            n_features,
+            n_features * 2,
             d_model,
             dropout=dropout,
-            with_pos=False,
         )
         self.encoder = InformerEncoder(
             [
-                AutoformerEncoderLayer(
-                    AutoCorrelationLayer(
-                        AutoCorrelation(False, factor, dropout, output_attention),
-                        d_model,
+                InformerEncoderLayer(
+                    MultiHeadAttention(
                         n_heads,
+                        d_model,
+                        d_model // n_heads,
+                        d_model // n_heads,
+                        ProbAttention(False, factor, dropout, output_attention),
                     ),
                     d_model,
                     d_ffn,
-                    moving_avg_window_size,
                     dropout,
                     activation,
                 )
                 for _ in range(n_layers)
             ],
-            norm_layer=SeasonalLayerNorm(d_model),
+            [ConvLayer(d_model) for _ in range(n_layers - 1)] if distil else None,
+            norm_layer=nn.LayerNorm(d_model),
         )
 
         # for the imputation task, the output dim is the same as input dim
@@ -69,9 +65,9 @@ class _Autoformer(nn.Module):
         X, masks = inputs["X"], inputs["missing_mask"]
 
         # embedding
-        enc_out = self.enc_embedding(X)  # [B,T,C]
+        enc_out = self.enc_embedding(X)
 
-        # Autoformer encoder processing
+        # Informer encoder processing
         enc_out, attns = self.encoder(enc_out)
 
         # project back the original data space
