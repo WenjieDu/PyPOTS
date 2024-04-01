@@ -181,6 +181,7 @@ Imputation                     Neural Net       PatchTST (A Time Series is Worth
 Imputation                     Neural Net       DLinear (Are transformers effective for time series forecasting?)                                         2023   :cite:`zeng2023dlinear`
 Imputation                     Neural Net       ETSformer (Exponential Smoothing Transformers for Time-series Forecasting)                                2023   :cite:`woo2023etsformer`
 Imputation                     Neural Net       FEDformer (Frequency Enhanced Decomposed Transformer for Long-term Series Forecasting)                    2022   :cite:`zhou2022fedformer`
+Imputation                     Neural Net       Informer (Beyond Efficient Transformer for Long Sequence Time-Series Forecasting)                         2021   :cite:`zhou2021informer`
 Imputation                     Neural Net       Autoformer (Decomposition Transformers with Auto-Correlation for Long-Term Series Forecasting)            2021   :cite:`wu2021autoformer`
 Imputation                     Neural Net       US-GAN (Unsupervised GAN for Multivariate Time Series Imputation)                                         2021   :cite:`miao2021SSGAN`
 Imputation                     Neural Net       CSDI (Conditional Score-based Diffusion Models for Probabilistic Time Series Imputation)                  2021   :cite:`tashiro2021csdi`
