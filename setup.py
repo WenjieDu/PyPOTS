@@ -49,6 +49,8 @@ setup(
         "h5py",
         "numpy",
         "scipy",
+        "sympy",
+        "einops",
         "pandas",
         "matplotlib",
         "tensorboard",

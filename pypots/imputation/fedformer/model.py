@@ -1,12 +1,12 @@
 """
-The implementation of TimesNet for the partially-observed time-series imputation task.
+The implementation of FEDformer for the partially-observed time-series imputation task.
 
-Refer to the paper "Wu, H., Hu, T., Liu, Y., Zhou, H., Wang, J., & Long, M. (2023).
-TimesNet: Temporal 2d-variation modeling for general time series analysis. ICLR 2023."
+Refer to the paper "Zhou, T., Ma, Z., Wen, Q., Wang, X., Sun, L., & Jin, R. (2022).
+FEDformer: Frequency enhanced decomposed transformer for long-term series forecasting. ICML 2022.".
 
 Notes
 -----
-Partial implementation uses code from https://github.com/thuml/Time-Series-Library.
+Partial implementation uses code from https://github.com/MAZiqing/FEDformer
 
 """
 
@@ -19,8 +19,8 @@ import numpy as np
 import torch
 from torch.utils.data import DataLoader
 
-from .data import DatasetForTimesNet
-from .modules.core import _TimesNet
+from .data import DatasetForFEDformer
+from .modules.core import _FEDformer
 from ..base import BaseNNImputer
 from ...data.base import BaseDataset
 from ...data.checking import check_X_ori_in_val_set
@@ -29,9 +29,9 @@ from ...optim.base import Optimizer
 from ...utils.logging import logger
 
 
-class TimesNet(BaseNNImputer):
-    """The PyTorch implementation of the TimesNet model.
-    TimesNet is originally proposed by Wu et al. in :cite:`wu2023timesnet`.
+class FEDformer(BaseNNImputer):
+    """The PyTorch implementation of the FEDformer model.
+    FEDformer is originally proposed by Woo et al. in :cite:`zhou2022fedformer`.
 
     Parameters
     ----------
@@ -42,10 +42,10 @@ class TimesNet(BaseNNImputer):
         The number of features in the time-series data sample.
 
     n_layers :
-        The number of layers in the TimesNet model.
+        The number of layers in the FEDformer.
 
-    top_k :
-        The number of top-k amplitude values to be selected to  obtain the most significant frequencies.
+    n_heads :
+        The number of heads in the multi-head attention mechanism.
 
     d_model :
         The dimension of the model.
@@ -53,16 +53,22 @@ class TimesNet(BaseNNImputer):
     d_ffn :
         The dimension of the feed-forward network.
 
-    n_kernels :
-        The number of 2D kernels (2D convolutional layers) to use in the submodule InceptionBlockV1.
+    moving_avg_window_size :
+        The window size of moving average.
 
     dropout :
         The dropout rate for the model.
 
-    apply_nonstationary_norm :
-        Whether to apply non-stationary normalization to the input data for TimesNet.
-        Please refer to :cite:`liu2022nonstationary` for details about non-stationary normalization,
-        which is not the idea of the original TimesNet paper. Hence, we make it optional and default not to use here.
+    version :
+        The version of the model. It has to be one of ["Wavelets", "Fourier"].
+        The default value is "Fourier".
+
+    modes :
+        The number of modes to be selected. The default value is 32.
+
+    mode_select :
+        Get modes on frequency domain. It has to "random" or "low". The default value is "random".
+        'random' means sampling randomly; 'low' means sampling the lowest modes;
 
     batch_size :
         The batch size for training and evaluating the model.
@@ -105,24 +111,26 @@ class TimesNet(BaseNNImputer):
 
     References
     ----------
-    .. [1] `Wu, Haixu, Tengge Hu, Yong Liu, Hang Zhou, Jianmin Wang, and Mingsheng Long.
-        "TimesNet: Temporal 2d-variation modeling for general time series analysis".
-        ICLR 2022.
-        <https://openreview.net/pdf?id=ju_Uqw384Oq>`_
+    .. [1] `Zhou, Tian, Ziqing Ma, Qingsong Wen, Xue Wang, Liang Sun, and Rong Jin.
+        "FEDformer: Frequency Enhanced Decomposed Transformer for Long-term Series Forecasting".
+        ICML 2022.
+        <https://proceedings.mlr.press/v162/zhou22g/zhou22g.pdf>`_
 
     """
 
     def __init__(
         self,
-        n_steps: int,
-        n_features: int,
-        n_layers: int,
-        top_k: int,
-        d_model: int,
-        d_ffn: int,
-        n_kernels: int,
+        n_steps,
+        n_features,
+        n_layers,
+        n_heads,
+        d_model,
+        d_ffn,
+        moving_avg_window_size,
         dropout: float = 0,
-        apply_nonstationary_norm: bool = False,
+        version="Fourier",
+        modes=32,
+        mode_select="random",
         batch_size: int = 32,
         epochs: int = 100,
         patience: int = None,
@@ -146,24 +154,28 @@ class TimesNet(BaseNNImputer):
         self.n_features = n_features
         # model hype-parameters
         self.n_layers = n_layers
-        self.top_k = top_k
+        self.n_heads = n_heads
         self.d_model = d_model
         self.d_ffn = d_ffn
-        self.n_kernels = n_kernels
+        self.modes = modes
+        self.mode_select = mode_select
+        self.moving_avg_window_size = moving_avg_window_size
         self.dropout = dropout
-        self.apply_nonstationary_norm = apply_nonstationary_norm
+        self.version = version
 
         # set up the model
-        self.model = _TimesNet(
-            self.n_layers,
+        self.model = _FEDformer(
             self.n_steps,
             self.n_features,
-            self.top_k,
+            self.n_layers,
+            self.n_heads,
             self.d_model,
             self.d_ffn,
-            self.n_kernels,
+            self.moving_avg_window_size,
             self.dropout,
-            self.apply_nonstationary_norm,
+            self.version,
+            self.modes,
+            self.mode_select,
         )
         self._send_model_to_given_device()
         self._print_model_size()
@@ -210,7 +222,7 @@ class TimesNet(BaseNNImputer):
         file_type: str = "h5py",
     ) -> None:
         # Step 1: wrap the input data with classes Dataset and DataLoader
-        training_set = DatasetForTimesNet(
+        training_set = DatasetForFEDformer(
             train_set, return_X_ori=False, return_labels=False, file_type=file_type
         )
         training_loader = DataLoader(
@@ -223,7 +235,7 @@ class TimesNet(BaseNNImputer):
         if val_set is not None:
             if not check_X_ori_in_val_set(val_set):
                 raise ValueError("val_set must contain 'X_ori' for model validation.")
-            val_set = DatasetForTimesNet(
+            val_set = DatasetForFEDformer(
                 val_set, return_X_ori=True, return_labels=False, file_type=file_type
             )
             val_loader = DataLoader(

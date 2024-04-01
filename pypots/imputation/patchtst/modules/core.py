@@ -25,31 +25,22 @@ class _PatchTST(nn.Module):
         d_v: int,
         patch_len: int,
         stride: int,
-        head_nf: int,
         dropout: float,
         attn_dropout: float,
     ):
         super().__init__()
 
-        self.seq_len = n_steps
+        patch_num = int((n_steps - patch_len) / stride + 2)
+        head_nf = d_model * patch_num
+        padding = stride
+
+        self.n_steps = n_steps
+        self.n_features = n_features
         self.n_layers = n_layers
 
-        padding = stride
         self.patch_embedding = PatchEmbedding(
             d_model, patch_len, stride, padding, dropout
         )
-        # self.encoder = Encoder(
-        #     n_layers,
-        #     n_steps,
-        #     n_features,
-        #     d_model,
-        #     d_ffn,
-        #     n_heads,
-        #     d_k,
-        #     d_v,
-        #     dropout,
-        #     attn_dropout,
-        # )
         self.encoder = nn.ModuleList(
             [
                 EncoderLayer(
@@ -64,30 +55,29 @@ class _PatchTST(nn.Module):
                 for _ in range(n_layers)
             ]
         )
-        self.head = FlattenHead(n_features, head_nf, n_steps, dropout)
-
-        # for the imputation task, the output dim is the same as input dim
-        self.projection = nn.Linear(d_model, n_features)
+        self.head = FlattenHead(head_nf, n_steps, dropout)
 
     def forward(self, inputs: dict, training: bool = True) -> dict:
         X, masks = inputs["X"], inputs["missing_mask"]
 
         # do patching and embedding
         x_enc = X.permute(0, 2, 1)
-        # u: [bs * nvars x patch_num x d_model]
-        enc_out, n_vars = self.patch_embedding(x_enc)
+        # u: [bs * n_features x patch_num x d_model]
+        enc_out = self.patch_embedding(x_enc)
 
         # PatchTST encoder processing
-        # z: [bs * nvars x patch_num x d_model]
+        # z: [bs * n_features x patch_num x d_model]
         for i in range(self.n_layers):
             enc_out, _ = self.encoder[i](enc_out)
-        # z: [bs x nvars x patch_num x d_model]
-        enc_out = enc_out.reshape(-1, n_vars, enc_out.shape[-2], enc_out.shape[-1])
-        # z: [bs x nvars x d_model x patch_num]
+        # z: [bs x n_features x patch_num x d_model]
+        enc_out = enc_out.reshape(
+            -1, self.n_features, enc_out.shape[-2], enc_out.shape[-1]
+        )
+        # z: [bs x n_features x d_model x patch_num]
         enc_out = enc_out.permute(0, 1, 3, 2)
 
         # project back the original data space
-        dec_out = self.head(enc_out)  # z: [bs x nvars x target_window]
+        dec_out = self.head(enc_out)  # z: [bs x n_features x target_window]
         dec_out = dec_out.permute(0, 2, 1)
 
         imputed_data = masks * X + (1 - masks) * dec_out

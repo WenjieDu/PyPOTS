@@ -1,12 +1,12 @@
 """
-The implementation of TimesNet for the partially-observed time-series imputation task.
+The implementation of DLinear for the partially-observed time-series imputation task.
 
-Refer to the paper "Wu, H., Hu, T., Liu, Y., Zhou, H., Wang, J., & Long, M. (2023).
-TimesNet: Temporal 2d-variation modeling for general time series analysis. ICLR 2023."
+Refer to the paper "Zeng, A., Chen, M., Zhang, L., & Xu, Q. (2023).
+Are transformers effective for time series forecasting? AAAI 2023".
 
 Notes
 -----
-Partial implementation uses code from https://github.com/thuml/Time-Series-Library.
+Partial implementation uses code from https://github.com/thuml/Time-Series-Library
 
 """
 
@@ -19,8 +19,8 @@ import numpy as np
 import torch
 from torch.utils.data import DataLoader
 
-from .data import DatasetForTimesNet
-from .modules.core import _TimesNet
+from .data import DatasetForDLinear
+from .modules.core import _DLinear
 from ..base import BaseNNImputer
 from ...data.base import BaseDataset
 from ...data.checking import check_X_ori_in_val_set
@@ -29,9 +29,9 @@ from ...optim.base import Optimizer
 from ...utils.logging import logger
 
 
-class TimesNet(BaseNNImputer):
-    """The PyTorch implementation of the TimesNet model.
-    TimesNet is originally proposed by Wu et al. in :cite:`wu2023timesnet`.
+class DLinear(BaseNNImputer):
+    """The PyTorch implementation of the DLinear model.
+    DLinear is originally proposed by Zeng et al. in :cite:`zeng2023dlinear`.
 
     Parameters
     ----------
@@ -41,28 +41,11 @@ class TimesNet(BaseNNImputer):
     n_features :
         The number of features in the time-series data sample.
 
-    n_layers :
-        The number of layers in the TimesNet model.
+    moving_avg_window_size :
+        The window size of moving average.
 
-    top_k :
-        The number of top-k amplitude values to be selected to  obtain the most significant frequencies.
-
-    d_model :
-        The dimension of the model.
-
-    d_ffn :
-        The dimension of the feed-forward network.
-
-    n_kernels :
-        The number of 2D kernels (2D convolutional layers) to use in the submodule InceptionBlockV1.
-
-    dropout :
-        The dropout rate for the model.
-
-    apply_nonstationary_norm :
-        Whether to apply non-stationary normalization to the input data for TimesNet.
-        Please refer to :cite:`liu2022nonstationary` for details about non-stationary normalization,
-        which is not the idea of the original TimesNet paper. Hence, we make it optional and default not to use here.
+    individual :
+        Whether to share model across different features.
 
     batch_size :
         The batch size for training and evaluating the model.
@@ -105,10 +88,10 @@ class TimesNet(BaseNNImputer):
 
     References
     ----------
-    .. [1] `Wu, Haixu, Tengge Hu, Yong Liu, Hang Zhou, Jianmin Wang, and Mingsheng Long.
-        "TimesNet: Temporal 2d-variation modeling for general time series analysis".
-        ICLR 2022.
-        <https://openreview.net/pdf?id=ju_Uqw384Oq>`_
+    .. [1] `Zeng, Ailing, Muxi Chen, Lei Zhang, and Qiang Xu.
+        "Are transformers effective for time series forecasting?".
+        In Proceedings of the AAAI conference on artificial intelligence, vol. 37, no. 9, pp. 11121-11128. 2023.
+        <https://ojs.aaai.org/index.php/AAAI/article/view/26317/26089>`_
 
     """
 
@@ -116,13 +99,8 @@ class TimesNet(BaseNNImputer):
         self,
         n_steps: int,
         n_features: int,
-        n_layers: int,
-        top_k: int,
-        d_model: int,
-        d_ffn: int,
-        n_kernels: int,
-        dropout: float = 0,
-        apply_nonstationary_norm: bool = False,
+        moving_avg_window_size: int,
+        individual: bool = False,
         batch_size: int = 32,
         epochs: int = 100,
         patience: int = None,
@@ -145,25 +123,15 @@ class TimesNet(BaseNNImputer):
         self.n_steps = n_steps
         self.n_features = n_features
         # model hype-parameters
-        self.n_layers = n_layers
-        self.top_k = top_k
-        self.d_model = d_model
-        self.d_ffn = d_ffn
-        self.n_kernels = n_kernels
-        self.dropout = dropout
-        self.apply_nonstationary_norm = apply_nonstationary_norm
+        self.moving_avg_window_size = moving_avg_window_size
+        self.individual = individual
 
         # set up the model
-        self.model = _TimesNet(
-            self.n_layers,
-            self.n_steps,
-            self.n_features,
-            self.top_k,
-            self.d_model,
-            self.d_ffn,
-            self.n_kernels,
-            self.dropout,
-            self.apply_nonstationary_norm,
+        self.model = _DLinear(
+            n_steps,
+            n_features,
+            moving_avg_window_size,
+            individual,
         )
         self._send_model_to_given_device()
         self._print_model_size()
@@ -210,7 +178,7 @@ class TimesNet(BaseNNImputer):
         file_type: str = "h5py",
     ) -> None:
         # Step 1: wrap the input data with classes Dataset and DataLoader
-        training_set = DatasetForTimesNet(
+        training_set = DatasetForDLinear(
             train_set, return_X_ori=False, return_labels=False, file_type=file_type
         )
         training_loader = DataLoader(
@@ -223,7 +191,7 @@ class TimesNet(BaseNNImputer):
         if val_set is not None:
             if not check_X_ori_in_val_set(val_set):
                 raise ValueError("val_set must contain 'X_ori' for model validation.")
-            val_set = DatasetForTimesNet(
+            val_set = DatasetForDLinear(
                 val_set, return_X_ori=True, return_labels=False, file_type=file_type
             )
             val_loader = DataLoader(

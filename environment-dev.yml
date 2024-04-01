@@ -12,7 +12,9 @@ dependencies:
     - conda-forge::h5py
     - conda-forge::numpy
     - conda-forge::scipy
+    - conda-forge::sympy
     - conda-forge::python
+    - conda-forge::einops
     - conda-forge::pandas
     - conda-forge::matplotlib
     - conda-forge::tensorboard
@@ -25,8 +27,8 @@ dependencies:
 
     # optional
     - pyg::pyg
-    - pyg::pytorch-scatter
     - pyg::pytorch-sparse
+    - pyg::pytorch-scatter
 
     # test
     - conda-forge::pytest-cov
