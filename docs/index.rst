@@ -187,8 +187,7 @@ Imputation                     Neural Net       CSDI (Conditional Score-based Di
 Imputation                     Neural Net       GP-VAE (Gaussian Process Variational Autoencoder)                                                         2020   :cite:`fortuin2020GPVAEDeep`
 Imputation, Classification     Neural Net       BRITS (Bidirectional Recurrent Imputation for Time Series)                                                2018   :cite:`cao2018BRITS`
 Imputation                     Neural Net       M-RNN (Multi-directional Recurrent Neural Network)                                                        2019   :cite:`yoon2019MRNN`
-Imputation                     Naive            LOCF (Last Observation Carried Forward)                                                                   /      /
-Imputation                     Naive            NOCB (Next Observation Carried Backward)                                                                  /      /
+Imputation                     Naive            LOCF/NOCB(Last Observation Carried Forward/Next Observation Carried Backward)                             /      /
 Imputation                     Naive            Median (Median Value Imputation)                                                                          /      /
 Imputation                     Naive            Mean (Mean Value Imputation)                                                                              /      /
 Classification                 Neural Net       GRU-D                                                                                                     2018   :cite:`che2018GRUD`
