@@ -10,8 +10,8 @@ from typing import Optional, Tuple, Union
 import torch
 import torch.nn as nn
 
+from .embedding import PositionalEncoding
 from .layers import EncoderLayer, DecoderLayer
-from .pos_enc import PositionalEncoding
 
 
 class Encoder(nn.Module):
