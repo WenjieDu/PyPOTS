@@ -17,7 +17,7 @@ Jun Wang
 - `LinkedIn (Jun Wang) <https://www.linkedin.com/in/wang-jun-35323b193>`_
 
 Linglong Qian
-********
+*************
 - Joined in February 2024
 - `GitHub (LinglongQian) <https://github.com/LinglongQian>`_
 - `LinkedIn (Linglong Qian) <https://www.linkedin.com/in/linglongqian>`_

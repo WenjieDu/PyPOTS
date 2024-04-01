@@ -135,3 +135,21 @@ pypots.imputation.locf
    :undoc-members:
    :show-inheritance:
    :inherited-members:
+
+pypots.imputation.median
+-----------------------------
+
+.. automodule:: pypots.imputation.median
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+
+pypots.imputation.mean
+-----------------------------
+
+.. automodule:: pypots.imputation.mean
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
