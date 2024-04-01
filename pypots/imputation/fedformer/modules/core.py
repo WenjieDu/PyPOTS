@@ -14,7 +14,7 @@ from ...autoformer.modules.submodules import (
     AutoCorrelationLayer,
     SeasonalLayerNorm,
 )
-from ...timesnet.modules.embedding import DataEmbedding
+from ....nn.modules.transformer.embedding import DataEmbedding
 from ....utils.metrics import calc_mse
 
 

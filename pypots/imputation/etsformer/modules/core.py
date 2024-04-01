@@ -13,7 +13,7 @@ from .submodules import (
     ETSformerDecoderLayer,
     ETSformerDecoder,
 )
-from ...timesnet.modules.embedding import DataEmbedding
+from ....nn.modules.transformer.embedding import DataEmbedding
 from ....utils.metrics import calc_mse
 
 
