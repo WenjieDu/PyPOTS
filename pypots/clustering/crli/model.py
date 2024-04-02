@@ -2,8 +2,9 @@
 The implementation of CRLI (Clustering Representation Learning on Incomplete time-series data) for
 the partially-observed time-series clustering task.
 
-Refer to the paper "Ma, Q., Chen, C., Li, S., & Cottrell, G. W. (2021).
-Learning Representations for Incomplete Time Series Clustering. AAAI 2021."
+Refer to the paper "Qianli Ma, Chuxin Chen, Sen Li, and Garrison W. Cottrell.
+Learning Representations for Incomplete Time Series Clustering.
+In AAAI, 35(10):8837–8846, May 2021."
 
 """
 
@@ -108,14 +109,6 @@ class CRLI(BaseNNClusterer):
         The "better" strategy will automatically save the model during training whenever the model performs
         better than in previous epochs.
         The "all" strategy will save every model after each epoch training.
-
-    References
-    ----------
-    .. [1] `Ma, Qianli, Chuxin Chen, Sen Li, and Garrison W. Cottrell. 2021.
-        "Learning Representations for Incomplete Time Series Clustering".
-        Proceedings of the AAAI Conference on Artificial Intelligence 35 (10):8837-46.
-        https://doi.org/10.1609/aaai.v35i10.17070.
-        <https://ojs.aaai.org/index.php/AAAI/article/view/17070>`_
 
     """
 

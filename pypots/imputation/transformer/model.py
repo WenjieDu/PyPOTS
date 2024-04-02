@@ -1,8 +1,9 @@
 """
 The implementation of Transformer for the partially-observed time-series imputation task.
 
-Refer to the paper "Du, W., Cote, D., & Liu, Y. (2023). SAITS: Self-Attention-based Imputation for Time Series.
-Expert systems with applications."
+Refer to the paper "Wenjie Du, David Cote, and Yan Liu.
+SAITS: Self-Attention-based Imputation for Time Series.
+Expert Systems with Applications, 219:119619, 2023."
 
 Notes
 -----
@@ -116,19 +117,6 @@ class Transformer(BaseNNImputer):
         The "better" strategy will automatically save the model during training whenever the model performs
         better than in previous epochs.
         The "all" strategy will save every model after each epoch training.
-
-    References
-    ----------
-    .. [1] `Vaswani, Ashish, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones, Aidan N. Gomez, Łukasz Kaiser,
-        and Illia Polosukhin.
-        "Attention is all you need."
-        Advances in neural information processing systems 30 (2017).
-        <https://proceedings.neurips.cc/paper/2017/file/3f5ee243547dee91fbd053c1c4a845aa-Paper.pdf>`_
-
-    .. [2] `Du, Wenjie, David Côté, and Yan Liu.
-        "Saits: Self-attention-based imputation for time series".
-        Expert Systems with Applications 219 (2023): 119619.
-        <https://arxiv.org/pdf/2202.08516>`_
 
     """
 

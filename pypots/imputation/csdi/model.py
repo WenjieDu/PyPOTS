@@ -1,8 +1,9 @@
 """
 The implementation of CSDI for the partially-observed time-series imputation task.
 
-Refer to the paper Tashiro, Y., Song, J., Song, Y., & Ermon, S. (2021).
-CSDI: Conditional Score-based Diffusion Models for Probabilistic Time Series Imputation. NeurIPS 2021.
+Refer to the paper "Yusuke Tashiro, Jiaming Song, Yang Song, and Stefano Ermon.
+CSDI: Conditional Score-based Diffusion Models for Probabilistic Time Series Imputation.
+In NeurIPS, 2021."
 
 Notes
 -----
@@ -116,13 +117,6 @@ class CSDI(BaseNNImputer):
         The "better" strategy will automatically save the model during training whenever the model performs
         better than in previous epochs.
         The "all" strategy will save every model after each epoch training.
-
-    References
-    ----------
-    .. [1] `Yusuke Tashiro, Jiaming Song, Yang Song, Stefano Ermon.
-        "CSDI: Conditional Score-based Diffusion Models for Probabilistic Time Series Imputation".
-        NeurIPS 2021.
-        <https://proceedings.neurips.cc/paper/2021/hash/cfe8504bda37b575c70ee1a8276f3486-Abstract.html>`_
 
     """
 
