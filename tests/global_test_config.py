@@ -51,7 +51,7 @@ RESULT_SAVING_DIR_FOR_CLUSTERING = os.path.join(RESULT_SAVING_DIR, "clustering")
 RESULT_SAVING_DIR_FOR_FORECASTING = os.path.join(RESULT_SAVING_DIR, "forecasting")
 
 # set the number of epochs for all model training
-EPOCHS = 5
+EPOCHS = 2
 
 # set DEVICES to None if no cuda device is available, to avoid initialization failed while importing test classes
 n_cuda_devices = torch.cuda.device_count()

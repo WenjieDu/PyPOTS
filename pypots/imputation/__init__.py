@@ -16,6 +16,7 @@ from .timesnet import TimesNet
 from .etsformer import ETSformer
 from .fedformer import FEDformer
 from .crossformer import Crossformer
+from .informer import Informer
 from .autoformer import Autoformer
 from .dlinear import DLinear
 from .patchtst import PatchTST
@@ -36,6 +37,7 @@ __all__ = [
     "TimesNet",
     "PatchTST",
     "DLinear",
+    "Informer",
     "Autoformer",
     "BRITS",
     "MRNN",

@@ -73,6 +73,15 @@ pypots.imputation.fedformer
    :show-inheritance:
    :inherited-members:
 
+pypots.imputation.informer
+------------------------------
+
+.. automodule:: pypots.imputation.informer
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+
 pypots.imputation.autoformer
 ------------------------------
 
