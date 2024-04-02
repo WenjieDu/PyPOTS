@@ -42,7 +42,7 @@ class TestRaindrop(unittest.TestCase):
         DATA["n_classes"],
         n_layers=2,
         d_model=DATA["n_features"] * 4,
-        d_ffn=256,
+        d_ffn=64,
         n_heads=2,
         dropout=0.3,
         d_static=0,

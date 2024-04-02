@@ -45,7 +45,7 @@ class TestMRNN(unittest.TestCase):
     mrnn = MRNN(
         DATA["n_steps"],
         DATA["n_features"],
-        256,
+        64,
         epochs=EPOCHS,
         saving_path=saving_path,
         optimizer=optimizer,

@@ -45,7 +45,7 @@ class TestBRITS(unittest.TestCase):
     brits = BRITS(
         DATA["n_steps"],
         DATA["n_features"],
-        256,
+        64,
         epochs=EPOCHS,
         saving_path=saving_path,
         optimizer=optimizer,
