@@ -49,7 +49,7 @@ class TestVaDER(unittest.TestCase):
         n_steps=DATA["n_steps"],
         n_features=DATA["n_features"],
         n_clusters=DATA["n_classes"],
-        rnn_hidden_size=64,
+        rnn_hidden_size=32,
         d_mu_stddev=5,
         pretrain_epochs=20,
         epochs=EPOCHS,

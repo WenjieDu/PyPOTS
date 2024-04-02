@@ -10,6 +10,7 @@ from typing import Optional, Tuple, Union
 import torch
 import torch.nn as nn
 
+from .attention import ScaledDotProductAttention
 from .embedding import PositionalEncoding
 from .layers import EncoderLayer, DecoderLayer
 
@@ -78,8 +79,8 @@ class Encoder(nn.Module):
                     n_heads,
                     d_k,
                     d_v,
+                    ScaledDotProductAttention(d_k**0.5, attn_dropout),
                     dropout,
-                    attn_dropout,
                 )
                 for _ in range(n_layers)
             ]
@@ -190,8 +191,9 @@ class Decoder(nn.Module):
                     n_heads,
                     d_k,
                     d_v,
+                    ScaledDotProductAttention(d_k**0.5, attn_dropout),
+                    ScaledDotProductAttention(d_k**0.5, attn_dropout),
                     dropout,
-                    attn_dropout,
                 )
                 for _ in range(n_layers)
             ]
