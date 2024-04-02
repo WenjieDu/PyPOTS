@@ -8,6 +8,7 @@
 import torch.nn as nn
 
 from .submodules import PatchEmbedding, FlattenHead
+from ....nn.modules.transformer.attention import ScaledDotProductAttention
 from ....nn.modules.transformer.auto_encoder import EncoderLayer
 from ....utils.metrics import calc_mse
 
@@ -49,8 +50,8 @@ class _PatchTST(nn.Module):
                     n_heads,
                     d_k,
                     d_v,
+                    ScaledDotProductAttention(d_k**0.5, attn_dropout),
                     dropout,
-                    attn_dropout,
                 )
                 for _ in range(n_layers)
             ]

@@ -19,6 +19,7 @@ import torch
 import torch.nn as nn
 
 from ....nn.modules.transformer import EncoderLayer, PositionalEncoding
+from ....nn.modules.transformer.attention import ScaledDotProductAttention
 from ....utils.metrics import calc_mae
 
 
@@ -52,8 +53,8 @@ class _TransformerEncoder(nn.Module):
                     n_heads,
                     d_k,
                     d_v,
+                    ScaledDotProductAttention(d_k**0.5, attn_dropout),
                     dropout,
-                    attn_dropout,
                 )
                 for _ in range(n_layers)
             ]

@@ -11,7 +11,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from .attention import MultiHeadAttention
+from .attention import MultiHeadAttention, AttentionOperator
 
 
 class PositionWiseFeedForward(nn.Module):
@@ -85,11 +85,12 @@ class EncoderLayer(nn.Module):
     d_v:
         The dimension of the value tensor.
 
+    slf_attn_opt:
+        The attention operator for the self multi-head attention module in the encoder layer.
+
     dropout:
         The dropout rate.
 
-    attn_dropout:
-        The dropout rate for the attention map.
     """
 
     def __init__(
@@ -99,11 +100,11 @@ class EncoderLayer(nn.Module):
         n_heads: int,
         d_k: int,
         d_v: int,
+        slf_attn_opt: AttentionOperator,
         dropout: float = 0.1,
-        attn_dropout: float = 0.1,
     ):
         super().__init__()
-        self.slf_attn = MultiHeadAttention(n_heads, d_model, d_k, d_v, attn_dropout)
+        self.slf_attn = MultiHeadAttention(n_heads, d_model, d_k, d_v, slf_attn_opt)
         self.dropout = nn.Dropout(dropout)
         self.layer_norm = nn.LayerNorm(d_model, eps=1e-6)
         self.pos_ffn = PositionWiseFeedForward(d_model, d_ffn, dropout)
@@ -112,6 +113,7 @@ class EncoderLayer(nn.Module):
         self,
         enc_input: torch.Tensor,
         src_mask: Optional[torch.Tensor] = None,
+        **kwargs,
     ) -> Tuple[torch.Tensor, torch.Tensor]:
         """Forward processing of the encoder layer.
 
@@ -137,6 +139,7 @@ class EncoderLayer(nn.Module):
             enc_input,
             enc_input,
             attn_mask=src_mask,
+            **kwargs,
         )
 
         # apply dropout and residual connection
@@ -170,11 +173,14 @@ class DecoderLayer(nn.Module):
     d_v:
         The dimension of the value tensor.
 
+    slf_attn_opt:
+        The attention operator for the self multi-head attention module in the decoder layer.
+
+    enc_attn_opt:
+        The attention operator for the encoding multi-head attention module in the decoder layer.
+
     dropout:
         The dropout rate.
-
-    attn_dropout:
-        The dropout rate for the attention map.
 
     """
 
@@ -185,12 +191,13 @@ class DecoderLayer(nn.Module):
         n_heads: int,
         d_k: int,
         d_v: int,
+        slf_attn_opt: AttentionOperator,
+        enc_attn_opt: AttentionOperator,
         dropout: float = 0.1,
-        attn_dropout: float = 0.1,
     ):
         super().__init__()
-        self.slf_attn = MultiHeadAttention(n_heads, d_model, d_k, d_v, attn_dropout)
-        self.enc_attn = MultiHeadAttention(n_heads, d_model, d_k, d_v, attn_dropout)
+        self.slf_attn = MultiHeadAttention(n_heads, d_model, d_k, d_v, slf_attn_opt)
+        self.enc_attn = MultiHeadAttention(n_heads, d_model, d_k, d_v, enc_attn_opt)
         self.pos_ffn = PositionWiseFeedForward(d_model, d_ffn, dropout)
 
     def forward(
@@ -199,6 +206,7 @@ class DecoderLayer(nn.Module):
         enc_output: torch.Tensor,
         slf_attn_mask: Optional[torch.Tensor] = None,
         dec_enc_attn_mask: Optional[torch.Tensor] = None,
+        **kwargs,
     ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         """Forward processing of the decoder layer.
 
@@ -231,10 +239,18 @@ class DecoderLayer(nn.Module):
 
         """
         dec_output, dec_slf_attn = self.slf_attn(
-            dec_input, dec_input, dec_input, attn_mask=slf_attn_mask
+            dec_input,
+            dec_input,
+            dec_input,
+            attn_mask=slf_attn_mask,
+            **kwargs,
         )
         dec_output, dec_enc_attn = self.enc_attn(
-            dec_output, enc_output, enc_output, attn_mask=dec_enc_attn_mask
+            dec_output,
+            enc_output,
+            enc_output,
+            attn_mask=dec_enc_attn_mask,
+            **kwargs,
         )
         dec_output = self.pos_ffn(dec_output)
         return dec_output, dec_slf_attn, dec_enc_attn
