@@ -50,7 +50,7 @@ class TestCRLI(unittest.TestCase):
         n_features=DATA["n_features"],
         n_clusters=DATA["n_classes"],
         n_generator_layers=2,
-        rnn_hidden_size=128,
+        rnn_hidden_size=32,
         rnn_cell_type="GRU",
         epochs=EPOCHS,
         saving_path=saving_path,
