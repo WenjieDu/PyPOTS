@@ -10,10 +10,10 @@ import torch.nn as nn
 from .submodules import (
     SeasonalLayerNorm,
     AutoformerEncoderLayer,
-    AutoformerEncoder,
     AutoCorrelation,
     AutoCorrelationLayer,
 )
+from ...informer.modules.submodules import InformerEncoder
 from ....nn.modules.transformer.embedding import DataEmbedding
 from ....utils.metrics import calc_mse
 
@@ -43,7 +43,7 @@ class _Autoformer(nn.Module):
             dropout=dropout,
             with_pos=False,
         )
-        self.encoder = AutoformerEncoder(
+        self.encoder = InformerEncoder(
             [
                 AutoformerEncoderLayer(
                     AutoCorrelationLayer(
