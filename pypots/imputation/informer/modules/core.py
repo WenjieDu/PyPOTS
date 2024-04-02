@@ -33,7 +33,7 @@ class _Informer(nn.Module):
         self.seq_len = n_steps
         self.n_layers = n_layers
         self.enc_embedding = DataEmbedding(
-            n_features * 2,
+            n_features,
             d_model,
             dropout=dropout,
         )
