@@ -9,7 +9,7 @@ import torch
 import torch.nn as nn
 from einops import rearrange, repeat
 
-from ....nn.modules.transformer import MultiHeadAttention
+from ....nn.modules.transformer import ScaledDotProductAttention, MultiHeadAttention
 
 
 class TwoStageAttentionLayer(nn.Module):
@@ -33,10 +33,26 @@ class TwoStageAttentionLayer(nn.Module):
         super().__init__()
         d_ff = 4 * d_model if d_ff is None else d_ff
         self.time_attention = MultiHeadAttention(
-            n_heads, d_model, d_k, d_v, attn_dropout
+            n_heads,
+            d_model,
+            d_k,
+            d_v,
+            ScaledDotProductAttention(d_k**0.5, attn_dropout),
         )
-        self.dim_sender = MultiHeadAttention(n_heads, d_model, d_k, d_v, attn_dropout)
-        self.dim_receiver = MultiHeadAttention(n_heads, d_model, d_k, d_v, attn_dropout)
+        self.dim_sender = MultiHeadAttention(
+            n_heads,
+            d_model,
+            d_k,
+            d_v,
+            ScaledDotProductAttention(d_k**0.5, attn_dropout),
+        )
+        self.dim_receiver = MultiHeadAttention(
+            n_heads,
+            d_model,
+            d_k,
+            d_v,
+            ScaledDotProductAttention(d_k**0.5, attn_dropout),
+        )
         self.router = nn.Parameter(torch.randn(seg_num, factor, d_model))
 
         self.dropout = nn.Dropout(dropout)
