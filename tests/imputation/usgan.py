@@ -46,7 +46,7 @@ class TestUSGAN(unittest.TestCase):
     usgan = USGAN(
         DATA["n_steps"],
         DATA["n_features"],
-        256,
+        32,
         epochs=EPOCHS,
         saving_path=saving_path,
         G_optimizer=G_optimizer,
