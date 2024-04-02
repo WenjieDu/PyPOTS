@@ -49,7 +49,7 @@ class TestCSDI(unittest.TestCase):
         d_time_embedding=32,
         d_feature_embedding=3,
         d_diffusion_embedding=32,
-        n_diffusion_steps=10,
+        n_diffusion_steps=5,
         n_heads=1,
         epochs=EPOCHS,
         saving_path=saving_path,

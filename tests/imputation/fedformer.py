@@ -47,8 +47,8 @@ class TestFEDformer(unittest.TestCase):
         DATA["n_features"],
         n_layers=1,
         n_heads=2,
-        d_model=64,
-        d_ffn=64,
+        d_model=32,
+        d_ffn=32,
         moving_avg_window_size=3,
         dropout=0,
         version="Wavelets",  # TODO: Fourier version does not work

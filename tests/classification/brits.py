@@ -44,7 +44,7 @@ class TestBRITS(unittest.TestCase):
         DATA["n_steps"],
         DATA["n_features"],
         n_classes=DATA["n_classes"],
-        rnn_hidden_size=256,
+        rnn_hidden_size=32,
         epochs=EPOCHS,
         saving_path=saving_path,
         model_saving_strategy="better",
