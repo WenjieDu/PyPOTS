@@ -1,8 +1,9 @@
 """
 The implementation of USGAN for the partially-observed time-series imputation task.
 
-Refer to the paper "Miao, X., Wu, Y., Wang, J., Gao, Y., Mao, X., & Yin, J. (2021).
-Generative Semi-supervised Learning for Multivariate Time Series Imputation. AAAI 2021."
+Refer to the paper "Xiaoye Miao, Yangyang Wu, Jun Wang, Yunjun Gao, Xudong Mao, and Jianwei Yin.
+Generative Semi-supervised Learning for Multivariate Time Series Imputation.
+In AAAI, 35(10):8983–8991, May 2021."
 
 """
 
@@ -101,13 +102,6 @@ class USGAN(BaseNNImputer):
         The "best" strategy will only automatically save the best model after the training finished.
         The "better" strategy will automatically save the model during training whenever the model performs
         better than in previous epochs.
-
-    References
-    ----------
-    .. [1] `Miao, Xiaoye, Yangyang Wu, Jun Wang, Yunjun Gao, Xudong Mao, and Jianwei Yin. 2021.
-       "Generative Semi-Supervised Learning for Multivariate Time Series Imputation".
-       Proceedings of the AAAI Conference on Artificial Intelligence 35 (10):8983-91.
-       <https://doi.org/10.1609/aaai.v35i10.17086>`_
 
     """
 

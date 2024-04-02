@@ -1,8 +1,11 @@
 """
 The package of the partially-observed time-series classification model Raindrop.
 
-Refer to the paper "Zhang, X., Zeman, M., Tsiligkaridis, T., & Zitnik, M. (2022).
-Graph-Guided Network for Irregularly Sampled Multivariate Time Series. ICLR 2022."
+Refer to the paper
+`Xiang Zhang, Marko Zeman, Theodoros Tsiligkaridis, and Marinka Zitnik.
+Graph-guided network for irregularly sampled multivariate time series.
+In ICLR, 2022.
+<https://openreview.net/forum?id=Kwm8I7dU-l5>`_
 
 """
 

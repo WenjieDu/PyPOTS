@@ -1,8 +1,9 @@
 """
 The implementation of GP-VAE for the partially-observed time-series imputation task.
 
-Refer to the paper Fortuin V, Baranchuk D, Rätsch G, et al.
-GP-VAE: Deep probabilistic time series imputation. AISTATS. PMLR, 2020: 1651-1661.
+Refer to the paper "Vincent Fortuin, Dmitry Baranchuk, Gunnar Rätsch, and Stephan Mandt.
+GP-VAE: Deep probabilistic time series imputation.
+In International conference on artificial intelligence and statistics, pages 1651–1661. PMLR, 2020."
 
 """
 
@@ -34,7 +35,7 @@ from ...utils.metrics import calc_mse
 
 
 class GPVAE(BaseNNImputer):
-    """The PyTorch implementation of the GPVAE model :cite:`fortuin2020GPVAEDeep`.
+    """The PyTorch implementation of the GPVAE model :cite:`fortuin2020gpvae`.
 
     Parameters
     ----------
@@ -114,14 +115,6 @@ class GPVAE(BaseNNImputer):
         The "best" strategy will only automatically save the best model after the training finished.
         The "better" strategy will automatically save the model during training whenever the model performs
         better than in previous epochs.
-
-    References
-    ----------
-    .. [1] `Fortuin, V., Baranchuk, D., Raetsch, G. &amp; Mandt, S.. (2020).
-        "GP-VAE: Deep Probabilistic Time Series Imputation".
-        <i>Proceedings of the Twenty Third International Conference on Artificial Intelligence and Statistics</i>,
-        in <i>Proceedings of Machine Learning Research</i> 108:1651-1661
-        <https://proceedings.mlr.press/v108/fortuin20a.html>`_
 
     """
 

@@ -1,8 +1,9 @@
 """
 The implementation of PatchTST for the partially-observed time-series imputation task.
 
-Refer to the paper "Nie, Y., Nguyen, N. H., Sinthong, P., & Kalagnanam, J. (2023).
-A time series is worth 64 words: Long-term forecasting with transformers. ICLR 2023".
+Refer to the paper "Yuqi Nie, Nam H Nguyen, Phanwadee Sinthong, and Jayant Kalagnanam.
+A time series is worth 64 words: Long-term forecasting with transformers.
+In The ICLR, 2023."
 
 Notes
 -----
@@ -110,13 +111,6 @@ class PatchTST(BaseNNImputer):
         The "better" strategy will automatically save the model during training whenever the model performs
         better than in previous epochs.
         The "all" strategy will save every model after each epoch training.
-
-    References
-    ----------
-    .. [1] `Nie, Yuqi, Nam H. Nguyen, Phanwadee Sinthong, and Jayant Kalagnanam.
-        "A time series is worth 64 words: Long-term forecasting with transformers".
-        ICLR 2023.
-        <https://openreview.net/pdf?id=Jbdc0vTOcol>`_
 
     """
 

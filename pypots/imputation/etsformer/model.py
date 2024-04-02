@@ -1,8 +1,9 @@
 """
 The implementation of ETSformer for the partially-observed time-series imputation task.
 
-Refer to the paper "Woo, G., Liu, C., Sahoo, D., Kumar, A., & Hoi, S. (2023).
-ETSformer: Exponential Smoothing Transformers for Time-series Forecasting.  ICLR 2023.".
+Refer to the paper "Gerald Woo, Chenghao Liu, Doyen Sahoo, Akshat Kumar, and Steven Hoi.
+ETSformer: Exponential smoothing transformers for time-series forecasting.
+In ICLR, 2023."
 
 Notes
 -----
@@ -100,13 +101,6 @@ class ETSformer(BaseNNImputer):
         The "better" strategy will automatically save the model during training whenever the model performs
         better than in previous epochs.
         The "all" strategy will save every model after each epoch training.
-
-    References
-    ----------
-    .. [1] `Woo, Gerald, Chenghao Liu, Doyen Sahoo, Akshat Kumar, and Steven Hoi.
-        "ETSformer: Exponential Smoothing Transformers for Time-series Forecasting ".
-        ICLR 2023.
-        <https://openreview.net/pdf?id=5m_3whfo483>`_
 
     """
 

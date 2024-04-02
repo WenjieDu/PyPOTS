@@ -1,8 +1,9 @@
 """
 The implementation of FEDformer for the partially-observed time-series imputation task.
 
-Refer to the paper "Zhou, T., Ma, Z., Wen, Q., Wang, X., Sun, L., & Jin, R. (2022).
-FEDformer: Frequency enhanced decomposed transformer for long-term series forecasting. ICML 2022.".
+Refer to the paper "Tian Zhou, Ziqing Ma, Qingsong Wen, Xue Wang, Liang Sun, and Rong Jin.
+FEDformer: Frequency enhanced decomposed transformer for long-term series forecasting.
+In ICML, volume 162 of Proceedings of Machine Learning Research, pages 27268–27286. PMLR, 17–23 Jul 2022.".
 
 Notes
 -----
@@ -108,13 +109,6 @@ class FEDformer(BaseNNImputer):
         The "better" strategy will automatically save the model during training whenever the model performs
         better than in previous epochs.
         The "all" strategy will save every model after each epoch training.
-
-    References
-    ----------
-    .. [1] `Zhou, Tian, Ziqing Ma, Qingsong Wen, Xue Wang, Liang Sun, and Rong Jin.
-        "FEDformer: Frequency Enhanced Decomposed Transformer for Long-term Series Forecasting".
-        ICML 2022.
-        <https://proceedings.mlr.press/v162/zhou22g/zhou22g.pdf>`_
 
     """
 

@@ -1,12 +1,14 @@
 """
 The implementation of DLinear for the partially-observed time-series imputation task.
 
-Refer to the paper "Zeng, A., Chen, M., Zhang, L., & Xu, Q. (2023).
-Are transformers effective for time series forecasting? AAAI 2023".
+Refer to the paper "Ailing Zeng, Muxi Chen, Lei Zhang, and Qiang Xu.
+Are transformers effective for time series forecasting?
+In AAAI, volume 37, pages 11121–11128, Jun. 2023.".
 
 Notes
 -----
-Partial implementation uses code from https://github.com/thuml/Time-Series-Library
+Partial implementation uses code from
+https://github.com/cure-lab/LTSF-Linear and https://github.com/thuml/Time-Series-Library
 
 """
 
@@ -85,13 +87,6 @@ class DLinear(BaseNNImputer):
         The "better" strategy will automatically save the model during training whenever the model performs
         better than in previous epochs.
         The "all" strategy will save every model after each epoch training.
-
-    References
-    ----------
-    .. [1] `Zeng, Ailing, Muxi Chen, Lei Zhang, and Qiang Xu.
-        "Are transformers effective for time series forecasting?".
-        In Proceedings of the AAAI conference on artificial intelligence, vol. 37, no. 9, pp. 11121-11128. 2023.
-        <https://ojs.aaai.org/index.php/AAAI/article/view/26317/26089>`_
 
     """
 

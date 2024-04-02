@@ -1,13 +1,14 @@
 """
 The implementation of BRITS for the partially-observed time-series imputation task.
 
-Refer to the paper "Cao, W., Wang, D., Li, J., Zhou, H., Li, L., & Li, Y. (2018).
-BRITS: Bidirectional Recurrent Imputation for Time Series. NeurIPS 2018."
+Refer to the paper "Wei Cao, Dong Wang, Jian Li, Hao Zhou, Lei Li, and Yitan Li.
+BRITS: Bidirectional recurrent imputation for time series.
+In Advances in Neural Information Processing Systems, volume 31. Curran Associates, Inc., 2018."
 
 Notes
 -----
-Partial implementation uses code from https://github.com/caow13/BRITS. The bugs in the original implementation
-are fixed here.
+Partial implementation uses code from https://github.com/caow13/BRITS.
+The bugs in the original implementation are fixed here.
 
 """
 
@@ -81,13 +82,6 @@ class BRITS(BaseNNImputer):
         The "better" strategy will automatically save the model during training whenever the model performs
         better than in previous epochs.
         The "all" strategy will save every model after each epoch training.
-
-    References
-    ----------
-    .. [1] `Cao, Wei, Dong Wang, Jian Li, Hao Zhou, Lei Li, and Yitan Li.
-        "Brits: Bidirectional recurrent imputation for time series."
-        Advances in neural information processing systems 31 (2018).
-        <https://arxiv.org/pdf/1805.10572>`_
 
     """
 

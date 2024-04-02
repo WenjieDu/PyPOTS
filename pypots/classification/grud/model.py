@@ -1,8 +1,9 @@
 """
 The implementation of GRU-D for the partially-observed time-series imputation task.
 
-Refer to the paper "Che, Z., Purushotham, S., Cho, K., Sontag, D.A., & Liu, Y. (2018).
-Recurrent Neural Networks for Multivariate Time Series with Missing Values. Scientific Reports."
+Refer to the paper "Zhengping Che, Sanjay Purushotham, Kyunghyun Cho, David Sontag, and Yan Liu.
+Recurrent Neural Networks for Multivariate Time Series with Missing Values.
+Scientific Reports, 8(1):6085, April 2018."
 
 """
 
@@ -79,13 +80,6 @@ class GRUD(BaseNNClassifier):
         The "better" strategy will automatically save the model during training whenever the model performs
         better than in previous epochs.
         The "all" strategy will save every model after each epoch training.
-
-    References
-    ----------
-    .. [1] `Che, Zhengping, Sanjay Purushotham, Kyunghyun Cho, David Sontag, and Yan Liu.
-        "Recurrent neural networks for multivariate time series with missing values."
-        Scientific reports 8, no. 1 (2018): 6085.
-        <https://www.nature.com/articles/s41598-018-24271-9.pdf>`_
 
     """
 
