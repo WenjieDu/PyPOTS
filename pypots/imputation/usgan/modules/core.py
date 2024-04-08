@@ -63,22 +63,30 @@ class _USGAN(nn.Module):
         if training:
             forward_X = inputs["forward"]["X"]
             forward_missing_mask = inputs["forward"]["missing_mask"]
-            imputed_data = results['imputed_data']
+            imputed_data = results["imputed_data"]
 
             if training_object == "discriminator":
-                inputs["discrimination"] = self.discriminator(imputed_data.detach(), forward_missing_mask)
+                inputs["discrimination"] = self.discriminator(
+                    imputed_data.detach(), forward_missing_mask
+                )
                 l_D = F.binary_cross_entropy_with_logits(
                     inputs["discrimination"], forward_missing_mask
                 )
                 results["discrimination_loss"] = l_D
             else:
-                inputs["discrimination"] = self.discriminator(imputed_data, forward_missing_mask)
+                inputs["discrimination"] = self.discriminator(
+                    imputed_data, forward_missing_mask
+                )
                 l_G = -F.binary_cross_entropy_with_logits(
                     inputs["discrimination"],
                     forward_missing_mask,
                     weight=1 - forward_missing_mask,
                 )
-                reconstruction_loss = calc_mse(forward_X, results['reconstructed_data'], forward_missing_mask) + 0.1 * calc_mse(results['f_reconstructed_data'], results['b_reconstructed_data'])
+                reconstruction_loss = calc_mse(
+                    forward_X, results["reconstructed_data"], forward_missing_mask
+                ) + 0.1 * calc_mse(
+                    results["f_reconstructed_data"], results["b_reconstructed_data"]
+                )
                 loss_gene = l_G + self.lambda_mse * reconstruction_loss
                 results["generation_loss"] = loss_gene
 
