@@ -1,8 +1,9 @@
 """
 The implementation of Raindrop for the partially-observed time-series classification task.
 
-Refer to the paper "Zhang, X., Zeman, M., Tsiligkaridis, T., & Zitnik, M. (2022).
-Graph-Guided Network for Irregularly Sampled Multivariate Time Series. ICLR 2022."
+Refer to the paper "Xiang Zhang, Marko Zeman, Theodoros Tsiligkaridis, and Marinka Zitnik.
+Graph-guided network for irregularly sampled multivariate time series.
+In ICLR, 2022."
 
 """
 
@@ -106,12 +107,6 @@ class Raindrop(BaseNNClassifier):
         better than in previous epochs.
         The "all" strategy will save every model after each epoch training.
 
-    References
-    ----------
-    .. [1] `Zhang, Xiang, Marko Zeman, Theodoros Tsiligkaridis, and Marinka Zitnik.
-        "Graph-guided network for irregularly sampled multivariate time series."
-        International Conference on Learning Representations (ICLR). 2022.
-        <https://openreview.net/forum?id=Kwm8I7dU-l5>`_
     """
 
     def __init__(

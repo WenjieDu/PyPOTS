@@ -1,8 +1,9 @@
 """
 The implementation of TimesNet for the partially-observed time-series imputation task.
 
-Refer to the paper "Wu, H., Hu, T., Liu, Y., Zhou, H., Wang, J., & Long, M. (2023).
-TimesNet: Temporal 2d-variation modeling for general time series analysis. ICLR 2023."
+Refer to the paper "Haixu Wu, Tengge Hu, Yong Liu, Hang Zhou, Jianmin Wang, and Mingsheng Long.
+TimesNet: Temporal 2D-Variation Modeling for General Time Series Analysis.
+In ICLR, 2023."
 
 Notes
 -----
@@ -102,13 +103,6 @@ class TimesNet(BaseNNImputer):
         The "better" strategy will automatically save the model during training whenever the model performs
         better than in previous epochs.
         The "all" strategy will save every model after each epoch training.
-
-    References
-    ----------
-    .. [1] `Wu, Haixu, Tengge Hu, Yong Liu, Hang Zhou, Jianmin Wang, and Mingsheng Long.
-        "TimesNet: Temporal 2d-variation modeling for general time series analysis".
-        ICLR 2022.
-        <https://openreview.net/pdf?id=ju_Uqw384Oq>`_
 
     """
 
