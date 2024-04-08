@@ -450,6 +450,8 @@ class BaseNNModel(BaseModel):
         The criteria to judge whether the model's performance is the best so far.
         Usually the lower, the better.
 
+    best_epoch : int, default = -1,
+        The epoch number when the best loss is got.
 
     Notes
     -----
@@ -494,8 +496,8 @@ class BaseNNModel(BaseModel):
         self.model = None
         self.optimizer = None
         self.best_model_dict = None
-        # WDU: may enable users to customize the criteria in the future
         self.best_loss = float("inf")
+        self.best_epoch = -1
 
     def _print_model_size(self) -> None:
         """Print the number of trainable parameters in the initialized NN model."""

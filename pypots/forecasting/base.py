@@ -331,6 +331,7 @@ class BaseNNForecaster(BaseNNModel):
                     )
 
                 if mean_loss < self.best_loss:
+                    self.best_epoch = epoch
                     self.best_loss = mean_loss
                     self.best_model_dict = self.model.state_dict()
                     self.patience = self.original_patience
@@ -370,7 +371,9 @@ class BaseNNForecaster(BaseNNModel):
         if np.isnan(self.best_loss):
             raise ValueError("Something is wrong. best_loss is Nan after training.")
 
-        logger.info("Finished training.")
+        logger.info(
+            f"Finished training. The best model is from epoch#{self.best_epoch}."
+        )
 
     @abstractmethod
     def fit(
