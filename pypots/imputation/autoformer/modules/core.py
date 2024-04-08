@@ -69,9 +69,9 @@ class _Autoformer(nn.Module):
     def forward(self, inputs: dict, training: bool = True) -> dict:
         X, masks = inputs["X"], inputs["missing_mask"]
 
-        # embedding
+        # the same as SAITS, concatenate the time series data and the missing mask for embedding
         input_X = torch.cat([X, masks], dim=2)
-        enc_out = self.enc_embedding(input_X)  # [B,T,C]
+        enc_out = self.enc_embedding(input_X)
 
         # Autoformer encoder processing
         enc_out, attns = self.encoder(enc_out)

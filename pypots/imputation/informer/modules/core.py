@@ -5,11 +5,12 @@
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
+import torch
 import torch.nn as nn
 
 from .submodules import ProbAttention, ConvLayer, InformerEncoderLayer, InformerEncoder
-from ....nn.modules.transformer.embedding import DataEmbedding
 from ....nn.modules.transformer import MultiHeadAttention
+from ....nn.modules.transformer.embedding import DataEmbedding
 from ....utils.metrics import calc_mse
 
 
@@ -33,7 +34,7 @@ class _Informer(nn.Module):
         self.seq_len = n_steps
         self.n_layers = n_layers
         self.enc_embedding = DataEmbedding(
-            n_features,
+            n_features * 2,
             d_model,
             dropout=dropout,
         )
@@ -64,8 +65,9 @@ class _Informer(nn.Module):
     def forward(self, inputs: dict, training: bool = True) -> dict:
         X, masks = inputs["X"], inputs["missing_mask"]
 
-        # embedding
-        enc_out = self.enc_embedding(X)
+        # the same as SAITS, concatenate the time series data and the missing mask for embedding
+        input_X = torch.cat([X, masks], dim=2)
+        enc_out = self.enc_embedding(input_X)
 
         # Informer encoder processing
         enc_out, attns = self.encoder(enc_out)
