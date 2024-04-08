@@ -236,16 +236,13 @@ class USGAN(BaseNNImputer):
 
         try:
             training_step = 0
-            epoch_train_loss_G_collector = []
-            epoch_train_loss_D_collector = []
             for epoch in range(1, self.epochs + 1):
                 self.model.train()
+                step_train_loss_G_collector = []
+                step_train_loss_D_collector = []
                 for idx, data in enumerate(training_loader):
                     training_step += 1
                     inputs = self._assemble_input_for_training(data)
-
-                    step_train_loss_G_collector = []
-                    step_train_loss_D_collector = []
 
                     if idx % self.G_steps == 0:
                         self.G_optimizer.zero_grad()
@@ -272,9 +269,6 @@ class USGAN(BaseNNImputer):
                     mean_step_train_D_loss = np.mean(step_train_loss_D_collector)
                     mean_step_train_G_loss = np.mean(step_train_loss_G_collector)
 
-                    epoch_train_loss_D_collector.append(mean_step_train_D_loss)
-                    epoch_train_loss_G_collector.append(mean_step_train_G_loss)
-
                     # save training loss logs into the tensorboard file for every step if in need
                     # Note: the `training_step` is not the actual number of steps that Discriminator and Generator get
                     # trained, the actual number should be D_steps*training_step and G_steps*training_step accordingly
@@ -286,8 +280,8 @@ class USGAN(BaseNNImputer):
                         self._save_log_into_tb_file(
                             training_step, "training", loss_results
                         )
-                mean_epoch_train_D_loss = np.mean(epoch_train_loss_D_collector)
-                mean_epoch_train_G_loss = np.mean(epoch_train_loss_G_collector)
+                mean_epoch_train_D_loss = np.mean(step_train_loss_D_collector)
+                mean_epoch_train_G_loss = np.mean(step_train_loss_G_collector)
 
                 if val_loader is not None:
                     self.model.eval()
