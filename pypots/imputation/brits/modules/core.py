@@ -172,7 +172,7 @@ class RITS(nn.Module):
 
         estimations = torch.cat(estimations, dim=1)
         imputed_data = masks * values + (1 - masks) * estimations
-        return imputed_data, hidden_states, reconstruction_loss
+        return imputed_data, estimations, hidden_states, reconstruction_loss
 
     def forward(self, inputs: dict, direction: str = "forward") -> dict:
         """Forward processing of the NN module.
@@ -190,7 +190,7 @@ class RITS(nn.Module):
             A dictionary includes all results.
 
         """
-        imputed_data, hidden_state, reconstruction_loss = self.impute(inputs, direction)
+        imputed_data, estimations, hidden_state, reconstruction_loss = self.impute(inputs, direction)
         # for each iteration, reconstruction_loss increases its value for 3 times
         reconstruction_loss /= self.n_steps * 3
 
@@ -200,6 +200,7 @@ class RITS(nn.Module):
             ),  # single direction, has no consistency loss
             "reconstruction_loss": reconstruction_loss,
             "imputed_data": imputed_data,
+            "reconstructed_data": estimations,
             "final_hidden_state": hidden_state,
         }
         return ret_dict
@@ -304,6 +305,7 @@ class _BRITS(nn.Module):
         ret_b = self._reverse(self.rits_b(inputs, "backward"))
 
         imputed_data = (ret_f["imputed_data"] + ret_b["imputed_data"]) / 2
+        reconstructed_data = (ret_f["reconstructed_data"] + ret_b["reconstructed_data"]) / 2
 
         results = {
             "imputed_data": imputed_data,
@@ -323,5 +325,8 @@ class _BRITS(nn.Module):
 
             # `loss` is always the item for backward propagating to update the model
             results["loss"] = loss
+            results['reconstructed_data'] = reconstructed_data
+            results['f_reconstructed_data'] = ret_f['reconstructed_data']
+            results['b_reconstructed_data'] = ret_b['reconstructed_data']
 
         return results
