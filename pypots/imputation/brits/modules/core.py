@@ -101,7 +101,7 @@ class RITS(nn.Module):
 
     def impute(
         self, inputs: dict, direction: str
-    ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+    ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
         """The imputation function.
         Parameters
         ----------
@@ -114,7 +114,10 @@ class RITS(nn.Module):
         Returns
         -------
         imputed_data :
-            [batch size, sequence length, feature number]
+            Input data with missing parts imputed. Shape of [batch size, sequence length, feature number].
+
+        estimations :
+            Reconstructed data. Shape of [batch size, sequence length, feature number].
 
         hidden_states: tensor,
             [batch size, RNN hidden size]
@@ -190,7 +193,9 @@ class RITS(nn.Module):
             A dictionary includes all results.
 
         """
-        imputed_data, estimations, hidden_state, reconstruction_loss = self.impute(inputs, direction)
+        imputed_data, estimations, hidden_state, reconstruction_loss = self.impute(
+            inputs, direction
+        )
         # for each iteration, reconstruction_loss increases its value for 3 times
         reconstruction_loss /= self.n_steps * 3
 
@@ -305,7 +310,9 @@ class _BRITS(nn.Module):
         ret_b = self._reverse(self.rits_b(inputs, "backward"))
 
         imputed_data = (ret_f["imputed_data"] + ret_b["imputed_data"]) / 2
-        reconstructed_data = (ret_f["reconstructed_data"] + ret_b["reconstructed_data"]) / 2
+        reconstructed_data = (
+            ret_f["reconstructed_data"] + ret_b["reconstructed_data"]
+        ) / 2
 
         results = {
             "imputed_data": imputed_data,
@@ -325,8 +332,8 @@ class _BRITS(nn.Module):
 
             # `loss` is always the item for backward propagating to update the model
             results["loss"] = loss
-            results['reconstructed_data'] = reconstructed_data
-            results['f_reconstructed_data'] = ret_f['reconstructed_data']
-            results['b_reconstructed_data'] = ret_b['reconstructed_data']
+            results["reconstructed_data"] = reconstructed_data
+            results["f_reconstructed_data"] = ret_f["reconstructed_data"]
+            results["b_reconstructed_data"] = ret_b["reconstructed_data"]
 
         return results
