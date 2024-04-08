@@ -2,9 +2,9 @@
 The implementation of BTTF (Bayesian Temporal Tensor Factorization) for the partially-observed time-series
 forecasting task.
 
-Refer to the paper "Chen, X., & Sun, L. (2021).
+Refer to the paper "Xinyu Chen and Lijun Sun.
 Bayesian Temporal Factorization for Multidimensional Time Series Prediction.
-IEEE transactions on pattern analysis and machine intelligence."
+IEEE Transactions on Pattern Analysis and Machine Intelligence, pages 1–1, 2021."
 
 Notes
 -----
@@ -68,13 +68,6 @@ class BTTF(BaseForecaster):
     1). ``n_steps`` must be larger than ``pred_step``;
 
     2). ``n_steps - pred_step`` must be larger than ``max(time_lags)``;
-
-    References
-    ----------
-    .. [1] `Chen, Xinyu, and Lijun Sun.
-        "Bayesian temporal factorization for multidimensional time series prediction."
-        IEEE Transactions on Pattern Analysis and Machine Intelligence 44, no. 9 (2021): 4659-4673.
-        <https://arxiv.org/pdf/1910.06366>`_
 
     """
 

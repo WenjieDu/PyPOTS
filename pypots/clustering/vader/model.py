@@ -1,9 +1,10 @@
 """
 The implementation of VaDER for the partially-observed time-series clustering task.
 
-Refer to the paper "Jong, J.D., Emon, M.A., Wu, P., Karki, R., Sood, M., Godard, P., Ahmad, A., Vrooman, H.A.,
-Hofmann-Apitius, M., & Fröhlich, H. (2019).
-Deep learning for clustering of multivariate clinical patient trajectories with missing values. GigaScience."
+Refer to the paper "Johann de Jong, Mohammad Asif Emon, Ping Wu, Reagon Karki, Meemansa Sood, Patrice Godard,
+Ashar Ahmad, Henri Vrooman, Martin Hofmann-Apitius, and Holger Fröhlich.
+Deep learning for clustering of multivariate clinical patient trajectories with missing values.
+GigaScience, 8(11):giz134, November 2019."
 
 """
 
@@ -91,16 +92,6 @@ class VaDER(BaseNNClusterer):
         The "better" strategy will automatically save the model during training whenever the model performs
         better than in previous epochs.
         The "all" strategy will save every model after each epoch training.
-
-    References
-    ----------
-    .. [1] `de Jong, Johann, Mohammad Asif Emon, Ping Wu, Reagon Karki, Meemansa Sood, Patrice Godard,
-    Ashar Ahmad, Henri Vrooman, Martin Hofmann-Apitius, and Holger Fröhlich.
-    "Deep learning for clustering of multivariate clinical patient trajectories with missing values."
-    GigaScience 8, no. 11 (2019): giz134.
-    <https://academic.oup.com/gigascience/article-pdf/8/11/giz134/30797160/giz134.pdf>`_
-
-
 
     """
 

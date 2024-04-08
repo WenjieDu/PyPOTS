@@ -1,8 +1,11 @@
 """
 The package of the partially-observed time-series imputation model ETSformer.
 
-Refer to the paper "Wu, H., Xu, J., Wang, J., & Long, M. (2021).
-ETSformer: Decomposition transformers with auto-correlation for long-term series forecasting. NeurIPS 2021.".
+Refer to the paper
+`Gerald Woo, Chenghao Liu, Doyen Sahoo, Akshat Kumar, and Steven Hoi.
+ETSformer: Exponential smoothing transformers for time-series forecasting.
+In ICLR, 2023.
+<https://openreview.net/pdf?id=5m_3whfo483>`_
 
 """
 

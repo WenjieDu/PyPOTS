@@ -16,9 +16,30 @@ from typing import Tuple, Optional
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from abc import abstractmethod
 
 
-class ScaledDotProductAttention(nn.Module):
+class AttentionOperator(nn.Module):
+    """
+    The abstract class for all attention layers.
+    """
+
+    def __init__(self):
+        super().__init__()
+
+    @abstractmethod
+    def forward(
+        self,
+        q: torch.Tensor,
+        k: torch.Tensor,
+        v: torch.Tensor,
+        attn_mask: Optional[torch.Tensor] = None,
+        **kwargs,
+    ) -> Tuple[torch.Tensor, torch.Tensor]:
+        raise NotImplementedError
+
+
+class ScaledDotProductAttention(AttentionOperator):
     """Scaled dot-product attention.
 
     Parameters
@@ -44,6 +65,7 @@ class ScaledDotProductAttention(nn.Module):
         k: torch.Tensor,
         v: torch.Tensor,
         attn_mask: Optional[torch.Tensor] = None,
+        **kwargs,
     ) -> Tuple[torch.Tensor, torch.Tensor]:
         """Forward processing of the scaled dot-product attention.
 
@@ -51,8 +73,10 @@ class ScaledDotProductAttention(nn.Module):
         ----------
         q:
             Query tensor.
+
         k:
             Key tensor.
+
         v:
             Value tensor.
 
@@ -106,11 +130,8 @@ class MultiHeadAttention(nn.Module):
     d_v:
         The dimension of the value tensor.
 
-    attn_dropout:
-        The dropout rate for the attention map.
-
-    attn_temperature:
-        The temperature for scaling. Default is None, which means d_k**0.5 will be applied.
+    attention_operator:
+        The attention operator, e.g. the self-attention proposed in Transformer.
 
     """
 
@@ -120,12 +141,9 @@ class MultiHeadAttention(nn.Module):
         d_model: int,
         d_k: int,
         d_v: int,
-        attn_dropout: float,
-        attn_temperature: float = None,
+        attention_operator: AttentionOperator,
     ):
         super().__init__()
-
-        attn_temperature = d_k**0.5 if attn_temperature is None else attn_temperature
 
         self.n_heads = n_heads
         self.d_k = d_k
@@ -135,7 +153,7 @@ class MultiHeadAttention(nn.Module):
         self.w_ks = nn.Linear(d_model, n_heads * d_k, bias=False)
         self.w_vs = nn.Linear(d_model, n_heads * d_v, bias=False)
 
-        self.attention = ScaledDotProductAttention(attn_temperature, attn_dropout)
+        self.attention_operator = attention_operator
         self.fc = nn.Linear(n_heads * d_v, d_model, bias=False)
 
     def forward(
@@ -144,6 +162,7 @@ class MultiHeadAttention(nn.Module):
         k: torch.Tensor,
         v: torch.Tensor,
         attn_mask: Optional[torch.Tensor],
+        **kwargs,
     ) -> Tuple[torch.Tensor, torch.Tensor]:
         """Forward processing of the multi-head attention module.
 
@@ -189,7 +208,7 @@ class MultiHeadAttention(nn.Module):
             # broadcasting on the head axis
             attn_mask = attn_mask.unsqueeze(1)
 
-        v, attn_weights = self.attention(q, k, v, attn_mask)
+        v, attn_weights = self.attention_operator(q, k, v, attn_mask, **kwargs)
 
         # transpose back -> [batch_size, n_steps, n_heads, d_v]
         # then merge the last two dimensions to combine all the heads -> [batch_size, n_steps, n_heads*d_v]

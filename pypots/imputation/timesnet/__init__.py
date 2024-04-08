@@ -1,8 +1,11 @@
 """
-The package of the partially-observed time-series imputation model Transformer.
+The package of the partially-observed time-series imputation model TimesNet.
 
-Refer to the paper "Du, W., Cote, D., & Liu, Y. (2023). SAITS: Self-Attention-based Imputation for Time Series.
-Expert systems with applications."
+Refer to the paper
+`Haixu Wu, Tengge Hu, Yong Liu, Hang Zhou, Jianmin Wang, and Mingsheng Long.
+TimesNet: Temporal 2D-Variation Modeling for General Time Series Analysis.
+In ICLR, 2023.
+<https://openreview.net/pdf?id=ju_Uqw384Oq>`_
 
 """
 

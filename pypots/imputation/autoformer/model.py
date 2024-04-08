@@ -1,12 +1,13 @@
 """
 The implementation of Autoformer for the partially-observed time-series imputation task.
 
-Refer to the paper "Wu, H., Xu, J., Wang, J., & Long, M. (2021).
-Autoformer: Decomposition transformers with auto-correlation for long-term series forecasting. NeurIPS 2021.".
+Refer to the paper "Haixu Wu, Jiehui Xu, Jianmin Wang, and Mingsheng Long.
+Autoformer: Decomposition transformers with autocorrelation for long-term series forecasting.
+In Advances in Neural Information Processing Systems, volume 34, pages 22419–22430. Curran Associates, Inc., 2021."
 
 Notes
 -----
-Partial implementation uses code from https://github.com/thuml/Time-Series-Library
+Partial implementation uses code from https://github.com/thuml/Autoformer
 
 """
 
@@ -100,13 +101,6 @@ class Autoformer(BaseNNImputer):
         The "better" strategy will automatically save the model during training whenever the model performs
         better than in previous epochs.
         The "all" strategy will save every model after each epoch training.
-
-    References
-    ----------
-    .. [1] `Wu, Haixu, Jiehui Xu, Jianmin Wang, and Mingsheng Long.
-        "Autoformer: Decomposition transformers with auto-correlation for long-term series forecasting".
-        Advances in neural information processing systems 34 (2021): 22419-22430.
-        <https://proceedings.neurips.cc/paper/2021/file/bcc0d400288793e8bdcd7c19a8ac0c2b-Paper.pdf>`_
 
     """
 

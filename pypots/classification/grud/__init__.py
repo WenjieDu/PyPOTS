@@ -1,8 +1,11 @@
 """
 The package of the partially-observed time-series classification model GRU-D.
 
-Refer to the paper "Che, Z., Purushotham, S., Cho, K., Sontag, D.A., & Liu, Y. (2018).
-Recurrent Neural Networks for Multivariate Time Series with Missing Values. Scientific Reports."
+Refer to the paper
+`Zhengping Che, Sanjay Purushotham, Kyunghyun Cho, David Sontag, and Yan Liu.
+Recurrent Neural Networks for Multivariate Time Series with Missing Values.
+Scientific Reports, 8(1):6085, April 2018.
+<https://www.nature.com/articles/s41598-018-24271-9.pdf>`_
 
 """
 

@@ -1,8 +1,9 @@
 """
 The implementation of USGAN for the partially-observed time-series imputation task.
 
-Refer to the paper "Miao, X., Wu, Y., Wang, J., Gao, Y., Mao, X., & Yin, J. (2021).
-Generative Semi-supervised Learning for Multivariate Time Series Imputation. AAAI 2021."
+Refer to the paper "Xiaoye Miao, Yangyang Wu, Jun Wang, Yunjun Gao, Xudong Mao, and Jianwei Yin.
+Generative Semi-supervised Learning for Multivariate Time Series Imputation.
+In AAAI, 35(10):8983–8991, May 2021."
 
 """
 
@@ -101,13 +102,6 @@ class USGAN(BaseNNImputer):
         The "best" strategy will only automatically save the best model after the training finished.
         The "better" strategy will automatically save the model during training whenever the model performs
         better than in previous epochs.
-
-    References
-    ----------
-    .. [1] `Miao, Xiaoye, Yangyang Wu, Jun Wang, Yunjun Gao, Xudong Mao, and Jianwei Yin. 2021.
-       "Generative Semi-Supervised Learning for Multivariate Time Series Imputation".
-       Proceedings of the AAAI Conference on Artificial Intelligence 35 (10):8983-91.
-       <https://doi.org/10.1609/aaai.v35i10.17086>`_
 
     """
 
@@ -242,16 +236,13 @@ class USGAN(BaseNNImputer):
 
         try:
             training_step = 0
-            epoch_train_loss_G_collector = []
-            epoch_train_loss_D_collector = []
             for epoch in range(1, self.epochs + 1):
                 self.model.train()
+                step_train_loss_G_collector = []
+                step_train_loss_D_collector = []
                 for idx, data in enumerate(training_loader):
                     training_step += 1
                     inputs = self._assemble_input_for_training(data)
-
-                    step_train_loss_G_collector = []
-                    step_train_loss_D_collector = []
 
                     if idx % self.G_steps == 0:
                         self.G_optimizer.zero_grad()
@@ -278,9 +269,6 @@ class USGAN(BaseNNImputer):
                     mean_step_train_D_loss = np.mean(step_train_loss_D_collector)
                     mean_step_train_G_loss = np.mean(step_train_loss_G_collector)
 
-                    epoch_train_loss_D_collector.append(mean_step_train_D_loss)
-                    epoch_train_loss_G_collector.append(mean_step_train_G_loss)
-
                     # save training loss logs into the tensorboard file for every step if in need
                     # Note: the `training_step` is not the actual number of steps that Discriminator and Generator get
                     # trained, the actual number should be D_steps*training_step and G_steps*training_step accordingly
@@ -292,8 +280,8 @@ class USGAN(BaseNNImputer):
                         self._save_log_into_tb_file(
                             training_step, "training", loss_results
                         )
-                mean_epoch_train_D_loss = np.mean(epoch_train_loss_D_collector)
-                mean_epoch_train_G_loss = np.mean(epoch_train_loss_G_collector)
+                mean_epoch_train_D_loss = np.mean(step_train_loss_D_collector)
+                mean_epoch_train_G_loss = np.mean(step_train_loss_G_collector)
 
                 if val_loader is not None:
                     self.model.eval()
