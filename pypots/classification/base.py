@@ -337,6 +337,7 @@ class BaseNNClassifier(BaseNNModel):
                     )
 
                 if mean_loss < self.best_loss:
+                    self.best_epoch = epoch
                     self.best_loss = mean_loss
                     self.best_model_dict = self.model.state_dict()
                     self.patience = self.original_patience
