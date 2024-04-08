@@ -185,7 +185,7 @@ Imputation                     Neural Net       Informer (Beyond Efficient Trans
 Imputation                     Neural Net       Autoformer (Decomposition Transformers with Auto-Correlation for Long-Term Series Forecasting)            2021   :cite:`wu2021autoformer`
 Imputation                     Neural Net       US-GAN (Unsupervised GAN for Multivariate Time Series Imputation)                                         2021   :cite:`miao2021SSGAN`
 Imputation                     Neural Net       CSDI (Conditional Score-based Diffusion Models for Probabilistic Time Series Imputation)                  2021   :cite:`tashiro2021csdi`
-Imputation                     Neural Net       GP-VAE (Gaussian Process Variational Autoencoder)                                                         2020   :cite:`fortuin2020GPVAEDeep`
+Imputation                     Neural Net       GP-VAE (Gaussian Process Variational Autoencoder)                                                         2020   :cite:`fortuin2020gpvae`
 Imputation, Classification     Neural Net       BRITS (Bidirectional Recurrent Imputation for Time Series)                                                2018   :cite:`cao2018BRITS`
 Imputation                     Neural Net       M-RNN (Multi-directional Recurrent Neural Network)                                                        2019   :cite:`yoon2019MRNN`
 Imputation                     Naive            LOCF/NOCB(Last Observation Carried Forward/Next Observation Carried Backward)                             /      /

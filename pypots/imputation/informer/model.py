@@ -1,12 +1,14 @@
 """
 The implementation of Informer for the partially-observed time-series imputation task.
 
-Refer to the paper "Zhou, H., Zhang, S., Peng, J., Zhang, S., Li, J., Xiong, H., & Zhang, W. (2021).
-Informer: Beyond efficient transformer for long sequence time-series forecasting. AAAI 2021".
+Refer to the paper "Haoyi Zhou, Shanghang Zhang, Jieqi Peng, Shuai Zhang, Jianxin Li, Hui Xiong, and Wancai Zhang.
+Informer: Beyond efficient transformer for long sequence time-series forecasting.
+In Proceedings of the AAAI conference on artificial intelligence, volume 35, pages 11106–11115, 2021.".
 
 Notes
 -----
-Partial implementation uses code from https://github.com/zhouhaoyi/Informer2020
+Partial implementation uses code from
+https://github.com/zhouhaoyi/Informer2020 and https://github.com/thuml/Time-Series-Library
 
 """
 
@@ -54,10 +56,7 @@ class Informer(BaseNNImputer):
         The dimension of the feed-forward network.
 
     factor :
-        The factor of the auto correlation mechanism for the Informer model.
-
-    moving_avg_window_size :
-        The window size of moving average.
+        The factor of the ProbSparse self-attention mechanism for the Informer model.
 
     dropout :
         The dropout rate for the model.
@@ -100,13 +99,6 @@ class Informer(BaseNNImputer):
         The "better" strategy will automatically save the model during training whenever the model performs
         better than in previous epochs.
         The "all" strategy will save every model after each epoch training.
-
-    References
-    ----------
-    .. [1] `Zhou, Haoyi, Shanghang Zhang, Jieqi Peng, Shuai Zhang, Jianxin Li, Hui Xiong, and Wancai Zhang.
-           "Informer: Beyond efficient transformer for long sequence time-series forecasting."
-           In Proceedings of the AAAI conference on artificial intelligence, vol. 35, no. 12, pp. 11106-11115. 2021.
-        <https://ojs.aaai.org/index.php/AAAI/article/download/17325/17132>`_
 
     """
 

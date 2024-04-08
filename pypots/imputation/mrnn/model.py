@@ -1,5 +1,9 @@
 """
-PyTorch MRNN model for the time-series imputation task.
+PyTorch M-RNN model for the time-series imputation task.
+
+Refer to the paper "Jinsung Yoon, William R. Zame, and Mihaela van der Schaar.
+Estimating missing data in temporal data streams using multi-directional recurrent neural networks.
+EEE Transactions on Biomedical Engineering, 66(5):14771490, 2019."
 
 This implementation is inspired by the official one https://github.com/jsyoon0823/MRNN.
 Some part of the code is from https://github.com/WenjieDu/SAITS.
@@ -77,14 +81,6 @@ class MRNN(BaseNNImputer):
         The "better" strategy will automatically save the model during training whenever the model performs
         better than in previous epochs.
         The "all" strategy will save every model after each epoch training.
-
-    References
-    ----------
-    .. [1] `J. Yoon, W. R. Zame and M. van der Schaar,
-        "Estimating Missing Data in Temporal Data Streams Using Multi-Directional Recurrent Neural Networks,"
-        in IEEE Transactions on Biomedical Engineering,
-        vol. 66, no. 5, pp. 1477-1490, May 2019, doi: 10.1109/TBME.2018.2874712.
-        <https://arxiv.org/pdf/1711.08742>`_
 
     """
 
