@@ -371,7 +371,9 @@ class BaseNNForecaster(BaseNNModel):
         if np.isnan(self.best_loss):
             raise ValueError("Something is wrong. best_loss is Nan after training.")
 
-        logger.info("Finished training.")
+        logger.info(
+            f"Finished training. The best model is from epoch#{self.best_epoch}."
+        )
 
     @abstractmethod
     def fit(
