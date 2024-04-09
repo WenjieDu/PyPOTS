@@ -47,15 +47,30 @@ class TestDLinear(unittest.TestCase):
         DATA["n_features"],
         moving_avg_window_size=3,
         individual=False,
+        d_model=128,
         epochs=EPOCHS,
         saving_path=saving_path,
         optimizer=optimizer,
         device=DEVICE,
     )
 
+    individual_optimizer = Adam(lr=0.001, weight_decay=1e-5)
+    individual_dlinear = DLinear(
+        DATA["n_steps"],
+        DATA["n_features"],
+        moving_avg_window_size=3,
+        individual=True,
+        d_model=None,  # d_model is useless for DLinear in the individual mode
+        epochs=EPOCHS,
+        saving_path=saving_path,
+        optimizer=individual_optimizer,
+        device=DEVICE,
+    )
+
     @pytest.mark.xdist_group(name="imputation-dlinear")
     def test_0_fit(self):
         self.dlinear.fit(TRAIN_SET, VAL_SET)
+        self.individual_dlinear.fit(TRAIN_SET, VAL_SET)
 
     @pytest.mark.xdist_group(name="imputation-dlinear")
     def test_1_impute(self):
@@ -70,6 +85,14 @@ class TestDLinear(unittest.TestCase):
             DATA["test_X_indicating_mask"],
         )
         logger.info(f"DLinear test_MSE: {test_MSE}")
+
+        imputation_results = self.individual_dlinear.predict(TEST_SET)
+        test_MSE = calc_mse(
+            imputation_results["imputation"],
+            DATA["test_X_ori"],
+            DATA["test_X_indicating_mask"],
+        )
+        logger.info(f"Individual DLinear test_MSE: {test_MSE}")
 
     @pytest.mark.xdist_group(name="imputation-dlinear")
     def test_2_parameters(self):

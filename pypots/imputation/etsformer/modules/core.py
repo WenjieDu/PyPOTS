@@ -5,6 +5,7 @@
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
+import torch
 import torch.nn as nn
 
 from .submodules import (
@@ -36,7 +37,7 @@ class _ETSformer(nn.Module):
         self.n_steps = n_steps
 
         self.enc_embedding = DataEmbedding(
-            n_features,
+            n_features * 2,
             d_model,
             dropout=dropout,
         )
@@ -76,8 +77,15 @@ class _ETSformer(nn.Module):
     def forward(self, inputs: dict, training: bool = True) -> dict:
         X, masks = inputs["X"], inputs["missing_mask"]
 
-        # embedding
-        res = self.enc_embedding(X)
+        # WDU: the original ETSformer paper isn't proposed for imputation task. Hence the model doesn't take
+        # the missing mask into account, which means, in the process, the model doesn't know which part of
+        # the input data is missing, and this may hurt the model's imputation performance. Therefore, I add the
+        # embedding layers to project the concatenation of features and masks into a hidden space, as well as
+        # the output layers to project back from the hidden space to the original space.
+
+        # the same as SAITS, concatenate the time series data and the missing mask for embedding
+        input_X = torch.cat([X, masks], dim=2)
+        res = self.enc_embedding(input_X)
 
         # ETSformer encoder processing
         level, growths, seasons = self.encoder(res, X, attn_mask=None)

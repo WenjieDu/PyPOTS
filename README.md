@@ -192,39 +192,42 @@ The paper references are all listed at the bottom of this readme file. Please re
 🌟 Since **v0.2**, all neural-network models in PyPOTS has got hyperparameter-optimization support.
 This functionality is implemented with the [Microsoft NNI](https://github.com/microsoft/nni) framework.
 
-|   ***`Imputation`***   |     🚥      |                                                                                        🚥                                                                                         |    🚥    |
-|:----------------------:|:-----------:|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------:|:--------:|
-|        **Type**        |  **Abbr.**  |                                                                       **Full name of the algorithm/model**                                                                        | **Year** |
-|       Neural Net       |    SAITS    |                                                               Self-Attention-based Imputation for Time Series [^1]                                                                |   2023   |
-|       Neural Net       | Transformer | Attention is All you Need [^2];<br>Self-Attention-based Imputation for Time Series [^1];<br><sub>Note: proposed in [^2], and re-implemented as an imputation model in [^1].</sub> |   2017   |
-|       Neural Net       | Crossformer |                                          Transformer Utilizing Cross-Dimension Dependency for Multivariate Time Series Forecasting [^16]                                          |   2023   |
-|       Neural Net       |  TimesNet   |                                                       Temporal 2D-Variation Modeling for General Time Series Analysis [^14]                                                       |   2023   |
-|       Neural Net       |  PatchTST   |                                                  A Time Series is Worth 64 Words: Long-Term Forecasting with Transformers [^18]                                                   |   2023   |
-|       Neural Net       |   DLinear   |                                                           Are Transformers Effective for Time Series Forecasting? [^17]                                                           |   2023   |
-|       Neural Net       |  ETSformer  |                                                       Exponential Smoothing Transformers for Time-series Forecasting [^19]                                                        |   2023   |
-|       Neural Net       |  FEDformer  |                                                 Frequency Enhanced Decomposed Transformer for Long-term Series Forecasting [^20]                                                  |   2022   |
-|       Neural Net       |  Informer   |                                                   Beyond Efficient Transformer for Long Sequence Time-Series Forecasting [^21]                                                    |   2021   |
-|       Neural Net       | Autoformer  |                                              Decomposition Transformers with Auto-Correlation for Long-Term Series Forecasting [^15]                                              |   2021   |
-|       Neural Net       |    CSDI     |                                              Conditional Score-based Diffusion Models for Probabilistic Time Series Imputation [^12]                                              |   2021   |
-|       Neural Net       |   US-GAN    |                                                          Unsupervised GAN for Multivariate Time Series Imputation [^10]                                                           |   2021   |
-|       Neural Net       |   GP-VAE    |                                                                  Gaussian Process Variational Autoencoder [^11]                                                                   |   2020   |
-|       Neural Net       |    BRITS    |                                                              Bidirectional Recurrent Imputation for Time Series [^3]                                                              |   2018   |
-|       Neural Net       |    M-RNN    |                                                                  Multi-directional Recurrent Neural Network [^9]                                                                  |   2019   |
-|         Naive          |  LOCF/NOCB  |                                                       Last Observation Carried Forward / Next Observation Carried Backward                                                        |    -     |
-|         Naive          |   Median    |                                                                              Median Value Imputation                                                                              |    -     |
-|         Naive          |    Mean     |                                                                               Mean Value Imputation                                                                               |    -     |
-| ***`Classification`*** |     🚥      |                                                                                        🚥                                                                                         |    🚥    |
-|        **Type**        |  **Abbr.**  |                                                                    **Full name of the algorithm/model/paper**                                                                     | **Year** |
-|       Neural Net       |    BRITS    |                                                              Bidirectional Recurrent Imputation for Time Series [^3]                                                              |   2018   |
-|       Neural Net       |    GRU-D    |                                                  Recurrent Neural Networks for Multivariate Time Series with Missing Values [^4]                                                  |   2018   |
-|       Neural Net       |  Raindrop   |                                                    Graph-Guided Network for Irregularly Sampled Multivariate Time Series [^5]                                                     |   2022   |
-|   ***`Clustering`***   |     🚥      |                                                                                        🚥                                                                                         |    🚥    |
-|        **Type**        |  **Abbr.**  |                                                                    **Full name of the algorithm/model/paper**                                                                     | **Year** |
-|       Neural Net       |    CRLI     |                                                      Clustering Representation Learning on Incomplete time-series data [^6]                                                       |   2021   |
-|       Neural Net       |    VaDER    |                                                                  Variational Deep Embedding with Recurrence [^7]                                                                  |   2019   |
-|  ***`Forecasting`***   |     🚥      |                                                                                        🚥                                                                                         |    🚥    |
-|        **Type**        |  **Abbr.**  |                                                                    **Full name of the algorithm/model/paper**                                                                     | **Year** |
-|     Probabilistic      |    BTTF     |                                                                    Bayesian Temporal Tensor Factorization [^8]                                                                    |   2021   |
+🔥 Note that Transformer, Crossformer, PatchTST, DLinear, ETSformer, FEDformer, Informer, Autoformer are not proposed as imputation methods in their original papers,
+and they cannot accept POTS as input. **To make them applicable on POTS data, we apply the embedding strategy the same as we did in [SAITS paper](https://arxiv.org/pdf/2202.08516).**
+
+|   ***`Imputation`***   |     🚥      |                                               🚥                                                |    🚥    |
+|:----------------------:|:-----------:|:-----------------------------------------------------------------------------------------------:|:--------:|
+|        **Type**        |  **Abbr.**  |                              **Full name of the algorithm/model**                               | **Year** |
+|       Neural Net       |    SAITS    |                      Self-Attention-based Imputation for Time Series [^1]                       |   2023   |
+|       Neural Net       | Transformer |                                 Attention is All you Need [^2]                                  |   2017   |
+|       Neural Net       | Crossformer | Transformer Utilizing Cross-Dimension Dependency for Multivariate Time Series Forecasting [^16] |   2023   |
+|       Neural Net       |  TimesNet   |              Temporal 2D-Variation Modeling for General Time Series Analysis [^14]              |   2023   |
+|       Neural Net       |  PatchTST   |         A Time Series is Worth 64 Words: Long-Term Forecasting with Transformers [^18]          |   2023   |
+|       Neural Net       |   DLinear   |                  Are Transformers Effective for Time Series Forecasting? [^17]                  |   2023   |
+|       Neural Net       |  ETSformer  |              Exponential Smoothing Transformers for Time-series Forecasting [^19]               |   2023   |
+|       Neural Net       |  FEDformer  |        Frequency Enhanced Decomposed Transformer for Long-term Series Forecasting [^20]         |   2022   |
+|       Neural Net       |  Informer   |          Beyond Efficient Transformer for Long Sequence Time-Series Forecasting [^21]           |   2021   |
+|       Neural Net       | Autoformer  |     Decomposition Transformers with Auto-Correlation for Long-Term Series Forecasting [^15]     |   2021   |
+|       Neural Net       |    CSDI     |     Conditional Score-based Diffusion Models for Probabilistic Time Series Imputation [^12]     |   2021   |
+|       Neural Net       |   US-GAN    |                 Unsupervised GAN for Multivariate Time Series Imputation [^10]                  |   2021   |
+|       Neural Net       |   GP-VAE    |                         Gaussian Process Variational Autoencoder [^11]                          |   2020   |
+|       Neural Net       |    BRITS    |                     Bidirectional Recurrent Imputation for Time Series [^3]                     |   2018   |
+|       Neural Net       |    M-RNN    |                         Multi-directional Recurrent Neural Network [^9]                         |   2019   |
+|         Naive          |  LOCF/NOCB  |              Last Observation Carried Forward / Next Observation Carried Backward               |    -     |
+|         Naive          |   Median    |                                     Median Value Imputation                                     |    -     |
+|         Naive          |    Mean     |                                      Mean Value Imputation                                      |    -     |
+| ***`Classification`*** |     🚥      |                                               🚥                                                |    🚥    |
+|        **Type**        |  **Abbr.**  |                           **Full name of the algorithm/model/paper**                            | **Year** |
+|       Neural Net       |    BRITS    |                     Bidirectional Recurrent Imputation for Time Series [^3]                     |   2018   |
+|       Neural Net       |    GRU-D    |         Recurrent Neural Networks for Multivariate Time Series with Missing Values [^4]         |   2018   |
+|       Neural Net       |  Raindrop   |           Graph-Guided Network for Irregularly Sampled Multivariate Time Series [^5]            |   2022   |
+|   ***`Clustering`***   |     🚥      |                                               🚥                                                |    🚥    |
+|        **Type**        |  **Abbr.**  |                           **Full name of the algorithm/model/paper**                            | **Year** |
+|       Neural Net       |    CRLI     |             Clustering Representation Learning on Incomplete time-series data [^6]              |   2021   |
+|       Neural Net       |    VaDER    |                         Variational Deep Embedding with Recurrence [^7]                         |   2019   |
+|  ***`Forecasting`***   |     🚥      |                                               🚥                                                |    🚥    |
+|        **Type**        |  **Abbr.**  |                           **Full name of the algorithm/model/paper**                            | **Year** |
+|     Probabilistic      |    BTTF     |                           Bayesian Temporal Tensor Factorization [^8]                           |   2021   |
 
 
 ## ❖ Citing PyPOTS

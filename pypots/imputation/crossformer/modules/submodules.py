@@ -144,11 +144,12 @@ class ScaleBlock(nn.Module):
         d_ff,
         depth,
         dropout,
-        seg_num=10,
-        factor=10,
+        seg_num,
+        factor,
     ):
         super().__init__()
 
+        d_k = d_model // n_heads
         if win_size > 1:
             self.merge_layer = SegMerging(d_model, win_size, nn.LayerNorm)
         else:
@@ -158,7 +159,9 @@ class ScaleBlock(nn.Module):
 
         for i in range(depth):
             self.encode_layers.append(
-                TwoStageAttentionLayer(seg_num, factor, d_model, n_heads, d_ff, dropout)
+                TwoStageAttentionLayer(
+                    seg_num, factor, d_model, n_heads, d_k, d_k, d_ff, dropout
+                )
             )
 
     def forward(self, x, attn_mask=None, tau=None, delta=None):
