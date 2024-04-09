@@ -39,7 +39,7 @@ class _Autoformer(nn.Module):
         self.seq_len = n_steps
         self.n_layers = n_layers
         self.enc_embedding = DataEmbedding(
-            n_features,
+            n_features * 2,
             d_model,
             dropout=dropout,
             with_pos=False,

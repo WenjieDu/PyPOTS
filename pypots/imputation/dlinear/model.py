@@ -47,7 +47,7 @@ class DLinear(BaseNNImputer):
         The window size of moving average.
 
     individual :
-        Whether to share model across different features.
+        Whether to make a linear layer for each variate/channel/feature individually.
 
     batch_size :
         The batch size for training and evaluating the model.
