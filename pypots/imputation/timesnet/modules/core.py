@@ -5,7 +5,6 @@
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-import torch
 import torch.nn as nn
 
 from .submodules import TimesBlock
@@ -41,14 +40,15 @@ class _TimesNet(nn.Module):
             ]
         )
         self.enc_embedding = DataEmbedding(
-            n_features * 2,
+            n_features,
             d_model,
             dropout=dropout,
         )
         self.layer_norm = nn.LayerNorm(d_model)
 
         # for the imputation task, the output dim is the same as input dim
-        self.projection = nn.Linear(d_model, n_features)
+        c_out = n_features
+        self.projection = nn.Linear(d_model, c_out)
 
     def forward(self, inputs: dict, training: bool = True) -> dict:
         X, masks = inputs["X"], inputs["missing_mask"]
@@ -58,8 +58,7 @@ class _TimesNet(nn.Module):
             X, means, stdev = nonstationary_norm(X, masks)
 
         # embedding
-        input_X = torch.cat([X, masks], dim=2)
-        enc_out = self.enc_embedding(input_X)  # [B,T,C]
+        enc_out = self.enc_embedding(X)  # [B,T,C]
         # TimesNet
         for i in range(self.n_layers):
             enc_out = self.layer_norm(self.model[i](enc_out))
