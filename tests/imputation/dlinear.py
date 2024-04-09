@@ -45,9 +45,9 @@ class TestDLinear(unittest.TestCase):
     dlinear = DLinear(
         DATA["n_steps"],
         DATA["n_features"],
-        d_model=128,
         moving_avg_window_size=3,
         individual=False,
+        d_model=128,
         epochs=EPOCHS,
         saving_path=saving_path,
         optimizer=optimizer,
@@ -58,9 +58,9 @@ class TestDLinear(unittest.TestCase):
     individual_dlinear = DLinear(
         DATA["n_steps"],
         DATA["n_features"],
-        d_model=128,
         moving_avg_window_size=3,
         individual=True,
+        d_model=None,  # d_model is useless for DLinear in the individual mode
         epochs=EPOCHS,
         saving_path=saving_path,
         optimizer=individual_optimizer,
