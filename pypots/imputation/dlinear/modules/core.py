@@ -5,6 +5,8 @@
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
+from typing import Optional
+
 import torch
 import torch.nn as nn
 
@@ -19,6 +21,7 @@ class _DLinear(nn.Module):
         n_features: int,
         moving_avg_window_size: int,
         individual: bool = False,
+        d_model: Optional[int] = None,
     ):
         super().__init__()
 
@@ -31,29 +34,33 @@ class _DLinear(nn.Module):
             # create linear layers for each feature individually
             self.linear_seasonal = nn.ModuleList()
             self.linear_trend = nn.ModuleList()
-            for i in range(self.n_features):
-                self.linear_seasonal.append(nn.Linear(self.n_steps, self.n_steps))
-                self.linear_trend.append(nn.Linear(self.n_steps, self.n_steps))
+            for i in range(n_features):
+                self.linear_seasonal.append(nn.Linear(n_steps, n_steps))
+                self.linear_trend.append(nn.Linear(n_steps, n_steps))
                 self.linear_seasonal[i].weight = nn.Parameter(
-                    (1 / self.n_steps) * torch.ones([self.n_steps, self.n_steps])
+                    (1 / n_steps) * torch.ones([n_steps, n_steps])
                 )
                 self.linear_trend[i].weight = nn.Parameter(
-                    (1 / self.n_steps) * torch.ones([self.n_steps, self.n_steps])
+                    (1 / n_steps) * torch.ones([n_steps, n_steps])
                 )
         else:
-            self.linear_seasonal = nn.Linear(self.n_steps, self.n_steps)
-            self.linear_trend = nn.Linear(self.n_steps, self.n_steps)
+            if d_model is None:
+                raise ValueError(
+                    "The argument d_model is necessary for DLinear in the non-individual mode."
+                )
+            self.linear_seasonal = nn.Linear(n_steps, n_steps)
+            self.linear_trend = nn.Linear(n_steps, n_steps)
             self.linear_seasonal.weight = nn.Parameter(
-                (1 / self.n_steps) * torch.ones([self.n_steps, self.n_steps])
+                (1 / n_steps) * torch.ones([n_steps, n_steps])
             )
             self.linear_trend.weight = nn.Parameter(
-                (1 / self.n_steps) * torch.ones([self.n_steps, self.n_steps])
+                (1 / n_steps) * torch.ones([n_steps, n_steps])
             )
 
-            self.linear_seasonal_embedding = nn.Linear(self.n_features * 2, 128)
-            self.linear_trend_embedding = nn.Linear(self.n_features * 2, 128)
-            self.linear_seasonal_output = nn.Linear(128, self.n_features)
-            self.linear_trend_output = nn.Linear(128, self.n_features)
+            self.linear_seasonal_embedding = nn.Linear(n_features * 2, d_model)
+            self.linear_trend_embedding = nn.Linear(n_features * 2, d_model)
+            self.linear_seasonal_output = nn.Linear(d_model, n_features)
+            self.linear_trend_output = nn.Linear(d_model, n_features)
 
     def forward(self, inputs: dict, training: bool = True) -> dict:
         X, masks = inputs["X"], inputs["missing_mask"]

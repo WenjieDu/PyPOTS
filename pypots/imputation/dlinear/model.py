@@ -49,6 +49,10 @@ class DLinear(BaseNNImputer):
     individual :
         Whether to make a linear layer for each variate/channel/feature individually.
 
+    d_model:
+        The dimension of the space in which the time-series data will be embedded and modeled.
+        It is necessary only for DLinear in the non-individual mode.
+
     batch_size :
         The batch size for training and evaluating the model.
 
@@ -96,6 +100,7 @@ class DLinear(BaseNNImputer):
         n_features: int,
         moving_avg_window_size: int,
         individual: bool = False,
+        d_model: Optional[int] = None,
         batch_size: int = 32,
         epochs: int = 100,
         patience: int = None,
@@ -120,6 +125,7 @@ class DLinear(BaseNNImputer):
         # model hype-parameters
         self.moving_avg_window_size = moving_avg_window_size
         self.individual = individual
+        self.d_model = d_model
 
         # set up the model
         self.model = _DLinear(
@@ -127,6 +133,7 @@ class DLinear(BaseNNImputer):
             n_features,
             moving_avg_window_size,
             individual,
+            d_model,
         )
         self._send_model_to_given_device()
         self._print_model_size()
