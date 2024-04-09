@@ -33,6 +33,7 @@ class _Crossformer(nn.Module):
         super().__init__()
 
         self.n_features = n_features
+        self.d_model = d_model
 
         # The padding operation to handle invisible sgemnet length
         pad_in_len = ceil(1.0 * n_steps / seg_len) * seg_len
@@ -49,7 +50,7 @@ class _Crossformer(nn.Module):
             0,
         )
         self.enc_pos_embedding = nn.Parameter(
-            torch.randn(1, n_features, in_seg_num, d_model)
+            torch.randn(1, d_model, in_seg_num, d_model)
         )
         self.pre_norm = nn.LayerNorm(d_model)
 
@@ -71,22 +72,31 @@ class _Crossformer(nn.Module):
         )
 
         self.head = FlattenHead(head_nf, n_steps, dropout)
+        self.embedding = nn.Linear(n_features * 2, d_model)
+        self.output_projection = nn.Linear(d_model, n_features)
 
     def forward(self, inputs: dict, training: bool = True) -> dict:
         X, masks = inputs["X"], inputs["missing_mask"]
 
         # embedding
-        x_enc = self.enc_value_embedding(X.permute(0, 2, 1))
+        # WDU: the original Crossformer paper isn't proposed for imputation task. Hence the model doesn't take
+        # the missing mask into account, which means, in the process, the model doesn't know which part of
+        # the input data is missing, and this may hurt the model's imputation performance. Therefore, I add the
+        # embedding layers to project the concatenation of features and masks into a hidden space, as well as
+        # the output layers to project the seasonal and trend from the hidden space to the original space.
+        input_X = self.embedding(torch.cat([X, masks], dim=2))
+        x_enc = self.enc_value_embedding(input_X.permute(0, 2, 1))
 
         # Crossformer processing
         x_enc = rearrange(
-            x_enc, "(b d) seg_num d_model -> b d seg_num d_model", d=self.n_features
+            x_enc, "(b d) seg_num d_model -> b d seg_num d_model", d=self.d_model
         )
         x_enc += self.enc_pos_embedding
         x_enc = self.pre_norm(x_enc)
         enc_out, attns = self.encoder(x_enc)
         # project back the original data space
         dec_out = self.head(enc_out[-1].permute(0, 1, 3, 2)).permute(0, 2, 1)
+        dec_out = self.output_projection(dec_out)
 
         imputed_data = masks * X + (1 - masks) * dec_out
         results = {
