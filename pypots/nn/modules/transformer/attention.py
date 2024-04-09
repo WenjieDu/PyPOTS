@@ -195,11 +195,12 @@ class MultiHeadAttention(nn.Module):
 
         # keep useful variables
         batch_size, n_steps = q.size(0), q.size(1)
+        k_n_steps = k.size(1)
 
         # now separate the last dimension of q, k, v into different heads -> [batch_size, n_steps, n_heads, d_k or d_v]
         q = self.w_qs(q).view(batch_size, n_steps, self.n_heads, self.d_k)
-        k = self.w_ks(k).view(batch_size, n_steps, self.n_heads, self.d_k)
-        v = self.w_vs(v).view(batch_size, n_steps, self.n_heads, self.d_v)
+        k = self.w_ks(k).view(batch_size, k_n_steps, self.n_heads, self.d_k)
+        v = self.w_vs(v).view(batch_size, k_n_steps, self.n_heads, self.d_v)
 
         # transpose for self-attention calculation -> [batch_size, n_steps, d_k or d_v, n_heads]
         q, k, v = q.transpose(1, 2), k.transpose(1, 2), v.transpose(1, 2)
