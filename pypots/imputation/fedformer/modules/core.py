@@ -76,10 +76,16 @@ class _FEDformer(nn.Module):
             ],
             norm_layer=SeasonalLayerNorm(d_model),
         )
-        self.projection = nn.Linear(d_model, n_features)
+        self.output_projection = nn.Linear(d_model, n_features)
 
     def forward(self, inputs: dict, training: bool = True) -> dict:
         X, masks = inputs["X"], inputs["missing_mask"]
+
+        # WDU: the original FEDformer paper isn't proposed for imputation task. Hence the model doesn't take
+        # the missing mask into account, which means, in the process, the model doesn't know which part of
+        # the input data is missing, and this may hurt the model's imputation performance. Therefore, I add the
+        # embedding layers to project the concatenation of features and masks into a hidden space, as well as
+        # the output layers to project back from the hidden space to the original space.
 
         # the same as SAITS, concatenate the time series data and the missing mask for embedding
         input_X = torch.cat([X, masks], dim=2)
@@ -87,7 +93,7 @@ class _FEDformer(nn.Module):
 
         # FEDformer encoder processing
         enc_out, attns = self.encoder(enc_out)
-        output = self.projection(enc_out)
+        output = self.output_projection(enc_out)
 
         imputed_data = masks * X + (1 - masks) * output
         results = {

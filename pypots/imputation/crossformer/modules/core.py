@@ -78,12 +78,12 @@ class _Crossformer(nn.Module):
     def forward(self, inputs: dict, training: bool = True) -> dict:
         X, masks = inputs["X"], inputs["missing_mask"]
 
-        # embedding
         # WDU: the original Crossformer paper isn't proposed for imputation task. Hence the model doesn't take
         # the missing mask into account, which means, in the process, the model doesn't know which part of
         # the input data is missing, and this may hurt the model's imputation performance. Therefore, I add the
         # embedding layers to project the concatenation of features and masks into a hidden space, as well as
-        # the output layers to project the seasonal and trend from the hidden space to the original space.
+        # the output layers to project back from the hidden space to the original space.
+        # embedding
         input_X = self.embedding(torch.cat([X, masks], dim=2))
         x_enc = self.enc_value_embedding(input_X.permute(0, 2, 1))
 
@@ -96,16 +96,16 @@ class _Crossformer(nn.Module):
         enc_out, attns = self.encoder(x_enc)
         # project back the original data space
         dec_out = self.head(enc_out[-1].permute(0, 1, 3, 2)).permute(0, 2, 1)
-        dec_out = self.output_projection(dec_out)
+        output = self.output_projection(dec_out)
 
-        imputed_data = masks * X + (1 - masks) * dec_out
+        imputed_data = masks * X + (1 - masks) * output
         results = {
             "imputed_data": imputed_data,
         }
 
         if training:
             # `loss` is always the item for backward propagating to update the model
-            loss = calc_mse(dec_out, inputs["X_ori"], inputs["indicating_mask"])
+            loss = calc_mse(output, inputs["X_ori"], inputs["indicating_mask"])
             results["loss"] = loss
 
         return results

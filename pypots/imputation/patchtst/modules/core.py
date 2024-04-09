@@ -69,7 +69,7 @@ class _PatchTST(nn.Module):
         # the missing mask into account, which means, in the process, the model doesn't know which part of
         # the input data is missing, and this may hurt the model's imputation performance. Therefore, I add the
         # embedding layers to project the concatenation of features and masks into a hidden space, as well as
-        # the output layers to project the seasonal and trend from the hidden space to the original space.
+        # the output layers to project back from the hidden space to the original space.
 
         # do patching and embedding
         input_X = self.embedding(torch.cat([X, masks], dim=2))
@@ -89,16 +89,16 @@ class _PatchTST(nn.Module):
         # project back the original data space
         dec_out = self.head(enc_out)  # z: [bs x d_model x target_window]
         dec_out = dec_out.permute(0, 2, 1)
-        dec_out = self.output_projection(dec_out)
+        output = self.output_projection(dec_out)
 
-        imputed_data = masks * X + (1 - masks) * dec_out
+        imputed_data = masks * X + (1 - masks) * output
         results = {
             "imputed_data": imputed_data,
         }
 
         if training:
             # `loss` is always the item for backward propagating to update the model
-            loss = calc_mse(dec_out, inputs["X_ori"], inputs["indicating_mask"])
+            loss = calc_mse(output, inputs["X_ori"], inputs["indicating_mask"])
             results["loss"] = loss
 
         return results

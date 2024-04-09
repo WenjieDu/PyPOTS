@@ -64,10 +64,16 @@ class _Autoformer(nn.Module):
         )
 
         # for the imputation task, the output dim is the same as input dim
-        self.projection = nn.Linear(d_model, n_features)
+        self.output_projection = nn.Linear(d_model, n_features)
 
     def forward(self, inputs: dict, training: bool = True) -> dict:
         X, masks = inputs["X"], inputs["missing_mask"]
+
+        # WDU: the original Autoformer paper isn't proposed for imputation task. Hence the model doesn't take
+        # the missing mask into account, which means, in the process, the model doesn't know which part of
+        # the input data is missing, and this may hurt the model's imputation performance. Therefore, I add the
+        # embedding layers to project the concatenation of features and masks into a hidden space, as well as
+        # the output layers to project back from the hidden space to the original space.
 
         # the same as SAITS, concatenate the time series data and the missing mask for embedding
         input_X = torch.cat([X, masks], dim=2)
@@ -77,16 +83,16 @@ class _Autoformer(nn.Module):
         enc_out, attns = self.encoder(enc_out)
 
         # project back the original data space
-        dec_out = self.projection(enc_out)
+        output = self.output_projection(enc_out)
 
-        imputed_data = masks * X + (1 - masks) * dec_out
+        imputed_data = masks * X + (1 - masks) * output
         results = {
             "imputed_data": imputed_data,
         }
 
         if training:
             # `loss` is always the item for backward propagating to update the model
-            loss = calc_mse(dec_out, inputs["X_ori"], inputs["indicating_mask"])
+            loss = calc_mse(output, inputs["X_ori"], inputs["indicating_mask"])
             results["loss"] = loss
 
         return results
