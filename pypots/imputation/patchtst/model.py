@@ -73,6 +73,12 @@ class PatchTST(BaseNNImputer):
     dropout :
         The dropout rate for the model.
 
+    ORT_weight :
+        The weight for the ORT loss, the same as SAITS.
+
+    MIT_weight :
+        The weight for the MIT loss, the same as SAITS.
+
     batch_size :
         The batch size for training and evaluating the model.
 
@@ -128,6 +134,8 @@ class PatchTST(BaseNNImputer):
         d_ffn: int,
         dropout: float,
         attn_dropout: float,
+        ORT_weight: float = 1,
+        MIT_weight: float = 1,
         batch_size: int = 32,
         epochs: int = 100,
         patience: int = None,
@@ -169,6 +177,8 @@ class PatchTST(BaseNNImputer):
         self.d_ffn = d_ffn
         self.dropout = dropout
         self.attn_dropout = attn_dropout
+        self.ORT_weight = ORT_weight
+        self.MIT_weight = MIT_weight
 
         # set up the model
         self.model = _PatchTST(
@@ -184,6 +194,8 @@ class PatchTST(BaseNNImputer):
             self.stride,
             self.dropout,
             self.attn_dropout,
+            self.ORT_weight,
+            self.MIT_weight,
         )
         self._send_model_to_given_device()
         self._print_model_size()
