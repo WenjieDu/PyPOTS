@@ -22,13 +22,18 @@ class _DLinear(nn.Module):
         moving_avg_window_size: int,
         individual: bool = False,
         d_model: Optional[int] = None,
+        ORT_weight: float = 1,
+        MIT_weight: float = 1,
     ):
         super().__init__()
 
         self.n_steps = n_steps
         self.n_features = n_features
-        self.series_decomp = SeriesDecompositionBlock(moving_avg_window_size)
         self.individual = individual
+        self.ORT_weight = ORT_weight
+        self.MIT_weight = MIT_weight
+
+        self.series_decomp = SeriesDecompositionBlock(moving_avg_window_size)
 
         if individual:
             # create linear layers for each feature individually
@@ -119,8 +124,11 @@ class _DLinear(nn.Module):
         }
 
         if training:
+            # apply SAITS loss function to DLinear on the imputation task
+            ORT_loss = calc_mse(output, X, masks)
+            MIT_loss = calc_mse(output, inputs["X_ori"], inputs["indicating_mask"])
             # `loss` is always the item for backward propagating to update the model
-            loss = calc_mse(output, inputs["X_ori"], inputs["indicating_mask"])
+            loss = self.ORT_weight * ORT_loss + self.MIT_weight * MIT_loss
             results["loss"] = loss
 
         return results
