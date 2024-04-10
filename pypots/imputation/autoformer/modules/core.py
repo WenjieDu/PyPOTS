@@ -31,13 +31,17 @@ class _Autoformer(nn.Module):
         factor,
         moving_avg_window_size,
         dropout,
+        ORT_weight: float = 1,
+        MIT_weight: float = 1,
         activation="relu",
-        output_attention=False,
     ):
         super().__init__()
 
         self.seq_len = n_steps
         self.n_layers = n_layers
+        self.ORT_weight = ORT_weight
+        self.MIT_weight = MIT_weight
+
         self.enc_embedding = DataEmbedding(
             n_features * 2,
             d_model,
@@ -48,7 +52,7 @@ class _Autoformer(nn.Module):
             [
                 AutoformerEncoderLayer(
                     AutoCorrelationLayer(
-                        AutoCorrelation(False, factor, dropout, output_attention),
+                        AutoCorrelation(factor, dropout),
                         d_model,
                         n_heads,
                     ),
@@ -91,8 +95,11 @@ class _Autoformer(nn.Module):
         }
 
         if training:
+            # apply SAITS loss function to Autoformer on the imputation task
+            ORT_loss = calc_mse(output, X, masks)
+            MIT_loss = calc_mse(output, inputs["X_ori"], inputs["indicating_mask"])
             # `loss` is always the item for backward propagating to update the model
-            loss = calc_mse(output, inputs["X_ori"], inputs["indicating_mask"])
+            loss = self.ORT_weight * ORT_loss + self.MIT_weight * MIT_loss
             results["loss"] = loss
 
         return results
