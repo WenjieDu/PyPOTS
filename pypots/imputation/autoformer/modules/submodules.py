@@ -24,17 +24,11 @@ class AutoCorrelation(nn.Module):
 
     def __init__(
         self,
-        mask_flag=True,
         factor=1,
-        scale=None,
         attention_dropout=0.1,
-        output_attention=False,
     ):
         super().__init__()
         self.factor = factor
-        self.scale = scale
-        self.mask_flag = mask_flag
-        self.output_attention = output_attention
         self.dropout = nn.Dropout(attention_dropout)
 
     def time_delay_agg_training(self, values, corr):
@@ -165,10 +159,7 @@ class AutoCorrelation(nn.Module):
                 values.permute(0, 2, 3, 1).contiguous(), corr
             ).permute(0, 3, 1, 2)
 
-        if self.output_attention:
-            return (V.contiguous(), corr.permute(0, 3, 1, 2))
-        else:
-            return (V.contiguous(), None)
+        return V.contiguous(), corr.permute(0, 3, 1, 2)
 
 
 class AutoCorrelationLayer(nn.Module):
