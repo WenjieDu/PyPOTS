@@ -30,11 +30,15 @@ class _ETSformer(nn.Module):
         d_ffn,
         dropout,
         top_k,
+        ORT_weight: float = 1,
+        MIT_weight: float = 1,
         activation="sigmoid",
     ):
         super().__init__()
 
         self.n_steps = n_steps
+        self.ORT_weight = ORT_weight
+        self.MIT_weight = MIT_weight
 
         self.enc_embedding = DataEmbedding(
             n_features * 2,
@@ -98,8 +102,11 @@ class _ETSformer(nn.Module):
         }
 
         if training:
+            # apply SAITS loss function to ETSformer on the imputation task
+            ORT_loss = calc_mse(output, X, masks)
+            MIT_loss = calc_mse(output, inputs["X_ori"], inputs["indicating_mask"])
             # `loss` is always the item for backward propagating to update the model
-            loss = calc_mse(output, inputs["X_ori"], inputs["indicating_mask"])
+            loss = self.ORT_weight * ORT_loss + self.MIT_weight * MIT_loss
             results["loss"] = loss
 
         return results
