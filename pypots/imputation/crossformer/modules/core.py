@@ -29,11 +29,15 @@ class _Crossformer(nn.Module):
         seg_len,
         win_size,
         dropout,
+        ORT_weight: float = 1,
+        MIT_weight: float = 1,
     ):
         super().__init__()
 
         self.n_features = n_features
         self.d_model = d_model
+        self.ORT_weight = ORT_weight
+        self.MIT_weight = MIT_weight
 
         # The padding operation to handle invisible sgemnet length
         pad_in_len = ceil(1.0 * n_steps / seg_len) * seg_len
@@ -104,8 +108,11 @@ class _Crossformer(nn.Module):
         }
 
         if training:
+            # apply SAITS loss function to Crossformer on the imputation task
+            ORT_loss = calc_mse(output, X, masks)
+            MIT_loss = calc_mse(output, inputs["X_ori"], inputs["indicating_mask"])
             # `loss` is always the item for backward propagating to update the model
-            loss = calc_mse(output, inputs["X_ori"], inputs["indicating_mask"])
+            loss = self.ORT_weight * ORT_loss + self.MIT_weight * MIT_loss
             results["loss"] = loss
 
         return results
