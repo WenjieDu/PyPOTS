@@ -60,15 +60,13 @@ class ProbAttention(AttentionOperator):
         self,
         mask_flag=True,
         factor=5,
-        scale=None,
         attention_dropout=0.1,
-        output_attention=False,
+        scale=None,
     ):
         super().__init__()
         self.factor = factor
         self.scale = scale
         self.mask_flag = mask_flag
-        self.output_attention = output_attention
         self.dropout = nn.Dropout(attention_dropout)
 
     def _prob_QK(self, Q, K, sample_k, n_top):  # n_top: c*ln(L_q)
@@ -121,14 +119,12 @@ class ProbAttention(AttentionOperator):
         context_in[
             torch.arange(B)[:, None, None], torch.arange(H)[None, :, None], index, :
         ] = torch.matmul(attn, V).type_as(context_in)
-        if self.output_attention:
-            attns = (torch.ones([B, H, L_V, L_V]) / L_V).type_as(attn).to(attn.device)
-            attns[
-                torch.arange(B)[:, None, None], torch.arange(H)[None, :, None], index, :
-            ] = attn
-            return (context_in, attns)
-        else:
-            return (context_in, None)
+
+        attns = (torch.ones([B, H, L_V, L_V]) / L_V).type_as(attn).to(attn.device)
+        attns[
+            torch.arange(B)[:, None, None], torch.arange(H)[None, :, None], index, :
+        ] = attn
+        return context_in, attns
 
     def forward(
         self,

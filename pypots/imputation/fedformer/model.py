@@ -71,6 +71,12 @@ class FEDformer(BaseNNImputer):
         Get modes on frequency domain. It has to "random" or "low". The default value is "random".
         'random' means sampling randomly; 'low' means sampling the lowest modes;
 
+    ORT_weight :
+        The weight for the ORT loss, the same as SAITS.
+
+    MIT_weight :
+        The weight for the MIT loss, the same as SAITS.
+
     batch_size :
         The batch size for training and evaluating the model.
 
@@ -125,6 +131,8 @@ class FEDformer(BaseNNImputer):
         version="Fourier",
         modes=32,
         mode_select="random",
+        ORT_weight: float = 1,
+        MIT_weight: float = 1,
         batch_size: int = 32,
         epochs: int = 100,
         patience: int = None,
@@ -151,11 +159,13 @@ class FEDformer(BaseNNImputer):
         self.n_heads = n_heads
         self.d_model = d_model
         self.d_ffn = d_ffn
-        self.modes = modes
-        self.mode_select = mode_select
         self.moving_avg_window_size = moving_avg_window_size
         self.dropout = dropout
         self.version = version
+        self.modes = modes
+        self.mode_select = mode_select
+        self.ORT_weight = ORT_weight
+        self.MIT_weight = MIT_weight
 
         # set up the model
         self.model = _FEDformer(
@@ -170,6 +180,8 @@ class FEDformer(BaseNNImputer):
             self.version,
             self.modes,
             self.mode_select,
+            self.ORT_weight,
+            self.MIT_weight,
         )
         self._send_model_to_given_device()
         self._print_model_size()

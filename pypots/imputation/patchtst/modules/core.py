@@ -29,6 +29,8 @@ class _PatchTST(nn.Module):
         stride: int,
         dropout: float,
         attn_dropout: float,
+        ORT_weight: float = 1,
+        MIT_weight: float = 1,
     ):
         super().__init__()
 
@@ -40,6 +42,8 @@ class _PatchTST(nn.Module):
         self.n_features = n_features
         self.n_layers = n_layers
         self.d_model = d_model
+        self.ORT_weight = ORT_weight
+        self.MIT_weight = MIT_weight
 
         self.embedding = nn.Linear(n_features * 2, d_model)
         self.patch_embedding = PatchEmbedding(
@@ -97,8 +101,11 @@ class _PatchTST(nn.Module):
         }
 
         if training:
+            # apply SAITS loss function to PatchTST on the imputation task
+            ORT_loss = calc_mse(output, X, masks)
+            MIT_loss = calc_mse(output, inputs["X_ori"], inputs["indicating_mask"])
             # `loss` is always the item for backward propagating to update the model
-            loss = calc_mse(output, inputs["X_ori"], inputs["indicating_mask"])
+            loss = self.ORT_weight * ORT_loss + self.MIT_weight * MIT_loss
             results["loss"] = loss
 
         return results

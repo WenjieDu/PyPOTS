@@ -78,9 +78,14 @@ Welcome to PyPOTS docs!
 -----------------
 
 
-⦿ `Motivation`: Due to all kinds of reasons like failure of collection sensors, communication error, and unexpected malfunction, missing values are common to see in time series from the real-world environment. This makes partially-observed time series (POTS) a pervasive problem in open-world modeling and prevents advanced data analysis. Although this problem is important, the area of data mining on POTS still lacks a dedicated toolkit. PyPOTS is created to fill in this blank.
+⦿ `Motivation`: Due to all kinds of reasons like failure of collection sensors, communication error, and unexpected malfunction, missing values are common to see in time series from the real-world environment.
+This makes partially-observed time series (POTS) a pervasive problem in open-world modeling and prevents advanced data analysis.
+Although this problem is important, the area of data mining on POTS still lacks a dedicated toolkit. PyPOTS is created to fill in this blank.
 
-⦿ `Mission`: PyPOTS is born to become a handy toolbox that is going to make data mining on POTS easy rather than tedious, to help engineers and researchers focus more on the core problems in their hands rather than on how to deal with the missing parts in their data. PyPOTS will keep integrating classical and the latest state-of-the-art data mining algorithms for partially-observed multivariate time series. For sure, besides various algorithms, PyPOTS is going to have unified APIs together with detailed documentation and interactive examples across algorithms as tutorials.
+⦿ `Mission`: PyPOTS is born to become a handy toolbox that is going to make data mining on POTS easy rather than tedious,
+to help engineers and researchers focus more on the core problems in their hands rather than on how to deal with the missing parts in their data.
+PyPOTS will keep integrating classical and the latest state-of-the-art data mining algorithms for partially-observed multivariate time series.
+For sure, besides various algorithms, PyPOTS is going to have unified APIs together with detailed documentation and interactive examples across algorithms as tutorials.
 
 🤗 **Please** star this repo to help others notice PyPOTS if you think it is a useful toolkit.
 **Please** properly `cite PyPOTS <https://docs.pypots.com/en/latest/milestones.html#citing-pypots>`_ in your publications
@@ -164,11 +169,15 @@ Additionally, we present you a usage example of imputing missing values in time 
 
 ❖ Available Algorithms
 ^^^^^^^^^^^^^^^^^^^^^^^
-PyPOTS supports imputation, classification, clustering, and forecasting tasks on multivariate time series with missing values. The currently available algorithms of four tasks are cataloged in the following table with four partitions. The paper references are all listed at the bottom of this readme file. Please refer to them if you want more details.
-
+PyPOTS supports imputation, classification, clustering, and forecasting tasks on multivariate time series with missing values.
+The currently available algorithms of four tasks are cataloged in the following table with four partitions. The paper references are all listed `on the reference page </references.html>`_.
 
 🌟 Since **v0.2**, all neural-network models in PyPOTS has got hyperparameter-optimization support.
 This functionality is implemented with the `Microsoft NNI <https://github.com/microsoft/nni>`_ framework.
+
+🔥 Note that Transformer, Crossformer, PatchTST, DLinear, ETSformer, FEDformer, Informer, Autoformer are not proposed as imputation methods in their original papers,
+and they cannot accept POTS as input. To make them applicable on POTS data, we apply the embedding strategy and training approach (ORT+MIT)
+the same as we did in `SAITS paper <https://arxiv.org/pdf/2202.08516)>`_.
 
 ============================== ================ ========================================================================================================= ====== =========
 Task                           Type             Algorithm                                                                                                 Year   Reference

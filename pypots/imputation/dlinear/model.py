@@ -53,6 +53,12 @@ class DLinear(BaseNNImputer):
         The dimension of the space in which the time-series data will be embedded and modeled.
         It is necessary only for DLinear in the non-individual mode.
 
+    ORT_weight :
+        The weight for the ORT loss, the same as SAITS.
+
+    MIT_weight :
+        The weight for the MIT loss, the same as SAITS.
+
     batch_size :
         The batch size for training and evaluating the model.
 
@@ -101,6 +107,8 @@ class DLinear(BaseNNImputer):
         moving_avg_window_size: int,
         individual: bool = False,
         d_model: Optional[int] = None,
+        ORT_weight: float = 1,
+        MIT_weight: float = 1,
         batch_size: int = 32,
         epochs: int = 100,
         patience: int = None,
@@ -126,14 +134,18 @@ class DLinear(BaseNNImputer):
         self.moving_avg_window_size = moving_avg_window_size
         self.individual = individual
         self.d_model = d_model
+        self.ORT_weight = ORT_weight
+        self.MIT_weight = MIT_weight
 
         # set up the model
         self.model = _DLinear(
-            n_steps,
-            n_features,
-            moving_avg_window_size,
-            individual,
-            d_model,
+            self.n_steps,
+            self.n_features,
+            self.moving_avg_window_size,
+            self.individual,
+            self.d_model,
+            self.ORT_weight,
+            self.MIT_weight,
         )
         self._send_model_to_given_device()
         self._print_model_size()
