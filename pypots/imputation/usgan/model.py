@@ -149,7 +149,6 @@ class USGAN(BaseNNImputer):
             lambda_mse,
             hint_rate,
             dropout,
-            self.device,
         )
         self._send_model_to_given_device()
         self._print_model_size()

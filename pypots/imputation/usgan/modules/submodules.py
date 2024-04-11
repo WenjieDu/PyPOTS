@@ -5,8 +5,6 @@
 # Created by Jun Wang <jwangfx@connect.ust.hk> and Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-from typing import Union
-
 import torch
 import torch.nn as nn
 
@@ -39,16 +37,14 @@ class Discriminator(nn.Module):
         rnn_hidden_size: int,
         hint_rate: float = 0.7,
         dropout_rate: float = 0.0,
-        device: Union[str, torch.device] = "cpu",
     ):
         super().__init__()
         self.hint_rate = hint_rate
-        self.device = device
         self.biRNN = nn.GRU(
             n_features * 2, rnn_hidden_size, bidirectional=True, batch_first=True
-        ).to(device)
-        self.dropout = nn.Dropout(dropout_rate).to(device)
-        self.read_out = nn.Linear(rnn_hidden_size * 2, n_features).to(device)
+        )
+        self.dropout = nn.Dropout(dropout_rate)
+        self.read_out = nn.Linear(rnn_hidden_size * 2, n_features)
 
     def forward(
         self,
@@ -72,8 +68,9 @@ class Discriminator(nn.Module):
 
         """
 
+        device = imputed_X.device
         hint = (
-            torch.rand_like(missing_mask, dtype=torch.float, device=self.device)
+            torch.rand_like(missing_mask, dtype=torch.float, device=device)
             < self.hint_rate
         )
         hint = hint.int()

@@ -9,15 +9,12 @@ Generative Semi-supervised Learning for Multivariate Time Series Imputation. AAA
 # Created by Jun Wang <jwangfx@connect.ust.hk> and Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-from typing import Union
-
-import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from ....utils.metrics import calc_mse
 
 from .submodules import Discriminator
-from ...brits.modules import _BRITS
+from ...brits.core import _BRITS
+from ....utils.metrics import calc_mse
 
 
 class _USGAN(nn.Module):
@@ -31,20 +28,17 @@ class _USGAN(nn.Module):
         lambda_mse: float,
         hint_rate: float = 0.7,
         dropout_rate: float = 0.0,
-        device: Union[str, torch.device] = "cpu",
     ):
         super().__init__()
-        self.generator = _BRITS(n_steps, n_features, rnn_hidden_size, device)
+        self.generator = _BRITS(n_steps, n_features, rnn_hidden_size)
         self.discriminator = Discriminator(
             n_features,
             rnn_hidden_size,
             hint_rate=hint_rate,
             dropout_rate=dropout_rate,
-            device=device,
         )
 
         self.lambda_mse = lambda_mse
-        self.device = device
 
     def forward(
         self,
@@ -83,9 +77,9 @@ class _USGAN(nn.Module):
                     weight=1 - forward_missing_mask,
                 )
                 reconstruction_loss = calc_mse(
-                    forward_X, results["reconstructed_data"], forward_missing_mask
+                    forward_X, results["reconstruction"], forward_missing_mask
                 ) + 0.1 * calc_mse(
-                    results["f_reconstructed_data"], results["b_reconstructed_data"]
+                    results["f_reconstruction"], results["b_reconstruction"]
                 )
                 loss_gene = l_G + self.lambda_mse * reconstruction_loss
                 results["generation_loss"] = loss_gene
