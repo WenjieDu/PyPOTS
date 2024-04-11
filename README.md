@@ -187,13 +187,14 @@ mae = calc_mae(imputation, np.nan_to_num(X_ori), indicating_mask)  # calculate m
 ## ❖ Available Algorithms
 PyPOTS supports imputation, classification, clustering, and forecasting tasks on multivariate time series with missing values.
 The currently available algorithms of four tasks are cataloged in the following table with four partitions.
-The paper references are all listed at the bottom of this readme file. Please refer to them if you want more details.
+The paper references are all listed at the bottom of this readme file.
 
 🌟 Since **v0.2**, all neural-network models in PyPOTS has got hyperparameter-optimization support.
 This functionality is implemented with the [Microsoft NNI](https://github.com/microsoft/nni) framework.
 
 🔥 Note that Transformer, Crossformer, PatchTST, DLinear, ETSformer, FEDformer, Informer, Autoformer are not proposed as imputation methods in their original papers,
-and they cannot accept POTS as input. **To make them applicable on POTS data, we apply the embedding strategy the same as we did in [SAITS paper](https://arxiv.org/pdf/2202.08516).**
+and they cannot accept POTS as input. **To make them applicable on POTS data, we apply the embedding strategy and training approach (ORT+MIT)
+the same as we did in [SAITS paper](https://arxiv.org/pdf/2202.08516).**
 
 |   ***`Imputation`***   |     🚥      |                                               🚥                                                |    🚥    |
 |:----------------------:|:-----------:|:-----------------------------------------------------------------------------------------------:|:--------:|
