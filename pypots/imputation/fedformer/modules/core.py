@@ -33,9 +33,14 @@ class _FEDformer(nn.Module):
         version="Fourier",
         modes=32,
         mode_select="random",
+        ORT_weight: float = 1,
+        MIT_weight: float = 1,
         activation="relu",
     ):
         super().__init__()
+
+        self.ORT_weight = ORT_weight
+        self.MIT_weight = MIT_weight
 
         self.enc_embedding = DataEmbedding(
             n_features * 2,
@@ -101,8 +106,11 @@ class _FEDformer(nn.Module):
         }
 
         if training:
+            # apply SAITS loss function to FEDformer on the imputation task
+            ORT_loss = calc_mse(output, X, masks)
+            MIT_loss = calc_mse(output, inputs["X_ori"], inputs["indicating_mask"])
             # `loss` is always the item for backward propagating to update the model
-            loss = calc_mse(output, inputs["X_ori"], inputs["indicating_mask"])
+            loss = self.ORT_weight * ORT_loss + self.MIT_weight * MIT_loss
             results["loss"] = loss
 
         return results

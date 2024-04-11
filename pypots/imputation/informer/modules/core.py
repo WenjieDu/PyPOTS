@@ -25,14 +25,18 @@ class _Informer(nn.Module):
         d_ffn,
         factor,
         dropout,
+        ORT_weight: float = 1,
+        MIT_weight: float = 1,
         distil=False,
         activation="relu",
-        output_attention=False,
     ):
         super().__init__()
 
         self.seq_len = n_steps
         self.n_layers = n_layers
+        self.ORT_weight = ORT_weight
+        self.MIT_weight = MIT_weight
+
         self.enc_embedding = DataEmbedding(
             n_features * 2,
             d_model,
@@ -46,7 +50,7 @@ class _Informer(nn.Module):
                         d_model,
                         d_model // n_heads,
                         d_model // n_heads,
-                        ProbAttention(False, factor, dropout, output_attention),
+                        ProbAttention(False, factor, dropout),
                     ),
                     d_model,
                     d_ffn,
@@ -87,8 +91,11 @@ class _Informer(nn.Module):
         }
 
         if training:
+            # apply SAITS loss function to Informer on the imputation task
+            ORT_loss = calc_mse(output, X, masks)
+            MIT_loss = calc_mse(output, inputs["X_ori"], inputs["indicating_mask"])
             # `loss` is always the item for backward propagating to update the model
-            loss = calc_mse(output, inputs["X_ori"], inputs["indicating_mask"])
+            loss = self.ORT_weight * ORT_loss + self.MIT_weight * MIT_loss
             results["loss"] = loss
 
         return results
