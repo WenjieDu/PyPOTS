@@ -10,7 +10,7 @@ import torch.nn as nn
 
 from .submodules import PatchEmbedding, FlattenHead
 from ....nn.modules.transformer.attention import ScaledDotProductAttention
-from ....nn.modules.transformer.auto_encoder import EncoderLayer
+from ....nn.modules.transformer.auto_encoder import TransformerEncoderLayer
 from ....utils.metrics import calc_mse
 
 
@@ -51,7 +51,7 @@ class _PatchTST(nn.Module):
         )
         self.encoder = nn.ModuleList(
             [
-                EncoderLayer(
+                TransformerEncoderLayer(
                     d_model,
                     d_ffn,
                     n_heads,
