@@ -6,17 +6,21 @@
 # License: BSD-3-Clause
 
 from .attention import ScaledDotProductAttention, MultiHeadAttention
-from .auto_encoder import Encoder, Decoder
+from .auto_encoder import TransformerEncoder, TransformerDecoder
 from .embedding import PositionalEncoding
-from .layers import EncoderLayer, DecoderLayer, PositionWiseFeedForward
+from .layers import (
+    TransformerEncoderLayer,
+    TransformerDecoderLayer,
+    PositionWiseFeedForward,
+)
 
 __all__ = [
     "ScaledDotProductAttention",
     "MultiHeadAttention",
     "PositionalEncoding",
-    "EncoderLayer",
-    "DecoderLayer",
+    "TransformerEncoderLayer",
+    "TransformerDecoderLayer",
     "PositionWiseFeedForward",
-    "Encoder",
-    "Decoder",
+    "TransformerEncoder",
+    "TransformerDecoder",
 ]

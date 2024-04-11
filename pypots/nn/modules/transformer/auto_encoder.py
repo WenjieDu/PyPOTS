@@ -12,22 +12,22 @@ import torch.nn as nn
 
 from .attention import ScaledDotProductAttention
 from .embedding import PositionalEncoding
-from .layers import EncoderLayer, DecoderLayer
+from .layers import TransformerEncoderLayer, TransformerDecoderLayer
 
 
-class Encoder(nn.Module):
+class TransformerEncoder(nn.Module):
     """Transformer encoder.
 
     Parameters
     ----------
-    n_layers:
-        The number of layers in the encoder.
-
     n_steps:
         The number of time steps in the input tensor.
 
     n_features:
         The number of features in the input tensor.
+
+    n_layers:
+        The number of layers in the encoder.
 
     d_model:
         The dimension of the module manipulation space.
@@ -55,9 +55,9 @@ class Encoder(nn.Module):
 
     def __init__(
         self,
-        n_layers: int,
         n_steps: int,
         n_features: int,
+        n_layers: int,
         d_model: int,
         d_ffn: int,
         n_heads: int,
@@ -73,7 +73,7 @@ class Encoder(nn.Module):
         self.position_enc = PositionalEncoding(d_model, n_positions=n_steps)
         self.enc_layer_stack = nn.ModuleList(
             [
-                EncoderLayer(
+                TransformerEncoderLayer(
                     d_model,
                     d_ffn,
                     n_heads,
@@ -128,7 +128,7 @@ class Encoder(nn.Module):
         return enc_output
 
 
-class Decoder(nn.Module):
+class TransformerDecoder(nn.Module):
     """Transformer decoder.
 
     Parameters
@@ -185,7 +185,7 @@ class Decoder(nn.Module):
         self.position_enc = PositionalEncoding(d_model, n_positions=n_steps)
         self.layer_stack = nn.ModuleList(
             [
-                DecoderLayer(
+                TransformerDecoderLayer(
                     d_model,
                     d_ffn,
                     n_heads,
