@@ -19,7 +19,7 @@ import torch
 import torch.nn as nn
 
 from pypots.utils.metrics import calc_mae
-from ...nn.modules.saits import SaitsEncoder
+from ...nn.modules.saits import BackboneSAITS
 
 
 class _SAITS(nn.Module):
@@ -48,7 +48,7 @@ class _SAITS(nn.Module):
         self.MIT_weight = MIT_weight
         self.customized_loss_func = customized_loss_func
 
-        self.encoder = SaitsEncoder(
+        self.encoder = BackboneSAITS(
             n_layers,
             n_steps,
             n_features,

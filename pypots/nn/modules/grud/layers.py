@@ -1,10 +1,3 @@
-"""
-The implementation of some common-use modules related to RNN.
-"""
-
-# Created by Wenjie Du <wenjay.du@gmail.com>
-# License: BSD-3-Clause
-
 import math
 
 import torch
@@ -15,8 +8,8 @@ from torch.nn.parameter import Parameter
 
 
 class TemporalDecay(nn.Module):
-    """The module used to generate the temporal decay factor gamma in the GRUD model.
-    Please refer to the original paper :cite:`che2018GRUD` for more deinails.
+    """The module used to generate the temporal decay factor gamma in the GRU-D model.
+    Please refer to the original paper :cite:`che2018GRUD` for more details.
 
     Attributes
     ----------

@@ -16,7 +16,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from ....nn.modules.rnn import TemporalDecay
+from ...nn.modules.grud import BackboneGRUD
 
 
 class _GRUD(nn.Module):
@@ -36,14 +36,10 @@ class _GRUD(nn.Module):
         self.device = device
 
         # create models
-        self.rnn_cell = nn.GRUCell(
-            self.n_features * 2 + self.rnn_hidden_size, self.rnn_hidden_size
-        )
-        self.temp_decay_h = TemporalDecay(
-            input_size=self.n_features, output_size=self.rnn_hidden_size, diag=False
-        )
-        self.temp_decay_x = TemporalDecay(
-            input_size=self.n_features, output_size=self.n_features, diag=True
+        self.model = BackboneGRUD(
+            n_steps,
+            n_features,
+            rnn_hidden_size,
         )
         self.classifier = nn.Linear(self.rnn_hidden_size, self.n_classes)
 
@@ -63,31 +59,15 @@ class _GRUD(nn.Module):
         dict,
             A dictionary includes all results.
         """
-        values = inputs["X"]
-        masks = inputs["missing_mask"]
+        X = inputs["X"]
+        missing_mask = inputs["missing_mask"]
         deltas = inputs["deltas"]
         empirical_mean = inputs["empirical_mean"]
         X_filledLOCF = inputs["X_filledLOCF"]
 
-        hidden_state = torch.zeros(
-            (values.size()[0], self.rnn_hidden_size), device=values.device
+        _, hidden_state = self.model(
+            X, missing_mask, deltas, empirical_mean, X_filledLOCF
         )
-
-        for t in range(self.n_steps):
-            # for data, [batch, time, features]
-            x = values[:, t, :]  # values
-            m = masks[:, t, :]  # mask
-            d = deltas[:, t, :]  # delta, time gap
-            x_filledLOCF = X_filledLOCF[:, t, :]
-
-            gamma_h = self.temp_decay_h(d)
-            gamma_x = self.temp_decay_x(d)
-            hidden_state = hidden_state * gamma_h
-
-            x_h = gamma_x * x_filledLOCF + (1 - gamma_x) * empirical_mean
-            x_replaced = m * x + (1 - m) * x_h
-            data_input = torch.cat([x_replaced, hidden_state, m], dim=1)
-            hidden_state = self.rnn_cell(data_input, hidden_state)
 
         logits = self.classifier(hidden_state)
         classification_pred = torch.softmax(logits, dim=1)
@@ -95,7 +75,6 @@ class _GRUD(nn.Module):
 
         # if in training mode, return results with losses
         if training:
-            torch.log(classification_pred)
             classification_loss = F.nll_loss(
                 torch.log(classification_pred), inputs["label"]
             )

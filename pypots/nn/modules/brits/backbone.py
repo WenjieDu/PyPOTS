@@ -14,17 +14,17 @@ are fixed here.
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-from typing import Tuple, Union
+from typing import Tuple
 
 import torch
 import torch.nn as nn
 
-from .submodules import FeatureRegression
-from ....nn.modules.rnn import TemporalDecay
+from .layers import FeatureRegression
+from ..grud.layers import TemporalDecay
 from ....utils.metrics import calc_mae
 
 
-class RITS(nn.Module):
+class BackboneRITS(nn.Module):
     """model RITS: Recurrent Imputation for Time Series
 
     Attributes
@@ -37,9 +37,6 @@ class RITS(nn.Module):
 
     rnn_hidden_size :
         the hidden size of the RNN cell
-
-    device :
-        specify running the model on which device, CPU/GPU
 
     rnn_cell :
         the LSTM cell to model temporal data
@@ -70,8 +67,6 @@ class RITS(nn.Module):
     rnn_hidden_size :
         the hidden size of the RNN cell
 
-    device :
-        specify running the model on which device, CPU/GPU
 
     """
 
@@ -80,13 +75,11 @@ class RITS(nn.Module):
         n_steps: int,
         n_features: int,
         rnn_hidden_size: int,
-        device: Union[str, torch.device],
     ):
         super().__init__()
         self.n_steps = n_steps
         self.n_features = n_features
         self.rnn_hidden_size = rnn_hidden_size
-        self.device = device
 
         self.rnn_cell = nn.LSTMCell(self.n_features * 2, self.rnn_hidden_size)
         self.temp_decay_h = TemporalDecay(
@@ -99,17 +92,17 @@ class RITS(nn.Module):
         self.feat_reg = FeatureRegression(self.n_features)
         self.combining_weight = nn.Linear(self.n_features * 2, self.n_features)
 
-    def impute(
+    def forward(
         self, inputs: dict, direction: str
     ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
-        """The imputation function.
+        """
         Parameters
         ----------
         inputs :
             Input data, a dictionary includes feature values, missing masks, and time-gap values.
 
         direction :
-            A keyword to extract data from parameter `data`.
+            A keyword to extract data from `inputs`.
 
         Returns
         -------
@@ -126,26 +119,24 @@ class RITS(nn.Module):
             reconstruction loss
 
         """
-        values = inputs[direction]["X"]  # feature values
-        masks = inputs[direction]["missing_mask"]  # missing masks
+        X = inputs[direction]["X"]  # feature values
+        missing_mask = inputs[direction]["missing_mask"]  # mask marks missing part in X
         deltas = inputs[direction]["deltas"]  # time-gap values
 
+        device = X.device
+
         # create hidden states and cell states for the lstm cell
-        hidden_states = torch.zeros(
-            (values.size()[0], self.rnn_hidden_size), device=values.device
-        )
-        cell_states = torch.zeros(
-            (values.size()[0], self.rnn_hidden_size), device=values.device
-        )
+        hidden_states = torch.zeros((X.size()[0], self.rnn_hidden_size), device=device)
+        cell_states = torch.zeros((X.size()[0], self.rnn_hidden_size), device=device)
 
         estimations = []
-        reconstruction_loss = torch.tensor(0.0).to(values.device)
+        reconstruction_loss = torch.tensor(0.0).to(device)
 
         # imputation period
         for t in range(self.n_steps):
             # data shape: [batch, time, features]
-            x = values[:, t, :]  # values
-            m = masks[:, t, :]  # mask
+            x = X[:, t, :]  # values
+            m = missing_mask[:, t, :]  # mask
             d = deltas[:, t, :]  # delta, time gap
 
             gamma_h = self.temp_decay_h(d)
@@ -173,45 +164,16 @@ class RITS(nn.Module):
                 inputs, (hidden_states, cell_states)
             )
 
-        estimations = torch.cat(estimations, dim=1)
-        imputed_data = masks * values + (1 - masks) * estimations
-        return imputed_data, estimations, hidden_states, reconstruction_loss
-
-    def forward(self, inputs: dict, direction: str = "forward") -> dict:
-        """Forward processing of the NN module.
-        Parameters
-        ----------
-        inputs :
-            The input data.
-
-        direction :
-            A keyword to extract data from parameter `data`.
-
-        Returns
-        -------
-        dict,
-            A dictionary includes all results.
-
-        """
-        imputed_data, estimations, hidden_state, reconstruction_loss = self.impute(
-            inputs, direction
-        )
         # for each iteration, reconstruction_loss increases its value for 3 times
         reconstruction_loss /= self.n_steps * 3
 
-        ret_dict = {
-            "consistency_loss": torch.tensor(
-                0.0, device=imputed_data.device
-            ),  # single direction, has no consistency loss
-            "reconstruction_loss": reconstruction_loss,
-            "imputed_data": imputed_data,
-            "reconstructed_data": estimations,
-            "final_hidden_state": hidden_state,
-        }
-        return ret_dict
+        reconstruction = torch.cat(estimations, dim=1)
+        imputed_data = missing_mask * X + (1 - missing_mask) * reconstruction
+
+        return imputed_data, reconstruction, hidden_states, reconstruction_loss
 
 
-class _BRITS(nn.Module):
+class BackboneBRITS(nn.Module):
     """model BRITS: Bidirectional RITS
     BRITS consists of two RITS, which take time-series data from two directions (forward/backward) respectively.
 
@@ -239,7 +201,6 @@ class _BRITS(nn.Module):
         n_steps: int,
         n_features: int,
         rnn_hidden_size: int,
-        device: Union[str, torch.device],
     ):
         super().__init__()
         # data settings
@@ -248,8 +209,8 @@ class _BRITS(nn.Module):
         # imputer settings
         self.rnn_hidden_size = rnn_hidden_size
         # create models
-        self.rits_f = RITS(n_steps, n_features, rnn_hidden_size, device)
-        self.rits_b = RITS(n_steps, n_features, rnn_hidden_size, device)
+        self.rits_f = BackboneRITS(n_steps, n_features, rnn_hidden_size)
+        self.rits_b = BackboneRITS(n_steps, n_features, rnn_hidden_size)
 
     @staticmethod
     def _get_consistency_loss(
@@ -275,19 +236,8 @@ class _BRITS(nn.Module):
         return loss
 
     @staticmethod
-    def _reverse(ret: dict) -> dict:
-        """Reverse the array values on the time dimension in the given dictionary.
-
-        Parameters
-        ----------
-        ret :
-
-        Returns
-        -------
-        dict,
-            A dictionary contains values reversed on the time dimension from the given dict.
-
-        """
+    def _reverse(ret: Tuple) -> Tuple:
+        """Reverse the array values on the time dimension in the given dictionary."""
 
         def reverse_tensor(tensor_):
             if tensor_.dim() <= 1:
@@ -298,42 +248,38 @@ class _BRITS(nn.Module):
             )
             return tensor_.index_select(1, indices)
 
-        for key in ret:
-            ret[key] = reverse_tensor(ret[key])
+        collector = []
+        for value in ret:
+            collector.append(reverse_tensor(value))
 
-        return ret
+        return tuple(collector)
 
-    def forward(self, inputs: dict, training: bool = True) -> dict:
+    def forward(self, inputs: dict) -> Tuple[torch.Tensor, ...]:
         # Results from the forward RITS.
-        ret_f = self.rits_f(inputs, "forward")
+        (
+            f_imputed_data,
+            f_reconstruction,
+            f_hidden_states,
+            f_reconstruction_loss,
+        ) = self.rits_f(inputs, "forward")
         # Results from the backward RITS.
-        ret_b = self._reverse(self.rits_b(inputs, "backward"))
+        (
+            b_imputed_data,
+            b_reconstruction,
+            b_hidden_states,
+            b_reconstruction_loss,
+        ) = self._reverse(self.rits_b(inputs, "backward"))
 
-        imputed_data = (ret_f["imputed_data"] + ret_b["imputed_data"]) / 2
-        reconstructed_data = (
-            ret_f["reconstructed_data"] + ret_b["reconstructed_data"]
-        ) / 2
+        imputed_data = (f_imputed_data + b_imputed_data) / 2
+        consistency_loss = self._get_consistency_loss(f_imputed_data, b_imputed_data)
+        reconstruction_loss = f_reconstruction_loss + b_reconstruction_loss
 
-        results = {
-            "imputed_data": imputed_data,
-        }
-
-        # if in training mode, return results with losses
-        if training:
-            consistency_loss = self._get_consistency_loss(
-                ret_f["imputed_data"], ret_b["imputed_data"]
-            )
-            results["consistency_loss"] = consistency_loss
-            loss = (
-                consistency_loss
-                + ret_f["reconstruction_loss"]
-                + ret_b["reconstruction_loss"]
-            )
-
-            # `loss` is always the item for backward propagating to update the model
-            results["loss"] = loss
-            results["reconstructed_data"] = reconstructed_data
-            results["f_reconstructed_data"] = ret_f["reconstructed_data"]
-            results["b_reconstructed_data"] = ret_b["reconstructed_data"]
-
-        return results
+        return (
+            imputed_data,
+            f_reconstruction,
+            b_reconstruction,
+            f_hidden_states,
+            b_hidden_states,
+            consistency_loss,
+            reconstruction_loss,
+        )

@@ -24,7 +24,7 @@ from torch.nn.parameter import Parameter
 
 
 class FeatureRegression(nn.Module):
-    """The module used to capture the correlation between features for imputation.
+    """The module used to capture the correlation between features for imputation in BRITS.
 
     Attributes
     ----------
