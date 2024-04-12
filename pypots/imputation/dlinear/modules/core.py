@@ -10,7 +10,7 @@ from typing import Optional
 import torch
 import torch.nn as nn
 
-from ...autoformer.modules.submodules import SeriesDecompositionBlock
+from ....nn.modules.autoformer import SeriesDecompositionBlock
 from ....utils.metrics import calc_mse
 
 

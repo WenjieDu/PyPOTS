@@ -8,10 +8,15 @@
 import torch
 import torch.nn as nn
 
-from .submodules import ProbAttention, ConvLayer, InformerEncoderLayer, InformerEncoder
-from ....nn.modules.transformer import MultiHeadAttention
-from ....nn.modules.transformer.embedding import DataEmbedding
-from ....utils.metrics import calc_mse
+from ...nn.modules.informer import (
+    ProbAttention,
+    ConvLayer,
+    InformerEncoderLayer,
+    InformerEncoder,
+)
+from ...nn.modules.transformer import MultiHeadAttention
+from ...nn.modules.transformer.embedding import DataEmbedding
+from ...utils.metrics import calc_mse
 
 
 class _Informer(nn.Module):
