@@ -270,22 +270,6 @@ class ETSformerEncoderLayer(nn.Module):
         return self.dropout2(x)
 
 
-class ETSformerEncoder(nn.Module):
-    def __init__(self, layers):
-        super().__init__()
-        self.layers = nn.ModuleList(layers)
-
-    def forward(self, res, level, attn_mask=None):
-        growths = []
-        seasons = []
-        for layer in self.layers:
-            res, level, growth, season = layer(res, level, attn_mask=None)
-            growths.append(growth)
-            seasons.append(season)
-
-        return level, growths, seasons
-
-
 class DampingLayer(nn.Module):
     def __init__(self, pred_len, nhead, dropout=0.1):
         super().__init__()
@@ -328,27 +312,3 @@ class ETSformerDecoderLayer(nn.Module):
 
         seasonal_horizon = season[:, -self.pred_len :]
         return growth_horizon, seasonal_horizon
-
-
-class ETSformerDecoder(nn.Module):
-    def __init__(self, layers):
-        super().__init__()
-        self.d_model = layers[0].d_model
-        self.c_out = layers[0].c_out
-        self.pred_len = layers[0].pred_len
-        self.nhead = layers[0].nhead
-
-        self.layers = nn.ModuleList(layers)
-        self.pred = nn.Linear(self.d_model, self.c_out)
-
-    def forward(self, growths, seasons):
-        growth_repr = []
-        season_repr = []
-
-        for idx, layer in enumerate(self.layers):
-            growth_horizon, season_horizon = layer(growths[idx], seasons[idx])
-            growth_repr.append(growth_horizon)
-            season_repr.append(season_horizon)
-        growth_repr = sum(growth_repr)
-        season_repr = sum(season_repr)
-        return self.pred(growth_repr), self.pred(season_repr)

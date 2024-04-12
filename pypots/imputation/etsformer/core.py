@@ -8,14 +8,14 @@
 import torch
 import torch.nn as nn
 
-from .submodules import (
+from ...nn.modules.etsformer import (
     ETSformerEncoderLayer,
     ETSformerEncoder,
     ETSformerDecoderLayer,
     ETSformerDecoder,
 )
-from ....nn.modules.transformer.embedding import DataEmbedding
-from ....utils.metrics import calc_mse
+from ...nn.modules.transformer.embedding import DataEmbedding
+from ...nn.modules.saits import SaitsLoss
 
 
 class _ETSformer(nn.Module):
@@ -76,10 +76,12 @@ class _ETSformer(nn.Module):
                 for _ in range(n_d_layers)
             ],
         )
-        # self.transform = Transform(sigma=0.2)  # for forecasting
+
+        # apply SAITS loss function to ETSformer on the imputation task
+        self.saits_loss_func = SaitsLoss(ORT_weight, MIT_weight)
 
     def forward(self, inputs: dict, training: bool = True) -> dict:
-        X, masks = inputs["X"], inputs["missing_mask"]
+        X, missing_mask = inputs["X"], inputs["missing_mask"]
 
         # WDU: the original ETSformer paper isn't proposed for imputation task. Hence the model doesn't take
         # the missing mask into account, which means, in the process, the model doesn't know which part of
@@ -88,25 +90,28 @@ class _ETSformer(nn.Module):
         # the output layers to project back from the hidden space to the original space.
 
         # the same as SAITS, concatenate the time series data and the missing mask for embedding
-        input_X = torch.cat([X, masks], dim=2)
+        input_X = torch.cat([X, missing_mask], dim=2)
         res = self.enc_embedding(input_X)
 
         # ETSformer encoder processing
         level, growths, seasons = self.encoder(res, X, attn_mask=None)
         growth, season = self.decoder(growths, seasons)
-        output = level[:, -1:] + growth + season
+        reconstruction = level[:, -1:] + growth + season
 
-        imputed_data = masks * X + (1 - masks) * output
+        imputed_data = missing_mask * X + (1 - missing_mask) * reconstruction
         results = {
             "imputed_data": imputed_data,
         }
 
+        # if in training mode, return results with losses
         if training:
-            # apply SAITS loss function to ETSformer on the imputation task
-            ORT_loss = calc_mse(output, X, masks)
-            MIT_loss = calc_mse(output, inputs["X_ori"], inputs["indicating_mask"])
+            X_ori, indicating_mask = inputs["X_ori"], inputs["indicating_mask"]
+            loss, ORT_loss, MIT_loss = self.saits_loss_func(
+                reconstruction, X_ori, missing_mask, indicating_mask
+            )
+            results["ORT_loss"] = ORT_loss
+            results["MIT_loss"] = MIT_loss
             # `loss` is always the item for backward propagating to update the model
-            loss = self.ORT_weight * ORT_loss + self.MIT_weight * MIT_loss
             results["loss"] = loss
 
         return results
