@@ -8,10 +8,8 @@
 import torch
 import torch.nn as nn
 
-from .submodules import PatchEmbedding, FlattenHead
-from ....nn.modules.transformer.attention import ScaledDotProductAttention
-from ....nn.modules.transformer.auto_encoder import TransformerEncoderLayer
-from ....utils.metrics import calc_mse
+from ...nn.modules.patchtst import PatchEmbedding, PatchtstEncoder, PredictionHead
+from ...nn.modules.saits import SaitsLoss
 
 
 class _PatchTST(nn.Module):
@@ -34,8 +32,7 @@ class _PatchTST(nn.Module):
     ):
         super().__init__()
 
-        patch_num = int((n_steps - patch_len) / stride + 2)
-        head_nf = d_model * patch_num
+        n_patches = int((n_steps - patch_len) / stride + 2)  # number of patches
         padding = stride
 
         self.n_steps = n_steps
@@ -49,25 +46,15 @@ class _PatchTST(nn.Module):
         self.patch_embedding = PatchEmbedding(
             d_model, patch_len, stride, padding, dropout
         )
-        self.encoder = nn.ModuleList(
-            [
-                TransformerEncoderLayer(
-                    d_model,
-                    d_ffn,
-                    n_heads,
-                    d_k,
-                    d_v,
-                    ScaledDotProductAttention(d_k**0.5, attn_dropout),
-                    dropout,
-                )
-                for _ in range(n_layers)
-            ]
+        self.encoder = PatchtstEncoder(
+            n_layers, n_heads, d_model, d_ffn, d_k, d_v, dropout, attn_dropout
         )
-        self.head = FlattenHead(head_nf, n_steps, dropout)
+        self.head = PredictionHead(d_model, n_patches, n_steps, dropout)
         self.output_projection = nn.Linear(d_model, n_features)
+        self.saits_loss_func = SaitsLoss(ORT_weight, MIT_weight)
 
     def forward(self, inputs: dict, training: bool = True) -> dict:
-        X, masks = inputs["X"], inputs["missing_mask"]
+        X, missing_mask = inputs["X"], inputs["missing_mask"]
 
         # WDU: the original PatchTST paper isn't proposed for imputation task. Hence the model doesn't take
         # the missing mask into account, which means, in the process, the model doesn't know which part of
@@ -76,36 +63,31 @@ class _PatchTST(nn.Module):
         # the output layers to project back from the hidden space to the original space.
 
         # do patching and embedding
-        input_X = self.embedding(torch.cat([X, masks], dim=2))
-        enc_out = self.patch_embedding(input_X.permute(0, 2, 1))
+        input_X = self.embedding(torch.cat([X, missing_mask], dim=2))
+        enc_out = self.patch_embedding(
+            input_X.permute(0, 2, 1)
+        )  # [bz * d_model, n_patches, d_model]
 
         # PatchTST encoder processing
-        # z: [bs * d_model x patch_num x d_model]
-        for i in range(self.n_layers):
-            enc_out, _ = self.encoder[i](enc_out)
-        # z: [bs x d_model x patch_num x d_model]
-        enc_out = enc_out.reshape(
-            -1, self.d_model, enc_out.shape[-2], enc_out.shape[-1]
-        )
-        # z: [bs x d_model x d_model x patch_num]
-        enc_out = enc_out.permute(0, 1, 3, 2)
+        enc_out, attns = self.encoder(enc_out)
 
         # project back the original data space
-        dec_out = self.head(enc_out)  # z: [bs x d_model x target_window]
-        dec_out = dec_out.permute(0, 2, 1)
-        output = self.output_projection(dec_out)
+        dec_out = self.head(enc_out)  # [bz, n_steps, d_model]
+        reconstruction = self.output_projection(dec_out)
 
-        imputed_data = masks * X + (1 - masks) * output
+        imputed_data = missing_mask * X + (1 - missing_mask) * reconstruction
         results = {
             "imputed_data": imputed_data,
         }
 
         if training:
-            # apply SAITS loss function to PatchTST on the imputation task
-            ORT_loss = calc_mse(output, X, masks)
-            MIT_loss = calc_mse(output, inputs["X_ori"], inputs["indicating_mask"])
+            X_ori, indicating_mask = inputs["X_ori"], inputs["indicating_mask"]
+            loss, ORT_loss, MIT_loss = self.saits_loss_func(
+                reconstruction, X_ori, missing_mask, indicating_mask
+            )
+            results["ORT_loss"] = ORT_loss
+            results["MIT_loss"] = MIT_loss
             # `loss` is always the item for backward propagating to update the model
-            loss = self.ORT_weight * ORT_loss + self.MIT_weight * MIT_loss
             results["loss"] = loss
 
         return results
