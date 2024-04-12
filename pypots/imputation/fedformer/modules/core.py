@@ -9,12 +9,12 @@ import torch
 import torch.nn as nn
 
 from .submodules import MultiWaveletTransform, FourierBlock
-from ...autoformer.modules.submodules import (
+from ....nn.modules.autoformer import (
     AutoformerEncoderLayer,
     AutoCorrelationLayer,
     SeasonalLayerNorm,
 )
-from ...informer.modules.submodules import InformerEncoder
+from ....nn.modules.informer import InformerEncoder
 from ....nn.modules.transformer.embedding import DataEmbedding
 from ....utils.metrics import calc_mse
 

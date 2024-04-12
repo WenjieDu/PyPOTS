@@ -8,15 +8,15 @@
 import torch
 import torch.nn as nn
 
-from .submodules import (
+from ...nn.modules.autoformer import (
     SeasonalLayerNorm,
     AutoformerEncoderLayer,
     AutoCorrelation,
     AutoCorrelationLayer,
 )
-from ...informer.modules.submodules import InformerEncoder
-from ....nn.modules.transformer.embedding import DataEmbedding
-from ....utils.metrics import calc_mse
+from ...nn.modules.informer import InformerEncoder
+from ...nn.modules.transformer.embedding import DataEmbedding
+from ...utils.metrics import calc_mse
 
 
 class _Autoformer(nn.Module):
