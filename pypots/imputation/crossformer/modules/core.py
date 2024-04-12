@@ -12,7 +12,7 @@ import torch.nn as nn
 from einops import rearrange
 
 from .submodules import CrossformerEncoder, ScaleBlock
-from ...patchtst.modules.submodules import FlattenHead, PatchEmbedding
+from ....nn.modules.patchtst import PredictionHead, PatchEmbedding
 from ....utils.metrics import calc_mse
 
 
@@ -43,7 +43,6 @@ class _Crossformer(nn.Module):
         pad_in_len = ceil(1.0 * n_steps / seg_len) * seg_len
         in_seg_num = pad_in_len // seg_len
         out_seg_num = ceil(in_seg_num / (win_size ** (n_layers - 1)))
-        head_nf = d_model * out_seg_num
 
         # Embedding
         self.enc_value_embedding = PatchEmbedding(
@@ -75,7 +74,7 @@ class _Crossformer(nn.Module):
             ]
         )
 
-        self.head = FlattenHead(head_nf, n_steps, dropout)
+        self.head = PredictionHead(d_model, out_seg_num, n_steps, dropout)
         self.embedding = nn.Linear(n_features * 2, d_model)
         self.output_projection = nn.Linear(d_model, n_features)
 
