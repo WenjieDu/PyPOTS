@@ -10,30 +10,20 @@ from typing import Optional
 import torch
 import torch.nn as nn
 
-from ....nn.modules.autoformer import SeriesDecompositionBlock
-from ....utils.metrics import calc_mse
 
-
-class _DLinear(nn.Module):
+class BackboneDLinear(nn.Module):
     def __init__(
         self,
         n_steps: int,
         n_features: int,
-        moving_avg_window_size: int,
         individual: bool = False,
         d_model: Optional[int] = None,
-        ORT_weight: float = 1,
-        MIT_weight: float = 1,
     ):
         super().__init__()
 
         self.n_steps = n_steps
         self.n_features = n_features
         self.individual = individual
-        self.ORT_weight = ORT_weight
-        self.MIT_weight = MIT_weight
-
-        self.series_decomp = SeriesDecompositionBlock(moving_avg_window_size)
 
         if individual:
             # create linear layers for each feature individually
@@ -62,18 +52,7 @@ class _DLinear(nn.Module):
                 (1 / n_steps) * torch.ones([n_steps, n_steps])
             )
 
-            self.linear_seasonal_embedding = nn.Linear(n_features * 2, d_model)
-            self.linear_trend_embedding = nn.Linear(n_features * 2, d_model)
-            self.linear_seasonal_output = nn.Linear(d_model, n_features)
-            self.linear_trend_output = nn.Linear(d_model, n_features)
-
-    def forward(self, inputs: dict, training: bool = True) -> dict:
-        X, masks = inputs["X"], inputs["missing_mask"]
-
-        # input preprocessing and embedding for DLinear
-        seasonal_init, trend_init = self.series_decomp(X)
-
-        # DLinear processing
+    def forward(self, seasonal_init, trend_init):
         if self.individual:
             seasonal_init, trend_init = seasonal_init.permute(
                 0, 2, 1
@@ -95,16 +74,6 @@ class _DLinear(nn.Module):
             seasonal_output = seasonal_output.permute(0, 2, 1)
             trend_output = trend_output.permute(0, 2, 1)
         else:
-            # WDU: the original DLinear paper isn't proposed for imputation task. Hence the model doesn't take
-            # the missing mask into account, which means, in the process, the model doesn't know which part of
-            # the input data is missing, and this may hurt the model's imputation performance. Therefore, I add the
-            # embedding layers to project the concatenation of features and masks into a hidden space, as well as
-            # the output layers to project the seasonal and trend from the hidden space to the original space.
-            # But this is only for the non-individual mode.
-            seasonal_init = torch.cat([seasonal_init, masks], dim=2)
-            trend_init = torch.cat([trend_init, masks], dim=2)
-            seasonal_init = self.linear_seasonal_embedding(seasonal_init)
-            trend_init = self.linear_trend_embedding(trend_init)
             seasonal_init, trend_init = seasonal_init.permute(
                 0, 2, 1
             ), trend_init.permute(0, 2, 1)
@@ -113,22 +82,5 @@ class _DLinear(nn.Module):
             trend_output = self.linear_trend(trend_init)
             seasonal_output = seasonal_output.permute(0, 2, 1)
             trend_output = trend_output.permute(0, 2, 1)
-            seasonal_output = self.linear_seasonal_output(seasonal_output)
-            trend_output = self.linear_trend_output(trend_output)
 
-        output = seasonal_output + trend_output
-
-        imputed_data = masks * X + (1 - masks) * output
-        results = {
-            "imputed_data": imputed_data,
-        }
-
-        if training:
-            # apply SAITS loss function to DLinear on the imputation task
-            ORT_loss = calc_mse(output, X, masks)
-            MIT_loss = calc_mse(output, inputs["X_ori"], inputs["indicating_mask"])
-            # `loss` is always the item for backward propagating to update the model
-            loss = self.ORT_weight * ORT_loss + self.MIT_weight * MIT_loss
-            results["loss"] = loss
-
-        return results
+        return seasonal_output, trend_output
