@@ -1,9 +1,4 @@
 """
-The implementation of GP-VAE for the partially-observed time-series imputation task.
-
-Refer to the paper Fortuin V, Baranchuk D, Rätsch G, et al.
-GP-VAE: Deep probabilistic time series imputation. AISTATS. PMLR, 2020: 1651-1661.
-
 
 """
 
@@ -157,7 +152,7 @@ def make_cnn(input_size, output_size, hidden_sizes, kernel_size=3):
     return nn.Sequential(*layers)
 
 
-class Encoder(nn.Module):
+class GpvaeEncoder(nn.Module):
     def __init__(self, input_size, z_size, hidden_sizes=(128, 128), window_size=24):
         """This module is an encoder with 1d-convolutional network and multivariate Normal posterior used by GP-VAE with
         proposed banded covariance matrix
@@ -240,7 +235,7 @@ class Encoder(nn.Module):
         return z_dist
 
 
-class Decoder(nn.Module):
+class GpvaeDecoder(nn.Module):
     def __init__(self, input_size, output_size, hidden_sizes=(256, 256)):
         """This module is a decoder with Gaussian output distribution.
 

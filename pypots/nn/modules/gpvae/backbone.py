@@ -1,8 +1,4 @@
 """
-The implementation of GP-VAE for the partially-observed time-series imputation task.
-
-Refer to the paper Fortuin V, Baranchuk D, Rätsch G, et al.
-GP-VAE: Deep probabilistic time series imputation. AISTATS. PMLR, 2020: 1651-1661.
 
 """
 
@@ -14,17 +10,17 @@ import numpy as np
 import torch
 import torch.nn as nn
 
-from .submodules import (
-    Encoder,
+from .layers import (
+    GpvaeEncoder,
     rbf_kernel,
     diffusion_kernel,
     matern_kernel,
     cauchy_kernel,
-    Decoder,
+    GpvaeDecoder,
 )
 
 
-class _GPVAE(nn.Module):
+class BackboneGPVAE(nn.Module):
     """model GPVAE with Gaussian Process prior
 
     Parameters
@@ -92,8 +88,8 @@ class _GPVAE(nn.Module):
         self.time_length = time_length
         self.latent_dim = latent_dim
         self.beta = beta
-        self.encoder = Encoder(input_dim, latent_dim, encoder_sizes, window_size)
-        self.decoder = Decoder(latent_dim, input_dim, decoder_sizes)
+        self.encoder = GpvaeEncoder(input_dim, latent_dim, encoder_sizes, window_size)
+        self.decoder = GpvaeDecoder(latent_dim, input_dim, decoder_sizes)
         self.M = M
         self.K = K
 
@@ -156,57 +152,49 @@ class _GPVAE(nn.Module):
         )
         return prior
 
-    def forward(self, inputs, training=True, n_sampling_times=1):
-        x = inputs["X"]
-        n_samples, n_steps, n_features = x.shape
-        m_mask = inputs["missing_mask"]
+    def impute(self, X, missing_mask, n_sampling_times=1):
+        n_samples, n_steps, n_features = X.shape
+        X = X.repeat(n_sampling_times, 1, 1)
+        missing_mask = missing_mask.repeat(n_sampling_times, 1, 1).type(torch.bool)
+        decode_x_mean = self.decode(self.encode(X).mean).mean
+        imputed_data = decode_x_mean * ~missing_mask + X * missing_mask
+        imputed_data = imputed_data.reshape(
+            n_sampling_times, n_samples, n_steps, n_features
+        ).permute(1, 0, 2, 3)
+        return imputed_data
 
-        results = {}
-        if training:
-            x = x.repeat(self.K * self.M, 1, 1)
-            m_mask = m_mask.repeat(self.K * self.M, 1, 1).type(torch.bool)
+    def forward(self, X, missing_mask):
+        X = X.repeat(self.K * self.M, 1, 1)
+        missing_mask = missing_mask.repeat(self.K * self.M, 1, 1).type(torch.bool)
 
-            if self.prior is None:
-                self.prior = self._init_prior(device=x.device)
+        if self.prior is None:
+            self.prior = self._init_prior(device=X.device)
 
-            qz_x = self.encode(x)
-            z = qz_x.rsample()
-            px_z = self.decode(z)
-            nll = -px_z.log_prob(x)
-            nll = torch.where(torch.isfinite(nll), nll, torch.zeros_like(nll))
-            if m_mask is not None:
-                nll = torch.where(m_mask, nll, torch.zeros_like(nll))
-            nll = nll.sum(dim=(1, 2))
+        qz_x = self.encode(X)
+        z = qz_x.rsample()
+        px_z = self.decode(z)
+        nll = -px_z.log_prob(X)
+        nll = torch.where(torch.isfinite(nll), nll, torch.zeros_like(nll))
+        if missing_mask is not None:
+            nll = torch.where(missing_mask, nll, torch.zeros_like(nll))
+        nll = nll.sum(dim=(1, 2))
 
-            if self.K > 1:
-                kl = qz_x.log_prob(z) - self.prior.log_prob(z)
-                kl = torch.where(torch.isfinite(kl), kl, torch.zeros_like(kl))
-                kl = kl.sum(1)
+        if self.K > 1:
+            kl = qz_x.log_prob(z) - self.prior.log_prob(z)
+            kl = torch.where(torch.isfinite(kl), kl, torch.zeros_like(kl))
+            kl = kl.sum(1)
 
-                weights = -nll - kl
-                weights = torch.reshape(weights, [self.M, self.K, -1])
+            weights = -nll - kl
+            weights = torch.reshape(weights, [self.M, self.K, -1])
 
-                elbo = torch.logsumexp(weights, dim=1)
-                elbo = elbo.mean()
-            else:
-                kl = self.kl_divergence(qz_x, self.prior)
-                kl = torch.where(torch.isfinite(kl), kl, torch.zeros_like(kl))
-                kl = kl.sum(1)
-
-                elbo = -nll - self.beta * kl
-                elbo = elbo.mean()
-            results["loss"] = -elbo.mean()
+            elbo = torch.logsumexp(weights, dim=1)
+            elbo = elbo.mean()
         else:
-            x = x.repeat(n_sampling_times, 1, 1)
-            m_mask = m_mask.repeat(n_sampling_times, 1, 1).type(torch.bool)
-            decode_x_mean = self.decode(self.encode(x).mean).mean
-            imputed_data = decode_x_mean * ~m_mask + x * m_mask
-            imputed_data = imputed_data.reshape(
-                n_sampling_times, n_samples, n_steps, n_features
-            ).permute(1, 0, 2, 3)
+            kl = self.kl_divergence(qz_x, self.prior)
+            kl = torch.where(torch.isfinite(kl), kl, torch.zeros_like(kl))
+            kl = kl.sum(1)
 
-            results = {
-                "imputed_data": imputed_data,
-            }
+            elbo = -nll - self.beta * kl
+            elbo = elbo.mean()
 
-        return results
+        return -elbo
