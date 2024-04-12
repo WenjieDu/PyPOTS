@@ -9,7 +9,7 @@ Learning Representations for Incomplete Time Series Clustering. AAAI 2021."
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-from typing import Tuple, Union
+from typing import Tuple
 
 import torch
 import torch.nn as nn
@@ -37,14 +37,12 @@ class MultiRNNCell(nn.Module):
         n_layer: int,
         d_input: int,
         d_hidden: int,
-        device: Union[str, torch.device],
     ):
         super().__init__()
         self.cell_type = cell_type
         self.n_layer = n_layer
         self.d_input = d_input
         self.d_hidden = d_hidden
-        self.device = device
 
         self.model = nn.ModuleList()
         if cell_type in ["LSTM", "GRU"]:
@@ -56,18 +54,22 @@ class MultiRNNCell(nn.Module):
 
         self.output_layer = nn.Linear(d_hidden, d_input)
 
-    def forward(self, inputs: dict) -> Tuple[torch.Tensor, torch.Tensor]:
-        X, missing_mask = inputs["X"], inputs["missing_mask"]
+    def forward(
+        self, X: torch.Tensor, missing_mask: torch.Tensor
+    ) -> Tuple[torch.Tensor, torch.Tensor]:
+
         bz, n_steps, _ = X.shape
-        hidden_state = torch.zeros((bz, self.d_hidden), device=self.device)
+        device = X.device
+
+        hidden_state = torch.zeros((bz, self.d_hidden), device=device)
         hidden_state_collector = torch.empty(
-            (bz, n_steps, self.d_hidden), device=self.device
+            (bz, n_steps, self.d_hidden), device=device
         )
-        output_collector = torch.empty((bz, n_steps, self.d_input), device=self.device)
+        output_collector = torch.empty((bz, n_steps, self.d_input), device=device)
         if self.cell_type == "LSTM":
             cell_states = [
-                torch.zeros((bz, self.d_hidden), device=self.device)
-                for i in range(self.n_layer)
+                torch.zeros((bz, self.d_hidden), device=device)
+                for _ in range(self.n_layer)
             ]
 
             for step in range(n_steps):
@@ -111,22 +113,23 @@ class MultiRNNCell(nn.Module):
         return output_collector, hidden_state
 
 
-class Generator(nn.Module):
+class CrliGenerator(nn.Module):
     def __init__(
         self,
         n_layers: int,
         n_features: int,
         d_hidden: int,
         cell_type: str,
-        device: Union[str, torch.device],
     ):
         super().__init__()
-        self.f_rnn = MultiRNNCell(cell_type, n_layers, n_features, d_hidden, device)
-        self.b_rnn = MultiRNNCell(cell_type, n_layers, n_features, d_hidden, device)
+        self.f_rnn = MultiRNNCell(cell_type, n_layers, n_features, d_hidden)
+        self.b_rnn = MultiRNNCell(cell_type, n_layers, n_features, d_hidden)
 
-    def forward(self, inputs: dict) -> Tuple[torch.Tensor, torch.Tensor]:
-        f_outputs, f_final_hidden_state = self.f_rnn(inputs)
-        b_outputs, b_final_hidden_state = self.b_rnn(inputs)
+    def forward(
+        self, X: torch.Tensor, missing_mask: torch.Tensor
+    ) -> Tuple[torch.Tensor, torch.Tensor]:
+        f_outputs, f_final_hidden_state = self.f_rnn(X, missing_mask)
+        b_outputs, b_final_hidden_state = self.b_rnn(X, missing_mask)
         b_outputs = reverse_tensor(b_outputs)  # reverse the output of the backward rnn
         imputation_latent = (f_outputs + b_outputs) / 2
         fb_final_hidden_states = torch.concat(
@@ -135,16 +138,14 @@ class Generator(nn.Module):
         return imputation_latent, fb_final_hidden_states
 
 
-class Discriminator(nn.Module):
+class CrliDiscriminator(nn.Module):
     def __init__(
         self,
         cell_type: str,
         d_input: int,
-        device: Union[str, torch.device],
     ):
         super().__init__()
         self.cell_type = cell_type
-        self.device = device
         # this setting is the same with the official implementation
         self.rnn_cell_module_list = nn.ModuleList(
             [
@@ -157,27 +158,31 @@ class Discriminator(nn.Module):
         )
         self.output_layer = nn.Linear(32, d_input)
 
-    def forward(self, inputs: dict) -> torch.Tensor:
-        imputed_X = (inputs["X"] * inputs["missing_mask"]) + (
-            inputs["imputation_latent"] * (1 - inputs["missing_mask"])
-        )
+    def forward(
+        self,
+        X: torch.Tensor,
+        missing_mask: torch.Tensor,
+        imputation_latent: torch.Tensor,
+    ) -> torch.Tensor:
+        imputed_X = (X * missing_mask) + (imputation_latent * (1 - missing_mask))
 
         bz, n_steps, _ = imputed_X.shape
+        device = imputed_X.device
         hidden_states = [
-            torch.zeros((bz, 32), device=self.device),
-            torch.zeros((bz, 16), device=self.device),
-            torch.zeros((bz, 8), device=self.device),
-            torch.zeros((bz, 16), device=self.device),
-            torch.zeros((bz, 32), device=self.device),
+            torch.zeros((bz, 32), device=device),
+            torch.zeros((bz, 16), device=device),
+            torch.zeros((bz, 8), device=device),
+            torch.zeros((bz, 16), device=device),
+            torch.zeros((bz, 32), device=device),
         ]
-        hidden_state_collector = torch.empty((bz, n_steps, 32), device=self.device)
+        hidden_state_collector = torch.empty((bz, n_steps, 32), device=device)
         if self.cell_type == "LSTM":
             cell_states = [
-                torch.zeros((bz, 32), device=self.device),
-                torch.zeros((bz, 16), device=self.device),
-                torch.zeros((bz, 8), device=self.device),
-                torch.zeros((bz, 16), device=self.device),
-                torch.zeros((bz, 32), device=self.device),
+                torch.zeros((bz, 32), device=device),
+                torch.zeros((bz, 16), device=device),
+                torch.zeros((bz, 8), device=device),
+                torch.zeros((bz, 16), device=device),
+                torch.zeros((bz, 32), device=device),
             ]
             for step in range(n_steps):
                 x = imputed_X[:, step, :]
@@ -210,19 +215,17 @@ class Discriminator(nn.Module):
         return output_collector
 
 
-class Decoder(nn.Module):
+class CrliDecoder(nn.Module):
     def __init__(
         self,
         n_steps: int,
         d_input: int,
         d_output: int,
         fcn_output_dims: list = None,
-        device: Union[str, torch.device] = "cpu",
     ):
         super().__init__()
         self.n_steps = n_steps
         self.d_output = d_output
-        self.device = device
 
         if fcn_output_dims is None:
             fcn_output_dims = [d_input]
@@ -236,15 +239,18 @@ class Decoder(nn.Module):
         self.rnn_cell = nn.GRUCell(fcn_output_dims[-1], fcn_output_dims[-1])
         self.output_layer = nn.Linear(fcn_output_dims[-1], d_output)
 
-    def forward(self, inputs: dict) -> Tuple[torch.Tensor, torch.Tensor]:
-        generator_fb_hidden_states = inputs["generator_fb_hidden_states"]
+    def forward(
+        self, generator_fb_hidden_states: torch.Tensor
+    ) -> Tuple[torch.Tensor, torch.Tensor]:
+        device = generator_fb_hidden_states.device
         bz, _ = generator_fb_hidden_states.shape
+
         fcn_latent = generator_fb_hidden_states
         for layer in self.fcn:
             fcn_latent = layer(fcn_latent)
         hidden_state = fcn_latent
         hidden_state_collector = torch.empty(
-            (bz, self.n_steps, self.fcn_output_dims[-1]), device=self.device
+            (bz, self.n_steps, self.fcn_output_dims[-1]), device=device
         )
         for i in range(self.n_steps):
             hidden_state = self.rnn_cell(hidden_state, hidden_state)
