@@ -11,9 +11,9 @@ import torch
 import torch.nn as nn
 from einops import rearrange
 
-from .submodules import CrossformerEncoder, ScaleBlock
-from ....nn.modules.patchtst import PredictionHead, PatchEmbedding
-from ....utils.metrics import calc_mse
+from ...nn.modules.crossformer import CrossformerEncoder, ScaleBlock
+from ...nn.modules.patchtst import PredictionHead, PatchEmbedding
+from ...nn.modules.saits import SaitsLoss
 
 
 class _Crossformer(nn.Module):
@@ -78,8 +78,11 @@ class _Crossformer(nn.Module):
         self.embedding = nn.Linear(n_features * 2, d_model)
         self.output_projection = nn.Linear(d_model, n_features)
 
+        # apply SAITS loss function to Crossformer on the imputation task
+        self.saits_loss_func = SaitsLoss(ORT_weight, MIT_weight)
+
     def forward(self, inputs: dict, training: bool = True) -> dict:
-        X, masks = inputs["X"], inputs["missing_mask"]
+        X, missing_mask = inputs["X"], inputs["missing_mask"]
 
         # WDU: the original Crossformer paper isn't proposed for imputation task. Hence the model doesn't take
         # the missing mask into account, which means, in the process, the model doesn't know which part of
@@ -87,31 +90,35 @@ class _Crossformer(nn.Module):
         # embedding layers to project the concatenation of features and masks into a hidden space, as well as
         # the output layers to project back from the hidden space to the original space.
         # embedding
-        input_X = self.embedding(torch.cat([X, masks], dim=2))
+        input_X = self.embedding(torch.cat([X, missing_mask], dim=2))
         x_enc = self.enc_value_embedding(input_X.permute(0, 2, 1))
-
-        # Crossformer processing
         x_enc = rearrange(
             x_enc, "(b d) seg_num d_model -> b d seg_num d_model", d=self.d_model
         )
         x_enc += self.enc_pos_embedding
+
+        # Crossformer processing
         x_enc = self.pre_norm(x_enc)
         enc_out, attns = self.encoder(x_enc)
         # project back the original data space
-        dec_out = self.head(enc_out[-1].permute(0, 1, 3, 2)).permute(0, 2, 1)
-        output = self.output_projection(dec_out)
+        enc_out = enc_out.permute(0, 1, 3, 2)
+        dec_out = self.head(enc_out)
+        reconstruction = self.output_projection(dec_out)
 
-        imputed_data = masks * X + (1 - masks) * output
+        imputed_data = missing_mask * X + (1 - missing_mask) * reconstruction
         results = {
             "imputed_data": imputed_data,
         }
 
+        # if in training mode, return results with losses
         if training:
-            # apply SAITS loss function to Crossformer on the imputation task
-            ORT_loss = calc_mse(output, X, masks)
-            MIT_loss = calc_mse(output, inputs["X_ori"], inputs["indicating_mask"])
+            X_ori, indicating_mask = inputs["X_ori"], inputs["indicating_mask"]
+            loss, ORT_loss, MIT_loss = self.saits_loss_func(
+                reconstruction, X_ori, missing_mask, indicating_mask
+            )
+            results["ORT_loss"] = ORT_loss
+            results["MIT_loss"] = MIT_loss
             # `loss` is always the item for backward propagating to update the model
-            loss = self.ORT_weight * ORT_loss + self.MIT_weight * MIT_loss
             results["loss"] = loss
 
         return results
