@@ -35,13 +35,6 @@ class _PatchTST(nn.Module):
         n_patches = int((n_steps - patch_len) / stride + 2)  # number of patches
         padding = stride
 
-        self.n_steps = n_steps
-        self.n_features = n_features
-        self.n_layers = n_layers
-        self.d_model = d_model
-        self.ORT_weight = ORT_weight
-        self.MIT_weight = MIT_weight
-
         self.embedding = nn.Linear(n_features * 2, d_model)
         self.patch_embedding = PatchEmbedding(
             d_model, patch_len, stride, padding, dropout

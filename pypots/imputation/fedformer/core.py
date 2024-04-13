@@ -33,9 +33,6 @@ class _FEDformer(nn.Module):
     ):
         super().__init__()
 
-        self.ORT_weight = ORT_weight
-        self.MIT_weight = MIT_weight
-
         self.enc_embedding = DataEmbedding(
             n_features * 2,
             d_model,

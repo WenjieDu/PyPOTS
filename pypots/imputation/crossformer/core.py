@@ -34,10 +34,7 @@ class _Crossformer(nn.Module):
     ):
         super().__init__()
 
-        self.n_features = n_features
         self.d_model = d_model
-        self.ORT_weight = ORT_weight
-        self.MIT_weight = MIT_weight
 
         # The padding operation to handle invisible sgemnet length
         pad_in_len = ceil(1.0 * n_steps / seg_len) * seg_len
