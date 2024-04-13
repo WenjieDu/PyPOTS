@@ -10,8 +10,6 @@ from typing import Union, Optional
 import numpy as np
 import torch
 
-from ..logging import logger
-
 
 def _check_inputs(
     predictions: Union[np.ndarray, torch.Tensor, list],
@@ -394,28 +392,3 @@ def calc_quantile_crps_sum(
         q_loss = calc_quantile_loss(targets, q_pred, quantiles[i], masks)
         CRPS += q_loss / denominator
     return CRPS.item() / len(quantiles)
-
-
-########################################################################################################################
-# Deprecated functions
-########################################################################################################################
-
-
-def cal_mae(*args):
-    logger.warning("🚨 cal_mae() is deprecated, use calc_mae() instead.")
-    return calc_mae(*args)
-
-
-def cal_rmse(*args):
-    logger.warning("🚨 cal_rmse() is deprecated, use calc_rmse() instead.")
-    return calc_rmse(*args)
-
-
-def cal_mse(*args):
-    logger.warning("🚨 cal_mse() is deprecated, use calc_mse() instead.")
-    return calc_mse(*args)
-
-
-def cal_mre(*args):
-    logger.warning("🚨 cal_mre() is deprecated, use calc_mre() instead.")
-    return calc_mre(*args)
