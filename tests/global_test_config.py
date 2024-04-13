@@ -20,10 +20,10 @@ set_random_seed(2023)
 # Generate the unified data for testing and cache it first, DATA here is a singleton
 # Otherwise, file lock will cause bug if running test parallely with pytest-xdist.
 DATA = gene_random_walk(
-    n_steps=24,
-    n_features=10,
+    n_steps=7,
+    n_features=5,
     n_classes=2,
-    n_samples_each_class=1000,
+    n_samples_each_class=100,
     missing_rate=0.1,
 )
 # DATA = gene_physionet2012()
