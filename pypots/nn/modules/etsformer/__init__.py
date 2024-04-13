@@ -1,5 +1,5 @@
 """
-The package of the partially-observed time-series imputation model ETSformer.
+The package including the modules of ETSformer.
 
 Refer to the paper
 `Gerald Woo, Chenghao Liu, Doyen Sahoo, Akshat Kumar, and Steven Hoi.

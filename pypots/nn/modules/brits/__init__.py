@@ -1,5 +1,5 @@
 """
-The package of the partially-observed time-series imputation model BRITS.
+The package including the modules of BRITS.
 
 Refer to the paper
 `Wei Cao, Dong Wang, Jian Li, Hao Zhou, Lei Li, and Yitan Li.

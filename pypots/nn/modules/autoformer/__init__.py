@@ -1,5 +1,5 @@
 """
-The package of the partially-observed time-series imputation model Autoformer.
+The package including the modules of Autoformer.
 
 Refer to the paper
 `Haixu Wu, Jiehui Xu, Jianmin Wang, and Mingsheng Long.
