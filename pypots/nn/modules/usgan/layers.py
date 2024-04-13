@@ -9,7 +9,7 @@ import torch
 import torch.nn as nn
 
 
-class Discriminator(nn.Module):
+class UsganDiscriminator(nn.Module):
     """model Discriminator: built on BiRNN
 
     Parameters
