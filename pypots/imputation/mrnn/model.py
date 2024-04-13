@@ -20,8 +20,8 @@ import numpy as np
 import torch
 from torch.utils.data import DataLoader
 
+from .core import _MRNN
 from .data import DatasetForMRNN
-from .modules import _MRNN
 from ..base import BaseNNImputer
 from ...data.checking import check_X_ori_in_val_set
 from ...optim.adam import Adam
@@ -117,7 +117,6 @@ class MRNN(BaseNNImputer):
             self.n_steps,
             self.n_features,
             self.rnn_hidden_size,
-            self.device,
         )
         self._send_model_to_given_device()
         self._print_model_size()

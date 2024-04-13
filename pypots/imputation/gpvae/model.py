@@ -24,8 +24,8 @@ except ImportError:
     pass
 
 
+from .core import _GPVAE
 from .data import DatasetForGPVAE
-from .modules import _GPVAE
 from ..base import BaseNNImputer
 from ...data.checking import check_X_ori_in_val_set
 from ...optim.adam import Adam

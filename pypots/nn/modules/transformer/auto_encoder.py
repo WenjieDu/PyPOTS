@@ -12,22 +12,16 @@ import torch.nn as nn
 
 from .attention import ScaledDotProductAttention
 from .embedding import PositionalEncoding
-from .layers import EncoderLayer, DecoderLayer
+from .layers import TransformerEncoderLayer, TransformerDecoderLayer
 
 
-class Encoder(nn.Module):
+class TransformerEncoder(nn.Module):
     """Transformer encoder.
 
     Parameters
     ----------
     n_layers:
         The number of layers in the encoder.
-
-    n_steps:
-        The number of time steps in the input tensor.
-
-    n_features:
-        The number of features in the input tensor.
 
     d_model:
         The dimension of the module manipulation space.
@@ -56,8 +50,6 @@ class Encoder(nn.Module):
     def __init__(
         self,
         n_layers: int,
-        n_steps: int,
-        n_features: int,
         d_model: int,
         d_ffn: int,
         n_heads: int,
@@ -68,12 +60,9 @@ class Encoder(nn.Module):
     ):
         super().__init__()
 
-        self.embedding = nn.Linear(n_features, d_model)
-        self.dropout = nn.Dropout(dropout)
-        self.position_enc = PositionalEncoding(d_model, n_positions=n_steps)
         self.enc_layer_stack = nn.ModuleList(
             [
-                EncoderLayer(
+                TransformerEncoderLayer(
                     d_model,
                     d_ffn,
                     n_heads,
@@ -90,7 +79,6 @@ class Encoder(nn.Module):
         self,
         x: torch.Tensor,
         src_mask: Optional[torch.Tensor] = None,
-        return_attn_weights: bool = False,
     ) -> Union[torch.Tensor, Tuple[torch.Tensor, list]]:
         """Forward processing of the encoder.
 
@@ -102,9 +90,6 @@ class Encoder(nn.Module):
         src_mask:
             Masking tensor for the attention map. The shape should be [batch_size, n_heads, n_steps, n_steps].
 
-        return_attn_weights:
-            Whether to return the attention map.
-
         Returns
         -------
         enc_output:
@@ -114,21 +99,17 @@ class Encoder(nn.Module):
             A list containing the attention map from each encoder layer.
 
         """
-        x = self.embedding(x)
-        enc_output = self.dropout(self.position_enc(x))
         attn_weights_collector = []
+        enc_output = x
 
         for layer in self.enc_layer_stack:
             enc_output, attn_weights = layer(enc_output, src_mask)
             attn_weights_collector.append(attn_weights)
 
-        if return_attn_weights:
-            return enc_output, attn_weights_collector
-
-        return enc_output
+        return enc_output, attn_weights_collector
 
 
-class Decoder(nn.Module):
+class TransformerDecoder(nn.Module):
     """Transformer decoder.
 
     Parameters
@@ -185,7 +166,7 @@ class Decoder(nn.Module):
         self.position_enc = PositionalEncoding(d_model, n_positions=n_steps)
         self.layer_stack = nn.ModuleList(
             [
-                DecoderLayer(
+                TransformerDecoderLayer(
                     d_model,
                     d_ffn,
                     n_heads,

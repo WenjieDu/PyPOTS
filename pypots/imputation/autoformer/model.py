@@ -21,7 +21,7 @@ import torch
 from torch.utils.data import DataLoader
 
 from .data import DatasetForAutoformer
-from .modules.core import _Autoformer
+from pypots.imputation.autoformer.core import _Autoformer
 from ..base import BaseNNImputer
 from ...data.base import BaseDataset
 from ...data.checking import check_X_ori_in_val_set
