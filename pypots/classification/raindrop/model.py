@@ -18,7 +18,7 @@ import numpy as np
 import torch
 from torch.utils.data import DataLoader
 
-from .modules import _Raindrop
+from .core import _Raindrop
 from ...classification.base import BaseNNClassifier
 from ...classification.grud.data import DatasetForGRUD
 from ...optim.adam import Adam
@@ -159,8 +159,7 @@ class Raindrop(BaseNNClassifier):
             d_static,
             aggregation,
             sensor_wise_mask,
-            static=static,
-            device=self.device,
+            static,
         )
         self._send_model_to_given_device()
         self._print_model_size()

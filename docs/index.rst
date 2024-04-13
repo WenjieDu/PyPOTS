@@ -170,7 +170,7 @@ Additionally, we present you a usage example of imputing missing values in time 
 ❖ Available Algorithms
 ^^^^^^^^^^^^^^^^^^^^^^^
 PyPOTS supports imputation, classification, clustering, and forecasting tasks on multivariate time series with missing values.
-The currently available algorithms of four tasks are cataloged in the following table with four partitions. The paper references are all listed `on the reference page </references.html>`_.
+The currently available algorithms of four tasks are cataloged in the following table with four partitions. The paper references are provided and you can click them to check out.
 
 🌟 Since **v0.2**, all neural-network models in PyPOTS has got hyperparameter-optimization support.
 This functionality is implemented with the `Microsoft NNI <https://github.com/microsoft/nni>`_ framework.
@@ -183,7 +183,7 @@ the same as we did in `SAITS paper <https://arxiv.org/pdf/2202.08516)>`_.
 Task                           Type             Algorithm                                                                                                 Year   Reference
 ============================== ================ ========================================================================================================= ====== =========
 Imputation                     Neural Net       SAITS (Self-Attention-based Imputation for Time Series)                                                   2023   :cite:`du2023SAITS`
-Imputation                     Neural Net       Transformer                                                                                               2017   :cite:`vaswani2017Transformer`, :cite:`du2023SAITS`
+Imputation                     Neural Net       Transformer                                                                                               2017   :cite:`vaswani2017Transformer`
 Imputation                     Neural Net       Crossformer (Transformer Utilizing Cross-Dimension Dependency for Multivariate Time Series Forecasting)   2023   :cite:`nie2023patchtst`
 Imputation                     Neural Net       TimesNet (Temporal 2D-Variation Modeling for General Time Series Analysis)                                2023   :cite:`wu2023timesnet`
 Imputation                     Neural Net       PatchTST (A Time Series is Worth 64 Words: Long-Term Forecasting with Transformers)                       2023   :cite:`nie2023patchtst`

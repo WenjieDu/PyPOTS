@@ -45,13 +45,13 @@ class TestCRLI(unittest.TestCase):
     D_optimizer = Adam(lr=0.001, weight_decay=1e-5)
 
     # initialize a CRLI model
-    crli_gru = CRLI(
+    crli_lstm = CRLI(
         n_steps=DATA["n_steps"],
         n_features=DATA["n_features"],
         n_clusters=DATA["n_classes"],
         n_generator_layers=2,
         rnn_hidden_size=32,
-        rnn_cell_type="GRU",
+        rnn_cell_type="LSTM",
         epochs=EPOCHS,
         saving_path=saving_path,
         G_optimizer=G_optimizer,
@@ -59,13 +59,13 @@ class TestCRLI(unittest.TestCase):
         device=DEVICE,
     )
 
-    crli_lstm = CRLI(
+    crli_gru = CRLI(
         n_steps=DATA["n_steps"],
         n_features=DATA["n_features"],
         n_clusters=DATA["n_classes"],
         n_generator_layers=2,
-        rnn_hidden_size=128,
-        rnn_cell_type="LSTM",
+        rnn_hidden_size=32,
+        rnn_cell_type="GRU",
         epochs=EPOCHS,
         saving_path=saving_path,
         G_optimizer=G_optimizer,
@@ -165,8 +165,8 @@ class TestCRLI(unittest.TestCase):
 
     @pytest.mark.xdist_group(name="clustering-crli")
     def test_4_lazy_loading(self):
-        self.crli_gru.fit(H5_TRAIN_SET_PATH, H5_VAL_SET_PATH)
-        clustering_results = self.crli_gru.predict(
+        self.crli_lstm.fit(H5_TRAIN_SET_PATH, H5_VAL_SET_PATH)
+        clustering_results = self.crli_lstm.predict(
             H5_TEST_SET_PATH, return_latent_vars=True
         )
         external_metrics = calc_external_cluster_validation_metrics(
@@ -175,8 +175,8 @@ class TestCRLI(unittest.TestCase):
         internal_metrics = calc_internal_cluster_validation_metrics(
             clustering_results["latent_vars"]["clustering_latent"], DATA["test_y"]
         )
-        logger.info(f"Lazy-loading CRLI-GRU external_metrics: {external_metrics}")
-        logger.info(f"Lazy-loading CRLI-GRU internal_metrics: {internal_metrics}")
+        logger.info(f"Lazy-loading CRLI-LSTM external_metrics: {external_metrics}")
+        logger.info(f"Lazy-loading CRLI-LSTM internal_metrics: {internal_metrics}")
 
 
 if __name__ == "__main__":

@@ -20,8 +20,8 @@ import numpy as np
 import torch
 from torch.utils.data import DataLoader
 
+from .core import _Transformer
 from .data import DatasetForTransformer
-from .modules import _TransformerEncoder
 from ..base import BaseNNImputer
 from ...data.base import BaseDataset
 from ...data.checking import check_X_ori_in_val_set
@@ -178,10 +178,10 @@ class Transformer(BaseNNImputer):
         self.MIT_weight = MIT_weight
 
         # set up the model
-        self.model = _TransformerEncoder(
-            self.n_layers,
+        self.model = _Transformer(
             self.n_steps,
             self.n_features,
+            self.n_layers,
             self.d_model,
             self.d_ffn,
             self.n_heads,

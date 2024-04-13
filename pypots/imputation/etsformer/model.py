@@ -21,7 +21,7 @@ import torch
 from torch.utils.data import DataLoader
 
 from .data import DatasetForETSformer
-from .modules.core import _ETSformer
+from pypots.imputation.etsformer.core import _ETSformer
 from ..base import BaseNNImputer
 from ...data.base import BaseDataset
 from ...data.checking import check_X_ori_in_val_set

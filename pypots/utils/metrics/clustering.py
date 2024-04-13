@@ -8,8 +8,6 @@ Evaluation metrics related to clustering.
 import numpy as np
 from sklearn import metrics
 
-from ..logging import logger
-
 
 def calc_rand_index(
     class_predictions: np.ndarray,
@@ -302,59 +300,3 @@ def calc_internal_cluster_validation_metrics(
         "davies_bouldin_score": davies_bouldin_score,
     }
     return internal_cluster_validation_metrics
-
-
-########################################################################################################################
-# Deprecated functions
-########################################################################################################################
-
-
-def cal_rand_index(*args):
-    logger.warning("🚨 Deprecated function, please use `calc_rand_index` instead.")
-    return calc_rand_index(*args)
-
-
-def cal_adjusted_rand_index(*args):
-    logger.warning(
-        "🚨 Deprecated function, please use `calc_adjusted_rand_index` instead."
-    )
-    return calc_adjusted_rand_index(*args)
-
-
-def cal_nmi(*args):
-    logger.warning("🚨 Deprecated function, please use `calc_nmi` instead.")
-    return calc_nmi(*args)
-
-
-def cal_cluster_purity(*args):
-    logger.warning("🚨 Deprecated function, please use `calc_cluster_purity` instead.")
-    return calc_cluster_purity(*args)
-
-
-def cal_external_cluster_validation_metrics(*args):
-    logger.warning(
-        "🚨 Deprecated function, please use `calc_external_cluster_validation_metrics` instead."
-    )
-    return calc_external_cluster_validation_metrics(*args)
-
-
-def cal_silhouette(*args):
-    logger.warning("🚨 Deprecated function, please use `calc_silhouette` instead.")
-    return calc_silhouette(*args)
-
-
-def cal_chs(*args):
-    logger.warning("🚨 Deprecated function, please use `calc_chs` instead.")
-    return calc_chs(*args)
-
-
-def cal_dbs(*args):
-    logger.warning("🚨 Deprecated function, please use `calc_dbs` instead.")
-    return calc_dbs(*args)
-
-
-def cal_internal_cluster_validation_metrics(*args):
-    logger.warning(
-        "🚨 Deprecated function, please use `calc_internal_cluster_validation_metrics` instead."
-    )
-    return calc_internal_cluster_validation_metrics(*args)

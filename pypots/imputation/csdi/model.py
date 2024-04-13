@@ -26,8 +26,8 @@ try:
 except ImportError:
     pass
 
+from .core import _CSDI
 from .data import DatasetForCSDI, TestDatasetForCSDI
-from .modules import _CSDI
 from ..base import BaseNNImputer
 from ...data.checking import check_X_ori_in_val_set
 from ...optim.adam import Adam

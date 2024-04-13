@@ -25,10 +25,10 @@ class TestBTTF(unittest.TestCase):
     # initialize a BTTF model
     bttf = BTTF(
         n_steps=DATA["n_steps"] - N_PRED_STEP,
-        n_features=10,
+        n_features=DATA["n_features"],
         pred_step=N_PRED_STEP,
         rank=10,
-        time_lags=[1, 2, 3, 5, 5 + 1, 5 + 2, 10, 10 + 1, 10 + 2],
+        time_lags=[1, 2, 3, 2, 2 + 1, 2 + 2, 3, 3 + 1, 3 + 2],
         burn_iter=5,
         gibbs_iter=5,
         multi_step=1,
