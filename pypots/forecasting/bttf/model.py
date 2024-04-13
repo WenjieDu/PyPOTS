@@ -21,7 +21,7 @@ from typing import Union, Optional
 import numpy as np
 import torch
 
-from .modules import BTTF_forecast
+from .core import BTTF_forecast
 from ..base import BaseForecaster
 from ...utils.logging import logger
 
