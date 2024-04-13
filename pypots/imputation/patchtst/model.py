@@ -22,7 +22,7 @@ import torch
 from torch.utils.data import DataLoader
 
 from .data import DatasetForPatchTST
-from .modules.core import _PatchTST
+from pypots.imputation.patchtst.core import _PatchTST
 from ..base import BaseNNImputer
 from ...data.base import BaseDataset
 from ...data.checking import check_X_ori_in_val_set

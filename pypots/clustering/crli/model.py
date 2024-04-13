@@ -18,8 +18,8 @@ import numpy as np
 import torch
 from torch.utils.data import DataLoader
 
+from .core import _CRLI
 from .data import DatasetForCRLI
-from .modules import _CRLI
 from ..base import BaseNNClusterer
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
@@ -161,7 +161,6 @@ class CRLI(BaseNNClusterer):
             decoder_fcn_output_dims,
             lambda_kmeans,
             rnn_cell_type,
-            self.device,
         )
         self._send_model_to_given_device()
         self._print_model_size()
@@ -170,12 +169,12 @@ class CRLI(BaseNNClusterer):
         self.G_optimizer = G_optimizer
         self.G_optimizer.init_optimizer(
             [
-                {"params": self.model.generator.parameters()},
-                {"params": self.model.decoder.parameters()},
+                {"params": self.model.backbone.generator.parameters()},
+                {"params": self.model.backbone.decoder.parameters()},
             ]
         )
         self.D_optimizer = D_optimizer
-        self.D_optimizer.init_optimizer(self.model.discriminator.parameters())
+        self.D_optimizer.init_optimizer(self.model.backbone.discriminator.parameters())
 
     def _assemble_input_for_training(self, data: list) -> dict:
         # fetch data

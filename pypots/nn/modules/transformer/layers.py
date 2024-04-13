@@ -65,7 +65,7 @@ class PositionWiseFeedForward(nn.Module):
         return x
 
 
-class EncoderLayer(nn.Module):
+class TransformerEncoderLayer(nn.Module):
     """Transformer encoder layer.
 
     Parameters
@@ -153,7 +153,7 @@ class EncoderLayer(nn.Module):
         return enc_output, attn_weights
 
 
-class DecoderLayer(nn.Module):
+class TransformerDecoderLayer(nn.Module):
     """Transformer decoder layer.
 
     Parameters
