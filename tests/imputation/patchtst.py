@@ -51,7 +51,7 @@ class TestPatchTST(unittest.TestCase):
         n_heads=2,
         d_k=16,
         d_v=16,
-        patch_len=16,
+        patch_len=DATA["n_steps"],
         stride=8,
         dropout=0.1,
         attn_dropout=0,
