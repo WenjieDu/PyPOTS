@@ -21,8 +21,8 @@ import numpy as np
 import torch
 from torch.utils.data import DataLoader
 
+from .core import _Informer
 from .data import DatasetForInformer
-from .modules.core import _Informer
 from ..base import BaseNNImputer
 from ...data.base import BaseDataset
 from ...data.checking import check_X_ori_in_val_set

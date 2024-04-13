@@ -21,8 +21,8 @@ import numpy as np
 import torch
 from torch.utils.data import DataLoader
 
+from .core import _BRITS
 from .data import DatasetForBRITS
-from .modules import _BRITS
 from ..base import BaseNNClassifier
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
@@ -135,7 +135,6 @@ class BRITS(BaseNNClassifier):
             self.n_classes,
             self.classification_weight,
             self.reconstruction_weight,
-            self.device,
         )
         self._send_model_to_given_device()
         self._print_model_size()

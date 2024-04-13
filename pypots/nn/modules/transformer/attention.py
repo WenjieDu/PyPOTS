@@ -194,13 +194,14 @@ class MultiHeadAttention(nn.Module):
         # d_tensor could be n_heads*d_k, n_heads*d_v
 
         # keep useful variables
-        batch_size, n_steps = q.size(0), q.size(1)
-        k_n_steps = k.size(1)
+        batch_size, q_len = q.size(0), q.size(1)
+        k_len = k.size(1)
+        v_len = v.size(1)
 
         # now separate the last dimension of q, k, v into different heads -> [batch_size, n_steps, n_heads, d_k or d_v]
-        q = self.w_qs(q).view(batch_size, n_steps, self.n_heads, self.d_k)
-        k = self.w_ks(k).view(batch_size, k_n_steps, self.n_heads, self.d_k)
-        v = self.w_vs(v).view(batch_size, k_n_steps, self.n_heads, self.d_v)
+        q = self.w_qs(q).view(batch_size, q_len, self.n_heads, self.d_k)
+        k = self.w_ks(k).view(batch_size, k_len, self.n_heads, self.d_k)
+        v = self.w_vs(v).view(batch_size, v_len, self.n_heads, self.d_v)
 
         # transpose for self-attention calculation -> [batch_size, n_steps, d_k or d_v, n_heads]
         q, k, v = q.transpose(1, 2), k.transpose(1, 2), v.transpose(1, 2)
@@ -213,7 +214,7 @@ class MultiHeadAttention(nn.Module):
 
         # transpose back -> [batch_size, n_steps, n_heads, d_v]
         # then merge the last two dimensions to combine all the heads -> [batch_size, n_steps, n_heads*d_v]
-        v = v.transpose(1, 2).contiguous().view(batch_size, n_steps, -1)
+        v = v.transpose(1, 2).contiguous().view(batch_size, q_len, -1)
         v = self.fc(v)
 
         return v, attn_weights
