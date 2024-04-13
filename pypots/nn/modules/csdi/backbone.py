@@ -1,3 +1,7 @@
+"""
+
+"""
+
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
@@ -5,10 +9,10 @@ import numpy as np
 import torch
 import torch.nn as nn
 
-from .submodules import DiffusionModel
+from .layers import CsdiDiffusionModel
 
 
-class _CSDI(nn.Module):
+class BackboneCSDI(nn.Module):
     def __init__(
         self,
         n_layers,
@@ -41,11 +45,11 @@ class _CSDI(nn.Module):
             d_input = 2
 
         self.embed_layer = nn.Embedding(
-            num_embeddings=self.d_target,
-            embedding_dim=self.d_feature_embedding,
+            num_embeddings=d_target,
+            embedding_dim=d_feature_embedding,
         )
 
-        self.diff_model = DiffusionModel(
+        self.diff_model = CsdiDiffusionModel(
             n_diffusion_steps,
             d_diffusion_embedding,
             d_input,
@@ -109,6 +113,16 @@ class _CSDI(nn.Module):
 
         return side_info
 
+    def set_input_to_diffmodel(self, noisy_data, observed_data, cond_mask):
+        if self.is_unconditional:
+            total_input = noisy_data.unsqueeze(1)  # (B,1,K,L)
+        else:
+            cond_obs = (cond_mask * observed_data).unsqueeze(1)
+            noisy_target = ((1 - cond_mask) * noisy_data).unsqueeze(1)
+            total_input = torch.cat([cond_obs, noisy_target], dim=1)  # (B,2,K,L)
+
+        return total_input
+
     def calc_loss_valid(
         self, observed_data, cond_mask, indicating_mask, side_info, is_train
     ):
@@ -146,17 +160,7 @@ class _CSDI(nn.Module):
         loss = (residual**2).sum() / (num_eval if num_eval > 0 else 1)
         return loss
 
-    def set_input_to_diffmodel(self, noisy_data, observed_data, cond_mask):
-        if self.is_unconditional:
-            total_input = noisy_data.unsqueeze(1)  # (B,1,K,L)
-        else:
-            cond_obs = (cond_mask * observed_data).unsqueeze(1)
-            noisy_target = ((1 - cond_mask) * noisy_data).unsqueeze(1)
-            total_input = torch.cat([cond_obs, noisy_target], dim=1)  # (B,2,K,L)
-
-        return total_input
-
-    def impute(self, observed_data, cond_mask, side_info, n_sampling_times):
+    def forward(self, observed_data, cond_mask, side_info, n_sampling_times):
         B, K, L = observed_data.shape
         device = observed_data.device
         imputed_samples = torch.zeros(B, n_sampling_times, K, L).to(device)
@@ -203,49 +207,3 @@ class _CSDI(nn.Module):
 
             imputed_samples[:, i] = current_sample.detach()
         return imputed_samples
-
-    def forward(self, inputs, training=True, n_sampling_times=1):
-        results = {}
-        if training:  # for training
-            (observed_data, indicating_mask, cond_mask, observed_tp) = (
-                inputs["X_ori"],
-                inputs["indicating_mask"],
-                inputs["cond_mask"],
-                inputs["observed_tp"],
-            )
-            side_info = self.get_side_info(observed_tp, cond_mask)
-            training_loss = self.calc_loss(
-                observed_data, cond_mask, indicating_mask, side_info, training
-            )
-            results["loss"] = training_loss
-        elif not training and n_sampling_times == 0:  # for validating
-            (observed_data, indicating_mask, cond_mask, observed_tp) = (
-                inputs["X_ori"],
-                inputs["indicating_mask"],
-                inputs["cond_mask"],
-                inputs["observed_tp"],
-            )
-            side_info = self.get_side_info(observed_tp, cond_mask)
-            validating_loss = self.calc_loss_valid(
-                observed_data, cond_mask, indicating_mask, side_info, training
-            )
-            results["loss"] = validating_loss
-        elif not training and n_sampling_times > 0:  # for testing
-            observed_data, cond_mask, observed_tp = (
-                inputs["X"],
-                inputs["cond_mask"],
-                inputs["observed_tp"],
-            )
-            side_info = self.get_side_info(observed_tp, cond_mask)
-            samples = self.impute(
-                observed_data, cond_mask, side_info, n_sampling_times
-            )  # (n_samples, n_sampling_times, n_features, n_steps)
-            repeated_obs = observed_data.unsqueeze(1).repeat(1, n_sampling_times, 1, 1)
-            repeated_mask = cond_mask.unsqueeze(1).repeat(1, n_sampling_times, 1, 1)
-            imputed_data = repeated_obs + samples * (1 - repeated_mask)
-
-            results["imputed_data"] = imputed_data.permute(
-                0, 1, 3, 2
-            )  # (n_samples, n_sampling_times, n_steps, n_features)
-
-        return results

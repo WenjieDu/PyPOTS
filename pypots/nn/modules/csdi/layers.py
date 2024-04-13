@@ -25,7 +25,7 @@ def conv1d_with_init(in_channels, out_channels, kernel_size):
     return layer
 
 
-class DiffusionEmbedding(nn.Module):
+class CsdiDiffusionEmbedding(nn.Module):
     def __init__(self, n_diffusion_steps, d_embedding=128, d_projection=None):
         super().__init__()
         if d_projection is None:
@@ -59,7 +59,7 @@ class DiffusionEmbedding(nn.Module):
         return x
 
 
-class ResidualBlock(nn.Module):
+class CsdiResidualBlock(nn.Module):
     def __init__(self, d_side, n_channels, diffusion_embedding_dim, nheads):
         super().__init__()
         self.diffusion_projection = nn.Linear(diffusion_embedding_dim, n_channels)
@@ -120,7 +120,7 @@ class ResidualBlock(nn.Module):
         return (x + residual) / math.sqrt(2.0), skip
 
 
-class DiffusionModel(nn.Module):
+class CsdiDiffusionModel(nn.Module):
     def __init__(
         self,
         n_diffusion_steps,
@@ -132,7 +132,7 @@ class DiffusionModel(nn.Module):
         n_layers,
     ):
         super().__init__()
-        self.diffusion_embedding = DiffusionEmbedding(
+        self.diffusion_embedding = CsdiDiffusionEmbedding(
             n_diffusion_steps=n_diffusion_steps,
             d_embedding=d_diffusion_embedding,
         )
@@ -143,7 +143,7 @@ class DiffusionModel(nn.Module):
 
         self.residual_layers = nn.ModuleList(
             [
-                ResidualBlock(
+                CsdiResidualBlock(
                     d_side=d_side,
                     n_channels=n_channels,
                     diffusion_embedding_dim=d_diffusion_embedding,
