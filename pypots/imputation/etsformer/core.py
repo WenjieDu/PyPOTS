@@ -14,8 +14,8 @@ from ...nn.modules.etsformer import (
     ETSformerDecoderLayer,
     ETSformerDecoder,
 )
-from ...nn.modules.transformer.embedding import DataEmbedding
 from ...nn.modules.saits import SaitsLoss
+from ...nn.modules.transformer.embedding import DataEmbedding
 
 
 class _ETSformer(nn.Module):
@@ -35,10 +35,6 @@ class _ETSformer(nn.Module):
         activation="sigmoid",
     ):
         super().__init__()
-
-        self.n_steps = n_steps
-        self.ORT_weight = ORT_weight
-        self.MIT_weight = MIT_weight
 
         self.enc_embedding = DataEmbedding(
             n_features * 2,
