@@ -17,8 +17,8 @@ import numpy as np
 import torch
 from torch.utils.data import DataLoader
 
+from .core import _USGAN
 from .data import DatasetForUSGAN
-from .modules import _USGAN
 from ..base import BaseNNImputer
 from ...data.checking import check_X_ori_in_val_set
 from ...optim.adam import Adam
@@ -155,9 +155,9 @@ class USGAN(BaseNNImputer):
 
         # set up the optimizer
         self.G_optimizer = G_optimizer
-        self.G_optimizer.init_optimizer(self.model.generator.parameters())
+        self.G_optimizer.init_optimizer(self.model.backbone.generator.parameters())
         self.D_optimizer = D_optimizer
-        self.D_optimizer.init_optimizer(self.model.discriminator.parameters())
+        self.D_optimizer.init_optimizer(self.model.backbone.discriminator.parameters())
 
     def _assemble_input_for_training(self, data: list) -> dict:
         # fetch data
@@ -248,22 +248,20 @@ class USGAN(BaseNNImputer):
                         results = self.model.forward(
                             inputs, training_object="generator"
                         )
-                        results["generation_loss"].backward()
+                        results["loss"].backward()  # generation loss
                         self.G_optimizer.step()
-                        step_train_loss_G_collector.append(
-                            results["generation_loss"].item()
-                        )
+                        step_train_loss_G_collector.append(results["loss"].item())
 
                     if idx % self.D_steps == 0:
                         self.D_optimizer.zero_grad()
                         results = self.model.forward(
                             inputs, training_object="discriminator"
                         )
-                        results["discrimination_loss"].backward(retain_graph=True)
+                        results["loss"].backward(
+                            retain_graph=True
+                        )  # discrimination loss
                         self.D_optimizer.step()
-                        step_train_loss_D_collector.append(
-                            results["discrimination_loss"].item()
-                        )
+                        step_train_loss_D_collector.append(results["loss"].item())
 
                     mean_step_train_D_loss = np.mean(step_train_loss_D_collector)
                     mean_step_train_G_loss = np.mean(step_train_loss_G_collector)
