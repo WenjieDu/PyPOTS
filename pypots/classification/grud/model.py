@@ -1,5 +1,5 @@
 """
-The implementation of GRU-D for the partially-observed time-series imputation task.
+The implementation of GRU-D for the partially-observed time-series classification task.
 
 Refer to the paper "Zhengping Che, Sanjay Purushotham, Kyunghyun Cho, David Sontag, and Yan Liu.
 Recurrent Neural Networks for Multivariate Time Series with Missing Values.
@@ -17,8 +17,8 @@ import numpy as np
 import torch
 from torch.utils.data import DataLoader
 
+from .core import _GRUD
 from .data import DatasetForGRUD
-from .modules import _GRUD
 from ..base import BaseNNClassifier
 from ...optim.adam import Adam
 from ...optim.base import Optimizer

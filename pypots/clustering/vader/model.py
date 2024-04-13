@@ -22,7 +22,7 @@ from sklearn.mixture import GaussianMixture
 from torch.utils.data import DataLoader
 
 from .data import DatasetForVaDER
-from .modules import inverse_softplus, _VaDER
+from .core import inverse_softplus, _VaDER
 from ..base import BaseNNClusterer
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
@@ -238,13 +238,13 @@ class VaDER(BaseNNClusterer):
 
             # use trained GMM's parameters to init GMM layer's
             if isinstance(self.device, list):  # if using multi-GPU
-                self.model.module.gmm_layer.set_values(
+                self.model.module.backbone.gmm_layer.set_values(
                     torch.from_numpy(mu).to(device),
                     torch.from_numpy(var).to(device),
                     torch.from_numpy(phi).to(device),
                 )
             else:
-                self.model.gmm_layer.set_values(
+                self.model.backbone.gmm_layer.set_values(
                     torch.from_numpy(mu).to(device),
                     torch.from_numpy(var).to(device),
                     torch.from_numpy(phi).to(device),
