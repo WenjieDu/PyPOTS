@@ -7,27 +7,26 @@ Some part of the code is from https://github.com/WenjieDu/SAITS.
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
+from typing import Tuple
 
 import torch
 import torch.nn as nn
 
-from .submodules import FCN_Regression
-from ....utils.metrics import calc_rmse
+from .layers import MrnnFcnRegression
 
 
-class _MRNN(nn.Module):
-    def __init__(self, seq_len, feature_num, rnn_hidden_size, device):
+class BackboneMRNN(nn.Module):
+    def __init__(self, n_steps, n_features, rnn_hidden_size):
         super().__init__()
-        # data settings
-        self.seq_len = seq_len
-        self.feature_num = feature_num
+
+        self.n_steps = n_steps
+        self.n_features = n_features
         self.rnn_hidden_size = rnn_hidden_size
-        self.device = device
 
         self.f_rnn = nn.GRU(3, self.rnn_hidden_size, batch_first=True)
         self.b_rnn = nn.GRU(3, self.rnn_hidden_size, batch_first=True)
         self.concated_hidden_project = nn.Linear(self.rnn_hidden_size * 2, 1)
-        self.fcn_regression = FCN_Regression(feature_num)
+        self.fcn_regression = MrnnFcnRegression(n_features)
 
     def gene_hidden_states(self, inputs, feature_idx):
         X_f = inputs["forward"]["X"][:, :, feature_idx].unsqueeze(dim=2)
@@ -57,30 +56,18 @@ class _MRNN(nn.Module):
 
         return feature_estimation, hidden_states_f, hidden_states_b
 
-    def forward(self, inputs: dict, training: bool = True) -> dict:
+    def forward(self, inputs: dict) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         X = inputs["forward"]["X"]
         M = inputs["forward"]["missing_mask"]
 
         feature_collector = []
-        for f in range(self.feature_num):
+        for f in range(self.n_features):
             feat_estimation, hid_states_f, hid_states_b = self.gene_hidden_states(
                 inputs, f
             )
             feature_collector.append(feat_estimation)
+
         RNN_estimation = torch.concat(feature_collector, dim=2)
         RNN_imputed_data = M * X + (1 - M) * RNN_estimation
         FCN_estimation = self.fcn_regression(X, M, RNN_imputed_data)
-
-        imputed_data = M * X + (1 - M) * FCN_estimation
-        results = {
-            "imputed_data": imputed_data,
-        }
-
-        # if in training mode, return results with losses
-        if training:
-            RNN_loss = calc_rmse(RNN_estimation, X, M)
-            FCN_loss = calc_rmse(FCN_estimation, RNN_imputed_data)
-            reconstruction_loss = RNN_loss + FCN_loss
-            results["loss"] = reconstruction_loss
-
-        return results
+        return RNN_estimation, RNN_imputed_data, FCN_estimation

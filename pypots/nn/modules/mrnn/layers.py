@@ -1,5 +1,5 @@
 """
-The submodules of the MRNN model.
+The layers of the M-RNN model.
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
@@ -14,7 +14,9 @@ import torch.nn.functional as F
 from torch.nn.parameter import Parameter
 
 
-class FCN_Regression(nn.Module):
+class MrnnFcnRegression(nn.Module):
+    """M-RNN fully connection regression Layer"""
+
     def __init__(self, feature_num):
         super().__init__()
         self.U = Parameter(torch.Tensor(feature_num, feature_num))
