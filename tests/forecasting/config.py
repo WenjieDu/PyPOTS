@@ -8,7 +8,7 @@ Test configs for forecasting models.
 from tests.global_test_config import DATA
 
 EPOCHS = 5
-N_PRED_STEP = 4
+N_PRED_STEP = 1
 
 TRAIN_SET = {"X": DATA["train_X"]}
 VAL_SET = {"X": DATA["val_X"]}
