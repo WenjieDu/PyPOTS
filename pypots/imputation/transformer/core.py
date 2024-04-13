@@ -55,6 +55,8 @@ class _Transformer(nn.Module):
             attn_dropout,
         )
         self.output_projection = nn.Linear(d_model, n_features)
+
+        # apply SAITS loss function to Transformer on the imputation task
         self.saits_loss_func = SaitsLoss(ORT_weight, MIT_weight)
 
     def forward(self, inputs: dict, training: bool = True) -> dict:

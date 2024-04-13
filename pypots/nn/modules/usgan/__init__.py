@@ -9,7 +9,7 @@ In AAAI, 35(10):8983–8991, May 2021.
 
 """
 
-# Created by Jun Wang <jwangfx@connect.ust.hk>
+# Created by Jun Wang <jwangfx@connect.ust.hk> and Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
 from .backbone import BackboneUSGAN
