@@ -67,7 +67,7 @@ class BaseForecaster(BaseModel):
         self,
         train_set: Union[dict, str],
         val_set: Optional[Union[dict, str]] = None,
-        file_type: str = "h5py",
+        file_type: str = "hdf5",
     ) -> None:
         """Train the classifier on the given data.
 
@@ -99,7 +99,7 @@ class BaseForecaster(BaseModel):
     def predict(
         self,
         test_set: Union[dict, str],
-        file_type: str = "h5py",
+        file_type: str = "hdf5",
     ) -> dict:
         raise NotImplementedError
 
@@ -107,7 +107,7 @@ class BaseForecaster(BaseModel):
     def forecast(
         self,
         X: dict or str,
-        file_type: str = "h5py",
+        file_type: str = "hdf5",
     ) -> np.ndarray:
         """Forecast the future the input with the trained model.
 
@@ -200,7 +200,7 @@ class BaseNNForecaster(BaseNNModel):
         )
 
     @abstractmethod
-    def _assemble_input_for_training(self, data) -> dict:
+    def _assemble_input_for_training(self, data: list) -> dict:
         """Assemble the given data into a dictionary for training input.
 
         Parameters
@@ -216,7 +216,7 @@ class BaseNNForecaster(BaseNNModel):
         raise NotImplementedError
 
     @abstractmethod
-    def _assemble_input_for_validating(self, data) -> dict:
+    def _assemble_input_for_validating(self, data: list) -> dict:
         """Assemble the given data into a dictionary for validating input.
 
         Parameters
@@ -232,7 +232,7 @@ class BaseNNForecaster(BaseNNModel):
         raise NotImplementedError
 
     @abstractmethod
-    def _assemble_input_for_testing(self, data) -> dict:
+    def _assemble_input_for_testing(self, data: list) -> dict:
         """Assemble the given data into a dictionary for testing input.
 
         Notes
@@ -380,7 +380,7 @@ class BaseNNForecaster(BaseNNModel):
         self,
         train_set: Union[dict, str],
         val_set: Optional[Union[dict, str]] = None,
-        file_type: str = "h5py",
+        file_type: str = "hdf5",
     ) -> None:
         """Train the classifier on the given data.
 
@@ -412,7 +412,7 @@ class BaseNNForecaster(BaseNNModel):
     def predict(
         self,
         test_set: Union[dict, str],
-        file_type: str = "h5py",
+        file_type: str = "hdf5",
     ) -> dict:
         raise NotImplementedError
 
@@ -420,7 +420,7 @@ class BaseNNForecaster(BaseNNModel):
     def forecast(
         self,
         X: dict or str,
-        file_type: str = "h5py",
+        file_type: str = "hdf5",
     ) -> np.ndarray:
         """Forecast the future the input with the trained model.
 

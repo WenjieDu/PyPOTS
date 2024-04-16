@@ -196,10 +196,10 @@ class CSDI(BaseNNImputer):
         }
         return inputs
 
-    def _assemble_input_for_validating(self, data) -> dict:
+    def _assemble_input_for_validating(self, data: list) -> dict:
         return self._assemble_input_for_training(data)
 
-    def _assemble_input_for_testing(self, data) -> dict:
+    def _assemble_input_for_testing(self, data: list) -> dict:
         (
             indices,
             X,
@@ -331,7 +331,7 @@ class CSDI(BaseNNImputer):
         self,
         train_set: Union[dict, str],
         val_set: Optional[Union[dict, str]] = None,
-        file_type: str = "h5py",
+        file_type: str = "hdf5",
         n_sampling_times: int = 1,
     ) -> None:
         # Step 1: wrap the input data with classes Dataset and DataLoader
@@ -339,7 +339,7 @@ class CSDI(BaseNNImputer):
             train_set,
             self.target_strategy,
             return_X_ori=False,
-            return_labels=False,
+            return_y=False,
             file_type=file_type,
         )
         training_loader = DataLoader(
@@ -356,7 +356,7 @@ class CSDI(BaseNNImputer):
                 val_set,
                 self.target_strategy,
                 return_X_ori=True,
-                return_labels=False,
+                return_y=False,
                 file_type=file_type,
             )
             val_loader = DataLoader(
@@ -377,7 +377,7 @@ class CSDI(BaseNNImputer):
     def predict(
         self,
         test_set: Union[dict, str],
-        file_type: str = "h5py",
+        file_type: str = "hdf5",
         n_sampling_times: int = 1,
     ) -> dict:
         """
@@ -393,7 +393,7 @@ class CSDI(BaseNNImputer):
             If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
             key-value pairs like a dict, and it has to include keys as 'X' and 'y'.
 
-        file_type : str
+        file_type :
             The type of the given file if test_set is a path string.
 
         n_sampling_times:
@@ -411,7 +411,7 @@ class CSDI(BaseNNImputer):
         # Step 1: wrap the input data with classes Dataset and DataLoader
         self.model.eval()  # set the model as eval status to freeze it.
         test_set = TestDatasetForCSDI(
-            test_set, return_X_ori=False, return_labels=False, file_type=file_type
+            test_set, return_X_ori=False, return_y=False, file_type=file_type
         )
         test_loader = DataLoader(
             test_set,
@@ -443,7 +443,7 @@ class CSDI(BaseNNImputer):
     def impute(
         self,
         X: Union[dict, str],
-        file_type="h5py",
+        file_type: str = "hdf5",
     ) -> np.ndarray:
         """Impute missing values in the given data with the trained model.
 

@@ -10,7 +10,7 @@ from typing import Union, Iterable
 import torch
 from pygrinder import fill_and_get_mask_torch
 
-from ...data.base import BaseDataset
+from ...data.dataset import BaseDataset
 from ...data.utils import _parse_delta_torch
 
 
@@ -19,7 +19,7 @@ class DatasetForMRNN(BaseDataset):
 
     Parameters
     ----------
-    data : dict or str,
+    data :
         The dataset for model input, should be a dictionary including keys as 'X' and 'y',
         or a path string locating a data file.
         If it is a dict, X should be array-like of shape [n_samples, sequence length (time steps), n_features],
@@ -28,7 +28,7 @@ class DatasetForMRNN(BaseDataset):
         If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
         key-value pairs like a dict, and it has to include keys as 'X' and 'y'.
 
-    return_labels : bool, default = True,
+    return_y :
         Whether to return labels in function __getitem__() if they exist in the given data. If `True`, for example,
         during training of classification models, the Dataset class will return labels in __getitem__() for model input.
         Otherwise, labels won't be included in the data returned by __getitem__(). This parameter exists because we
@@ -37,7 +37,7 @@ class DatasetForMRNN(BaseDataset):
         with function _fetch_data_from_file(), which works for all three stages. Therefore, we need this parameter for
         distinction.
 
-    file_type : str, default = "h5py"
+    file_type :
         The type of the given file if train_set and val_set are path strings.
     """
 
@@ -45,18 +45,24 @@ class DatasetForMRNN(BaseDataset):
         self,
         data: Union[dict, str],
         return_X_ori: bool,
-        return_labels: bool,
-        file_type: str = "h5py",
+        return_y: bool,
+        file_type: str = "hdf5",
     ):
-        super().__init__(data, return_X_ori, return_labels, file_type)
+        super().__init__(
+            data=data,
+            return_X_ori=return_X_ori,
+            return_X_pred=False,
+            return_y=return_y,
+            file_type=file_type,
+        )
 
         if not isinstance(self.data, str):
             # calculate all delta here.
-            if self.X_ori is None:
-                forward_X, forward_missing_mask = fill_and_get_mask_torch(self.X)
-            else:
+            if self.return_X_ori:
                 forward_missing_mask = self.missing_mask
                 forward_X = self.X
+            else:
+                forward_X, forward_missing_mask = fill_and_get_mask_torch(self.X)
 
             forward_delta = _parse_delta_torch(forward_missing_mask)
             backward_X = torch.flip(forward_X, dims=[1])
@@ -81,12 +87,12 @@ class DatasetForMRNN(BaseDataset):
 
         Parameters
         ----------
-        idx : int,
+        idx :
             The index of the sample to be return.
 
         Returns
         -------
-        sample : list,
+        sample :
             A list contains
 
             index : int tensor,
@@ -116,10 +122,10 @@ class DatasetForMRNN(BaseDataset):
             self.processed_data["backward"]["delta"][idx],
         ]
 
-        if self.X_ori is not None and self.return_X_ori:
+        if self.return_X_ori:
             sample.extend([self.X_ori[idx], self.indicating_mask[idx]])
 
-        if self.y is not None and self.return_labels:
+        if self.return_y:
             sample.append(self.y[idx].to(torch.long))
 
         return sample
@@ -130,12 +136,12 @@ class DatasetForMRNN(BaseDataset):
 
         Parameters
         ----------
-        idx : int,
+        idx :
             The index of the sample to be return.
 
         Returns
         -------
-        sample : list,
+        sample :
             The collated data sample, a list including all necessary sample info.
         """
 
@@ -169,14 +175,14 @@ class DatasetForMRNN(BaseDataset):
             backward["deltas"],
         ]
 
-        if "X_ori" in self.file_handle.keys() and self.return_X_ori:
+        if self.return_X_ori:
             X_ori = torch.from_numpy(self.file_handle["X_ori"][idx]).to(torch.float32)
             X_ori, X_ori_missing_mask = fill_and_get_mask_torch(X_ori)
             indicating_mask = X_ori_missing_mask - missing_mask
             sample.extend([X_ori, indicating_mask])
 
         # if the dataset has labels and is for training, then fetch it from the file
-        if "y" in self.file_handle.keys() and self.return_labels:
+        if self.return_y:
             sample.append(torch.tensor(self.file_handle["y"][idx], dtype=torch.long))
 
         return sample

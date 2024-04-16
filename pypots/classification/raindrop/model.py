@@ -19,8 +19,8 @@ import torch
 from torch.utils.data import DataLoader
 
 from .core import _Raindrop
+from .data import DatasetForRaindrop
 from ...classification.base import BaseNNClassifier
-from ...classification.grud.data import DatasetForGRUD
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
 from ...utils.logging import logger
@@ -224,10 +224,10 @@ class Raindrop(BaseNNClassifier):
         self,
         train_set: Union[dict, str],
         val_set: Optional[Union[dict, str]] = None,
-        file_type="h5py",
+        file_type: str = "hdf5",
     ) -> None:
         # Step 1: wrap the input data with classes Dataset and DataLoader
-        training_set = DatasetForGRUD(train_set, file_type=file_type)
+        training_set = DatasetForRaindrop(train_set, file_type=file_type)
         training_loader = DataLoader(
             training_set,
             batch_size=self.batch_size,
@@ -236,7 +236,7 @@ class Raindrop(BaseNNClassifier):
         )
         val_loader = None
         if val_set is not None:
-            val_set = DatasetForGRUD(val_set, file_type=file_type)
+            val_set = DatasetForRaindrop(val_set, file_type=file_type)
             val_loader = DataLoader(
                 val_set,
                 batch_size=self.batch_size,
@@ -255,10 +255,10 @@ class Raindrop(BaseNNClassifier):
     def predict(
         self,
         test_set: Union[dict, str],
-        file_type: str = "h5py",
+        file_type: str = "hdf5",
     ) -> dict:
         self.model.eval()  # set the model as eval status to freeze it.
-        test_set = DatasetForGRUD(test_set, return_labels=False, file_type=file_type)
+        test_set = DatasetForRaindrop(test_set, return_y=False, file_type=file_type)
         test_loader = DataLoader(
             test_set,
             batch_size=self.batch_size,
@@ -284,7 +284,7 @@ class Raindrop(BaseNNClassifier):
     def classify(
         self,
         X: Union[dict, str],
-        file_type: str = "h5py",
+        file_type: str = "hdf5",
     ) -> np.ndarray:
         """Classify the input data with the trained model.
 
