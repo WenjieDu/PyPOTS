@@ -72,7 +72,7 @@ class BaseClusterer(BaseModel):
         self,
         train_set: Union[dict, str],
         val_set: Union[dict, str] = None,
-        file_type: str = "h5py",
+        file_type: str = "hdf5",
     ) -> None:
         """Train the cluster.
 
@@ -105,7 +105,7 @@ class BaseClusterer(BaseModel):
     def predict(
         self,
         test_set: Union[dict, str],
-        file_type: str = "h5py",
+        file_type: str = "hdf5",
     ) -> dict:
         raise NotImplementedError
 
@@ -113,7 +113,7 @@ class BaseClusterer(BaseModel):
     def cluster(
         self,
         X: Union[dict, str],
-        file_type="h5py",
+        file_type: str = "hdf5",
     ) -> np.ndarray:
         """Cluster the input with the trained model.
 
@@ -379,7 +379,7 @@ class BaseNNClusterer(BaseNNModel):
         self,
         train_set: Union[dict, str],
         val_set: Union[dict, str] = None,
-        file_type: str = "h5py",
+        file_type: str = "hdf5",
     ) -> None:
         """Train the cluster.
 
@@ -412,7 +412,7 @@ class BaseNNClusterer(BaseNNModel):
     def predict(
         self,
         test_set: Union[dict, str],
-        file_type: str = "h5py",
+        file_type: str = "hdf5",
     ) -> dict:
         raise NotImplementedError
 
@@ -420,7 +420,7 @@ class BaseNNClusterer(BaseNNModel):
     def cluster(
         self,
         X: Union[dict, str],
-        file_type="h5py",
+        file_type: str = "hdf5",
     ) -> np.ndarray:
         """Cluster the input with the trained model.
 

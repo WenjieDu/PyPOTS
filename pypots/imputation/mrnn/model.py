@@ -194,11 +194,11 @@ class MRNN(BaseNNImputer):
         self,
         train_set: Union[dict, str],
         val_set: Optional[Union[dict, str]] = None,
-        file_type: str = "h5py",
+        file_type: str = "hdf5",
     ) -> None:
         # Step 1: wrap the input data with classes Dataset and DataLoader
         training_set = DatasetForMRNN(
-            train_set, return_X_ori=False, return_labels=False, file_type=file_type
+            train_set, return_X_ori=False, return_y=False, file_type=file_type
         )
         training_loader = DataLoader(
             training_set,
@@ -211,7 +211,7 @@ class MRNN(BaseNNImputer):
             if not check_X_ori_in_val_set(val_set):
                 raise ValueError("val_set must contain 'X_ori' for model validation.")
             val_set = DatasetForMRNN(
-                val_set, return_X_ori=True, return_labels=False, file_type=file_type
+                val_set, return_X_ori=True, return_y=False, file_type=file_type
             )
             val_loader = DataLoader(
                 val_set,
@@ -231,11 +231,11 @@ class MRNN(BaseNNImputer):
     def predict(
         self,
         test_set: Union[dict, str],
-        file_type="h5py",
+        file_type: str = "hdf5",
     ) -> dict:
         self.model.eval()  # set the model as eval status to freeze it.
         test_set = DatasetForMRNN(
-            test_set, return_X_ori=False, return_labels=False, file_type=file_type
+            test_set, return_X_ori=False, return_y=False, file_type=file_type
         )
         test_loader = DataLoader(
             test_set,
@@ -261,7 +261,7 @@ class MRNN(BaseNNImputer):
     def impute(
         self,
         X: Union[dict, str],
-        file_type="h5py",
+        file_type: str = "hdf5",
     ) -> np.ndarray:
         """Impute missing values in the given data with the trained model.
 
