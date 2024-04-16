@@ -3,6 +3,8 @@ The implementation of YourNewModel for the partially-observed time-series classi
 
 Refer to the paper "Your paper citation".
 
+TODO: modify the above description with your model's information.
+
 """
 
 # Created by Your Name <Your contact email> TODO: modify the author information.
@@ -10,38 +12,17 @@ Refer to the paper "Your paper citation".
 
 from typing import Union, Optional
 
-import numpy as np
 import torch
-import torch.nn as nn
+
+from .core import _YourNewModel
 
 # TODO: import the base class from the classification package in PyPOTS.
 #  Here I suppose this is a neural-network classification model.
 #  You should make your model inherent BaseClassifier if it is not a NN.
 # from ..base import BaseClassifier
 from ..base import BaseNNClassifier
-
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
-
-
-# TODO: define your new model here.
-#  It could be a neural network model or a non-neural network algorithm (e.g. written in numpy).
-#  Your model should be implemented with PyTorch and subclass torch.nn.Module if it is a neural network.
-#  Note that your main algorithm is defined in this class, and this class usually won't be exposed to users.
-class _YourNewModel(nn.Module):
-    def __init__(self):
-        super().__init__()
-
-    def forward(self, inputs: dict) -> dict:
-        # TODO: define your model's forward propagation process here.
-        #  The input is a dict, and the output `results` should also be a dict.
-        #  `results` must contains the key `loss` which is will be used for backward propagation to update the model.
-
-        loss = None
-        results = {
-            "loss": loss,
-        }
-        return results
 
 
 # TODO: define your new model's wrapper here.
@@ -53,13 +34,13 @@ class YourNewModel(BaseNNClassifier):
         self,
         # TODO: add your model's hyper-parameters here
         n_classes: int,
-        batch_size: int,
-        epochs: int,
-        patience: int,
-        num_workers: int = 0,
+        batch_size: int = 32,
+        epochs: int = 100,
+        patience: Optional[int] = None,
         optimizer: Optional[Optimizer] = Adam(),
+        num_workers: int = 0,
         device: Optional[Union[str, torch.device, list]] = None,
-        saving_path: str = None,
+        saving_path: Optional[str] = None,
         model_saving_strategy: Optional[str] = "best",
     ):
         super().__init__(
@@ -76,9 +57,11 @@ class YourNewModel(BaseNNClassifier):
         # TODO: set up your model's hyper-parameters here
 
         # set up the model
-        self.model = _YourNewModel()
-        self.model = self.model.to(self.device)
+        self.model = _YourNewModel(
+            # pass the arguments to your model
+        )
         self._print_model_size()
+        self._send_model_to_given_device()
 
         # set up the optimizer
         self.optimizer = optimizer
@@ -97,13 +80,13 @@ class YourNewModel(BaseNNClassifier):
         self,
         train_set: Union[dict, str],
         val_set: Optional[Union[dict, str]] = None,
-        file_type: str = "h5py",
+        file_type: str = "hdf5",
     ) -> None:
         raise NotImplementedError
 
     def predict(
         self,
         test_set: Union[dict, str],
-        file_type: str = "h5py",
+        file_type: str = "hdf5",
     ) -> dict:
         raise NotImplementedError
