@@ -32,14 +32,13 @@ class DatasetForCSDI(BaseDataset):
         data: Union[dict, str],
         target_strategy: str,
         return_X_ori: bool,
-        return_y: bool,
         file_type: str = "hdf5",
     ):
         super().__init__(
             data=data,
             return_X_ori=return_X_ori,
             return_X_pred=False,
-            return_y=return_y,
+            return_y=False,
             file_type=file_type,
         )
         assert target_strategy in ["random", "hist", "mix"]

@@ -20,16 +20,13 @@ class DatasetForForecastingCSDI(BaseDataset):
     def __init__(
         self,
         data: Union[dict, str],
-        return_X_ori: bool,
-        return_X_pred: bool = True,
-        return_y: bool = False,
         file_type: str = "hdf5",
     ):
         super().__init__(
             data=data,
-            return_X_ori=return_X_ori,
-            return_X_pred=return_X_pred,
-            return_y=return_y,
+            return_X_ori=False,
+            return_X_pred=True,
+            return_y=False,
             file_type=file_type,
         )
 
@@ -75,35 +72,30 @@ class DatasetForForecastingCSDI(BaseDataset):
         """
 
         feature_id = torch.arange(self.n_pred_features)
-        if self.return_X_ori:  # for validating
-            observed_data = self.X_ori[idx]
-            cond_mask = self.missing_mask[idx]
-            indicating_mask = self.indicating_mask[idx]
-        else:  # for training
-            observed_data = self.X[idx]
-            observed_data, observed_mask = fill_and_get_mask_torch(observed_data)
+        observed_data = self.X[idx]
+        observed_data, observed_mask = fill_and_get_mask_torch(observed_data)
 
-            # apply specifically given mask or the hist masking strategy, rather than the random masking strategy
-            if "for_pattern_mask" in self.data.keys():
-                for_pattern_mask = torch.from_numpy(
-                    self.data["for_pattern_mask"][idx]
-                ).to(torch.float32)
-            else:
-                previous_sample = self.X[idx - 1]
-                for_pattern_mask = (~torch.isnan(previous_sample)).to(torch.float32)
-            cond_mask = observed_mask * for_pattern_mask
+        # apply specifically given mask or the hist masking strategy, rather than the random masking strategy
+        if "for_pattern_mask" in self.data.keys():
+            for_pattern_mask = torch.from_numpy(self.data["for_pattern_mask"][idx]).to(
+                torch.float32
+            )
+        else:
+            previous_sample = self.X[idx - 1]
+            for_pattern_mask = (~torch.isnan(previous_sample)).to(torch.float32)
+        cond_mask = observed_mask * for_pattern_mask
 
-            indicating_mask = observed_mask - cond_mask
+        indicating_mask = observed_mask - cond_mask
 
-            if self.n_pred_features > self.n_features:
-                (
-                    observed_data,
-                    observed_mask,
-                    feature_id,
-                    cond_mask,
-                ) = self.sample_features(
-                    observed_data, observed_mask, feature_id, cond_mask
-                )
+        if self.n_pred_features > self.n_features:
+            (
+                observed_data,
+                observed_mask,
+                feature_id,
+                cond_mask,
+            ) = self.sample_features(
+                observed_data, observed_mask, feature_id, cond_mask
+            )
 
         X_pred = self.X_pred[idx]
         X_pred_missing_mask = self.X_pred_missing_mask[idx]
@@ -164,43 +156,32 @@ class DatasetForForecastingCSDI(BaseDataset):
             self.file_handle = self._open_file_handle()
 
         feature_id = torch.arange(self.n_pred_features)
-        if self.return_X_ori:  # for validating
-            observed_data = torch.from_numpy(self.file_handle["X_ori"][idx]).to(
+        observed_data = torch.from_numpy(self.file_handle["X"][idx]).to(torch.float32)
+        observed_data, observed_mask = fill_and_get_mask_torch(observed_data)
+
+        # apply specifically given mask or the hist masking strategy, rather than the random masking strategy
+        if "for_pattern_mask" in self.file_handle.keys():
+            for_pattern_mask = torch.from_numpy(
+                self.file_handle["for_pattern_mask"][idx]
+            ).to(torch.float32)
+        else:
+            previous_sample = torch.from_numpy(self.file_handle["X"][idx - 1]).to(
                 torch.float32
             )
-            observed_data, observed_mask = fill_and_get_mask_torch(observed_data)
-            X = torch.from_numpy(self.file_handle["X"][idx]).to(torch.float32)
-            _, cond_mask = fill_and_get_mask_torch(X)
-            indicating_mask = observed_mask - cond_mask
-        else:  # for training
-            observed_data = torch.from_numpy(self.file_handle["X"][idx]).to(
-                torch.float32
+            for_pattern_mask = (~torch.isnan(previous_sample)).to(torch.float32)
+        cond_mask = observed_mask * for_pattern_mask
+
+        indicating_mask = observed_mask - cond_mask
+
+        if self.n_pred_features > self.n_features:
+            (
+                observed_data,
+                observed_mask,
+                feature_id,
+                cond_mask,
+            ) = self.sample_features(
+                observed_data, observed_mask, feature_id, cond_mask
             )
-            observed_data, observed_mask = fill_and_get_mask_torch(observed_data)
-
-            # apply specifically given mask or the hist masking strategy, rather than the random masking strategy
-            if "for_pattern_mask" in self.file_handle.keys():
-                for_pattern_mask = torch.from_numpy(
-                    self.file_handle["for_pattern_mask"][idx]
-                ).to(torch.float32)
-            else:
-                previous_sample = torch.from_numpy(self.file_handle["X"][idx - 1]).to(
-                    torch.float32
-                )
-                for_pattern_mask = (~torch.isnan(previous_sample)).to(torch.float32)
-            cond_mask = observed_mask * for_pattern_mask
-
-            indicating_mask = observed_mask - cond_mask
-
-            if self.n_pred_features > self.n_features:
-                (
-                    observed_data,
-                    observed_mask,
-                    feature_id,
-                    cond_mask,
-                ) = self.sample_features(
-                    observed_data, observed_mask, feature_id, cond_mask
-                )
 
         X_pred = torch.from_numpy(self.file_handle["X_pred"][idx]).to(torch.float32)
         X_pred, X_pred_missing_mask = fill_and_get_mask_torch(X_pred)
@@ -235,14 +216,10 @@ class TestDatasetForForecastingCSDI(DatasetForForecastingCSDI):
         data: Union[dict, str],
         n_pred_steps: int,
         n_pred_features: int,
-        return_y: bool,
         file_type: str = "hdf5",
     ):
         super().__init__(
             data=data,
-            return_X_ori=False,
-            return_X_pred=False,
-            return_y=return_y,
             file_type=file_type,
         )
         self.n_pred_steps = n_pred_steps

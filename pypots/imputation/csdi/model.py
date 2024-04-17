@@ -344,7 +344,6 @@ class CSDI(BaseNNImputer):
             train_set,
             self.target_strategy,
             return_X_ori=False,
-            return_y=False,
             file_type=file_type,
         )
         training_loader = DataLoader(
@@ -361,7 +360,6 @@ class CSDI(BaseNNImputer):
                 val_set,
                 self.target_strategy,
                 return_X_ori=True,
-                return_y=False,
                 file_type=file_type,
             )
             val_loader = DataLoader(
