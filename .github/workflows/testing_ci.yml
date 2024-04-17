@@ -55,6 +55,15 @@ jobs:
             - name: Install other dependencies
               run: |
                   pip install -r requirements.txt
+
+            - name: Test building package
+              # we need to know if the package can be built successfully without optional dependencies
+              run: |
+                  pip install build wheel
+                  python -m build --no-isolation
+
+            - name: Continue to install torch-geometric dependencies
+              run: |
                   pip install torch-geometric torch-scatter torch-sparse -f "https://data.pyg.org/whl/torch-${{ steps.determine_pytorch_ver.outputs.value }}+cpu.html"
                   pip install pypots[dev]
                   python_site_path=`python -c "import site; print(site.getsitepackages()[0])"`
