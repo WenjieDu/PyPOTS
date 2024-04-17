@@ -295,14 +295,14 @@ class BaseDataset(Dataset):
         )
         if X_ori is not None:
             X_ori = turn_data_into_specified_dtype(X_ori, out_dtype)
-            X_ori = X_ori.to(torch.float32) if out_dtype == "tensor" else X
+            X_ori = X_ori.to(torch.float32) if out_dtype == "tensor" else X_ori
             assert (
                 X_shape == X_ori.shape
             ), f"X and X_ori must have matched shape, but got X: f{X.shape} and X_ori: {X_ori.shape}"
 
         if X_pred is not None:
             X_pred = turn_data_into_specified_dtype(X_pred, out_dtype)
-            X_ori = X_ori.to(torch.float32) if out_dtype == "tensor" else X
+            X_pred = X_pred.to(torch.float32) if out_dtype == "tensor" else X_pred
             assert len(X) == len(
                 X_pred
             ), f"X and X_pred must have the same number of samples, but got X: f{X.shape} and X_pred: {X_pred.shape}"
