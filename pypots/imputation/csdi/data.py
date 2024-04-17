@@ -15,7 +15,17 @@ from ...data.dataset import BaseDataset
 
 
 class DatasetForCSDI(BaseDataset):
-    """Dataset for CSDI model."""
+    """Dataset for CSDI model.
+
+    Notes
+    -----
+    In CSDI official code, `observed_mask` indicates all observed values in raw data.
+    `gt_mask` indicates all observed values in the input data.
+    `observed_mask` - `gt_mask` = `indicating_mask` in our code.
+    `cond_mask`, for testing, it is `gt_mask`; for training, it is `observed_mask`
+    includes some artificially missing values.
+
+    """
 
     def __init__(
         self,

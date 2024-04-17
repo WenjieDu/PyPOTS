@@ -43,6 +43,7 @@ class TestCSDI(unittest.TestCase):
 
     # initialize a CSDI model
     csdi = CSDI(
+        n_steps=DATA["n_steps"],
         n_features=DATA["n_features"],
         n_layers=1,
         n_channels=8,
