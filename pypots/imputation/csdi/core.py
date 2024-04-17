@@ -10,7 +10,7 @@ from ...nn.modules.csdi import BackboneCSDI
 class _CSDI(nn.Module):
     def __init__(
         self,
-        n_pred_features,
+        n_features,
         n_layers,
         n_heads,
         n_channels,
@@ -25,19 +25,19 @@ class _CSDI(nn.Module):
     ):
         super().__init__()
 
-        self.n_pred_features = n_pred_features
+        self.n_features = n_features
         self.d_time_embedding = d_time_embedding
         self.is_unconditional = is_unconditional
 
         self.embed_layer = nn.Embedding(
-            num_embeddings=n_pred_features,
+            num_embeddings=n_features,
             embedding_dim=d_feature_embedding,
         )
         self.backbone = BackboneCSDI(
             n_layers,
             n_heads,
             n_channels,
-            n_pred_features,
+            n_features,
             d_time_embedding,
             d_feature_embedding,
             d_diffusion_embedding,
@@ -68,7 +68,7 @@ class _CSDI(nn.Module):
         time_embed = time_embed.to(device)
         time_embed = time_embed.unsqueeze(2).expand(-1, -1, K, -1)
         feature_embed = self.embed_layer(
-            torch.arange(self.n_pred_features).to(device)
+            torch.arange(self.n_features).to(device)
         )  # (K,emb)
         feature_embed = feature_embed.unsqueeze(0).unsqueeze(0).expand(B, L, -1, -1)
 

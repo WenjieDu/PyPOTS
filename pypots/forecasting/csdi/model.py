@@ -362,8 +362,6 @@ class CSDI(BaseNNForecaster):
         # Step 1: wrap the input data with classes Dataset and DataLoader
         training_set = DatasetForForecastingCSDI(
             train_set,
-            return_X_ori=False,
-            return_y=False,
             file_type=file_type,
         )
         training_loader = DataLoader(
@@ -378,8 +376,6 @@ class CSDI(BaseNNForecaster):
                 raise ValueError("val_set must contain 'X_pred' for model validation.")
             val_set = DatasetForForecastingCSDI(
                 val_set,
-                return_X_ori=False,
-                return_y=False,
                 file_type=file_type,
             )
             val_loader = DataLoader(
@@ -437,7 +433,6 @@ class CSDI(BaseNNForecaster):
             test_set,
             self.n_pred_steps,
             self.n_pred_features,
-            return_y=False,
             file_type=file_type,
         )
         test_loader = DataLoader(
