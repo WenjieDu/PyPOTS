@@ -13,14 +13,15 @@ import h5py
 import numpy as np
 import torch
 
-from .modules.core import locf_numpy, locf_torch
+from .core import locf_numpy, locf_torch
 from ..base import BaseImputer
 from ...utils.logging import logger
 
 
 class LOCF(BaseImputer):
     """LOCF (Last Observed Carried Forward) imputation method. A naive imputation method that fills missing values
-    with the last observed value. Simple but commonly used in practice.
+    with the last observed value. When time-series data gets inverse on the time dimension, this method can also be
+    seen as NOCB (Next Observation Carried Backward). Simple but commonly used in practice.
 
     Parameters
     ----------
