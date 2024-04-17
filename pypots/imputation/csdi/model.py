@@ -40,6 +40,9 @@ class CSDI(BaseNNImputer):
 
     Parameters
     ----------
+    n_steps :
+        The number of time steps in the time-series data sample.
+
     n_features :
         The number of features in the time-series data sample.
 
@@ -122,6 +125,7 @@ class CSDI(BaseNNImputer):
 
     def __init__(
         self,
+        n_steps: int,
         n_features: int,
         n_layers: int,
         n_heads: int,
@@ -155,14 +159,15 @@ class CSDI(BaseNNImputer):
         )
         assert target_strategy in ["mix", "random"]
         assert schedule in ["quad", "linear"]
+        self.n_steps = n_steps
         self.target_strategy = target_strategy
 
         # set up the model
         self.model = _CSDI(
+            n_features,
             n_layers,
             n_heads,
             n_channels,
-            n_features,
             d_time_embedding,
             d_feature_embedding,
             d_diffusion_embedding,
