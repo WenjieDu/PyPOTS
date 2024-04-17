@@ -29,7 +29,7 @@ except ImportError:
 from .core import _CSDI
 from .data import DatasetForCSDI, TestDatasetForCSDI
 from ..base import BaseNNImputer
-from ...data.checking import check_X_ori_in_val_set
+from ...data.checking import key_in_data_set
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
 from ...utils.logging import logger
@@ -350,7 +350,7 @@ class CSDI(BaseNNImputer):
         )
         val_loader = None
         if val_set is not None:
-            if not check_X_ori_in_val_set(val_set):
+            if not key_in_data_set("X_ori", val_set):
                 raise ValueError("val_set must contain 'X_ori' for model validation.")
             val_set = DatasetForCSDI(
                 val_set,
