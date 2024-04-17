@@ -13,9 +13,7 @@ In ICLR, 2022.
 # License: BSD-3-Clause
 
 from .backbone import BackboneRaindrop
-from .layers import ObservationPropagation
 
 __all__ = [
     "BackboneRaindrop",
-    "ObservationPropagation",
 ]
