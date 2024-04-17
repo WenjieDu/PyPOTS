@@ -24,7 +24,7 @@ from torch.utils.data import DataLoader
 from .core import _PatchTST
 from .data import DatasetForPatchTST
 from ..base import BaseNNImputer
-from ...data.checking import check_X_ori_in_val_set
+from ...data.checking import key_in_data_set
 from ...data.dataset import BaseDataset
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
@@ -253,7 +253,7 @@ class PatchTST(BaseNNImputer):
         )
         val_loader = None
         if val_set is not None:
-            if not check_X_ori_in_val_set(val_set):
+            if not key_in_data_set("X_ori", val_set):
                 raise ValueError("val_set must contain 'X_ori' for model validation.")
             val_set = DatasetForPatchTST(
                 val_set, return_X_ori=True, return_y=False, file_type=file_type
