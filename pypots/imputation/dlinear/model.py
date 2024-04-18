@@ -21,11 +21,11 @@ import numpy as np
 import torch
 from torch.utils.data import DataLoader
 
+from .core import _DLinear
 from .data import DatasetForDLinear
-from pypots.imputation.dlinear.core import _DLinear
 from ..base import BaseNNImputer
-from ...data.base import BaseDataset
-from ...data.checking import check_X_ori_in_val_set
+from ...data.checking import key_in_data_set
+from ...data.dataset import BaseDataset
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
 from ...utils.logging import logger
@@ -189,11 +189,11 @@ class DLinear(BaseNNImputer):
         self,
         train_set: Union[dict, str],
         val_set: Optional[Union[dict, str]] = None,
-        file_type: str = "h5py",
+        file_type: str = "hdf5",
     ) -> None:
         # Step 1: wrap the input data with classes Dataset and DataLoader
         training_set = DatasetForDLinear(
-            train_set, return_X_ori=False, return_labels=False, file_type=file_type
+            train_set, return_X_ori=False, return_y=False, file_type=file_type
         )
         training_loader = DataLoader(
             training_set,
@@ -203,10 +203,10 @@ class DLinear(BaseNNImputer):
         )
         val_loader = None
         if val_set is not None:
-            if not check_X_ori_in_val_set(val_set):
+            if not key_in_data_set("X_ori", val_set):
                 raise ValueError("val_set must contain 'X_ori' for model validation.")
             val_set = DatasetForDLinear(
-                val_set, return_X_ori=True, return_labels=False, file_type=file_type
+                val_set, return_X_ori=True, return_y=False, file_type=file_type
             )
             val_loader = DataLoader(
                 val_set,
@@ -226,7 +226,7 @@ class DLinear(BaseNNImputer):
     def predict(
         self,
         test_set: Union[dict, str],
-        file_type: str = "h5py",
+        file_type: str = "hdf5",
     ) -> dict:
         """Make predictions for the input data with the trained model.
 
@@ -241,19 +241,23 @@ class DLinear(BaseNNImputer):
             If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
             key-value pairs like a dict, and it has to include keys as 'X' and 'y'.
 
-        file_type : str
+        file_type :
             The type of the given file if test_set is a path string.
 
         Returns
         -------
-        result_dict : dict,
+        file_type :
             The dictionary containing the clustering results and latent variables if necessary.
 
         """
         # Step 1: wrap the input data with classes Dataset and DataLoader
         self.model.eval()  # set the model as eval status to freeze it.
         test_set = BaseDataset(
-            test_set, return_X_ori=False, return_labels=False, file_type=file_type
+            test_set,
+            return_X_ori=False,
+            return_X_pred=False,
+            return_y=False,
+            file_type=file_type,
         )
         test_loader = DataLoader(
             test_set,
@@ -280,7 +284,7 @@ class DLinear(BaseNNImputer):
     def impute(
         self,
         X: Union[dict, str],
-        file_type="h5py",
+        file_type: str = "hdf5",
     ) -> np.ndarray:
         """Impute missing values in the given data with the trained model.
 

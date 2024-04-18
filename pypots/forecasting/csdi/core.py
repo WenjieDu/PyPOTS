@@ -11,6 +11,7 @@ class _CSDI(nn.Module):
     def __init__(
         self,
         n_features,
+        n_pred_features,
         n_layers,
         n_heads,
         n_channels,
@@ -26,6 +27,7 @@ class _CSDI(nn.Module):
         super().__init__()
 
         self.n_features = n_features
+        self.n_pred_features = n_pred_features
         self.d_time_embedding = d_time_embedding
         self.is_unconditional = is_unconditional
 
@@ -37,7 +39,7 @@ class _CSDI(nn.Module):
             n_layers,
             n_heads,
             n_channels,
-            n_features,
+            n_pred_features,
             d_time_embedding,
             d_feature_embedding,
             d_diffusion_embedding,
@@ -59,18 +61,24 @@ class _CSDI(nn.Module):
         pe[:, :, 1::2] = torch.cos(position * div_term)
         return pe
 
-    def get_side_info(self, observed_tp, cond_mask):
+    def get_side_info(self, observed_tp, cond_mask, feature_id):
         B, K, L = cond_mask.shape
         device = observed_tp.device
         time_embed = self.time_embedding(
             observed_tp, self.d_time_embedding
         )  # (B,L,emb)
         time_embed = time_embed.to(device)
-        time_embed = time_embed.unsqueeze(2).expand(-1, -1, K, -1)
-        feature_embed = self.embed_layer(
-            torch.arange(self.n_features).to(device)
-        )  # (K,emb)
-        feature_embed = feature_embed.unsqueeze(0).unsqueeze(0).expand(B, L, -1, -1)
+        time_embed = time_embed.unsqueeze(2).expand(-1, -1, self.n_pred_features, -1)
+
+        if self.n_pred_features == self.n_features:
+            feature_embed = self.embed_layer(
+                torch.arange(self.n_pred_features).to(device)
+            )  # (K,emb)
+            feature_embed = feature_embed.unsqueeze(0).unsqueeze(0).expand(B, L, -1, -1)
+        else:
+            feature_embed = (
+                self.embed_layer(feature_id).unsqueeze(1).expand(-1, L, -1, -1)
+            )
 
         side_info = torch.cat(
             [time_embed, feature_embed], dim=-1
@@ -86,44 +94,47 @@ class _CSDI(nn.Module):
     def forward(self, inputs, training=True, n_sampling_times=1):
         results = {}
         if training:  # for training
-            (observed_data, indicating_mask, cond_mask, observed_tp) = (
+            (observed_data, indicating_mask, cond_mask, observed_tp, feature_id) = (
                 inputs["X_ori"],
                 inputs["indicating_mask"],
                 inputs["cond_mask"],
                 inputs["observed_tp"],
+                inputs["feature_id"],
             )
-            side_info = self.get_side_info(observed_tp, cond_mask)
+            side_info = self.get_side_info(observed_tp, cond_mask, feature_id)
             training_loss = self.backbone.calc_loss(
                 observed_data, cond_mask, indicating_mask, side_info, training
             )
             results["loss"] = training_loss
         elif not training and n_sampling_times == 0:  # for validating
-            (observed_data, indicating_mask, cond_mask, observed_tp) = (
+            (observed_data, indicating_mask, cond_mask, observed_tp, feature_id) = (
                 inputs["X_ori"],
                 inputs["indicating_mask"],
                 inputs["cond_mask"],
                 inputs["observed_tp"],
+                inputs["feature_id"],
             )
-            side_info = self.get_side_info(observed_tp, cond_mask)
+            side_info = self.get_side_info(observed_tp, cond_mask, feature_id)
             validating_loss = self.backbone.calc_loss_valid(
                 observed_data, cond_mask, indicating_mask, side_info, training
             )
             results["loss"] = validating_loss
         elif not training and n_sampling_times > 0:  # for testing
-            observed_data, cond_mask, observed_tp = (
+            observed_data, cond_mask, observed_tp, feature_id = (
                 inputs["X"],
                 inputs["cond_mask"],
                 inputs["observed_tp"],
+                inputs["feature_id"],
             )
-            side_info = self.get_side_info(observed_tp, cond_mask)
+            side_info = self.get_side_info(observed_tp, cond_mask, feature_id)
             samples = self.backbone(
                 observed_data, cond_mask, side_info, n_sampling_times
             )  # (n_samples, n_sampling_times, n_features, n_steps)
             repeated_obs = observed_data.unsqueeze(1).repeat(1, n_sampling_times, 1, 1)
             repeated_mask = cond_mask.unsqueeze(1).repeat(1, n_sampling_times, 1, 1)
-            imputed_data = repeated_obs + samples * (1 - repeated_mask)
+            forecasting = repeated_obs + samples * (1 - repeated_mask)
 
-            results["imputed_data"] = imputed_data.permute(
+            results["forecasting_data"] = forecasting.permute(
                 0, 1, 3, 2
             )  # (n_samples, n_sampling_times, n_steps, n_features)
 

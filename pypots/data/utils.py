@@ -136,8 +136,9 @@ def parse_delta(
 
     Parameters
     ----------
-    missing_mask : shape of [n_steps, n_features] or [n_samples, n_steps, n_features]
+    missing_mask :
         Binary masks indicate missing data (0 means missing values, 1 means observed values).
+        Shape of [n_steps, n_features] or [n_samples, n_steps, n_features].
 
     Returns
     -------

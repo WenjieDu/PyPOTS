@@ -97,7 +97,7 @@ class BTTF(BaseForecaster):
         self,
         train_set: Union[dict, str],
         val_set: Optional[Union[dict, str]] = None,
-        file_type="h5py",
+        file_type: str = "hdf5",
     ) -> None:
         """Train the forecaster on the given data.
 
@@ -112,7 +112,7 @@ class BTTF(BaseForecaster):
     def predict(
         self,
         test_set: Union[dict, str],
-        file_type: str = "h5py",
+        file_type: str = "hdf5",
     ) -> dict:
         assert not isinstance(
             test_set, str
@@ -140,7 +140,7 @@ class BTTF(BaseForecaster):
     def forecast(
         self,
         X: Union[dict, str],
-        file_type: str = "h5py",
+        file_type: str = "hdf5",
     ) -> np.ndarray:
         """Forecast the future the input with the trained model.
 

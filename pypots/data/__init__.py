@@ -5,7 +5,7 @@ Expose all usable data manipulation classes and functions.
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-from .base import BaseDataset
+from .dataset import BaseDataset, SUPPORTED_DATASET_FILE_FORMATS
 from .generating import (
     gene_complete_random_walk,
     gene_complete_random_walk_for_anomaly_detection,
@@ -21,9 +21,10 @@ from .saving import save_dict_into_h5
 from .utils import parse_delta, sliding_window
 
 __all__ = [
-    # datasets
+    # base dataset classes
     "BaseDataset",
-    # data generation
+    "SUPPORTED_DATASET_FILE_FORMATS",
+    # dataset generation functions
     "gene_complete_random_walk",
     "gene_complete_random_walk_for_anomaly_detection",
     "gene_complete_random_walk_for_classification",

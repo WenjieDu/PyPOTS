@@ -1,5 +1,5 @@
 """
-Test cases for CSDI imputation model.
+Test cases for CSDI forecasting model.
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
@@ -12,30 +12,32 @@ import unittest
 import numpy as np
 import pytest
 
-from pypots.imputation import CSDI
+from pypots.forecasting import CSDI
 from pypots.optim import Adam
 from pypots.utils.logging import logger
 from pypots.utils.metrics import calc_mse, calc_quantile_crps
+
 from tests.global_test_config import (
     DATA,
     EPOCHS,
     DEVICE,
-    TRAIN_SET,
-    VAL_SET,
-    TEST_SET,
-    GENERAL_H5_TRAIN_SET_PATH,
-    GENERAL_H5_VAL_SET_PATH,
-    GENERAL_H5_TEST_SET_PATH,
-    RESULT_SAVING_DIR_FOR_IMPUTATION,
+    N_PRED_STEPS,
+    FORECASTING_TRAIN_SET,
+    FORECASTING_VAL_SET,
+    FORECASTING_TEST_SET,
+    FORECASTING_H5_TRAIN_SET_PATH,
+    FORECASTING_H5_VAL_SET_PATH,
+    FORECASTING_H5_TEST_SET_PATH,
+    RESULT_SAVING_DIR_FOR_FORECASTING,
     check_tb_and_model_checkpoints_existence,
 )
 
 
 class TestCSDI(unittest.TestCase):
-    logger.info("Running tests for an imputation model CSDI...")
+    logger.info("Running tests for an forecasting model CSDI...")
 
     # set the log and model saving path
-    saving_path = os.path.join(RESULT_SAVING_DIR_FOR_IMPUTATION, "CSDI")
+    saving_path = os.path.join(RESULT_SAVING_DIR_FOR_FORECASTING, "CSDI")
     model_save_name = "saved_csdi_model.pypots"
 
     # initialize an Adam optimizer
@@ -43,8 +45,10 @@ class TestCSDI(unittest.TestCase):
 
     # initialize a CSDI model
     csdi = CSDI(
-        n_steps=DATA["n_steps"],
+        n_steps=DATA["n_steps"] - N_PRED_STEPS,
         n_features=DATA["n_features"],
+        n_pred_steps=N_PRED_STEPS,
+        n_pred_features=DATA["n_features"],
         n_layers=1,
         n_channels=8,
         d_time_embedding=32,
@@ -58,26 +62,34 @@ class TestCSDI(unittest.TestCase):
         device=DEVICE,
     )
 
-    @pytest.mark.xdist_group(name="imputation-csdi")
+    @pytest.mark.xdist_group(name="forecasting-csdi")
     def test_0_fit(self):
-        self.csdi.fit(TRAIN_SET, VAL_SET)
+        self.csdi.fit(FORECASTING_TRAIN_SET, FORECASTING_VAL_SET)
 
-    @pytest.mark.xdist_group(name="imputation-csdi")
-    def test_1_impute(self):
-        imputed_X = self.csdi.predict(TEST_SET, n_sampling_times=2)["imputation"]
+    @pytest.mark.xdist_group(name="forecasting-csdi")
+    def test_1_forecasting(self):
+        forecasting_X = self.csdi.predict(FORECASTING_TEST_SET, n_sampling_times=2)[
+            "forecasting"
+        ]
         test_CRPS = calc_quantile_crps(
-            imputed_X, DATA["test_X_ori"], DATA["test_X_indicating_mask"]
+            forecasting_X,
+            FORECASTING_TEST_SET["X_pred"],
+            ~np.isnan(FORECASTING_TEST_SET["X_pred"]),
         )
-        imputed_X = imputed_X.mean(axis=1)  # mean over sampling times
+        forecasting_X = forecasting_X.mean(axis=1)  # mean over sampling times
         assert not np.isnan(
-            imputed_X
-        ).any(), "Output still has missing values after running impute()."
+            forecasting_X
+        ).any(), (
+            "Output has missing values in the forecasting results that should not be."
+        )
         test_MSE = calc_mse(
-            imputed_X, DATA["test_X_ori"], DATA["test_X_indicating_mask"]
+            forecasting_X,
+            FORECASTING_TEST_SET["X_pred"],
+            ~np.isnan(FORECASTING_TEST_SET["X_pred"]),
         )
         logger.info(f"CSDI test_MSE: {test_MSE}, test_CRPS: {test_CRPS}")
 
-    @pytest.mark.xdist_group(name="imputation-csdi")
+    @pytest.mark.xdist_group(name="forecasting-csdi")
     def test_2_parameters(self):
         assert hasattr(self.csdi, "model") and self.csdi.model is not None
 
@@ -91,7 +103,7 @@ class TestCSDI(unittest.TestCase):
             and self.csdi.best_model_dict is not None
         )
 
-    @pytest.mark.xdist_group(name="imputation-csdi")
+    @pytest.mark.xdist_group(name="forecasting-csdi")
     def test_3_saving_path(self):
         # whether the root saving dir exists, which should be created by save_log_into_tb_file
         assert os.path.exists(
@@ -108,21 +120,27 @@ class TestCSDI(unittest.TestCase):
         # test loading the saved model, not necessary, but need to test
         self.csdi.load(saved_model_path)
 
-    @pytest.mark.xdist_group(name="imputation-csdi")
+    @pytest.mark.xdist_group(name="forecasting-csdi")
     def test_4_lazy_loading(self):
-        self.csdi.fit(GENERAL_H5_TRAIN_SET_PATH, GENERAL_H5_VAL_SET_PATH)
-        imputation_results = self.csdi.predict(GENERAL_H5_TEST_SET_PATH)
-        imputed_X = imputation_results["imputation"]
+        self.csdi.fit(FORECASTING_H5_TRAIN_SET_PATH, FORECASTING_H5_VAL_SET_PATH)
+        forecasting_results = self.csdi.predict(FORECASTING_H5_TEST_SET_PATH)
+        forecasting_X = forecasting_results["forecasting"]
         test_CRPS = calc_quantile_crps(
-            imputed_X, DATA["test_X_ori"], DATA["test_X_indicating_mask"]
+            forecasting_X,
+            FORECASTING_TEST_SET["X_pred"],
+            ~np.isnan(FORECASTING_TEST_SET["X_pred"]),
         )
-        imputed_X = imputed_X.mean(axis=1)  # mean over sampling times
+        forecasting_X = forecasting_X.mean(axis=1)  # mean over sampling times
         assert not np.isnan(
-            imputed_X
-        ).any(), "Output still has missing values after running impute()."
+            forecasting_X
+        ).any(), (
+            "Output has missing values in the forecasting results that should not be."
+        )
 
         test_MSE = calc_mse(
-            imputed_X, DATA["test_X_ori"], DATA["test_X_indicating_mask"]
+            forecasting_X,
+            FORECASTING_TEST_SET["X_pred"],
+            ~np.isnan(FORECASTING_TEST_SET["X_pred"]),
         )
         logger.info(f"Lazy-loading CSDI test_MSE: {test_MSE}, test_CRPS: {test_CRPS}")
 

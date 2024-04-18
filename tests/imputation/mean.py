@@ -18,9 +18,9 @@ from pypots.utils.metrics import calc_mse
 from tests.global_test_config import (
     DATA,
     TEST_SET,
-    H5_TRAIN_SET_PATH,
-    H5_VAL_SET_PATH,
-    H5_TEST_SET_PATH,
+    GENERAL_H5_TRAIN_SET_PATH,
+    GENERAL_H5_VAL_SET_PATH,
+    GENERAL_H5_TEST_SET_PATH,
 )
 
 
@@ -56,8 +56,8 @@ class TestMean(unittest.TestCase):
 
     @pytest.mark.xdist_group(name="imputation-mean")
     def test_4_lazy_loading(self):
-        self.mean.fit(H5_TRAIN_SET_PATH, H5_VAL_SET_PATH)
-        imputation_results = self.mean.predict(H5_TEST_SET_PATH)
+        self.mean.fit(GENERAL_H5_TRAIN_SET_PATH, GENERAL_H5_VAL_SET_PATH)
+        imputation_results = self.mean.predict(GENERAL_H5_TEST_SET_PATH)
         assert not np.isnan(
             imputation_results["imputation"]
         ).any(), "Output still has missing values after running impute()."
