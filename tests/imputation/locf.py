@@ -19,9 +19,9 @@ from tests.global_test_config import (
     DATA,
     DEVICE,
     TEST_SET,
-    H5_TRAIN_SET_PATH,
-    H5_VAL_SET_PATH,
-    H5_TEST_SET_PATH,
+    GENERAL_H5_TRAIN_SET_PATH,
+    GENERAL_H5_VAL_SET_PATH,
+    GENERAL_H5_TEST_SET_PATH,
 )
 
 
@@ -114,8 +114,8 @@ class TestLOCF(unittest.TestCase):
 
     @pytest.mark.xdist_group(name="imputation-locf")
     def test_4_lazy_loading(self):
-        self.locf_backward.fit(H5_TRAIN_SET_PATH, H5_VAL_SET_PATH)
-        imputation_results = self.locf_backward.predict(H5_TEST_SET_PATH)
+        self.locf_backward.fit(GENERAL_H5_TRAIN_SET_PATH, GENERAL_H5_VAL_SET_PATH)
+        imputation_results = self.locf_backward.predict(GENERAL_H5_TEST_SET_PATH)
         assert not np.isnan(
             imputation_results["imputation"]
         ).any(), "Output still has missing values after running impute()."
