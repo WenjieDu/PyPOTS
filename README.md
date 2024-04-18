@@ -228,6 +228,7 @@ the same as we did in [SAITS paper](https://arxiv.org/pdf/2202.08516).**
 |       Neural Net       |    VaDER    |                         Variational Deep Embedding with Recurrence [^7]                         |   2019   |
 |  ***`Forecasting`***   |     🚥      |                                               🚥                                                |    🚥    |
 |        **Type**        |  **Abbr.**  |                           **Full name of the algorithm/model/paper**                            | **Year** |
+|       Neural Net       |    CSDI     |     Conditional Score-based Diffusion Models for Probabilistic Time Series Imputation [^12]     |   2021   |
 |     Probabilistic      |    BTTF     |                           Bayesian Temporal Tensor Factorization [^8]                           |   2021   |
 
 
