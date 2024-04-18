@@ -72,7 +72,7 @@ class BaseClassifier(BaseModel):
         self,
         train_set: Union[dict, str],
         val_set: Optional[Union[dict, str]] = None,
-        file_type: str = "h5py",
+        file_type: str = "hdf5",
     ) -> None:
         """Train the classifier on the given data.
 
@@ -106,7 +106,7 @@ class BaseClassifier(BaseModel):
     def predict(
         self,
         test_set: Union[dict, str],
-        file_type: str = "h5py",
+        file_type: str = "hdf5",
     ) -> dict:
         raise NotImplementedError
 
@@ -114,7 +114,7 @@ class BaseClassifier(BaseModel):
     def classify(
         self,
         X: Union[dict, str],
-        file_type: str = "h5py",
+        file_type: str = "hdf5",
     ) -> np.ndarray:
         """Classify the input data with the trained model.
 
@@ -214,12 +214,12 @@ class BaseNNClassifier(BaseNNModel):
         self.n_classes = n_classes
 
     @abstractmethod
-    def _assemble_input_for_training(self, data) -> dict:
+    def _assemble_input_for_training(self, data: list) -> dict:
         """Assemble the given data into a dictionary for training input.
 
         Parameters
         ----------
-        data : list,
+        data :
             Input data from dataloader, should be list.
 
         Returns
@@ -230,12 +230,12 @@ class BaseNNClassifier(BaseNNModel):
         raise NotImplementedError
 
     @abstractmethod
-    def _assemble_input_for_validating(self, data) -> dict:
+    def _assemble_input_for_validating(self, data: list) -> dict:
         """Assemble the given data into a dictionary for validating input.
 
         Parameters
         ----------
-        data : list,
+        data :
             Data output from dataloader, should be list.
 
         Returns
@@ -246,7 +246,7 @@ class BaseNNClassifier(BaseNNModel):
         raise NotImplementedError
 
     @abstractmethod
-    def _assemble_input_for_testing(self, data) -> dict:
+    def _assemble_input_for_testing(self, data: list) -> dict:
         """Assemble the given data into a dictionary for testing input.
 
         Notes
@@ -259,7 +259,7 @@ class BaseNNClassifier(BaseNNModel):
 
         Parameters
         ----------
-        data : list,
+        data :
             Data output from dataloader, should be list.
 
         Returns
@@ -386,7 +386,7 @@ class BaseNNClassifier(BaseNNModel):
         self,
         train_set: Union[dict, str],
         val_set: Optional[Union[dict, str]] = None,
-        file_type: str = "h5py",
+        file_type: str = "hdf5",
     ) -> None:
         """Train the classifier on the given data.
 
@@ -420,7 +420,7 @@ class BaseNNClassifier(BaseNNModel):
     def predict(
         self,
         test_set: Union[dict, str],
-        file_type: str = "h5py",
+        file_type: str = "hdf5",
     ) -> dict:
         raise NotImplementedError
 
@@ -428,7 +428,7 @@ class BaseNNClassifier(BaseNNModel):
     def classify(
         self,
         X: Union[dict, str],
-        file_type: str = "h5py",
+        file_type: str = "hdf5",
     ) -> np.ndarray:
         """Classify the input data with the trained model.
 

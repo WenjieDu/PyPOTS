@@ -44,11 +44,6 @@ class BackboneCSDI(nn.Module):
             d_side += 1  # for conditional mask
             d_input = 2
 
-        self.embed_layer = nn.Embedding(
-            num_embeddings=d_target,
-            embedding_dim=d_feature_embedding,
-        )
-
         self.diff_model = CsdiDiffusionModel(
             n_diffusion_steps,
             d_diffusion_embedding,
@@ -77,41 +72,6 @@ class BackboneCSDI(nn.Module):
         self.register_buffer(
             "alpha_torch", torch.tensor(self.alpha).float().unsqueeze(1).unsqueeze(1)
         )
-
-    @staticmethod
-    def time_embedding(pos, d_model=128):
-        pe = torch.zeros(pos.shape[0], pos.shape[1], d_model).to(pos.device)
-        position = pos.unsqueeze(2)
-        div_term = 1 / torch.pow(
-            10000.0, torch.arange(0, d_model, 2, device=pos.device) / d_model
-        )
-        pe[:, :, 0::2] = torch.sin(position * div_term)
-        pe[:, :, 1::2] = torch.cos(position * div_term)
-        return pe
-
-    def get_side_info(self, observed_tp, cond_mask):
-        B, K, L = cond_mask.shape
-        device = observed_tp.device
-        time_embed = self.time_embedding(
-            observed_tp, self.d_time_embedding
-        )  # (B,L,emb)
-        time_embed = time_embed.to(device)
-        time_embed = time_embed.unsqueeze(2).expand(-1, -1, K, -1)
-        feature_embed = self.embed_layer(
-            torch.arange(self.d_target).to(device)
-        )  # (K,emb)
-        feature_embed = feature_embed.unsqueeze(0).unsqueeze(0).expand(B, L, -1, -1)
-
-        side_info = torch.cat(
-            [time_embed, feature_embed], dim=-1
-        )  # (B,L,K,emb+d_feature_embedding)
-        side_info = side_info.permute(0, 3, 2, 1)  # (B,*,K,L)
-
-        if not self.is_unconditional:
-            side_mask = cond_mask.unsqueeze(1)  # (B,1,K,L)
-            side_info = torch.cat([side_info, side_mask], dim=1)
-
-        return side_info
 
     def set_input_to_diffmodel(self, noisy_data, observed_data, cond_mask):
         if self.is_unconditional:

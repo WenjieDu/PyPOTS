@@ -357,12 +357,10 @@ class VaDER(BaseNNClusterer):
         self,
         train_set: Union[dict, str],
         val_set: Optional[Union[dict, str]] = None,
-        file_type: str = "h5py",
+        file_type: str = "hdf5",
     ) -> None:
         # Step 1: wrap the input data with classes Dataset and DataLoader
-        training_set = DatasetForVaDER(
-            train_set, return_labels=False, file_type=file_type
-        )
+        training_set = DatasetForVaDER(train_set, return_y=False, file_type=file_type)
         training_loader = DataLoader(
             training_set,
             batch_size=self.batch_size,
@@ -372,7 +370,7 @@ class VaDER(BaseNNClusterer):
 
         val_loader = None
         if val_set is not None:
-            val_set = DatasetForVaDER(val_set, return_labels=False, file_type=file_type)
+            val_set = DatasetForVaDER(val_set, return_y=False, file_type=file_type)
             val_loader = DataLoader(
                 val_set,
                 batch_size=self.batch_size,
@@ -391,7 +389,7 @@ class VaDER(BaseNNClusterer):
     def predict(
         self,
         test_set: Union[dict, str],
-        file_type: str = "h5py",
+        file_type: str = "hdf5",
         return_latent_vars: bool = False,
     ) -> dict:
         """Make predictions for the input data with the trained model.
@@ -407,7 +405,7 @@ class VaDER(BaseNNClusterer):
             If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
             key-value pairs like a dict, and it has to include keys as 'X' and 'y'.
 
-        file_type : str
+        file_type :
             The type of the given file if test_set is a path string.
 
         return_latent_vars : bool
@@ -415,12 +413,12 @@ class VaDER(BaseNNClusterer):
 
         Returns
         -------
-        result_dict : dict,
+        file_type :
             The dictionary containing the clustering results and latent variables if necessary.
 
         """
         self.model.eval()  # set the model as eval status to freeze it.
-        test_set = DatasetForVaDER(test_set, return_labels=False, file_type=file_type)
+        test_set = DatasetForVaDER(test_set, return_y=False, file_type=file_type)
         test_loader = DataLoader(
             test_set,
             batch_size=self.batch_size,
@@ -501,7 +499,7 @@ class VaDER(BaseNNClusterer):
     def cluster(
         self,
         X: Union[dict, str],
-        file_type: str = "h5py",
+        file_type: str = "hdf5",
     ) -> Union[np.ndarray]:
         """Cluster the input with the trained model.
 

@@ -23,9 +23,9 @@ from tests.global_test_config import (
     TRAIN_SET,
     VAL_SET,
     TEST_SET,
-    H5_TRAIN_SET_PATH,
-    H5_VAL_SET_PATH,
-    H5_TEST_SET_PATH,
+    GENERAL_H5_TRAIN_SET_PATH,
+    GENERAL_H5_VAL_SET_PATH,
+    GENERAL_H5_TEST_SET_PATH,
     RESULT_SAVING_DIR_FOR_IMPUTATION,
     check_tb_and_model_checkpoints_existence,
 )
@@ -101,8 +101,8 @@ class TestGPVAE(unittest.TestCase):
 
     @pytest.mark.xdist_group(name="imputation-gpvae")
     def test_4_lazy_loading(self):
-        self.gp_vae.fit(H5_TRAIN_SET_PATH, H5_VAL_SET_PATH)
-        imputed_X = self.gp_vae.predict(H5_TEST_SET_PATH, n_sampling_times=2)[
+        self.gp_vae.fit(GENERAL_H5_TRAIN_SET_PATH, GENERAL_H5_VAL_SET_PATH)
+        imputed_X = self.gp_vae.predict(GENERAL_H5_TEST_SET_PATH, n_sampling_times=2)[
             "imputation"
         ]
         imputed_X = imputed_X.mean(axis=1)

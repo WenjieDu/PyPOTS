@@ -29,7 +29,7 @@ class Median(BaseImputer):
         self,
         train_set: Union[dict, str],
         val_set: Optional[Union[dict, str]] = None,
-        file_type: str = "h5py",
+        file_type: str = "hdf5",
     ) -> None:
         """Train the imputer on the given data.
 
@@ -47,7 +47,7 @@ class Median(BaseImputer):
     def predict(
         self,
         test_set: Union[dict, str],
-        file_type: str = "h5py",
+        file_type: str = "hdf5",
     ) -> dict:
         """Make predictions for the input data with the trained model.
 
@@ -62,7 +62,7 @@ class Median(BaseImputer):
             If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
             key-value pairs like a dict, and it has to include keys as 'X' and 'y'.
 
-        file_type : str
+        file_type :
             The type of the given file if test_set is a path string.
 
         Returns
@@ -115,7 +115,7 @@ class Median(BaseImputer):
     def impute(
         self,
         X: Union[dict, str],
-        file_type="h5py",
+        file_type: str = "hdf5",
     ) -> np.ndarray:
         """Impute missing values in the given data with the trained model.
 
