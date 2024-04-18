@@ -30,15 +30,21 @@ RESULT_SAVING_DIR_FOR_CLASSIFICATION = os.path.join(MODEL_SAVING_DIR, "classific
 RESULT_SAVING_DIR_FOR_CLUSTERING = os.path.join(MODEL_SAVING_DIR, "clustering")
 RESULT_SAVING_DIR_FOR_FORECASTING = os.path.join(MODEL_SAVING_DIR, "forecasting")
 # paths to save the generated dataset into files for testing the lazy-loading strategy
-GENERAL_DATA_SAVING_DIR = f"{DATA_SAVING_DIR}/h5data_for_testing"
-H5_TRAIN_SET_PATH = f"{GENERAL_DATA_SAVING_DIR}/train_set.h5"
-H5_VAL_SET_PATH = f"{GENERAL_DATA_SAVING_DIR}/val_set.h5"
-H5_TEST_SET_PATH = f"{GENERAL_DATA_SAVING_DIR}/test_set.h5"
+GENERAL_DATA_SAVING_DIR = f"{DATA_SAVING_DIR}/general_h5dataset"
+H5_TRAIN_SET_PATH = os.path.abspath(f"{GENERAL_DATA_SAVING_DIR}/train_set.h5")
+H5_VAL_SET_PATH = os.path.abspath(f"{GENERAL_DATA_SAVING_DIR}/val_set.h5")
+H5_TEST_SET_PATH = os.path.abspath(f"{GENERAL_DATA_SAVING_DIR}/test_set.h5")
 # paths to save the generated dataset for testing forecasting models with the lazy-loading strategy
-FORECASTING_DATA_SAVING_DIR = f"{DATA_SAVING_DIR}/h5data_for_forecasting"
-FORECASTING_H5_TRAIN_SET_PATH = f"{FORECASTING_DATA_SAVING_DIR}/train_set.h5"
-FORECASTING_H5_VAL_SET_PATH = f"{FORECASTING_DATA_SAVING_DIR}/val_set.h5"
-FORECASTING_H5_TEST_SET_PATH = f"{FORECASTING_DATA_SAVING_DIR}/test_set.h5"
+FORECASTING_DATA_SAVING_DIR = f"{DATA_SAVING_DIR}/forecasting_h5dataset"
+FORECASTING_H5_TRAIN_SET_PATH = os.path.abspath(
+    f"{FORECASTING_DATA_SAVING_DIR}/train_set.h5"
+)
+FORECASTING_H5_VAL_SET_PATH = os.path.abspath(
+    f"{FORECASTING_DATA_SAVING_DIR}/val_set.h5"
+)
+FORECASTING_H5_TEST_SET_PATH = os.path.abspath(
+    f"{FORECASTING_DATA_SAVING_DIR}/test_set.h5"
+)
 
 
 set_random_seed(RANDOM_SEED)
@@ -125,3 +131,10 @@ if __name__ == "__main__":
         save_dict_into_h5(FORECASTING_VAL_SET, FORECASTING_H5_VAL_SET_PATH)
     if not os.path.exists(FORECASTING_H5_TEST_SET_PATH):
         save_dict_into_h5(FORECASTING_TEST_SET, FORECASTING_H5_TEST_SET_PATH)
+
+    logger.info(
+        f"Files under GENERAL_DATA_SAVING_DIR: {os.listdir(GENERAL_DATA_SAVING_DIR)}"
+    )
+    logger.info(
+        f"Files under FORECASTING_DATA_SAVING_DIR: {os.listdir(FORECASTING_DATA_SAVING_DIR)}"
+    )
