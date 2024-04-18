@@ -272,7 +272,9 @@ def gene_random_walk(
 
     if missing_rate > 0:
         # create random missing values
+        train_X_ori = train_X
         train_X = mcar(train_X, missing_rate)
+        val_X_ori = val_X
         val_X = mcar(val_X, missing_rate)
         # test set is left to mask after normalization
 
@@ -302,12 +304,6 @@ def gene_random_walk(
     }
 
     if missing_rate > 0:
-        # mask values as ground truth
-        train_X_ori = train_X
-        train_X = mcar(train_X, missing_rate)
-        val_X_ori = val_X
-        val_X = mcar(val_X, missing_rate)
-
         # mask values in the test set as ground truth
         test_X_ori = test_X
         test_X = mcar(test_X, missing_rate)
