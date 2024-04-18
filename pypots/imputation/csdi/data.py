@@ -231,10 +231,9 @@ class TestDatasetForCSDI(DatasetForCSDI):
         self,
         data: Union[dict, str],
         return_X_ori: bool,
-        return_y: bool,
         file_type: str = "hdf5",
     ):
-        super().__init__(data, "random", return_X_ori, return_y, file_type)
+        super().__init__(data, "random", return_X_ori, file_type)
 
     def _fetch_data_from_array(self, idx: int) -> Iterable:
         """Fetch data according to index.
