@@ -18,8 +18,8 @@ from typing import Callable
 import torch
 import torch.nn as nn
 
-from pypots.utils.metrics import calc_mae
 from ...nn.modules.saits import BackboneSAITS
+from ...utils.metrics import calc_mae
 
 
 class _SAITS(nn.Module):

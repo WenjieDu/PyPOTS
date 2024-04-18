@@ -337,13 +337,13 @@ class BaseModel(ABC):
         self,
         train_set: Union[dict, str],
         val_set: Optional[Union[dict, str]] = None,
-        file_type: str = "h5py",
+        file_type: str = "hdf5",
     ) -> None:
         """Train the classifier on the given data.
 
         Parameters
         ----------
-        train_set : dict or str
+        train_set :
             The dataset for model training, should be a dictionary including keys as 'X',
             or a path string locating a data file supported by PyPOTS (e.g. h5 file).
             If it is a dict, X should be array-like of shape [n_samples, sequence length (time steps), n_features],
@@ -352,7 +352,7 @@ class BaseModel(ABC):
             If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
             key-value pairs like a dict, and it has to include keys as 'X' and 'y'.
 
-        val_set : dict or str
+        val_set :
             The dataset for model validating, should be a dictionary including keys as 'X',
             or a path string locating a data file supported by PyPOTS (e.g. h5 file).
             If it is a dict, X should be array-like of shape [n_samples, sequence length (time steps), n_features],
@@ -361,7 +361,7 @@ class BaseModel(ABC):
             If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
             key-value pairs like a dict, and it has to include keys as 'X' and 'y'.
 
-        file_type : str
+        file_type :
             The type of the given file if train_set and val_set are path strings.
 
         """
@@ -371,13 +371,13 @@ class BaseModel(ABC):
     def predict(
         self,
         test_set: Union[dict, str],
-        file_type: str = "h5py",
+        file_type: str = "hdf5",
     ) -> dict:
         """Make predictions for the input data with the trained model.
 
         Parameters
         ----------
-        test_set : dict or str
+        test_set :
             The dataset for model validating, should be a dictionary including keys as 'X',
             or a path string locating a data file supported by PyPOTS (e.g. h5 file).
             If it is a dict, X should be array-like of shape [n_samples, sequence length (time steps), n_features],
@@ -386,12 +386,12 @@ class BaseModel(ABC):
             If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
             key-value pairs like a dict, and it has to include keys as 'X' and 'y'.
 
-        file_type : str
+        file_type :
             The type of the given file if test_set is a path string.
 
         Returns
         -------
-        result_dict: dict
+        result_dict :
             Prediction results in a Python Dictionary for the given samples.
             It should be a dictionary including keys as 'imputation', 'classification', 'clustering', and 'forecasting'.
             For sure, only the keys that relevant tasks are supported by the model will be returned.
@@ -512,7 +512,7 @@ class BaseNNModel(BaseModel):
         self,
         train_set: Union[dict, str],
         val_set: Optional[Union[dict, str]] = None,
-        file_type: str = "h5py",
+        file_type: str = "hdf5",
     ) -> None:
         raise NotImplementedError
 
@@ -520,6 +520,6 @@ class BaseNNModel(BaseModel):
     def predict(
         self,
         test_set: Union[dict, str],
-        file_type: str = "h5py",
+        file_type: str = "hdf5",
     ) -> dict:
         raise NotImplementedError

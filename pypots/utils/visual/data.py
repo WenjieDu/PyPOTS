@@ -29,26 +29,26 @@ def plot_data(
 
     Parameters
     ----------
-    X : ndarray,
+    X :
         The observed values
 
-    X_ori : ndarray,
+    X_ori :
         The evaluated values
 
-    X_imputed : ndarray,
+    X_imputed :
         The imputed values
 
-    sample_idx : int,
+    sample_idx :
         The index of the sample to be plotted.
         If None, a randomly-selected sample will be plotted for visualization.
 
-    n_rows : int,
+    n_rows :
         The number of rows in the plot
 
-    n_cols : int,
+    n_cols :
         The number of columns in the plot
 
-    fig_size : list,
+    fig_size :
         The size of the figure
     """
 
@@ -95,9 +95,9 @@ def plot_data(
 
 
 def plot_missingness(
-    missing_mask,
-    min_step=0,
-    max_step=1,
+    missing_mask: int,
+    min_step: int = 0,
+    max_step: int = 1,
     sample_idx: Optional[int] = None,
 ):
     """Plot the missingness pattern of one multivariate timeseries. For each feature,
@@ -106,16 +106,16 @@ def plot_missingness(
 
     Parameters
     ----------
-    missing_mask : ndarray,
+    missing_mask :
         The missing mask of multivariate time series.
 
-    min_step : int,
+    min_step :
         The minimum time step for visualization.
 
-    max_step : int,
+    max_step :
         The maximum time step for visualization.
 
-    sample_idx : int,
+    sample_idx :
         The index of the sample to be plotted, if None, a randomly-selected sample will be plotted for visualization.
     """
     mask_shape = missing_mask.shape

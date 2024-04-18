@@ -180,7 +180,7 @@ class GRUD(BaseNNClassifier):
         self,
         train_set: Union[dict, str],
         val_set: Optional[Union[dict, str]] = None,
-        file_type: str = "h5py",
+        file_type: str = "hdf5",
     ) -> None:
         # Step 1: wrap the input data with classes Dataset and DataLoader
         training_set = DatasetForGRUD(train_set, file_type=file_type)
@@ -211,10 +211,10 @@ class GRUD(BaseNNClassifier):
     def predict(
         self,
         test_set: Union[dict, str],
-        file_type: str = "h5py",
+        file_type: str = "hdf5",
     ) -> dict:
         self.model.eval()  # set the model as eval status to freeze it.
-        test_set = DatasetForGRUD(test_set, return_labels=False, file_type=file_type)
+        test_set = DatasetForGRUD(test_set, return_y=False, file_type=file_type)
         test_loader = DataLoader(
             test_set,
             batch_size=self.batch_size,
@@ -239,7 +239,7 @@ class GRUD(BaseNNClassifier):
     def classify(
         self,
         X: Union[dict, str],
-        file_type: str = "h5py",
+        file_type: str = "hdf5",
     ) -> np.ndarray:
         """Classify the input data with the trained model.
 

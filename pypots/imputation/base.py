@@ -68,7 +68,7 @@ class BaseImputer(BaseModel):
         self,
         train_set: Union[dict, str],
         val_set: Optional[Union[dict, str]] = None,
-        file_type: str = "h5py",
+        file_type: str = "hdf5",
     ) -> None:
         """Train the imputer on the given data.
 
@@ -90,7 +90,7 @@ class BaseImputer(BaseModel):
             If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
             key-value pairs like a dict, and it has to include the key 'X'.
 
-        file_type : str, default = "h5py",
+        file_type :
             The type of the given file if train_set and val_set are path strings.
 
         """
@@ -100,7 +100,7 @@ class BaseImputer(BaseModel):
     def predict(
         self,
         test_set: Union[dict, str],
-        file_type: str = "h5py",
+        file_type: str = "hdf5",
     ) -> dict:
         raise NotImplementedError
 
@@ -108,7 +108,7 @@ class BaseImputer(BaseModel):
     def impute(
         self,
         X: Union[dict, str],
-        file_type: str = "h5py",
+        file_type: str = "hdf5",
     ) -> np.ndarray:
         """Impute missing values in the given data with the trained model.
 
@@ -207,7 +207,7 @@ class BaseNNImputer(BaseNNModel):
 
         Parameters
         ----------
-        data : list,
+        data :
             Input data from dataloader, should be list.
 
         Returns
@@ -223,7 +223,7 @@ class BaseNNImputer(BaseNNModel):
 
         Parameters
         ----------
-        data : list,
+        data :
             Data output from dataloader, should be list.
 
         Returns
@@ -247,7 +247,7 @@ class BaseNNImputer(BaseNNModel):
 
         Parameters
         ----------
-        data : list,
+        data :
             Data output from dataloader, should be list.
 
         Returns
@@ -383,7 +383,7 @@ class BaseNNImputer(BaseNNModel):
         self,
         train_set: Union[dict, str],
         val_set: Optional[Union[dict, str]] = None,
-        file_type: str = "h5py",
+        file_type: str = "hdf5",
     ) -> None:
         """Train the imputer on the given data.
 
@@ -405,7 +405,7 @@ class BaseNNImputer(BaseNNModel):
             If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
             key-value pairs like a dict, and it has to include the key 'X'.
 
-        file_type : str, default = "h5py",
+        file_type :
             The type of the given file if train_set and val_set are path strings.
 
         """
@@ -415,7 +415,7 @@ class BaseNNImputer(BaseNNModel):
     def predict(
         self,
         test_set: Union[dict, str],
-        file_type: str = "h5py",
+        file_type: str = "hdf5",
     ) -> dict:
         raise NotImplementedError
 
@@ -423,7 +423,7 @@ class BaseNNImputer(BaseNNModel):
     def impute(
         self,
         X: Union[dict, str],
-        file_type: str = "h5py",
+        file_type: str = "hdf5",
     ) -> np.ndarray:
         """Impute missing values in the given data with the trained model.
 
