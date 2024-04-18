@@ -23,19 +23,19 @@ EPOCHS = 2
 N_PRED_STEPS = 1
 # tensorboard and model files saving directory
 RESULT_SAVING_DIR = "testing_results"
-RESULT_SAVING_DIR_FOR_IMPUTATION = os.path.join(RESULT_SAVING_DIR, "imputation")
-RESULT_SAVING_DIR_FOR_CLASSIFICATION = os.path.join(RESULT_SAVING_DIR, "classification")
-RESULT_SAVING_DIR_FOR_CLUSTERING = os.path.join(RESULT_SAVING_DIR, "clustering")
-RESULT_SAVING_DIR_FOR_FORECASTING = os.path.join(RESULT_SAVING_DIR, "forecasting")
+MODEL_SAVING_DIR = f"{RESULT_SAVING_DIR}/models"
+DATA_SAVING_DIR = f"{RESULT_SAVING_DIR}/datasets"
+RESULT_SAVING_DIR_FOR_IMPUTATION = os.path.join(MODEL_SAVING_DIR, "imputation")
+RESULT_SAVING_DIR_FOR_CLASSIFICATION = os.path.join(MODEL_SAVING_DIR, "classification")
+RESULT_SAVING_DIR_FOR_CLUSTERING = os.path.join(MODEL_SAVING_DIR, "clustering")
+RESULT_SAVING_DIR_FOR_FORECASTING = os.path.join(MODEL_SAVING_DIR, "forecasting")
 # paths to save the generated dataset into files for testing the lazy-loading strategy
-DATA_SAVING_DIR = f"{RESULT_SAVING_DIR}/h5data_for_testing"
-H5_TRAIN_SET_PATH = f"{DATA_SAVING_DIR}/train_set.h5"
-H5_VAL_SET_PATH = f"{DATA_SAVING_DIR}/val_set.h5"
-H5_TEST_SET_PATH = f"{DATA_SAVING_DIR}/test_set.h5"
+GENERAL_DATA_SAVING_DIR = f"{DATA_SAVING_DIR}/h5data_for_testing"
+H5_TRAIN_SET_PATH = f"{GENERAL_DATA_SAVING_DIR}/train_set.h5"
+H5_VAL_SET_PATH = f"{GENERAL_DATA_SAVING_DIR}/val_set.h5"
+H5_TEST_SET_PATH = f"{GENERAL_DATA_SAVING_DIR}/test_set.h5"
 # paths to save the generated dataset for testing forecasting models with the lazy-loading strategy
-FORECASTING_DATA_SAVING_DIR = (
-    f"{RESULT_SAVING_DIR_FOR_FORECASTING}/h5data_for_forecasting"
-)
+FORECASTING_DATA_SAVING_DIR = f"{DATA_SAVING_DIR}/h5data_for_forecasting"
 FORECASTING_H5_TRAIN_SET_PATH = f"{FORECASTING_DATA_SAVING_DIR}/train_set.h5"
 FORECASTING_H5_VAL_SET_PATH = f"{FORECASTING_DATA_SAVING_DIR}/val_set.h5"
 FORECASTING_H5_TEST_SET_PATH = f"{FORECASTING_DATA_SAVING_DIR}/test_set.h5"
