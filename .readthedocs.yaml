@@ -31,6 +31,9 @@ build:
             - pip install ./TSDB_repo && pip install ./PyGrinder_repo && pip install .
 
         post_install:
+            # To fix the exception: This documentation is not using `furo.css` as the stylesheet.
+            #   If you have set `html_style` in your conf.py file, remove it.
+            - pip install sphinx==7.2.6
+            # this docutils version fixes issue#102, put it in post_install to avoid being
+            #   overwritten by other versions (like 0.19) while installing other packages
             - pip install docutils==0.20
-            # this version fixes issue#102, put it in post_install to avoid being
-            # overwritten by other versions (like 0.19) while installing other packages
