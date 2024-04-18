@@ -1,7 +1,7 @@
 """
 Dataset class for YourNewModel.
 
-TODO: modify the above description with your model's information.
+TODO: modify the above description for your model's dataset class.
 
 """
 
@@ -10,17 +10,26 @@ TODO: modify the above description with your model's information.
 
 from typing import Union, Iterable
 
-from ...data.base import BaseDataset
+from ...data.dataset import BaseDataset
 
 
+# TODO: define your new dataset class here. Remove or add arguments as needed.
 class DatasetForYourNewModel(BaseDataset):
     def __init__(
         self,
         data: Union[dict, str],
-        return_labels: bool = True,
-        file_type: str = "h5py",
+        return_X_ori: bool,
+        return_X_pred: bool,
+        return_y: bool,
+        file_type: str = "hdf5",
     ):
-        super().__init__(data, return_labels, file_type)
+        super().__init__(
+            data=data,
+            return_X_ori=return_X_ori,
+            return_X_pred=return_X_pred,
+            return_y=return_y,
+            file_type=file_type,
+        )
 
     def _fetch_data_from_array(self, idx: int) -> Iterable:
         raise NotImplementedError
