@@ -21,9 +21,9 @@ from tests.global_test_config import (
     TRAIN_SET,
     VAL_SET,
     TEST_SET,
-    H5_TRAIN_SET_PATH,
-    H5_VAL_SET_PATH,
-    H5_TEST_SET_PATH,
+    GENERAL_H5_TRAIN_SET_PATH,
+    GENERAL_H5_VAL_SET_PATH,
+    GENERAL_H5_TEST_SET_PATH,
     RESULT_SAVING_DIR_FOR_CLASSIFICATION,
     check_tb_and_model_checkpoints_existence,
 )
@@ -101,8 +101,8 @@ class TestGRUD(unittest.TestCase):
 
     @pytest.mark.xdist_group(name="classification-grud")
     def test_4_lazy_loading(self):
-        self.grud.fit(H5_TRAIN_SET_PATH, H5_VAL_SET_PATH)
-        results = self.grud.predict(H5_TEST_SET_PATH)
+        self.grud.fit(GENERAL_H5_TRAIN_SET_PATH, GENERAL_H5_VAL_SET_PATH)
+        results = self.grud.predict(GENERAL_H5_TEST_SET_PATH)
         metrics = calc_binary_classification_metrics(
             results["classification"], DATA["test_y"]
         )
