@@ -23,9 +23,9 @@ from tests.global_test_config import (
     TRAIN_SET,
     VAL_SET,
     TEST_SET,
-    H5_TRAIN_SET_PATH,
-    H5_VAL_SET_PATH,
-    H5_TEST_SET_PATH,
+    GENERAL_H5_TRAIN_SET_PATH,
+    GENERAL_H5_VAL_SET_PATH,
+    GENERAL_H5_TEST_SET_PATH,
     RESULT_SAVING_DIR_FOR_IMPUTATION,
     check_tb_and_model_checkpoints_existence,
 )
@@ -114,8 +114,8 @@ class TestFEDformer(unittest.TestCase):
 
     @pytest.mark.xdist_group(name="imputation-fedformer")
     def test_4_lazy_loading(self):
-        self.fedformer.fit(H5_TRAIN_SET_PATH, H5_VAL_SET_PATH)
-        imputation_results = self.fedformer.predict(H5_TEST_SET_PATH)
+        self.fedformer.fit(GENERAL_H5_TRAIN_SET_PATH, GENERAL_H5_VAL_SET_PATH)
+        imputation_results = self.fedformer.predict(GENERAL_H5_TEST_SET_PATH)
         assert not np.isnan(
             imputation_results["imputation"]
         ).any(), "Output still has missing values after running impute()."

@@ -31,9 +31,9 @@ RESULT_SAVING_DIR_FOR_CLUSTERING = os.path.join(MODEL_SAVING_DIR, "clustering")
 RESULT_SAVING_DIR_FOR_FORECASTING = os.path.join(MODEL_SAVING_DIR, "forecasting")
 # paths to save the generated dataset into files for testing the lazy-loading strategy
 GENERAL_DATA_SAVING_DIR = f"{DATA_SAVING_DIR}/general_h5dataset"
-H5_TRAIN_SET_PATH = os.path.abspath(f"{GENERAL_DATA_SAVING_DIR}/train_set.h5")
-H5_VAL_SET_PATH = os.path.abspath(f"{GENERAL_DATA_SAVING_DIR}/val_set.h5")
-H5_TEST_SET_PATH = os.path.abspath(f"{GENERAL_DATA_SAVING_DIR}/test_set.h5")
+GENERAL_H5_TRAIN_SET_PATH = os.path.abspath(f"{GENERAL_DATA_SAVING_DIR}/train_set.h5")
+GENERAL_H5_VAL_SET_PATH = os.path.abspath(f"{GENERAL_DATA_SAVING_DIR}/val_set.h5")
+GENERAL_H5_TEST_SET_PATH = os.path.abspath(f"{GENERAL_DATA_SAVING_DIR}/test_set.h5")
 # paths to save the generated dataset for testing forecasting models with the lazy-loading strategy
 FORECASTING_DATA_SAVING_DIR = f"{DATA_SAVING_DIR}/forecasting_h5dataset"
 FORECASTING_H5_TRAIN_SET_PATH = os.path.abspath(
@@ -118,12 +118,12 @@ def check_tb_and_model_checkpoints_existence(model):
 
 
 if __name__ == "__main__":
-    if not os.path.exists(H5_TRAIN_SET_PATH):
-        save_dict_into_h5(TRAIN_SET, H5_TRAIN_SET_PATH)
-    if not os.path.exists(H5_VAL_SET_PATH):
-        save_dict_into_h5(VAL_SET, H5_VAL_SET_PATH)
-    if not os.path.exists(H5_TEST_SET_PATH):
-        save_dict_into_h5(TEST_SET, H5_TEST_SET_PATH)
+    if not os.path.exists(GENERAL_H5_TRAIN_SET_PATH):
+        save_dict_into_h5(TRAIN_SET, GENERAL_H5_TRAIN_SET_PATH)
+    if not os.path.exists(GENERAL_H5_VAL_SET_PATH):
+        save_dict_into_h5(VAL_SET, GENERAL_H5_VAL_SET_PATH)
+    if not os.path.exists(GENERAL_H5_TEST_SET_PATH):
+        save_dict_into_h5(TEST_SET, GENERAL_H5_TEST_SET_PATH)
 
     if not os.path.exists(FORECASTING_H5_TRAIN_SET_PATH):
         save_dict_into_h5(FORECASTING_TRAIN_SET, FORECASTING_H5_TRAIN_SET_PATH)
