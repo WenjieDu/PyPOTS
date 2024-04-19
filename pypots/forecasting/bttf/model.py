@@ -23,7 +23,6 @@ import torch
 
 from .core import BTTF_forecast
 from ..base import BaseForecaster
-from ...utils.logging import logger
 
 
 class BTTF(BaseForecaster):
@@ -139,31 +138,25 @@ class BTTF(BaseForecaster):
 
     def forecast(
         self,
-        X: Union[dict, str],
+        test_set: Union[dict, str],
         file_type: str = "hdf5",
     ) -> np.ndarray:
-        """Forecast the future the input with the trained model.
-
-        Warnings
-        --------
-        The method forecast is deprecated. Please use `predict()` instead.
+        """Forecast the future of the input with the trained model.
 
         Parameters
         ----------
-        X :
-            Time-series data containing missing values. Shape [n_samples, sequence length (time steps), n_features].
+        test_set :
+            The data samples for testing, should be array-like of shape [n_samples, sequence length (n_steps),
+            n_features], or a path string locating a data file, e.g. h5 file.
 
         file_type :
             The type of the given file if X is a path string.
 
         Returns
         -------
-        array-like, shape [n_samples, prediction_horizon, n_features],
+        array-like, shape [n_samples, n_pred_steps, n_features],
             Forecasting results.
         """
-        logger.warning(
-            "🚨DeprecationWarning: The method forecast is deprecated. Please use `predict` instead."
-        )
-        result_dict = self.predict(X, file_type=file_type)
-        forecasting = result_dict["forecasting"]
-        return forecasting
+
+        result_dict = self.predict(test_set, file_type=file_type)
+        return result_dict["forecasting"]

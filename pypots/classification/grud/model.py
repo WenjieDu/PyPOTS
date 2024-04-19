@@ -22,7 +22,6 @@ from .data import DatasetForGRUD
 from ..base import BaseNNClassifier
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
-from ...utils.logging import logger
 
 
 class GRUD(BaseNNClassifier):
@@ -238,19 +237,15 @@ class GRUD(BaseNNClassifier):
 
     def classify(
         self,
-        X: Union[dict, str],
+        test_set: Union[dict, str],
         file_type: str = "hdf5",
     ) -> np.ndarray:
         """Classify the input data with the trained model.
 
-        Warnings
-        --------
-        The method classify is deprecated. Please use `predict()` instead.
-
         Parameters
         ----------
-        X :
-            The data samples for testing, should be array-like of shape [n_samples, sequence length (time steps),
+        test_set :
+            The data samples for testing, should be array-like of shape [n_samples, sequence length (n_steps),
             n_features], or a path string locating a data file, e.g. h5 file.
 
         file_type :
@@ -261,8 +256,6 @@ class GRUD(BaseNNClassifier):
         array-like, shape [n_samples],
             Classification results of the given samples.
         """
-        logger.warning(
-            "🚨DeprecationWarning: The method classify is deprecated. Please use `predict` instead."
-        )
-        result_dict = self.predict(X, file_type=file_type)
+
+        result_dict = self.predict(test_set, file_type=file_type)
         return result_dict["classification"]
