@@ -71,13 +71,57 @@ have unified APIs together with detailed documentation and interactive examples 
 if it helps with your research. This really means a lot to our open-source research. Thank you!
 
 The rest of this readme file is organized as follows:
+[**❖ Available Algorithms**](#-available-algorithms),
 [**❖ PyPOTS Ecosystem**](#-pypots-ecosystem),
 [**❖ Installation**](#-installation),
-[**❖ Available Algorithms**](#-available-algorithms),
 [**❖ Usage**](#-usage),
 [**❖ Citing PyPOTS**](#-citing-pypots),
 [**❖ Contribution**](#-contribution),
 [**❖ Community**](#-community).
+
+
+## ❖ Available Algorithms
+PyPOTS supports imputation, classification, clustering, forecasting, and anomaly detection tasks on multivariate partially-observed
+time series with missing values. The table below shows the availability of each algorithm in PyPOTS for different tasks.
+The symbol ✅ indicates the algorithm is available for the corresponding task (note that models will be continuously updated 
+in the future to handle tasks that are not currently supported. Stay tuned❗️).
+The task types are abbreviated as follows: **`IMPU`**: Imputation; **`FORE`**: Forecasting;
+**`CLAS`**: Classification; **`CLUS`**: Clustering; **`ANOD`**: Anomaly Detection.
+The paper references are all listed at the bottom of this readme file.
+
+🌟 Since **v0.2**, all neural-network models in PyPOTS has got hyperparameter-optimization support.
+This functionality is implemented with the [Microsoft NNI](https://github.com/microsoft/nni) framework. You may want to refer to our time-series 
+imputation survey repo [Awesome_Imputation](https://github.com/WenjieDu/Awesome_Imputation) to see how to config and 
+tune the hyperparameters.  
+🔥 Note that Transformer, Crossformer, PatchTST, DLinear, ETSformer, FEDformer, Informer, Autoformer are not proposed as imputation methods in their original papers,
+and they cannot accept POTS as input. **To make them applicable on POTS data, we apply the embedding strategy and training approach (ORT+MIT)
+the same as we did in [SAITS paper](https://arxiv.org/pdf/2202.08516).**
+
+| **Type**      | **Algo**         | **IMPU** | **FORE** | **CLAS** | **CLUS** | **ANOD** | **Year** |
+|:--------------|:-----------------|:--------:|:--------:|:--------:|:--------:|:--------:|:--------:|
+| Neural Net    | SAITS[^1]        |    ✅     |          |          |          |          |   2023   |
+| Neural Net    | Crossformer[^16] |    ✅     |          |          |          |          |   2023   |
+| Neural Net    | TimesNet[^14]    |    ✅     |          |          |          |          |   2023   |
+| Neural Net    | PatchTST[^18]    |    ✅     |          |          |          |          |   2023   |
+| Neural Net    | DLinear[^17]     |    ✅     |          |          |          |          |   2023   |
+| Neural Net    | ETSformer[^19]   |    ✅     |          |          |          |          |   2023   |
+| Neural Net    | FEDformer[^20]   |    ✅     |          |          |          |          |   2022   |
+| Neural Net    | Raindrop[^5]     |          |          |    ✅     |          |          |   2022   |
+| Neural Net    | Informer[^21]    |    ✅     |          |          |          |          |   2021   |
+| Neural Net    | Autoformer[^15]  |    ✅     |          |          |          |          |   2021   |
+| Neural Net    | CSDI[^12]        |    ✅     |    ✅     |          |          |          |   2021   |
+| Neural Net    | US-GAN[^10]      |    ✅     |          |          |          |          |   2021   |
+| Neural Net    | CRLI[^6]         |          |          |          |    ✅     |          |   2021   |
+| Probabilistic | BTTF[^8]         |          |    ✅     |          |          |          |   2021   |
+| Neural Net    | GP-VAE[^16]      |    ✅     |          |          |          |          |   2020   |
+| Neural Net    | VaDER[^7]        |          |          |          |    ✅     |          |   2019   |
+| Neural Net    | M-RNN[^9]        |    ✅     |          |          |          |          |   2019   |
+| Neural Net    | BRITS[^3]        |    ✅     |          |    ✅     |          |          |   2018   |
+| Neural Net    | GRU-D[^4]        |    ✅     |          |    ✅     |          |          |   2018   |
+| Neural Net    | Transformer[^2]  |    ✅     |          |          |          |          |   2017   |
+| Naive         | LOCF/NOCB        |    ✅     |          |          |          |          |          |
+| Naive         | Mean             |    ✅     |          |          |          |          |          |
+| Naive         | Median           |    ✅     |          |          |          |          |          |
 
 
 ## ❖ PyPOTS Ecosystem
@@ -126,7 +170,7 @@ Take a look at it now, and learn how to brew your POTS datasets!
 You can refer to [the installation instruction](https://docs.pypots.com/en/latest/install.html) in PyPOTS documentation for a guideline with more details.
 
 PyPOTS is available on both [PyPI](https://pypi.python.org/pypi/pypots) and [Anaconda](https://anaconda.org/conda-forge/pypots).
-You can install PyPOTS as shown below:
+You can install PyPOTS like below as well as TSDB and PyGrinder:
 
 ``` bash
 # via pip
@@ -139,50 +183,6 @@ pip install https://github.com/WenjieDu/PyPOTS/archive/main.zip
 conda install -c conda-forge pypots  # the first time installation
 conda update  -c conda-forge pypots  # update pypots to the latest version
 ```
-
-
-## ❖ Available Algorithms
-PyPOTS supports imputation, classification, clustering, forecasting, and anomaly detection tasks on multivariate partially-observed
-time series with missing values. The table below shows the availability of each algorithm in PyPOTS for different tasks.
-The symbol ✅ indicates the algorithm is available for the corresponding task 
-(note that models may support tasks in the future that are not currently supported).
-The task types are abbreviated as follows: **`IMPU`**: Imputation; **`FORE`**: Forecasting;
-**`CLAS`**: Classification; **`CLUS`**: Clustering; **`ANOD`**: Anomaly Detection.
-The paper references are all listed at the bottom of this readme file.
-
-🌟 Since **v0.2**, all neural-network models in PyPOTS has got hyperparameter-optimization support.
-This functionality is implemented with the [Microsoft NNI](https://github.com/microsoft/nni) framework. You may want to refer to our time-series 
-imputation survey repo [Awesome_Imputation](https://github.com/WenjieDu/Awesome_Imputation) to see how to config and 
-tune the hyperparameters.  
-🔥 Note that Transformer, Crossformer, PatchTST, DLinear, ETSformer, FEDformer, Informer, Autoformer are not proposed as imputation methods in their original papers,
-and they cannot accept POTS as input. **To make them applicable on POTS data, we apply the embedding strategy and training approach (ORT+MIT)
-the same as we did in [SAITS paper](https://arxiv.org/pdf/2202.08516).**
-
-| **Type**      | **Algo**         | **IMPU** | **FORE** | **CLAS** | **CLUS** | **ANOD** | **Year** |
-|:--------------|:-----------------|:--------:|:--------:|:--------:|:--------:|:--------:|:--------:|
-| Neural Net    | SAITS[^1]        |    ✅     |          |          |          |          |   2023   |
-| Neural Net    | Crossformer[^16] |    ✅     |          |          |          |          |   2023   |
-| Neural Net    | TimesNet[^14]    |    ✅     |          |          |          |          |   2023   |
-| Neural Net    | PatchTST[^18]    |    ✅     |          |          |          |          |   2023   |
-| Neural Net    | DLinear[^17]     |    ✅     |          |          |          |          |   2023   |
-| Neural Net    | ETSformer[^19]   |    ✅     |          |          |          |          |   2023   |
-| Neural Net    | FEDformer[^20]   |    ✅     |          |          |          |          |   2022   |
-| Neural Net    | Raindrop[^5]     |          |          |    ✅     |          |          |   2022   |
-| Neural Net    | Informer[^21]    |    ✅     |          |          |          |          |   2021   |
-| Neural Net    | Autoformer[^15]  |    ✅     |          |          |          |          |   2021   |
-| Neural Net    | CSDI[^12]        |    ✅     |    ✅     |          |          |          |   2021   |
-| Neural Net    | US-GAN[^10]      |    ✅     |          |          |          |          |   2021   |
-| Neural Net    | CRLI[^6]         |          |          |          |    ✅     |          |   2021   |
-| Probabilistic | BTTF[^8]         |          |    ✅     |          |          |          |   2021   |
-| Neural Net    | GP-VAE[^16]      |    ✅     |          |          |          |          |   2020   |
-| Neural Net    | VaDER[^7]        |          |          |          |    ✅     |          |   2019   |
-| Neural Net    | M-RNN[^9]        |    ✅     |          |          |          |          |   2019   |
-| Neural Net    | BRITS[^3]        |    ✅     |          |    ✅     |          |          |   2018   |
-| Neural Net    | GRU-D[^4]        |    ✅     |          |    ✅     |          |          |   2018   |
-| Neural Net    | Transformer[^2]  |    ✅     |          |          |          |          |   2017   |
-| Naive         | LOCF/NOCB        |    ✅     |          |          |          |          |          |
-| Naive         | Mean             |    ✅     |          |          |          |          |          |
-| Naive         | Median           |    ✅     |          |          |          |          |          |
 
 
 ## ❖ Usage
