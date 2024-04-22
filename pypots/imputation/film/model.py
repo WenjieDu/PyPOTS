@@ -1,16 +1,6 @@
 """
 The implementation of FiLM for the partially-observed time-series imputation task.
 
-Refer to the paper
-`Zhou, Tian, Ziqing Ma, Qingsong Wen, Liang Sun, Tao Yao, Wotao Yin, and Rong Jin.
-"FiLM: Frequency improved legendre memory model for long-term time series forecasting."
-In Advances in Neural Information Processing Systems 35 (2022): 12677-12690.
-<https://proceedings.neurips.cc/paper_files/paper/2022/file/524ef58c2bd075775861234266e5e020-Paper-Conference.pdf>`_
-
-Notes
------
-Partial implementation uses code from https://github.com/tianzhou2011/FiLM
-
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
@@ -33,7 +23,7 @@ from ...optim.base import Optimizer
 
 class FiLM(BaseNNImputer):
     """The PyTorch implementation of the FiLM model.
-    FiLM is originally proposed by Wu et al. in :cite:`zhou2022FiLM`.
+    FiLM is originally proposed by Zhou et al. in :cite:`zhou2022film`.
 
     Parameters
     ----------
