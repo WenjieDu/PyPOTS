@@ -7,6 +7,10 @@ Refer to the paper
 In Advances in Neural Information Processing Systems 35 (2022): 12677-12690.
 <https://proceedings.neurips.cc/paper_files/paper/2022/file/524ef58c2bd075775861234266e5e020-Paper-Conference.pdf>`_
 
+Notes
+-----
+Partial implementation uses code from https://github.com/tianzhou2011/FiLM
+
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
