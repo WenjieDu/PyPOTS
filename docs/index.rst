@@ -10,7 +10,7 @@ Welcome to PyPOTS docs!
    :target: https://github.com/WenjieDu/PyPOTS
    :alt: PyPOTS logo
 
-**A Python Toolbox for Data Mining on Partially-Observed Time Series**
+**A Python Toolbox for Machine Learning on Partially-Observed Time Series**
 
 .. image:: https://img.shields.io/badge/Python-v3.7+-E97040?logo=python&logoColor=white
    :alt: Python version
@@ -92,13 +92,83 @@ For sure, besides various algorithms, PyPOTS is going to have unified APIs toget
 if it helps with your research. This really means a lot to our open-source research. Thank you!
 
 The rest of this readme file is organized as follows:
-`❖ PyPOTS Ecosystem <#id1>`_,
-`❖ Installation <#id3>`_,
-`❖ Usage <#id5>`_,
-`❖ Available Algorithms <#id7>`_,
-`❖ Citing PyPOTS <#id22>`_,
-`❖ Contribution <#id23>`_,
-`❖ Community <#id24>`_.
+`❖ Available Algorithms <#id1>`_,
+`❖ PyPOTS Ecosystem <#id22>`_,
+`❖ Installation <#id24>`_,
+`❖ Usage <#id26>`_,
+`❖ Citing PyPOTS <#id28>`_,
+`❖ Contribution <#id29>`_,
+`❖ Community <#id30>`_.
+
+
+❖ Available Algorithms
+^^^^^^^^^^^^^^^^^^^^^^^
+PyPOTS supports imputation, classification, clustering, forecasting, and anomaly detection tasks on multivariate partially-observed
+time series with missing values. The table below shows the availability of each algorithm in PyPOTS for different tasks.
+The symbol ✅ indicates the algorithm is available for the corresponding task (note that models will be continuously updated
+in the future to handle tasks that are not currently supported. Stay tuned❗️).
+The task types are abbreviated as follows: **IMPU**: Imputation; **FORE**: Forecasting;
+**CLAS**: Classification; **CLUS**: Clustering; **ANOD**: Anomaly Detection.
+The paper references are all listed at the bottom of this readme file.
+
+🌟 Since **v0.2**, all neural-network models in PyPOTS has got hyperparameter-optimization support.
+This functionality is implemented with the `Microsoft NNI <https://github.com/microsoft/nni>`_ framework. You may want to refer to our time-series
+imputation survey repo `Awesome_Imputation <https://github.com/WenjieDu/Awesome_Imputation>`_ to see how to config and
+tune the hyperparameters.
+
+🔥 Note that Transformer, Crossformer, PatchTST, DLinear, ETSformer, FEDformer, Informer, Autoformer are not proposed as imputation methods in their original papers,
+and they cannot accept POTS as input. To make them applicable on POTS data, we apply the embedding strategy and training approach (ORT+MIT)
+the same as we did in `SAITS paper <https://arxiv.org/pdf/2202.08516)>`_.
+
++----------------+------------------------------------------------------+------+------+------+------+------+------+
+| Type           | Algorithm                                            | IMPU | FORE | CLAS | CLUS | ANOD | Year |
++================+======================================================+======+======+======+======+======+======+
+| Neural Net     | SAITS :cite:`du2023SAITS`                            |  ✅  |      |      |      |      | 2023 |
++----------------+------------------------------------------------------+------+------+------+------+------+------+
+| Neural Net     | Crossformer :cite:`nie2023patchtst`                  |  ✅  |      |      |      |      | 2023 |
++----------------+------------------------------------------------------+------+------+------+------+------+------+
+| Neural Net     | TimesNet :cite:`wu2023timesnet`                      |  ✅  |      |      |      |      | 2023 |
++----------------+------------------------------------------------------+------+------+------+------+------+------+
+| Neural Net     | PatchTST :cite:`nie2023patchtst`                     |  ✅  |      |      |      |      | 2023 |
++----------------+------------------------------------------------------+------+------+------+------+------+------+
+| Neural Net     | DLinear :cite:`zeng2023dlinear`                      |  ✅  |      |      |      |      | 2023 |
++----------------+------------------------------------------------------+------+------+------+------+------+------+
+| Neural Net     | ETSformer :cite:`woo2023etsformer`                   |  ✅  |      |      |      |      | 2023 |
++----------------+------------------------------------------------------+------+------+------+------+------+------+
+| Neural Net     | FEDformer :cite:`zhou2022fedformer`                  |  ✅  |      |      |      |      | 2022 |
++----------------+------------------------------------------------------+------+------+------+------+------+------+
+| Neural Net     | Raindrop :cite:`zhang2022Raindrop`                   |      |      |  ✅  |      |      | 2022 |
++----------------+------------------------------------------------------+------+------+------+------+------+------+
+| Neural Net     | Informer :cite:`zhou2021informer`                    |  ✅  |      |      |      |      | 2021 |
++----------------+------------------------------------------------------+------+------+------+------+------+------+
+| Neural Net     | Autoformer :cite:`wu2021autoformer`                  |  ✅  |      |      |      |      | 2021 |
++----------------+------------------------------------------------------+------+------+------+------+------+------+
+| Neural Net     | CSDI :cite:`tashiro2021csdi`                         |  ✅  |  ✅  |      |      |      | 2021 |
++----------------+------------------------------------------------------+------+------+------+------+------+------+
+| Neural Net     | US-GAN :cite:`miao2021SSGAN`                         |  ✅  |      |      |      |      | 2021 |
++----------------+------------------------------------------------------+------+------+------+------+------+------+
+| Neural Net     | CRLI :cite:`ma2021CRLI`                              |      |      |      |  ✅  |      | 2021 |
++----------------+------------------------------------------------------+------+------+------+------+------+------+
+| Probabilistic  | BTTF :cite:`chen2021BTMF`                            |      |  ✅  |      |      |      | 2021 |
++----------------+------------------------------------------------------+------+------+------+------+------+------+
+| Neural Net     | GP-VAE :cite:`fortuin2020gpvae`                      |  ✅  |      |      |      |      | 2020 |
++----------------+------------------------------------------------------+------+------+------+------+------+------+
+| Neural Net     | VaDER :cite:`dejong2019VaDER`                        |      |      |      |  ✅  |      | 2019 |
++----------------+------------------------------------------------------+------+------+------+------+------+------+
+| Neural Net     | M-RNN :cite:`yoon2019MRNN`                           |  ✅  |      |      |      |      | 2019 |
++----------------+------------------------------------------------------+------+------+------+------+------+------+
+| Neural Net     | BRITS :cite:`cao2018BRITS`                           |  ✅  |      |  ✅  |      |      | 2018 |
++----------------+------------------------------------------------------+------+------+------+------+------+------+
+| Neural Net     | GRU-D :cite:`che2018GRUD`                            |      |      |  ✅  |      |      | 2018 |
++----------------+------------------------------------------------------+------+------+------+------+------+------+
+| Neural Net     | Transformer :cite:`vaswani2017Transformer`           |  ✅  |      |      |      |      | 2017 |
++----------------+------------------------------------------------------+------+------+------+------+------+------+
+| Naive          | LOCF/NOCB                                            |  ✅  |      |      |      |      |  /   |
++----------------+------------------------------------------------------+------+------+------+------+------+------+
+| Naive          | Median                                               |  ✅  |      |      |      |      |  /   |
++----------------+------------------------------------------------------+------+------+------+------+------+------+
+| Naive          | Mean                                                 |  ✅  |      |      |      |      |  /   |
++----------------+------------------------------------------------------+------+------+------+------+------+------+
 
 
 ❖ PyPOTS Ecosystem
@@ -167,47 +237,6 @@ Additionally, we present you a usage example of imputing missing values in time 
 `Section Quick-start Examples <https://docs.pypots.com/en/latest/examples.html>`_, you can click it to view.
 
 
-❖ Available Algorithms
-^^^^^^^^^^^^^^^^^^^^^^^
-PyPOTS supports imputation, classification, clustering, and forecasting tasks on multivariate time series with missing values.
-The currently available algorithms of four tasks are cataloged in the following table with four partitions. The paper references are provided and you can click them to check out.
-
-🌟 Since **v0.2**, all neural-network models in PyPOTS has got hyperparameter-optimization support.
-This functionality is implemented with the `Microsoft NNI <https://github.com/microsoft/nni>`_ framework.
-
-🔥 Note that Transformer, Crossformer, PatchTST, DLinear, ETSformer, FEDformer, Informer, Autoformer are not proposed as imputation methods in their original papers,
-and they cannot accept POTS as input. To make them applicable on POTS data, we apply the embedding strategy and training approach (ORT+MIT)
-the same as we did in `SAITS paper <https://arxiv.org/pdf/2202.08516)>`_.
-
-============================== ================ ========================================================================================================= ====== =========
-Task                           Type             Algorithm                                                                                                 Year   Reference
-============================== ================ ========================================================================================================= ====== =========
-Imputation                     Neural Net       SAITS (Self-Attention-based Imputation for Time Series)                                                   2023   :cite:`du2023SAITS`
-Imputation                     Neural Net       Transformer                                                                                               2017   :cite:`vaswani2017Transformer`
-Imputation                     Neural Net       Crossformer (Transformer Utilizing Cross-Dimension Dependency for Multivariate Time Series Forecasting)   2023   :cite:`nie2023patchtst`
-Imputation                     Neural Net       TimesNet (Temporal 2D-Variation Modeling for General Time Series Analysis)                                2023   :cite:`wu2023timesnet`
-Imputation                     Neural Net       PatchTST (A Time Series is Worth 64 Words: Long-Term Forecasting with Transformers)                       2023   :cite:`nie2023patchtst`
-Imputation                     Neural Net       DLinear (Are transformers effective for time series forecasting?)                                         2023   :cite:`zeng2023dlinear`
-Imputation                     Neural Net       ETSformer (Exponential Smoothing Transformers for Time-series Forecasting)                                2023   :cite:`woo2023etsformer`
-Imputation                     Neural Net       FEDformer (Frequency Enhanced Decomposed Transformer for Long-term Series Forecasting)                    2022   :cite:`zhou2022fedformer`
-Imputation                     Neural Net       Informer (Beyond Efficient Transformer for Long Sequence Time-Series Forecasting)                         2021   :cite:`zhou2021informer`
-Imputation                     Neural Net       Autoformer (Decomposition Transformers with Auto-Correlation for Long-Term Series Forecasting)            2021   :cite:`wu2021autoformer`
-Imputation                     Neural Net       US-GAN (Unsupervised GAN for Multivariate Time Series Imputation)                                         2021   :cite:`miao2021SSGAN`
-Imputation, Forecasting        Neural Net       CSDI (Conditional Score-based Diffusion Models for Probabilistic Time Series Imputation)                  2021   :cite:`tashiro2021csdi`
-Imputation                     Neural Net       GP-VAE (Gaussian Process Variational Autoencoder)                                                         2020   :cite:`fortuin2020gpvae`
-Imputation, Classification     Neural Net       BRITS (Bidirectional Recurrent Imputation for Time Series)                                                2018   :cite:`cao2018BRITS`
-Imputation                     Neural Net       M-RNN (Multi-directional Recurrent Neural Network)                                                        2019   :cite:`yoon2019MRNN`
-Imputation                     Naive            LOCF/NOCB(Last Observation Carried Forward/Next Observation Carried Backward)                             /      /
-Imputation                     Naive            Median (Median Value Imputation)                                                                          /      /
-Imputation                     Naive            Mean (Mean Value Imputation)                                                                              /      /
-Classification                 Neural Net       GRU-D                                                                                                     2018   :cite:`che2018GRUD`
-Classification                 Neural Net       Raindrop                                                                                                  2022   :cite:`zhang2022Raindrop`
-Clustering                     Neural Net       CRLI (Clustering Representation Learning on Incomplete time-series data)                                  2021   :cite:`ma2021CRLI`
-Clustering                     Neural Net       VaDER (Variational Deep Embedding with Recurrence)                                                        2019   :cite:`dejong2019VaDER`
-Forecasting                    Probabilistic    BTTF (Bayesian Temporal Tensor Factorization)                                                             2021   :cite:`chen2021BTMF`
-============================== ================ ========================================================================================================= ====== =========
-
-
 ❖ Citing PyPOTS
 ^^^^^^^^^^^^^^^^
 **[Updates in Jun 2023]** 🎉A short version of the PyPOTS paper is accepted by the 9th SIGKDD international workshop on
@@ -270,6 +299,7 @@ The lists of PyPOTS stargazers and forkers are shown below, and we're so proud t
    :target: https://github.com/WenjieDu/PyPOTS/network/members
 
 👀 Check out a full list of our users' affiliations `on PyPOTS website here <https://pypots.com/users/>`_ !
+
 
 ❖ Community
 ^^^^^^^^^^^^
