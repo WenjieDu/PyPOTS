@@ -71,13 +71,57 @@ have unified APIs together with detailed documentation and interactive examples 
 if it helps with your research. This really means a lot to our open-source research. Thank you!
 
 The rest of this readme file is organized as follows:
+[**❖ Available Algorithms**](#-available-algorithms),
 [**❖ PyPOTS Ecosystem**](#-pypots-ecosystem),
 [**❖ Installation**](#-installation),
 [**❖ Usage**](#-usage),
-[**❖ Available Algorithms**](#-available-algorithms),
 [**❖ Citing PyPOTS**](#-citing-pypots),
 [**❖ Contribution**](#-contribution),
 [**❖ Community**](#-community).
+
+
+## ❖ Available Algorithms
+PyPOTS supports imputation, classification, clustering, forecasting, and anomaly detection tasks on multivariate partially-observed
+time series with missing values. The table below shows the availability of each algorithm in PyPOTS for different tasks.
+The symbol ✅ indicates the algorithm is available for the corresponding task (note that models will be continuously updated 
+in the future to handle tasks that are not currently supported. Stay tuned❗️).
+The task types are abbreviated as follows: **`IMPU`**: Imputation; **`FORE`**: Forecasting;
+**`CLAS`**: Classification; **`CLUS`**: Clustering; **`ANOD`**: Anomaly Detection.
+The paper references are all listed at the bottom of this readme file.
+
+🌟 Since **v0.2**, all neural-network models in PyPOTS has got hyperparameter-optimization support.
+This functionality is implemented with the [Microsoft NNI](https://github.com/microsoft/nni) framework. You may want to refer to our time-series 
+imputation survey repo [Awesome_Imputation](https://github.com/WenjieDu/Awesome_Imputation) to see how to config and 
+tune the hyperparameters.  
+🔥 Note that Transformer, Crossformer, PatchTST, DLinear, ETSformer, FEDformer, Informer, Autoformer are not proposed as imputation methods in their original papers,
+and they cannot accept POTS as input. **To make them applicable on POTS data, we apply the embedding strategy and training approach (ORT+MIT)
+the same as we did in [SAITS paper](https://arxiv.org/pdf/2202.08516).**
+
+| **Type**      | **Algo**         | **IMPU** | **FORE** | **CLAS** | **CLUS** | **ANOD** | **Year** |
+|:--------------|:-----------------|:--------:|:--------:|:--------:|:--------:|:--------:|:--------:|
+| Neural Net    | SAITS[^1]        |    ✅     |          |          |          |          |   2023   |
+| Neural Net    | Crossformer[^16] |    ✅     |          |          |          |          |   2023   |
+| Neural Net    | TimesNet[^14]    |    ✅     |          |          |          |          |   2023   |
+| Neural Net    | PatchTST[^18]    |    ✅     |          |          |          |          |   2023   |
+| Neural Net    | DLinear[^17]     |    ✅     |          |          |          |          |   2023   |
+| Neural Net    | ETSformer[^19]   |    ✅     |          |          |          |          |   2023   |
+| Neural Net    | FEDformer[^20]   |    ✅     |          |          |          |          |   2022   |
+| Neural Net    | Raindrop[^5]     |          |          |    ✅     |          |          |   2022   |
+| Neural Net    | Informer[^21]    |    ✅     |          |          |          |          |   2021   |
+| Neural Net    | Autoformer[^15]  |    ✅     |          |          |          |          |   2021   |
+| Neural Net    | CSDI[^12]        |    ✅     |    ✅     |          |          |          |   2021   |
+| Neural Net    | US-GAN[^10]      |    ✅     |          |          |          |          |   2021   |
+| Neural Net    | CRLI[^6]         |          |          |          |    ✅     |          |   2021   |
+| Probabilistic | BTTF[^8]         |          |    ✅     |          |          |          |   2021   |
+| Neural Net    | GP-VAE[^16]      |    ✅     |          |          |          |          |   2020   |
+| Neural Net    | VaDER[^7]        |          |          |          |    ✅     |          |   2019   |
+| Neural Net    | M-RNN[^9]        |    ✅     |          |          |          |          |   2019   |
+| Neural Net    | BRITS[^3]        |    ✅     |          |    ✅     |          |          |   2018   |
+| Neural Net    | GRU-D[^4]        |    ✅     |          |    ✅     |          |          |   2018   |
+| Neural Net    | Transformer[^2]  |    ✅     |          |          |          |          |   2017   |
+| Naive         | LOCF/NOCB        |    ✅     |          |          |          |          |          |
+| Naive         | Mean             |    ✅     |          |          |          |          |          |
+| Naive         | Median           |    ✅     |          |          |          |          |          |
 
 
 ## ❖ PyPOTS Ecosystem
@@ -126,7 +170,7 @@ Take a look at it now, and learn how to brew your POTS datasets!
 You can refer to [the installation instruction](https://docs.pypots.com/en/latest/install.html) in PyPOTS documentation for a guideline with more details.
 
 PyPOTS is available on both [PyPI](https://pypi.python.org/pypi/pypots) and [Anaconda](https://anaconda.org/conda-forge/pypots).
-You can install PyPOTS as shown below:
+You can install PyPOTS like below as well as TSDB and PyGrinder:
 
 ``` bash
 # via pip
@@ -154,14 +198,11 @@ We present you a usage example of imputing missing values in time series with Py
 <summary><b>Click here to see an example applying SAITS on PhysioNet2012 for imputation:</b></summary>
 
 ``` python
+# Data preprocessing. Tedious, but PyPOTS can help.
 import numpy as np
 from sklearn.preprocessing import StandardScaler
 from pygrinder import mcar
 from pypots.data import load_specific_dataset
-from pypots.imputation import SAITS
-from pypots.utils.metrics import calc_mae
-
-# Data preprocessing. Tedious, but PyPOTS can help.
 data = load_specific_dataset('physionet_2012')  # PyPOTS will automatically download and extract it.
 X = data['X']
 num_samples = len(X['RecordID'].unique())
@@ -174,62 +215,18 @@ dataset = {"X": X}  # X for model input
 print(X.shape)  # (11988, 48, 37), 11988 samples and each sample has 48 time steps, 37 features
 
 # Model training. This is PyPOTS showtime.
+from pypots.imputation import SAITS
+from pypots.utils.metrics import calc_mae
 saits = SAITS(n_steps=48, n_features=37, n_layers=2, d_model=256, d_ffn=128, n_heads=4, d_k=64, d_v=64, dropout=0.1, epochs=10)
 # Here I use the whole dataset as the training set because ground truth is not visible to the model, you can also split it into train/val/test sets
-saits.fit(dataset)
+saits.fit(dataset)  # train the model on the dataset
 imputation = saits.impute(dataset)  # impute the originally-missing values and artificially-missing values
 indicating_mask = np.isnan(X) ^ np.isnan(X_ori)  # indicating mask for imputation error calculation
 mae = calc_mae(imputation, np.nan_to_num(X_ori), indicating_mask)  # calculate mean absolute error on the ground truth (artificially-missing values)
+saits.save("save_it_here/saits_physionet2012.pypots")  # save the model for future use
+saits.load("save_it_here/saits_physionet2012.pypots")  # reload the serialized model file for following imputation or training
 ```
 </details>
-
-
-## ❖ Available Algorithms
-PyPOTS supports imputation, classification, clustering, and forecasting tasks on multivariate time series with missing values.
-The currently available algorithms of four tasks are cataloged in the following table with four partitions.
-The paper references are all listed at the bottom of this readme file.
-
-🌟 Since **v0.2**, all neural-network models in PyPOTS has got hyperparameter-optimization support.
-This functionality is implemented with the [Microsoft NNI](https://github.com/microsoft/nni) framework.
-
-🔥 Note that Transformer, Crossformer, PatchTST, DLinear, ETSformer, FEDformer, Informer, Autoformer are not proposed as imputation methods in their original papers,
-and they cannot accept POTS as input. **To make them applicable on POTS data, we apply the embedding strategy and training approach (ORT+MIT)
-the same as we did in [SAITS paper](https://arxiv.org/pdf/2202.08516).**
-
-|   ***`Imputation`***   |     🚥      |                                               🚥                                                |    🚥    |
-|:----------------------:|:-----------:|:-----------------------------------------------------------------------------------------------:|:--------:|
-|        **Type**        |  **Abbr.**  |                              **Full name of the algorithm/model**                               | **Year** |
-|       Neural Net       |    SAITS    |                      Self-Attention-based Imputation for Time Series [^1]                       |   2023   |
-|       Neural Net       | Transformer |                                 Attention is All you Need [^2]                                  |   2017   |
-|       Neural Net       | Crossformer | Transformer Utilizing Cross-Dimension Dependency for Multivariate Time Series Forecasting [^16] |   2023   |
-|       Neural Net       |  TimesNet   |              Temporal 2D-Variation Modeling for General Time Series Analysis [^14]              |   2023   |
-|       Neural Net       |  PatchTST   |         A Time Series is Worth 64 Words: Long-Term Forecasting with Transformers [^18]          |   2023   |
-|       Neural Net       |   DLinear   |                  Are Transformers Effective for Time Series Forecasting? [^17]                  |   2023   |
-|       Neural Net       |  ETSformer  |              Exponential Smoothing Transformers for Time-series Forecasting [^19]               |   2023   |
-|       Neural Net       |  FEDformer  |        Frequency Enhanced Decomposed Transformer for Long-term Series Forecasting [^20]         |   2022   |
-|       Neural Net       |  Informer   |          Beyond Efficient Transformer for Long Sequence Time-Series Forecasting [^21]           |   2021   |
-|       Neural Net       | Autoformer  |     Decomposition Transformers with Auto-Correlation for Long-Term Series Forecasting [^15]     |   2021   |
-|       Neural Net       |    CSDI     |     Conditional Score-based Diffusion Models for Probabilistic Time Series Imputation [^12]     |   2021   |
-|       Neural Net       |   US-GAN    |                 Unsupervised GAN for Multivariate Time Series Imputation [^10]                  |   2021   |
-|       Neural Net       |   GP-VAE    |                         Gaussian Process Variational Autoencoder [^11]                          |   2020   |
-|       Neural Net       |    BRITS    |                     Bidirectional Recurrent Imputation for Time Series [^3]                     |   2018   |
-|       Neural Net       |    M-RNN    |                         Multi-directional Recurrent Neural Network [^9]                         |   2019   |
-|         Naive          |  LOCF/NOCB  |              Last Observation Carried Forward / Next Observation Carried Backward               |    -     |
-|         Naive          |   Median    |                                     Median Value Imputation                                     |    -     |
-|         Naive          |    Mean     |                                      Mean Value Imputation                                      |    -     |
-| ***`Classification`*** |     🚥      |                                               🚥                                                |    🚥    |
-|        **Type**        |  **Abbr.**  |                           **Full name of the algorithm/model/paper**                            | **Year** |
-|       Neural Net       |    BRITS    |                     Bidirectional Recurrent Imputation for Time Series [^3]                     |   2018   |
-|       Neural Net       |    GRU-D    |         Recurrent Neural Networks for Multivariate Time Series with Missing Values [^4]         |   2018   |
-|       Neural Net       |  Raindrop   |           Graph-Guided Network for Irregularly Sampled Multivariate Time Series [^5]            |   2022   |
-|   ***`Clustering`***   |     🚥      |                                               🚥                                                |    🚥    |
-|        **Type**        |  **Abbr.**  |                           **Full name of the algorithm/model/paper**                            | **Year** |
-|       Neural Net       |    CRLI     |             Clustering Representation Learning on Incomplete time-series data [^6]              |   2021   |
-|       Neural Net       |    VaDER    |                         Variational Deep Embedding with Recurrence [^7]                         |   2019   |
-|  ***`Forecasting`***   |     🚥      |                                               🚥                                                |    🚥    |
-|        **Type**        |  **Abbr.**  |                           **Full name of the algorithm/model/paper**                            | **Year** |
-|       Neural Net       |    CSDI     |     Conditional Score-based Diffusion Models for Probabilistic Time Series Imputation [^12]     |   2021   |
-|     Probabilistic      |    BTTF     |                           Bayesian Temporal Tensor Factorization [^8]                           |   2021   |
 
 
 ## ❖ Citing PyPOTS
