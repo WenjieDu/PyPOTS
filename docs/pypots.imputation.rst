@@ -19,6 +19,15 @@ pypots.imputation.transformer
    :show-inheritance:
    :inherited-members:
 
+pypots.imputation.itransformer
+------------------------------------
+
+.. automodule:: pypots.imputation.itransformer
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+
 pypots.imputation.frets
 ------------------------------
 

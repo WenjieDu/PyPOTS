@@ -12,6 +12,7 @@ from .gpvae import GPVAE
 from .mrnn import MRNN
 from .saits import SAITS
 from .transformer import Transformer
+from .itransformer import iTransformer
 from .timesnet import TimesNet
 from .etsformer import ETSformer
 from .fedformer import FEDformer
@@ -33,6 +34,7 @@ __all__ = [
     # neural network imputation methods
     "SAITS",
     "Transformer",
+    "iTransformer",
     "ETSformer",
     "FEDformer",
     "FiLM",
