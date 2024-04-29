@@ -15,6 +15,7 @@ from .transformer import Transformer
 from .timesnet import TimesNet
 from .etsformer import ETSformer
 from .fedformer import FEDformer
+from .film import FiLM
 from .crossformer import Crossformer
 from .informer import Informer
 from .autoformer import Autoformer
@@ -33,6 +34,7 @@ __all__ = [
     "Transformer",
     "ETSformer",
     "FEDformer",
+    "FiLM",
     "Crossformer",
     "TimesNet",
     "PatchTST",
