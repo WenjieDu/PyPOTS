@@ -13,9 +13,11 @@ Expert Systems with Applications, 219:119619, 2023.
 # License: BSD-3-Clause
 
 from .backbone import BackboneSAITS
+from .embedding import SaitsEmbedding
 from .loss import SaitsLoss
 
 __all__ = [
     "BackboneSAITS",
+    "SaitsEmbedding",
     "SaitsLoss",
 ]
