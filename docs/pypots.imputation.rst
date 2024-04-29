@@ -64,6 +64,15 @@ pypots.imputation.etsformer
    :show-inheritance:
    :inherited-members:
 
+pypots.imputation.film
+------------------------------
+
+.. automodule:: pypots.imputation.film
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+
 pypots.imputation.fedformer
 ------------------------------
 
