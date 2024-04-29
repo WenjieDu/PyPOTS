@@ -20,7 +20,7 @@ jobs:
             fail-fast: false
             matrix:
                 os: [ubuntu-latest, windows-latest, macOS-latest]
-                python-version: ["3.7", "3.11"]
+                python-version: ["3.7.17", "3.11"]
 
         steps:
             - name: Check out the repo code
