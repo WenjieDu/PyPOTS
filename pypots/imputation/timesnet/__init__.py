@@ -7,6 +7,10 @@ TimesNet: Temporal 2D-Variation Modeling for General Time Series Analysis.
 In ICLR, 2023.
 <https://openreview.net/pdf?id=ju_Uqw384Oq>`_
 
+Notes
+-----
+This implementation is inspired by the official one https://github.com/thuml/Time-Series-Library
+
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>

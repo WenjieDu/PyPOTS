@@ -1,5 +1,5 @@
 """
-Dataset class for model GRU-D.
+Dataset class for the clustering model CRLI.
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>

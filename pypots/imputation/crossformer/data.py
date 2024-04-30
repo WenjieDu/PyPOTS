@@ -1,5 +1,5 @@
 """
-Dataset class for Crossformer.
+Dataset class for the imputation model Crossformer.
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>

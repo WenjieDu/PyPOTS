@@ -1,10 +1,6 @@
 """
 The implementation of USGAN for the partially-observed time-series imputation task.
 
-Refer to the paper "Xiaoye Miao, Yangyang Wu, Jun Wang, Yunjun Gao, Xudong Mao, and Jianwei Yin.
-Generative Semi-supervised Learning for Multivariate Time Series Imputation.
-In AAAI, 35(10):8983–8991, May 2021."
-
 """
 
 # Created by Jun Wang <jwangfx@connect.ust.hk> and Wenjie Du <wenjay.du@gmail.com>

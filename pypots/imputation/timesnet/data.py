@@ -1,5 +1,5 @@
 """
-Dataset class for TimesNet.
+Dataset class for the imputation model TimesNet.
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>

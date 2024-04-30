@@ -1,14 +1,6 @@
 """
 The implementation of Autoformer for the partially-observed time-series imputation task.
 
-Refer to the paper "Haixu Wu, Jiehui Xu, Jianmin Wang, and Mingsheng Long.
-Autoformer: Decomposition transformers with autocorrelation for long-term series forecasting.
-In Advances in Neural Information Processing Systems, volume 34, pages 22419–22430. Curran Associates, Inc., 2021."
-
-Notes
------
-Partial implementation uses code from https://github.com/thuml/Autoformer
-
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>

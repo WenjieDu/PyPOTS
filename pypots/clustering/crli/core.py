@@ -1,10 +1,6 @@
 """
-The implementation of CRLI (Clustering Representation Learning on Incomplete time-series data) for
-the partially-observed time-series clustering task.
-
-Refer to the paper "Ma, Q., Chen, C., Li, S., & Cottrell, G. W. (2021).
-Learning Representations for Incomplete Time Series Clustering. AAAI 2021."
-
+The core wrapper assembles the submodules of CRLI clustering model
+and takes over the forward progress of the algorithm.
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>

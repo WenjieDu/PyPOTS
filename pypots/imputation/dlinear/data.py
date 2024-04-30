@@ -1,5 +1,5 @@
 """
-Dataset class for DLinear.
+Dataset class for the imputation model DLinear.
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>

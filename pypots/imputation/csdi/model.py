@@ -1,14 +1,6 @@
 """
 The implementation of CSDI for the partially-observed time-series imputation task.
 
-Refer to the paper "Yusuke Tashiro, Jiaming Song, Yang Song, and Stefano Ermon.
-CSDI: Conditional Score-based Diffusion Models for Probabilistic Time Series Imputation.
-In NeurIPS, 2021."
-
-Notes
------
-Partial implementation uses code from the official implementation https://github.com/ermongroup/CSDI.
-
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>

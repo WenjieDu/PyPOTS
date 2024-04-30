@@ -1,5 +1,5 @@
 """
-Dataset class for FiLM.
+Dataset class for the imputation model FiLM.
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>

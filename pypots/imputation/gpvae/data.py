@@ -1,5 +1,5 @@
 """
-Dataset class for model GP-VAE.
+Dataset class for the imputation model GP-VAE.
 """
 
 # Created by Jun Wang <jwangfx@connect.ust.hk> and Wenjie Du <wenjay.du@gmail.com>

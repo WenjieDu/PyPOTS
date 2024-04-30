@@ -1,15 +1,6 @@
 """
 The implementation of DLinear for the partially-observed time-series imputation task.
 
-Refer to the paper "Ailing Zeng, Muxi Chen, Lei Zhang, and Qiang Xu.
-Are transformers effective for time series forecasting?
-In AAAI, volume 37, pages 11121–11128, Jun. 2023.".
-
-Notes
------
-Partial implementation uses code from
-https://github.com/cure-lab/LTSF-Linear and https://github.com/thuml/Time-Series-Library
-
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
