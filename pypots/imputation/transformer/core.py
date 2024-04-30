@@ -13,11 +13,10 @@ Partial implementation uses code from https://github.com/WenjieDu/SAITS.
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-import torch
 import torch.nn as nn
 
-from ...nn.modules.saits import SaitsLoss
-from ...nn.modules.transformer import TransformerEncoder, PositionalEncoding
+from ...nn.modules.saits import SaitsLoss, SaitsEmbedding
+from ...nn.modules.transformer import TransformerEncoder
 
 
 class _Transformer(nn.Module):
@@ -41,9 +40,13 @@ class _Transformer(nn.Module):
         self.ORT_weight = ORT_weight
         self.MIT_weight = MIT_weight
 
-        self.embedding = nn.Linear(n_features * 2, d_model)
-        self.dropout = nn.Dropout(dropout)
-        self.position_enc = PositionalEncoding(d_model, n_positions=n_steps)
+        self.saits_embedding = SaitsEmbedding(
+            n_features * 2,
+            d_model,
+            with_pos=True,
+            n_max_steps=n_steps,
+            dropout=dropout,
+        )
         self.encoder = TransformerEncoder(
             n_layers,
             d_model,
@@ -63,11 +66,9 @@ class _Transformer(nn.Module):
         X, missing_mask = inputs["X"], inputs["missing_mask"]
 
         # apply the SAITS embedding strategy, concatenate X and missing mask for input
-        input_X = torch.cat([X, missing_mask], dim=2)
+        input_X = self.saits_embedding(X, missing_mask)
 
         # Transformer encoder processing
-        input_X = self.embedding(input_X)
-        input_X = self.dropout(self.position_enc(input_X))
         enc_output, _ = self.encoder(input_X)
         # project the representation from the d_model-dimensional space to the original data space for output
         reconstruction = self.output_projection(enc_output)
