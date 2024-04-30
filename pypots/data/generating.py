@@ -316,7 +316,7 @@ def gene_random_walk(
         test_X_ori = test_X
         test_X = mcar(test_X, missing_rate)
         data["test_X"] = test_X
-        data["test_X_ori"] = test_X_ori
+        data["test_X_ori"] = np.nan_to_num(test_X_ori)  # fill NaNs for later error calc
         data["test_X_indicating_mask"] = np.isnan(test_X_ori) ^ np.isnan(test_X)
 
     return data
@@ -422,7 +422,7 @@ def gene_physionet2012(artificially_missing_rate: float = 0.1):
         # test_X is for model input
         data["test_X"] = test_X
         # test_X_ori is for error calc, not for model input, hence mustn't have NaNs
-        data["test_X_ori"] = test_X_ori
+        data["test_X_ori"] = np.nan_to_num(test_X_ori)  # fill NaNs for later error calc
         data["test_X_indicating_mask"] = np.isnan(test_X_ori) ^ np.isnan(test_X)
 
     return data
