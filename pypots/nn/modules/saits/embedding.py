@@ -52,9 +52,9 @@ class SaitsEmbedding(nn.Module):
         )
         self.dropout = nn.Dropout(p=dropout) if dropout > 0 else None
 
-    def forward(self, X, missing_mask=None, concat_dim=2, embedding_dim=2):
+    def forward(self, X, missing_mask=None):
         if missing_mask is not None:
-            X = torch.cat([X, missing_mask], dim=concat_dim)
+            X = torch.cat([X, missing_mask], dim=2)
 
         X_embedding = self.embedding_layer(X)
 

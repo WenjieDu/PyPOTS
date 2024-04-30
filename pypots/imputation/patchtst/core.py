@@ -5,11 +5,10 @@
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-import torch
 import torch.nn as nn
 
 from ...nn.modules.patchtst import PatchEmbedding, PatchtstEncoder, PredictionHead
-from ...nn.modules.saits import SaitsLoss
+from ...nn.modules.saits import SaitsLoss, SaitsEmbedding
 
 
 class _PatchTST(nn.Module):
@@ -35,7 +34,7 @@ class _PatchTST(nn.Module):
         n_patches = int((n_steps - patch_len) / stride + 2)  # number of patches
         padding = stride
 
-        self.embedding = nn.Linear(n_features * 2, d_model)
+        self.saits_embedding = SaitsEmbedding(n_features * 2, d_model, with_pos=False)
         self.patch_embedding = PatchEmbedding(
             d_model, patch_len, stride, padding, dropout
         )
@@ -51,12 +50,12 @@ class _PatchTST(nn.Module):
 
         # WDU: the original PatchTST paper isn't proposed for imputation task. Hence the model doesn't take
         # the missing mask into account, which means, in the process, the model doesn't know which part of
-        # the input data is missing, and this may hurt the model's imputation performance. Therefore, I add the
-        # embedding layers to project the concatenation of features and masks into a hidden space, as well as
+        # the input data is missing, and this may hurt the model's imputation performance. Therefore, I apply the
+        # SAITS embedding method to project the concatenation of features and masks into a hidden space, as well as
         # the output layers to project back from the hidden space to the original space.
+        input_X = self.saits_embedding(X, missing_mask)
 
-        # do patching and embedding
-        input_X = self.embedding(torch.cat([X, missing_mask], dim=2))
+        # do patch  embedding
         enc_out = self.patch_embedding(
             input_X.permute(0, 2, 1)
         )  # [bz * d_model, n_patches, d_model]
