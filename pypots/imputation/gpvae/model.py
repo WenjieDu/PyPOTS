@@ -1,10 +1,6 @@
 """
 The implementation of GP-VAE for the partially-observed time-series imputation task.
 
-Refer to the paper "Vincent Fortuin, Dmitry Baranchuk, Gunnar Rätsch, and Stephan Mandt.
-GP-VAE: Deep probabilistic time series imputation.
-In International conference on artificial intelligence and statistics, pages 1651–1661. PMLR, 2020."
-
 """
 
 # Created by Jun Wang <jwangfx@connect.ust.hk> and Wenjie Du <wenjay.du@gmail.com>

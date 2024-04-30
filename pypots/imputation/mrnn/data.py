@@ -1,5 +1,5 @@
 """
-Dataset class for model MRNN.
+Dataset class for the imputation model M-RNN.
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>

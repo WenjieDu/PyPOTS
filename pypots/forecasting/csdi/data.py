@@ -1,5 +1,5 @@
 """
-
+Dataset class for the forecasting model CSDI.
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>

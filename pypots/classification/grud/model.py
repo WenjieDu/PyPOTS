@@ -1,10 +1,6 @@
 """
 The implementation of GRU-D for the partially-observed time-series classification task.
 
-Refer to the paper "Zhengping Che, Sanjay Purushotham, Kyunghyun Cho, David Sontag, and Yan Liu.
-Recurrent Neural Networks for Multivariate Time Series with Missing Values.
-Scientific Reports, 8(1):6085, April 2018."
-
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>

@@ -1,15 +1,6 @@
 """
 The implementation of BRITS for the partially-observed time-series classification task.
 
-Refer to the paper "Wei Cao, Dong Wang, Jian Li, Hao Zhou, Lei Li, and Yitan Li.
-BRITS: Bidirectional recurrent imputation for time series.
-In Advances in Neural Information Processing Systems, volume 31. Curran Associates, Inc., 2018."
-
-Notes
------
-Partial implementation uses code from https://github.com/caow13/BRITS.
-The bugs in the original implementation are fixed here.
-
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>

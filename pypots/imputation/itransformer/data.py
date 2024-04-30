@@ -1,5 +1,5 @@
 """
-Dataset class for self-attention models trained with MIT (masked imputation task) task.
+Dataset class for the imputation model iTransformer.
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>

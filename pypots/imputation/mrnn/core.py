@@ -1,7 +1,6 @@
 """
-PyTorch MRNN model for the time-series imputation task.
-This implementation is inspired by the official one https://github.com/jsyoon0823/MRNN.
-Some part of the code is from https://github.com/WenjieDu/SAITS.
+The core wrapper assembles the submodules of M-RNN imputation model
+and takes over the forward progress of the algorithm.
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>

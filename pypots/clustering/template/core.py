@@ -1,8 +1,6 @@
 """
-The implementation of YourNewModel for the partially-observed time-series clustering task.
-
-Refer to the paper "Your paper citation".
-
+The core wrapper assembles the submodules of YourNewModel clustering model
+and takes over the forward progress of the algorithm.
 """
 
 # Created by Your Name <Your contact email> TODO: modify the author information.
