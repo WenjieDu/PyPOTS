@@ -1,10 +1,4 @@
 """
-Refer to the paper "Du, W., Cote, D., & Liu, Y. (2023). SAITS: Self-Attention-based Imputation for Time Series.
-Expert systems with applications."
-
-Notes
------
-Partial implementation uses code from https://github.com/WenjieDu/SAITS.
 
 """
 

@@ -1,14 +1,6 @@
 """
 The implementation of ETSformer for the partially-observed time-series imputation task.
 
-Refer to the paper "Gerald Woo, Chenghao Liu, Doyen Sahoo, Akshat Kumar, and Steven Hoi.
-ETSformer: Exponential smoothing transformers for time-series forecasting.
-In ICLR, 2023."
-
-Notes
------
-Partial implementation uses code from https://github.com/salesforce/ETSformer
-
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>

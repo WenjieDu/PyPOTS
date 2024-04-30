@@ -1,11 +1,6 @@
 """
 The implementation of VaDER for the partially-observed time-series clustering task.
 
-Refer to the paper "Johann de Jong, Mohammad Asif Emon, Ping Wu, Reagon Karki, Meemansa Sood, Patrice Godard,
-Ashar Ahmad, Henri Vrooman, Martin Hofmann-Apitius, and Holger Fröhlich.
-Deep learning for clustering of multivariate clinical patient trajectories with missing values.
-GigaScience, 8(11):giz134, November 2019."
-
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>

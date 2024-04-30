@@ -1,5 +1,5 @@
 """
-Dataset class for YourNewModel.
+Dataset class for the forecasting model YourNewModel.
 
 TODO: modify the above description for your model's dataset class.
 

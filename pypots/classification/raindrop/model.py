@@ -1,10 +1,6 @@
 """
 The implementation of Raindrop for the partially-observed time-series classification task.
 
-Refer to the paper "Xiang Zhang, Marko Zeman, Theodoros Tsiligkaridis, and Marinka Zitnik.
-Graph-guided network for irregularly sampled multivariate time series.
-In ICLR, 2022."
-
 """
 
 

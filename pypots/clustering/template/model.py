@@ -1,8 +1,6 @@
 """
 The implementation of YourNewModel for the partially-observed time-series clustering task.
 
-Refer to the paper "Your paper citation".
-
 TODO: modify the above description with your model's information.
 
 """

@@ -1,9 +1,6 @@
 """
-The implementation of USGAN for the partially-observed time-series imputation task.
-
-Refer to the paper "Miao, X., Wu, Y., Wang, J., Gao, Y., Mao, X., & Yin, J. (2021).
-Generative Semi-supervised Learning for Multivariate Time Series Imputation. AAAI 2021."
-
+The core wrapper assembles the submodules of USGAN imputation model
+and takes over the forward progress of the algorithm.
 """
 
 # Created by Jun Wang <jwangfx@connect.ust.hk> and Wenjie Du <wenjay.du@gmail.com>

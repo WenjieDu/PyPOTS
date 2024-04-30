@@ -1,8 +1,4 @@
 """
-The implementation of the modules for CRLI (Clustering Representation Learning on Incomplete time-series data).
-
-Refer to the paper "Ma, Q., Chen, C., Li, S., & Cottrell, G. W. (2021).
-Learning Representations for Incomplete Time Series Clustering. AAAI 2021."
 
 """
 

@@ -1,15 +1,6 @@
 """
 The implementation of Crossformer for the partially-observed time-series imputation task.
 
-Refer to the paper "Yunhao Zhang and Junchi Yan.
-Crossformer: Transformer utilizing cross-dimension dependency for multivariate time series forecasting.
-In The 11th ICLR, 2023."
-
-Notes
------
-Partial implementation uses code from
-https://github.com/Thinklab-SJTU/Crossformer and https://github.com/thuml/Time-Series-Library
-
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>

@@ -1,8 +1,4 @@
 """
-The implementation of USGAN for the partially-observed time-series imputation task.
-
-Refer to the paper "Miao, X., Wu, Y., Wang, J., Gao, Y., Mao, X., & Yin, J. (2021).
-Generative Semi-supervised Learning for Multivariate Time Series Imputation. AAAI 2021."
 
 """
 

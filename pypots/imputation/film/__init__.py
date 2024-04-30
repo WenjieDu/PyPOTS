@@ -9,7 +9,7 @@ In Advances in Neural Information Processing Systems 35 (2022): 12677-12690.
 
 Notes
 -----
-Partial implementation uses code from https://github.com/tianzhou2011/FiLM
+This implementation is inspired by the official one https://github.com/tianzhou2011/FiLM
 
 """
 

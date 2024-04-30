@@ -1,12 +1,6 @@
 """
-The implementation of SAITS for the partially-observed time-series imputation task.
-
-Refer to the paper "Du, W., Cote, D., & Liu, Y. (2023). SAITS: Self-Attention-based Imputation for Time Series.
-Expert systems with applications."
-
-Notes
------
-Partial implementation uses code from https://github.com/WenjieDu/SAITS.
+The core wrapper assembles the submodules of SAITS imputation model
+and takes over the forward progress of the algorithm.
 
 """
 

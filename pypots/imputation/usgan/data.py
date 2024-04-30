@@ -1,5 +1,5 @@
 """
-Dataset class for model USGAN.
+Dataset class for the imputation model USGAN.
 """
 
 # Created by Jun Wang <jwangfx@connect.ust.hk> and Wenjie Du <wenjay.du@gmail.com>

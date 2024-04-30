@@ -1,14 +1,6 @@
 """
 The implementation of TimesNet for the partially-observed time-series imputation task.
 
-Refer to the paper "Haixu Wu, Tengge Hu, Yong Liu, Hang Zhou, Jianmin Wang, and Mingsheng Long.
-TimesNet: Temporal 2D-Variation Modeling for General Time Series Analysis.
-In ICLR, 2023."
-
-Notes
------
-Partial implementation uses code from https://github.com/thuml/Time-Series-Library.
-
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>

@@ -1,5 +1,5 @@
 """
-Dataset class for FEDformer.
+Dataset class for the imputation model FEDformer.
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>

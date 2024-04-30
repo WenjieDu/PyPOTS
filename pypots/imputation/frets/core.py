@@ -1,5 +1,6 @@
 """
-
+The core wrapper assembles the submodules of FreTS imputation model
+and takes over the forward progress of the algorithm.
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
