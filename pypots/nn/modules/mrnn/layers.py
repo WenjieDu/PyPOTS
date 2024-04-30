@@ -1,5 +1,5 @@
 """
-The layers of the M-RNN model.
+
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>

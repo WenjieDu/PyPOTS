@@ -1,5 +1,5 @@
 """
-
+Dataset class for the imputation model CSDI.
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>

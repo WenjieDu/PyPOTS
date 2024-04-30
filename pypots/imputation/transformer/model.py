@@ -1,14 +1,6 @@
 """
 The implementation of Transformer for the partially-observed time-series imputation task.
 
-Refer to the paper "Wenjie Du, David Cote, and Yan Liu.
-SAITS: Self-Attention-based Imputation for Time Series.
-Expert Systems with Applications, 219:119619, 2023."
-
-Notes
------
-Partial implementation uses code from https://github.com/WenjieDu/SAITS.
-
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>

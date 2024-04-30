@@ -1,5 +1,6 @@
 """
-
+The core wrapper assembles the submodules of DLinear imputation model
+and takes over the forward progress of the algorithm.
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
@@ -7,12 +8,11 @@
 
 from typing import Optional
 
-import torch
 import torch.nn as nn
 
 from ...nn.modules.autoformer import SeriesDecompositionBlock
 from ...nn.modules.dlinear import BackboneDLinear
-from ...nn.modules.saits import SaitsLoss
+from ...nn.modules.saits import SaitsLoss, SaitsEmbedding
 
 
 class _DLinear(nn.Module):
@@ -36,8 +36,12 @@ class _DLinear(nn.Module):
         self.backbone = BackboneDLinear(n_steps, n_features, individual, d_model)
 
         if not individual:
-            self.linear_seasonal_embedding = nn.Linear(n_features * 2, d_model)
-            self.linear_trend_embedding = nn.Linear(n_features * 2, d_model)
+            self.seasonal_saits_embedding = SaitsEmbedding(
+                n_features * 2, d_model, with_pos=False
+            )
+            self.trend_saits_embedding = SaitsEmbedding(
+                n_features * 2, d_model, with_pos=False
+            )
             self.linear_seasonal_output = nn.Linear(d_model, n_features)
             self.linear_trend_output = nn.Linear(d_model, n_features)
 
@@ -53,14 +57,12 @@ class _DLinear(nn.Module):
         if not self.individual:
             # WDU: the original DLinear paper isn't proposed for imputation task. Hence the model doesn't take
             # the missing mask into account, which means, in the process, the model doesn't know which part of
-            # the input data is missing, and this may hurt the model's imputation performance. Therefore, I add the
-            # embedding layers to project the concatenation of features and masks into a hidden space, as well as
+            # the input data is missing, and this may hurt the model's imputation performance. Therefore, I apply the
+            # SAITS embedding method to project the concatenation of features and masks into a hidden space, as well as
             # the output layers to project the seasonal and trend from the hidden space to the original space.
             # But this is only for the non-individual mode.
-            seasonal_init = torch.cat([seasonal_init, missing_mask], dim=2)
-            trend_init = torch.cat([trend_init, missing_mask], dim=2)
-            seasonal_init = self.linear_seasonal_embedding(seasonal_init)
-            trend_init = self.linear_trend_embedding(trend_init)
+            seasonal_init = self.seasonal_saits_embedding(seasonal_init, missing_mask)
+            trend_init = self.trend_saits_embedding(trend_init, missing_mask)
 
         seasonal_output, trend_output = self.backbone(seasonal_init, trend_init)
 

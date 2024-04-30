@@ -1,11 +1,11 @@
 """
-
+The core wrapper assembles the submodules of ETSformer imputation model
+and takes over the forward progress of the algorithm.
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-import torch
 import torch.nn as nn
 
 from ...nn.modules.etsformer import (
@@ -14,8 +14,7 @@ from ...nn.modules.etsformer import (
     ETSformerDecoderLayer,
     ETSformerDecoder,
 )
-from ...nn.modules.saits import SaitsLoss
-from ...nn.modules.transformer.embedding import DataEmbedding
+from ...nn.modules.saits import SaitsLoss, SaitsEmbedding
 
 
 class _ETSformer(nn.Module):
@@ -36,9 +35,11 @@ class _ETSformer(nn.Module):
     ):
         super().__init__()
 
-        self.enc_embedding = DataEmbedding(
+        self.saits_embedding = SaitsEmbedding(
             n_features * 2,
             d_model,
+            with_pos=True,
+            n_max_steps=n_steps,
             dropout=dropout,
         )
 
@@ -81,13 +82,10 @@ class _ETSformer(nn.Module):
 
         # WDU: the original ETSformer paper isn't proposed for imputation task. Hence the model doesn't take
         # the missing mask into account, which means, in the process, the model doesn't know which part of
-        # the input data is missing, and this may hurt the model's imputation performance. Therefore, I add the
-        # embedding layers to project the concatenation of features and masks into a hidden space, as well as
+        # the input data is missing, and this may hurt the model's imputation performance. Therefore, I apply the
+        # SAITS embedding method to project the concatenation of features and masks into a hidden space, as well as
         # the output layers to project back from the hidden space to the original space.
-
-        # the same as SAITS, concatenate the time series data and the missing mask for embedding
-        input_X = torch.cat([X, missing_mask], dim=2)
-        res = self.enc_embedding(input_X)
+        res = self.saits_embedding(X, missing_mask)
 
         # ETSformer encoder processing
         level, growths, seasons = self.encoder(res, X, attn_mask=None)

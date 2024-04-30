@@ -7,6 +7,10 @@ Refer to the paper
 Advances in Neural Information Processing Systems 36 (2024).
 <https://proceedings.neurips.cc/paper_files/paper/2023/file/f1d16af76939f476b5f040fd1398c0a3-Paper-Conference.pdf>`_
 
+Notes
+-----
+This implementation is inspired by the official one https://github.com/aikunyi/FreTS
+
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>

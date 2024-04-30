@@ -1,5 +1,6 @@
 """
-
+The core wrapper assembles the submodules of iTransformer imputation model
+and takes over the forward progress of the algorithm.
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
@@ -8,7 +9,7 @@
 import torch
 import torch.nn as nn
 
-from ...nn.modules.saits import SaitsLoss
+from ...nn.modules.saits import SaitsLoss, SaitsEmbedding
 from ...nn.modules.transformer import TransformerEncoder
 
 
@@ -34,8 +35,9 @@ class _iTransformer(nn.Module):
         self.ORT_weight = ORT_weight
         self.MIT_weight = MIT_weight
 
-        self.embedding = nn.Linear(n_steps, d_model)
-        self.dropout = nn.Dropout(dropout)
+        self.saits_embedding = SaitsEmbedding(
+            n_steps, d_model, with_pos=False, dropout=dropout
+        )
         self.encoder = TransformerEncoder(
             n_layers,
             d_model,
@@ -54,12 +56,15 @@ class _iTransformer(nn.Module):
     def forward(self, inputs: dict, training: bool = True) -> dict:
         X, missing_mask = inputs["X"], inputs["missing_mask"]
 
-        # apply the SAITS embedding strategy, concatenate X and missing mask for input
+        # WDU: the original Informer paper isn't proposed for imputation task. Hence the model doesn't take
+        # the missing mask into account, which means, in the process, the model doesn't know which part of
+        # the input data is missing, and this may hurt the model's imputation performance. Therefore, I apply the
+        # SAITS embedding method to project the concatenation of features and masks into a hidden space, as well as
+        # the output layers to project back from the hidden space to the original space.
         input_X = torch.cat([X.permute(0, 2, 1), missing_mask.permute(0, 2, 1)], dim=1)
+        input_X = self.saits_embedding(input_X)
 
         # Transformer encoder processing
-        input_X = self.embedding(input_X)
-        input_X = self.dropout(input_X)
         enc_output, _ = self.encoder(input_X)
         # project the representation from the d_model-dimensional space to the original data space for output
         reconstruction = self.output_projection(enc_output)

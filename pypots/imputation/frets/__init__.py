@@ -9,7 +9,7 @@ Advances in Neural Information Processing Systems 36 (2024).
 
 Notes
 -----
-Partial implementation uses code from https://github.com/aikunyi/FreTS
+This implementation is inspired by the official one https://github.com/aikunyi/FreTS
 
 """
 

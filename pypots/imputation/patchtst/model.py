@@ -5,11 +5,6 @@ Refer to the paper "Yuqi Nie, Nam H Nguyen, Phanwadee Sinthong, and Jayant Kalag
 A time series is worth 64 words: Long-term forecasting with transformers.
 In The ICLR, 2023."
 
-Notes
------
-Partial implementation uses code from
-https://github.com/yuqinie98/PatchTST and https://github.com/thuml/Time-Series-Library
-
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>

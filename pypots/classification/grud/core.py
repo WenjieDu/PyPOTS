@@ -1,9 +1,6 @@
 """
-The implementation of GRU-D for the partially-observed time-series imputation task.
-
-Refer to the paper "Che, Z., Purushotham, S., Cho, K., Sontag, D.A., & Liu, Y. (2018).
-Recurrent Neural Networks for Multivariate Time Series with Missing Values. Scientific Reports."
-
+The core wrapper assembles the submodules of GRU-D classification model
+and takes over the forward progress of the algorithm.
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>

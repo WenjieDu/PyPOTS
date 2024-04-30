@@ -9,7 +9,7 @@ ICLR 2024.
 
 Notes
 -----
-Partial implementation uses code from https://github.com/thuml/iTransformer
+This implementation is inspired by the official one https://github.com/thuml/iTransformer
 
 """
 

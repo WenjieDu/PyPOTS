@@ -1,5 +1,5 @@
 """
-Dataset class for FreTS.
+Dataset class for the imputation model FreTS.
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>

@@ -1,5 +1,5 @@
 """
-Dataset class for ETSformer.
+Dataset class for the imputation model ETSformer.
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>

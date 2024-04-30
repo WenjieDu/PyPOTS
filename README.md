@@ -82,7 +82,7 @@ The rest of this readme file is organized as follows:
 
 ## ❖ Available Algorithms
 PyPOTS supports imputation, classification, clustering, forecasting, and anomaly detection tasks on multivariate partially-observed
-time series with missing values. The table below shows the availability of each algorithm in PyPOTS for different tasks.
+time series with missing values. The table below shows the availability of each algorithm (sorted by Year) in PyPOTS for different tasks.
 The symbol ✅ indicates the algorithm is available for the corresponding task (note that models will be continuously updated
 in the future to handle tasks that are not currently supported. Stay tuned❗️).
 The task types are abbreviated as follows: **`IMPU`**: Imputation; **`FORE`**: Forecasting;
@@ -93,8 +93,10 @@ The paper references are all listed at the bottom of this readme file.
 This functionality is implemented with the [Microsoft NNI](https://github.com/microsoft/nni) framework. You may want to refer to our time-series
 imputation survey repo [Awesome_Imputation](https://github.com/WenjieDu/Awesome_Imputation) to see how to config and
 tune the hyperparameters.
-🔥 Note that Transformer, Crossformer, PatchTST, DLinear, ETSformer, FEDformer, Informer, Autoformer are not proposed as imputation methods in their original papers,
-and they cannot accept POTS as input. **To make them applicable on POTS data, we apply the embedding strategy and training approach (ORT+MIT)
+
+🔥 Note that Transformer, iTransformer, FreTS, Crossformer, PatchTST, DLinear, ETSformer, FiLM, FEDformer, Informer, Autoformer
+are not proposed as imputation methods in their original papers, and they cannot accept POTS as input.
+**To make them applicable on POTS data, we apply the embedding strategy and training approach (ORT+MIT)
 the same as we did in [SAITS paper](https://arxiv.org/pdf/2202.08516).**
 
 | **Type**      | **Algo**               | **IMPU** | **FORE** | **CLAS** | **CLUS** | **ANOD** | **Year** |

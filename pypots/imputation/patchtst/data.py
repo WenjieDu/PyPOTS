@@ -1,5 +1,5 @@
 """
-Dataset class for PatchTST.
+Dataset class for the imputation model PatchTST.
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>

@@ -3,7 +3,7 @@ The implementation of the modules for Transformer :cite:`vaswani2017Transformer`
 
 Notes
 -----
-Partial implementation uses code from https://github.com/WenjieDu/SAITS,
+This implementation is inspired by the official one https://github.com/WenjieDu/SAITS,
 and https://github.com/jadore801120/attention-is-all-you-need-pytorch.
 
 """

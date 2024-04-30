@@ -1,5 +1,5 @@
 """
-Dataset class for Informer.
+Dataset class for the imputation model Informer.
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
