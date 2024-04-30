@@ -8,8 +8,7 @@
 import torch.nn as nn
 
 from ...nn.modules.film import BackboneFiLM
-from ...nn.modules.saits import SaitsLoss
-from ...nn.modules.transformer.embedding import DataEmbedding
+from ...nn.modules.saits import SaitsLoss, SaitsEmbedding
 
 
 class _FiLM(nn.Module):
@@ -28,7 +27,7 @@ class _FiLM(nn.Module):
     ):
         super().__init__()
 
-        self.saits_embedding = DataEmbedding(
+        self.saits_embedding = SaitsEmbedding(
             n_features * 2,
             d_model,
             with_pos=False,
@@ -55,7 +54,8 @@ class _FiLM(nn.Module):
         # the missing mask into account, which means, in the process, the model doesn't know which part of
         # the input data is missing, and this may hurt the model's imputation performance. Therefore, I apply the
         # SAITS embedding method to project the concatenation of features and masks into a hidden space, as well as
-        # the output layers to project back from the hidden space to the original space.
+        # the output layers to pro
+        # ject back from the hidden space to the original space.
         X_embedding = self.saits_embedding(X, missing_mask)
 
         # FiLM processing
