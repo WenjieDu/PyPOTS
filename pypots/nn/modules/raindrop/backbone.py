@@ -81,7 +81,7 @@ class BackboneRaindrop(nn.Module):
             )
         self.transformer_encoder = TransformerEncoder(encoder_layers, n_layers)
 
-        self.R_u = nn.Linear(1, self.n_features * self.d_ob, bias=False)
+        self.R_u = nn.Parameter(torch.Tensor(1, self.n_features * self.d_ob))
 
         self.ob_propagation = ObservationPropagation(
             in_channels=max_len * self.d_ob,
