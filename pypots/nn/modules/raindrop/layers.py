@@ -18,8 +18,6 @@ from torch.nn import Linear
 from torch.nn import init
 from torch.nn.parameter import Parameter
 
-from ....utils.logging import logger
-
 try:
     from torch_geometric.nn.conv import MessagePassing
     from torch_geometric.nn.inits import glorot
@@ -27,13 +25,10 @@ try:
     from torch_geometric.utils import softmax
     from torch_scatter import scatter
     from torch_sparse import SparseTensor
-except ImportError as e:
-    logger.error(
-        f"❌ {e}\n"
-        "Note torch_geometric is missing, please install it with "
-        "'pip install torch_geometric torch_scatter torch_sparse' or "
-        "'conda install -c pyg pyg pytorch-scatter pytorch-sparse'"
-    )
+except ImportError:
+    # Modules here only for Raindrop model, and torch_geometric import errors are caught in BackboneRaindrop.
+    # Hence, we can pass them here.
+    pass
 
 
 class PositionalEncoding(nn.Module):
