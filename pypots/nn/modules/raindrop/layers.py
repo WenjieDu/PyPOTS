@@ -25,7 +25,7 @@ try:
     from torch_geometric.utils import softmax
     from torch_scatter import scatter
     from torch_sparse import SparseTensor
-except ImportError as e:
+except ImportError:
     # Modules here only for Raindrop model, and torch_geometric import errors are caught in BackboneRaindrop.
     # Hence, we can pass them here.
     pass
