@@ -40,11 +40,11 @@ class ETSformer(BaseNNImputer):
     n_d_layers :
         The number of layers in the ETSformer decoder.
 
-    n_heads :
-        The number of heads in each layer of ETSformer.
-
     d_model :
         The dimension of the model.
+
+    n_heads :
+        The number of heads in each layer of ETSformer.
 
     d_ffn :
         The dimension of the feed-forward network.
@@ -108,8 +108,8 @@ class ETSformer(BaseNNImputer):
         n_features,
         n_e_layers,
         n_d_layers,
-        n_heads,
         d_model,
+        n_heads,
         d_ffn,
         top_k,
         dropout: float = 0,
@@ -153,8 +153,8 @@ class ETSformer(BaseNNImputer):
             self.n_features,
             self.n_e_layers,
             self.n_d_layers,
-            self.n_heads,
             self.d_model,
+            self.n_heads,
             self.d_ffn,
             self.dropout,
             self.top_k,

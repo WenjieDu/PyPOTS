@@ -24,8 +24,8 @@ class _ETSformer(nn.Module):
         n_features,
         n_e_layers,
         n_d_layers,
-        n_heads,
         d_model,
+        n_heads,
         d_ffn,
         dropout,
         top_k,
@@ -53,7 +53,7 @@ class _ETSformer(nn.Module):
                     n_steps,
                     n_steps,
                     top_k,
-                    dim_feedforward=d_ffn,
+                    d_ffn=d_ffn,
                     dropout=dropout,
                     activation=activation,
                 )

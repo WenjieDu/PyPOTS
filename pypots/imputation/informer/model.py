@@ -37,11 +37,11 @@ class Informer(BaseNNImputer):
     n_layers :
         The number of layers in the Informer model.
 
-    n_heads :
-        The number of heads in each layer of Informer.
-
     d_model :
         The dimension of the model.
+
+    n_heads :
+        The number of heads in each layer of Informer.
 
     d_ffn :
         The dimension of the feed-forward network.
@@ -104,8 +104,8 @@ class Informer(BaseNNImputer):
         n_steps: int,
         n_features: int,
         n_layers: int,
-        n_heads: int,
         d_model: int,
+        n_heads: int,
         d_ffn: int,
         factor: int,
         dropout: float = 0,
@@ -147,8 +147,8 @@ class Informer(BaseNNImputer):
             self.n_steps,
             self.n_features,
             self.n_layers,
-            self.n_heads,
             self.d_model,
+            self.n_heads,
             self.d_ffn,
             self.factor,
             self.dropout,

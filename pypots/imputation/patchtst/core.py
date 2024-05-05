@@ -18,11 +18,11 @@ class _PatchTST(nn.Module):
         n_steps: int,
         n_features: int,
         n_layers: int,
-        n_heads: int,
         d_model: int,
-        d_ffn: int,
+        n_heads: int,
         d_k: int,
         d_v: int,
+        d_ffn: int,
         patch_len: int,
         stride: int,
         dropout: float,
@@ -40,7 +40,14 @@ class _PatchTST(nn.Module):
             d_model, patch_len, stride, padding, dropout
         )
         self.encoder = PatchtstEncoder(
-            n_layers, n_heads, d_model, d_ffn, d_k, d_v, dropout, attn_dropout
+            n_layers,
+            d_model,
+            n_heads,
+            d_k,
+            d_v,
+            d_ffn,
+            dropout,
+            attn_dropout,
         )
         self.head = PredictionHead(d_model, n_patches, n_steps, dropout)
         self.output_projection = nn.Linear(d_model, n_features)

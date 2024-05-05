@@ -6,14 +6,17 @@
 # License: BSD-3-Clause
 
 import math
+from typing import Tuple, Optional
 
 import torch
 import torch.fft
 import torch.nn as nn
 import torch.nn.functional as F
 
+from ..transformer.attention import AttentionOperator, MultiHeadAttention
 
-class AutoCorrelation(nn.Module):
+
+class AutoCorrelation(AttentionOperator):
     """
     AutoCorrelation Mechanism with the following two phases:
         (1) period-based dependencies discovery
@@ -132,63 +135,46 @@ class AutoCorrelation(nn.Module):
             delays_agg = delays_agg + pattern * (tmp_corr[..., i].unsqueeze(-1))
         return delays_agg
 
-    def forward(self, queries, keys, values, attn_mask):
-        B, L, H, E = queries.shape
-        _, S, _, D = values.shape
+    def forward(
+        self,
+        q: torch.Tensor,
+        k: torch.Tensor,
+        v: torch.Tensor,
+        attn_mask: Optional[torch.Tensor] = None,
+        **kwargs,
+    ) -> Tuple[torch.Tensor, torch.Tensor]:
+        # q, k, v all have 4 dimensions [batch_size, n_steps, n_heads, d_tensor]
+        # d_tensor could be d_q, d_k, d_v
+
+        B, L, H, E = q.shape
+        _, S, _, D = v.shape
         if L > S:
-            zeros = torch.zeros_like(queries[:, : (L - S), :]).float()
-            values = torch.cat([values, zeros], dim=1)
-            keys = torch.cat([keys, zeros], dim=1)
+            zeros = torch.zeros_like(q[:, : (L - S), :]).float()
+            v = torch.cat([v, zeros], dim=1)
+            k = torch.cat([k, zeros], dim=1)
         else:
-            values = values[:, :L, :, :]
-            keys = keys[:, :L, :, :]
+            v = v[:, :L, :, :]
+            k = k[:, :L, :, :]
 
         # period-based dependencies
-        q_fft = torch.fft.rfft(queries.permute(0, 2, 3, 1).contiguous(), dim=-1)
-        k_fft = torch.fft.rfft(keys.permute(0, 2, 3, 1).contiguous(), dim=-1)
+        q_fft = torch.fft.rfft(q.permute(0, 2, 3, 1).contiguous(), dim=-1)
+        k_fft = torch.fft.rfft(k.permute(0, 2, 3, 1).contiguous(), dim=-1)
         res = q_fft * torch.conj(k_fft)
         corr = torch.fft.irfft(res, dim=-1)
 
         # time delay agg
         if self.training:
             V = self.time_delay_agg_training(
-                values.permute(0, 2, 3, 1).contiguous(), corr
+                v.permute(0, 2, 3, 1).contiguous(), corr
             ).permute(0, 3, 1, 2)
         else:
             V = self.time_delay_agg_inference(
-                values.permute(0, 2, 3, 1).contiguous(), corr
+                v.permute(0, 2, 3, 1).contiguous(), corr
             ).permute(0, 3, 1, 2)
 
-        return V.contiguous(), corr.permute(0, 3, 1, 2)
-
-
-class AutoCorrelationLayer(nn.Module):
-    def __init__(self, correlation, d_model, n_heads, d_keys=None, d_values=None):
-        super().__init__()
-
-        d_keys = d_keys or (d_model // n_heads)
-        d_values = d_values or (d_model // n_heads)
-
-        self.inner_correlation = correlation
-        self.query_projection = nn.Linear(d_model, d_keys * n_heads)
-        self.key_projection = nn.Linear(d_model, d_keys * n_heads)
-        self.value_projection = nn.Linear(d_model, d_values * n_heads)
-        self.out_projection = nn.Linear(d_values * n_heads, d_model)
-        self.n_heads = n_heads
-
-    def forward(self, queries, keys, values, attn_mask):
-        B, L, _ = queries.shape
-        _, S, _ = keys.shape
-        H = self.n_heads
-
-        queries = self.query_projection(queries).view(B, L, H, -1)
-        keys = self.key_projection(keys).view(B, S, H, -1)
-        values = self.value_projection(values).view(B, S, H, -1)
-
-        out, attn = self.inner_correlation(queries, keys, values, attn_mask)
-        out = out.view(B, L, -1)
-
-        return self.out_projection(out), attn
+        attn = corr.permute(0, 3, 1, 2)
+        output = V.contiguous()
+        return output, attn
 
 
 class SeasonalLayerNorm(nn.Module):
@@ -244,21 +230,28 @@ class AutoformerEncoderLayer(nn.Module):
 
     def __init__(
         self,
-        attention,
-        d_model,
-        d_ff=None,
-        moving_avg=25,
-        dropout=0.1,
+        attn_opt: AttentionOperator,
+        d_model: int,
+        n_heads: int,
+        d_ffn: int,
+        moving_avg: int = 25,
+        dropout: float = 0.1,
         activation="relu",
     ):
         super().__init__()
-        d_ff = d_ff or 4 * d_model
-        self.attention = attention
+        d_ffn = d_ffn or 4 * d_model
+        self.attention = MultiHeadAttention(
+            attn_opt,
+            d_model,
+            n_heads,
+            d_model // n_heads,
+            d_model // n_heads,
+        )
         self.conv1 = nn.Conv1d(
-            in_channels=d_model, out_channels=d_ff, kernel_size=1, bias=False
+            in_channels=d_model, out_channels=d_ffn, kernel_size=1, bias=False
         )
         self.conv2 = nn.Conv1d(
-            in_channels=d_ff, out_channels=d_model, kernel_size=1, bias=False
+            in_channels=d_ffn, out_channels=d_model, kernel_size=1, bias=False
         )
         self.series_decomp1 = SeriesDecompositionBlock(moving_avg)
         self.series_decomp2 = SeriesDecompositionBlock(moving_avg)
@@ -283,10 +276,11 @@ class AutoformerDecoderLayer(nn.Module):
 
     def __init__(
         self,
-        self_attention,
-        cross_attention,
+        self_attn_opt,
+        cross_attn_opt,
         d_model,
-        c_out,
+        n_heads,
+        d_out,
         d_ff=None,
         moving_avg=25,
         dropout=0.1,
@@ -294,8 +288,20 @@ class AutoformerDecoderLayer(nn.Module):
     ):
         super().__init__()
         d_ff = d_ff or 4 * d_model
-        self.self_attention = self_attention
-        self.cross_attention = cross_attention
+        self.self_attention = MultiHeadAttention(
+            self_attn_opt,
+            d_model,
+            n_heads,
+            d_model // n_heads,
+            d_model // n_heads,
+        )
+        self.cross_attention = MultiHeadAttention(
+            cross_attn_opt,
+            d_model,
+            n_heads,
+            d_model // n_heads,
+            d_model // n_heads,
+        )
         self.conv1 = nn.Conv1d(
             in_channels=d_model, out_channels=d_ff, kernel_size=1, bias=False
         )
@@ -308,7 +314,7 @@ class AutoformerDecoderLayer(nn.Module):
         self.dropout = nn.Dropout(dropout)
         self.projection = nn.Conv1d(
             in_channels=d_model,
-            out_channels=c_out,
+            out_channels=d_out,
             kernel_size=3,
             stride=1,
             padding=1,

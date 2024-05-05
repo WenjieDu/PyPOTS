@@ -33,25 +33,25 @@ class TwoStageAttentionLayer(nn.Module):
         super().__init__()
         d_ff = 4 * d_model if d_ff is None else d_ff
         self.time_attention = MultiHeadAttention(
-            n_heads,
+            ScaledDotProductAttention(d_k**0.5, attn_dropout),
             d_model,
+            n_heads,
             d_k,
             d_v,
-            ScaledDotProductAttention(d_k**0.5, attn_dropout),
         )
         self.dim_sender = MultiHeadAttention(
-            n_heads,
+            ScaledDotProductAttention(d_k**0.5, attn_dropout),
             d_model,
+            n_heads,
             d_k,
             d_v,
-            ScaledDotProductAttention(d_k**0.5, attn_dropout),
         )
         self.dim_receiver = MultiHeadAttention(
-            n_heads,
+            ScaledDotProductAttention(d_k**0.5, attn_dropout),
             d_model,
+            n_heads,
             d_k,
             d_v,
-            ScaledDotProductAttention(d_k**0.5, attn_dropout),
         )
         self.router = nn.Parameter(torch.randn(seg_num, factor, d_model))
 

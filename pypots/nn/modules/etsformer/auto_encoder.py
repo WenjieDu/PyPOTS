@@ -28,12 +28,12 @@ class ETSformerDecoder(nn.Module):
     def __init__(self, layers):
         super().__init__()
         self.d_model = layers[0].d_model
-        self.c_out = layers[0].c_out
+        self.d_out = layers[0].d_out
         self.pred_len = layers[0].pred_len
-        self.nhead = layers[0].nhead
+        self.n_head = layers[0].n_heads
 
         self.layers = nn.ModuleList(layers)
-        self.pred = nn.Linear(self.d_model, self.c_out)
+        self.pred = nn.Linear(self.d_model, self.d_out)
 
     def forward(self, growths, seasons):
         growth_repr = []
