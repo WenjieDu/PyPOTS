@@ -20,10 +20,10 @@ class _Transformer(nn.Module):
         n_features: int,
         n_layers: int,
         d_model: int,
-        d_ffn: int,
         n_heads: int,
         d_k: int,
         d_v: int,
+        d_ffn: int,
         dropout: float,
         attn_dropout: float,
         ORT_weight: float = 1,
@@ -44,10 +44,10 @@ class _Transformer(nn.Module):
         self.encoder = TransformerEncoder(
             n_layers,
             d_model,
-            d_ffn,
             n_heads,
             d_k,
             d_v,
+            d_ffn,
             dropout,
             attn_dropout,
         )
