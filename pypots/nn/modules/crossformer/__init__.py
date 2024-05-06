@@ -17,7 +17,7 @@ This implementation is inspired by the official one https://github.com/Thinklab-
 # License: BSD-3-Clause
 
 
-from .auto_encoder import CrossformerEncoder, CrossformerDecoder
+from .autoencoder import CrossformerEncoder, CrossformerDecoder
 from .layers import TwoStageAttentionLayer, ScaleBlock, CrossformerDecoderLayer
 
 __all__ = [
