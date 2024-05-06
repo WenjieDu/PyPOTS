@@ -81,7 +81,7 @@ class BaseClassifier(BaseModel):
         train_set :
             The dataset for model training, should be a dictionary including keys as 'X' and 'y',
             or a path string locating a data file.
-            If it is a dict, X should be array-like of shape [n_samples, sequence length (time steps), n_features],
+            If it is a dict, X should be array-like of shape [n_samples, sequence length (n_steps), n_features],
             which is time-series data for training, can contain missing values, and y should be array-like of shape
             [n_samples], which is classification labels of X.
             If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
@@ -90,7 +90,7 @@ class BaseClassifier(BaseModel):
         val_set :
             The dataset for model validating, should be a dictionary including keys as 'X' and 'y',
             or a path string locating a data file.
-            If it is a dict, X should be array-like of shape [n_samples, sequence length (time steps), n_features],
+            If it is a dict, X should be array-like of shape [n_samples, sequence length (n_steps), n_features],
             which is time-series data for validating, can contain missing values, and y should be array-like of shape
             [n_samples], which is classification labels of X.
             If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
@@ -113,15 +113,15 @@ class BaseClassifier(BaseModel):
     @abstractmethod
     def classify(
         self,
-        X: Union[dict, str],
+        test_set: Union[dict, str],
         file_type: str = "hdf5",
     ) -> np.ndarray:
         """Classify the input data with the trained model.
 
         Parameters
         ----------
-        X :
-            The data samples for testing, should be array-like of shape [n_samples, sequence length (time steps),
+        test_set :
+            The data samples for testing, should be array-like of shape [n_samples, sequence length (n_steps),
             n_features], or a path string locating a data file, e.g. h5 file.
 
         file_type :
@@ -132,8 +132,7 @@ class BaseClassifier(BaseModel):
         array-like, shape [n_samples],
             Classification results of the given samples.
         """
-        # this is for old API compatibility, will be removed in the future.
-        # Please implement predict() instead.
+
         raise NotImplementedError
 
 
@@ -395,7 +394,7 @@ class BaseNNClassifier(BaseNNModel):
         train_set :
             The dataset for model training, should be a dictionary including keys as 'X' and 'y',
             or a path string locating a data file.
-            If it is a dict, X should be array-like of shape [n_samples, sequence length (time steps), n_features],
+            If it is a dict, X should be array-like of shape [n_samples, sequence length (n_steps), n_features],
             which is time-series data for training, can contain missing values, and y should be array-like of shape
             [n_samples], which is classification labels of X.
             If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
@@ -404,7 +403,7 @@ class BaseNNClassifier(BaseNNModel):
         val_set :
             The dataset for model validating, should be a dictionary including keys as 'X' and 'y',
             or a path string locating a data file.
-            If it is a dict, X should be array-like of shape [n_samples, sequence length (time steps), n_features],
+            If it is a dict, X should be array-like of shape [n_samples, sequence length (n_steps), n_features],
             which is time-series data for validating, can contain missing values, and y should be array-like of shape
             [n_samples], which is classification labels of X.
             If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
@@ -427,19 +426,17 @@ class BaseNNClassifier(BaseNNModel):
     @abstractmethod
     def classify(
         self,
-        X: Union[dict, str],
+        test_set: Union[dict, str],
         file_type: str = "hdf5",
     ) -> np.ndarray:
         """Classify the input data with the trained model.
 
-        Warnings
-        --------
-        The method classify is deprecated. Please use `predict()` instead.
+
 
         Parameters
         ----------
-        X :
-            The data samples for testing, should be array-like of shape [n_samples, sequence length (time steps),
+        test_set :
+            The data samples for testing, should be array-like of shape [n_samples, sequence length (n_steps),
             n_features], or a path string locating a data file, e.g. h5 file.
 
         file_type :
@@ -450,6 +447,5 @@ class BaseNNClassifier(BaseNNModel):
         array-like, shape [n_samples],
             Classification results of the given samples.
         """
-        # this is for old API compatibility, will be removed in the future.
-        # Please implement predict() instead.
+
         raise NotImplementedError
