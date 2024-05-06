@@ -17,7 +17,7 @@ This implementation is inspired by the official one https://github.com/zhouhaoyi
 # License: BSD-3-Clause
 
 
-from .auto_encoder import InformerEncoder, InformerDecoder
+from .autoencoder import InformerEncoder, InformerDecoder
 from .layers import ProbAttention, ConvLayer, InformerEncoderLayer, InformerDecoderLayer
 
 __all__ = [

@@ -17,7 +17,7 @@ This implementation is inspired by the official one https://github.com/salesforc
 # License: BSD-3-Clause
 
 
-from .auto_encoder import ETSformerEncoder, ETSformerDecoder
+from .autoencoder import ETSformerEncoder, ETSformerDecoder
 from .layers import ETSformerEncoderLayer, ETSformerDecoderLayer, Transform
 
 __all__ = [

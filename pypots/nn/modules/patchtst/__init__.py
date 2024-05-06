@@ -17,7 +17,7 @@ This implementation is inspired by the official one https://github.com/yuqinie98
 # License: BSD-3-Clause
 
 
-from .auto_encoder import PatchtstEncoder
+from .autoencoder import PatchtstEncoder
 from .layers import PatchEmbedding, RegressionHead, ClassificationHead, PredictionHead
 
 __all__ = [
