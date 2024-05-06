@@ -255,11 +255,16 @@ class BaseDataset(Dataset):
         Parameters
         ----------
         X :
-            Time-series data that must have a shape like [n_samples, expected_n_steps, expected_n_features].
+            The data samples for testing, should be array-like of shape [n_samples, sequence length (n_steps),
+            n_features], or a path string locating a data file, e.g. h5 file.
 
         X_ori :
             If X is with artificial missingness, X_ori is the original X without artificial missing values.
             It must have the same shape as X. If X_ori is with original missing values, should be left as NaN.
+
+        X_pred :
+            The forecasting results of X , should be array-like of shape [n_samples, sequence length (n_steps),
+            n_features], or a path string locating a data file, e.g. h5 file.
 
         y :
             Labels of time-series samples (X) that must have a shape like [n_samples] or [n_samples, n_classes].

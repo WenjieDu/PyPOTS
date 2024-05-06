@@ -12,7 +12,7 @@ from .layers import (
     AutoformerEncoderLayer,
     AutoCorrelation,
 )
-from ..informer.auto_encoder import InformerEncoder
+from ..informer.autoencoder import InformerEncoder
 
 
 class AutoformerEncoder(nn.Module):

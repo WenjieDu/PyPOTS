@@ -22,7 +22,7 @@ class DatasetForBRITS(BaseDataset):
     data :
         The dataset for model input, should be a dictionary including keys as 'X' and 'y',
         or a path string locating a data file.
-        If it is a dict, X should be array-like of shape [n_samples, sequence length (time steps), n_features],
+        If it is a dict, X should be array-like of shape [n_samples, sequence length (n_steps), n_features],
         which is time-series data for input, can contain missing values, and y should be array-like of shape
         [n_samples], which is classification labels of X.
         If it is a path string, the path should point to a data file, e.g. a h5 file, which contains

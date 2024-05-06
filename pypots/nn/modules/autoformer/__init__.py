@@ -17,7 +17,7 @@ This implementation is inspired by the official one https://github.com/thuml/Aut
 # License: BSD-3-Clause
 
 
-from .auto_encoder import AutoformerEncoder
+from .autoencoder import AutoformerEncoder
 from .layers import (
     AutoCorrelation,
     SeasonalLayerNorm,
