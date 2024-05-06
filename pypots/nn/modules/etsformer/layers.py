@@ -109,20 +109,20 @@ class Feedforward(nn.Module):
 
 
 class GrowthLayer(nn.Module):
-    def __init__(self, d_model, nhead, d_head=None, dropout=0.1):
+    def __init__(self, d_model, n_heads, d_head=None, dropout=0.1):
         super().__init__()
-        self.d_head = d_head or (d_model // nhead)
+        self.d_head = d_head or (d_model // n_heads)
         self.d_model = d_model
-        self.nhead = nhead
+        self.n_heads = n_heads
 
-        self.z0 = nn.Parameter(torch.randn(self.nhead, self.d_head))
-        self.in_proj = nn.Linear(self.d_model, self.d_head * self.nhead)
-        self.es = ExponentialSmoothing(self.d_head, self.nhead, dropout=dropout)
-        self.out_proj = nn.Linear(self.d_head * self.nhead, self.d_model)
+        self.z0 = nn.Parameter(torch.randn(self.n_heads, self.d_head))
+        self.in_proj = nn.Linear(self.d_model, self.d_head * self.n_heads)
+        self.es = ExponentialSmoothing(self.d_head, self.n_heads, dropout=dropout)
+        self.out_proj = nn.Linear(self.d_head * self.n_heads, self.d_model)
 
         assert (
-            self.d_head * self.nhead == self.d_model
-        ), "d_model must be divisible by nhead"
+            self.d_head * self.n_heads == self.d_model
+        ), "d_model must be divisible by n_heads"
 
     def forward(self, inputs):
         """
@@ -130,7 +130,7 @@ class GrowthLayer(nn.Module):
         :return: shape: (batch, seq_len, dim)
         """
         b, t, d = inputs.shape
-        values = self.in_proj(inputs).view(b, t, self.nhead, -1)
+        values = self.in_proj(inputs).view(b, t, self.n_heads, -1)
         values = torch.cat([repeat(self.z0, "h d -> b 1 h d", b=b), values], dim=1)
         values = values[:, 1:] - values[:, :-1]
         out = self.es(values)
@@ -219,32 +219,30 @@ class ETSformerEncoderLayer(nn.Module):
         self,
         d_model,
         n_heads,
-        c_out,
+        d_out,
         seq_len,
         pred_len,
         k,
-        dim_feedforward=None,
+        d_ffn=None,
         dropout=0.1,
         activation="sigmoid",
         layer_norm_eps=1e-5,
     ):
         super().__init__()
         self.d_model = d_model
-        self.nhead = n_heads
-        self.c_out = c_out
+        self.n_heads = n_heads
+        self.d_out = d_out
         self.seq_len = seq_len
         self.pred_len = pred_len
-        dim_feedforward = dim_feedforward or 4 * d_model
-        self.dim_feedforward = dim_feedforward
+        d_ffn = d_ffn or 4 * d_model
+        self.d_ffn = d_ffn
 
         self.growth_layer = GrowthLayer(d_model, n_heads, dropout=dropout)
         self.seasonal_layer = FourierLayer(d_model, pred_len, k=k)
-        self.level_layer = LevelLayer(d_model, c_out, dropout=dropout)
+        self.level_layer = LevelLayer(d_model, d_out, dropout=dropout)
 
         # Implementation of Feedforward model
-        self.ff = Feedforward(
-            d_model, dim_feedforward, dropout=dropout, activation=activation
-        )
+        self.ff = Feedforward(d_model, d_ffn, dropout=dropout, activation=activation)
         self.norm1 = nn.LayerNorm(d_model, eps=layer_norm_eps)
         self.norm2 = nn.LayerNorm(d_model, eps=layer_norm_eps)
 
@@ -271,11 +269,11 @@ class ETSformerEncoderLayer(nn.Module):
 
 
 class DampingLayer(nn.Module):
-    def __init__(self, pred_len, nhead, dropout=0.1):
+    def __init__(self, pred_len, n_heads, dropout=0.1):
         super().__init__()
         self.pred_len = pred_len
-        self.nhead = nhead
-        self._damping_factor = nn.Parameter(torch.randn(1, nhead))
+        self.n_heads = n_heads
+        self._damping_factor = nn.Parameter(torch.randn(1, n_heads))
         self.dropout = nn.Dropout(dropout)
 
     def forward(self, x):
@@ -286,7 +284,7 @@ class DampingLayer(nn.Module):
         powers = powers.view(self.pred_len, 1)
         damping_factors = self.damping_factor**powers
         damping_factors = damping_factors.cumsum(dim=0)
-        x = x.view(b, t, self.nhead, -1)
+        x = x.view(b, t, self.n_heads, -1)
         x = self.dropout(x) * damping_factors.unsqueeze(-1)
         return x.view(b, t, d)
 
@@ -296,14 +294,14 @@ class DampingLayer(nn.Module):
 
 
 class ETSformerDecoderLayer(nn.Module):
-    def __init__(self, d_model, nhead, c_out, pred_len, dropout=0.1):
+    def __init__(self, d_model, n_heads, d_out, pred_len, dropout=0.1):
         super().__init__()
         self.d_model = d_model
-        self.nhead = nhead
-        self.c_out = c_out
+        self.n_heads = n_heads
+        self.d_out = d_out
         self.pred_len = pred_len
 
-        self.growth_damping = DampingLayer(pred_len, nhead, dropout=dropout)
+        self.growth_damping = DampingLayer(pred_len, n_heads, dropout=dropout)
         self.dropout1 = nn.Dropout(dropout)
 
     def forward(self, growth, season):

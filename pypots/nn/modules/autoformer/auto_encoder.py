@@ -11,7 +11,6 @@ from .layers import (
     SeasonalLayerNorm,
     AutoformerEncoderLayer,
     AutoCorrelation,
-    AutoCorrelationLayer,
 )
 from ..informer.auto_encoder import InformerEncoder
 
@@ -20,8 +19,8 @@ class AutoformerEncoder(nn.Module):
     def __init__(
         self,
         n_layers,
-        n_heads,
         d_model,
+        n_heads,
         d_ffn,
         factor,
         moving_avg_window_size,
@@ -33,12 +32,9 @@ class AutoformerEncoder(nn.Module):
         self.encoder = InformerEncoder(
             [
                 AutoformerEncoderLayer(
-                    AutoCorrelationLayer(
-                        AutoCorrelation(factor, dropout),
-                        d_model,
-                        n_heads,
-                    ),
+                    AutoCorrelation(factor, dropout),
                     d_model,
+                    n_heads,
                     d_ffn,
                     moving_avg_window_size,
                     dropout,
