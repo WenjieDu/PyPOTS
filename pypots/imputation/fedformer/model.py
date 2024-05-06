@@ -1,14 +1,6 @@
 """
 The implementation of FEDformer for the partially-observed time-series imputation task.
 
-Refer to the paper "Tian Zhou, Ziqing Ma, Qingsong Wen, Xue Wang, Liang Sun, and Rong Jin.
-FEDformer: Frequency enhanced decomposed transformer for long-term series forecasting.
-In ICML, volume 162 of Proceedings of Machine Learning Research, pages 27268–27286. PMLR, 17–23 Jul 2022.".
-
-Notes
------
-Partial implementation uses code from https://github.com/MAZiqing/FEDformer
-
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
@@ -122,8 +114,8 @@ class FEDformer(BaseNNImputer):
         n_steps,
         n_features,
         n_layers,
-        n_heads,
         d_model,
+        n_heads,
         d_ffn,
         moving_avg_window_size,
         dropout: float = 0,
@@ -171,8 +163,8 @@ class FEDformer(BaseNNImputer):
             self.n_steps,
             self.n_features,
             self.n_layers,
-            self.n_heads,
             self.d_model,
+            self.n_heads,
             self.d_ffn,
             self.moving_avg_window_size,
             self.dropout,

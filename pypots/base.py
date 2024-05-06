@@ -285,7 +285,10 @@ class BaseModel(ABC):
                     f"‼️ File {saving_path} exists. Argument `overwrite` is True. Overwriting now..."
                 )
             else:
-                logger.error(f"❌ File {saving_path} exists. Saving operation aborted.")
+                logger.error(
+                    f"❌ File {saving_path} exists. Saving operation aborted. "
+                    f"Use the arg `overwrite=True` to force overwrite."
+                )
 
         try:
             create_dir_if_not_exist(saving_dir)

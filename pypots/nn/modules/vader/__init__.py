@@ -8,6 +8,10 @@ Deep learning for clustering of multivariate clinical patient trajectories with 
 GigaScience, 8(11):giz134, November 2019.
 <https://academic.oup.com/gigascience/article-pdf/8/11/giz134/30797160/giz134.pdf>`_
 
+Notes
+-----
+This implementation is inspired by the official one https://github.com/johanndejong/VaDER
+
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>

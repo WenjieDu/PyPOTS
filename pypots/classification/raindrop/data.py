@@ -1,5 +1,5 @@
 """
-Dataset class for model Raindrop.
+Dataset class for the classification model Raindrop.
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>

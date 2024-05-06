@@ -1,12 +1,6 @@
 """
-The implementation of SAITS for the partially-observed time-series imputation task.
-
-Refer to the paper "Du, W., Cote, D., & Liu, Y. (2023). SAITS: Self-Attention-based Imputation for Time Series.
-Expert systems with applications."
-
-Notes
------
-Partial implementation uses code from https://github.com/WenjieDu/SAITS.
+The core wrapper assembles the submodules of SAITS imputation model
+and takes over the forward progress of the algorithm.
 
 """
 
@@ -29,10 +23,10 @@ class _SAITS(nn.Module):
         n_steps: int,
         n_features: int,
         d_model: int,
-        d_ffn: int,
         n_heads: int,
         d_k: int,
         d_v: int,
+        d_ffn: int,
         dropout: float,
         attn_dropout: float,
         diagonal_attention_mask: bool = True,
@@ -49,14 +43,14 @@ class _SAITS(nn.Module):
         self.customized_loss_func = customized_loss_func
 
         self.encoder = BackboneSAITS(
-            n_layers,
             n_steps,
             n_features,
+            n_layers,
             d_model,
-            d_ffn,
             n_heads,
             d_k,
             d_v,
+            d_ffn,
             dropout,
             attn_dropout,
         )

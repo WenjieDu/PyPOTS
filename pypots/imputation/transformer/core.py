@@ -1,23 +1,16 @@
 """
-The implementation of Transformer for the partially-observed time-series imputation task.
-
-Refer to the paper "Du, W., Cote, D., & Liu, Y. (2023). SAITS: Self-Attention-based Imputation for Time Series.
-Expert systems with applications."
-
-Notes
------
-Partial implementation uses code from https://github.com/WenjieDu/SAITS.
+The core wrapper assembles the submodules of Transformer imputation model
+and takes over the forward progress of the algorithm.
 
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-import torch
 import torch.nn as nn
 
-from ...nn.modules.saits import SaitsLoss
-from ...nn.modules.transformer import TransformerEncoder, PositionalEncoding
+from ...nn.modules.saits import SaitsLoss, SaitsEmbedding
+from ...nn.modules.transformer import TransformerEncoder
 
 
 class _Transformer(nn.Module):
@@ -27,10 +20,10 @@ class _Transformer(nn.Module):
         n_features: int,
         n_layers: int,
         d_model: int,
-        d_ffn: int,
         n_heads: int,
         d_k: int,
         d_v: int,
+        d_ffn: int,
         dropout: float,
         attn_dropout: float,
         ORT_weight: float = 1,
@@ -41,16 +34,20 @@ class _Transformer(nn.Module):
         self.ORT_weight = ORT_weight
         self.MIT_weight = MIT_weight
 
-        self.embedding = nn.Linear(n_features * 2, d_model)
-        self.dropout = nn.Dropout(dropout)
-        self.position_enc = PositionalEncoding(d_model, n_positions=n_steps)
+        self.saits_embedding = SaitsEmbedding(
+            n_features * 2,
+            d_model,
+            with_pos=True,
+            n_max_steps=n_steps,
+            dropout=dropout,
+        )
         self.encoder = TransformerEncoder(
             n_layers,
             d_model,
-            d_ffn,
             n_heads,
             d_k,
             d_v,
+            d_ffn,
             dropout,
             attn_dropout,
         )
@@ -63,11 +60,9 @@ class _Transformer(nn.Module):
         X, missing_mask = inputs["X"], inputs["missing_mask"]
 
         # apply the SAITS embedding strategy, concatenate X and missing mask for input
-        input_X = torch.cat([X, missing_mask], dim=2)
+        input_X = self.saits_embedding(X, missing_mask)
 
         # Transformer encoder processing
-        input_X = self.embedding(input_X)
-        input_X = self.dropout(self.position_enc(input_X))
         enc_output, _ = self.encoder(input_X)
         # project the representation from the d_model-dimensional space to the original data space for output
         reconstruction = self.output_projection(enc_output)

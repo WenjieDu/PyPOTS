@@ -1,13 +1,6 @@
 """
 PyTorch M-RNN model for the time-series imputation task.
 
-Refer to the paper "Jinsung Yoon, William R. Zame, and Mihaela van der Schaar.
-Estimating missing data in temporal data streams using multi-directional recurrent neural networks.
-EEE Transactions on Biomedical Engineering, 66(5):14771490, 2019."
-
-This implementation is inspired by the official one https://github.com/jsyoon0823/MRNN.
-Some part of the code is from https://github.com/WenjieDu/SAITS.
-
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>

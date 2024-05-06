@@ -1,5 +1,5 @@
 """
-Dataset class for model BRITS.
+Dataset class for the imputation model BRITS.
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>

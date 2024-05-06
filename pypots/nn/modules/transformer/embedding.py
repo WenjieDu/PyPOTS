@@ -2,7 +2,7 @@
 Embedding methods for Transformer models are put here.
 
 
-Partial implementation uses code from https://github.com/zhouhaoyi/Informer2020/blob/main/models/embed.py
+This implementation is inspired by the official one https://github.com/zhouhaoyi/Informer2020/blob/main/models/embed.py
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>

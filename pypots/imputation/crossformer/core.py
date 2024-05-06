@@ -1,5 +1,6 @@
 """
-
+The core wrapper assembles the submodules of Crossformer imputation model
+and takes over the forward progress of the algorithm.
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
@@ -13,7 +14,7 @@ from einops import rearrange
 
 from ...nn.modules.crossformer import CrossformerEncoder, ScaleBlock
 from ...nn.modules.patchtst import PredictionHead, PatchEmbedding
-from ...nn.modules.saits import SaitsLoss
+from ...nn.modules.saits import SaitsLoss, SaitsEmbedding
 
 
 class _Crossformer(nn.Module):
@@ -22,8 +23,8 @@ class _Crossformer(nn.Module):
         n_steps,
         n_features,
         n_layers,
-        n_heads,
         d_model,
+        n_heads,
         d_ffn,
         factor,
         seg_len,
@@ -72,7 +73,11 @@ class _Crossformer(nn.Module):
         )
 
         self.head = PredictionHead(d_model, out_seg_num, n_steps, dropout)
-        self.embedding = nn.Linear(n_features * 2, d_model)
+        self.saits_embedding = SaitsEmbedding(
+            n_features * 2,
+            d_model,
+            with_pos=False,
+        )
         self.output_projection = nn.Linear(d_model, n_features)
 
         # apply SAITS loss function to Crossformer on the imputation task
@@ -83,11 +88,11 @@ class _Crossformer(nn.Module):
 
         # WDU: the original Crossformer paper isn't proposed for imputation task. Hence the model doesn't take
         # the missing mask into account, which means, in the process, the model doesn't know which part of
-        # the input data is missing, and this may hurt the model's imputation performance. Therefore, I add the
-        # embedding layers to project the concatenation of features and masks into a hidden space, as well as
+        # the input data is missing, and this may hurt the model's imputation performance. Therefore, I apply the
+        # SAITS embedding method to project the concatenation of features and masks into a hidden space, as well as
         # the output layers to project back from the hidden space to the original space.
-        # embedding
-        input_X = self.embedding(torch.cat([X, missing_mask], dim=2))
+        input_X = self.saits_embedding(X, missing_mask)
+
         x_enc = self.enc_value_embedding(input_X.permute(0, 2, 1))
         x_enc = rearrange(
             x_enc, "(b d) seg_num d_model -> b d seg_num d_model", d=self.d_model

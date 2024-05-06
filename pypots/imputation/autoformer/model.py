@@ -1,14 +1,6 @@
 """
 The implementation of Autoformer for the partially-observed time-series imputation task.
 
-Refer to the paper "Haixu Wu, Jiehui Xu, Jianmin Wang, and Mingsheng Long.
-Autoformer: Decomposition transformers with autocorrelation for long-term series forecasting.
-In Advances in Neural Information Processing Systems, volume 34, pages 22419–22430. Curran Associates, Inc., 2021."
-
-Notes
------
-Partial implementation uses code from https://github.com/thuml/Autoformer
-
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
@@ -44,11 +36,11 @@ class Autoformer(BaseNNImputer):
     n_layers :
         The number of layers in the Autoformer model.
 
-    n_heads :
-        The number of heads in each layer of Autoformer.
-
     d_model :
         The dimension of the model.
+
+    n_heads :
+        The number of heads in each layer of Autoformer.
 
     d_ffn :
         The dimension of the feed-forward network.
@@ -114,8 +106,8 @@ class Autoformer(BaseNNImputer):
         n_steps: int,
         n_features: int,
         n_layers: int,
-        n_heads: int,
         d_model: int,
+        n_heads: int,
         d_ffn: int,
         factor: int,
         moving_avg_window_size: int,
@@ -159,8 +151,8 @@ class Autoformer(BaseNNImputer):
             self.n_steps,
             self.n_features,
             self.n_layers,
-            self.n_heads,
             self.d_model,
+            self.n_heads,
             self.d_ffn,
             self.factor,
             self.moving_avg_window_size,

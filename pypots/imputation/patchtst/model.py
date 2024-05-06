@@ -5,11 +5,6 @@ Refer to the paper "Yuqi Nie, Nam H Nguyen, Phanwadee Sinthong, and Jayant Kalag
 A time series is worth 64 words: Long-term forecasting with transformers.
 In The ICLR, 2023."
 
-Notes
------
-Partial implementation uses code from
-https://github.com/yuqinie98/PatchTST and https://github.com/thuml/Time-Series-Library
-
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
@@ -52,6 +47,9 @@ class PatchTST(BaseNNImputer):
     n_layers :
         The number of layers in the PatchTST model.
 
+    d_model :
+        The dimension of the model.
+
     n_heads :
         The number of heads in each layer of PatchTST.
 
@@ -63,9 +61,6 @@ class PatchTST(BaseNNImputer):
 
     d_v :
         The dimension of the `values` (V) in the DMSA mechanism.
-
-    d_model :
-        The dimension of the model.
 
     d_ffn :
         The dimension of the feed-forward network.
@@ -127,10 +122,10 @@ class PatchTST(BaseNNImputer):
         patch_len: int,
         stride: int,
         n_layers: int,
+        d_model: int,
         n_heads: int,
         d_k: int,
         d_v: int,
-        d_model: int,
         d_ffn: int,
         dropout: float,
         attn_dropout: float,
@@ -185,11 +180,11 @@ class PatchTST(BaseNNImputer):
             self.n_steps,
             self.n_features,
             self.n_layers,
-            self.n_heads,
             self.d_model,
-            self.d_ffn,
+            self.n_heads,
             self.d_k,
             self.d_v,
+            self.d_ffn,
             self.patch_len,
             self.stride,
             self.dropout,

@@ -1,15 +1,6 @@
 """
 The implementation of Informer for the partially-observed time-series imputation task.
 
-Refer to the paper "Haoyi Zhou, Shanghang Zhang, Jieqi Peng, Shuai Zhang, Jianxin Li, Hui Xiong, and Wancai Zhang.
-Informer: Beyond efficient transformer for long sequence time-series forecasting.
-In Proceedings of the AAAI conference on artificial intelligence, volume 35, pages 11106–11115, 2021.".
-
-Notes
------
-Partial implementation uses code from
-https://github.com/zhouhaoyi/Informer2020 and https://github.com/thuml/Time-Series-Library
-
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
@@ -45,11 +36,11 @@ class Informer(BaseNNImputer):
     n_layers :
         The number of layers in the Informer model.
 
-    n_heads :
-        The number of heads in each layer of Informer.
-
     d_model :
         The dimension of the model.
+
+    n_heads :
+        The number of heads in each layer of Informer.
 
     d_ffn :
         The dimension of the feed-forward network.
@@ -112,8 +103,8 @@ class Informer(BaseNNImputer):
         n_steps: int,
         n_features: int,
         n_layers: int,
-        n_heads: int,
         d_model: int,
+        n_heads: int,
         d_ffn: int,
         factor: int,
         dropout: float = 0,
@@ -155,8 +146,8 @@ class Informer(BaseNNImputer):
             self.n_steps,
             self.n_features,
             self.n_layers,
-            self.n_heads,
             self.d_model,
+            self.n_heads,
             self.d_ffn,
             self.factor,
             self.dropout,

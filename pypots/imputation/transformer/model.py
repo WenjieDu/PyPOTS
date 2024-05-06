@@ -1,14 +1,6 @@
 """
 The implementation of Transformer for the partially-observed time-series imputation task.
 
-Refer to the paper "Wenjie Du, David Cote, and Yan Liu.
-SAITS: Self-Attention-based Imputation for Time Series.
-Expert Systems with Applications, 219:119619, 2023."
-
-Notes
------
-Partial implementation uses code from https://github.com/WenjieDu/SAITS.
-
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
@@ -51,9 +43,6 @@ class Transformer(BaseNNImputer):
         The dimension of the model's backbone.
         It is the input dimension of the multi-head self-attention layers.
 
-    d_ffn :
-        The dimension of the layer in the Feed-Forward Networks (FFN).
-
     n_heads :
         The number of heads in the multi-head self-attention mechanism.
         ``d_model`` must be divisible by ``n_heads``, and the result should be equal to ``d_k``.
@@ -66,6 +55,9 @@ class Transformer(BaseNNImputer):
 
     d_v :
         The dimension of the `values` (V) in the DMSA mechanism.
+
+    d_ffn :
+        The dimension of the layer in the Feed-Forward Networks (FFN).
 
     dropout :
         The dropout rate for all fully-connected layers in the model.
@@ -126,10 +118,10 @@ class Transformer(BaseNNImputer):
         n_features: int,
         n_layers: int,
         d_model: int,
-        d_ffn: int,
         n_heads: int,
         d_k: int,
         d_v: int,
+        d_ffn: int,
         dropout: float = 0,
         attn_dropout: float = 0,
         ORT_weight: int = 1,
@@ -183,10 +175,10 @@ class Transformer(BaseNNImputer):
             self.n_features,
             self.n_layers,
             self.d_model,
-            self.d_ffn,
             self.n_heads,
             self.d_k,
             self.d_v,
+            self.d_ffn,
             self.dropout,
             self.attn_dropout,
             self.ORT_weight,

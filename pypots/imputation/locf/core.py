@@ -1,5 +1,5 @@
 """
-
+The core wrapper assembles the submodules of LOCF imputation model.
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>

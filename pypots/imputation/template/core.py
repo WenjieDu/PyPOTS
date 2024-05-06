@@ -1,7 +1,6 @@
 """
-The implementation of YourNewModel for the partially-observed time-series imputation task.
-
-Refer to the paper "Your paper citation".
+The core wrapper assembles the submodules of YourNewModel imputation model
+and takes over the forward progress of the algorithm.
 
 """
 

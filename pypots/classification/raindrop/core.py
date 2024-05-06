@@ -1,9 +1,6 @@
 """
-The implementation of Raindrop for the partially-observed time-series classification task.
-
-Refer to the paper "Zhang, X., Zeman, M., Tsiligkaridis, T., & Zitnik, M. (2022).
-Graph-Guided Network for Irregularly Sampled Multivariate Time Series. ICLR 2022."
-
+The core wrapper assembles the submodules of Raindrop classification model
+and takes over the forward progress of the algorithm.
 """
 
 
@@ -24,8 +21,8 @@ class _Raindrop(nn.Module):
         n_features,
         n_layers,
         d_model,
-        d_ffn,
         n_heads,
+        d_ffn,
         n_classes,
         dropout=0.3,
         max_len=215,
@@ -44,8 +41,8 @@ class _Raindrop(nn.Module):
             n_features,
             n_layers,
             d_model,
-            d_ffn,
             n_heads,
+            d_ffn,
             n_classes,
             dropout,
             max_len,

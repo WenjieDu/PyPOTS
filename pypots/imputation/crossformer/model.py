@@ -1,15 +1,6 @@
 """
 The implementation of Crossformer for the partially-observed time-series imputation task.
 
-Refer to the paper "Yunhao Zhang and Junchi Yan.
-Crossformer: Transformer utilizing cross-dimension dependency for multivariate time series forecasting.
-In The 11th ICLR, 2023."
-
-Notes
------
-Partial implementation uses code from
-https://github.com/Thinklab-SJTU/Crossformer and https://github.com/thuml/Time-Series-Library
-
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
@@ -45,11 +36,11 @@ class Crossformer(BaseNNImputer):
     n_layers :
         The number of layers in the 1st and 2nd DMSA blocks in the SAITS model.
 
-    n_heads:
-        The number of heads in the multi-head attention mechanism.
-
     d_model :
         The dimension of the model.
+
+    n_heads:
+        The number of heads in the multi-head attention mechanism.
 
     d_ffn :
         The dimension of the feed-forward network.
@@ -118,8 +109,8 @@ class Crossformer(BaseNNImputer):
         n_steps: int,
         n_features: int,
         n_layers: int,
-        n_heads: int,
         d_model: int,
+        n_heads: int,
         d_ffn: int,
         factor: int,
         seg_len: int,
@@ -165,8 +156,8 @@ class Crossformer(BaseNNImputer):
             self.n_steps,
             self.n_features,
             self.n_layers,
-            self.n_heads,
             self.d_model,
+            self.n_heads,
             self.d_ffn,
             self.factor,
             self.seg_len,

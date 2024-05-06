@@ -3,7 +3,7 @@ The implementation of the modules for Transformer :cite:`vaswani2017Transformer`
 
 Notes
 -----
-Partial implementation uses code from https://github.com/WenjieDu/SAITS,
+This implementation is inspired by the official one https://github.com/WenjieDu/SAITS,
 and https://github.com/jadore801120/attention-is-all-you-need-pytorch.
 
 """
@@ -93,8 +93,11 @@ class ScaledDotProductAttention(AttentionOperator):
             The scaled dot-product attention map.
 
         """
-        # q, k, v all have 4 dimensions [batch_size, n_heads, n_steps, d_tensor]
+        # q, k, v all have 4 dimensions [batch_size, n_steps, n_heads, d_tensor]
         # d_tensor could be d_q, d_k, d_v
+
+        # transpose for attention dot product: [batch_size, n_heads, n_steps, d_k or d_v]
+        q, k, v = q.transpose(1, 2), k.transpose(1, 2), v.transpose(1, 2)
 
         # dot product q with k.T to obtain similarity
         attn = torch.matmul(q / self.temperature, k.transpose(2, 3))
@@ -118,11 +121,14 @@ class MultiHeadAttention(nn.Module):
 
     Parameters
     ----------
-    n_heads:
-        The number of heads in multi-head attention.
+    attn_opt:
+        The attention operator, e.g. the self-attention proposed in Transformer.
 
     d_model:
         The dimension of the input tensor.
+
+    n_heads:
+        The number of heads in multi-head attention.
 
     d_k:
         The dimension of the key and query tensor.
@@ -130,18 +136,15 @@ class MultiHeadAttention(nn.Module):
     d_v:
         The dimension of the value tensor.
 
-    attention_operator:
-        The attention operator, e.g. the self-attention proposed in Transformer.
-
     """
 
     def __init__(
         self,
-        n_heads: int,
+        attn_opt: AttentionOperator,
         d_model: int,
+        n_heads: int,
         d_k: int,
         d_v: int,
-        attention_operator: AttentionOperator,
     ):
         super().__init__()
 
@@ -153,7 +156,7 @@ class MultiHeadAttention(nn.Module):
         self.w_ks = nn.Linear(d_model, n_heads * d_k, bias=False)
         self.w_vs = nn.Linear(d_model, n_heads * d_v, bias=False)
 
-        self.attention_operator = attention_operator
+        self.attention_operator = attn_opt
         self.fc = nn.Linear(n_heads * d_v, d_model, bias=False)
 
     def forward(
@@ -190,10 +193,8 @@ class MultiHeadAttention(nn.Module):
             The attention map.
 
         """
-        # the input q, k, v currently have 3 dimensions [batch_size, n_steps, d_tensor]
-        # d_tensor could be n_heads*d_k, n_heads*d_v
+        # the shapes of q, k, v are the same [batch_size, n_steps, d_model]
 
-        # keep useful variables
         batch_size, q_len = q.size(0), q.size(1)
         k_len = k.size(1)
         v_len = v.size(1)
@@ -202,9 +203,7 @@ class MultiHeadAttention(nn.Module):
         q = self.w_qs(q).view(batch_size, q_len, self.n_heads, self.d_k)
         k = self.w_ks(k).view(batch_size, k_len, self.n_heads, self.d_k)
         v = self.w_vs(v).view(batch_size, v_len, self.n_heads, self.d_v)
-
-        # transpose for self-attention calculation -> [batch_size, n_steps, d_k or d_v, n_heads]
-        q, k, v = q.transpose(1, 2), k.transpose(1, 2), v.transpose(1, 2)
+        # for generalization, we don't do transposing here but leave it for the attention operator if necessary
 
         if attn_mask is not None:
             # broadcasting on the head axis

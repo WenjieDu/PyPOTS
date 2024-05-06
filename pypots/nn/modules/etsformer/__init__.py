@@ -7,13 +7,17 @@ ETSformer: Exponential smoothing transformers for time-series forecasting.
 In ICLR, 2023.
 <https://openreview.net/pdf?id=5m_3whfo483>`_
 
+Notes
+-----
+This implementation is inspired by the official one https://github.com/salesforce/ETSformer
+
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
 
-from .auto_encoder import ETSformerEncoder, ETSformerDecoder
+from .autoencoder import ETSformerEncoder, ETSformerDecoder
 from .layers import ETSformerEncoderLayer, ETSformerDecoderLayer, Transform
 
 __all__ = [

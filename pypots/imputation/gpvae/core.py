@@ -1,8 +1,6 @@
 """
-The implementation of GP-VAE for the partially-observed time-series imputation task.
-
-Refer to the paper Fortuin V, Baranchuk D, Rätsch G, et al.
-GP-VAE: Deep probabilistic time series imputation. AISTATS. PMLR, 2020: 1651-1661.
+The core wrapper assembles the submodules of GP-VAE imputation model
+and takes over the forward progress of the algorithm.
 
 """
 

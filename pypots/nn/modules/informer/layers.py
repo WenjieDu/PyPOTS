@@ -134,6 +134,8 @@ class ProbAttention(AttentionOperator):
         attn_mask: Optional[torch.Tensor] = None,
         **kwargs,
     ):
+        # q, k, v all have 4 dimensions [batch_size, n_steps, n_heads, d_tensor]
+        # d_tensor could be d_q, d_k, d_v
 
         B, L_Q, H, D = q.shape
         _, L_K, _, _ = k.shape

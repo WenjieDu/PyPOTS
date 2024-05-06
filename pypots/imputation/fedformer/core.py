@@ -1,16 +1,15 @@
 """
-
+The core wrapper assembles the submodules of FEDformer imputation model
+and takes over the forward progress of the algorithm.
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-import torch
 import torch.nn as nn
 
 from ...nn.modules.fedformer import FEDformerEncoder
-from ...nn.modules.saits import SaitsLoss
-from ...nn.modules.transformer.embedding import DataEmbedding
+from ...nn.modules.saits import SaitsLoss, SaitsEmbedding
 
 
 class _FEDformer(nn.Module):
@@ -19,8 +18,8 @@ class _FEDformer(nn.Module):
         n_steps,
         n_features,
         n_layers,
-        n_heads,
         d_model,
+        n_heads,
         d_ffn,
         moving_avg_window_size,
         dropout,
@@ -33,17 +32,19 @@ class _FEDformer(nn.Module):
     ):
         super().__init__()
 
-        self.enc_embedding = DataEmbedding(
+        self.saits_embedding = SaitsEmbedding(
             n_features * 2,
             d_model,
+            with_pos=True,
+            n_max_steps=n_steps,
             dropout=dropout,
         )
 
         self.encoder = FEDformerEncoder(
             n_steps,
             n_layers,
-            n_heads,
             d_model,
+            n_heads,
             d_ffn,
             moving_avg_window_size,
             dropout,
@@ -62,13 +63,10 @@ class _FEDformer(nn.Module):
 
         # WDU: the original FEDformer paper isn't proposed for imputation task. Hence the model doesn't take
         # the missing mask into account, which means, in the process, the model doesn't know which part of
-        # the input data is missing, and this may hurt the model's imputation performance. Therefore, I add the
-        # embedding layers to project the concatenation of features and masks into a hidden space, as well as
+        # the input data is missing, and this may hurt the model's imputation performance. Therefore, I apply the
+        # SAITS embedding method to project the concatenation of features and masks into a hidden space, as well as
         # the output layers to project back from the hidden space to the original space.
-
-        # the same as SAITS, concatenate the time series data and the missing mask for embedding
-        input_X = torch.cat([X, missing_mask], dim=2)
-        enc_out = self.enc_embedding(input_X)
+        enc_out = self.saits_embedding(X, missing_mask)
 
         # FEDformer encoder processing
         enc_out, attns = self.encoder(enc_out)
