@@ -1,5 +1,5 @@
 """
-The implementation of Nonstationary-Transformer for the partially-observed time-series imputation task.
+The implementation of Pyraformer for the partially-observed time-series imputation task.
 
 """
 
@@ -12,19 +12,18 @@ import numpy as np
 import torch
 from torch.utils.data import DataLoader
 
-from .core import _NonstationaryTransformer
-from .data import DatasetForNonstationaryTransformer
+from .core import _Pyraformer
+from .data import DatasetForPyraformer
 from ..base import BaseNNImputer
 from ...data.checking import key_in_data_set
 from ...data.dataset import BaseDataset
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
-from ...utils.logging import logger
 
 
-class NonstationaryTransformer(BaseNNImputer):
-    """The PyTorch implementation of the Nonstationary-Transformer model.
-    NonstationaryTransformer is originally proposed by Liu et al. in :cite:`liu2022nonstationary`.
+class Pyraformer(BaseNNImputer):
+    """The PyTorch implementation of the Pyraformer model.
+    Pyraformer is originally proposed by Liu et al. in :cite:`liu2022pyraformer`.
 
     Parameters
     ----------
@@ -35,26 +34,28 @@ class NonstationaryTransformer(BaseNNImputer):
         The number of features in the time-series data sample.
 
     n_layers :
-        The number of layers in the NonstationaryTransformer model.
+        The number of layers in the Pyraformer model.
 
     d_model :
         The dimension of the model.
 
     n_heads :
-        The number of heads in each layer of NonstationaryTransformer.
+        The number of heads in each layer of Pyraformer.
 
     d_ffn :
         The dimension of the feed-forward network.
 
-    d_projector_hidden :
-        The dimensions of hidden layers in MLP projectors.
-        It should be a list of integers and the length of the list should be equal to n_projector_hidden_layers.
+    window_size :
+        The downsample window size in pyramidal attention.
 
-    n_projector_hidden_layers :
-        The number of hidden layers in MLP projectors.
+    inner_size :
+        The size of neighbour attention
 
     dropout :
         The dropout rate for the model.
+
+    attn_dropout :
+        The dropout rate for the attention mechanism.
 
     ORT_weight :
         The weight for the ORT loss, the same as SAITS.
@@ -111,9 +112,10 @@ class NonstationaryTransformer(BaseNNImputer):
         d_model: int,
         n_heads: int,
         d_ffn: int,
-        d_projector_hidden: list,
-        n_projector_hidden_layers: int,
+        window_size: list,
+        inner_size: int,
         dropout: float = 0,
+        attn_dropout: float = 0,
         ORT_weight: float = 1,
         MIT_weight: float = 1,
         batch_size: int = 32,
@@ -134,10 +136,6 @@ class NonstationaryTransformer(BaseNNImputer):
             saving_path,
             model_saving_strategy,
         )
-        assert len(d_projector_hidden) == n_projector_hidden_layers, (
-            f"The length of d_hidden should be equal to n_hidden_layers, "
-            f"but got {len(d_projector_hidden)} and {n_projector_hidden_layers}."
-        )
 
         self.n_steps = n_steps
         self.n_features = n_features
@@ -146,23 +144,25 @@ class NonstationaryTransformer(BaseNNImputer):
         self.n_layers = n_layers
         self.d_model = d_model
         self.d_ffn = d_ffn
-        self.d_projector_hidden = d_projector_hidden
-        self.n_projector_hidden_layers = n_projector_hidden_layers
         self.dropout = dropout
+        self.attn_dropout = attn_dropout
+        self.window_size = window_size
+        self.inner_size = inner_size
         self.ORT_weight = ORT_weight
         self.MIT_weight = MIT_weight
 
         # set up the model
-        self.model = _NonstationaryTransformer(
+        self.model = _Pyraformer(
             self.n_steps,
             self.n_features,
             self.n_layers,
             self.d_model,
             self.n_heads,
             self.d_ffn,
-            self.d_projector_hidden,
-            self.n_projector_hidden_layers,
             self.dropout,
+            self.attn_dropout,
+            self.window_size,
+            self.inner_size,
             self.ORT_weight,
             self.MIT_weight,
         )
@@ -211,7 +211,7 @@ class NonstationaryTransformer(BaseNNImputer):
         file_type: str = "hdf5",
     ) -> None:
         # Step 1: wrap the input data with classes Dataset and DataLoader
-        training_set = DatasetForNonstationaryTransformer(
+        training_set = DatasetForPyraformer(
             train_set, return_X_ori=False, return_y=False, file_type=file_type
         )
         training_loader = DataLoader(
@@ -224,7 +224,7 @@ class NonstationaryTransformer(BaseNNImputer):
         if val_set is not None:
             if not key_in_data_set("X_ori", val_set):
                 raise ValueError("val_set must contain 'X_ori' for model validation.")
-            val_set = DatasetForNonstationaryTransformer(
+            val_set = DatasetForPyraformer(
                 val_set, return_X_ori=True, return_y=False, file_type=file_type
             )
             val_loader = DataLoader(
@@ -254,7 +254,7 @@ class NonstationaryTransformer(BaseNNImputer):
         test_set : dict or str
             The dataset for model validating, should be a dictionary including keys as 'X',
             or a path string locating a data file supported by PyPOTS (e.g. h5 file).
-            If it is a dict, X should be array-like of shape [n_samples, sequence length (time steps), n_features],
+            If it is a dict, X should be array-like of shape [n_samples, sequence length (n_steps), n_features],
             which is time-series data for validating, can contain missing values, and y should be array-like of shape
             [n_samples], which is classification labels of X.
             If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
@@ -302,19 +302,15 @@ class NonstationaryTransformer(BaseNNImputer):
 
     def impute(
         self,
-        X: Union[dict, str],
+        test_set: Union[dict, str],
         file_type: str = "hdf5",
     ) -> np.ndarray:
         """Impute missing values in the given data with the trained model.
 
-        Warnings
-        --------
-        The method impute is deprecated. Please use `predict()` instead.
-
         Parameters
         ----------
-        X :
-            The data samples for testing, should be array-like of shape [n_samples, sequence length (time steps),
+        test_set :
+            The data samples for testing, should be array-like of shape [n_samples, sequence length (n_steps),
             n_features], or a path string locating a data file, e.g. h5 file.
 
         file_type :
@@ -322,12 +318,9 @@ class NonstationaryTransformer(BaseNNImputer):
 
         Returns
         -------
-        array-like, shape [n_samples, sequence length (time steps), n_features],
+        array-like, shape [n_samples, sequence length (n_steps), n_features],
             Imputed data.
         """
-        logger.warning(
-            "🚨DeprecationWarning: The method impute is deprecated. Please use `predict` instead."
-        )
 
-        results_dict = self.predict(X, file_type=file_type)
-        return results_dict["imputation"]
+        result_dict = self.predict(test_set, file_type=file_type)
+        return result_dict["imputation"]
