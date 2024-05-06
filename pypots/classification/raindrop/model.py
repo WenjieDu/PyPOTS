@@ -43,11 +43,11 @@ class Raindrop(BaseNNClassifier):
         The dimension of the Transformer encoder backbone.
         It is the input dimension of the multi-head self-attention layers.
 
-    d_ffn :
-        The dimension of the layer in the Feed-Forward Networks (FFN).
-
     n_heads :
         The number of heads in the multi-head self-attention mechanism.
+
+    d_ffn :
+        The dimension of the layer in the Feed-Forward Networks (FFN).
 
     dropout :
         The dropout rate for all fully-connected layers in the model.
@@ -112,8 +112,8 @@ class Raindrop(BaseNNClassifier):
         n_classes,
         n_layers,
         d_model,
-        d_ffn,
         n_heads,
+        d_ffn,
         dropout,
         d_static=0,
         aggregation="mean",
@@ -147,8 +147,8 @@ class Raindrop(BaseNNClassifier):
             n_features,
             n_layers,
             d_model,
-            d_ffn,
             n_heads,
+            d_ffn,
             n_classes,
             dropout,
             n_steps,

@@ -20,7 +20,6 @@ This implementation is inspired by the official one https://github.com/thuml/Aut
 from .auto_encoder import AutoformerEncoder
 from .layers import (
     AutoCorrelation,
-    AutoCorrelationLayer,
     SeasonalLayerNorm,
     MovingAvgBlock,
     SeriesDecompositionBlock,
@@ -30,7 +29,6 @@ from .layers import (
 
 __all__ = [
     "AutoCorrelation",
-    "AutoCorrelationLayer",
     "SeasonalLayerNorm",
     "MovingAvgBlock",
     "SeriesDecompositionBlock",

@@ -16,7 +16,6 @@ from .layers import (
 from ....nn.modules.autoformer import (
     AutoformerEncoderLayer,
     AutoformerDecoderLayer,
-    AutoCorrelationLayer,
     SeasonalLayerNorm,
 )
 from ....nn.modules.informer import InformerEncoder, InformerDecoder
@@ -27,8 +26,8 @@ class FEDformerEncoder(nn.Module):
         self,
         n_steps,
         n_layers,
-        n_heads,
         d_model,
+        n_heads,
         d_ffn,
         moving_avg_window_size,
         dropout,
@@ -57,12 +56,9 @@ class FEDformerEncoder(nn.Module):
         self.encoder = InformerEncoder(
             [
                 AutoformerEncoderLayer(
-                    AutoCorrelationLayer(
-                        encoder_self_att,  # instead of multi-head attention in transformer
-                        d_model,
-                        n_heads,
-                    ),
+                    encoder_self_att,  # instead of multi-head attention in transformer
                     d_model,
+                    n_heads,
                     d_ffn,
                     moving_avg_window_size,
                     dropout,
@@ -134,9 +130,10 @@ class FEDformerDecoder(nn.Module):
         self.decoder = InformerDecoder(
             [
                 AutoformerDecoderLayer(
-                    AutoCorrelationLayer(decoder_self_att, d_model, n_heads),
-                    AutoCorrelationLayer(decoder_cross_att, d_model, n_heads),
+                    decoder_self_att,
+                    decoder_cross_att,
                     d_model,
+                    n_heads,
                     d_output,
                     d_ffn,
                     moving_avg=moving_avg_window_size,
