@@ -21,14 +21,14 @@ from ..transformer import (
 class BackboneSAITS(nn.Module):
     def __init__(
         self,
-        n_layers: int,
         n_steps: int,
         n_features: int,
+        n_layers: int,
         d_model: int,
-        d_ffn: int,
         n_heads: int,
         d_k: int,
         d_v: int,
+        d_ffn: int,
         dropout: float,
         attn_dropout: float,
     ):
@@ -48,12 +48,12 @@ class BackboneSAITS(nn.Module):
         self.layer_stack_for_first_block = nn.ModuleList(
             [
                 TransformerEncoderLayer(
+                    ScaledDotProductAttention(d_k**0.5, attn_dropout),
                     d_model,
-                    d_ffn,
                     n_heads,
                     d_k,
                     d_v,
-                    ScaledDotProductAttention(d_k**0.5, attn_dropout),
+                    d_ffn,
                     dropout,
                 )
                 for _ in range(n_layers)
@@ -72,12 +72,12 @@ class BackboneSAITS(nn.Module):
         self.layer_stack_for_second_block = nn.ModuleList(
             [
                 TransformerEncoderLayer(
+                    ScaledDotProductAttention(d_k**0.5, attn_dropout),
                     d_model,
-                    d_ffn,
                     n_heads,
                     d_k,
                     d_v,
-                    ScaledDotProductAttention(d_k**0.5, attn_dropout),
+                    d_ffn,
                     dropout,
                 )
                 for _ in range(n_layers)

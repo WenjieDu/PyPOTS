@@ -27,9 +27,6 @@ class TransformerEncoder(nn.Module):
         The dimension of the module manipulation space.
         The input tensor will be projected to a space with d_model dimensions.
 
-    d_ffn:
-        The dimension of the hidden layer in the feed-forward network.
-
     n_heads:
         The number of heads in multi-head attention.
 
@@ -38,6 +35,9 @@ class TransformerEncoder(nn.Module):
 
     d_v:
         The dimension of the value tensor.
+
+    d_ffn:
+        The dimension of the hidden layer in the feed-forward network.
 
     dropout:
         The dropout rate.
@@ -51,10 +51,10 @@ class TransformerEncoder(nn.Module):
         self,
         n_layers: int,
         d_model: int,
-        d_ffn: int,
         n_heads: int,
         d_k: int,
         d_v: int,
+        d_ffn: int,
         dropout: float,
         attn_dropout: float,
     ):
@@ -63,12 +63,12 @@ class TransformerEncoder(nn.Module):
         self.enc_layer_stack = nn.ModuleList(
             [
                 TransformerEncoderLayer(
+                    ScaledDotProductAttention(d_k**0.5, attn_dropout),
                     d_model,
-                    d_ffn,
                     n_heads,
                     d_k,
                     d_v,
-                    ScaledDotProductAttention(d_k**0.5, attn_dropout),
+                    d_ffn,
                     dropout,
                 )
                 for _ in range(n_layers)
@@ -114,21 +114,18 @@ class TransformerDecoder(nn.Module):
 
     Parameters
     ----------
-    n_layers:
-        The number of layers in the decoder.
-
     n_steps:
         The number of time steps in the input tensor.
 
     n_features:
         The number of features in the input tensor.
 
+    n_layers:
+        The number of layers in the decoder.
+
     d_model:
         The dimension of the module manipulation space.
         The input tensor will be projected to a space with d_model dimensions.
-
-    d_ffn:
-        The dimension of the hidden layer in the feed-forward network.
 
     n_heads:
         The number of heads in multi-head attention.
@@ -138,6 +135,9 @@ class TransformerDecoder(nn.Module):
 
     d_v:
         The dimension of the value tensor.
+
+    d_ffn:
+        The dimension of the hidden layer in the feed-forward network.
 
     dropout:
         The dropout rate.
@@ -149,14 +149,14 @@ class TransformerDecoder(nn.Module):
 
     def __init__(
         self,
-        n_layers: int,
         n_steps: int,
         n_features: int,
+        n_layers: int,
         d_model: int,
-        d_ffn: int,
         n_heads: int,
         d_k: int,
         d_v: int,
+        d_ffn: int,
         dropout: float,
         attn_dropout: float,
     ):
@@ -167,13 +167,13 @@ class TransformerDecoder(nn.Module):
         self.layer_stack = nn.ModuleList(
             [
                 TransformerDecoderLayer(
+                    ScaledDotProductAttention(d_k**0.5, attn_dropout),
+                    ScaledDotProductAttention(d_k**0.5, attn_dropout),
                     d_model,
-                    d_ffn,
                     n_heads,
                     d_k,
                     d_v,
-                    ScaledDotProductAttention(d_k**0.5, attn_dropout),
-                    ScaledDotProductAttention(d_k**0.5, attn_dropout),
+                    d_ffn,
                     dropout,
                 )
                 for _ in range(n_layers)

@@ -7,7 +7,7 @@
 
 import math
 from functools import partial
-from typing import List, Tuple
+from typing import List, Tuple, Optional
 
 import numpy as np
 import torch
@@ -16,6 +16,8 @@ from scipy.special import eval_legendre
 from sympy import Poly, legendre, Symbol, chebyshevt
 from torch import Tensor
 from torch import nn
+
+from ..transformer.attention import AttentionOperator
 
 
 def legendreDer(k, x):
@@ -395,7 +397,7 @@ class MWT_CZ1d(nn.Module):
         return x
 
 
-class MultiWaveletTransform(nn.Module):
+class MultiWaveletTransform(AttentionOperator):
     """
     1D multiwavelet block.
     """
@@ -422,19 +424,29 @@ class MultiWaveletTransform(nn.Module):
         self.ich = ich
         self.MWT_CZ = nn.ModuleList(MWT_CZ1d(k, alpha, L, c, base) for i in range(nCZ))
 
-    def forward(self, queries, keys, values, attn_mask):
-        B, L, H, E = queries.shape
-        _, S, _, D = values.shape
-        if L > S:
-            zeros = torch.zeros_like(queries[:, : (L - S), :]).float()
-            values = torch.cat([values, zeros], dim=1)
-            keys = torch.cat([keys, zeros], dim=1)
-        else:
-            values = values[:, :L, :, :]
-            keys = keys[:, :L, :, :]
-        values = values.view(B, L, -1)
+    def forward(
+        self,
+        q: torch.Tensor,
+        k: torch.Tensor,
+        v: torch.Tensor,
+        attn_mask: Optional[torch.Tensor] = None,
+        **kwargs,
+    ) -> Tuple[torch.Tensor, None]:
+        # q, k, v all have 4 dimensions [batch_size, n_steps, n_heads, d_tensor]
+        # d_tensor could be d_q, d_k, d_v
 
-        V = self.Lk0(values).view(B, L, self.c, -1)
+        B, L, H, E = q.shape
+        _, S, _, D = v.shape
+        if L > S:
+            zeros = torch.zeros_like(q[:, : (L - S), :]).float()
+            v = torch.cat([v, zeros], dim=1)
+            # k = torch.cat([k, zeros], dim=1)
+        else:
+            v = v[:, :L, :, :]
+            # k = k[:, :L, :, :]
+        v = v.reshape(B, L, -1)
+
+        V = self.Lk0(v).view(B, L, self.c, -1)
         for i in range(self.nCZ):
             V = self.MWT_CZ[i](V)
             if i < self.nCZ - 1:
@@ -442,7 +454,7 @@ class MultiWaveletTransform(nn.Module):
 
         V = self.Lk1(V.view(B, L, -1))
         V = V.view(B, L, -1, D)
-        return (V.contiguous(), None)
+        return V.contiguous(), None
 
 
 class FourierCrossAttentionW(nn.Module):
@@ -531,7 +543,7 @@ class FourierCrossAttentionW(nn.Module):
         return (out, None)
 
 
-class MultiWaveletCross(nn.Module):
+class MultiWaveletCross(AttentionOperator):
     """
     1D Multiwavelet Cross Attention layer.
     """
@@ -554,7 +566,6 @@ class MultiWaveletCross(nn.Module):
         **kwargs,
     ):
         super().__init__()
-        # print("base", base)
 
         self.c = c
         self.k = k
@@ -620,7 +631,17 @@ class MultiWaveletCross(nn.Module):
         self.out = nn.Linear(c * k, ich)
         self.modes1 = modes
 
-    def forward(self, q, k, v, mask=None):
+    def forward(
+        self,
+        q: torch.Tensor,
+        k: torch.Tensor,
+        v: torch.Tensor,
+        attn_mask: Optional[torch.Tensor] = None,
+        **kwargs,
+    ) -> Tuple[torch.Tensor, None]:
+        # q, k, v all have 4 dimensions [batch_size, n_steps, n_heads, d_tensor]
+        # d_tensor could be d_q, d_k, d_v
+
         B, N, H, E = q.shape  # (B, N, H, E) torch.Size([3, 768, 8, 2])
         _, S, _, _ = k.shape  # (B, S, H, E) torch.Size([3, 96, 8, 2])
 
@@ -680,11 +701,11 @@ class MultiWaveletCross(nn.Module):
             dq, sq = Ud_q[i], Us_q[i]
             dv, sv = Ud_v[i], Us_v[i]
             Ud += [
-                self.attn1(dq[0], dk[0], dv[0], mask)[0]
-                + self.attn2(dq[1], dk[1], dv[1], mask)[0]
+                self.attn1(dq[0], dk[0], dv[0], attn_mask)[0]
+                + self.attn2(dq[1], dk[1], dv[1], attn_mask)[0]
             ]
-            Us += [self.attn3(sq, sk, sv, mask)[0]]
-        v = self.attn4(q, k, v, mask)[0]
+            Us += [self.attn3(sq, sk, sv, attn_mask)[0]]
+        v = self.attn4(q, k, v, attn_mask)[0]
 
         # reconstruct
         for i in range(ns - 1 - self.L, -1, -1):
@@ -692,7 +713,7 @@ class MultiWaveletCross(nn.Module):
             v = torch.cat((v, Ud[i]), -1)
             v = self.evenOdd(v)
         v = self.out(v[:, :N, :, :].contiguous().view(B, N, -1))
-        return (v.contiguous(), None)
+        return v.contiguous(), None
 
     def wavelet_transform(self, x):
         xa = torch.cat(
@@ -736,7 +757,7 @@ def get_frequency_modes(seq_len, modes=64, mode_select_method="random"):
 
 
 # ########## fourier layer #############
-class FourierBlock(nn.Module):
+class FourierBlock(AttentionOperator):
     def __init__(
         self, in_channels, out_channels, seq_len, modes=0, mode_select_method="random"
     ):
@@ -769,8 +790,17 @@ class FourierBlock(nn.Module):
         # (batch, in_channel, x ), (in_channel, out_channel, x) -> (batch, out_channel, x)
         return torch.einsum("bhi,hio->bho", input, weights)
 
-    def forward(self, q, k, v, mask):
-        # size = [B, L, H, E]
+    def forward(
+        self,
+        q: torch.Tensor,
+        k: torch.Tensor,
+        v: torch.Tensor,
+        attn_mask: Optional[torch.Tensor] = None,
+        **kwargs,
+    ) -> Tuple[torch.Tensor, None]:
+        # q, k, v all have 4 dimensions [batch_size, n_steps, n_heads, d_tensor]
+        # d_tensor could be d_q, d_k, d_v
+
         B, L, H, E = q.shape
         x = q.permute(0, 2, 3, 1)
         # Compute Fourier coefficients
@@ -783,11 +813,11 @@ class FourierBlock(nn.Module):
             )
         # Return to time domain
         x = torch.fft.irfft(out_ft, n=x.size(-1))
-        return (x, None)
+        return x, None
 
 
 # ########## Fourier Cross Former ####################
-class FourierCrossAttention(nn.Module):
+class FourierCrossAttention(AttentionOperator):
     def __init__(
         self,
         in_channels,
@@ -863,8 +893,17 @@ class FourierCrossAttention(nn.Module):
         else:
             return torch.einsum(order, x.real, weights.real)
 
-    def forward(self, q, k, v, mask):
-        # size = [B, L, H, E]
+    def forward(
+        self,
+        q: torch.Tensor,
+        k: torch.Tensor,
+        v: torch.Tensor,
+        attn_mask: Optional[torch.Tensor] = None,
+        **kwargs,
+    ) -> Tuple[torch.Tensor, None]:
+        # q, k, v all have 4 dimensions [batch_size, n_steps, n_heads, d_tensor]
+        # d_tensor could be d_q, d_k, d_v
+
         B, L, H, E = q.shape
         xq = q.permute(0, 2, 3, 1)  # size = [B, H, E, L]
         xk = k.permute(0, 2, 3, 1)
@@ -912,4 +951,4 @@ class FourierCrossAttention(nn.Module):
         out = torch.fft.irfft(
             out_ft / self.in_channels / self.out_channels, n=xq.size(-1)
         )
-        return (out, None)
+        return out, None
