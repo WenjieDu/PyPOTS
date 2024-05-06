@@ -24,7 +24,7 @@ This implementation is inspired by https://github.com/WenjieDu/SAITS
 # License: BSD-3-Clause
 
 from .attention import ScaledDotProductAttention, MultiHeadAttention
-from .auto_encoder import TransformerEncoder, TransformerDecoder
+from .autoencoder import TransformerEncoder, TransformerDecoder
 from .embedding import PositionalEncoding
 from .layers import (
     TransformerEncoderLayer,
