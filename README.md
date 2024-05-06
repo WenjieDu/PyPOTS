@@ -52,6 +52,9 @@
     <a href="https://arxiv.org/abs/2305.18811">
         <img alt="arXiv DOI" src="https://img.shields.io/badge/DOI-10.48550/arXiv.2305.18811-F8F7F0">
     </a>
+    <a href="https://github.com/WenjieDu/PyPOTS/blob/main/README_zh.md">
+        <img alt="README in Chinese" src="https://img.shields.io/badge/README-🇨🇳中文版-FCEFE8">
+    </a>
 </p>
 
 ⦿ `Motivation`: Due to all kinds of reasons like failure of collection sensors, communication error,
@@ -85,9 +88,6 @@ PyPOTS supports imputation, classification, clustering, forecasting, and anomaly
 time series with missing values. The table below shows the availability of each algorithm (sorted by Year) in PyPOTS for different tasks.
 The symbol ✅ indicates the algorithm is available for the corresponding task (note that models will be continuously updated
 in the future to handle tasks that are not currently supported. Stay tuned❗️).
-The task types are abbreviated as follows: **`IMPU`**: Imputation; **`FORE`**: Forecasting;
-**`CLAS`**: Classification; **`CLUS`**: Clustering; **`ANOD`**: Anomaly Detection.
-The paper references are all listed at the bottom of this readme file.
 
 🌟 Since **v0.2**, all neural-network models in PyPOTS has got hyperparameter-optimization support.
 This functionality is implemented with the [Microsoft NNI](https://github.com/microsoft/nni) framework. You may want to refer to our time-series
@@ -99,34 +99,42 @@ are not proposed as imputation methods in their original papers, and they cannot
 **To make them applicable on POTS data, we apply the embedding strategy and training approach (ORT+MIT)
 the same as we did in [SAITS paper](https://arxiv.org/pdf/2202.08516).**
 
-| **Type**      | **Algo**               | **IMPU** | **FORE** | **CLAS** | **CLUS** | **ANOD** | **Year** |
-|:--------------|:-----------------------|:--------:|:--------:|:--------:|:--------:|:--------:|:--------:|
-| Neural Net    | iTransformer[^24]      |    ✅     |          |          |          |          |   2024   |
-| Neural Net    | FreTS[^23]             |    ✅     |          |          |          |          |   2024   |
-| Neural Net    | SAITS[^1]              |    ✅     |          |          |          |          |   2023   |
-| Neural Net    | Crossformer[^16]       |    ✅     |          |          |          |          |   2023   |
-| Neural Net    | TimesNet[^14]          |    ✅     |          |          |          |          |   2023   |
-| Neural Net    | PatchTST[^18]          |    ✅     |          |          |          |          |   2023   |
-| Neural Net    | DLinear[^17]           |    ✅     |          |          |          |          |   2023   |
-| Neural Net    | ETSformer[^19]         |    ✅     |          |          |          |          |   2023   |
-| Neural Net    | FiLM[^22]              |    ✅     |          |          |          |          |   2022   |
-| Neural Net    | FEDformer[^20]         |    ✅     |          |          |          |          |   2022   |
-| Neural Net    | Raindrop[^5]           |          |          |    ✅     |          |          |   2022   |
-| Neural Net    | Informer[^21]          |    ✅     |          |          |          |          |   2021   |
-| Neural Net    | Autoformer[^15]        |    ✅     |          |          |          |          |   2021   |
-| Neural Net    | CSDI[^12]              |    ✅     |    ✅     |          |          |          |   2021   |
-| Neural Net    | US-GAN[^10]            |    ✅     |          |          |          |          |   2021   |
-| Neural Net    | CRLI[^6]               |          |          |          |    ✅     |          |   2021   |
-| Probabilistic | BTTF[^8]               |          |    ✅     |          |          |          |   2021   |
-| Neural Net    | GP-VAE[^11]            |    ✅     |          |          |          |          |   2020   |
-| Neural Net    | VaDER[^7]              |          |          |          |    ✅     |          |   2019   |
-| Neural Net    | M-RNN[^9]              |    ✅     |          |          |          |          |   2019   |
-| Neural Net    | BRITS[^3]              |    ✅     |          |    ✅     |          |          |   2018   |
-| Neural Net    | GRU-D[^4]              |    ✅     |          |    ✅     |          |          |   2018   |
-| Neural Net    | Transformer[^2]        |    ✅     |          |          |          |          |   2017   |
-| Naive         | LOCF/NOCB              |    ✅     |          |          |          |          |          |
-| Naive         | Mean                   |    ✅     |          |          |          |          |          |
-| Naive         | Median                 |    ✅     |          |          |          |          |          |
+The task types are abbreviated as follows:
+**`IMPU`**: Imputation;
+**`FORE`**: Forecasting;
+**`CLAS`**: Classification;
+**`CLUS`**: Clustering;
+**`ANOD`**: Anomaly Detection.
+The paper references and links are all listed at the bottom of this file.
+
+| **Type**      | **Algo**                           | **IMPU** | **FORE** | **CLAS** | **CLUS** | **ANOD** | **Year - Venue** |
+|:--------------|:-----------------------------------|:--------:|:--------:|:--------:|:--------:|:--------:|:-----------------|
+| Neural Net    | iTransformer[^24]                  |    ✅     |          |          |          |          | 2024 - ICLR      |
+| Neural Net    | FreTS[^23]                         |    ✅     |          |          |          |          | 2024 - NeurIPS   |
+| Neural Net    | SAITS[^1]                          |    ✅     |          |          |          |          | 2023 - ESWA      |
+| Neural Net    | Crossformer[^16]                   |    ✅     |          |          |          |          | 2023 - ICLR      |
+| Neural Net    | TimesNet[^14]                      |    ✅     |          |          |          |          | 2023 - ICLR      |
+| Neural Net    | PatchTST[^18]                      |    ✅     |          |          |          |          | 2023 - ICLR      |
+| Neural Net    | ETSformer[^19]                     |    ✅     |          |          |          |          | 2023 - ICLR      |
+| Neural Net    | DLinear[^17]                       |    ✅     |          |          |          |          | 2023 - AAAI      |
+| Neural Net    | FiLM[^22]                          |    ✅     |          |          |          |          | 2022 - NeurIPS   |
+| Neural Net    | Raindrop[^5]                       |          |          |    ✅     |          |          | 2022 - ICLR      |
+| Neural Net    | FEDformer[^20]                     |    ✅     |          |          |          |          | 2022 - ICML      |
+| Neural Net    | Autoformer[^15]                    |    ✅     |          |          |          |          | 2021 - NeurIPS   |
+| Neural Net    | CSDI[^12]                          |    ✅     |    ✅     |          |          |          | 2021 - NeurIPS   |
+| Neural Net    | Informer[^21]                      |    ✅     |          |          |          |          | 2021 - AAAI      |
+| Neural Net    | US-GAN[^10]                        |    ✅     |          |          |          |          | 2021 - AAAI      |
+| Neural Net    | CRLI[^6]                           |          |          |          |    ✅     |          | 2021 - AAAI      |
+| Probabilistic | BTTF[^8]                           |          |    ✅     |          |          |          | 2021 - TPAMI     |
+| Neural Net    | GP-VAE[^11]                        |    ✅     |          |          |          |          | 2020 - AISTATS   |
+| Neural Net    | VaDER[^7]                          |          |          |          |    ✅     |          | 2019 - GigaSci.  |
+| Neural Net    | M-RNN[^9]                          |    ✅     |          |          |          |          | 2019 - TBME      |
+| Neural Net    | BRITS[^3]                          |    ✅     |          |    ✅     |          |          | 2018 - NeurIPS   |
+| Neural Net    | GRU-D[^4]                          |    ✅     |          |    ✅     |          |          | 2018 - Sci. Rep. |
+| Neural Net    | Transformer[^2]                    |    ✅     |          |          |          |          | 2017 - NeurIPS   |
+| Naive         | LOCF/NOCB                          |    ✅     |          |          |          |          |                  |
+| Naive         | Mean                               |    ✅     |          |          |          |          |                  |
+| Naive         | Median                             |    ✅     |          |          |          |          |                  |
 
 
 ## ❖ PyPOTS Ecosystem
@@ -141,7 +149,7 @@ And what else? Please read on ;-)
 👈 Time series datasets are taken as coffee beans at PyPOTS, and POTS datasets are incomplete coffee beans with missing parts that have their own meanings.
 To make various public time-series datasets readily available to users,
 <i>Time Series Data Beans (TSDB)</i> is created to make loading time-series datasets super easy!
-Visit [TSDB](https://github.com/WenjieDu/TSDB) right now to know more about this handy tool 🛠, and it now supports a total of 168 open-source datasets!
+Visit [TSDB](https://github.com/WenjieDu/TSDB) right now to know more about this handy tool 🛠, and it now supports a total of 169 open-source datasets!
 
 <a href="https://github.com/WenjieDu/PyGrinder">
     <img src="https://pypots.com/figs/pypots_logos/PyGrinder/logo_FFBG.svg" align="right" width="140" alt="PyGrinder logo"/>
@@ -222,7 +230,7 @@ print(X.shape)  # (11988, 48, 37), 11988 samples and each sample has 48 time ste
 # Model training. This is PyPOTS showtime.
 from pypots.imputation import SAITS
 from pypots.utils.metrics import calc_mae
-saits = SAITS(n_steps=48, n_features=37, n_layers=2, d_model=256, d_ffn=128, n_heads=4, d_k=64, d_v=64, dropout=0.1, epochs=10)
+saits = SAITS(n_steps=48, n_features=37, n_layers=2, d_model=256, n_heads=4, d_k=64, d_v=64, d_ffn=128, dropout=0.1, epochs=10)
 # Here I use the whole dataset as the training set because ground truth is not visible to the model, you can also split it into train/val/test sets
 saits.fit(dataset)  # train the model on the dataset
 imputation = saits.impute(dataset)  # impute the originally-missing values and artificially-missing values
