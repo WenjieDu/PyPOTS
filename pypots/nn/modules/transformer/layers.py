@@ -70,11 +70,11 @@ class TransformerEncoderLayer(nn.Module):
 
     Parameters
     ----------
+    attn_opt:
+        The attention operator for the multi-head attention module in the encoder layer.
+
     d_model:
         The dimension of the input tensor.
-
-    d_ffn:
-        The dimension of the hidden layer.
 
     n_heads:
         The number of heads in multi-head attention.
@@ -85,8 +85,8 @@ class TransformerEncoderLayer(nn.Module):
     d_v:
         The dimension of the value tensor.
 
-    slf_attn_opt:
-        The attention operator for the self multi-head attention module in the encoder layer.
+    d_ffn:
+        The dimension of the hidden layer.
 
     dropout:
         The dropout rate.
@@ -95,16 +95,22 @@ class TransformerEncoderLayer(nn.Module):
 
     def __init__(
         self,
+        attn_opt: AttentionOperator,
         d_model: int,
-        d_ffn: int,
         n_heads: int,
         d_k: int,
         d_v: int,
-        slf_attn_opt: AttentionOperator,
+        d_ffn: int,
         dropout: float = 0.1,
     ):
         super().__init__()
-        self.slf_attn = MultiHeadAttention(n_heads, d_model, d_k, d_v, slf_attn_opt)
+        self.slf_attn = MultiHeadAttention(
+            attn_opt,
+            d_model,
+            n_heads,
+            d_k,
+            d_v,
+        )
         self.dropout = nn.Dropout(dropout)
         self.layer_norm = nn.LayerNorm(d_model, eps=1e-6)
         self.pos_ffn = PositionWiseFeedForward(d_model, d_ffn, dropout)
@@ -158,11 +164,14 @@ class TransformerDecoderLayer(nn.Module):
 
     Parameters
     ----------
+    slf_attn_opt:
+        The attention operator for the multi-head attention module in the decoder layer.
+
+    enc_attn_opt:
+        The attention operator for the encoding multi-head attention module in the decoder layer.
+
     d_model:
         The dimension of the input tensor.
-
-    d_ffn:
-        The dimension of the hidden layer.
 
     n_heads:
         The number of heads in multi-head attention.
@@ -173,11 +182,8 @@ class TransformerDecoderLayer(nn.Module):
     d_v:
         The dimension of the value tensor.
 
-    slf_attn_opt:
-        The attention operator for the self multi-head attention module in the decoder layer.
-
-    enc_attn_opt:
-        The attention operator for the encoding multi-head attention module in the decoder layer.
+    d_ffn:
+        The dimension of the hidden layer.
 
     dropout:
         The dropout rate.
@@ -186,18 +192,30 @@ class TransformerDecoderLayer(nn.Module):
 
     def __init__(
         self,
+        slf_attn_opt: AttentionOperator,
+        enc_attn_opt: AttentionOperator,
         d_model: int,
-        d_ffn: int,
         n_heads: int,
         d_k: int,
         d_v: int,
-        slf_attn_opt: AttentionOperator,
-        enc_attn_opt: AttentionOperator,
+        d_ffn: int,
         dropout: float = 0.1,
     ):
         super().__init__()
-        self.slf_attn = MultiHeadAttention(n_heads, d_model, d_k, d_v, slf_attn_opt)
-        self.enc_attn = MultiHeadAttention(n_heads, d_model, d_k, d_v, enc_attn_opt)
+        self.slf_attn = MultiHeadAttention(
+            slf_attn_opt,
+            d_model,
+            n_heads,
+            d_k,
+            d_v,
+        )
+        self.enc_attn = MultiHeadAttention(
+            enc_attn_opt,
+            d_model,
+            n_heads,
+            d_k,
+            d_v,
+        )
         self.pos_ffn = PositionWiseFeedForward(d_model, d_ffn, dropout)
 
     def forward(

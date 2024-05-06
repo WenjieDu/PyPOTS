@@ -24,8 +24,8 @@ class _Informer(nn.Module):
         n_steps,
         n_features,
         n_layers,
-        n_heads,
         d_model,
+        n_heads,
         d_ffn,
         factor,
         dropout,
@@ -47,11 +47,11 @@ class _Informer(nn.Module):
             [
                 InformerEncoderLayer(
                     MultiHeadAttention(
-                        n_heads,
-                        d_model,
-                        d_model // n_heads,
-                        d_model // n_heads,
                         ProbAttention(False, factor, dropout),
+                        d_model,
+                        n_heads,
+                        d_model // n_heads,
+                        d_model // n_heads,
                     ),
                     d_model,
                     d_ffn,
