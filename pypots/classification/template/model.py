@@ -88,3 +88,10 @@ class YourNewModel(BaseNNClassifier):
         file_type: str = "hdf5",
     ) -> dict:
         raise NotImplementedError
+
+    def classify(
+        self,
+        test_set: Union[dict, str],
+        file_type: str = "hdf5",
+    ) -> dict:
+        raise NotImplementedError
