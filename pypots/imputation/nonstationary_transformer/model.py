@@ -1,5 +1,5 @@
 """
-The implementation of Transformer for the partially-observed time-series imputation task.
+The implementation of Nonstationary-Transformer for the partially-observed time-series imputation task.
 
 """
 
@@ -12,21 +12,19 @@ import numpy as np
 import torch
 from torch.utils.data import DataLoader
 
-from .core import _Transformer
-from .data import DatasetForTransformer
+from .core import _NonstationaryTransformer
+from .data import DatasetForNonstationaryTransformer
 from ..base import BaseNNImputer
-from ...data.dataset import BaseDataset
 from ...data.checking import key_in_data_set
+from ...data.dataset import BaseDataset
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
 from ...utils.logging import logger
 
 
-class Transformer(BaseNNImputer):
-    """The PyTorch implementation of the Transformer model.
-    Transformer is originally proposed by Vaswani et al. in :cite:`vaswani2017Transformer`,
-    and gets re-implemented as a time-series imputation model by Du et al. in :cite:`du2023SAITS`.
-    Here you should refer to :cite:`du2023SAITS` for details about this Transformer imputation model.
+class NonstationaryTransformer(BaseNNImputer):
+    """The PyTorch implementation of the Nonstationary-Transformer model.
+    NonstationaryTransformer is originally proposed by Liu et al. in :cite:`liu2022nonstationary`.
 
     Parameters
     ----------
@@ -37,39 +35,32 @@ class Transformer(BaseNNImputer):
         The number of features in the time-series data sample.
 
     n_layers :
-        The number of layers in the 1st and 2nd DMSA blocks in the SAITS model.
+        The number of layers in the NonstationaryTransformer model.
 
     d_model :
-        The dimension of the model's backbone.
-        It is the input dimension of the multi-head self-attention layers.
+        The dimension of the model.
 
     n_heads :
-        The number of heads in the multi-head self-attention mechanism.
-        ``d_model`` must be divisible by ``n_heads``, and the result should be equal to ``d_k``.
-
-    d_k :
-        The dimension of the `keys` (K) and the `queries` (Q) in the DMSA mechanism.
-        ``d_k`` should be the result of ``d_model`` divided by ``n_heads``. Although ``d_k`` can be directly calculated
-        with given ``d_model`` and ``n_heads``, we want it be explicitly given together with ``d_v`` by users to ensure
-        users be aware of them and to avoid any potential mistakes.
-
-    d_v :
-        The dimension of the `values` (V) in the DMSA mechanism.
+        The number of heads in each layer of NonstationaryTransformer.
 
     d_ffn :
-        The dimension of the layer in the Feed-Forward Networks (FFN).
+        The dimension of the feed-forward network.
+
+    d_projector_hidden :
+        The dimensions of hidden layers in MLP projectors.
+        It should be a list of integers and the length of the list should be equal to n_projector_hidden_layers.
+
+    n_projector_hidden_layers :
+        The number of hidden layers in MLP projectors.
 
     dropout :
-        The dropout rate for all fully-connected layers in the model.
-
-    attn_dropout :
-        The dropout rate for the attention mechanism.
+        The dropout rate for the model.
 
     ORT_weight :
-        The weight for the ORT loss.
+        The weight for the ORT loss, the same as SAITS.
 
     MIT_weight :
-        The weight for the MIT loss.
+        The weight for the MIT loss, the same as SAITS.
 
     batch_size :
         The batch size for training and evaluating the model.
@@ -119,16 +110,15 @@ class Transformer(BaseNNImputer):
         n_layers: int,
         d_model: int,
         n_heads: int,
-        d_k: int,
-        d_v: int,
         d_ffn: int,
+        d_projector_hidden: list,
+        n_projector_hidden_layers: int,
         dropout: float = 0,
-        attn_dropout: float = 0,
-        ORT_weight: int = 1,
-        MIT_weight: int = 1,
+        ORT_weight: float = 1,
+        MIT_weight: float = 1,
         batch_size: int = 32,
         epochs: int = 100,
-        patience: Optional[int] = None,
+        patience: int = None,
         optimizer: Optional[Optimizer] = Adam(),
         num_workers: int = 0,
         device: Optional[Union[str, torch.device, list]] = None,
@@ -144,43 +134,35 @@ class Transformer(BaseNNImputer):
             saving_path,
             model_saving_strategy,
         )
-
-        if d_model != n_heads * d_k:
-            logger.warning(
-                "‼️ d_model must = n_heads * d_k, it should be divisible by n_heads "
-                f"and the result should be equal to d_k, but got d_model={d_model}, n_heads={n_heads}, d_k={d_k}"
-            )
-            d_model = n_heads * d_k
-            logger.warning(
-                f"⚠️ d_model is reset to {d_model} = n_heads ({n_heads}) * d_k ({d_k})"
-            )
+        assert len(d_projector_hidden) == n_projector_hidden_layers, (
+            f"The length of d_hidden should be equal to n_hidden_layers, "
+            f"but got {len(d_projector_hidden)} and {n_projector_hidden_layers}."
+        )
 
         self.n_steps = n_steps
         self.n_features = n_features
         # model hype-parameters
+        self.n_heads = n_heads
         self.n_layers = n_layers
         self.d_model = d_model
         self.d_ffn = d_ffn
-        self.n_heads = n_heads
-        self.d_k = d_k
-        self.d_v = d_v
+        self.d_projector_hidden = d_projector_hidden
+        self.n_projector_hidden_layers = n_projector_hidden_layers
         self.dropout = dropout
-        self.attn_dropout = attn_dropout
         self.ORT_weight = ORT_weight
         self.MIT_weight = MIT_weight
 
         # set up the model
-        self.model = _Transformer(
+        self.model = _NonstationaryTransformer(
             self.n_steps,
             self.n_features,
             self.n_layers,
             self.d_model,
             self.n_heads,
-            self.d_k,
-            self.d_v,
             self.d_ffn,
+            self.d_projector_hidden,
+            self.n_projector_hidden_layers,
             self.dropout,
-            self.attn_dropout,
             self.ORT_weight,
             self.MIT_weight,
         )
@@ -229,7 +211,7 @@ class Transformer(BaseNNImputer):
         file_type: str = "hdf5",
     ) -> None:
         # Step 1: wrap the input data with classes Dataset and DataLoader
-        training_set = DatasetForTransformer(
+        training_set = DatasetForNonstationaryTransformer(
             train_set, return_X_ori=False, return_y=False, file_type=file_type
         )
         training_loader = DataLoader(
@@ -242,7 +224,7 @@ class Transformer(BaseNNImputer):
         if val_set is not None:
             if not key_in_data_set("X_ori", val_set):
                 raise ValueError("val_set must contain 'X_ori' for model validation.")
-            val_set = DatasetForTransformer(
+            val_set = DatasetForNonstationaryTransformer(
                 val_set, return_X_ori=True, return_y=False, file_type=file_type
             )
             val_loader = DataLoader(
@@ -265,6 +247,29 @@ class Transformer(BaseNNImputer):
         test_set: Union[dict, str],
         file_type: str = "hdf5",
     ) -> dict:
+        """Make predictions for the input data with the trained model.
+
+        Parameters
+        ----------
+        test_set : dict or str
+            The dataset for model validating, should be a dictionary including keys as 'X',
+            or a path string locating a data file supported by PyPOTS (e.g. h5 file).
+            If it is a dict, X should be array-like of shape [n_samples, sequence length (time steps), n_features],
+            which is time-series data for validating, can contain missing values, and y should be array-like of shape
+            [n_samples], which is classification labels of X.
+            If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
+            key-value pairs like a dict, and it has to include keys as 'X' and 'y'.
+
+        file_type :
+            The type of the given file if test_set is a path string.
+
+        Returns
+        -------
+        file_type :
+            The dictionary containing the clustering results and latent variables if necessary.
+
+        """
+        # Step 1: wrap the input data with classes Dataset and DataLoader
         self.model.eval()  # set the model as eval status to freeze it.
         test_set = BaseDataset(
             test_set,
@@ -281,13 +286,14 @@ class Transformer(BaseNNImputer):
         )
         imputation_collector = []
 
+        # Step 2: process the data with the model
         with torch.no_grad():
             for idx, data in enumerate(test_loader):
                 inputs = self._assemble_input_for_testing(data)
                 results = self.model.forward(inputs, training=False)
-                imputed_data = results["imputed_data"]
-                imputation_collector.append(imputed_data)
+                imputation_collector.append(results["imputed_data"])
 
+        # Step 3: output collection and return
         imputation = torch.cat(imputation_collector).cpu().detach().numpy()
         result_dict = {
             "imputation": imputation,
@@ -296,15 +302,19 @@ class Transformer(BaseNNImputer):
 
     def impute(
         self,
-        test_set: Union[dict, str],
+        X: Union[dict, str],
         file_type: str = "hdf5",
     ) -> np.ndarray:
         """Impute missing values in the given data with the trained model.
 
+        Warnings
+        --------
+        The method impute is deprecated. Please use `predict()` instead.
+
         Parameters
         ----------
-        test_set :
-            The data samples for testing, should be array-like of shape [n_samples, sequence length (n_steps),
+        X :
+            The data samples for testing, should be array-like of shape [n_samples, sequence length (time steps),
             n_features], or a path string locating a data file, e.g. h5 file.
 
         file_type :
@@ -312,9 +322,12 @@ class Transformer(BaseNNImputer):
 
         Returns
         -------
-        array-like, shape [n_samples, sequence length (n_steps), n_features],
+        array-like, shape [n_samples, sequence length (time steps), n_features],
             Imputed data.
         """
+        logger.warning(
+            "🚨DeprecationWarning: The method impute is deprecated. Please use `predict` instead."
+        )
 
-        result_dict = self.predict(test_set, file_type=file_type)
-        return result_dict["imputation"]
+        results_dict = self.predict(X, file_type=file_type)
+        return results_dict["imputation"]
