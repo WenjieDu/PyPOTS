@@ -24,7 +24,7 @@ from ...utils.logging import logger
 
 class NonstationaryTransformer(BaseNNImputer):
     """The PyTorch implementation of the Nonstationary-Transformer model.
-    NonstationaryTransformer is originally proposed by Wu et al. in :cite:`liu2022nonstationary`.
+    NonstationaryTransformer is originally proposed by Liu et al. in :cite:`liu2022nonstationary`.
 
     Parameters
     ----------
