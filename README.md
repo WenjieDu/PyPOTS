@@ -94,7 +94,7 @@ This functionality is implemented with the [Microsoft NNI](https://github.com/mi
 imputation survey repo [Awesome_Imputation](https://github.com/WenjieDu/Awesome_Imputation) to see how to config and
 tune the hyperparameters.
 
-🔥 Note that Transformer, iTransformer, FreTS, Crossformer, PatchTST, DLinear, ETSformer, FiLM, FEDformer, Informer, Autoformer
+🔥 Note that Transformer, iTransformer, FreTS, Crossformer, PatchTST, DLinear, ETSformer, Pyraformer, Nonstationary Transformer, FiLM, FEDformer, Informer, Autoformer
 are not proposed as imputation methods in their original papers, and they cannot accept POTS as input.
 **To make them applicable on POTS data, we apply the embedding strategy and training approach (ORT+MIT)
 the same as we did in [SAITS paper](https://arxiv.org/pdf/2202.08516).**
@@ -110,14 +110,16 @@ The paper references and links are all listed at the bottom of this file.
 | **Type**      | **Algo**                           | **IMPU** | **FORE** | **CLAS** | **CLUS** | **ANOD** | **Year - Venue** |
 |:--------------|:-----------------------------------|:--------:|:--------:|:--------:|:--------:|:--------:|:-----------------|
 | Neural Net    | iTransformer[^24]                  |    ✅     |          |          |          |          | 2024 - ICLR      |
-| Neural Net    | FreTS[^23]                         |    ✅     |          |          |          |          | 2024 - NeurIPS   |
 | Neural Net    | SAITS[^1]                          |    ✅     |          |          |          |          | 2023 - ESWA      |
+| Neural Net    | FreTS[^23]                         |    ✅     |          |          |          |          | 2023 - NeurIPS   |
 | Neural Net    | Crossformer[^16]                   |    ✅     |          |          |          |          | 2023 - ICLR      |
 | Neural Net    | TimesNet[^14]                      |    ✅     |          |          |          |          | 2023 - ICLR      |
 | Neural Net    | PatchTST[^18]                      |    ✅     |          |          |          |          | 2023 - ICLR      |
 | Neural Net    | ETSformer[^19]                     |    ✅     |          |          |          |          | 2023 - ICLR      |
 | Neural Net    | DLinear[^17]                       |    ✅     |          |          |          |          | 2023 - AAAI      |
+| Neural Net    | Nonstationary <br>Transformer[^25] |    ✅     |          |          |          |          | 2022 - NeurIPS   |
 | Neural Net    | FiLM[^22]                          |    ✅     |          |          |          |          | 2022 - NeurIPS   |
+| Neural Net    | Pyraformer[^26]                    |          |          |    ✅     |          |          | 2022 - ICLR      |
 | Neural Net    | Raindrop[^5]                       |          |          |    ✅     |          |          | 2022 - ICLR      |
 | Neural Net    | FEDformer[^20]                     |    ✅     |          |          |          |          | 2022 - ICML      |
 | Neural Net    | Autoformer[^15]                    |    ✅     |          |          |          |          | 2021 - NeurIPS   |
@@ -350,8 +352,10 @@ PyPOTS community is open, transparent, and surely friendly. Let's work together 
 [^20]: Zhou, T., Ma, Z., Wen, Q., Wang, X., Sun, L., & Jin, R. (2022). [FEDformer: Frequency enhanced decomposed transformer for long-term series forecasting](https://proceedings.mlr.press/v162/zhou22g.html). *ICML 2022*.
 [^21]: Zhou, H., Zhang, S., Peng, J., Zhang, S., Li, J., Xiong, H., & Zhang, W. (2021). [Informer: Beyond efficient transformer for long sequence time-series forecasting](https://ojs.aaai.org/index.php/AAAI/article/view/17325). *AAAI 2021*.
 [^22]: Zhou, T., Ma, Z., Wen, Q., Sun, L., Yao, T., Yin, W., & Jin, R. (2022). [FiLM: Frequency improved Legendre Memory Model for Long-term Time Series Forecasting](https://proceedings.neurips.cc/paper_files/paper/2022/hash/524ef58c2bd075775861234266e5e020-Abstract-Conference.html). *NeurIPS 2022*.
-[^23]: Yi, K., Zhang, Q., Fan, W., Wang, S., Wang, P., He, H., An, N., Lian, D., Cao, L., & Niu, Z. (2024). [Frequency-domain MLPs are More Effective Learners in Time Series Forecasting](https://proceedings.neurips.cc/paper_files/paper/2023/hash/f1d16af76939f476b5f040fd1398c0a3-Abstract-Conference.html). *NeurIPS 2024*.
+[^23]: Yi, K., Zhang, Q., Fan, W., Wang, S., Wang, P., He, H., An, N., Lian, D., Cao, L., & Niu, Z. (2023). [Frequency-domain MLPs are More Effective Learners in Time Series Forecasting](https://proceedings.neurips.cc/paper_files/paper/2023/hash/f1d16af76939f476b5f040fd1398c0a3-Abstract-Conference.html). *NeurIPS 2023*.
 [^24]: Liu, Y., Hu, T., Zhang, H., Wu, H., Wang, S., Ma, L., & Long, M. (2024). [iTransformer: Inverted Transformers Are Effective for Time Series Forecasting](https://openreview.net/forum?id=JePfAI8fah). *ICLR 2024*.
+[^25]: Liu, Y., Wu, H., Wang, J., & Long, M. (2022). [Non-stationary Transformers: Exploring the Stationarity in Time Series Forecasting](https://proceedings.neurips.cc/paper_files/paper/2022/hash/4054556fcaa934b0bf76da52cf4f92cb-Abstract-Conference.html). *NeurIPS 2022*.
+[^26]: Liu, S., Yu, H., Liao, C., Li, J., Lin, W., Liu, A. X., & Dustdar, S. (2022). [Pyraformer: Low-Complexity Pyramidal Attention for Long-Range Time Series Modeling and Forecasting](https://openreview.net/forum?id=0EXmFzUn5I). *ICLR 2022*.
 
 
 
