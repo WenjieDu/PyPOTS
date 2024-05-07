@@ -12,7 +12,7 @@ from ..transformer import PositionalEncoding
 
 
 class SaitsEmbedding(nn.Module):
-    """The embedding method from the SAITS paper :cite:`du2023saits`.
+    """The embedding method from the SAITS paper :cite:`du2023SAITS`.
 
     Parameters
     ----------
