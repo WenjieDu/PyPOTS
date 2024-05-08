@@ -8,12 +8,12 @@ and takes over the forward progress of the algorithm.
 
 import torch.nn as nn
 
+from ...nn.functional import nonstationary_norm, nonstationary_denorm
 from ...nn.modules.nonstationary_transformer import (
     NonstationaryTransformerEncoder,
     Projector,
 )
 from ...nn.modules.saits import SaitsLoss, SaitsEmbedding
-from ...nn.functional.normalization import nonstationary_norm, nonstationary_denorm
 
 
 class _NonstationaryTransformer(nn.Module):

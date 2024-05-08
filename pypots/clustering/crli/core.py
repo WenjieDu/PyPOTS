@@ -13,8 +13,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 from sklearn.cluster import KMeans
 
+from ...nn.functional import calc_mse
 from ...nn.modules.crli import BackboneCRLI
-from ...utils.metrics import calc_mse
 
 
 class _CRLI(nn.Module):

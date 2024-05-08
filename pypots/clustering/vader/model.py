@@ -16,8 +16,8 @@ from scipy.stats import multivariate_normal
 from sklearn.mixture import GaussianMixture
 from torch.utils.data import DataLoader
 
-from .data import DatasetForVaDER
 from .core import inverse_softplus, _VaDER
+from .data import DatasetForVaDER
 from ..base import BaseNNClusterer
 from ...optim.adam import Adam
 from ...optim.base import Optimizer

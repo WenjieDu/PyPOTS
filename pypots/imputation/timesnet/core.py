@@ -7,10 +7,10 @@
 
 import torch.nn as nn
 
+from ...nn.functional import calc_mse
 from ...nn.functional import nonstationary_norm, nonstationary_denorm
 from ...nn.modules.timesnet import BackboneTimesNet
 from ...nn.modules.transformer.embedding import DataEmbedding
-from ...utils.metrics import calc_mse
 
 
 class _TimesNet(nn.Module):

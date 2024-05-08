@@ -17,10 +17,10 @@ from .data import DatasetForSAITS
 from ..base import BaseNNImputer
 from ...data.checking import key_in_data_set
 from ...data.dataset import BaseDataset
+from ...nn.functional import calc_mae, calc_mse
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
 from ...utils.logging import logger
-from ...utils.metrics import calc_mae, calc_mse
 
 
 class SAITS(BaseNNImputer):

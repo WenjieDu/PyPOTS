@@ -17,10 +17,10 @@ from .core import _USGAN
 from .data import DatasetForUSGAN
 from ..base import BaseNNImputer
 from ...data.checking import key_in_data_set
+from ...nn.functional import calc_mse
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
 from ...utils.logging import logger
-from ...utils.metrics import calc_mse
 
 try:
     import nni

@@ -15,8 +15,8 @@ from torch.utils.data import DataLoader
 from .core import _Transformer
 from .data import DatasetForTransformer
 from ..base import BaseNNImputer
-from ...data.dataset import BaseDataset
 from ...data.checking import key_in_data_set
+from ...data.dataset import BaseDataset
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
 from ...utils.logging import logger
