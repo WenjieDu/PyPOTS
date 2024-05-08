@@ -74,6 +74,14 @@ class CRLI(BaseNNClusterer):
         stopped when the model does not perform better after that number of epochs.
         Leaving it default as None will disable the early-stopping.
 
+    train_loss_func:
+        The customized loss function designed by users for training the model.
+        If not given, will use the default loss as claimed in the original paper.
+
+    val_metric_func:
+        The customized metric function designed by users for validating the model.
+        If not given, will use the default MSE metric.
+
     G_optimizer :
         The optimizer for the generator training.
         If not given, will use a default Adam optimizer.
@@ -123,6 +131,8 @@ class CRLI(BaseNNClusterer):
         batch_size: int = 32,
         epochs: int = 100,
         patience: Optional[int] = None,
+        train_loss_func: Optional[dict] = None,
+        val_metric_func: Optional[dict] = None,
         G_optimizer: Optional[Optimizer] = Adam(),
         D_optimizer: Optional[Optimizer] = Adam(),
         num_workers: int = 0,
@@ -135,6 +145,8 @@ class CRLI(BaseNNClusterer):
             batch_size,
             epochs,
             patience,
+            train_loss_func,
+            val_metric_func,
             num_workers,
             device,
             saving_path,
@@ -259,7 +271,7 @@ class CRLI(BaseNNClusterer):
                     with torch.no_grad():
                         for idx, data in enumerate(val_loader):
                             inputs = self._assemble_input_for_validating(data)
-                            results = self.model.forward(inputs, training=True)
+                            results = self.model.forward(inputs)
                             epoch_val_loss_G_collector.append(
                                 results["generation_loss"].sum().item()
                             )
@@ -415,7 +427,7 @@ class CRLI(BaseNNClusterer):
         with torch.no_grad():
             for idx, data in enumerate(test_loader):
                 inputs = self._assemble_input_for_testing(data)
-                inputs = self.model.forward(inputs, training=False)
+                inputs = self.model.forward(inputs)
                 clustering_latent_collector.append(inputs["fcn_latent"])
                 if return_latent_vars:
                     imputation_collector.append(inputs["imputation_latent"])

@@ -114,6 +114,8 @@ class USGAN(BaseNNImputer):
         batch_size: int = 32,
         epochs: int = 100,
         patience: Optional[int] = None,
+        train_loss_func: Optional[dict] = None,
+        val_metric_func: Optional[dict] = None,
         G_optimizer: Optional[Optimizer] = Adam(),
         D_optimizer: Optional[Optimizer] = Adam(),
         num_workers: int = 0,
@@ -125,6 +127,8 @@ class USGAN(BaseNNImputer):
             batch_size,
             epochs,
             patience,
+            train_loss_func,
+            val_metric_func,
             num_workers,
             device,
             saving_path,
@@ -282,7 +286,7 @@ class USGAN(BaseNNImputer):
                     with torch.no_grad():
                         for idx, data in enumerate(val_loader):
                             inputs = self._assemble_input_for_validating(data)
-                            results = self.model.forward(inputs, training=False)
+                            results = self.model.forward(inputs)
                             imputation_mse = (
                                 calc_mse(
                                     results["imputed_data"],
@@ -425,7 +429,7 @@ class USGAN(BaseNNImputer):
         with torch.no_grad():
             for idx, data in enumerate(test_loader):
                 inputs = self._assemble_input_for_testing(data)
-                results = self.model.forward(inputs, training=False)
+                results = self.model.forward(inputs)
                 imputed_data = results["imputed_data"]
                 imputation_collector.append(imputed_data)
 
