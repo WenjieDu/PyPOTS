@@ -17,8 +17,8 @@ This implementation is inspired by the official one https://github.com/tianzhou2
 # License: BSD-3-Clause
 
 
-from .layers import HiPPO_LegT, SpectralConv1d
 from .backbone import BackboneFiLM
+from .layers import HiPPO_LegT, SpectralConv1d
 
 __all__ = [
     "HiPPO_LegT",

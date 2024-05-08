@@ -27,7 +27,7 @@ from ...data.checking import key_in_data_set
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
 from ...utils.logging import logger
-from ...utils.metrics import calc_mse
+from ...nn.functional import calc_mse
 
 
 class GPVAE(BaseNNImputer):

@@ -9,8 +9,8 @@ and takes over the forward progress of the algorithm.
 
 import torch.nn as nn
 
+from ...nn.functional import calc_rmse
 from ...nn.modules.mrnn import BackboneMRNN
-from ...utils.metrics import calc_rmse
 
 
 class _MRNN(nn.Module):

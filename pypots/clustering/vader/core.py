@@ -11,8 +11,8 @@ import numpy as np
 import torch
 import torch.nn as nn
 
+from ...nn.functional import calc_mse
 from ...nn.modules.vader import BackboneVaDER
-from ...utils.metrics import calc_mse
 
 
 def inverse_softplus(x: np.ndarray) -> np.ndarray:

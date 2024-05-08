@@ -14,8 +14,8 @@ import torch
 from torch.utils.data import DataLoader
 
 from ..base import BaseModel, BaseNNModel
+from ..nn.functional import calc_mse
 from ..utils.logging import logger
-from ..utils.metrics.error import calc_mse
 
 try:
     import nni
