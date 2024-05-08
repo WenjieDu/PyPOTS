@@ -55,7 +55,6 @@ class _CRLI(nn.Module):
         self,
         inputs: dict,
         training_object: str = "generator",
-        training: bool = True,
     ) -> dict:
         X, missing_mask = inputs["X"], inputs["missing_mask"]
         imputation_latent, discrimination, reconstruction, fcn_latent = self.backbone(
@@ -67,10 +66,6 @@ class _CRLI(nn.Module):
             "reconstruction": reconstruction,
             "fcn_latent": fcn_latent,
         }
-
-        # return results directly, skip loss calculation to reduce inference time
-        if not training:
-            return results
 
         if training_object == "discriminator":
             l_D = F.binary_cross_entropy_with_logits(discrimination, missing_mask)

@@ -51,7 +51,7 @@ class _TimesNet(nn.Module):
         # for the imputation task, the output dim is the same as input dim
         self.projection = nn.Linear(d_model, n_features)
 
-    def forward(self, inputs: dict, training: bool = True) -> dict:
+    def forward(self, inputs: dict) -> dict:
         X, missing_mask = inputs["X"], inputs["missing_mask"]
 
         if self.apply_nonstationary_norm:
@@ -75,7 +75,7 @@ class _TimesNet(nn.Module):
             "imputed_data": imputed_data,
         }
 
-        if training:
+        if self.training:
             # `loss` is always the item for backward propagating to update the model
             loss = calc_mse(dec_out, inputs["X_ori"], inputs["indicating_mask"])
             results["loss"] = loss

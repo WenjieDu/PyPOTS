@@ -34,6 +34,8 @@ class YourNewModel(BaseNNImputer):
         batch_size: int = 32,
         epochs: int = 100,
         patience: Optional[int] = None,
+        train_loss_func: Optional[dict] = None,
+        val_metric_func: Optional[dict] = None,
         optimizer: Optional[Optimizer] = Adam(),
         num_workers: int = 0,
         device: Optional[Union[str, torch.device, list]] = None,
@@ -44,12 +46,13 @@ class YourNewModel(BaseNNImputer):
             batch_size,
             epochs,
             patience,
+            train_loss_func,
+            val_metric_func,
             num_workers,
             device,
             saving_path,
             model_saving_strategy,
-        )
-        # set up the hyper-parameters
+        )  # set up the hyper-parameters
         # TODO: set up your model's hyper-parameters here
 
         # set up the model

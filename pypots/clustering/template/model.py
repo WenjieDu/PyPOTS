@@ -35,6 +35,8 @@ class YourNewModel(BaseNNClusterer):
         batch_size: int = 32,
         epochs: int = 100,
         patience: Optional[int] = None,
+        train_loss_func: Optional[dict] = None,
+        val_metric_func: Optional[dict] = None,
         optimizer: Optional[Optimizer] = Adam(),
         num_workers: int = 0,
         device: Optional[Union[str, torch.device, list]] = None,

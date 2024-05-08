@@ -144,6 +144,8 @@ class CSDI(BaseNNImputer):
             batch_size,
             epochs,
             patience,
+            None,
+            None,
             num_workers,
             device,
             saving_path,
@@ -153,6 +155,11 @@ class CSDI(BaseNNImputer):
         assert schedule in ["quad", "linear"]
         self.n_steps = n_steps
         self.target_strategy = target_strategy
+        # CSDI has its own defined loss function and validation loss, so we set them as None here
+        self.train_loss_func = None
+        self.train_loss_func_name = "default"
+        self.val_metric_func = None
+        self.val_metric_func_name = "loss (default)"
 
         # set up the model
         self.model = _CSDI(
@@ -248,9 +255,7 @@ class CSDI(BaseNNImputer):
                     with torch.no_grad():
                         for idx, data in enumerate(val_loader):
                             inputs = self._assemble_input_for_validating(data)
-                            results = self.model.forward(
-                                inputs, training=False, n_sampling_times=0
-                            )
+                            results = self.model.forward(inputs, n_sampling_times=0)
                             val_loss_collector.append(results["loss"].sum().item())
 
                     mean_val_loss = np.asarray(val_loss_collector).mean()
@@ -264,13 +269,13 @@ class CSDI(BaseNNImputer):
 
                     logger.info(
                         f"Epoch {epoch:03d} - "
-                        f"training loss: {mean_train_loss:.4f}, "
-                        f"validation loss: {mean_val_loss:.4f}"
+                        f"training loss ({self.train_loss_func_name}): {mean_train_loss:.4f}, "
+                        f"validation {self.val_metric_func_name}: {mean_val_loss:.4f}"
                     )
                     mean_loss = mean_val_loss
                 else:
                     logger.info(
-                        f"Epoch {epoch:03d} - training loss: {mean_train_loss:.4f}"
+                        f"Epoch {epoch:03d} - training loss ({self.train_loss_func_name}): {mean_train_loss:.4f}"
                     )
                     mean_loss = mean_train_loss
 
@@ -420,7 +425,6 @@ class CSDI(BaseNNImputer):
                 inputs = self._assemble_input_for_testing(data)
                 results = self.model(
                     inputs,
-                    training=False,
                     n_sampling_times=n_sampling_times,
                 )
                 imputed_data = results["imputed_data"]
