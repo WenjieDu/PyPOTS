@@ -53,7 +53,7 @@
         <img alt="arXiv DOI" src="https://img.shields.io/badge/DOI-10.48550/arXiv.2305.18811-F8F7F0">
     </a>
     <a href="https://github.com/WenjieDu/PyPOTS/blob/main/README_zh.md">
-        <img alt="README in Chinese" src="https://img.shields.io/badge/README-%F0%9F%87%A8%F0%9F%87%B3中文版-FCEFE8">
+        <img alt="README in Chinese" src="https://pypots.com/figs/pypots_logos/readme/CN.svg">
     </a>
 </p>
 
