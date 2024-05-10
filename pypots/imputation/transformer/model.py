@@ -63,7 +63,7 @@ class Transformer(BaseNNImputer):
         The dropout rate for all fully-connected layers in the model.
 
     attn_dropout :
-        The dropout rate for DMSA.
+        The dropout rate for the attention mechanism.
 
     ORT_weight :
         The weight for the ORT loss.

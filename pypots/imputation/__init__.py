@@ -14,6 +14,7 @@ from .saits import SAITS
 from .transformer import Transformer
 from .itransformer import iTransformer
 from .nonstationary_transformer import NonstationaryTransformer
+from .pyraformer import Pyraformer
 from .timesnet import TimesNet
 from .etsformer import ETSformer
 from .fedformer import FEDformer
@@ -47,6 +48,7 @@ __all__ = [
     "Informer",
     "Autoformer",
     "NonstationaryTransformer",
+    "Pyraformer",
     "BRITS",
     "MRNN",
     "GPVAE",
