@@ -116,8 +116,10 @@ The paper references and links are all listed at the bottom of this file.
 | Neural Net    | TimesNet[^14]                      |    ✅     |          |          |          |          | `2023 - ICLR`      |
 | Neural Net    | PatchTST[^18]                      |    ✅     |          |          |          |          | `2023 - ICLR`      |
 | Neural Net    | ETSformer[^19]                     |    ✅     |          |          |          |          | `2023 - ICLR`      |
+| Neural Net    | MICN[^27]                          |    ✅     |          |          |          |          | `2023 - ICLR`      |
 | Neural Net    | DLinear[^17]                       |    ✅     |          |          |          |          | `2023 - AAAI`      |
-| Neural Net    | Nonstationary <br>Transformer[^25] |    ✅     |          |          |          |          | `2022 - NeurIPS`   |
+| Neural Net    | TiDE[^28]                          |    ✅     |          |          |          |          | `2023 - TMLR`      |
+| Neural Net    | Nonstationary Trans.[^25]          |    ✅     |          |          |          |          | `2022 - NeurIPS`   |
 | Neural Net    | FiLM[^22]                          |    ✅     |          |          |          |          | `2022 - NeurIPS`   |
 | Neural Net    | Pyraformer[^26]                    |          |          |    ✅     |          |          | `2022 - ICLR`      |
 | Neural Net    | Raindrop[^5]                       |          |          |    ✅     |          |          | `2022 - ICLR`      |
@@ -356,7 +358,8 @@ PyPOTS community is open, transparent, and surely friendly. Let's work together 
 [^24]: Liu, Y., Hu, T., Zhang, H., Wu, H., Wang, S., Ma, L., & Long, M. (2024). [iTransformer: Inverted Transformers Are Effective for Time Series Forecasting](https://openreview.net/forum?id=JePfAI8fah). *ICLR 2024*.
 [^25]: Liu, Y., Wu, H., Wang, J., & Long, M. (2022). [Non-stationary Transformers: Exploring the Stationarity in Time Series Forecasting](https://proceedings.neurips.cc/paper_files/paper/2022/hash/4054556fcaa934b0bf76da52cf4f92cb-Abstract-Conference.html). *NeurIPS 2022*.
 [^26]: Liu, S., Yu, H., Liao, C., Li, J., Lin, W., Liu, A. X., & Dustdar, S. (2022). [Pyraformer: Low-Complexity Pyramidal Attention for Long-Range Time Series Modeling and Forecasting](https://openreview.net/forum?id=0EXmFzUn5I). *ICLR 2022*.
-
+[^27]: Wang, H., Peng, J., Huang, F., Wang, J., Chen, J., & Xiao, Y. (2023). [MICN: Multi-scale Local and Global Context Modeling for Long-term Series Forecasting](https://openreview.net/forum?id=zt53IDUR1U). *ICLR 2023*.
+[^28]: Das, A., Kong, W., Leach, A., Mathur, S., Sen, R., & Yu, R. (2023). [Long-term Forecasting with TiDE: Time-series Dense Encoder](https://openreview.net/forum?id=pCbC3aQB5W). *TMLR 2023*.
 
 
 <details>
