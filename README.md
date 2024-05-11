@@ -120,9 +120,10 @@ The paper references and links are all listed at the bottom of this file.
 | Neural Net    | MICN[^27]                          |    ✅     |          |          |          |          | `2023 - ICLR`      |
 | Neural Net    | DLinear[^17]                       |    ✅     |          |          |          |          | `2023 - AAAI`      |
 | Neural Net    | TiDE[^28]                          |    ✅     |          |          |          |          | `2023 - TMLR`      |
+| Neural Net    | SCINet[^30]                        |    ✅     |          |          |          |          | `2022 - NeurIPS`   |
 | Neural Net    | Nonstationary Trans.[^25]          |    ✅     |          |          |          |          | `2022 - NeurIPS`   |
 | Neural Net    | FiLM[^22]                          |    ✅     |          |          |          |          | `2022 - NeurIPS`   |
-| Neural Net    | RevIN[^30]                         |          |          |    ✅     |          |          | `2022 - ICLR`      |
+| Neural Net    | RevIN[^31]                         |          |          |    ✅     |          |          | `2022 - ICLR`      |
 | Neural Net    | Pyraformer[^26]                    |          |          |    ✅     |          |          | `2022 - ICLR`      |
 | Neural Net    | Raindrop[^5]                       |          |          |    ✅     |          |          | `2022 - ICLR`      |
 | Neural Net    | FEDformer[^20]                     |    ✅     |          |          |          |          | `2022 - ICML`      |
@@ -363,7 +364,8 @@ PyPOTS community is open, transparent, and surely friendly. Let's work together 
 [^27]: Wang, H., Peng, J., Huang, F., Wang, J., Chen, J., & Xiao, Y. (2023). [MICN: Multi-scale Local and Global Context Modeling for Long-term Series Forecasting](https://openreview.net/forum?id=zt53IDUR1U). *ICLR 2023*.
 [^28]: Das, A., Kong, W., Leach, A., Mathur, S., Sen, R., & Yu, R. (2023). [Long-term Forecasting with TiDE: Time-series Dense Encoder](https://openreview.net/forum?id=pCbC3aQB5W). *TMLR 2023*.
 [^29]: Liu, Y., Li, C., Wang, J., & Long, M. (2023). [Koopa: Learning Non-stationary Time Series Dynamics with Koopman Predictors](https://proceedings.neurips.cc/paper_files/paper/2023/hash/28b3dc0970fa4624a63278a4268de997-Abstract-Conference.html). *NeurIPS 2023*.
-[^30]: Kim, T., Kim, J., Tae, Y., Park, C., Choi, J. H., & Choo, J. (2022). [Reversible Instance Normalization for Accurate Time-Series Forecasting against Distribution Shift](https://openreview.net/forum?id=cGDAkQo1C0p). *ICLR 2022*.
+[^30]: Liu, M., Zeng, A., Chen, M., Xu, Z., Lai, Q., Ma, L., & Xu, Q. (2022). [SCINet: Time Series Modeling and Forecasting with Sample Convolution and Interaction](https://proceedings.neurips.cc/paper_files/paper/2022/hash/266983d0949aed78a16fa4782237dea7-Abstract-Conference.html). *NeurIPS 2022*.
+[^31]: Kim, T., Kim, J., Tae, Y., Park, C., Choi, J. H., & Choo, J. (2022). [Reversible Instance Normalization for Accurate Time-Series Forecasting against Distribution Shift](https://openreview.net/forum?id=cGDAkQo1C0p). *ICLR 2022*.
 
 
 <details>
