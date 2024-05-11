@@ -95,34 +95,37 @@ PyPOTS当前支持多变量POTS数据的插补，预测，分类，聚类以及�
 
 | **类型**      | **算法**                           | **插补** | **预测** | **分类** | **聚类** | **异常检测** | **年份 - 刊物**      |
 |:--------------|:-----------------------------------|:------:|:------:|:------:|:------:|:--------:|:-----------------|
-| Neural Net    | iTransformer[^24]                  |   ✅    |        |          |          |          | `2024 - ICLR`      |
-| Neural Net    | SAITS[^1]                          |   ✅    |        |          |          |          | `2023 - ESWA`      |
-| Neural Net    | FreTS[^23]                         |   ✅    |        |          |          |          | `2023 - NeurIPS`   |
-| Neural Net    | Crossformer[^16]                   |   ✅    |        |          |          |          | `2023 - ICLR`      |
-| Neural Net    | TimesNet[^14]                      |   ✅    |        |          |          |          | `2023 - ICLR`      |
-| Neural Net    | PatchTST[^18]                      |   ✅    |        |          |          |          | `2023 - ICLR`      |
-| Neural Net    | ETSformer[^19]                     |   ✅    |        |          |          |          | `2023 - ICLR`      |
-| Neural Net    | DLinear[^17]                       |   ✅    |        |          |          |          | `2023 - AAAI`      |
-| Neural Net    | Nonstationary <br>Transformer[^25] |   ✅    |        |          |          |          | `2022 - NeurIPS`   |
-| Neural Net    | FiLM[^22]                          |   ✅    |        |          |          |          | `2022 - NeurIPS`   |
-| Neural Net    | Pyraformer[^26]                    |        |        |    ✅     |          |          | `2022 - ICLR`      |
-| Neural Net    | Raindrop[^5]                       |        |        |    ✅     |          |          | `2022 - ICLR`      |
-| Neural Net    | FEDformer[^20]                     |   ✅    |        |          |          |          | `2022 - ICML`      |
-| Neural Net    | Autoformer[^15]                    |   ✅    |        |          |          |          | `2021 - NeurIPS`   |
-| Neural Net    | CSDI[^12]                          |   ✅    |   ✅    |          |          |          | `2021 - NeurIPS`   |
-| Neural Net    | Informer[^21]                      |   ✅    |        |          |          |          | `2021 - AAAI`      |
-| Neural Net    | US-GAN[^10]                        |   ✅    |        |          |          |          | `2021 - AAAI`      |
-| Neural Net    | CRLI[^6]                           |        |        |          |    ✅     |          | `2021 - AAAI`      |
-| Probabilistic | BTTF[^8]                           |        |   ✅    |          |          |          | `2021 - TPAMI`     |
-| Neural Net    | GP-VAE[^11]                        |   ✅    |        |          |          |          | `2020 - AISTATS`   |
-| Neural Net    | VaDER[^7]                          |        |        |          |    ✅     |          | `2019 - GigaSci.`  |
-| Neural Net    | M-RNN[^9]                          |   ✅    |        |          |          |          | `2019 - TBME`      |
-| Neural Net    | BRITS[^3]                          |   ✅    |        |    ✅     |          |          | `2018 - NeurIPS`   |
-| Neural Net    | GRU-D[^4]                          |   ✅    |        |    ✅     |          |          | `2018 - Sci. Rep.` |
-| Neural Net    | Transformer[^2]                    |   ✅    |        |          |          |          | `2017 - NeurIPS`   |
-| Naive         | LOCF/NOCB                          |   ✅    |        |          |          |          |                    |
-| Naive         | Mean                               |   ✅    |        |          |          |          |                    |
-| Naive         | Median                             |   ✅    |        |          |          |          |                    |
+| Neural Net    | iTransformer[^24]                  |    ✅     |          |          |          |          | `2024 - ICLR`      |
+| Neural Net    | SAITS[^1]                          |    ✅     |          |          |          |          | `2023 - ESWA`      |
+| Neural Net    | FreTS[^23]                         |    ✅     |          |          |          |          | `2023 - NeurIPS`   |
+| Neural Net    | Koopa[^29]                         |    ✅     |          |          |          |          | `2023 - NeurIPS`   |
+| Neural Net    | Crossformer[^16]                   |    ✅     |          |          |          |          | `2023 - ICLR`      |
+| Neural Net    | TimesNet[^14]                      |    ✅     |          |          |          |          | `2023 - ICLR`      |
+| Neural Net    | PatchTST[^18]                      |    ✅     |          |          |          |          | `2023 - ICLR`      |
+| Neural Net    | ETSformer[^19]                     |    ✅     |          |          |          |          | `2023 - ICLR`      |
+| Neural Net    | MICN[^27]                          |    ✅     |          |          |          |          | `2023 - ICLR`      |
+| Neural Net    | DLinear[^17]                       |    ✅     |          |          |          |          | `2023 - AAAI`      |
+| Neural Net    | TiDE[^28]                          |    ✅     |          |          |          |          | `2023 - TMLR`      |
+| Neural Net    | Nonstationary Trans.[^25]          |    ✅     |          |          |          |          | `2022 - NeurIPS`   |
+| Neural Net    | FiLM[^22]                          |    ✅     |          |          |          |          | `2022 - NeurIPS`   |
+| Neural Net    | Pyraformer[^26]                    |          |          |    ✅     |          |          | `2022 - ICLR`      |
+| Neural Net    | Raindrop[^5]                       |          |          |    ✅     |          |          | `2022 - ICLR`      |
+| Neural Net    | FEDformer[^20]                     |    ✅     |          |          |          |          | `2022 - ICML`      |
+| Neural Net    | Autoformer[^15]                    |    ✅     |          |          |          |          | `2021 - NeurIPS`   |
+| Neural Net    | CSDI[^12]                          |    ✅     |    ✅     |          |          |          | `2021 - NeurIPS`   |
+| Neural Net    | Informer[^21]                      |    ✅     |          |          |          |          | `2021 - AAAI`      |
+| Neural Net    | US-GAN[^10]                        |    ✅     |          |          |          |          | `2021 - AAAI`      |
+| Neural Net    | CRLI[^6]                           |          |          |          |    ✅     |          | `2021 - AAAI`      |
+| Probabilistic | BTTF[^8]                           |          |    ✅     |          |          |          | `2021 - TPAMI`     |
+| Neural Net    | GP-VAE[^11]                        |    ✅     |          |          |          |          | `2020 - AISTATS`   |
+| Neural Net    | VaDER[^7]                          |          |          |          |    ✅     |          | `2019 - GigaSci.`  |
+| Neural Net    | M-RNN[^9]                          |    ✅     |          |          |          |          | `2019 - TBME`      |
+| Neural Net    | BRITS[^3]                          |    ✅     |          |    ✅     |          |          | `2018 - NeurIPS`   |
+| Neural Net    | GRU-D[^4]                          |    ✅     |          |    ✅     |          |          | `2018 - Sci. Rep.` |
+| Neural Net    | Transformer[^2]                    |    ✅     |          |          |          |          | `2017 - NeurIPS`   |
+| Naive         | LOCF/NOCB                          |    ✅     |          |          |          |          |                    |
+| Naive         | Mean                               |    ✅     |          |          |          |          |                    |
+| Naive         | Median                             |    ✅     |          |          |          |          |                    |
 
 
 ## ❖ PyPOTS生态系统
@@ -331,6 +334,9 @@ PyPOTS社区是一个开放、透明、友好的社区，让我们共同努力�
 [^24]: Liu, Y., Hu, T., Zhang, H., Wu, H., Wang, S., Ma, L., & Long, M. (2024). [iTransformer: Inverted Transformers Are Effective for Time Series Forecasting](https://openreview.net/forum?id=JePfAI8fah). *ICLR 2024*.
 [^25]: Liu, Y., Wu, H., Wang, J., & Long, M. (2022). [Non-stationary Transformers: Exploring the Stationarity in Time Series Forecasting](https://proceedings.neurips.cc/paper_files/paper/2022/hash/4054556fcaa934b0bf76da52cf4f92cb-Abstract-Conference.html). *NeurIPS 2022*.
 [^26]: Liu, S., Yu, H., Liao, C., Li, J., Lin, W., Liu, A. X., & Dustdar, S. (2022). [Pyraformer: Low-Complexity Pyramidal Attention for Long-Range Time Series Modeling and Forecasting](https://openreview.net/forum?id=0EXmFzUn5I). *ICLR 2022*.
+[^27]: Wang, H., Peng, J., Huang, F., Wang, J., Chen, J., & Xiao, Y. (2023). [MICN: Multi-scale Local and Global Context Modeling for Long-term Series Forecasting](https://openreview.net/forum?id=zt53IDUR1U). *ICLR 2023*.
+[^28]: Das, A., Kong, W., Leach, A., Mathur, S., Sen, R., & Yu, R. (2023). [Long-term Forecasting with TiDE: Time-series Dense Encoder](https://openreview.net/forum?id=pCbC3aQB5W). *TMLR 2023*.
+[^29]: Liu, Y., Li, C., Wang, J., & Long, M. (2023). [Koopa: Learning Non-stationary Time Series Dynamics with Koopman Predictors](https://proceedings.neurips.cc/paper_files/paper/2023/hash/28b3dc0970fa4624a63278a4268de997-Abstract-Conference.html). *NeurIPS 2023*.
 
 
 <details>
