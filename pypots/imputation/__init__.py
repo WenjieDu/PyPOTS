@@ -26,6 +26,7 @@ from .autoformer import Autoformer
 from .dlinear import DLinear
 from .patchtst import PatchTST
 from .usgan import USGAN
+from .scinet import SCINet
 
 # naive imputation methods
 from .locf import LOCF
@@ -54,6 +55,7 @@ __all__ = [
     "GPVAE",
     "USGAN",
     "CSDI",
+    "SCINet",
     # naive imputation methods
     "LOCF",
     "Mean",
