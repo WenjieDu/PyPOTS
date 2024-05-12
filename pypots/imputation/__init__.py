@@ -28,6 +28,7 @@ from .patchtst import PatchTST
 from .usgan import USGAN
 from .scinet import SCINet
 from .revinscinet import RevIN_SCINet
+from .koopa import Koopa
 
 # naive imputation methods
 from .locf import LOCF
@@ -58,6 +59,7 @@ __all__ = [
     "CSDI",
     "SCINet",
     "RevIN_SCINet",
+    "Koopa",
     # naive imputation methods
     "LOCF",
     "Mean",
