@@ -95,37 +95,39 @@ PyPOTS当前支持多变量POTS数据的插补，预测，分类，聚类以及�
 
 | **类型**      | **算法**                           | **插补** | **预测** | **分类** | **聚类** | **异常检测** | **年份 - 刊物**      |
 |:--------------|:-----------------------------------|:------:|:------:|:------:|:------:|:--------:|:-----------------|
-| Neural Net    | iTransformer[^24]                  |    ✅     |          |          |          |          | `2024 - ICLR`      |
-| Neural Net    | SAITS[^1]                          |    ✅     |          |          |          |          | `2023 - ESWA`      |
-| Neural Net    | FreTS[^23]                         |    ✅     |          |          |          |          | `2023 - NeurIPS`   |
-| Neural Net    | Koopa[^29]                         |    ✅     |          |          |          |          | `2023 - NeurIPS`   |
-| Neural Net    | Crossformer[^16]                   |    ✅     |          |          |          |          | `2023 - ICLR`      |
-| Neural Net    | TimesNet[^14]                      |    ✅     |          |          |          |          | `2023 - ICLR`      |
-| Neural Net    | PatchTST[^18]                      |    ✅     |          |          |          |          | `2023 - ICLR`      |
-| Neural Net    | ETSformer[^19]                     |    ✅     |          |          |          |          | `2023 - ICLR`      |
-| Neural Net    | MICN[^27]                          |    ✅     |          |          |          |          | `2023 - ICLR`      |
-| Neural Net    | DLinear[^17]                       |    ✅     |          |          |          |          | `2023 - AAAI`      |
-| Neural Net    | TiDE[^28]                          |    ✅     |          |          |          |          | `2023 - TMLR`      |
-| Neural Net    | Nonstationary Trans.[^25]          |    ✅     |          |          |          |          | `2022 - NeurIPS`   |
-| Neural Net    | FiLM[^22]                          |    ✅     |          |          |          |          | `2022 - NeurIPS`   |
-| Neural Net    | Pyraformer[^26]                    |          |          |    ✅     |          |          | `2022 - ICLR`      |
-| Neural Net    | Raindrop[^5]                       |          |          |    ✅     |          |          | `2022 - ICLR`      |
-| Neural Net    | FEDformer[^20]                     |    ✅     |          |          |          |          | `2022 - ICML`      |
-| Neural Net    | Autoformer[^15]                    |    ✅     |          |          |          |          | `2021 - NeurIPS`   |
-| Neural Net    | CSDI[^12]                          |    ✅     |    ✅     |          |          |          | `2021 - NeurIPS`   |
-| Neural Net    | Informer[^21]                      |    ✅     |          |          |          |          | `2021 - AAAI`      |
-| Neural Net    | US-GAN[^10]                        |    ✅     |          |          |          |          | `2021 - AAAI`      |
-| Neural Net    | CRLI[^6]                           |          |          |          |    ✅     |          | `2021 - AAAI`      |
-| Probabilistic | BTTF[^8]                           |          |    ✅     |          |          |          | `2021 - TPAMI`     |
-| Neural Net    | GP-VAE[^11]                        |    ✅     |          |          |          |          | `2020 - AISTATS`   |
-| Neural Net    | VaDER[^7]                          |          |          |          |    ✅     |          | `2019 - GigaSci.`  |
-| Neural Net    | M-RNN[^9]                          |    ✅     |          |          |          |          | `2019 - TBME`      |
-| Neural Net    | BRITS[^3]                          |    ✅     |          |    ✅     |          |          | `2018 - NeurIPS`   |
-| Neural Net    | GRU-D[^4]                          |    ✅     |          |    ✅     |          |          | `2018 - Sci. Rep.` |
-| Neural Net    | Transformer[^2]                    |    ✅     |          |          |          |          | `2017 - NeurIPS`   |
-| Naive         | LOCF/NOCB                          |    ✅     |          |          |          |          |                    |
-| Naive         | Mean                               |    ✅     |          |          |          |          |                    |
-| Naive         | Median                             |    ✅     |          |          |          |          |                    |
+| Neural Net    | iTransformer🧑‍🔧[^24]      |    ✅     |          |          |          |          | `2024 - ICLR`      |
+| Neural Net    | SAITS[^1]                   |    ✅     |          |          |          |          | `2023 - ESWA`      |
+| Neural Net    | FreTS🧑‍🔧[^23]             |    ✅     |          |          |          |          | `2023 - NeurIPS`   |
+| Neural Net    | Koopa🧑‍🔧[^29]             |    ✅     |          |          |          |          | `2023 - NeurIPS`   |
+| Neural Net    | Crossformer🧑‍🔧[^16]       |    ✅     |          |          |          |          | `2023 - ICLR`      |
+| Neural Net    | TimesNet[^14]               |    ✅     |          |          |          |          | `2023 - ICLR`      |
+| Neural Net    | PatchTST🧑‍🔧[^18]          |    ✅     |          |          |          |          | `2023 - ICLR`      |
+| Neural Net    | ETSformer🧑‍🔧[^19]         |    ✅     |          |          |          |          | `2023 - ICLR`      |
+| Neural Net    | MICN🧑‍🔧[^27]              |    ✅     |          |          |          |          | `2023 - ICLR`      |
+| Neural Net    | DLinear🧑‍🔧[^17]           |    ✅     |          |          |          |          | `2023 - AAAI`      |
+| Neural Net    | TiDE🧑‍🔧[^28]              |    ✅     |          |          |          |          | `2023 - TMLR`      |
+| Neural Net    | SCINet🧑‍🔧[^30]            |    ✅     |          |          |          |          | `2022 - NeurIPS`   |
+| Neural Net    | Nonstationary Tr.🧑‍🔧[^25] |    ✅     |          |          |          |          | `2022 - NeurIPS`   |
+| Neural Net    | FiLM🧑‍🔧[^22]              |    ✅     |          |          |          |          | `2022 - NeurIPS`   |
+| Neural Net    | RevIN_SCInet🧑‍🔧[^31]      |          |          |    ✅     |          |          | `2022 - ICLR`      |
+| Neural Net    | Pyraformer🧑‍🔧[^26]        |          |          |    ✅     |          |          | `2022 - ICLR`      |
+| Neural Net    | Raindrop[^5]                |          |          |    ✅     |          |          | `2022 - ICLR`      |
+| Neural Net    | FEDformer🧑‍🔧[^20]         |    ✅     |          |          |          |          | `2022 - ICML`      |
+| Neural Net    | Autoformer🧑‍🔧[^15]        |    ✅     |          |          |          |          | `2021 - NeurIPS`   |
+| Neural Net    | CSDI[^12]                   |    ✅     |    ✅     |          |          |          | `2021 - NeurIPS`   |
+| Neural Net    | Informer🧑‍🔧[^21]          |    ✅     |          |          |          |          | `2021 - AAAI`      |
+| Neural Net    | US-GAN[^10]                 |    ✅     |          |          |          |          | `2021 - AAAI`      |
+| Neural Net    | CRLI[^6]                    |          |          |          |    ✅     |          | `2021 - AAAI`      |
+| Probabilistic | BTTF[^8]                    |          |    ✅     |          |          |          | `2021 - TPAMI`     |
+| Neural Net    | GP-VAE[^11]                 |    ✅     |          |          |          |          | `2020 - AISTATS`   |
+| Neural Net    | VaDER[^7]                   |          |          |          |    ✅     |          | `2019 - GigaSci.`  |
+| Neural Net    | M-RNN[^9]                   |    ✅     |          |          |          |          | `2019 - TBME`      |
+| Neural Net    | BRITS[^3]                   |    ✅     |          |    ✅     |          |          | `2018 - NeurIPS`   |
+| Neural Net    | GRU-D[^4]                   |    ✅     |          |    ✅     |          |          | `2018 - Sci. Rep.` |
+| Neural Net    | Transformer🧑‍🔧[^2]        |    ✅     |          |          |          |          | `2017 - NeurIPS`   |
+| Naive         | LOCF/NOCB                   |    ✅     |          |          |          |          |                    |
+| Naive         | Mean                        |    ✅     |          |          |          |          |                    |
+| Naive         | Median                      |    ✅     |          |          |          |          |                    |
 
 
 ## ❖ PyPOTS生态系统

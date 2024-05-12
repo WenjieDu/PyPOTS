@@ -123,7 +123,7 @@ The paper references and links are all listed at the bottom of this file.
 | Neural Net    | SCINet🧑‍🔧[^30]            |    ✅     |          |          |          |          | `2022 - NeurIPS`   |
 | Neural Net    | Nonstationary Tr.🧑‍🔧[^25] |    ✅     |          |          |          |          | `2022 - NeurIPS`   |
 | Neural Net    | FiLM🧑‍🔧[^22]              |    ✅     |          |          |          |          | `2022 - NeurIPS`   |
-| Neural Net    | RevIN🧑‍🔧[^31]             |          |          |    ✅     |          |          | `2022 - ICLR`      |
+| Neural Net    | RevIN_SCInet🧑‍🔧[^31]      |          |          |    ✅     |          |          | `2022 - ICLR`      |
 | Neural Net    | Pyraformer🧑‍🔧[^26]        |          |          |    ✅     |          |          | `2022 - ICLR`      |
 | Neural Net    | Raindrop[^5]                |          |          |    ✅     |          |          | `2022 - ICLR`      |
 | Neural Net    | FEDformer🧑‍🔧[^20]         |    ✅     |          |          |          |          | `2022 - ICML`      |
