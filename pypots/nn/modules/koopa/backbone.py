@@ -19,18 +19,18 @@ class BackboneKoopa(nn.Module):
         n_steps: int,
         n_features: int,
         n_pred_steps: int,
+        n_seg_steps: int,
         d_dynamic: int,
         d_hidden: int,
         n_hidden_layers: int,
         n_blocks: int,
         multistep: bool,
-        train_dataloader: DataLoader,
         alpha: int = 0.2,
     ):
         super().__init__()
         self.n_blocks = n_blocks
         self.alpha = alpha
-        self.mask_spectrum = self._get_mask_spectrum(train_dataloader)
+        self.mask_spectrum = None
         self.disentanglement = FourierFilter(self.mask_spectrum)
 
         # shared encoder/decoder to make koopman embedding consistent
@@ -43,7 +43,7 @@ class BackboneKoopa(nn.Module):
         )
         self.time_inv_decoder = MLP(
             d_in=d_dynamic,
-            d_out=self.pred_len,
+            d_out=n_pred_steps,
             activation="relu",
             d_hidden=d_hidden,
             n_hidden_layers=n_hidden_layers,
@@ -57,13 +57,13 @@ class BackboneKoopa(nn.Module):
                     encoder=self.time_inv_encoder,
                     decoder=self.time_inv_decoder,
                 )
-                for _ in range(self.num_blocks)
+                for _ in range(n_blocks)
             ]
         )
 
         # shared encoder/decoder to make koopman embedding consistent
         self.time_var_encoder = MLP(
-            d_in=n_pred_steps * n_features,
+            d_in=n_seg_steps * n_features,
             d_out=d_dynamic,
             activation="tanh",
             d_hidden=d_hidden,
@@ -71,7 +71,7 @@ class BackboneKoopa(nn.Module):
         )
         self.time_var_decoder = MLP(
             d_in=d_dynamic,
-            d_out=n_pred_steps * n_features,
+            d_out=n_seg_steps * n_features,
             activation="tanh",
             d_hidden=d_hidden,
             n_hidden_layers=n_hidden_layers,
@@ -82,7 +82,7 @@ class BackboneKoopa(nn.Module):
                     enc_in=n_features,
                     input_len=n_steps,
                     pred_len=n_pred_steps,
-                    seg_len=n_pred_steps,
+                    seg_len=n_seg_steps,
                     dynamic_dim=d_dynamic,
                     encoder=self.time_var_encoder,
                     decoder=self.time_var_decoder,
@@ -103,7 +103,14 @@ class BackboneKoopa(nn.Module):
         mask_spectrum = amps.topk(int(amps.shape[0] * self.alpha)).indices
         return mask_spectrum  # as the spectrums of time-invariant component
 
+    def init_mask_spectrum(self, train_dataloader: DataLoader):
+        self.mask_spectrum = self._get_mask_spectrum(train_dataloader)
+
     def forward(self, X):
+        assert (
+            self.mask_spectrum is not None
+        ), "Please initialize the mask spectrum first with init_mask_spectrum() method."
+
         residual, output = X, None
         for i in range(self.n_blocks):
             time_var_input, time_inv_input = self.disentanglement(residual)
