@@ -17,6 +17,7 @@ from sympy import Poly, legendre, Symbol, chebyshevt
 from torch import Tensor
 from torch import nn
 
+from ..autoformer.layers import MovingAvgBlock
 from ..transformer.attention import AttentionOperator
 
 
@@ -952,3 +953,28 @@ class FourierCrossAttention(AttentionOperator):
             out_ft / self.in_channels / self.out_channels, n=xq.size(-1)
         )
         return out, None
+
+
+class SeriesDecompositionMultiBlock(nn.Module):
+    """
+    Series decomposition block from FEDfromer,
+    i.e. series_decomp_multi from https://github.com/MAZiqing/FEDformer
+
+    """
+
+    def __init__(self, kernel_size):
+        super().__init__()
+        self.moving_avg = [MovingAvgBlock(kernel, stride=1) for kernel in kernel_size]
+        self.layer = torch.nn.Linear(1, len(kernel_size))
+
+    def forward(self, x):
+        moving_mean = []
+        for func in self.moving_avg:
+            moving_avg = func(x)
+            moving_mean.append(moving_avg.unsqueeze(-1))
+        moving_mean = torch.cat(moving_mean, dim=-1)
+        moving_mean = torch.sum(
+            moving_mean * nn.Softmax(-1)(self.layer(x.unsqueeze(-1))), dim=-1
+        )
+        res = x - moving_mean
+        return res, moving_mean
