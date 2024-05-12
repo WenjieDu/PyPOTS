@@ -17,10 +17,8 @@ This implementation is inspired by the official one https://github.com/ts-kim/Re
 # License: BSD-3-Clause
 
 
-from .backbone import BackboneRevINSCINet
 from .layers import RevIN
 
 __all__ = [
     "RevIN",
-    "BackboneRevINSCINet",
 ]
