@@ -1,5 +1,5 @@
 """
-The package including the modules of RevIN.
+The package of the partially-observed time-series imputation model RevIN_SCINet.
 
 Refer to the paper
 `Taesung Kim, Jinhee Kim, Yunwon Tae, Cheonbok Park, Jang-Ho Choi, and Jaegul Choo.
@@ -17,8 +17,8 @@ This implementation is inspired by the official one https://github.com/ts-kim/Re
 # License: BSD-3-Clause
 
 
-from .layers import RevIN
+from .model import RevIN_SCINet
 
 __all__ = [
-    "RevIN",
+    "RevIN_SCINet",
 ]
