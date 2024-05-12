@@ -270,7 +270,8 @@ class SCINet_Tree(nn.Module):
 
     def forward(self, x):
         x_even_update, x_odd_update = self.workingblock(x)
-        # We recursively reordered these sub-series. You can run the ./utils/recursive_demo.py to emulate this procedure.
+        # We recursively reordered these sub-series.
+        # You can run the ./utils/recursive_demo.py to emulate this procedure.
         if self.current_level == 0:
             return self.zip_up_the_pants(x_even_update, x_odd_update)
         else:

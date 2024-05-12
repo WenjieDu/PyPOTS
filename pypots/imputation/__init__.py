@@ -27,6 +27,7 @@ from .dlinear import DLinear
 from .patchtst import PatchTST
 from .usgan import USGAN
 from .scinet import SCINet
+from .revinscinet import RevIN_SCINet
 
 # naive imputation methods
 from .locf import LOCF
@@ -56,6 +57,7 @@ __all__ = [
     "USGAN",
     "CSDI",
     "SCINet",
+    "RevIN_SCINet",
     # naive imputation methods
     "LOCF",
     "Mean",
