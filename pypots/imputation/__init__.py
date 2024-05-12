@@ -29,6 +29,7 @@ from .usgan import USGAN
 from .scinet import SCINet
 from .revinscinet import RevIN_SCINet
 from .koopa import Koopa
+from .micn import MICN
 
 # naive imputation methods
 from .locf import LOCF
@@ -60,6 +61,7 @@ __all__ = [
     "SCINet",
     "RevIN_SCINet",
     "Koopa",
+    "MICN",
     # naive imputation methods
     "LOCF",
     "Mean",
