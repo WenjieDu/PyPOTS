@@ -117,9 +117,9 @@ This functionality is implemented with the `Microsoft NNI <https://github.com/mi
 imputation survey repo `Awesome_Imputation <https://github.com/WenjieDu/Awesome_Imputation>`_ to see how to config and
 tune the hyperparameters.
 
-🔥 Note that Transformer, iTransformer, FreTS, Crossformer, PatchTST, DLinear, ETSformer, Pyraformer, Nonstationary Transformer, FiLM, FEDformer, Informer, Autoformer
-are not proposed as imputation methods in their original papers, and they cannot accept POTS as input.
-To make them applicable on POTS data, we apply the embedding strategy and training approach (ORT+MIT)
+🔥 Note that all models whose name with `🧑‍🔧` in the table (e.g. Transformer, iTransformer, Informer etc.) are not originally
+proposed as algorithms for POTS data in their papers, and they cannot directly accept time series with missing values as input, let alone imputation.
+To make them applicable to POTS data, we specifically apply the embedding strategy and training approach (ORT+MIT)
 the same as we did in `SAITS paper <https://arxiv.org/pdf/2202.08516)>`_.
 
 The task types are abbreviated as follows: **IMPU**: Imputation; **FORE**: Forecasting;

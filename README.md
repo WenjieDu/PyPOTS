@@ -95,9 +95,9 @@ imputation survey repo [Awesome_Imputation](https://github.com/WenjieDu/Awesome_
 tune the hyperparameters.
 
 🔥 Note that all models whose name with `🧑‍🔧` in the table (e.g. Transformer, iTransformer, Informer etc.) are not originally
-proposed as algorithms for POTS data in their papers, and they cannot directly accept time series with missing values as input.
-**To make them applicable to POTS data, we specifically apply the embedding strategy and training approach (ORT+MIT)
-the same as we did in [SAITS paper](https://arxiv.org/pdf/2202.08516).**
+proposed as algorithms for POTS data in their papers, and they cannot directly accept time series with missing values as input,
+let alone imputation. **To make them applicable to POTS data, we specifically apply the embedding strategy and
+training approach (ORT+MIT) the same as we did in [SAITS paper](https://arxiv.org/pdf/2202.08516).**
 
 The task types are abbreviated as follows:
 **`IMPU`**: Imputation;

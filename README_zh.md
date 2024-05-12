@@ -83,14 +83,14 @@
 
 ## ❖ 支持的算法
 PyPOTS当前支持多变量POTS数据的插补，预测，分类，聚类以及异常检测五类任务。下表描述了当前PyPOTS中所集成的算法以及对应不同任务的可用性。
-符号 ✅ 表示该算法当前可用于相应的任务（注意，目前模型尚不支持的任务在未来版本中可能会逐步添加，敬请关注！)。
+符号`✅`表示该算法当前可用于相应的任务（注意，目前模型尚不支持的任务在未来版本中可能会逐步添加，敬请关注！)。
 算法的参考文献以及论文链接在该文档底部可以找到。
 
 🌟 自**v0.2**版本开始, PyPOTS中所有神经网络模型都支持超参数调优。该功能基于[微软的NNI](https://github.com/microsoft/nni)框架实现。
 你可以通过参考我们的时间序列插补综述项目的代码[Awesome_Imputation](https://github.com/WenjieDu/Awesome_Imputation)来了解如何使用PyPOTS调优模型的超参。
 
-🔥 请注意: Transformer, iTransformer, FreTS, Crossformer, PatchTST, DLinear, ETSformer, Pyraformer, Nonstationary Transformer, FiLM, FEDformer, Informer, Autoformer
-模型在它们的原始论文中并未用作插补方法，因此这些模型的输入中不能带有缺失值， 所以无法接受POTS数据作为输入。
+🔥 请注意: 表格中名称带有`🧑‍🔧`的模型（例如Transformer, iTransformer, Informer等）在它们的原始论文中并非作为可以处理POTS数据的算法提出，
+所以这些模型的输入中不能带有缺失值，无法接受POTS数据作为输入，更加不是插补算法。
 **为了使上述模型能够适用于POTS数据，我们采用了与[SAITS论文](https://arxiv.org/pdf/2202.08516)中相同的embedding策略和训练方法（ORT+MIT）对它们进行改进**。
 
 | **类型**      | **算法**                           | **插补** | **预测** | **分类** | **聚类** | **异常检测** | **年份 - 刊物**      |
