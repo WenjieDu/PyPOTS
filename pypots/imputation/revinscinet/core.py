@@ -1,5 +1,5 @@
 """
-The core wrapper assembles the submodules of Pyraformer imputation model
+The core wrapper assembles the submodules of RevIN_SCINet imputation model
 and takes over the forward progress of the algorithm.
 """
 
@@ -8,23 +8,25 @@ and takes over the forward progress of the algorithm.
 
 import torch.nn as nn
 
-from ...nn.modules.pyraformer import PyraformerEncoder
 from ...nn.modules.saits import SaitsLoss, SaitsEmbedding
+from ...nn.modules.scinet import BackboneSCINet
+from ...nn.modules.revin import RevIN
 
 
-class _Pyraformer(nn.Module):
+class _RevIN_SCINet(nn.Module):
     def __init__(
         self,
-        n_steps: int,
-        n_features: int,
-        n_layers: int,
-        d_model: int,
-        n_heads: int,
-        d_ffn: int,
-        dropout: float,
-        attn_dropout: float,
-        window_size: list,
-        inner_size: int,
+        n_steps,
+        n_features,
+        n_stacks,
+        n_levels,
+        n_groups,
+        n_decoder_layers,
+        d_hidden,
+        kernel_size,
+        dropout,
+        concat_len,
+        pos_enc: bool,
         ORT_weight: float = 1,
         MIT_weight: float = 1,
     ):
@@ -32,40 +34,45 @@ class _Pyraformer(nn.Module):
 
         self.saits_embedding = SaitsEmbedding(
             n_features * 2,
-            d_model,
-            with_pos=True,
+            n_features,
+            with_pos=False,
             dropout=dropout,
         )
-        self.encoder = PyraformerEncoder(
-            n_steps,
-            n_layers,
-            d_model,
-            n_heads,
-            d_ffn,
-            dropout,
-            attn_dropout,
-            window_size,
-            inner_size,
+        self.backbone = BackboneSCINet(
+            n_out_steps=n_steps,
+            n_in_steps=n_steps,
+            n_in_features=n_features,
+            d_hidden=d_hidden,
+            n_stacks=n_stacks,
+            n_levels=n_levels,
+            n_decoder_layers=n_decoder_layers,
+            n_groups=n_groups,
+            kernel_size=kernel_size,
+            dropout=dropout,
+            concat_len=concat_len,
+            modified=True,
+            pos_enc=pos_enc,
+            single_step_output_One=False,
         )
+        self.revin = RevIN(n_features)
 
         # for the imputation task, the output dim is the same as input dim
-        self.output_projection = nn.Linear((len(window_size) + 1) * d_model, n_features)
         self.saits_loss_func = SaitsLoss(ORT_weight, MIT_weight)
 
     def forward(self, inputs: dict, training: bool = True) -> dict:
         X, missing_mask = inputs["X"], inputs["missing_mask"]
+        X = self.revin(X, missing_mask, mode="norm")
 
-        # WDU: the original Pyraformer paper isn't proposed for imputation task. Hence the model doesn't take
+        # WDU: the original RevIN_SCINet paper isn't proposed for imputation task. Hence the model doesn't take
         # the missing mask into account, which means, in the process, the model doesn't know which part of
         # the input data is missing, and this may hurt the model's imputation performance. Therefore, I apply the
         # SAITS embedding method to project the concatenation of features and masks into a hidden space, as well as
         # the output layers to project back from the hidden space to the original space.
         enc_out = self.saits_embedding(X, missing_mask)
 
-        # Pyraformer encoder processing
-        enc_out, attns = self.encoder(enc_out)
-        # project back the original data space
-        reconstruction = self.output_projection(enc_out)
+        # RevIN_SCINet encoder processing
+        reconstruction, _ = self.backbone(enc_out)
+        reconstruction = self.revin(reconstruction, mode="denorm")
 
         imputed_data = missing_mask * X + (1 - missing_mask) * reconstruction
         results = {
