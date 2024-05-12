@@ -1,5 +1,5 @@
 """
-The package including the modules of Koopa.
+The package of the partially-observed time-series imputation model Koopa.
 
 Refer to the paper
 `Yong Liu, Chenyu Li, Jianmin Wang, and Mingsheng Long.
@@ -16,13 +16,9 @@ This implementation is inspired by the official one https://github.com/thuml/Koo
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-from .backbone import BackboneKoopa
-from .layers import FourierFilter, MLP, TimeVarKP, TimeInvKP
+
+from .model import Koopa
 
 __all__ = [
-    "BackboneKoopa",
-    "MLP",
-    "FourierFilter",
-    "TimeVarKP",
-    "TimeInvKP",
+    "Koopa",
 ]
