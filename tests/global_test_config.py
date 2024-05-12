@@ -26,6 +26,9 @@ RESULT_SAVING_DIR = "testing_results"
 MODEL_SAVING_DIR = f"{RESULT_SAVING_DIR}/models"
 DATA_SAVING_DIR = f"{RESULT_SAVING_DIR}/datasets"
 RESULT_SAVING_DIR_FOR_IMPUTATION = os.path.join(MODEL_SAVING_DIR, "imputation")
+RESULT_SAVING_DIR_FOR_ANOMALY_DETECTION = os.path.join(
+    MODEL_SAVING_DIR, "anomaly_detection"
+)
 RESULT_SAVING_DIR_FOR_CLASSIFICATION = os.path.join(MODEL_SAVING_DIR, "classification")
 RESULT_SAVING_DIR_FOR_CLUSTERING = os.path.join(MODEL_SAVING_DIR, "clustering")
 RESULT_SAVING_DIR_FOR_FORECASTING = os.path.join(MODEL_SAVING_DIR, "forecasting")
@@ -52,7 +55,7 @@ set_random_seed(RANDOM_SEED)
 # Generate the unified data for testing and cache it first, DATA here is a singleton
 # Otherwise, file lock will cause bug if running test parallely with pytest-xdist.
 DATA = gene_random_walk(
-    n_steps=7,
+    n_steps=8,
     n_features=5,
     n_classes=2,
     n_samples_each_class=100,
