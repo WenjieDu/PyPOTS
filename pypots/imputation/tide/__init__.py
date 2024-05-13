@@ -1,5 +1,5 @@
 """
-The package including the modules of TiDE.
+The package of the partially-observed time-series imputation model TiDE.
 
 Refer to the paper
 `Abhimanyu Das, Weihao Kong, Andrew Leach, Shaan Mathur, Rajat Sen, and Rose Yu.
@@ -10,7 +10,7 @@ In Transactions on Machine Learning Research, 2023.
 Notes
 -----
 This implementation is inspired by the official one
-https://github.com/google-research/google-research/blob/master/tide and https://github.com/lich99/TiDE
+https://github.com/google-research/google-research/blob/master/tide and
 
 """
 
@@ -18,11 +18,8 @@ https://github.com/google-research/google-research/blob/master/tide and https://
 # License: BSD-3-Clause
 
 
-from .autoencoder import TideEncoder, TideDecoder
-from .layers import ResBlock
+from .model import TiDE
 
 __all__ = [
-    "TideEncoder",
-    "TideDecoder",
-    "ResBlock",
+    "TiDE",
 ]
