@@ -76,6 +76,10 @@ Welcome to PyPOTS docs!
    :alt: README in Chinese
    :target: https://github.com/WenjieDu/PyPOTS/blob/main/README_zh.md
 
+.. image:: https://pypots.com/figs/pypots_logos/readme/US.svg
+   :alt: README in English
+   :target: https://github.com/WenjieDu/PyPOTS/blob/main/README.md
+
 .. image:: https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2FPyPOTS%2FPyPOTS&count_bg=%23009A0A&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=Visits%20since%20May%202022&edge_flat=false
    :alt: Visiting number
 

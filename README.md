@@ -55,6 +55,9 @@
     <a href="https://github.com/WenjieDu/PyPOTS/blob/main/README_zh.md">
         <img alt="README in Chinese" src="https://pypots.com/figs/pypots_logos/readme/CN.svg">
     </a>
+   <a href="https://github.com/WenjieDu/PyPOTS/blob/main/README.md">
+        <img alt="README in English" src="https://pypots.com/figs/pypots_logos/readme/US.svg">
+    </a>
 </p>
 
 ⦿ `Motivation`: Due to all kinds of reasons like failure of collection sensors, communication error,
