@@ -23,7 +23,7 @@ from ...optim.base import Optimizer
 
 class SCINet(BaseNNImputer):
     """The PyTorch implementation of the SCINet model.
-    SCINet is originally proposed by Wu et al. in :cite:`wu2021autoformer`.
+    SCINet is originally proposed by Liu et al. in :cite:`liu2022scinet`.
 
     Parameters
     ----------

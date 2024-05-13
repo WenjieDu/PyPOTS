@@ -23,7 +23,7 @@ from ...optim.base import Optimizer
 
 class RevIN_SCINet(BaseNNImputer):
     """The PyTorch implementation of the RevIN_SCINet model.
-    RevIN_SCINet is originally proposed by  et al. in :cite:`wu2021autoformer`.
+    RevIN_SCINet is originally proposed by Kim et al. in :cite:`kim2022revin`.
 
     Parameters
     ----------
