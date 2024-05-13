@@ -28,6 +28,15 @@ pypots.imputation.itransformer
    :show-inheritance:
    :inherited-members:
 
+pypots.imputation.koopa
+------------------------------------
+
+.. automodule:: pypots.imputation.koopa
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+
 pypots.imputation.frets
 ------------------------------
 
@@ -64,15 +73,6 @@ pypots.imputation.patchtst
    :show-inheritance:
    :inherited-members:
 
-pypots.imputation.dlinear
-------------------------------
-
-.. automodule:: pypots.imputation.dlinear
-   :members:
-   :undoc-members:
-   :show-inheritance:
-   :inherited-members:
-
 pypots.imputation.etsformer
 ------------------------------
 
@@ -82,10 +82,72 @@ pypots.imputation.etsformer
    :show-inheritance:
    :inherited-members:
 
+pypots.imputation.micn
+------------------------------
+.. automodule:: pypots.imputation.micn
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+
+pypots.imputation.dlinear
+------------------------------
+
+.. automodule:: pypots.imputation.dlinear
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+
+pypots.imputation.tide
+------------------------------
+
+.. automodule:: pypots.imputation.tide
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+
+pypots.imputation.scinet
+------------------------------
+
+.. automodule:: pypots.imputation.scinet
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+
+pypots.imputation.nonstationary_transformer
+------------------------------
+
+.. automodule:: pypots.imputation.nonstationary_transformer
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+
 pypots.imputation.film
 ------------------------------
 
 .. automodule:: pypots.imputation.film
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+
+pypots.imputation.revin_scinet
+------------------------------
+
+.. automodule:: pypots.imputation.film
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+
+pypots.imputation.pyraformer
+------------------------------
+
+.. automodule:: pypots.imputation.pyraformer
    :members:
    :undoc-members:
    :show-inheritance:

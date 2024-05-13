@@ -1,5 +1,5 @@
 """
-The core wrapper assembles the submodules of Pyraformer imputation model
+The core wrapper assembles the submodules of MICN imputation model
 and takes over the forward progress of the algorithm.
 """
 
@@ -8,23 +8,20 @@ and takes over the forward progress of the algorithm.
 
 import torch.nn as nn
 
-from ...nn.modules.pyraformer import PyraformerEncoder
+from ...nn.modules.fedformer.layers import SeriesDecompositionMultiBlock
+from ...nn.modules.micn import BackboneMICN
 from ...nn.modules.saits import SaitsLoss, SaitsEmbedding
 
 
-class _Pyraformer(nn.Module):
+class _MICN(nn.Module):
     def __init__(
         self,
         n_steps: int,
         n_features: int,
         n_layers: int,
         d_model: int,
-        n_heads: int,
-        d_ffn: int,
         dropout: float,
-        attn_dropout: float,
-        window_size: list,
-        inner_size: int,
+        conv_kernel: list = None,
         ORT_weight: float = 1,
         MIT_weight: float = 1,
     ):
@@ -36,36 +33,48 @@ class _Pyraformer(nn.Module):
             with_pos=True,
             dropout=dropout,
         )
-        self.encoder = PyraformerEncoder(
+
+        decomp_kernel = []  # kernel of decomposition operation
+        isometric_kernel = []  # kernel of isometric convolution
+        for ii in conv_kernel:
+            if ii % 2 == 0:  # the kernel of decomposition operation must be odd
+                decomp_kernel.append(ii + 1)
+                isometric_kernel.append((n_steps + n_steps + ii) // ii)
+            else:
+                decomp_kernel.append(ii)
+                isometric_kernel.append((n_steps + n_steps + ii - 1) // ii)
+
+        self.decomp_multi = SeriesDecompositionMultiBlock(decomp_kernel)
+        self.backbone = BackboneMICN(
             n_steps,
+            n_features,
+            n_steps,
+            n_features,
             n_layers,
             d_model,
-            n_heads,
-            d_ffn,
-            dropout,
-            attn_dropout,
-            window_size,
-            inner_size,
+            decomp_kernel,
+            isometric_kernel,
+            conv_kernel,
         )
 
         # for the imputation task, the output dim is the same as input dim
-        self.output_projection = nn.Linear((len(window_size) + 1) * d_model, n_features)
         self.saits_loss_func = SaitsLoss(ORT_weight, MIT_weight)
 
     def forward(self, inputs: dict, training: bool = True) -> dict:
         X, missing_mask = inputs["X"], inputs["missing_mask"]
 
-        # WDU: the original Pyraformer paper isn't proposed for imputation task. Hence the model doesn't take
+        seasonal_init, trend_init = self.decomp_multi(X)
+
+        # WDU: the original MICN paper isn't proposed for imputation task. Hence the model doesn't take
         # the missing mask into account, which means, in the process, the model doesn't know which part of
         # the input data is missing, and this may hurt the model's imputation performance. Therefore, I apply the
         # SAITS embedding method to project the concatenation of features and masks into a hidden space, as well as
         # the output layers to project back from the hidden space to the original space.
-        enc_out = self.saits_embedding(X, missing_mask)
+        enc_out = self.saits_embedding(seasonal_init, missing_mask)
 
-        # Pyraformer encoder processing
-        enc_out, attns = self.encoder(enc_out)
-        # project back the original data space
-        reconstruction = self.output_projection(enc_out)
+        # MICN encoder processing
+        reconstruction = self.backbone(enc_out)
+        reconstruction = reconstruction + trend_init
 
         imputed_data = missing_mask * X + (1 - missing_mask) * reconstruction
         results = {
