@@ -19,8 +19,10 @@ https://github.com/google-research/google-research/blob/master/tide and https://
 
 
 from .autoencoder import TideEncoder, TideDecoder
+from .layers import ResBlock
 
 __all__ = [
     "TideEncoder",
     "TideDecoder",
+    "ResBlock",
 ]
