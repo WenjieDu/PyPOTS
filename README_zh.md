@@ -52,11 +52,11 @@
     <a href="https://arxiv.org/abs/2305.18811">
         <img alt="arXiv DOI" src="https://img.shields.io/badge/DOI-10.48550/arXiv.2305.18811-F8F7F0">
     </a>
-   <a href="https://github.com/WenjieDu/PyPOTS/blob/main/README_zh.md">
-        <img alt="README in Chinese" src="https://pypots.com/figs/pypots_logos/readme/CN.svg">
-    </a>
     <a href="https://github.com/WenjieDu/PyPOTS/blob/main/README.md">
         <img alt="README in English" src="https://pypots.com/figs/pypots_logos/readme/US.svg">
+    </a>
+    <a href="https://github.com/WenjieDu/PyPOTS/blob/main/README_zh.md">
+        <img alt="README in Chinese" src="https://pypots.com/figs/pypots_logos/readme/CN.svg">
     </a>
 </p>
 
