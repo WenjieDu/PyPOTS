@@ -132,13 +132,17 @@ class BackboneStemGNN(nn.Module):
     def forward(self, x):
         mul_L, attention = self.latent_correlation_layer(x)
         X = x.unsqueeze(1).permute(0, 1, 3, 2).contiguous()
-        result = []
+
+        result = None
         for stack_i in range(self.stack_cnt):
             forecast, X = self.stock_block[stack_i](X, mul_L)
-            result.append(forecast)
-        forecast = result[0] + result[1]
-        forecast = self.fc(forecast)
-        if forecast.size()[-1] == 1:
-            return forecast.unsqueeze(1).squeeze(-1), attention
+            if stack_i == 0:
+                result = forecast
+            else:
+                result += forecast  # residual connection
+
+        forecast_result = self.fc(result)
+        if forecast_result.size()[-1] == 1:
+            return forecast_result.unsqueeze(1).squeeze(-1), attention
         else:
-            return forecast.permute(0, 2, 1).contiguous(), attention
+            return forecast_result.permute(0, 2, 1).contiguous(), attention
