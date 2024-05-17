@@ -32,6 +32,7 @@ from .koopa import Koopa
 from .micn import MICN
 from .tide import TiDE
 from .grud import GRUD
+from .stemgnn import StemGNN
 
 # naive imputation methods
 from .locf import LOCF
@@ -66,6 +67,7 @@ __all__ = [
     "MICN",
     "TiDE",
     "GRUD",
+    "StemGNN",
     # naive imputation methods
     "LOCF",
     "Mean",
