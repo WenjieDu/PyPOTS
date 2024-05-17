@@ -7,8 +7,6 @@ and takes over the forward progress of the algorithm.
 # License: BSD-3-Clause
 
 
-from typing import Union
-
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -23,14 +21,12 @@ class _GRUD(nn.Module):
         n_features: int,
         rnn_hidden_size: int,
         n_classes: int,
-        device: Union[str, torch.device],
     ):
         super().__init__()
         self.n_steps = n_steps
         self.n_features = n_features
         self.rnn_hidden_size = rnn_hidden_size
         self.n_classes = n_classes
-        self.device = device
 
         # create models
         self.model = BackboneGRUD(

@@ -38,7 +38,7 @@ class BackboneGRUD(nn.Module):
 
     def forward(
         self, X, missing_mask, deltas, empirical_mean, X_filledLOCF
-    ) -> Tuple[list, torch.Tensor]:
+    ) -> Tuple[torch.Tensor, ...]:
         """Forward processing of GRU-D.
 
         Parameters
@@ -81,5 +81,7 @@ class BackboneGRUD(nn.Module):
             x_replaced = m * x + (1 - m) * x_h
             data_input = torch.cat([x_replaced, hidden_state, m], dim=1)
             hidden_state = self.rnn_cell(data_input, hidden_state)
+
+        representation_collector = torch.stack(representation_collector, dim=1)
 
         return representation_collector, hidden_state
