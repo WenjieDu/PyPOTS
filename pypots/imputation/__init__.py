@@ -31,6 +31,7 @@ from .revinscinet import RevIN_SCINet
 from .koopa import Koopa
 from .micn import MICN
 from .tide import TiDE
+from .grud import GRUD
 
 # naive imputation methods
 from .locf import LOCF
@@ -64,6 +65,7 @@ __all__ = [
     "Koopa",
     "MICN",
     "TiDE",
+    "GRUD",
     # naive imputation methods
     "LOCF",
     "Mean",

@@ -1,5 +1,5 @@
 """
-The core wrapper assembles the submodules of GRU-D classification model
+The core wrapper assembles the submodules of GRU-D imputation model
 and takes over the forward progress of the algorithm.
 """
 
@@ -7,11 +7,10 @@ and takes over the forward progress of the algorithm.
 # License: BSD-3-Clause
 
 
-import torch
 import torch.nn as nn
-import torch.nn.functional as F
 
 from ...nn.modules.grud import BackboneGRUD
+from ...utils.metrics import calc_mse
 
 
 class _GRUD(nn.Module):
@@ -20,21 +19,19 @@ class _GRUD(nn.Module):
         n_steps: int,
         n_features: int,
         rnn_hidden_size: int,
-        n_classes: int,
     ):
         super().__init__()
         self.n_steps = n_steps
         self.n_features = n_features
         self.rnn_hidden_size = rnn_hidden_size
-        self.n_classes = n_classes
 
         # create models
-        self.model = BackboneGRUD(
+        self.backbone = BackboneGRUD(
             n_steps,
             n_features,
             rnn_hidden_size,
         )
-        self.classifier = nn.Linear(self.rnn_hidden_size, self.n_classes)
+        self.output_projection = nn.Linear(rnn_hidden_size, n_features)
 
     def forward(self, inputs: dict, training: bool = True) -> dict:
         """Forward processing of GRU-D.
@@ -58,19 +55,20 @@ class _GRUD(nn.Module):
         empirical_mean = inputs["empirical_mean"]
         X_filledLOCF = inputs["X_filledLOCF"]
 
-        _, hidden_state = self.model(
+        hidden_states, _ = self.backbone(
             X, missing_mask, deltas, empirical_mean, X_filledLOCF
         )
 
-        logits = self.classifier(hidden_state)
-        classification_pred = torch.softmax(logits, dim=1)
-        results = {"classification_pred": classification_pred}
+        # project back the original data space
+        reconstruction = self.output_projection(hidden_states)
+
+        imputed_data = missing_mask * X + (1 - missing_mask) * reconstruction
+        results = {
+            "imputed_data": imputed_data,
+        }
 
         # if in training mode, return results with losses
         if training:
-            classification_loss = F.nll_loss(
-                torch.log(classification_pred), inputs["label"]
-            )
-            results["loss"] = classification_loss
+            results["loss"] = calc_mse(reconstruction, X, missing_mask)
 
         return results
