@@ -114,7 +114,6 @@ class GRUD(BaseNNClassifier):
             self.n_features,
             self.rnn_hidden_size,
             self.n_classes,
-            self.device,
         )
         self._send_model_to_given_device()
         self._print_model_size()
