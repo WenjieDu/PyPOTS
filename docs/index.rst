@@ -76,6 +76,10 @@ Welcome to PyPOTS docs!
    :alt: README in Chinese
    :target: https://github.com/WenjieDu/PyPOTS/blob/main/README_zh.md
 
+.. image:: https://pypots.com/figs/pypots_logos/readme/US.svg
+   :alt: README in English
+   :target: https://github.com/WenjieDu/PyPOTS/blob/main/README.md
+
 .. image:: https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2FPyPOTS%2FPyPOTS&count_bg=%23009A0A&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=Visits%20since%20May%202022&edge_flat=false
    :alt: Visiting number
 
@@ -120,7 +124,7 @@ tune the hyperparameters.
 🔥 Note that all models whose name with `🧑‍🔧` in the table (e.g. Transformer, iTransformer, Informer etc.) are not originally
 proposed as algorithms for POTS data in their papers, and they cannot directly accept time series with missing values as input, let alone imputation.
 To make them applicable to POTS data, we specifically apply the embedding strategy and training approach (ORT+MIT)
-the same as we did in `SAITS paper <https://arxiv.org/pdf/2202.08516)>`_.
+the same as we did in `the SAITS paper <https://arxiv.org/pdf/2202.08516)>`_ :cite:`du2023SAITS`.
 
 The task types are abbreviated as follows: **IMPU**: Imputation; **FORE**: Forecasting;
 **CLAS**: Classification; **CLUS**: Clustering; **ANOD**: Anomaly Detection.
@@ -129,53 +133,57 @@ The paper references are all listed at the bottom of this readme file.
 +----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
 | Type           | Algorithm                                                 | IMPU | FORE | CLAS | CLUS | ANOD | Year - Venue          |
 +================+===========================================================+======+======+======+======+======+=======================+
-| Neural Net     | iTransformer :cite:`liu2024itransformer`                  |  ✅  |      |      |      |      | ``2024 - ICLR``       |
+| Neural Net     | iTransformer🧑‍🔧 :cite:`liu2024itransformer`             |  ✅  |      |      |      |      | ``2024 - ICLR``       |
 +----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
 | Neural Net     | SAITS :cite:`du2023SAITS`                                 |  ✅  |      |      |      |      | ``2023 - ESWA``       |
 +----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
-| Neural Net     | FreTS :cite:`yi2023frets`                                 |  ✅  |      |      |      |      | ``2023 - NeurIPS``    |
+| Neural Net     | FreTS🧑‍🔧 :cite:`yi2023frets`                            |  ✅  |      |      |      |      | ``2023 - NeurIPS``    |
 +----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
-| Neural Net     | Koopa :cite:`liu2023koopa`                                |  ✅  |      |      |      |      | ``2023 - NeurIPS``    |
+| Neural Net     | Koopa🧑‍🔧 :cite:`liu2023koopa`                           |  ✅  |      |      |      |      | ``2023 - NeurIPS``    |
 +----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
-| Neural Net     | Crossformer :cite:`nie2023patchtst`                       |  ✅  |      |      |      |      | ``2023 - ICLR``       |
+| Neural Net     | Crossformer🧑‍🔧 :cite:`zhang2023crossformer`             |  ✅  |      |      |      |      | ``2023 - ICLR``       |
 +----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
 | Neural Net     | TimesNet :cite:`wu2023timesnet`                           |  ✅  |      |      |      |      | ``2023 - ICLR``       |
 +----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
-| Neural Net     | PatchTST :cite:`nie2023patchtst`                          |  ✅  |      |      |      |      | ``2023 - ICLR``       |
+| Neural Net     | PatchTST🧑‍🔧 :cite:`nie2023patchtst`                     |  ✅  |      |      |      |      | ``2023 - ICLR``       |
 +----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
-| Neural Net     | ETSformer :cite:`woo2023etsformer`                        |  ✅  |      |      |      |      | ``2023 - ICLR``       |
+| Neural Net     | ETSformer🧑‍🔧 :cite:`woo2023etsformer`                   |  ✅  |      |      |      |      | ``2023 - ICLR``       |
 +----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
-| Neural Net     | MICN :cite:`wang2023micn`                                 |  ✅  |      |      |      |      | ``2023 - ICLR``       |
+| Neural Net     | MICN🧑‍🔧 :cite:`wang2023micn`                            |  ✅  |      |      |      |      | ``2023 - ICLR``       |
 +----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
-| Neural Net     | DLinear :cite:`zeng2023dlinear`                           |  ✅  |      |      |      |      | ``2023 - AAAI``       |
+| Neural Net     | DLinear🧑‍🔧 :cite:`zeng2023dlinear`                      |  ✅  |      |      |      |      | ``2023 - AAAI``       |
 +----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
-| Neural Net     | TiDE :cite:`das2023tide`                                  |  ✅  |      |      |      |      | ``2023 - TMLR``       |
+| Neural Net     | TiDE🧑‍🔧 :cite:`das2023tide`                             |  ✅  |      |      |      |      | ``2023 - TMLR``       |
 +----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
-| Neural Net     | SCINet :cite:`liu2022scinet`                              |  ✅  |      |      |      |      | ``2022 - NeurIPS``    |
+| Neural Net     | SCINet🧑‍🔧 :cite:`liu2022scinet`                         |  ✅  |      |      |      |      | ``2022 - NeurIPS``    |
 +----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
-| Neural Net     | Nonstationary Tran. :cite:`liu2022nonstationary`          |  ✅  |      |      |      |      | ``2022 - NeurIPS``    |
+| Neural Net     | Nonstationary Tr🧑‍🔧 :cite:`liu2022nonstationary`        |  ✅  |      |      |      |      | ``2022 - NeurIPS``    |
 +----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
-| Neural Net     | FiLM :cite:`zhou2022film`                                 |  ✅  |      |      |      |      | ``2022 - NeurIPS``    |
+| Neural Net     | FiLM🧑‍🔧 :cite:`zhou2022film`                            |  ✅  |      |      |      |      | ``2022 - NeurIPS``    |
 +----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
-| Neural Net     | RevIN_SCInet :cite:`kim2022revin`                         |  ✅  |      |      |      |      | ``2022 - ICLR``       |
+| Neural Net     | RevIN_SCINet🧑‍🔧 :cite:`kim2022revin`                    |  ✅  |      |      |      |      | ``2022 - ICLR``       |
 +----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
-| Neural Net     | Pyraformer :cite:`liu2022pyraformer`                      |  ✅  |      |      |      |      | ``2022 - ICLR``       |
+| Neural Net     | Pyraformer🧑‍🔧 :cite:`liu2022pyraformer`                 |  ✅  |      |      |      |      | ``2022 - ICLR``       |
 +----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
 | Neural Net     | Raindrop :cite:`zhang2022Raindrop`                        |      |      |  ✅  |      |      | ``2022 - ICLR``       |
 +----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
-| Neural Net     | FEDformer :cite:`zhou2022fedformer`                       |  ✅  |      |      |      |      | ``2022 - ICML``       |
+| Neural Net     | FEDformer🧑‍🔧 :cite:`zhou2022fedformer`                  |  ✅  |      |      |      |      | ``2022 - ICML``       |
 +----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
-| Neural Net     | Autoformer :cite:`wu2021autoformer`                       |  ✅  |      |      |      |      | ``2021 - NeurIPS``    |
+| Neural Net     | Autoformer🧑‍🔧 :cite:`wu2021autoformer`                  |  ✅  |      |      |      |      | ``2021 - NeurIPS``    |
 +----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
 | Neural Net     | CSDI :cite:`tashiro2021csdi`                              |  ✅  |  ✅  |      |      |      | ``2021 - NeurIPS``    |
 +----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
-| Neural Net     | Informer :cite:`zhou2021informer`                         |  ✅  |      |      |      |      | ``2021 - AAAI``       |
+| Neural Net     | Informer🧑‍🔧 :cite:`zhou2021informer`                    |  ✅  |      |      |      |      | ``2021 - AAAI``       |
 +----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
 | Neural Net     | US-GAN :cite:`miao2021SSGAN`                              |  ✅  |      |      |      |      | ``2021 - AAAI``       |
 +----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
 | Neural Net     | CRLI :cite:`ma2021CRLI`                                   |      |      |      |  ✅  |      | ``2021 - AAAI``       |
 +----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
 | Probabilistic  | BTTF :cite:`chen2021BTMF`                                 |      |  ✅  |      |      |      | ``2021 - TPAMI``      |
++----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
+| Neural Net     | StemGNN🧑‍🔧 :cite:`cao2020stemgnn`                       |  ✅  |      |      |      |      | ``2020 - NeurIPS``    |
++----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
+| Neural Net     | Reformer🧑‍🔧 :cite:`kitaev2020reformer`                  |  ✅  |      |      |      |      | ``2020 - ICLR``       |
 +----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
 | Neural Net     | GP-VAE :cite:`fortuin2020gpvae`                           |  ✅  |      |      |      |      | ``2020 - AISTATS``    |
 +----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
@@ -187,7 +195,7 @@ The paper references are all listed at the bottom of this readme file.
 +----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
 | Neural Net     | GRU-D :cite:`che2018GRUD`                                 |      |      |  ✅  |      |      | ``2018 - Sci. Rep.``  |
 +----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
-| Neural Net     | Transformer :cite:`vaswani2017Transformer`                |  ✅  |      |      |      |      | ``2017 - NeurIPS``    |
+| Neural Net     | Transformer🧑‍🔧 :cite:`vaswani2017Transformer`           |  ✅  |      |      |      |      | ``2017 - NeurIPS``    |
 +----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
 | Naive          | LOCF/NOCB                                                 |  ✅  |      |      |      |      |                       |
 +----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+

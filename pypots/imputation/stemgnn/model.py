@@ -1,11 +1,10 @@
 """
-The implementation of GRU-D for the partially-observed time-series classification task.
+The implementation of StemGNN for the partially-observed time-series imputation task.
 
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
-
 
 from typing import Union, Optional
 
@@ -13,15 +12,18 @@ import numpy as np
 import torch
 from torch.utils.data import DataLoader
 
-from .core import _GRUD
-from .data import DatasetForGRUD
-from ..base import BaseNNClassifier
+from .core import _StemGNN
+from .data import DatasetForStemGNN
+from ..base import BaseNNImputer
+from ...data.checking import key_in_data_set
+from ...data.dataset import BaseDataset
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
 
 
-class GRUD(BaseNNClassifier):
-    """The PyTorch implementation of the GRU-D model :cite:`che2018GRUD`.
+class StemGNN(BaseNNImputer):
+    """The PyTorch implementation of the StemGNN model.
+    StemGNN is originally proposed by Cao et al. in :cite:`cao2020stemgnn`.
 
     Parameters
     ----------
@@ -31,11 +33,26 @@ class GRUD(BaseNNClassifier):
     n_features :
         The number of features in the time-series data sample.
 
-    n_classes :
-        The number of classes in the classification task.
+    n_layers :
+        The number of layers in each block stack of the StemGNN model.
 
-    rnn_hidden_size :
-        The size of the RNN hidden state.
+    n_stacks :
+        The number of stacks in the StemGNN model.
+
+    d_model :
+        The dimension of the embedding layer and the model.
+
+    dropout :
+        The dropout rate for the model.
+
+    leaky_rate ：
+        The leaky rate for the model.
+
+    ORT_weight :
+        The weight for the ORT loss, the same as SAITS.
+
+    MIT_weight :
+        The weight for the MIT loss, the same as SAITS.
 
     batch_size :
         The batch size for training and evaluating the model.
@@ -82,11 +99,16 @@ class GRUD(BaseNNClassifier):
         self,
         n_steps: int,
         n_features: int,
-        n_classes: int,
-        rnn_hidden_size: int,
+        n_layers: int,
+        n_stacks: int,
+        d_model: int,
+        dropout: float = 0.5,
+        leaky_rate: float = 0.2,
+        ORT_weight: float = 1,
+        MIT_weight: float = 1,
         batch_size: int = 32,
         epochs: int = 100,
-        patience: Optional[int] = None,
+        patience: int = None,
         optimizer: Optional[Optimizer] = Adam(),
         num_workers: int = 0,
         device: Optional[Union[str, torch.device, list]] = None,
@@ -94,7 +116,6 @@ class GRUD(BaseNNClassifier):
         model_saving_strategy: Optional[str] = "best",
     ):
         super().__init__(
-            n_classes,
             batch_size,
             epochs,
             patience,
@@ -106,14 +127,26 @@ class GRUD(BaseNNClassifier):
 
         self.n_steps = n_steps
         self.n_features = n_features
-        self.rnn_hidden_size = rnn_hidden_size
+        # model hype-parameters
+        self.n_layers = n_layers
+        self.n_stacks = n_stacks
+        self.d_model = d_model
+        self.dropout = dropout
+        self.leaky_rate = leaky_rate
+        self.ORT_weight = ORT_weight
+        self.MIT_weight = MIT_weight
 
         # set up the model
-        self.model = _GRUD(
+        self.model = _StemGNN(
             self.n_steps,
             self.n_features,
-            self.rnn_hidden_size,
-            self.n_classes,
+            self.n_layers,
+            self.n_stacks,
+            self.d_model,
+            self.dropout,
+            self.leaky_rate,
+            self.ORT_weight,
+            self.MIT_weight,
         )
         self._send_model_to_given_device()
         self._print_model_size()
@@ -123,49 +156,32 @@ class GRUD(BaseNNClassifier):
         self.optimizer.init_optimizer(self.model.parameters())
 
     def _assemble_input_for_training(self, data: list) -> dict:
-        # fetch data
         (
             indices,
             X,
-            X_filledLOCF,
             missing_mask,
-            deltas,
-            empirical_mean,
-            label,
+            X_ori,
+            indicating_mask,
         ) = self._send_data_to_given_device(data)
 
-        # assemble input data
         inputs = {
-            "indices": indices,
             "X": X,
-            "X_filledLOCF": X_filledLOCF,
             "missing_mask": missing_mask,
-            "deltas": deltas,
-            "empirical_mean": empirical_mean,
-            "label": label,
+            "X_ori": X_ori,
+            "indicating_mask": indicating_mask,
         }
+
         return inputs
 
     def _assemble_input_for_validating(self, data: list) -> dict:
         return self._assemble_input_for_training(data)
 
     def _assemble_input_for_testing(self, data: list) -> dict:
-        (
-            indices,
-            X,
-            X_filledLOCF,
-            missing_mask,
-            deltas,
-            empirical_mean,
-        ) = self._send_data_to_given_device(data)
+        indices, X, missing_mask = self._send_data_to_given_device(data)
 
         inputs = {
-            "indices": indices,
             "X": X,
-            "X_filledLOCF": X_filledLOCF,
             "missing_mask": missing_mask,
-            "deltas": deltas,
-            "empirical_mean": empirical_mean,
         }
 
         return inputs
@@ -177,7 +193,9 @@ class GRUD(BaseNNClassifier):
         file_type: str = "hdf5",
     ) -> None:
         # Step 1: wrap the input data with classes Dataset and DataLoader
-        training_set = DatasetForGRUD(train_set, file_type=file_type)
+        training_set = DatasetForStemGNN(
+            train_set, return_X_ori=False, return_y=False, file_type=file_type
+        )
         training_loader = DataLoader(
             training_set,
             batch_size=self.batch_size,
@@ -186,7 +204,11 @@ class GRUD(BaseNNClassifier):
         )
         val_loader = None
         if val_set is not None:
-            val_set = DatasetForGRUD(val_set, file_type=file_type)
+            if not key_in_data_set("X_ori", val_set):
+                raise ValueError("val_set must contain 'X_ori' for model validation.")
+            val_set = DatasetForStemGNN(
+                val_set, return_X_ori=True, return_y=False, file_type=file_type
+            )
             val_loader = DataLoader(
                 val_set,
                 batch_size=self.batch_size,
@@ -207,35 +229,65 @@ class GRUD(BaseNNClassifier):
         test_set: Union[dict, str],
         file_type: str = "hdf5",
     ) -> dict:
+        """Make predictions for the input data with the trained model.
+
+        Parameters
+        ----------
+        test_set : dict or str
+            The dataset for model validating, should be a dictionary including keys as 'X',
+            or a path string locating a data file supported by PyPOTS (e.g. h5 file).
+            If it is a dict, X should be array-like of shape [n_samples, sequence length (n_steps), n_features],
+            which is time-series data for validating, can contain missing values, and y should be array-like of shape
+            [n_samples], which is classification labels of X.
+            If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
+            key-value pairs like a dict, and it has to include keys as 'X' and 'y'.
+
+        file_type :
+            The type of the given file if test_set is a path string.
+
+        Returns
+        -------
+        file_type :
+            The dictionary containing the clustering results and latent variables if necessary.
+
+        """
+        # Step 1: wrap the input data with classes Dataset and DataLoader
         self.model.eval()  # set the model as eval status to freeze it.
-        test_set = DatasetForGRUD(test_set, return_y=False, file_type=file_type)
+        test_set = BaseDataset(
+            test_set,
+            return_X_ori=False,
+            return_X_pred=False,
+            return_y=False,
+            file_type=file_type,
+        )
         test_loader = DataLoader(
             test_set,
             batch_size=self.batch_size,
             shuffle=False,
             num_workers=self.num_workers,
         )
-        classification_collector = []
+        imputation_collector = []
 
+        # Step 2: process the data with the model
         with torch.no_grad():
             for idx, data in enumerate(test_loader):
                 inputs = self._assemble_input_for_testing(data)
                 results = self.model.forward(inputs, training=False)
-                prediction = results["classification_pred"]
-                classification_collector.append(prediction)
+                imputation_collector.append(results["imputed_data"])
 
-        classification = torch.cat(classification_collector).cpu().detach().numpy()
+        # Step 3: output collection and return
+        imputation = torch.cat(imputation_collector).cpu().detach().numpy()
         result_dict = {
-            "classification": classification,
+            "imputation": imputation,
         }
         return result_dict
 
-    def classify(
+    def impute(
         self,
         test_set: Union[dict, str],
         file_type: str = "hdf5",
     ) -> np.ndarray:
-        """Classify the input data with the trained model.
+        """Impute missing values in the given data with the trained model.
 
         Parameters
         ----------
@@ -248,9 +300,9 @@ class GRUD(BaseNNClassifier):
 
         Returns
         -------
-        array-like, shape [n_samples],
-            Classification results of the given samples.
+        array-like, shape [n_samples, sequence length (n_steps), n_features],
+            Imputed data.
         """
 
         result_dict = self.predict(test_set, file_type=file_type)
-        return result_dict["classification"]
+        return result_dict["imputation"]
