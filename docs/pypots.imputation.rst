@@ -198,6 +198,24 @@ pypots.imputation.usgan
    :show-inheritance:
    :inherited-members:
 
+pypots.imputation.stemgnn
+------------------------------
+
+.. automodule:: pypots.imputation.stemgnn
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+
+pypots.imputation.reformer
+------------------------------
+
+.. automodule:: pypots.imputation.reformer
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+
 pypots.imputation.gpvae
 ------------------------------
 
@@ -220,6 +238,15 @@ pypots.imputation.mrnn
 ------------------------------
 
 .. automodule:: pypots.imputation.mrnn
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+
+pypots.imputation.grud
+------------------------------
+
+.. automodule:: pypots.imputation.grud
    :members:
    :undoc-members:
    :show-inheritance:
