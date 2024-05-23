@@ -9,7 +9,7 @@ with open("./README.md", encoding="utf-8") as f:
 setup(
     name="pypots",
     version=__version__,
-    description="A Python Toolbox for Data Mining on Partially-Observed Time Series",
+    description="A Python Toolbox for Machine Learning on Partially-Observed Time Series",
     long_description=README,
     long_description_content_type="text/markdown",
     license="BSD-3-Clause",
