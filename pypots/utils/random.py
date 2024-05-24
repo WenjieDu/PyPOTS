@@ -5,12 +5,15 @@ PyPOTS util module about random seed setting.
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
+import random
+
 import numpy as np
 import torch
-import random
+
 from .logging import logger
 
-RANDOM_SEED = 2204
+# Take the birth year of PyPOTS as the default random seed
+RANDOM_SEED: int = 2022
 
 
 def set_random_seed(random_seed: int = RANDOM_SEED) -> None:
@@ -23,11 +26,11 @@ def set_random_seed(random_seed: int = RANDOM_SEED) -> None:
 
     """
     globals()["RANDOM_SEED"] = random_seed
+    random.seed(random_seed)
     np.random.seed(random_seed)
     torch.manual_seed(random_seed)
-    random.seed(random_seed)
     torch.cuda.manual_seed_all(random_seed)
-    # torch.backends.cudnn.deterministic = True
+    # torch.backends.cudnn.deterministic = True  # This will slow down the training process.
     logger.info(f"Have set the random seed as {random_seed} for numpy and pytorch.")
 
 
