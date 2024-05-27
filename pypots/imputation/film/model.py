@@ -39,7 +39,7 @@ class FiLM(BaseNNImputer):
     multiscale :
         A list including the multiscale factors for the HiPPO projection layers.
 
-    ratio :
+    dropout :
         The dropout ratio for the HiPPO projection layers.
         It only works when mode_type == 1.
 
@@ -103,8 +103,8 @@ class FiLM(BaseNNImputer):
         n_features: int,
         window_size: list,
         multiscale: list,
-        modes1: int,
-        ratio: float = 0.5,
+        modes1: int = 32,
+        dropout: float = 0.5,
         mode_type: int = 0,
         d_model: int = 128,
         ORT_weight: float = 1,
@@ -135,7 +135,7 @@ class FiLM(BaseNNImputer):
         self.window_size = window_size
         self.multiscale = multiscale
         self.modes1 = modes1
-        self.ratio = ratio
+        self.dropout = dropout
         self.mode_type = mode_type
         self.d_model = d_model
         self.ORT_weight = ORT_weight
@@ -148,7 +148,7 @@ class FiLM(BaseNNImputer):
             self.window_size,
             self.multiscale,
             self.modes1,
-            self.ratio,
+            self.dropout,
             self.mode_type,
             self.d_model,
             self.ORT_weight,
