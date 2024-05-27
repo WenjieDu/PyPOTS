@@ -48,7 +48,7 @@ class TestFiLM(unittest.TestCase):
         window_size=[2],
         multiscale=[1, 2],
         modes1=512,
-        ratio=0.5,
+        dropout=0.5,
         d_model=512,
         epochs=EPOCHS,
         saving_path=saving_path,
