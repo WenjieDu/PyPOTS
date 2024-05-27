@@ -14,10 +14,35 @@ import torch
 from .base import BaseCommand
 from .utils import load_package_from_path
 from ..classification import BRITS as BRITS_classification
-from ..classification import Raindrop, GRUD
+from ..classification import Raindrop
 from ..clustering import CRLI, VaDER
 from ..data.saving.h5 import load_dict_from_h5
-from ..imputation import SAITS, Transformer, CSDI, USGAN, GPVAE, MRNN, BRITS, TimesNet
+from ..imputation import (
+    SAITS,
+    FreTS,
+    Koopa,
+    iTransformer,
+    Crossformer,
+    TimesNet,
+    PatchTST,
+    ETSformer,
+    MICN,
+    DLinear,
+    SCINet,
+    NonstationaryTransformer,
+    FiLM,
+    Pyraformer,
+    Autoformer,
+    CSDI,
+    Informer,
+    USGAN,
+    StemGNN,
+    GPVAE,
+    MRNN,
+    BRITS,
+    GRUD,
+    Transformer,
+)
 from ..optim import Adam
 from ..utils.logging import logger
 from ..utils.random import set_random_seed
@@ -33,7 +58,22 @@ except ImportError:
 NN_MODELS = {
     # imputation models
     "pypots.imputation.SAITS": SAITS,
+    "pypots.imputation.iTransformer": iTransformer,
     "pypots.imputation.Transformer": Transformer,
+    "pypots.imputation.FreTS": FreTS,
+    "pypots.imputation.Koopa": Koopa,
+    "pypots.imputation.Crossformer": Crossformer,
+    "pypots.imputation.PatchTST": PatchTST,
+    "pypots.imputation.ETSformer": ETSformer,
+    "pypots.imputation.MICN": MICN,
+    "pypots.imputation.DLinear": DLinear,
+    "pypots.imputation.SCINet": SCINet,
+    "pypots.imputation.NonstationaryTransformer": NonstationaryTransformer,
+    "pypots.imputation.FiLM": FiLM,
+    "pypots.imputation.Pyraformer": Pyraformer,
+    "pypots.imputation.Autoformer": Autoformer,
+    "pypots.imputation.Informer": Informer,
+    "pypots.imputation.StemGNN": StemGNN,
     "pypots.imputation.TimesNet": TimesNet,
     "pypots.imputation.CSDI": CSDI,
     "pypots.imputation.USGAN": USGAN,
