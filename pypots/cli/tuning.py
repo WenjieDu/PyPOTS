@@ -14,6 +14,7 @@ import torch
 from .base import BaseCommand
 from .utils import load_package_from_path
 from ..classification import BRITS as BRITS_classification
+from ..classification import GRUD as GRUD_classification
 from ..classification import Raindrop
 from ..clustering import CRLI, VaDER
 from ..data.saving.h5 import load_dict_from_h5
@@ -80,8 +81,9 @@ NN_MODELS = {
     "pypots.imputation.GPVAE": GPVAE,
     "pypots.imputation.BRITS": BRITS,
     "pypots.imputation.MRNN": MRNN,
+    "pypots.imputation.GRUD": GRUD,
     # classification models
-    "pypots.classification.GRUD": GRUD,
+    "pypots.classification.GRUD": GRUD_classification,
     "pypots.classification.BRITS": BRITS_classification,
     "pypots.classification.Raindrop": Raindrop,
     # clustering models
@@ -248,7 +250,7 @@ class TuningCommand(BaseCommand):
                 )
                 raise RuntimeError(
                     f"Hyperparameters do not match. Mismatched hyperparameters "
-                    f"(in the tuning configuration but not in the given model's arguments): {list(mismatched)}"
+                    f"(in the tuning configuration but not in {model_class.__name__}'s arguments): {list(mismatched)}"
                 )
 
             # initializing optimizer and model
