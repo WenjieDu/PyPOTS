@@ -110,7 +110,7 @@ def load_dict_from_h5(
     assert isinstance(
         file_path, str
     ), f"`file_path` should be a string, but got {type(file_path)}."
-    assert os.path.exists(file_path), "`file_path` does not exist."
+    assert os.path.exists(file_path), f"file_path {file_path} does not exist."
 
     def load_set(handle, datadict):
         for key, item in handle.items():
