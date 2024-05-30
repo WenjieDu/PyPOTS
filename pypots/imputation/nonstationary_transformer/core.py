@@ -25,7 +25,7 @@ class _NonstationaryTransformer(nn.Module):
         d_model: int,
         n_heads: int,
         d_ffn: int,
-        d_projector_hidden: int,
+        d_projector_hidden: list,
         n_projector_hidden_layers: int,
         dropout: float,
         attn_dropout: float,

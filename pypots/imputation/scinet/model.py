@@ -141,6 +141,8 @@ class SCINet(BaseNNImputer):
             model_saving_strategy,
         )
 
+        assert n_features % n_groups == 0, "n_features must be divisible by groups"
+
         self.n_steps = n_steps
         self.n_features = n_features
         # model hype-parameters
