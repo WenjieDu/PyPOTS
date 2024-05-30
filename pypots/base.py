@@ -497,6 +497,7 @@ class BaseNNModel(BaseModel):
         self.num_workers = num_workers
 
         self.model = None
+        self.num_params = None
         self.optimizer = None
         self.best_model_dict = None
         self.best_loss = float("inf")
@@ -504,10 +505,12 @@ class BaseNNModel(BaseModel):
 
     def _print_model_size(self) -> None:
         """Print the number of trainable parameters in the initialized NN model."""
-        num_params = sum(p.numel() for p in self.model.parameters() if p.requires_grad)
+        self.num_params = sum(
+            p.numel() for p in self.model.parameters() if p.requires_grad
+        )
         logger.info(
             f"{self.__class__.__name__} initialized with the given hyperparameters, "
-            f"the number of trainable parameters: {num_params:,}"
+            f"the number of trainable parameters: {self.num_params:,}"
         )
 
     @abstractmethod
