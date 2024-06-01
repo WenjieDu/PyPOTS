@@ -137,6 +137,7 @@ class GPVAE(BaseNNImputer):
         device: Optional[Union[str, torch.device, list]] = None,
         saving_path: str = None,
         model_saving_strategy: Optional[str] = "best",
+        verbose: bool = True,
     ):
         super().__init__(
             batch_size,
@@ -146,6 +147,7 @@ class GPVAE(BaseNNImputer):
             device,
             saving_path,
             model_saving_strategy,
+            verbose,
         )
         available_kernel_type = ["cauchy", "diffusion", "rbf", "matern"]
         assert (

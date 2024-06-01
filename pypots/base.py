@@ -15,7 +15,7 @@ import torch
 from torch.utils.tensorboard import SummaryWriter
 
 from .utils.file import create_dir_if_not_exist
-from .utils.logging import logger
+from .utils.logging import logger, logger_creator
 
 
 class BaseModel(ABC):
@@ -43,6 +43,9 @@ class BaseModel(ABC):
         better than in previous epochs.
         The "all" strategy will save every model after each epoch training.
 
+    verbose :
+        Whether to print out the training logs during the training process.
+
     Attributes
     ----------
     model : object, default = None
@@ -64,6 +67,7 @@ class BaseModel(ABC):
         device: Optional[Union[str, torch.device, list]] = None,
         saving_path: str = None,
         model_saving_strategy: Optional[str] = "best",
+        verbose: bool = True,
     ):
         saving_strategies = [None, "best", "better", "all"]
         assert (
@@ -73,6 +77,10 @@ class BaseModel(ABC):
         self.device = None  # set up with _setup_device() below
         self.saving_path = None  # set up with _setup_path() below
         self.model_saving_strategy = model_saving_strategy
+        self.verbose = verbose
+
+        if not self.verbose:
+            logger_creator.set_level("warning")
 
         self.model = None
         self.summary_writer = None
@@ -442,6 +450,8 @@ class BaseNNModel(BaseModel):
         better than in previous epochs.
         The "all" strategy will save every model after each epoch training.
 
+    verbose :
+        Whether to print out the training logs during the training process.
 
     Attributes
     ---------
@@ -475,11 +485,13 @@ class BaseNNModel(BaseModel):
         device: Optional[Union[str, torch.device, list]] = None,
         saving_path: str = None,
         model_saving_strategy: Optional[str] = "best",
+        verbose: bool = True,
     ):
         super().__init__(
             device,
             saving_path,
             model_saving_strategy,
+            verbose,
         )
 
         if patience is None:

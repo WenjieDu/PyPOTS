@@ -101,6 +101,8 @@ class NonstationaryTransformer(BaseNNImputer):
         better than in previous epochs.
         The "all" strategy will save every model after each epoch training.
 
+    verbose :
+        Whether to print out the training logs during the training process.
     """
 
     def __init__(
@@ -124,6 +126,7 @@ class NonstationaryTransformer(BaseNNImputer):
         device: Optional[Union[str, torch.device, list]] = None,
         saving_path: str = None,
         model_saving_strategy: Optional[str] = "best",
+        verbose: bool = True,
     ):
         super().__init__(
             batch_size,
@@ -133,6 +136,7 @@ class NonstationaryTransformer(BaseNNImputer):
             device,
             saving_path,
             model_saving_strategy,
+            verbose,
         )
         assert len(d_projector_hidden) == n_projector_hidden_layers, (
             f"The length of d_hidden should be equal to n_hidden_layers, "
