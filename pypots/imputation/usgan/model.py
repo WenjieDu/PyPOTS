@@ -120,6 +120,7 @@ class USGAN(BaseNNImputer):
         device: Optional[Union[str, torch.device, list]] = None,
         saving_path: Optional[str] = None,
         model_saving_strategy: Optional[str] = "best",
+        verbose: bool = True,
     ):
         super().__init__(
             batch_size,
@@ -129,6 +130,7 @@ class USGAN(BaseNNImputer):
             device,
             saving_path,
             model_saving_strategy,
+            verbose,
         )
         assert G_steps > 0 and D_steps > 0, "G_steps and D_steps should both >0"
 
