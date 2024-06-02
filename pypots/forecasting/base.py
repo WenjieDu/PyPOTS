@@ -48,6 +48,8 @@ class BaseForecaster(BaseModel):
         better than in previous epochs.
         The "all" strategy will save every model after each epoch training.
 
+    verbose :
+        Whether to print out the training logs during the training process.
     """
 
     def __init__(
@@ -55,11 +57,13 @@ class BaseForecaster(BaseModel):
         device: Optional[Union[str, torch.device, list]] = None,
         saving_path: str = None,
         model_saving_strategy: Optional[str] = "best",
+        verbose: bool = True,
     ):
         super().__init__(
             device,
             saving_path,
             model_saving_strategy,
+            verbose,
         )
 
     @abstractmethod
@@ -168,6 +172,10 @@ class BaseNNForecaster(BaseNNModel):
         The "better" strategy will automatically save the model during training whenever the model performs
         better than in previous epochs.
         The "all" strategy will save every model after each epoch training.
+
+    verbose :
+        Whether to print out the training logs during the training process.
+
     Notes
     -----
     Optimizers are necessary for training deep-learning neural networks, but we don't put  a parameter ``optimizer``
@@ -188,6 +196,7 @@ class BaseNNForecaster(BaseNNModel):
         device: Optional[Union[str, torch.device, list]] = None,
         saving_path: str = None,
         model_saving_strategy: Optional[str] = "best",
+        verbose: bool = True,
     ):
         super().__init__(
             batch_size,
@@ -197,6 +206,7 @@ class BaseNNForecaster(BaseNNModel):
             device,
             saving_path,
             model_saving_strategy,
+            verbose,
         )
 
     @abstractmethod

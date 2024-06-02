@@ -74,6 +74,8 @@ class MRNN(BaseNNImputer):
         better than in previous epochs.
         The "all" strategy will save every model after each epoch training.
 
+    verbose :
+        Whether to print out the training logs during the training process.
     """
 
     def __init__(
@@ -89,6 +91,7 @@ class MRNN(BaseNNImputer):
         device: Optional[Union[str, torch.device, list]] = None,
         saving_path: str = None,
         model_saving_strategy: Optional[str] = "best",
+        verbose: bool = True,
     ):
         super().__init__(
             batch_size,
@@ -98,6 +101,7 @@ class MRNN(BaseNNImputer):
             device,
             saving_path,
             model_saving_strategy,
+            verbose,
         )
 
         self.n_steps = n_steps
