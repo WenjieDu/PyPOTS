@@ -44,4 +44,4 @@ def create_dir_if_not_exist(path: str, is_dir: bool = True) -> None:
     path = extract_parent_dir(path) if not is_dir else path
     if not os.path.exists(path):
         os.makedirs(path, exist_ok=True)
-        logger.info(f'Successfully created the given path "{path}".')
+        logger.info(f"Successfully created the given path {path}")
