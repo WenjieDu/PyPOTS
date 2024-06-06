@@ -281,6 +281,8 @@ class BaseModel(ABC):
         """
         # split the saving dir and file name from the given path
         saving_dir, file_name = os.path.split(saving_path)
+        # if parent dir is not given, save in the current dir
+        saving_dir = "." if saving_dir == "" else saving_dir
         # add the suffix ".pypots" if not given
         if file_name.split(".")[-1] != "pypots":
             file_name += ".pypots"
