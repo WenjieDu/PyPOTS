@@ -18,7 +18,11 @@ from .load_specific_datasets import (
     load_specific_dataset,
 )
 from .saving import save_dict_into_h5
-from .utils import parse_delta, sliding_window
+from .utils import (
+    parse_delta,
+    sliding_window,
+    inverse_sliding_window,
+)
 
 __all__ = [
     # base dataset classes
@@ -36,6 +40,7 @@ __all__ = [
     # utils
     "parse_delta",
     "sliding_window",
+    "inverse_sliding_window",
     # saving
     "save_dict_into_h5",
 ]
