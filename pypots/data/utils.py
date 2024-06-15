@@ -5,10 +5,13 @@ Data utils.
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
+import math
 from typing import Union
 
 import numpy as np
 import torch
+
+from ..utils.logging import logger
 
 
 def turn_data_into_specified_dtype(
@@ -195,7 +198,12 @@ def sliding_window(time_series, window_len, sliding_len=None):
 
     # remove the last one if left length is not enough
     if total_len - start_indices[-1] * sliding_len < window_len:
-        start_indices = start_indices[:-1]
+        to_drop = math.ceil(window_len / sliding_len) - 1
+        left_len = total_len - start_indices[-1]
+        start_indices = start_indices[:-to_drop]
+        logger.warning(
+            f"The last {to_drop} samples are dropped due to the left length {left_len} is not enough."
+        )
 
     sample_collector = []
     for idx in start_indices:
