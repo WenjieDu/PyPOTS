@@ -105,6 +105,8 @@ class SCINet(BaseNNImputer):
         better than in previous epochs.
         The "all" strategy will save every model after each epoch training.
 
+    verbose :
+        Whether to print out the training logs during the training process.
     """
 
     def __init__(
@@ -116,10 +118,10 @@ class SCINet(BaseNNImputer):
         n_groups: int,
         n_decoder_layers: int,
         d_hidden: int,
-        kernel_size: int,
-        dropout: float,
-        concat_len: int,
-        pos_enc: bool,
+        kernel_size: int = 3,
+        concat_len: int = 0,
+        dropout: float = 0.5,
+        pos_enc: bool = False,
         ORT_weight: float = 1,
         MIT_weight: float = 1,
         batch_size: int = 32,
@@ -130,6 +132,7 @@ class SCINet(BaseNNImputer):
         device: Optional[Union[str, torch.device, list]] = None,
         saving_path: str = None,
         model_saving_strategy: Optional[str] = "best",
+        verbose: bool = True,
     ):
         super().__init__(
             batch_size,
@@ -139,7 +142,10 @@ class SCINet(BaseNNImputer):
             device,
             saving_path,
             model_saving_strategy,
+            verbose,
         )
+
+        assert n_features % n_groups == 0, "n_features must be divisible by groups"
 
         self.n_steps = n_steps
         self.n_features = n_features

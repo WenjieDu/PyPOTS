@@ -1,10 +1,11 @@
 """
-The implementation of BRITS for the partially-observed time-series imputation task.
+The implementation of GRU-D for the partially-observed time-series imputation task.
 
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
+
 
 from typing import Union, Optional
 
@@ -12,16 +13,15 @@ import numpy as np
 import torch
 from torch.utils.data import DataLoader
 
-from .core import _BRITS
-from .data import DatasetForBRITS
+from .core import _GRUD
+from .data import DatasetForGRUD
 from ..base import BaseNNImputer
-from ...data.checking import key_in_data_set
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
 
 
-class BRITS(BaseNNImputer):
-    """The PyTorch implementation of the BRITS model :cite:`cao2018BRITS`.
+class GRUD(BaseNNImputer):
+    """The PyTorch implementation of the GRU-D model :cite:`che2018GRUD`.
 
     Parameters
     ----------
@@ -32,7 +32,7 @@ class BRITS(BaseNNImputer):
         The number of features in the time-series data sample.
 
     rnn_hidden_size :
-        The size of the RNN hidden state, also the number of hidden units in the RNN cell.
+        The size of the RNN hidden state.
 
     batch_size :
         The batch size for training and evaluating the model.
@@ -108,7 +108,7 @@ class BRITS(BaseNNImputer):
         self.rnn_hidden_size = rnn_hidden_size
 
         # set up the model
-        self.model = _BRITS(
+        self.model = _GRUD(
             self.n_steps,
             self.n_features,
             self.rnn_hidden_size,
@@ -125,28 +125,21 @@ class BRITS(BaseNNImputer):
         (
             indices,
             X,
+            X_filledLOCF,
             missing_mask,
             deltas,
-            back_X,
-            back_missing_mask,
-            back_deltas,
+            empirical_mean,
         ) = self._send_data_to_given_device(data)
 
         # assemble input data
         inputs = {
             "indices": indices,
-            "forward": {
-                "X": X,
-                "missing_mask": missing_mask,
-                "deltas": deltas,
-            },
-            "backward": {
-                "X": back_X,
-                "missing_mask": back_missing_mask,
-                "deltas": back_deltas,
-            },
+            "X": X,
+            "X_filledLOCF": X_filledLOCF,
+            "missing_mask": missing_mask,
+            "deltas": deltas,
+            "empirical_mean": empirical_mean,
         }
-
         return inputs
 
     def _assemble_input_for_validating(self, data: list) -> dict:
@@ -154,11 +147,10 @@ class BRITS(BaseNNImputer):
         (
             indices,
             X,
+            X_filledLOCF,
             missing_mask,
             deltas,
-            back_X,
-            back_missing_mask,
-            back_deltas,
+            empirical_mean,
             X_ori,
             indicating_mask,
         ) = self._send_data_to_given_device(data)
@@ -166,16 +158,11 @@ class BRITS(BaseNNImputer):
         # assemble input data
         inputs = {
             "indices": indices,
-            "forward": {
-                "X": X,
-                "missing_mask": missing_mask,
-                "deltas": deltas,
-            },
-            "backward": {
-                "X": back_X,
-                "missing_mask": back_missing_mask,
-                "deltas": back_deltas,
-            },
+            "X": X,
+            "X_filledLOCF": X_filledLOCF,
+            "missing_mask": missing_mask,
+            "deltas": deltas,
+            "empirical_mean": empirical_mean,
             "X_ori": X_ori,
             "indicating_mask": indicating_mask,
         }
@@ -191,8 +178,8 @@ class BRITS(BaseNNImputer):
         file_type: str = "hdf5",
     ) -> None:
         # Step 1: wrap the input data with classes Dataset and DataLoader
-        training_set = DatasetForBRITS(
-            train_set, return_X_ori=False, return_y=False, file_type=file_type
+        training_set = DatasetForGRUD(
+            train_set, return_X_ori=False, file_type=file_type
         )
         training_loader = DataLoader(
             training_set,
@@ -202,11 +189,7 @@ class BRITS(BaseNNImputer):
         )
         val_loader = None
         if val_set is not None:
-            if not key_in_data_set("X_ori", val_set):
-                raise ValueError("val_set must contain 'X_ori' for model validation.")
-            val_set = DatasetForBRITS(
-                val_set, return_X_ori=True, return_y=False, file_type=file_type
-            )
+            val_set = DatasetForGRUD(val_set, return_X_ori=True, file_type=file_type)
             val_loader = DataLoader(
                 val_set,
                 batch_size=self.batch_size,
@@ -228,9 +211,7 @@ class BRITS(BaseNNImputer):
         file_type: str = "hdf5",
     ) -> dict:
         self.model.eval()  # set the model as eval status to freeze it.
-        test_set = DatasetForBRITS(
-            test_set, return_X_ori=False, return_y=False, file_type=file_type
-        )
+        test_set = DatasetForGRUD(test_set, return_X_ori=False, file_type=file_type)
         test_loader = DataLoader(
             test_set,
             batch_size=self.batch_size,

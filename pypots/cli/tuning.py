@@ -14,10 +14,36 @@ import torch
 from .base import BaseCommand
 from .utils import load_package_from_path
 from ..classification import BRITS as BRITS_classification
-from ..classification import Raindrop, GRUD
+from ..classification import GRUD as GRUD_classification
+from ..classification import Raindrop
 from ..clustering import CRLI, VaDER
 from ..data.saving.h5 import load_dict_from_h5
-from ..imputation import SAITS, Transformer, CSDI, USGAN, GPVAE, MRNN, BRITS, TimesNet
+from ..imputation import (
+    SAITS,
+    FreTS,
+    Koopa,
+    iTransformer,
+    Crossformer,
+    TimesNet,
+    PatchTST,
+    ETSformer,
+    MICN,
+    DLinear,
+    SCINet,
+    NonstationaryTransformer,
+    FiLM,
+    Pyraformer,
+    Autoformer,
+    CSDI,
+    Informer,
+    USGAN,
+    StemGNN,
+    GPVAE,
+    MRNN,
+    BRITS,
+    GRUD,
+    Transformer,
+)
 from ..optim import Adam
 from ..utils.logging import logger
 from ..utils.random import set_random_seed
@@ -33,15 +59,31 @@ except ImportError:
 NN_MODELS = {
     # imputation models
     "pypots.imputation.SAITS": SAITS,
+    "pypots.imputation.iTransformer": iTransformer,
     "pypots.imputation.Transformer": Transformer,
+    "pypots.imputation.FreTS": FreTS,
+    "pypots.imputation.Koopa": Koopa,
+    "pypots.imputation.Crossformer": Crossformer,
+    "pypots.imputation.PatchTST": PatchTST,
+    "pypots.imputation.ETSformer": ETSformer,
+    "pypots.imputation.MICN": MICN,
+    "pypots.imputation.DLinear": DLinear,
+    "pypots.imputation.SCINet": SCINet,
+    "pypots.imputation.NonstationaryTransformer": NonstationaryTransformer,
+    "pypots.imputation.FiLM": FiLM,
+    "pypots.imputation.Pyraformer": Pyraformer,
+    "pypots.imputation.Autoformer": Autoformer,
+    "pypots.imputation.Informer": Informer,
+    "pypots.imputation.StemGNN": StemGNN,
     "pypots.imputation.TimesNet": TimesNet,
     "pypots.imputation.CSDI": CSDI,
     "pypots.imputation.USGAN": USGAN,
     "pypots.imputation.GPVAE": GPVAE,
     "pypots.imputation.BRITS": BRITS,
     "pypots.imputation.MRNN": MRNN,
+    "pypots.imputation.GRUD": GRUD,
     # classification models
-    "pypots.classification.GRUD": GRUD,
+    "pypots.classification.GRUD": GRUD_classification,
     "pypots.classification.BRITS": BRITS_classification,
     "pypots.classification.Raindrop": Raindrop,
     # clustering models
@@ -168,7 +210,7 @@ class TuningCommand(BaseCommand):
             if self._model not in NN_MODELS:
                 logger.info(
                     f"The specified model {self._model} is not in PyPOTS. Available models are {NN_MODELS.keys()}. "
-                    f"Trying to fetch it from the given model package {self._model_package_path}."
+                    f"Trying to fetch it from the given model package {self._model_package_path}"
                 )
                 assert self._model_package_path is not None, (
                     f"The given model {self._model} is not in PyPOTS. "
@@ -178,7 +220,7 @@ class TuningCommand(BaseCommand):
                 )
                 model_package = load_package_from_path(self._model_package_path)
                 assert self._model in model_package.__all__, (
-                    f"{self._model} is not in the given model package {self._model_package_path}."
+                    f"{self._model} is not in the given model package {self._model_package_path}"
                     f"Please ensure that the model class is in the __all__ list of the model package."
                 )
                 model_class = getattr(model_package, self._model)
@@ -208,7 +250,7 @@ class TuningCommand(BaseCommand):
                 )
                 raise RuntimeError(
                     f"Hyperparameters do not match. Mismatched hyperparameters "
-                    f"(in the tuning configuration but not in the given model's arguments): {list(mismatched)}"
+                    f"(in the tuning configuration but not in {model_class.__name__}'s arguments): {list(mismatched)}"
                 )
 
             # initializing optimizer and model
