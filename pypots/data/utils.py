@@ -197,8 +197,8 @@ def sliding_window(time_series, window_len, sliding_len=None):
     start_indices = np.asarray(range(total_len // sliding_len)) * sliding_len
 
     # remove the last one if left length is not enough
-    if total_len - start_indices[-1] * sliding_len < window_len:
-        to_drop = math.ceil(window_len / sliding_len) - 1
+    if total_len - start_indices[-1] < window_len:
+        to_drop = math.ceil(window_len / sliding_len)
         left_len = total_len - start_indices[-1]
         start_indices = start_indices[:-to_drop]
         logger.warning(
