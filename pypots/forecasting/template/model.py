@@ -39,6 +39,7 @@ class YourNewModel(BaseNNForecaster):
         device: Optional[Union[str, torch.device, list]] = None,
         saving_path: Optional[str] = None,
         model_saving_strategy: Optional[str] = "best",
+        verbose: bool = True,
     ):
         super().__init__(
             batch_size,
@@ -48,6 +49,7 @@ class YourNewModel(BaseNNForecaster):
             device,
             saving_path,
             model_saving_strategy,
+            verbose,
         )
         # set up the hyper-parameters
         # TODO: set up your model's hyper-parameters here

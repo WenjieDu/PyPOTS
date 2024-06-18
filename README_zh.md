@@ -156,11 +156,18 @@ TSDB让加载开源时序数据集变得超级简单！访问 [TSDB](https://git
 完全随机缺失（missing completely at random，简称为MCAR）、随机缺失（missing at random，简称为MAR）和非随机缺失（missing not at random，简称为MNAR ）。
 PyGrinder支持以上所有模式并提供与缺失相关的其他功能函数。通过PyGrinder，你可以仅仅通过一行代码就将模拟缺失引入你的数据集中。
 
-<a href="https://github.com/WenjieDu/BrewPOTS">
-    <img src="https://pypots.com/figs/pypots_logos/BrewPOTS/logo_FFBG.svg" align="left" width="140" alt="BrewPOTS logo"/>
+<a href="https://github.com/WenjieDu/BenchPOTS">
+    <img src="https://pypots.com/figs/pypots_logos/BenchPOTS/logo_FFBG.svg" align="left" width="140" alt="BenchPOTS logo"/>
 </a>
 
-👈 现在我们有了咖啡豆、磨豆机和咖啡壶，那么如何萃取一杯咖啡呢？冲泡教程是必不可少的！
+👈 为了评估机器学习算法在POTS数据上的性能，我们创建了生态系统中的另一个仓库[BenchPOTS](https://github.com/WenjieDu/BenchPOTS),
+其提供了标准且统一的数据预处理管道来帮助你在多种任务上衡量不同POTS算法的性能。
+
+<a href="https://github.com/WenjieDu/BrewPOTS">
+    <img src="https://pypots.com/figs/pypots_logos/BrewPOTS/logo_FFBG.svg" align="right" width="140" alt="BrewPOTS logo"/>
+</a>
+
+👉 现在我们有了咖啡豆、磨豆机和咖啡壶，那么如何萃取一杯咖啡呢？冲泡教程是必不可少的！
 考虑到未来的工作量，PyPOTS的相关教程将发布在一个独立的仓库[BrewPOTS](https://github.com/WenjieDu/BrewPOTS)中。
 点击访问查看教程，学习如何萃取你的POTS数据！
 

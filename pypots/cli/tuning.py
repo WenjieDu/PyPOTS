@@ -210,7 +210,7 @@ class TuningCommand(BaseCommand):
             if self._model not in NN_MODELS:
                 logger.info(
                     f"The specified model {self._model} is not in PyPOTS. Available models are {NN_MODELS.keys()}. "
-                    f"Trying to fetch it from the given model package {self._model_package_path}."
+                    f"Trying to fetch it from the given model package {self._model_package_path}"
                 )
                 assert self._model_package_path is not None, (
                     f"The given model {self._model} is not in PyPOTS. "
@@ -220,7 +220,7 @@ class TuningCommand(BaseCommand):
                 )
                 model_package = load_package_from_path(self._model_package_path)
                 assert self._model in model_package.__all__, (
-                    f"{self._model} is not in the given model package {self._model_package_path}."
+                    f"{self._model} is not in the given model package {self._model_package_path}"
                     f"Please ensure that the model class is in the __all__ list of the model package."
                 )
                 model_class = getattr(model_package, self._model)

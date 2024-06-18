@@ -50,16 +50,16 @@ def save_dict_into_h5(
     # check typing
     assert isinstance(
         data_dict, dict
-    ), f"`data_dict` should be a Python dictionary, but got {type(data_dict)}."
+    ), f"`data_dict` should be a Python dictionary, but got {type(data_dict)}"
     assert isinstance(
         saving_path, str
-    ), f"`saving_path` should be a string, but got {type(saving_path)}."
+    ), f"`saving_path` should be a string, but got {type(saving_path)}"
 
     if file_name is None:  # if file_name is not given
         # check suffix
         if not saving_path.endswith(".h5") or saving_path.endswith(".hdf5"):
             logger.warning(
-                f"‼️ `saving_path` should end with '.h5' or '.hdf5', but got {saving_path}. "
+                f"‼️ `saving_path` should end with '.h5' or '.hdf5', but got {saving_path} ."
                 f"PyPOTS will automatically append '.h5' to the given `saving_path`."
             )
     else:  # if file_name is given
@@ -84,7 +84,7 @@ def save_dict_into_h5(
         for k, v in data_dict.items():
             save_set(hf, k, v)
 
-    logger.info(f"Successfully saved the given data into {saving_path}.")
+    logger.info(f"Successfully saved the given data into {saving_path}")
 
 
 def load_dict_from_h5(
@@ -110,7 +110,7 @@ def load_dict_from_h5(
     assert isinstance(
         file_path, str
     ), f"`file_path` should be a string, but got {type(file_path)}."
-    assert os.path.exists(file_path), "`file_path` does not exist."
+    assert os.path.exists(file_path), f"file_path {file_path} does not exist."
 
     def load_set(handle, datadict):
         for key, item in handle.items():

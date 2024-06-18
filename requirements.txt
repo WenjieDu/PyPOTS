@@ -11,5 +11,6 @@ matplotlib
 tensorboard
 scikit-learn
 torch>=1.10.0
-tsdb>=0.2
-pygrinder>=0.4
+tsdb>=0.4
+pygrinder>=0.6
+benchpots>=0.1
