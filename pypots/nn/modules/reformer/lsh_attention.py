@@ -139,9 +139,9 @@ def merge_dims(ind_from, ind_to, tensor):
 
 def split_at_index(dim, index, t):
     pre_slices = (slice(None),) * dim
-    l = (*pre_slices, slice(None, index))
-    r = (*pre_slices, slice(index, None))
-    return t[l], t[r]
+    l_ = (*pre_slices, slice(None, index))
+    r_ = (*pre_slices, slice(index, None))
+    return t[l_], t[r_]
 
 
 class FullQKAttention(nn.Module):
@@ -608,10 +608,9 @@ class LSHSelfAttention(nn.Module):
         **kwargs,
     ):
         device, dtype = x.device, x.dtype
-        b, t, e, h, dh, m, l_h = (
+        b, t, e, h, m, l_h = (
             *x.shape,
             self.heads,
-            self.dim_head,
             self.num_mem_kv,
             self.n_local_attn_heads,
         )

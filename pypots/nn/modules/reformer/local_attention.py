@@ -43,10 +43,6 @@ def apply_rotary_pos_emb(q, k, freqs, scale=1):
     return q, k
 
 
-def exists(val):
-    return val is not None
-
-
 def default(value, d):
     return d if not exists(value) else value
 
@@ -186,7 +182,6 @@ class LocalAttention(nn.Module):
         ), "cannot perform window size extrapolation if xpos is not turned on"
 
         (
-            shape,
             autopad,
             pad_value,
             window_size,
@@ -195,7 +190,6 @@ class LocalAttention(nn.Module):
             look_forward,
             shared_qk,
         ) = (
-            q.shape,
             self.autopad,
             -1,
             default(window_size, self.window_size),
@@ -216,7 +210,7 @@ class LocalAttention(nn.Module):
                 lambda t: pad_to_multiple(t, self.window_size, dim=-2), (q, k, v)
             )
 
-        b, n, dim_head, device, dtype = *q.shape, q.device, q.dtype
+        b, n, dim_head, device = *q.shape, q.device
 
         scale = default(self.scale, dim_head**-0.5)
 
