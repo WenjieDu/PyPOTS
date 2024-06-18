@@ -42,7 +42,7 @@ jobs:
               run: |
                   which python
                   which pip
-                  pip install numpy==1.26 torch==${{ matrix.pytorch-version }} -f https://download.pytorch.org/whl/cpu
+                  pip install numpy==1.24 torch==${{ matrix.pytorch-version }} -f https://download.pytorch.org/whl/cpu
                   python -c "import torch; print('PyTorch:', torch.__version__)"
 
             - name: Install other dependencies
