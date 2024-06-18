@@ -173,11 +173,19 @@ MCAR (missing completely at random), MAR (missing at random), and MNAR (missing 
 PyGrinder supports all of them and additional functionalities related to missingness.
 With PyGrinder, you can introduce synthetic missing values into your datasets with a single line of code.
 
-<a href="https://github.com/WenjieDu/BrewPOTS">
-    <img src="https://pypots.com/figs/pypots_logos/BrewPOTS/logo_FFBG.svg" align="left" width="140" alt="BrewPOTS logo"/>
+<a href="https://github.com/WenjieDu/BenchPOTS">
+    <img src="https://pypots.com/figs/pypots_logos/BenchPOTS/logo_FFBG.svg" align="left" width="140" alt="BenchPOTS logo"/>
 </a>
 
-👈 Now we have the beans, the grinder, and the pot, how to brew us a cup of coffee? Tutorials are necessary!
+👈 To fairly evaluate the performance of PyPOTS algorithms, the benchmarking suite [BenchPOTS](https://github.com/WenjieDu/BenchPOTS) is created, 
+which provides standard and unified data-preprocessing pipelines to prepare datasets for measuring the performance of different 
+POTS algorithms on various tasks.
+
+<a href="https://github.com/WenjieDu/BrewPOTS">
+    <img src="https://pypots.com/figs/pypots_logos/BrewPOTS/logo_FFBG.svg" align="right" width="140" alt="BrewPOTS logo"/>
+</a>
+
+👉 Now we have the beans, the grinder, and the pot, how to brew us a cup of coffee? Tutorials are necessary!
 Considering the future workload, PyPOTS tutorials are released in a single repo,
 and you can find them in [BrewPOTS](https://github.com/WenjieDu/BrewPOTS).
 Take a look at it now, and learn how to brew your POTS datasets!

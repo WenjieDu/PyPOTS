@@ -1,5 +1,5 @@
 """
-The implementation of BRITS for the partially-observed time-series imputation task.
+The implementation of Reformer for the partially-observed time-series imputation task.
 
 """
 
@@ -12,16 +12,18 @@ import numpy as np
 import torch
 from torch.utils.data import DataLoader
 
-from .core import _BRITS
-from .data import DatasetForBRITS
+from .core import _Reformer
+from .data import DatasetForReformer
 from ..base import BaseNNImputer
 from ...data.checking import key_in_data_set
+from ...data.dataset import BaseDataset
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
 
 
-class BRITS(BaseNNImputer):
-    """The PyTorch implementation of the BRITS model :cite:`cao2018BRITS`.
+class Reformer(BaseNNImputer):
+    """The PyTorch implementation of the Reformer model.
+    Reformer is originally proposed by Kitaev et al. in :cite:`kitaev2020reformer`.
 
     Parameters
     ----------
@@ -31,8 +33,36 @@ class BRITS(BaseNNImputer):
     n_features :
         The number of features in the time-series data sample.
 
-    rnn_hidden_size :
-        The size of the RNN hidden state, also the number of hidden units in the RNN cell.
+    n_layers :
+        The number of layers in the Reformer model.
+
+    d_model :
+        The dimension of the model.
+
+    n_heads :
+        The number of heads in each layer of Reformer.
+
+    bucket_size :
+        Average size of qk per bucket, 64 was recommended in paper.
+
+    n_hashes :
+        4 is permissible per author, 8 is the best but slower.
+
+    causal :
+        Auto-regressive or not.
+
+    d_ffn :
+        The dimension of the feed-forward network.
+        The window size of moving average.
+
+    dropout :
+        The dropout rate for the model.
+
+    ORT_weight :
+        The weight for the ORT loss, the same as SAITS.
+
+    MIT_weight :
+        The weight for the MIT loss, the same as SAITS.
 
     batch_size :
         The batch size for training and evaluating the model.
@@ -81,10 +111,19 @@ class BRITS(BaseNNImputer):
         self,
         n_steps: int,
         n_features: int,
-        rnn_hidden_size: int,
+        n_layers: int,
+        d_model: int,
+        n_heads: int,
+        bucket_size: int,
+        n_hashes: int,
+        causal: bool,
+        d_ffn: int,
+        dropout: float = 0,
+        ORT_weight: float = 1,
+        MIT_weight: float = 1,
         batch_size: int = 32,
         epochs: int = 100,
-        patience: Optional[int] = None,
+        patience: int = None,
         optimizer: Optional[Optimizer] = Adam(),
         num_workers: int = 0,
         device: Optional[Union[str, torch.device, list]] = None,
@@ -105,13 +144,32 @@ class BRITS(BaseNNImputer):
 
         self.n_steps = n_steps
         self.n_features = n_features
-        self.rnn_hidden_size = rnn_hidden_size
+        # model hype-parameters
+        self.n_heads = n_heads
+        self.n_layers = n_layers
+        self.d_model = d_model
+        self.bucket_size = bucket_size
+        self.n_hashes = n_hashes
+        self.causal = causal
+        self.d_ffn = d_ffn
+        self.dropout = dropout
+        self.ORT_weight = ORT_weight
+        self.MIT_weight = MIT_weight
 
         # set up the model
-        self.model = _BRITS(
+        self.model = _Reformer(
             self.n_steps,
             self.n_features,
-            self.rnn_hidden_size,
+            self.n_layers,
+            self.d_model,
+            self.n_heads,
+            self.bucket_size,
+            self.n_hashes,
+            self.causal,
+            self.d_ffn,
+            self.dropout,
+            self.ORT_weight,
+            self.MIT_weight,
         )
         self._send_model_to_given_device()
         self._print_model_size()
@@ -121,68 +179,35 @@ class BRITS(BaseNNImputer):
         self.optimizer.init_optimizer(self.model.parameters())
 
     def _assemble_input_for_training(self, data: list) -> dict:
-        # fetch data
         (
             indices,
             X,
             missing_mask,
-            deltas,
-            back_X,
-            back_missing_mask,
-            back_deltas,
+            X_ori,
+            indicating_mask,
         ) = self._send_data_to_given_device(data)
 
-        # assemble input data
         inputs = {
-            "indices": indices,
-            "forward": {
-                "X": X,
-                "missing_mask": missing_mask,
-                "deltas": deltas,
-            },
-            "backward": {
-                "X": back_X,
-                "missing_mask": back_missing_mask,
-                "deltas": back_deltas,
-            },
+            "X": X,
+            "missing_mask": missing_mask,
+            "X_ori": X_ori,
+            "indicating_mask": indicating_mask,
         }
 
         return inputs
 
     def _assemble_input_for_validating(self, data: list) -> dict:
-        # fetch data
-        (
-            indices,
-            X,
-            missing_mask,
-            deltas,
-            back_X,
-            back_missing_mask,
-            back_deltas,
-            X_ori,
-            indicating_mask,
-        ) = self._send_data_to_given_device(data)
-
-        # assemble input data
-        inputs = {
-            "indices": indices,
-            "forward": {
-                "X": X,
-                "missing_mask": missing_mask,
-                "deltas": deltas,
-            },
-            "backward": {
-                "X": back_X,
-                "missing_mask": back_missing_mask,
-                "deltas": back_deltas,
-            },
-            "X_ori": X_ori,
-            "indicating_mask": indicating_mask,
-        }
-        return inputs
+        return self._assemble_input_for_training(data)
 
     def _assemble_input_for_testing(self, data: list) -> dict:
-        return self._assemble_input_for_training(data)
+        indices, X, missing_mask = self._send_data_to_given_device(data)
+
+        inputs = {
+            "X": X,
+            "missing_mask": missing_mask,
+        }
+
+        return inputs
 
     def fit(
         self,
@@ -191,7 +216,7 @@ class BRITS(BaseNNImputer):
         file_type: str = "hdf5",
     ) -> None:
         # Step 1: wrap the input data with classes Dataset and DataLoader
-        training_set = DatasetForBRITS(
+        training_set = DatasetForReformer(
             train_set, return_X_ori=False, return_y=False, file_type=file_type
         )
         training_loader = DataLoader(
@@ -204,7 +229,7 @@ class BRITS(BaseNNImputer):
         if val_set is not None:
             if not key_in_data_set("X_ori", val_set):
                 raise ValueError("val_set must contain 'X_ori' for model validation.")
-            val_set = DatasetForBRITS(
+            val_set = DatasetForReformer(
                 val_set, return_X_ori=True, return_y=False, file_type=file_type
             )
             val_loader = DataLoader(
@@ -227,9 +252,36 @@ class BRITS(BaseNNImputer):
         test_set: Union[dict, str],
         file_type: str = "hdf5",
     ) -> dict:
+        """Make predictions for the input data with the trained model.
+
+        Parameters
+        ----------
+        test_set : dict or str
+            The dataset for model validating, should be a dictionary including keys as 'X',
+            or a path string locating a data file supported by PyPOTS (e.g. h5 file).
+            If it is a dict, X should be array-like of shape [n_samples, sequence length (n_steps), n_features],
+            which is time-series data for validating, can contain missing values, and y should be array-like of shape
+            [n_samples], which is classification labels of X.
+            If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
+            key-value pairs like a dict, and it has to include keys as 'X' and 'y'.
+
+        file_type :
+            The type of the given file if test_set is a path string.
+
+        Returns
+        -------
+        file_type :
+            The dictionary containing the clustering results and latent variables if necessary.
+
+        """
+        # Step 1: wrap the input data with classes Dataset and DataLoader
         self.model.eval()  # set the model as eval status to freeze it.
-        test_set = DatasetForBRITS(
-            test_set, return_X_ori=False, return_y=False, file_type=file_type
+        test_set = BaseDataset(
+            test_set,
+            return_X_ori=False,
+            return_X_pred=False,
+            return_y=False,
+            file_type=file_type,
         )
         test_loader = DataLoader(
             test_set,
@@ -239,13 +291,14 @@ class BRITS(BaseNNImputer):
         )
         imputation_collector = []
 
+        # Step 2: process the data with the model
         with torch.no_grad():
             for idx, data in enumerate(test_loader):
                 inputs = self._assemble_input_for_testing(data)
                 results = self.model.forward(inputs, training=False)
-                imputed_data = results["imputed_data"]
-                imputation_collector.append(imputed_data)
+                imputation_collector.append(results["imputed_data"])
 
+        # Step 3: output collection and return
         imputation = torch.cat(imputation_collector).cpu().detach().numpy()
         result_dict = {
             "imputation": imputation,
