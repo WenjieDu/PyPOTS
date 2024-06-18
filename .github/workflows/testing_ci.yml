@@ -32,7 +32,7 @@ jobs:
               with:
                 cond: ${{ matrix.python-version == 3.7 }}
                 if_true: "1.13.1"
-                if_false: "2.1.0"
+                if_false: "2.3.0"
 
             - name: Set up Python
               uses: actions/setup-python@v4
