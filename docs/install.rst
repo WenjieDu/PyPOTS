@@ -20,7 +20,7 @@ It is recommended to use **pip** or **conda** for PyPOTS installation as shown b
 
 Required Dependencies
 """""""""""""""""""""
-* Python >=3.7
+* Python >=3.8
 * h5py
 * numpy
 * scipy
@@ -44,24 +44,17 @@ Optional Dependencies
 
 Reasons of Version Limitations on Dependencies
 **********************************************
-* **Why we need python >=3.7?**
+* **Why we need python >=3.8?**
 
 Python v3.6 and before versions have no longer been supported officially (check out `status of Python versions here <https://devguide.python.org/versions/>`_).
 Besides, PyG (torch-geometric) is available for Python >= v3.7 (refer to https://pytorch-geometric.readthedocs.io/en/latest/install/installation.html#installation-via-anaconda ).
 Although torch-geometric is an optional dependency, we hope things go smoothly when our users opt to install it.
-
 In addition, note that Python v.3.7 has also been in the end-of-life status since 2023-06-27.
-Hence, we will raise the minimum support Python version to v3.8 in the future.
-Please use Python v3.8 or above if possible also for the security of your development environment.
+Hence, we raise the minimum support Python version to v3.8.
 
 * **Why we need PyTorch >=1.10?**
 
 Because of pytorch_sparse, please refer to https://github.com/rusty1s/pytorch_sparse/issues/207#issuecomment-1065549338.
-
-* **Why we need TSDB >=0.2 and PyGrinder >=0.4?**
-Since v0.2, all libraries in PyPOTS Ecosystem switch their licenses from GPL-v3-only to BSD-3-Clause, which has less constraints for users.
-Please refer to the discussion in issue `PyPOTS#227 <https://github.com/WenjieDu/PyPOTS/issues/227>`_ for details.
-
 
 Acceleration
 """"""""""""

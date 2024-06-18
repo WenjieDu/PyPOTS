@@ -8,7 +8,7 @@
 
 <p align="center">
     <a href="https://docs.pypots.com/en/latest/install.html#reasons-of-version-limitations-on-dependencies">
-       <img alt="Python version" src="https://img.shields.io/badge/Python-v3.7+-E97040?logo=python&logoColor=white">
+       <img alt="Python version" src="https://img.shields.io/badge/Python-v3.8+-E97040?logo=python&logoColor=white">
     </a>
     <a href="https://github.com/WenjieDu/PyPOTS">
         <img alt="powered by Pytorch" src="https://img.shields.io/badge/PyTorch-%E2%9D%A4%EF%B8%8F-F8C6B5?logo=pytorch&logoColor=white">
@@ -177,8 +177,8 @@ With PyGrinder, you can introduce synthetic missing values into your datasets wi
     <img src="https://pypots.com/figs/pypots_logos/BenchPOTS/logo_FFBG.svg" align="left" width="140" alt="BenchPOTS logo"/>
 </a>
 
-👈 To fairly evaluate the performance of PyPOTS algorithms, the benchmarking suite [BenchPOTS](https://github.com/WenjieDu/BenchPOTS) is created, 
-which provides standard and unified data-preprocessing pipelines to prepare datasets for measuring the performance of different 
+👈 To fairly evaluate the performance of PyPOTS algorithms, the benchmarking suite [BenchPOTS](https://github.com/WenjieDu/BenchPOTS) is created,
+which provides standard and unified data-preprocessing pipelines to prepare datasets for measuring the performance of different
 POTS algorithms on various tasks.
 
 <a href="https://github.com/WenjieDu/BrewPOTS">

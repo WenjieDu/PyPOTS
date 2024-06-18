@@ -60,7 +60,7 @@ setup(
         "pygrinder>=0.6",
         "benchpots>=0.1",
     ],
-    python_requires=">=3.7.0",
+    python_requires=">=3.8.0",
     setup_requires=["setuptools>=38.6.0"],
     entry_points={"console_scripts": ["pypots-cli=pypots.cli.pypots_cli:main"]},
     classifiers=[
