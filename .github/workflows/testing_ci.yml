@@ -27,14 +27,6 @@ jobs:
             - name: Check out the repo code
               uses: actions/checkout@v3
 
-            - name: Determine the PyTorch version
-              uses: haya14busa/action-cond@v1
-              id: determine_pytorch_ver
-              with:
-                cond: ${{ matrix.python-version >= 3.8 }}
-                if_true: "2.3.0"
-                if_false: "1.13.1"
-
             - name: Set up Python
               uses: actions/setup-python@v4
               with:
@@ -50,7 +42,7 @@ jobs:
               run: |
                   which python
                   which pip
-                  pip install torch==${{ matrix.pytorch-version }} -f https://download.pytorch.org/whl/cpu
+                  pip install numpy==1.26 torch==${{ matrix.pytorch-version }} -f https://download.pytorch.org/whl/cpu
                   python -c "import torch; print('PyTorch:', torch.__version__)"
 
             - name: Install other dependencies
