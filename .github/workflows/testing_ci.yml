@@ -42,7 +42,6 @@ jobs:
               run: |
                   which python
                   which pip
-                  pip install --upgrade pip
                   pip install numpy==1.24 torch==${{ matrix.pytorch-version }} -f https://download.pytorch.org/whl/cpu
                   python -c "import torch; print('PyTorch:', torch.__version__)"
 
