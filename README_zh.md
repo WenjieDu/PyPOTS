@@ -167,8 +167,8 @@ PyGrinder支持以上所有模式并提供与缺失相关的其他功能函数�
     <img src="https://pypots.com/figs/pypots_logos/BrewPOTS/logo_FFBG.svg" align="right" width="140" alt="BrewPOTS logo"/>
 </a>
 
-👉 现在我们有了咖啡豆、磨豆机和咖啡壶，那么如何萃取一杯咖啡呢？冲泡教程是必不可少的！
-考虑到未来的工作量，PyPOTS的相关教程将发布在一个独立的仓库[BrewPOTS](https://github.com/WenjieDu/BrewPOTS)中。
+👉 现在我们有了咖啡豆(beans)、磨豆机(grinder)和咖啡壶(pot)，让我们坐在长凳(bench)上想想如何萃取一杯咖啡呢？
+教程必不可少！考虑到未来的工作量，PyPOTS的相关教程将发布在一个独立的仓库[BrewPOTS](https://github.com/WenjieDu/BrewPOTS)中。
 点击访问查看教程，学习如何萃取你的POTS数据！
 
 <p align="center">

@@ -250,8 +250,8 @@ POTS algorithms on various tasks.
    :align: right
    :target: https://github.com/WenjieDu/BrewPOTS
 
-👉 Now we have the beans, the grinder, and the pot, how to brew us a cup of coffee? Tutorials are necessary!
-Considering the future workload, PyPOTS tutorials is released in a single repo,
+👉 Now the beans, grinder, and pot are ready, please have a seat on the bench and let's think about how to brew us a cup of coffee.
+Tutorials are necessary! Considering the future workload, PyPOTS tutorials is released in a single repo,
 and you can find them in `BrewPOTS <https://github.com/WenjieDu/BrewPOTS>`_.
 Take a look at it now, and learn how to brew your POTS datasets!
 
