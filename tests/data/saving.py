@@ -20,7 +20,7 @@ from pypots.data.saving import (
 from pypots.utils.logging import logger
 
 
-class TestLazyLoadingClasses(unittest.TestCase):
+class TestDataSavingAndLoading(unittest.TestCase):
     logger.info("Running tests for data saving utils...")
 
     data_to_save = {
