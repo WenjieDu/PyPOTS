@@ -244,16 +244,16 @@ saits.load("save_it_here/saits_physionet2012.pypots")  # 你随时可以重新�
 
 ## ❖ 引用PyPOTS
 > [!TIP]
-> **[2024年2月更新]** 😎 我们的综述论文[Deep Learning for Multivariate Time Series Imputation: A Survey](https://arxiv.org/abs/2402.04059)
-> 已在 arXiv 上发布，代码也在GitHub项目（[Awesome_Imputation](https://github.com/WenjieDu/Awesome_Imputation)）上开源。
-> 我们全面调研总结了最新基于深度学习的时间序列插补方法文献并对现有的方法进行分类，除此之外，还讨论了该领域当前的挑战和未来发展方向。
+> **[2024年6月更新]** 😎 第一个全面的时间序列插补基准论文[TSI-Bench: Benchmarking Time Series Imputation](https://arxiv.org/abs/2406.12747)现在来了。
+> 所有代码开源在[Awesome_Imputation](https://github.com/WenjieDu/Awesome_Imputation)仓库中。通过近35,000个实验，我们对28种imputation方法，3种缺失模式(点，序列，块)，各种缺失率，和8个真实数据集进行了全面的基准研究。
 >
-> **[2023年6月更新]** 🎉 PyPOTS的5页短版论文已被第9届SIGKDD international workshop on
-Mining and Learning from Time Series ([MiLeTS'23](https://kdd-milets.github.io/milets2023/))收录。
-> 此外，PyPOTS也已被纳入[PyTorch Ecosystem](https://pytorch.org/ecosystem/)。
+> **[2024年2月更新]** 🎉 我们的综述论文[Deep Learning for Multivariate Time Series Imputation: A Survey](https://arxiv.org/abs/2402.04059)
+> 已在 arXiv 上发布。我们全面调研总结了最新基于深度学习的时间序列插补方法文献并对现有的方法进行分类，此外，还讨论了该领域当前的挑战和未来发展方向。
 
-介绍PyPOTS的论文可以通过[该链接](https://arxiv.org/abs/2305.18811)在arXiv上获取，我们正在努力将其发表在更具影响力的学术刊物上，
-例如JMLR (track for [Machine Learning Open Source Software](https://www.jmlr.org/mloss/))。
+PyPOTS的论文可以[在arXiv上获取](https://arxiv.org/abs/2305.18811)，其5页的短版论文已被第9届SIGKDD international workshop on
+Mining and Learning from Time Series ([MiLeTS'23](https://kdd-milets.github.io/milets2023/))收录，与此同时，
+PyPOTS也已被纳入[PyTorch Ecosystem](https://pytorch.org/ecosystem/)。我们正在努力将其发表在更具影响力的学术刊物上，
+如JMLR (track for [Machine Learning Open Source Software](https://www.jmlr.org/mloss/))。
 如果你在工作中使用了PyPOTS，请按照以下格式引用我们的论文并为将项目设为星标🌟，以便让更多人关注到它，对此我们深表感谢🤗。
 
 据不完全统计，该[列表](https://scholar.google.com/scholar?as_ylo=2022&q=%E2%80%9CPyPOTS%E2%80%9D&hl=en>)为当前使用PyPOTS并在其论文中引用PyPOTS的科学研究项目
@@ -262,18 +262,14 @@ Mining and Learning from Time Series ([MiLeTS'23](https://kdd-milets.github.io/m
 @article{du2023pypots,
 title={{PyPOTS: a Python toolbox for data mining on Partially-Observed Time Series}},
 author={Wenjie Du},
+journal={arXiv preprint arXiv:2305.18811},
 year={2023},
-eprint={2305.18811},
-archivePrefix={arXiv},
-primaryClass={cs.LG},
-url={https://arxiv.org/abs/2305.18811},
-doi={10.48550/arXiv.2305.18811},
 }
 ```
 或者
 > Wenjie Du. (2023).
 > PyPOTS: a Python toolbox for data mining on Partially-Observed Time Series.
-> arXiv, abs/2305.18811.https://arxiv.org/abs/2305.18811
+> arXiv, abs/2305.18811. https://arxiv.org/abs/2305.18811
 
 
 ## ❖ 贡献声明

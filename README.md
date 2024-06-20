@@ -264,39 +264,38 @@ saits.load("save_it_here/saits_physionet2012.pypots")  # reload the serialized m
 
 ## ❖ Citing PyPOTS
 > [!TIP]
-> **[Updates in Feb 2024]** 😎 Our survey paper [Deep Learning for Multivariate Time Series Imputation: A Survey](https://arxiv.org/abs/2402.04059) has been released on arXiv.
-The code is open source in the GitHub repo [Awesome_Imputation](https://github.com/WenjieDu/Awesome_Imputation).
+> **[Updates in Jun 2024]** 😎 The 1st comprehensive time-seres imputation benchmark paper
+[TSI-Bench: Benchmarking Time Series Imputation](https://arxiv.org/abs/2406.12747) now is public available.
+The code is open source in the repo [Awesome_Imputation](https://github.com/WenjieDu/Awesome_Imputation).
+With nearly 35,000 experiments, we provide a comprehensive benchmarking study on 28 imputation methods, 3 missing patterns (points, sequences, blocks),
+various missing rates, and 8 real-world datasets.
+>
+> **[Updates in Feb 2024]** 🎉 Our survey paper [Deep Learning for Multivariate Time Series Imputation: A Survey](https://arxiv.org/abs/2402.04059) has been released on arXiv.
 We comprehensively review the literature of the state-of-the-art deep-learning imputation methods for time series,
 provide a taxonomy for them, and discuss the challenges and future directions in this field.
->
-> **[Updates in Jun 2023]** 🎉 A short version of the PyPOTS paper is accepted by the 9th SIGKDD international workshop on
-Mining and Learning from Time Series ([MiLeTS'23](https://kdd-milets.github.io/milets2023/))).
-**Additionally**, PyPOTS has been included as a [PyTorch Ecosystem](https://pytorch.org/ecosystem/) project.
 
-The paper introducing PyPOTS is available on arXiv at [this URL](https://arxiv.org/abs/2305.18811),
-and we are pursuing to publish it in prestigious academic venues, e.g. JMLR (track for
+The paper introducing PyPOTS is available [on arXiv](https://arxiv.org/abs/2305.18811),
+A short version of it is accepted by the 9th SIGKDD international workshop on Mining and Learning from Time Series ([MiLeTS'23](https://kdd-milets.github.io/milets2023/))).
+**Additionally**, PyPOTS has been included as a [PyTorch Ecosystem](https://pytorch.org/ecosystem/) project.
+We are pursuing to publish it in prestigious academic venues, e.g. JMLR (track for
 [Machine Learning Open Source Software](https://www.jmlr.org/mloss/)). If you use PyPOTS in your work,
 please cite it as below and 🌟star this repository to make others notice this library. 🤗
 
 There are scientific research projects using PyPOTS and referencing in their papers.
-Here is [an incomplete list of them](https://scholar.google.com/scholar?as_ylo=2022&q=%E2%80%9CPyPOTS%E2%80%9D&hl=en>).
+Here is [an incomplete list of them](https://scholar.google.com/scholar?as_ylo=2022&q=%E2%80%9CPyPOTS%E2%80%9D&hl=en).
 
 ``` bibtex
 @article{du2023pypots,
 title={{PyPOTS: a Python toolbox for data mining on Partially-Observed Time Series}},
 author={Wenjie Du},
+journal={arXiv preprint arXiv:2305.18811},
 year={2023},
-eprint={2305.18811},
-archivePrefix={arXiv},
-primaryClass={cs.LG},
-url={https://arxiv.org/abs/2305.18811},
-doi={10.48550/arXiv.2305.18811},
 }
 ```
 or
 > Wenjie Du. (2023).
 > PyPOTS: a Python toolbox for data mining on Partially-Observed Time Series.
-> arXiv, abs/2305.18811.https://arxiv.org/abs/2305.18811
+> arXiv, abs/2305.18811. https://arxiv.org/abs/2305.18811
 
 
 ## ❖ Contribution
