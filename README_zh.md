@@ -145,7 +145,7 @@ PyPOTS当前支持多变量POTS数据的插补，预测，分类，聚类以及�
 
 👈 在PyPOTS中，数据可以被看作是咖啡豆，而写的携带缺失值的POTS数据则是不完整的咖啡豆。
 为了让用户能够轻松使用各种开源的时间序列数据集，我们创建了开源时间序列数据集的仓库 Time Series Data Beans (TSDB)（可以将其视为咖啡豆仓库），
-TSDB让加载开源时序数据集变得超级简单！访问 [TSDB](https://github.com/WenjieDu/TSDB)，了解更多关于TSDB的信息，目前总共支持169个开源数据集！
+TSDB让加载开源时序数据集变得超级简单！访问 [TSDB](https://github.com/WenjieDu/TSDB)，了解更多关于TSDB的信息，目前总共支持170个开源数据集！
 
 <a href="https://github.com/WenjieDu/PyGrinder">
     <img src="https://pypots.com/figs/pypots_logos/PyGrinder/logo_FFBG.svg" align="right" width="140" alt="PyGrinder logo"/>
@@ -315,7 +315,7 @@ doi={10.48550/arXiv.2305.18811},
 
 - [Slack](https://join.slack.com/t/pypots-org/shared_invite/zt-1gq6ufwsi-p0OZdW~e9UW_IA4_f1OfxA)：你可以在这里进行日常讨论、问答以及与我们的开发团队交流；
 - [领英](https://www.linkedin.com/company/pypots)：你可以在这里获取官方公告和新闻；
-- [微信公众号](https://mp.weixin.qq.com/s/sNgZmgAyxDn2sZxXoWJYMA)：你可以关注官方公众号并加入微信群聊参与讨论以及获取最新动态；
+- [微信公众号](https://mp.weixin.qq.com/s/X3ukIgL1QpNH8ZEXq1YifA)：你可以关注官方公众号并加入微信群聊参与讨论以及获取最新动态；
 
 如果你有任何建议、想法、或打算分享与时间序列相关的论文，欢迎加入我们！
 PyPOTS社区是一个开放、透明、友好的社区，让我们共同努力建设并改进PyPOTS！
