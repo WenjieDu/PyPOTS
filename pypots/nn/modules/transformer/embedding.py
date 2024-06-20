@@ -170,6 +170,7 @@ class DataEmbedding(nn.Module):
         freq="h",
         dropout=0.1,
         with_pos=True,
+        n_max_steps=1000,
     ):
         super().__init__()
 
@@ -177,7 +178,9 @@ class DataEmbedding(nn.Module):
 
         self.value_embedding = TokenEmbedding(c_in=c_in, d_model=d_model)
         if with_pos:
-            self.position_embedding = PositionalEncoding(d_hid=d_model)
+            self.position_embedding = PositionalEncoding(
+                d_hid=d_model, n_positions=n_max_steps
+            )
         self.temporal_embedding = (
             TemporalEmbedding(d_model=d_model, embed_type=embed_type, freq=freq)
             if embed_type != "timeF"
