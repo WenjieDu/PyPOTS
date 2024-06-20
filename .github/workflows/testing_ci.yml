@@ -19,20 +19,13 @@ jobs:
         strategy:
             fail-fast: false
             matrix:
-                os: [ubuntu-latest, windows-latest, macOS-13]
-                python-version: ["3.7", "3.11"]
+                os: [ubuntu-latest, windows-latest, macOS-latest]
+                python-version: ["3.8", "3.11"]
+                pytorch-version: ["2.3.0"]
 
         steps:
             - name: Check out the repo code
               uses: actions/checkout@v3
-
-            - name: Determine the PyTorch version
-              uses: haya14busa/action-cond@v1
-              id: determine_pytorch_ver
-              with:
-                cond: ${{ matrix.python-version == 3.7 }}
-                if_true: "1.13.1"
-                if_false: "2.1.0"
 
             - name: Set up Python
               uses: actions/setup-python@v4
@@ -43,13 +36,13 @@ jobs:
                 cache-dependency-path: |
                   setup.cfg
 
-            - name: Install PyTorch ${{ steps.determine_pytorch_ver.outputs.value }}+cpu
+            - name: Install PyTorch ${{ matrix.pytorch-version }}+cpu
               # we have to install torch in advance because torch_sparse needs it for compilation,
               # refer to https://github.com/rusty1s/pytorch_sparse/issues/156#issuecomment-1304869772 for details
               run: |
                   which python
                   which pip
-                  pip install torch==${{ steps.determine_pytorch_ver.outputs.value }} -f https://download.pytorch.org/whl/cpu
+                  pip install numpy==1.24 torch==${{ matrix.pytorch-version }} -f https://download.pytorch.org/whl/cpu
                   python -c "import torch; print('PyTorch:', torch.__version__)"
 
             - name: Install other dependencies
@@ -64,7 +57,7 @@ jobs:
 
             - name: Continue to install torch-geometric dependencies
               run: |
-                  pip install torch-geometric torch-scatter torch-sparse -f "https://data.pyg.org/whl/torch-${{ steps.determine_pytorch_ver.outputs.value }}+cpu.html"
+                  pip install torch-geometric torch-scatter torch-sparse -f "https://data.pyg.org/whl/torch-${{ matrix.pytorch-version }}+cpu.html"
                   pip install pypots[dev]
                   python_site_path=`python -c "import site; print(site.getsitepackages()[0])"`
                   echo "python site-packages path: $python_site_path"

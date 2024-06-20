@@ -23,6 +23,7 @@ from .frets import FreTS
 from .crossformer import Crossformer
 from .informer import Informer
 from .autoformer import Autoformer
+from .reformer import Reformer
 from .dlinear import DLinear
 from .patchtst import PatchTST
 from .usgan import USGAN
@@ -54,6 +55,7 @@ __all__ = [
     "DLinear",
     "Informer",
     "Autoformer",
+    "Reformer",
     "NonstationaryTransformer",
     "Pyraformer",
     "BRITS",
