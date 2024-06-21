@@ -10,7 +10,7 @@ In Transactions on Machine Learning Research, 2023.
 Notes
 -----
 This implementation is inspired by the official one
-https://github.com/google-research/google-research/blob/master/tide and
+https://github.com/google-research/google-research/blob/master/tide and https://github.com/lich99/TiDE
 
 """
 
