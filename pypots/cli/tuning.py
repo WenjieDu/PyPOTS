@@ -6,6 +6,7 @@ CLI tools to help initialize environments for running and developing PyPOTS.
 # License: BSD-3-Clause
 
 
+import inspect
 import os
 from argparse import ArgumentParser, Namespace
 
@@ -237,7 +238,7 @@ class TuningCommand(BaseCommand):
             lr = tuner_params.pop("lr")
 
             # check if hyperparameters match
-            model_all_arguments = model_class.__init__.__annotations__.keys()
+            model_all_arguments = inspect.signature(model_class).parameters.keys()
             tuner_params_set = set(tuner_params.keys())
             model_arguments_set = set(model_all_arguments)
             if_hyperparameter_match = tuner_params_set.issubset(model_arguments_set)
