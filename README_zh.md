@@ -145,7 +145,7 @@ PyPOTS当前支持多变量POTS数据的插补，预测，分类，聚类以及�
 
 👈 在PyPOTS中，数据可以被看作是咖啡豆，而写的携带缺失值的POTS数据则是不完整的咖啡豆。
 为了让用户能够轻松使用各种开源的时间序列数据集，我们创建了开源时间序列数据集的仓库 Time Series Data Beans (TSDB)（可以将其视为咖啡豆仓库），
-TSDB让加载开源时序数据集变得超级简单！访问 [TSDB](https://github.com/WenjieDu/TSDB)，了解更多关于TSDB的信息，目前总共支持169个开源数据集！
+TSDB让加载开源时序数据集变得超级简单！访问 [TSDB](https://github.com/WenjieDu/TSDB)，了解更多关于TSDB的信息，目前总共支持170个开源数据集！
 
 <a href="https://github.com/WenjieDu/PyGrinder">
     <img src="https://pypots.com/figs/pypots_logos/PyGrinder/logo_FFBG.svg" align="right" width="140" alt="PyGrinder logo"/>
@@ -167,8 +167,8 @@ PyGrinder支持以上所有模式并提供与缺失相关的其他功能函数�
     <img src="https://pypots.com/figs/pypots_logos/BrewPOTS/logo_FFBG.svg" align="right" width="140" alt="BrewPOTS logo"/>
 </a>
 
-👉 现在我们有了咖啡豆、磨豆机和咖啡壶，那么如何萃取一杯咖啡呢？冲泡教程是必不可少的！
-考虑到未来的工作量，PyPOTS的相关教程将发布在一个独立的仓库[BrewPOTS](https://github.com/WenjieDu/BrewPOTS)中。
+👉 现在我们有了咖啡豆(beans)、磨豆机(grinder)和咖啡壶(pot)，让我们坐在长凳(bench)上想想如何萃取一杯咖啡呢？
+教程必不可少！考虑到未来的工作量，PyPOTS的相关教程将发布在一个独立的仓库[BrewPOTS](https://github.com/WenjieDu/BrewPOTS)中。
 点击访问查看教程，学习如何萃取你的POTS数据！
 
 <p align="center">
@@ -244,16 +244,16 @@ saits.load("save_it_here/saits_physionet2012.pypots")  # 你随时可以重新�
 
 ## ❖ 引用PyPOTS
 > [!TIP]
-> **[2024年2月更新]** 😎 我们的综述论文[Deep Learning for Multivariate Time Series Imputation: A Survey](https://arxiv.org/abs/2402.04059)
-> 已在 arXiv 上发布，代码也在GitHub项目（[Awesome_Imputation](https://github.com/WenjieDu/Awesome_Imputation)）上开源。
-> 我们全面调研总结了最新基于深度学习的时间序列插补方法文献并对现有的方法进行分类，除此之外，还讨论了该领域当前的挑战和未来发展方向。
+> **[2024年6月更新]** 😎 第一个全面的时间序列插补基准论文[TSI-Bench: Benchmarking Time Series Imputation](https://arxiv.org/abs/2406.12747)现在来了。
+> 所有代码开源在[Awesome_Imputation](https://github.com/WenjieDu/Awesome_Imputation)仓库中。通过近35,000个实验，我们对28种imputation方法，3种缺失模式(点，序列，块)，各种缺失率，和8个真实数据集进行了全面的基准研究。
 >
-> **[2023年6月更新]** 🎉 PyPOTS的5页短版论文已被第9届SIGKDD international workshop on
-Mining and Learning from Time Series ([MiLeTS'23](https://kdd-milets.github.io/milets2023/))收录。
-> 此外，PyPOTS也已被纳入[PyTorch Ecosystem](https://pytorch.org/ecosystem/)。
+> **[2024年2月更新]** 🎉 我们的综述论文[Deep Learning for Multivariate Time Series Imputation: A Survey](https://arxiv.org/abs/2402.04059)
+> 已在 arXiv 上发布。我们全面调研总结了最新基于深度学习的时间序列插补方法文献并对现有的方法进行分类，此外，还讨论了该领域当前的挑战和未来发展方向。
 
-介绍PyPOTS的论文可以通过[该链接](https://arxiv.org/abs/2305.18811)在arXiv上获取，我们正在努力将其发表在更具影响力的学术刊物上，
-例如JMLR (track for [Machine Learning Open Source Software](https://www.jmlr.org/mloss/))。
+PyPOTS的论文可以[在arXiv上获取](https://arxiv.org/abs/2305.18811)，其5页的短版论文已被第9届SIGKDD international workshop on
+Mining and Learning from Time Series ([MiLeTS'23](https://kdd-milets.github.io/milets2023/))收录，与此同时，
+PyPOTS也已被纳入[PyTorch Ecosystem](https://pytorch.org/ecosystem/)。我们正在努力将其发表在更具影响力的学术刊物上，
+如JMLR (track for [Machine Learning Open Source Software](https://www.jmlr.org/mloss/))。
 如果你在工作中使用了PyPOTS，请按照以下格式引用我们的论文并为将项目设为星标🌟，以便让更多人关注到它，对此我们深表感谢🤗。
 
 据不完全统计，该[列表](https://scholar.google.com/scholar?as_ylo=2022&q=%E2%80%9CPyPOTS%E2%80%9D&hl=en>)为当前使用PyPOTS并在其论文中引用PyPOTS的科学研究项目
@@ -262,18 +262,14 @@ Mining and Learning from Time Series ([MiLeTS'23](https://kdd-milets.github.io/m
 @article{du2023pypots,
 title={{PyPOTS: a Python toolbox for data mining on Partially-Observed Time Series}},
 author={Wenjie Du},
+journal={arXiv preprint arXiv:2305.18811},
 year={2023},
-eprint={2305.18811},
-archivePrefix={arXiv},
-primaryClass={cs.LG},
-url={https://arxiv.org/abs/2305.18811},
-doi={10.48550/arXiv.2305.18811},
 }
 ```
 或者
 > Wenjie Du. (2023).
 > PyPOTS: a Python toolbox for data mining on Partially-Observed Time Series.
-> arXiv, abs/2305.18811.https://arxiv.org/abs/2305.18811
+> arXiv, abs/2305.18811. https://arxiv.org/abs/2305.18811
 
 
 ## ❖ 贡献声明
@@ -315,7 +311,7 @@ doi={10.48550/arXiv.2305.18811},
 
 - [Slack](https://join.slack.com/t/pypots-org/shared_invite/zt-1gq6ufwsi-p0OZdW~e9UW_IA4_f1OfxA)：你可以在这里进行日常讨论、问答以及与我们的开发团队交流；
 - [领英](https://www.linkedin.com/company/pypots)：你可以在这里获取官方公告和新闻；
-- [微信公众号](https://mp.weixin.qq.com/s/sNgZmgAyxDn2sZxXoWJYMA)：你可以关注官方公众号并加入微信群聊参与讨论以及获取最新动态；
+- [微信公众号](https://mp.weixin.qq.com/s/X3ukIgL1QpNH8ZEXq1YifA)：你可以关注官方公众号并加入微信群聊参与讨论以及获取最新动态；
 
 如果你有任何建议、想法、或打算分享与时间序列相关的论文，欢迎加入我们！
 PyPOTS社区是一个开放、透明、友好的社区，让我们共同努力建设并改进PyPOTS！
