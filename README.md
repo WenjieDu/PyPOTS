@@ -161,7 +161,7 @@ And what else? Please read on ;-)
 👈 Time series datasets are taken as coffee beans at PyPOTS, and POTS datasets are incomplete coffee beans with missing parts that have their own meanings.
 To make various public time-series datasets readily available to users,
 <i>Time Series Data Beans (TSDB)</i> is created to make loading time-series datasets super easy!
-Visit [TSDB](https://github.com/WenjieDu/TSDB) right now to know more about this handy tool 🛠, and it now supports a total of 169 open-source datasets!
+Visit [TSDB](https://github.com/WenjieDu/TSDB) right now to know more about this handy tool 🛠, and it now supports a total of 170 open-source datasets!
 
 <a href="https://github.com/WenjieDu/PyGrinder">
     <img src="https://pypots.com/figs/pypots_logos/PyGrinder/logo_FFBG.svg" align="right" width="140" alt="PyGrinder logo"/>
@@ -185,8 +185,8 @@ POTS algorithms on various tasks.
     <img src="https://pypots.com/figs/pypots_logos/BrewPOTS/logo_FFBG.svg" align="right" width="140" alt="BrewPOTS logo"/>
 </a>
 
-👉 Now we have the beans, the grinder, and the pot, how to brew us a cup of coffee? Tutorials are necessary!
-Considering the future workload, PyPOTS tutorials are released in a single repo,
+👉 Now the beans, grinder, and pot are ready, please have a seat on the bench and let's think about how to brew us a cup of coffee.
+Tutorials are necessary! Considering the future workload, PyPOTS tutorials are released in a single repo,
 and you can find them in [BrewPOTS](https://github.com/WenjieDu/BrewPOTS).
 Take a look at it now, and learn how to brew your POTS datasets!
 
@@ -264,39 +264,38 @@ saits.load("save_it_here/saits_physionet2012.pypots")  # reload the serialized m
 
 ## ❖ Citing PyPOTS
 > [!TIP]
-> **[Updates in Feb 2024]** 😎 Our survey paper [Deep Learning for Multivariate Time Series Imputation: A Survey](https://arxiv.org/abs/2402.04059) has been released on arXiv.
-The code is open source in the GitHub repo [Awesome_Imputation](https://github.com/WenjieDu/Awesome_Imputation).
+> **[Updates in Jun 2024]** 😎 The 1st comprehensive time-seres imputation benchmark paper
+[TSI-Bench: Benchmarking Time Series Imputation](https://arxiv.org/abs/2406.12747) now is public available.
+The code is open source in the repo [Awesome_Imputation](https://github.com/WenjieDu/Awesome_Imputation).
+With nearly 35,000 experiments, we provide a comprehensive benchmarking study on 28 imputation methods, 3 missing patterns (points, sequences, blocks),
+various missing rates, and 8 real-world datasets.
+>
+> **[Updates in Feb 2024]** 🎉 Our survey paper [Deep Learning for Multivariate Time Series Imputation: A Survey](https://arxiv.org/abs/2402.04059) has been released on arXiv.
 We comprehensively review the literature of the state-of-the-art deep-learning imputation methods for time series,
 provide a taxonomy for them, and discuss the challenges and future directions in this field.
->
-> **[Updates in Jun 2023]** 🎉 A short version of the PyPOTS paper is accepted by the 9th SIGKDD international workshop on
-Mining and Learning from Time Series ([MiLeTS'23](https://kdd-milets.github.io/milets2023/))).
-**Additionally**, PyPOTS has been included as a [PyTorch Ecosystem](https://pytorch.org/ecosystem/) project.
 
-The paper introducing PyPOTS is available on arXiv at [this URL](https://arxiv.org/abs/2305.18811),
-and we are pursuing to publish it in prestigious academic venues, e.g. JMLR (track for
+The paper introducing PyPOTS is available [on arXiv](https://arxiv.org/abs/2305.18811),
+A short version of it is accepted by the 9th SIGKDD international workshop on Mining and Learning from Time Series ([MiLeTS'23](https://kdd-milets.github.io/milets2023/))).
+**Additionally**, PyPOTS has been included as a [PyTorch Ecosystem](https://pytorch.org/ecosystem/) project.
+We are pursuing to publish it in prestigious academic venues, e.g. JMLR (track for
 [Machine Learning Open Source Software](https://www.jmlr.org/mloss/)). If you use PyPOTS in your work,
 please cite it as below and 🌟star this repository to make others notice this library. 🤗
 
 There are scientific research projects using PyPOTS and referencing in their papers.
-Here is [an incomplete list of them](https://scholar.google.com/scholar?as_ylo=2022&q=%E2%80%9CPyPOTS%E2%80%9D&hl=en>).
+Here is [an incomplete list of them](https://scholar.google.com/scholar?as_ylo=2022&q=%E2%80%9CPyPOTS%E2%80%9D&hl=en).
 
 ``` bibtex
 @article{du2023pypots,
 title={{PyPOTS: a Python toolbox for data mining on Partially-Observed Time Series}},
 author={Wenjie Du},
+journal={arXiv preprint arXiv:2305.18811},
 year={2023},
-eprint={2305.18811},
-archivePrefix={arXiv},
-primaryClass={cs.LG},
-url={https://arxiv.org/abs/2305.18811},
-doi={10.48550/arXiv.2305.18811},
 }
 ```
 or
 > Wenjie Du. (2023).
 > PyPOTS: a Python toolbox for data mining on Partially-Observed Time Series.
-> arXiv, abs/2305.18811.https://arxiv.org/abs/2305.18811
+> arXiv, abs/2305.18811. https://arxiv.org/abs/2305.18811
 
 
 ## ❖ Contribution
@@ -340,7 +339,7 @@ We care about the feedback from our users, so we're building PyPOTS community on
 
 - [Slack](https://join.slack.com/t/pypots-org/shared_invite/zt-1gq6ufwsi-p0OZdW~e9UW_IA4_f1OfxA). General discussion, Q&A, and our development team are here;
 - [LinkedIn](https://www.linkedin.com/company/pypots). Official announcements and news are here;
-- [WeChat (微信公众号)](https://mp.weixin.qq.com/s/sNgZmgAyxDn2sZxXoWJYMA). We also run a group chat on WeChat,
+- [WeChat (微信公众号)](https://mp.weixin.qq.com/s/X3ukIgL1QpNH8ZEXq1YifA). We also run a group chat on WeChat,
   and you can get the QR code from the official account after following it;
 
 If you have any suggestions or want to contribute ideas or share time-series related papers, join us and tell.

@@ -23,7 +23,7 @@ from ...optim.base import Optimizer
 
 class TiDE(BaseNNImputer):
     """The PyTorch implementation of the TiDE model.
-    TiDE is originally proposed by Wu et al. in :cite:`wu2021TiDE`.
+    TiDE is originally proposed by Das et al. in :cite:`das2023tide`.
 
     Parameters
     ----------
@@ -39,17 +39,14 @@ class TiDE(BaseNNImputer):
     d_model :
         The dimension of the model.
 
-    n_heads :
-        The number of heads in each layer of TiDE.
+    d_hidden :
+        The dimension of the hidden layer in the model.
 
-    d_ffn :
-        The dimension of the feed-forward network.
+    d_feature_encode :
+        The dimension of the feature encoder.
 
-    factor :
-        The factor of the auto correlation mechanism for the TiDE model.
-
-    moving_avg_window_size :
-        The window size of moving average.
+    d_temporal_decoder_hidden :
+        The dimension of the hidden layer in the temporal decoder.
 
     dropout :
         The dropout rate for the model.
