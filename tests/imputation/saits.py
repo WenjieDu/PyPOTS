@@ -16,6 +16,7 @@ from pypots.imputation import SAITS
 from pypots.optim import Adam
 from pypots.utils.logging import logger
 from pypots.utils.metrics import calc_mse
+from pypots.utils.visual.data import plot_data, plot_missingness
 from tests.global_test_config import (
     DATA,
     EPOCHS,
@@ -78,6 +79,12 @@ class TestSAITS(unittest.TestCase):
             DATA["test_X_indicating_mask"],
         )
         logger.info(f"SAITS test_MSE: {test_MSE}")
+
+        # plot the missingness and imputed data
+        plot_missingness(
+            ~np.isnan(TEST_SET["X"]), 0, imputation_results["imputation"].shape[1]
+        )
+        plot_data(TEST_SET["X"], TEST_SET["X_ori"], imputation_results["imputation"])
 
     @pytest.mark.xdist_group(name="imputation-saits")
     def test_2_parameters(self):

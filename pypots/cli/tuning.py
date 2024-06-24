@@ -6,6 +6,7 @@ CLI tools to help initialize environments for running and developing PyPOTS.
 # License: BSD-3-Clause
 
 
+import inspect
 import os
 from argparse import ArgumentParser, Namespace
 
@@ -43,6 +44,9 @@ from ..imputation import (
     BRITS,
     GRUD,
     Transformer,
+    TiDE,
+    Reformer,
+    RevIN_SCINet,
 )
 from ..optim import Adam
 from ..utils.logging import logger
@@ -57,34 +61,37 @@ except ImportError:
     )
 
 NN_MODELS = {
-    # imputation models
-    "pypots.imputation.SAITS": SAITS,
-    "pypots.imputation.iTransformer": iTransformer,
-    "pypots.imputation.Transformer": Transformer,
-    "pypots.imputation.FreTS": FreTS,
-    "pypots.imputation.Koopa": Koopa,
-    "pypots.imputation.Crossformer": Crossformer,
-    "pypots.imputation.PatchTST": PatchTST,
-    "pypots.imputation.ETSformer": ETSformer,
-    "pypots.imputation.MICN": MICN,
-    "pypots.imputation.DLinear": DLinear,
-    "pypots.imputation.SCINet": SCINet,
-    "pypots.imputation.NonstationaryTransformer": NonstationaryTransformer,
-    "pypots.imputation.FiLM": FiLM,
-    "pypots.imputation.Pyraformer": Pyraformer,
+    # imputation models, sorted by the first letter of the model name
     "pypots.imputation.Autoformer": Autoformer,
+    "pypots.imputation.BRITS": BRITS,
+    "pypots.imputation.CSDI": CSDI,
+    "pypots.imputation.Crossformer": Crossformer,
+    "pypots.imputation.DLinear": DLinear,
+    "pypots.imputation.ETSformer": ETSformer,
+    "pypots.imputation.FreTS": FreTS,
+    "pypots.imputation.FiLM": FiLM,
+    "pypots.imputation.GPVAE": GPVAE,
+    "pypots.imputation.GRUD": GRUD,
     "pypots.imputation.Informer": Informer,
+    "pypots.imputation.iTransformer": iTransformer,
+    "pypots.imputation.Koopa": Koopa,
+    "pypots.imputation.MICN": MICN,
+    "pypots.imputation.MRNN": MRNN,
+    "pypots.imputation.NonstationaryTransformer": NonstationaryTransformer,
+    "pypots.imputation.PatchTST": PatchTST,
+    "pypots.imputation.Pyraformer": Pyraformer,
+    "pypots.imputation.Reformer": Reformer,
+    "pypots.imputation.RevIN_SCINet": RevIN_SCINet,
+    "pypots.imputation.SAITS": SAITS,
+    "pypots.imputation.SCINet": SCINet,
     "pypots.imputation.StemGNN": StemGNN,
     "pypots.imputation.TimesNet": TimesNet,
-    "pypots.imputation.CSDI": CSDI,
+    "pypots.imputation.TiDE": TiDE,
+    "pypots.imputation.Transformer": Transformer,
     "pypots.imputation.USGAN": USGAN,
-    "pypots.imputation.GPVAE": GPVAE,
-    "pypots.imputation.BRITS": BRITS,
-    "pypots.imputation.MRNN": MRNN,
-    "pypots.imputation.GRUD": GRUD,
     # classification models
-    "pypots.classification.GRUD": GRUD_classification,
     "pypots.classification.BRITS": BRITS_classification,
+    "pypots.classification.GRUD": GRUD_classification,
     "pypots.classification.Raindrop": Raindrop,
     # clustering models
     "pypots.clustering.CRLI": CRLI,
@@ -237,7 +244,7 @@ class TuningCommand(BaseCommand):
             lr = tuner_params.pop("lr")
 
             # check if hyperparameters match
-            model_all_arguments = model_class.__init__.__annotations__.keys()
+            model_all_arguments = inspect.signature(model_class).parameters.keys()
             tuner_params_set = set(tuner_params.keys())
             model_arguments_set = set(model_all_arguments)
             if_hyperparameter_match = tuner_params_set.issubset(model_arguments_set)
