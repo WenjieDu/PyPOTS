@@ -298,12 +298,8 @@ please cite it as below and 🌟star `PyPOTS repository <https://github.com/Wenj
    @article{du2023pypots,
    title={{PyPOTS: a Python toolbox for data mining on Partially-Observed Time Series}},
    author={Wenjie Du},
+   journal={arXiv preprint arXiv:2305.18811},
    year={2023},
-   eprint={2305.18811},
-   archivePrefix={arXiv},
-   primaryClass={cs.LG},
-   url={https://arxiv.org/abs/2305.18811},
-   doi={10.48550/arXiv.2305.18811},
    }
 
 or
