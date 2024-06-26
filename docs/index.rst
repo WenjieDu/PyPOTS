@@ -220,7 +220,7 @@ And what else? Please read on ;-)
 👈 Time series datasets are taken as coffee beans at PyPOTS, and POTS datasets are incomplete coffee beans with missing parts that have their own meanings.
 To make various public time-series datasets readily available to users,
 *Time Series Data Beans (TSDB)* is created to make loading time-series datasets super easy!
-Visit `TSDB <https://github.com/WenjieDu/TSDB>`_ right now to know more about this handy tool 🛠, and it now supports a total of 170 open-source datasets!
+Visit `TSDB <https://github.com/WenjieDu/TSDB>`_ right now to know more about this handy tool 🛠, and it now supports a total of 172 open-source datasets!
 
 .. image:: https://pypots.com/figs/pypots_logos/PyGrinder/logo_FFBG.svg
    :width: 150
