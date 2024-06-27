@@ -6,21 +6,21 @@ Core Development Team
 
 Wenjie Du
 **********
-- Initialized the project in March 2022
+- Founded the organization in March 2022
 - `GitHub (WenjieDu) <https://github.com/WenjieDu>`_
 - `LinkedIn (Wenjie Du) <https://www.linkedin.com/in/wenjie-du>`_
-
-Maciej Skrabski
-***************
-- Joined in May 2023
-- `GitHub (MaciejSkrabski) <https://github.com/MaciejSkrabski>`_
-- `LinkedIn (Maciej Skrabski) <https://www.linkedin.com/in/maciej-skrabski-75595525a>`_
 
 Jun Wang
 ********
 - Joined in August 2023
 - `GitHub (AugustJW) <https://github.com/AugustJW>`_
 - `LinkedIn (Jun Wang) <https://www.linkedin.com/in/wang-jun-35323b193>`_
+
+Linglong Qian
+*************
+- Joined in February 2024
+- `GitHub (LinglongQian) <https://github.com/LinglongQian>`_
+- `LinkedIn (Linglong Qian) <https://www.linkedin.com/in/linglongqian>`_
 
 
 All Contributors
@@ -33,5 +33,5 @@ PyPOTS exists thanks to all the nice people (sorted by contribution time) who co
 
 .. raw:: html
 
-    <object data="https://pypots.com/figs/pypots_logos/PyPOTS_contributors.svg">
+    <object data="https://pypots.com/figs/pypots_logos/publicity/PyPOTS_contributors.svg">
     </object>

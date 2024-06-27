@@ -1,10 +1,10 @@
 pypots.data package
 ===================
 
-pypots.data.base
+pypots.data.dataset
 -----------------------
 
-.. automodule:: pypots.data.base
+.. automodule:: pypots.data.dataset
    :members:
    :undoc-members:
    :show-inheritance:

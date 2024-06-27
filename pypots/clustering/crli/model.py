@@ -2,9 +2,6 @@
 The implementation of CRLI (Clustering Representation Learning on Incomplete time-series data) for
 the partially-observed time-series clustering task.
 
-Refer to the paper "Ma, Q., Chen, C., Li, S., & Cottrell, G. W. (2021).
-Learning Representations for Incomplete Time Series Clustering. AAAI 2021."
-
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
@@ -17,8 +14,8 @@ import numpy as np
 import torch
 from torch.utils.data import DataLoader
 
+from .core import _CRLI
 from .data import DatasetForCRLI
-from .modules import _CRLI
 from ..base import BaseNNClusterer
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
@@ -109,14 +106,8 @@ class CRLI(BaseNNClusterer):
         better than in previous epochs.
         The "all" strategy will save every model after each epoch training.
 
-    References
-    ----------
-    .. [1] `Ma, Qianli, Chuxin Chen, Sen Li, and Garrison W. Cottrell. 2021.
-        "Learning Representations for Incomplete Time Series Clustering".
-        Proceedings of the AAAI Conference on Artificial Intelligence 35 (10):8837-46.
-        https://doi.org/10.1609/aaai.v35i10.17070.
-        <https://ojs.aaai.org/index.php/AAAI/article/view/17070>`_
-
+    verbose :
+        Whether to print out the training logs during the training process.
     """
 
     def __init__(
@@ -140,6 +131,7 @@ class CRLI(BaseNNClusterer):
         device: Optional[Union[str, torch.device, list]] = None,
         saving_path: Optional[str] = None,
         model_saving_strategy: Optional[str] = "best",
+        verbose: bool = True,
     ):
         super().__init__(
             n_clusters,
@@ -150,6 +142,7 @@ class CRLI(BaseNNClusterer):
             device,
             saving_path,
             model_saving_strategy,
+            verbose,
         )
         assert G_steps > 0 and D_steps > 0, "G_steps and D_steps should both >0"
 
@@ -168,7 +161,6 @@ class CRLI(BaseNNClusterer):
             decoder_fcn_output_dims,
             lambda_kmeans,
             rnn_cell_type,
-            self.device,
         )
         self._send_model_to_given_device()
         self._print_model_size()
@@ -177,12 +169,12 @@ class CRLI(BaseNNClusterer):
         self.G_optimizer = G_optimizer
         self.G_optimizer.init_optimizer(
             [
-                {"params": self.model.generator.parameters()},
-                {"params": self.model.decoder.parameters()},
+                {"params": self.model.backbone.generator.parameters()},
+                {"params": self.model.backbone.decoder.parameters()},
             ]
         )
         self.D_optimizer = D_optimizer
-        self.D_optimizer.init_optimizer(self.model.discriminator.parameters())
+        self.D_optimizer.init_optimizer(self.model.backbone.discriminator.parameters())
 
     def _assemble_input_for_training(self, data: list) -> dict:
         # fetch data
@@ -276,7 +268,7 @@ class CRLI(BaseNNClusterer):
                                 results["generation_loss"].sum().item()
                             )
                     mean_val_G_loss = np.mean(epoch_val_loss_G_collector)
-                    # save validating loss logs into the tensorboard file for every epoch if in need
+                    # save validation loss logs into the tensorboard file for every epoch if in need
                     if self.summary_writer is not None:
                         val_loss_dict = {
                             "generation_loss": mean_val_G_loss,
@@ -286,7 +278,7 @@ class CRLI(BaseNNClusterer):
                         f"Epoch {epoch:03d} - "
                         f"generator training loss: {mean_epoch_train_G_loss:.4f}, "
                         f"discriminator training loss: {mean_epoch_train_D_loss:.4f}, "
-                        f"generator validating loss: {mean_val_G_loss:.4f}"
+                        f"generator validation loss: {mean_val_G_loss:.4f}"
                     )
                     mean_loss = mean_val_G_loss
                 else:
@@ -303,6 +295,7 @@ class CRLI(BaseNNClusterer):
                     )
 
                 if mean_loss < self.best_loss:
+                    self.best_epoch = epoch
                     self.best_loss = mean_loss
                     self.best_model_dict = self.model.state_dict()
                     self.patience = self.original_patience
@@ -328,9 +321,11 @@ class CRLI(BaseNNClusterer):
                     )
                     break
 
-        except Exception as e:
+        except KeyboardInterrupt:  # if keyboard interrupt, only warning
+            logger.warning("‼️ Training got interrupted by the user. Exist now ...")
+        except Exception as e:  # other kind of exception follows below processing
             logger.error(f"❌ Exception: {e}")
-            if self.best_model_dict is None:
+            if self.best_model_dict is None:  # if no best model, raise error
                 raise RuntimeError(
                     "Training got interrupted. Model was not trained. Please investigate the error printed above."
                 )
@@ -344,18 +339,18 @@ class CRLI(BaseNNClusterer):
         if np.isnan(self.best_loss):
             raise ValueError("Something is wrong. best_loss is Nan after training.")
 
-        logger.info("Finished training.")
+        logger.info(
+            f"Finished training. The best model is from epoch#{self.best_epoch}."
+        )
 
     def fit(
         self,
         train_set: Union[dict, str],
         val_set: Optional[Union[dict, str]] = None,
-        file_type: str = "h5py",
+        file_type: str = "hdf5",
     ) -> None:
         # Step 1: wrap the input data with classes Dataset and DataLoader
-        training_set = DatasetForCRLI(
-            train_set, return_labels=False, file_type=file_type
-        )
+        training_set = DatasetForCRLI(train_set, return_y=False, file_type=file_type)
         training_loader = DataLoader(
             training_set,
             batch_size=self.batch_size,
@@ -365,7 +360,7 @@ class CRLI(BaseNNClusterer):
         val_loader = None
 
         if val_set is not None:
-            val_set = DatasetForCRLI(val_set, return_labels=False, file_type=file_type)
+            val_set = DatasetForCRLI(val_set, return_y=False, file_type=file_type)
             val_loader = DataLoader(
                 val_set,
                 batch_size=self.batch_size,
@@ -384,7 +379,7 @@ class CRLI(BaseNNClusterer):
     def predict(
         self,
         test_set: Union[dict, str],
-        file_type: str = "h5py",
+        file_type: str = "hdf5",
         return_latent_vars: bool = False,
     ) -> dict:
         """Make predictions for the input data with the trained model.
@@ -394,13 +389,13 @@ class CRLI(BaseNNClusterer):
         test_set : dict or str
             The dataset for model validating, should be a dictionary including keys as 'X',
             or a path string locating a data file supported by PyPOTS (e.g. h5 file).
-            If it is a dict, X should be array-like of shape [n_samples, sequence length (time steps), n_features],
+            If it is a dict, X should be array-like of shape [n_samples, sequence length (n_steps), n_features],
             which is time-series data for validating, can contain missing values, and y should be array-like of shape
             [n_samples], which is classification labels of X.
             If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
             key-value pairs like a dict, and it has to include keys as 'X' and 'y'.
 
-        file_type : str
+        file_type :
             The type of the given file if test_set is a path string.
 
         return_latent_vars : bool
@@ -409,13 +404,13 @@ class CRLI(BaseNNClusterer):
 
         Returns
         -------
-        result_dict : dict,
+        file_type :
             The dictionary containing the clustering results and latent variables if necessary.
 
         """
 
         self.model.eval()  # set the model as eval status to freeze it.
-        test_set = DatasetForCRLI(test_set, return_labels=False, file_type=file_type)
+        test_set = DatasetForCRLI(test_set, return_y=False, file_type=file_type)
         test_loader = DataLoader(
             test_set,
             batch_size=self.batch_size,
@@ -454,19 +449,15 @@ class CRLI(BaseNNClusterer):
 
     def cluster(
         self,
-        X: Union[dict, str],
-        file_type: str = "h5py",
+        test_set: Union[dict, str],
+        file_type: str = "hdf5",
     ) -> np.ndarray:
         """Cluster the input with the trained model.
 
-        Warnings
-        --------
-        The method cluster is deprecated. Please use `predict()` instead.
-
         Parameters
         ----------
-        X :
-            The data samples for testing, should be array-like of shape [n_samples, sequence length (time steps),
+        test_set :
+            The data samples for testing, should be array-like of shape [n_samples, sequence length (n_steps),
             n_features], or a path string locating a data file, e.g. h5 file.
 
         file_type :
@@ -478,9 +469,6 @@ class CRLI(BaseNNClusterer):
             Clustering results.
 
         """
-        logger.warning(
-            "🚨DeprecationWarning: The method cluster is deprecated. Please use `predict` instead."
-        )
 
-        result_dict = self.predict(X, file_type)
+        result_dict = self.predict(test_set, file_type=file_type)
         return result_dict["clustering"]

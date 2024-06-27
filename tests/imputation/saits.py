@@ -16,6 +16,7 @@ from pypots.imputation import SAITS
 from pypots.optim import Adam
 from pypots.utils.logging import logger
 from pypots.utils.metrics import calc_mse
+from pypots.utils.visual.data import plot_data, plot_missingness
 from tests.global_test_config import (
     DATA,
     EPOCHS,
@@ -23,9 +24,9 @@ from tests.global_test_config import (
     TRAIN_SET,
     VAL_SET,
     TEST_SET,
-    H5_TRAIN_SET_PATH,
-    H5_VAL_SET_PATH,
-    H5_TEST_SET_PATH,
+    GENERAL_H5_TRAIN_SET_PATH,
+    GENERAL_H5_VAL_SET_PATH,
+    GENERAL_H5_TEST_SET_PATH,
     RESULT_SAVING_DIR_FOR_IMPUTATION,
     check_tb_and_model_checkpoints_existence,
 )
@@ -46,11 +47,11 @@ class TestSAITS(unittest.TestCase):
         DATA["n_steps"],
         DATA["n_features"],
         n_layers=2,
-        d_model=256,
-        d_inner=128,
-        n_heads=4,
-        d_k=64,
-        d_v=64,
+        d_model=32,
+        n_heads=2,
+        d_k=16,
+        d_v=16,
+        d_ffn=32,
         dropout=0.1,
         epochs=EPOCHS,
         saving_path=saving_path,
@@ -78,6 +79,12 @@ class TestSAITS(unittest.TestCase):
             DATA["test_X_indicating_mask"],
         )
         logger.info(f"SAITS test_MSE: {test_MSE}")
+
+        # plot the missingness and imputed data
+        plot_missingness(
+            ~np.isnan(TEST_SET["X"]), 0, imputation_results["imputation"].shape[1]
+        )
+        plot_data(TEST_SET["X"], TEST_SET["X_ori"], imputation_results["imputation"])
 
     @pytest.mark.xdist_group(name="imputation-saits")
     def test_2_parameters(self):
@@ -112,8 +119,8 @@ class TestSAITS(unittest.TestCase):
 
     @pytest.mark.xdist_group(name="imputation-saits")
     def test_4_lazy_loading(self):
-        self.saits.fit(H5_TRAIN_SET_PATH, H5_VAL_SET_PATH)
-        imputation_results = self.saits.predict(H5_TEST_SET_PATH)
+        self.saits.fit(GENERAL_H5_TRAIN_SET_PATH, GENERAL_H5_VAL_SET_PATH)
+        imputation_results = self.saits.predict(GENERAL_H5_TEST_SET_PATH)
         assert not np.isnan(
             imputation_results["imputation"]
         ).any(), "Output still has missing values after running impute()."

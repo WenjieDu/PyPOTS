@@ -2,14 +2,6 @@
 The implementation of BTTF (Bayesian Temporal Tensor Factorization) for the partially-observed time-series
 forecasting task.
 
-Refer to the paper "Chen, X., & Sun, L. (2021).
-Bayesian Temporal Factorization for Multidimensional Time Series Prediction.
-IEEE transactions on pattern analysis and machine intelligence."
-
-Notes
------
-This numpy implementation is the same with the official one from https://github.com/xinychen/transdim.
-
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
@@ -21,9 +13,8 @@ from typing import Union, Optional
 import numpy as np
 import torch
 
-from .modules import BTTF_forecast
+from .core import BTTF_forecast
 from ..base import BaseForecaster
-from ...utils.logging import logger
 
 
 class BTTF(BaseForecaster):
@@ -69,13 +60,6 @@ class BTTF(BaseForecaster):
 
     2). ``n_steps - pred_step`` must be larger than ``max(time_lags)``;
 
-    References
-    ----------
-    .. [1] `Chen, Xinyu, and Lijun Sun.
-        "Bayesian temporal factorization for multidimensional time series prediction."
-        IEEE Transactions on Pattern Analysis and Machine Intelligence 44, no. 9 (2021): 4659-4673.
-        <https://arxiv.org/pdf/1910.06366>`_
-
     """
 
     def __init__(
@@ -104,7 +88,7 @@ class BTTF(BaseForecaster):
         self,
         train_set: Union[dict, str],
         val_set: Optional[Union[dict, str]] = None,
-        file_type="h5py",
+        file_type: str = "hdf5",
     ) -> None:
         """Train the forecaster on the given data.
 
@@ -119,7 +103,7 @@ class BTTF(BaseForecaster):
     def predict(
         self,
         test_set: Union[dict, str],
-        file_type: str = "h5py",
+        file_type: str = "hdf5",
     ) -> dict:
         assert not isinstance(
             test_set, str
@@ -146,31 +130,25 @@ class BTTF(BaseForecaster):
 
     def forecast(
         self,
-        X: Union[dict, str],
-        file_type: str = "h5py",
+        test_set: Union[dict, str],
+        file_type: str = "hdf5",
     ) -> np.ndarray:
-        """Forecast the future the input with the trained model.
-
-        Warnings
-        --------
-        The method forecast is deprecated. Please use `predict()` instead.
+        """Forecast the future of the input with the trained model.
 
         Parameters
         ----------
-        X :
-            Time-series data containing missing values. Shape [n_samples, sequence length (time steps), n_features].
+        test_set :
+            The data samples for testing, should be array-like of shape [n_samples, sequence length (n_steps),
+            n_features], or a path string locating a data file, e.g. h5 file.
 
         file_type :
             The type of the given file if X is a path string.
 
         Returns
         -------
-        array-like, shape [n_samples, prediction_horizon, n_features],
+        array-like, shape [n_samples, n_pred_steps, n_features],
             Forecasting results.
         """
-        logger.warning(
-            "🚨DeprecationWarning: The method forecast is deprecated. Please use `predict` instead."
-        )
-        result_dict = self.predict(X, file_type=file_type)
-        forecasting = result_dict["forecasting"]
-        return forecasting
+
+        result_dict = self.predict(test_set, file_type=file_type)
+        return result_dict["forecasting"]

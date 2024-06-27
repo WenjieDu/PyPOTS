@@ -1,8 +1,5 @@
 """
-The implementation of GRU-D for the partially-observed time-series imputation task.
-
-Refer to the paper "Che, Z., Purushotham, S., Cho, K., Sontag, D.A., & Liu, Y. (2018).
-Recurrent Neural Networks for Multivariate Time Series with Missing Values. Scientific Reports."
+The implementation of GRU-D for the partially-observed time-series classification task.
 
 """
 
@@ -16,12 +13,11 @@ import numpy as np
 import torch
 from torch.utils.data import DataLoader
 
+from .core import _GRUD
 from .data import DatasetForGRUD
-from .modules import _GRUD
 from ..base import BaseNNClassifier
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
-from ...utils.logging import logger
 
 
 class GRUD(BaseNNClassifier):
@@ -80,13 +76,8 @@ class GRUD(BaseNNClassifier):
         better than in previous epochs.
         The "all" strategy will save every model after each epoch training.
 
-    References
-    ----------
-    .. [1] `Che, Zhengping, Sanjay Purushotham, Kyunghyun Cho, David Sontag, and Yan Liu.
-        "Recurrent neural networks for multivariate time series with missing values."
-        Scientific reports 8, no. 1 (2018): 6085.
-        <https://www.nature.com/articles/s41598-018-24271-9.pdf>`_
-
+    verbose :
+        Whether to print out the training logs during the training process.
     """
 
     def __init__(
@@ -103,6 +94,7 @@ class GRUD(BaseNNClassifier):
         device: Optional[Union[str, torch.device, list]] = None,
         saving_path: str = None,
         model_saving_strategy: Optional[str] = "best",
+        verbose: bool = True,
     ):
         super().__init__(
             n_classes,
@@ -113,6 +105,7 @@ class GRUD(BaseNNClassifier):
             device,
             saving_path,
             model_saving_strategy,
+            verbose,
         )
 
         self.n_steps = n_steps
@@ -125,7 +118,6 @@ class GRUD(BaseNNClassifier):
             self.n_features,
             self.rnn_hidden_size,
             self.n_classes,
-            self.device,
         )
         self._send_model_to_given_device()
         self._print_model_size()
@@ -186,7 +178,7 @@ class GRUD(BaseNNClassifier):
         self,
         train_set: Union[dict, str],
         val_set: Optional[Union[dict, str]] = None,
-        file_type: str = "h5py",
+        file_type: str = "hdf5",
     ) -> None:
         # Step 1: wrap the input data with classes Dataset and DataLoader
         training_set = DatasetForGRUD(train_set, file_type=file_type)
@@ -217,10 +209,10 @@ class GRUD(BaseNNClassifier):
     def predict(
         self,
         test_set: Union[dict, str],
-        file_type: str = "h5py",
+        file_type: str = "hdf5",
     ) -> dict:
         self.model.eval()  # set the model as eval status to freeze it.
-        test_set = DatasetForGRUD(test_set, return_labels=False, file_type=file_type)
+        test_set = DatasetForGRUD(test_set, return_y=False, file_type=file_type)
         test_loader = DataLoader(
             test_set,
             batch_size=self.batch_size,
@@ -244,19 +236,15 @@ class GRUD(BaseNNClassifier):
 
     def classify(
         self,
-        X: Union[dict, str],
-        file_type: str = "h5py",
+        test_set: Union[dict, str],
+        file_type: str = "hdf5",
     ) -> np.ndarray:
         """Classify the input data with the trained model.
 
-        Warnings
-        --------
-        The method classify is deprecated. Please use `predict()` instead.
-
         Parameters
         ----------
-        X :
-            The data samples for testing, should be array-like of shape [n_samples, sequence length (time steps),
+        test_set :
+            The data samples for testing, should be array-like of shape [n_samples, sequence length (n_steps),
             n_features], or a path string locating a data file, e.g. h5 file.
 
         file_type :
@@ -267,8 +255,6 @@ class GRUD(BaseNNClassifier):
         array-like, shape [n_samples],
             Classification results of the given samples.
         """
-        logger.warning(
-            "🚨DeprecationWarning: The method classify is deprecated. Please use `predict` instead."
-        )
-        result_dict = self.predict(X, file_type=file_type)
+
+        result_dict = self.predict(test_set, file_type=file_type)
         return result_dict["classification"]

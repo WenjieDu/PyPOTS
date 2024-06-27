@@ -1,9 +1,6 @@
 """
 The implementation of USGAN for the partially-observed time-series imputation task.
 
-Refer to the paper "Miao, X., Wu, Y., Wang, J., Gao, Y., Mao, X., & Yin, J. (2021).
-Generative Semi-supervised Learning for Multivariate Time Series Imputation. AAAI 2021."
-
 """
 
 # Created by Jun Wang <jwangfx@connect.ust.hk> and Wenjie Du <wenjay.du@gmail.com>
@@ -16,10 +13,10 @@ import numpy as np
 import torch
 from torch.utils.data import DataLoader
 
+from .core import _USGAN
 from .data import DatasetForUSGAN
-from .modules import _USGAN
 from ..base import BaseNNImputer
-from ...data.checking import check_X_ori_in_val_set
+from ...data.checking import key_in_data_set
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
 from ...utils.logging import logger
@@ -102,13 +99,6 @@ class USGAN(BaseNNImputer):
         The "better" strategy will automatically save the model during training whenever the model performs
         better than in previous epochs.
 
-    References
-    ----------
-    .. [1] `Miao, Xiaoye, Yangyang Wu, Jun Wang, Yunjun Gao, Xudong Mao, and Jianwei Yin. 2021.
-       "Generative Semi-Supervised Learning for Multivariate Time Series Imputation".
-       Proceedings of the AAAI Conference on Artificial Intelligence 35 (10):8983-91.
-       <https://doi.org/10.1609/aaai.v35i10.17086>`_
-
     """
 
     def __init__(
@@ -130,6 +120,7 @@ class USGAN(BaseNNImputer):
         device: Optional[Union[str, torch.device, list]] = None,
         saving_path: Optional[str] = None,
         model_saving_strategy: Optional[str] = "best",
+        verbose: bool = True,
     ):
         super().__init__(
             batch_size,
@@ -139,6 +130,7 @@ class USGAN(BaseNNImputer):
             device,
             saving_path,
             model_saving_strategy,
+            verbose,
         )
         assert G_steps > 0 and D_steps > 0, "G_steps and D_steps should both >0"
 
@@ -155,16 +147,15 @@ class USGAN(BaseNNImputer):
             lambda_mse,
             hint_rate,
             dropout,
-            self.device,
         )
         self._send_model_to_given_device()
         self._print_model_size()
 
         # set up the optimizer
         self.G_optimizer = G_optimizer
-        self.G_optimizer.init_optimizer(self.model.generator.parameters())
+        self.G_optimizer.init_optimizer(self.model.backbone.generator.parameters())
         self.D_optimizer = D_optimizer
-        self.D_optimizer.init_optimizer(self.model.discriminator.parameters())
+        self.D_optimizer.init_optimizer(self.model.backbone.discriminator.parameters())
 
     def _assemble_input_for_training(self, data: list) -> dict:
         # fetch data
@@ -242,44 +233,36 @@ class USGAN(BaseNNImputer):
 
         try:
             training_step = 0
-            epoch_train_loss_G_collector = []
-            epoch_train_loss_D_collector = []
             for epoch in range(1, self.epochs + 1):
                 self.model.train()
+                step_train_loss_G_collector = []
+                step_train_loss_D_collector = []
                 for idx, data in enumerate(training_loader):
                     training_step += 1
                     inputs = self._assemble_input_for_training(data)
-
-                    step_train_loss_G_collector = []
-                    step_train_loss_D_collector = []
 
                     if idx % self.G_steps == 0:
                         self.G_optimizer.zero_grad()
                         results = self.model.forward(
                             inputs, training_object="generator"
                         )
-                        results["generation_loss"].backward()
+                        results["loss"].backward()  # generation loss
                         self.G_optimizer.step()
-                        step_train_loss_G_collector.append(
-                            results["generation_loss"].item()
-                        )
+                        step_train_loss_G_collector.append(results["loss"].item())
 
                     if idx % self.D_steps == 0:
                         self.D_optimizer.zero_grad()
                         results = self.model.forward(
                             inputs, training_object="discriminator"
                         )
-                        results["discrimination_loss"].backward(retain_graph=True)
+                        results["loss"].backward(
+                            retain_graph=True
+                        )  # discrimination loss
                         self.D_optimizer.step()
-                        step_train_loss_D_collector.append(
-                            results["discrimination_loss"].item()
-                        )
+                        step_train_loss_D_collector.append(results["loss"].item())
 
                     mean_step_train_D_loss = np.mean(step_train_loss_D_collector)
                     mean_step_train_G_loss = np.mean(step_train_loss_G_collector)
-
-                    epoch_train_loss_D_collector.append(mean_step_train_D_loss)
-                    epoch_train_loss_G_collector.append(mean_step_train_G_loss)
 
                     # save training loss logs into the tensorboard file for every step if in need
                     # Note: the `training_step` is not the actual number of steps that Discriminator and Generator get
@@ -292,8 +275,8 @@ class USGAN(BaseNNImputer):
                         self._save_log_into_tb_file(
                             training_step, "training", loss_results
                         )
-                mean_epoch_train_D_loss = np.mean(epoch_train_loss_D_collector)
-                mean_epoch_train_G_loss = np.mean(epoch_train_loss_G_collector)
+                mean_epoch_train_D_loss = np.mean(step_train_loss_D_collector)
+                mean_epoch_train_G_loss = np.mean(step_train_loss_G_collector)
 
                 if val_loader is not None:
                     self.model.eval()
@@ -315,7 +298,7 @@ class USGAN(BaseNNImputer):
                             imputation_loss_collector.append(imputation_mse)
 
                     mean_val_loss = np.mean(imputation_loss_collector)
-                    # save validating loss logs into the tensorboard file for every epoch if in need
+                    # save validation loss logs into the tensorboard file for every epoch if in need
                     if self.summary_writer is not None:
                         val_loss_dict = {
                             "validating_loss": mean_val_loss,
@@ -325,7 +308,7 @@ class USGAN(BaseNNImputer):
                         f"Epoch {epoch:03d} - "
                         f"generator training loss: {mean_epoch_train_G_loss:.4f}, "
                         f"discriminator training loss: {mean_epoch_train_D_loss:.4f}, "
-                        f"validating loss: {mean_val_loss:.4f}"
+                        f"validation loss: {mean_val_loss:.4f}"
                     )
                     mean_loss = mean_val_loss
                 else:
@@ -342,6 +325,7 @@ class USGAN(BaseNNImputer):
                     )
 
                 if mean_loss < self.best_loss:
+                    self.best_epoch = epoch
                     self.best_loss = mean_loss
                     self.best_model_dict = self.model.state_dict()
                     self.patience = self.original_patience
@@ -367,9 +351,11 @@ class USGAN(BaseNNImputer):
                     )
                     break
 
-        except Exception as e:
+        except KeyboardInterrupt:  # if keyboard interrupt, only warning
+            logger.warning("‼️ Training got interrupted by the user. Exist now ...")
+        except Exception as e:  # other kind of exception follows below processing
             logger.error(f"❌ Exception: {e}")
-            if self.best_model_dict is None:
+            if self.best_model_dict is None:  # if no best model, raise error
                 raise RuntimeError(
                     "Training got interrupted. Model was not trained. Please investigate the error printed above."
                 )
@@ -383,17 +369,19 @@ class USGAN(BaseNNImputer):
         if np.isnan(self.best_loss):
             raise ValueError("Something is wrong. best_loss is Nan after training.")
 
-        logger.info("Finished training.")
+        logger.info(
+            f"Finished training. The best model is from epoch#{self.best_epoch}."
+        )
 
     def fit(
         self,
         train_set: Union[dict, str],
         val_set: Optional[Union[dict, str]] = None,
-        file_type: str = "h5py",
+        file_type: str = "hdf5",
     ) -> None:
         # Step 1: wrap the input data with classes Dataset and DataLoader
         training_set = DatasetForUSGAN(
-            train_set, return_X_ori=False, return_labels=False, file_type=file_type
+            train_set, return_X_ori=False, return_y=False, file_type=file_type
         )
         training_loader = DataLoader(
             training_set,
@@ -403,10 +391,10 @@ class USGAN(BaseNNImputer):
         )
         val_loader = None
         if val_set is not None:
-            if not check_X_ori_in_val_set(val_set):
+            if not key_in_data_set("X_ori", val_set):
                 raise ValueError("val_set must contain 'X_ori' for model validation.")
             val_set = DatasetForUSGAN(
-                val_set, return_X_ori=True, return_labels=False, file_type=file_type
+                val_set, return_X_ori=True, return_y=False, file_type=file_type
             )
             val_loader = DataLoader(
                 val_set,
@@ -426,11 +414,11 @@ class USGAN(BaseNNImputer):
     def predict(
         self,
         test_set: Union[dict, str],
-        file_type="h5py",
+        file_type: str = "hdf5",
     ) -> dict:
         self.model.eval()  # set the model as eval status to freeze it.
         test_set = DatasetForUSGAN(
-            test_set, return_X_ori=False, return_labels=False, file_type=file_type
+            test_set, return_X_ori=False, return_y=False, file_type=file_type
         )
         test_loader = DataLoader(
             test_set,
@@ -455,19 +443,15 @@ class USGAN(BaseNNImputer):
 
     def impute(
         self,
-        X: Union[dict, str],
-        file_type="h5py",
+        test_set: Union[dict, str],
+        file_type: str = "hdf5",
     ) -> np.ndarray:
         """Impute missing values in the given data with the trained model.
 
-        Warnings
-        --------
-        The method impute is deprecated. Please use `predict()` instead.
-
         Parameters
         ----------
-        X :
-            The data samples for testing, should be array-like of shape [n_samples, sequence length (time steps),
+        test_set :
+            The data samples for testing, should be array-like of shape [n_samples, sequence length (n_steps),
             n_features], or a path string locating a data file, e.g. h5 file.
 
         file_type :
@@ -475,11 +459,9 @@ class USGAN(BaseNNImputer):
 
         Returns
         -------
-        array-like, shape [n_samples, sequence length (time steps), n_features],
+        array-like, shape [n_samples, sequence length (n_steps), n_features],
             Imputed data.
         """
-        logger.warning(
-            "🚨DeprecationWarning: The method impute is deprecated. Please use `predict` instead."
-        )
-        results_dict = self.predict(X, file_type=file_type)
-        return results_dict["imputation"]
+
+        result_dict = self.predict(test_set, file_type=file_type)
+        return result_dict["imputation"]

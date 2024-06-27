@@ -30,7 +30,7 @@ class TestAdam(unittest.TestCase):
         DATA["n_features"],
         n_layers=1,
         d_model=128,
-        d_inner=64,
+        d_ffn=64,
         n_heads=2,
         d_k=64,
         d_v=64,

@@ -1,13 +1,6 @@
 """
 The implementation of SAITS for the partially-observed time-series imputation task.
 
-Refer to the paper "Du, W., Cote, D., & Liu, Y. (2023). SAITS: Self-Attention-based Imputation for Time Series.
-Expert systems with applications."
-
-Notes
------
-Partial implementation uses code from https://github.com/WenjieDu/SAITS.
-
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
@@ -19,11 +12,11 @@ import numpy as np
 import torch
 from torch.utils.data import DataLoader
 
+from .core import _SAITS
 from .data import DatasetForSAITS
-from .modules import _SAITS
 from ..base import BaseNNImputer
-from ...data.base import BaseDataset
-from ...data.checking import check_X_ori_in_val_set
+from ...data.checking import key_in_data_set
+from ...data.dataset import BaseDataset
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
 from ...utils.logging import logger
@@ -48,9 +41,6 @@ class SAITS(BaseNNImputer):
         The dimension of the model's backbone.
         It is the input dimension of the multi-head DMSA layers.
 
-    d_inner :
-        The dimension of the layer in the Feed-Forward Networks (FFN).
-
     n_heads :
         The number of heads in the multi-head DMSA mechanism.
         ``d_model`` must be divisible by ``n_heads``, and the result should be equal to ``d_k``.
@@ -63,6 +53,9 @@ class SAITS(BaseNNImputer):
 
     d_v :
         The dimension of the `values` (V) in the DMSA mechanism.
+
+    d_ffn :
+        The dimension of the layer in the Feed-Forward Networks (FFN).
 
     dropout :
         The dropout rate for all fully-connected layers in the model.
@@ -123,13 +116,8 @@ class SAITS(BaseNNImputer):
         better than in previous epochs.
         The "all" strategy will save every model after each epoch training.
 
-    References
-    ----------
-    .. [1] `Du, Wenjie, David Côté, and Yan Liu.
-        "Saits: Self-attention-based imputation for time series".
-        Expert Systems with Applications 219 (2023): 119619.
-        <https://arxiv.org/pdf/2202.08516>`_
-
+    verbose :
+        Whether to print out the training logs during the training process.
     """
 
     def __init__(
@@ -138,10 +126,10 @@ class SAITS(BaseNNImputer):
         n_features: int,
         n_layers: int,
         d_model: int,
-        d_inner: int,
         n_heads: int,
         d_k: int,
         d_v: int,
+        d_ffn: int,
         dropout: float = 0,
         attn_dropout: float = 0,
         diagonal_attention_mask: bool = True,
@@ -156,6 +144,7 @@ class SAITS(BaseNNImputer):
         device: Optional[Union[str, torch.device, list]] = None,
         saving_path: Optional[str] = None,
         model_saving_strategy: Optional[str] = "best",
+        verbose: bool = True,
     ):
         super().__init__(
             batch_size,
@@ -165,6 +154,7 @@ class SAITS(BaseNNImputer):
             device,
             saving_path,
             model_saving_strategy,
+            verbose,
         )
 
         if d_model != n_heads * d_k:
@@ -182,7 +172,7 @@ class SAITS(BaseNNImputer):
         # model hype-parameters
         self.n_layers = n_layers
         self.d_model = d_model
-        self.d_inner = d_inner
+        self.d_ffn = d_ffn
         self.n_heads = n_heads
         self.d_k = d_k
         self.d_v = d_v
@@ -198,10 +188,10 @@ class SAITS(BaseNNImputer):
             self.n_steps,
             self.n_features,
             self.d_model,
-            self.d_inner,
             self.n_heads,
             self.d_k,
             self.d_v,
+            self.d_ffn,
             self.dropout,
             self.attn_dropout,
             self.diagonal_attention_mask,
@@ -252,11 +242,11 @@ class SAITS(BaseNNImputer):
         self,
         train_set: Union[dict, str],
         val_set: Optional[Union[dict, str]] = None,
-        file_type: str = "h5py",
+        file_type: str = "hdf5",
     ) -> None:
         # Step 1: wrap the input data with classes Dataset and DataLoader
         training_set = DatasetForSAITS(
-            train_set, return_X_ori=False, return_labels=False, file_type=file_type
+            train_set, return_X_ori=False, return_y=False, file_type=file_type
         )
         training_loader = DataLoader(
             training_set,
@@ -266,10 +256,10 @@ class SAITS(BaseNNImputer):
         )
         val_loader = None
         if val_set is not None:
-            if not check_X_ori_in_val_set(val_set):
+            if not key_in_data_set("X_ori", val_set):
                 raise ValueError("val_set must contain 'X_ori' for model validation.")
             val_set = DatasetForSAITS(
-                val_set, return_X_ori=True, return_labels=False, file_type=file_type
+                val_set, return_X_ori=True, return_y=False, file_type=file_type
             )
             val_loader = DataLoader(
                 val_set,
@@ -289,7 +279,7 @@ class SAITS(BaseNNImputer):
     def predict(
         self,
         test_set: Union[dict, str],
-        file_type: str = "h5py",
+        file_type: str = "hdf5",
         diagonal_attention_mask: bool = True,
         return_latent_vars: bool = False,
     ) -> dict:
@@ -297,35 +287,39 @@ class SAITS(BaseNNImputer):
 
         Parameters
         ----------
-        test_set : dict or str
+        test_set :
             The dataset for model validating, should be a dictionary including keys as 'X',
             or a path string locating a data file supported by PyPOTS (e.g. h5 file).
-            If it is a dict, X should be array-like of shape [n_samples, sequence length (time steps), n_features],
+            If it is a dict, X should be array-like of shape [n_samples, sequence length (n_steps), n_features],
             which is time-series data for validating, can contain missing values, and y should be array-like of shape
             [n_samples], which is classification labels of X.
             If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
             key-value pairs like a dict, and it has to include keys as 'X' and 'y'.
 
-        file_type : str
+        file_type :
             The type of the given file if test_set is a path string.
 
-        diagonal_attention_mask : bool
+        diagonal_attention_mask :
             Whether to apply a diagonal attention mask to the self-attention mechanism in the testing stage.
 
-        return_latent_vars : bool
+        return_latent_vars :
             Whether to return the latent variables in SAITS, e.g. attention weights of two DMSA blocks and
             the weight matrix from the combination block, etc.
 
         Returns
         -------
-        result_dict : dict,
+        file_type :
             The dictionary containing the clustering results and latent variables if necessary.
 
         """
         # Step 1: wrap the input data with classes Dataset and DataLoader
         self.model.eval()  # set the model as eval status to freeze it.
         test_set = BaseDataset(
-            test_set, return_X_ori=False, return_labels=False, file_type=file_type
+            test_set,
+            return_X_ori=False,
+            return_X_pred=False,
+            return_y=False,
+            file_type=file_type,
         )
         test_loader = DataLoader(
             test_set,
@@ -380,19 +374,15 @@ class SAITS(BaseNNImputer):
 
     def impute(
         self,
-        X: Union[dict, str],
-        file_type="h5py",
+        test_set: Union[dict, str],
+        file_type: str = "hdf5",
     ) -> np.ndarray:
         """Impute missing values in the given data with the trained model.
 
-        Warnings
-        --------
-        The method impute is deprecated. Please use `predict()` instead.
-
         Parameters
         ----------
-        X :
-            The data samples for testing, should be array-like of shape [n_samples, sequence length (time steps),
+        test_set :
+            The data samples for testing, should be array-like of shape [n_samples, sequence length (n_steps),
             n_features], or a path string locating a data file, e.g. h5 file.
 
         file_type :
@@ -400,12 +390,9 @@ class SAITS(BaseNNImputer):
 
         Returns
         -------
-        array-like, shape [n_samples, sequence length (time steps), n_features],
+        array-like, shape [n_samples, sequence length (n_steps), n_features],
             Imputed data.
         """
-        logger.warning(
-            "🚨DeprecationWarning: The method impute is deprecated. Please use `predict` instead."
-        )
 
-        results_dict = self.predict(X, file_type=file_type)
-        return results_dict["imputation"]
+        result_dict = self.predict(test_set, file_type=file_type)
+        return result_dict["imputation"]

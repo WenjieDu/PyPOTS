@@ -26,9 +26,9 @@ from tests.global_test_config import (
     TRAIN_SET,
     VAL_SET,
     TEST_SET,
-    H5_TRAIN_SET_PATH,
-    H5_VAL_SET_PATH,
-    H5_TEST_SET_PATH,
+    GENERAL_H5_TRAIN_SET_PATH,
+    GENERAL_H5_VAL_SET_PATH,
+    GENERAL_H5_TEST_SET_PATH,
     RESULT_SAVING_DIR_FOR_CLUSTERING,
     check_tb_and_model_checkpoints_existence,
 )
@@ -49,7 +49,7 @@ class TestVaDER(unittest.TestCase):
         n_steps=DATA["n_steps"],
         n_features=DATA["n_features"],
         n_clusters=DATA["n_classes"],
-        rnn_hidden_size=64,
+        rnn_hidden_size=32,
         d_mu_stddev=5,
         pretrain_epochs=20,
         epochs=EPOCHS,
@@ -113,9 +113,9 @@ class TestVaDER(unittest.TestCase):
 
     @pytest.mark.xdist_group(name="clustering-vader")
     def test_4_lazy_loading(self):
-        self.vader.fit(H5_TRAIN_SET_PATH, H5_VAL_SET_PATH)
+        self.vader.fit(GENERAL_H5_TRAIN_SET_PATH, GENERAL_H5_VAL_SET_PATH)
         clustering_results = self.vader.predict(
-            H5_TEST_SET_PATH, return_latent_vars=True
+            GENERAL_H5_TEST_SET_PATH, return_latent_vars=True
         )
         external_metrics = calc_external_cluster_validation_metrics(
             clustering_results["clustering"], DATA["test_y"]

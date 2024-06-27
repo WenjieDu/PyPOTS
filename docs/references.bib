@@ -23,7 +23,6 @@ pages={1477-1490},
 doi={10.1109/TBME.2018.2874712}
 }
 
-
 @article{che2018GRUD,
 title = {Recurrent {{Neural Networks}} for {{Multivariate Time Series}} with {{Missing Values}}},
 author = {Che, Zhengping and Purushotham, Sanjay and Cho, Kyunghyun and Sontag, David and Liu, Yan},
@@ -123,18 +122,14 @@ doi = {10.1016/j.eswa.2023.119619},
 url = {https://arxiv.org/abs/2202.08516},
 author = {Wenjie Du and David Cote and Yan Liu},
 }
-@article{fortuin2020GPVAEDeep,
-title = {{{GP-VAE}}: {{Deep Probabilistic Time Series Imputation}}},
-author = {Fortuin, Vincent and Baranchuk, Dmitry and R{\"a}tsch, Gunnar and Mandt, Stephan},
-year = {2020},
-month = feb,
-journal = {arXiv:1907.04155 [cs, stat]},
-eprint = {1907.04155},
-eprinttype = {arxiv},
-primaryclass = {cs, stat},
-url = {http://arxiv.org/abs/1907.04155},
-archiveprefix = {arXiv},
-keywords = {Computer Science - Machine Learning,Statistics - Machine Learning}
+
+@inproceedings{fortuin2020gpvae,
+title={{GP-VAE: Deep probabilistic time series imputation}},
+author={Fortuin, Vincent and Baranchuk, Dmitry and R{\"a}tsch, Gunnar and Mandt, Stephan},
+booktitle={International conference on artificial intelligence and statistics},
+pages={1651--1661},
+year={2020},
+organization={PMLR}
 }
 
 @article{horn2019SeFT,
@@ -360,20 +355,6 @@ issn = {2313-4534},
 url = {https://eudl.eu/doi/10.4108/icst.iniscom.2015.258269}
 }
 
-@article{yoon2017EstimatingMissing,
-title = {Estimating {{Missing Data}} in {{Temporal Data Streams Using Multi-directional Recurrent Neural Networks}}},
-author = {Yoon, Jinsung and Zame, William R. and {van der Schaar}, Mihaela},
-year = {2017},
-month = nov,
-journal = {arXiv:1711.08742 [cs]},
-eprint = {1711.08742},
-eprinttype = {arxiv},
-primaryclass = {cs},
-url = {http://arxiv.org/abs/1711.08742},
-archiveprefix = {arXiv},
-keywords = {Computer Science - Machine Learning}
-}
-
 @article{yuan2019E2GAN,
 title = {{{E}}{$^{2}$}{{GAN}}: {{End-to-End Generative Adversarial Network}} for {{Multivariate Time Series Imputation}}},
 author = {Yuan, Xiaojie and Luo, Yonghong and Zhang, Ying and Cai, Xiangrui},
@@ -382,20 +363,13 @@ pages = {3094--3100},
 url = {https://www.ijcai.org/Proceedings/2019/429}
 }
 
-@article{zhang2022Raindrop,
-title = {Graph-{{Guided Network}} for {{Irregularly Sampled Multivariate Time Series}}},
-author = {Zhang, Xiang and Zeman, Marko and Tsiligkaridis, Theodoros and Zitnik, Marinka},
-year = {2022},
-month = mar,
-journal = {arXiv:2110.05357 [cs]},
-eprint = {2110.05357},
-eprinttype = {arxiv},
-primaryclass = {cs},
-url = {http://arxiv.org/abs/2110.05357},
-archiveprefix = {arXiv},
-keywords = {Computer Science - Artificial Intelligence,Computer Science - Machine Learning}
+@inproceedings{zhang2022Raindrop,
+title={Graph-Guided Network for Irregularly Sampled Multivariate Time Series},
+author={Xiang Zhang and Marko Zeman and Theodoros Tsiligkaridis and Marinka Zitnik},
+booktitle={International Conference on Learning Representations},
+year={2022},
+url={https://openreview.net/forum?id=Kwm8I7dU-l5}
 }
-
 
 @inproceedings{reddi2018OnTheConvergence,
 title={On the Convergence of Adam and Beyond},
@@ -406,35 +380,35 @@ url={https://openreview.net/forum?id=ryQu7f-RZ},
 }
 
 @article{hubert1985,
-  title={Comparing partitions},
-  author={Hubert, Lawrence and Arabie, Phipps},
-  journal={Journal of classification},
-  volume={2},
-  pages={193--218},
-  year={1985},
-  publisher={Springer}
+title={Comparing partitions},
+author={Hubert, Lawrence and Arabie, Phipps},
+journal={Journal of classification},
+volume={2},
+pages={193--218},
+year={1985},
+publisher={Springer}
 }
 
 @article{steinley2004,
-  title={Properties of the hubert-arable adjusted rand index},
-  author={Steinley, Douglas},
-  journal={Psychological methods},
-  volume={9},
-  number={3},
-  pages={386},
-  year={2004},
-  publisher={American Psychological Association}
+title={Properties of the hubert-arable adjusted rand index},
+author={Steinley, Douglas},
+journal={Psychological methods},
+volume={9},
+number={3},
+pages={386},
+year={2004},
+publisher={American Psychological Association}
 }
 
 @article{calinski1974,
-  title={A dendrite method for cluster analysis},
-  author={Cali{\'n}ski, Tadeusz and Harabasz, Jerzy},
-  journal={Communications in Statistics-theory and Methods},
-  volume={3},
-  number={1},
-  pages={1--27},
-  year={1974},
-  publisher={Taylor \& Francis}
+title={A dendrite method for cluster analysis},
+author={Cali{\'n}ski, Tadeusz and Harabasz, Jerzy},
+journal={Communications in Statistics-theory and Methods},
+volume={3},
+number={1},
+pages={1--27},
+year={1974},
+publisher={Taylor \& Francis}
 }
 
 @inproceedings{tashiro2021csdi,
@@ -459,6 +433,14 @@ volume = {63},
 year = {1976}
 }
 
+@inproceedings{ipsen2021notmiwae,
+title={not-{\{}MIWAE{\}}: Deep Generative Modelling with Missing not at Random Data},
+author={Niels Bruun Ipsen and Pierre-Alexandre Mattei and Jes Frellsen},
+booktitle={International Conference on Learning Representations},
+year={2021},
+url={https://openreview.net/forum?id=tu29GQT0JFy}
+}
+
 @inproceedings{wu2023timesnet,
 title={{TimesNet: Temporal 2D-Variation Modeling for General Time Series Analysis}},
 author={Haixu Wu and Tengge Hu and Yong Liu and Hang Zhou and Jianmin Wang and Mingsheng Long},
@@ -467,9 +449,299 @@ year={2023},
 url={https://openreview.net/forum?id=ju_Uqw384Oq}
 }
 
+@inproceedings{wu2021autoformer,
+author = {Wu, Haixu and Xu, Jiehui and Wang, Jianmin and Long, Mingsheng},
+booktitle = {Advances in Neural Information Processing Systems},
+pages = {22419--22430},
+publisher = {Curran Associates, Inc.},
+title = {Autoformer: Decomposition Transformers with Auto-Correlation for Long-Term Series Forecasting},
+url = {https://proceedings.neurips.cc/paper_files/paper/2021/file/bcc0d400288793e8bdcd7c19a8ac0c2b-Paper.pdf},
+volume = {34},
+year = {2021}
+}
+
+@inproceedings{zhang2023crossformer,
+title={Crossformer: Transformer Utilizing Cross-Dimension Dependency for Multivariate Time Series Forecasting},
+author={Yunhao Zhang and Junchi Yan},
+booktitle={The Eleventh International Conference on Learning Representations},
+year={2023},
+url={https://openreview.net/forum?id=vSVLM2j9eie}
+}
+
+@inproceedings{zeng2023dlinear,
+title={Are Transformers Effective for Time Series Forecasting?},
+volume={37},
+url={https://ojs.aaai.org/index.php/AAAI/article/view/26317},
+DOI={10.1609/aaai.v37i9.26317},
+number={9},
+booktitle={Proceedings of the AAAI Conference on Artificial Intelligence},
+author={Zeng, Ailing and Chen, Muxi and Zhang, Lei and Xu, Qiang},
+year={2023},
+month={Jun.},
+pages={11121-11128}
+}
+
+@inproceedings{nie2023patchtst,
+title={A Time Series is Worth 64 Words:  Long-term Forecasting with Transformers},
+author={Yuqi Nie and Nam H Nguyen and Phanwadee Sinthong and Jayant Kalagnanam},
+booktitle={The Eleventh International Conference on Learning Representations },
+year={2023},
+url={https://openreview.net/forum?id=Jbdc0vTOcol}
+}
+
+@inproceedings{woo2023etsformer,
+title={{ETS}former: Exponential Smoothing Transformers for Time-series Forecasting},
+author={Gerald Woo and Chenghao Liu and Doyen Sahoo and Akshat Kumar and Steven Hoi},
+booktitle={The Eleventh International Conference on Learning Representations},
+year={2023},
+url={https://openreview.net/forum?id=5m_3whfo483}
+}
+
+@inproceedings{zhou2022fedformer,
+title = {{FED}former: Frequency Enhanced Decomposed Transformer for Long-term Series Forecasting},
+author = {Zhou, Tian and Ma, Ziqing and Wen, Qingsong and Wang, Xue and Sun, Liang and Jin, Rong},
+booktitle = {Proceedings of the 39th International Conference on Machine Learning},
+pages = {27268--27286},
+year = {2022},
+editor = {Chaudhuri, Kamalika and Jegelka, Stefanie and Song, Le and Szepesvari, Csaba and Niu, Gang and Sabato, Sivan},
+volume = {162},
+series = {Proceedings of Machine Learning Research},
+month = {17--23 Jul},
+publisher = {PMLR},
+pdf = {https://proceedings.mlr.press/v162/zhou22g/zhou22g.pdf},
+url = {https://proceedings.mlr.press/v162/zhou22g.html},
+}
+
+@inproceedings{zhou2021informer,
+title={Informer: Beyond efficient transformer for long sequence time-series forecasting},
+author={Zhou, Haoyi and Zhang, Shanghang and Peng, Jieqi and Zhang, Shuai and Li, Jianxin and Xiong, Hui and Zhang, Wancai},
+booktitle={Proceedings of the AAAI conference on artificial intelligence},
+volume={35},
+number={12},
+pages={11106--11115},
+year={2021}
+}
+
+@inproceedings{zhou2022film,
+author = {Zhou, Tian and MA, Ziqing and wang, xue and Wen, Qingsong and Sun, Liang and Yao, Tao and Yin, Wotao and Jin, Rong},
+booktitle = {Advances in Neural Information Processing Systems},
+editor = {S. Koyejo and S. Mohamed and A. Agarwal and D. Belgrave and K. Cho and A. Oh},
+pages = {12677--12690},
+publisher = {Curran Associates, Inc.},
+title = {{FiLM: Frequency improved Legendre Memory Model for Long-term Time Series Forecasting}},
+url = {https://proceedings.neurips.cc/paper_files/paper/2022/file/524ef58c2bd075775861234266e5e020-Paper-Conference.pdf},
+volume = {35},
+year = {2022}
+}
+
+@inproceedings{yi2023frets,
+author = {Yi, Kun and Zhang, Qi and Fan, Wei and Wang, Shoujin and Wang, Pengyang and He, Hui and An, Ning and Lian, Defu and Cao, Longbing and Niu, Zhendong},
+booktitle = {Advances in Neural Information Processing Systems},
+editor = {A. Oh and T. Neumann and A. Globerson and K. Saenko and M. Hardt and S. Levine},
+pages = {76656--76679},
+publisher = {Curran Associates, Inc.},
+title = {Frequency-domain MLPs are More Effective Learners in Time Series Forecasting},
+url = {https://proceedings.neurips.cc/paper_files/paper/2023/file/f1d16af76939f476b5f040fd1398c0a3-Paper-Conference.pdf},
+volume = {36},
+year = {2023}
+}
+
+@inproceedings{liu2024itransformer,
+title={{iTransformer: Inverted Transformers Are Effective for Time Series Forecasting}},
+author={Yong Liu and Tengge Hu and Haoran Zhang and Haixu Wu and Shiyu Wang and Lintao Ma and Mingsheng Long},
+booktitle={The Twelfth International Conference on Learning Representations},
+year={2024},
+url={https://openreview.net/forum?id=JePfAI8fah}
+}
+
 @inproceedings{liu2022nonstationary,
-  title={Non-stationary Transformers: Exploring the Stationarity in Time Series Forecasting},
-  author={Liu, Yong and Wu, Haixu and Wang, Jianmin and Long, Mingsheng},
-  booktitle={Advances in Neural Information Processing Systems},
-  year={2022}
+author = {Liu, Yong and Wu, Haixu and Wang, Jianmin and Long, Mingsheng},
+booktitle = {Advances in Neural Information Processing Systems},
+editor = {S. Koyejo and S. Mohamed and A. Agarwal and D. Belgrave and K. Cho and A. Oh},
+pages = {9881--9893},
+publisher = {Curran Associates, Inc.},
+title = {Non-stationary Transformers: Exploring the Stationarity in Time Series Forecasting},
+url = {https://proceedings.neurips.cc/paper_files/paper/2022/file/4054556fcaa934b0bf76da52cf4f92cb-Paper-Conference.pdf},
+volume = {35},
+year = {2022}
+}
+
+@inproceedings{liu2023koopa,
+author = {Liu, Yong and Li, Chenyu and Wang, Jianmin and Long, Mingsheng},
+booktitle = {Advances in Neural Information Processing Systems},
+editor = {A. Oh and T. Neumann and A. Globerson and K. Saenko and M. Hardt and S. Levine},
+pages = {12271--12290},
+publisher = {Curran Associates, Inc.},
+title = {Koopa: Learning Non-stationary Time Series Dynamics with Koopman Predictors},
+url = {https://proceedings.neurips.cc/paper_files/paper/2023/file/28b3dc0970fa4624a63278a4268de997-Paper-Conference.pdf},
+volume = {36},
+year = {2023}
+}
+
+@inproceedings{liu2022pyraformer,
+title={Pyraformer: Low-Complexity Pyramidal Attention for Long-Range Time Series Modeling and Forecasting},
+author={Shizhan Liu and Hang Yu and Cong Liao and Jianguo Li and Weiyao Lin and Alex X. Liu and Schahram Dustdar},
+booktitle={International Conference on Learning Representations},
+year={2022},
+url={https://openreview.net/forum?id=0EXmFzUn5I}
+}
+
+@inproceedings{kitaev2020reformer,
+title={Reformer: The Efficient Transformer},
+author={Nikita Kitaev and Lukasz Kaiser and Anselm Levskaya},
+booktitle={International Conference on Learning Representations},
+year={2020},
+url={https://openreview.net/forum?id=rkgNKkHtvB}
+}
+
+@article{das2023tide,
+title={Long-term Forecasting with Ti{DE}: Time-series Dense Encoder},
+author={Abhimanyu Das and Weihao Kong and Andrew Leach and Shaan K Mathur and Rajat Sen and Rose Yu},
+journal={Transactions on Machine Learning Research},
+issn={2835-8856},
+year={2023},
+url={https://openreview.net/forum?id=pCbC3aQB5W},
+}
+
+@inproceedings{chen2023contiformer,
+title={ContiFormer: Continuous-Time Transformer for Irregular Time Series Modeling},
+author={Yuqi Chen and Kan Ren and Yansen Wang and Yuchen Fang and Weiwei Sun and Dongsheng Li},
+booktitle={Thirty-seventh Conference on Neural Information Processing Systems},
+year={2023},
+url={https://openreview.net/forum?id=YJDz4F2AZu}
+}
+
+@inproceedings{lee2024pits,
+title={Learning to Embed Time Series Patches Independently},
+author={Seunghan Lee and Taeyoung Park and Kibok Lee},
+booktitle={The Twelfth International Conference on Learning Representations},
+year={2024},
+url={https://openreview.net/forum?id=WS7GuBDFa2}
+}
+
+@inproceedings{wang2023micn,
+title={{MICN}: Multi-scale Local and Global Context Modeling for Long-term Series Forecasting},
+author={Huiqiang Wang and Jian Peng and Feihu Huang and Jince Wang and Junhui Chen and Yifei Xiao},
+booktitle={The Eleventh International Conference on Learning Representations},
+year={2023},
+url={https://openreview.net/forum?id=zt53IDUR1U}
+}
+
+@inproceedings{wang2024timemixer,
+title={TimeMixer: Decomposable Multiscale Mixing for Time Series Forecasting},
+author={Shiyu Wang and Haixu Wu and Xiaoming Shi and Tengge Hu and Huakun Luo and Lintao Ma and James Y. Zhang and JUN ZHOU},
+booktitle={The Twelfth International Conference on Learning Representations},
+year={2024},
+url={https://openreview.net/forum?id=7oLshfEIC2}
+}
+
+@article{gu2023mamba,
+title={Mamba: Linear-Time Sequence Modeling with Selective State Spaces},
+author={Gu, Albert and Dao, Tri},
+journal={arXiv preprint arXiv:2312.00752},
+year={2023}
+}
+
+@article{zhang2022lightts,
+title={Less Is More: Fast Multivariate Time Series Forecasting with Light Sampling-oriented MLP Structures},
+author={Tianping Zhang and Yizhuo Zhang and Wei Cao and Jiang Bian and Xiaohan Yi and Shun Zheng and Jian Li},
+year={2022},
+eprint={2207.01186},
+archivePrefix={arXiv},
+primaryClass={cs.LG}
+}
+
+@article{lin2023segrnn,
+title={{SegRNN}: Segment Recurrent Neural Network for Long-Term Time Series Forecasting},
+author={Shengsheng Lin and Weiwei Lin and Wentai Wu and Feiyu Zhao and Ruichao Mo and Haotong Zhang},
+year={2023},
+eprint={2308.11200},
+archivePrefix={arXiv},
+primaryClass={cs.LG}
+}
+
+@article{chen2023tsmixer,
+title={{TSMixer}: An All-MLP Architecture for Time Series Forecasting},
+author={Si-An Chen and Chun-Liang Li and Nate Yoder and Sercan O. Arik and Tomas Pfister},
+year={2023},
+eprint={2303.06053},
+archivePrefix={arXiv},
+primaryClass={cs.LG}
+}
+
+@inproceedings{choi2024timecib,
+title={Conditional Information Bottleneck Approach for Time Series Imputation},
+author={MinGyu Choi and Changhee Lee},
+booktitle={The Twelfth International Conference on Learning Representations},
+year={2024},
+url={https://openreview.net/forum?id=K1mcPiDdOJ}
+}
+
+@article{gao2024units,
+title={{UniTS}: Building a Unified Time Series Model},
+author={Gao, Shanghua and Koker, Teddy and Queen, Owen and Hartvigsen, Thomas and Tsiligkaridis, Theodoros and Zitnik, Marinka},
+journal={arXiv},
+url={https://arxiv.org/pdf/2403.00131.pdf},
+year={2024}
+}
+
+@article{liu2024timesurl,
+title={{TimesURL}: Self-Supervised Contrastive Learning for Universal Time Series Representation Learning},
+author={Liu, Jiexi and Chen, Songcan},
+volume={38},
+url={https://ojs.aaai.org/index.php/AAAI/article/view/29299},
+DOI={10.1609/aaai.v38i12.29299},
+number={12},
+journal={Proceedings of the AAAI Conference on Artificial Intelligence},
+year={2024},
+month={Mar.},
+pages={13918-13926},
+}
+
+@inproceedings{luo2024moderntcn,
+title={Modern{TCN}: A Modern Pure Convolution Structure for General Time Series Analysis},
+author={Luo Donghao, Wue Xue},
+booktitle={The Twelfth International Conference on Learning Representations},
+year={2024},
+url={https://openreview.net/forum?id=vpJMJerXHU}
+}
+
+@inproceedings{liu2022scinet,
+author = {LIU, Minhao and Zeng, Ailing and Chen, Muxi and Xu, Zhijian and LAI, Qiuxia and Ma, Lingna and Xu, Qiang},
+booktitle = {Advances in Neural Information Processing Systems},
+editor = {S. Koyejo and S. Mohamed and A. Agarwal and D. Belgrave and K. Cho and A. Oh},
+pages = {5816--5828},
+publisher = {Curran Associates, Inc.},
+title = {SCINet: Time Series Modeling and Forecasting with Sample Convolution and Interaction},
+url = {https://proceedings.neurips.cc/paper_files/paper/2022/file/266983d0949aed78a16fa4782237dea7-Paper-Conference.pdf},
+volume = {35},
+year = {2022}
+}
+
+@inproceedings{kim2022revin,
+title={Reversible Instance Normalization for Accurate Time-Series Forecasting against Distribution Shift},
+author={Taesung Kim and Jinhee Kim and Yunwon Tae and Cheonbok Park and Jang-Ho Choi and Jaegul Choo},
+booktitle={International Conference on Learning Representations},
+year={2022},
+url={https://openreview.net/forum?id=cGDAkQo1C0p}
+}
+
+@inproceedings{cao2020stemgnn,
+author = {Cao, Defu and Wang, Yujing and Duan, Juanyong and Zhang, Ce and Zhu, Xia and Huang, Congrui and Tong, Yunhai and Xu, Bixiong and Bai, Jing and Tong, Jie and Zhang, Qi},
+booktitle = {Advances in Neural Information Processing Systems},
+editor = {H. Larochelle and M. Ranzato and R. Hadsell and M.F. Balcan and H. Lin},
+pages = {17766--17778},
+publisher = {Curran Associates, Inc.},
+title = {Spectral Temporal Graph Neural Network for Multivariate Time-series Forecasting},
+url = {https://proceedings.neurips.cc/paper_files/paper/2020/file/cdf6581cb7aca4b7e19ef136c6e601a5-Paper.pdf},
+volume = {33},
+year = {2020}
+}
+
+@inproceedings{xu2024fits,
+title={{FITS}: Modeling Time Series with \$10k\$ Parameters},
+author={Zhijian Xu and Ailing Zeng and Qiang Xu},
+booktitle={The Twelfth International Conference on Learning Representations},
+year={2024},
+url={https://openreview.net/forum?id=bWcnvZ3qMb}
 }

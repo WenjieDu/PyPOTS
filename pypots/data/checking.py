@@ -11,11 +11,30 @@ from typing import Union
 import h5py
 
 
-def check_X_ori_in_val_set(val_set: Union[str, dict]) -> bool:
-    if isinstance(val_set, str):
-        with h5py.File(val_set, "r") as f:
-            return "X_ori" in f.keys()
-    elif isinstance(val_set, dict):
-        return "X_ori" in val_set.keys()
+def key_in_data_set(key: str, dataset: Union[str, dict]) -> bool:
+    """Check if the key is in the given dataset.
+    The dataset could be a path to an HDF5 file or a Python dictionary.
+
+    Parameters
+    ----------
+    key :
+        The key to check.
+
+    dataset :
+        The dataset to be checked.
+
+    Returns
+    -------
+    bool
+        Whether the key is in the dataset.
+    """
+
+    if isinstance(dataset, str):
+        with h5py.File(dataset, "r") as f:
+            return key in f.keys()
+    elif isinstance(dataset, dict):
+        return key in dataset.keys()
     else:
-        raise TypeError("val_set must be a str or a Python dictionary.")
+        raise TypeError(
+            f"dataset must be a str or a Python dictionary, but got {type(dataset)}"
+        )

@@ -1,5 +1,5 @@
 """
-Dataset class for self-attention models trained with MIT (masked imputation task) task.
+Dataset class for the imputation model Transformer.
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
@@ -15,8 +15,8 @@ class DatasetForTransformer(DatasetForSAITS):
         self,
         data: Union[dict, str],
         return_X_ori: bool,
-        return_labels: bool,
-        file_type: str = "h5py",
+        return_y: bool,
+        file_type: str = "hdf5",
         rate: float = 0.2,
     ):
-        super().__init__(data, return_X_ori, return_labels, file_type, rate)
+        super().__init__(data, return_X_ori, return_y, file_type, rate)

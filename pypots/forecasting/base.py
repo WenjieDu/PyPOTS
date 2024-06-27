@@ -48,6 +48,8 @@ class BaseForecaster(BaseModel):
         better than in previous epochs.
         The "all" strategy will save every model after each epoch training.
 
+    verbose :
+        Whether to print out the training logs during the training process.
     """
 
     def __init__(
@@ -55,11 +57,13 @@ class BaseForecaster(BaseModel):
         device: Optional[Union[str, torch.device, list]] = None,
         saving_path: str = None,
         model_saving_strategy: Optional[str] = "best",
+        verbose: bool = True,
     ):
         super().__init__(
             device,
             saving_path,
             model_saving_strategy,
+            verbose,
         )
 
     @abstractmethod
@@ -67,7 +71,7 @@ class BaseForecaster(BaseModel):
         self,
         train_set: Union[dict, str],
         val_set: Optional[Union[dict, str]] = None,
-        file_type: str = "h5py",
+        file_type: str = "hdf5",
     ) -> None:
         """Train the classifier on the given data.
 
@@ -76,7 +80,7 @@ class BaseForecaster(BaseModel):
         train_set :
             The dataset for model training, should be a dictionary including the key 'X',
             or a path string locating a data file.
-            If it is a dict, X should be array-like of shape [n_samples, sequence length (time steps), n_features],
+            If it is a dict, X should be array-like of shape [n_samples, sequence length (n_steps), n_features],
             which is time-series data for training, can contain missing values.
             If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
             key-value pairs like a dict, and it has to include the key 'X'.
@@ -84,7 +88,7 @@ class BaseForecaster(BaseModel):
         val_set :
             The dataset for model validating, should be a dictionary including the key 'X',
             or a path string locating a data file.
-            If it is a dict, X should be array-like of shape [n_samples, sequence length (time steps), n_features],
+            If it is a dict, X should be array-like of shape [n_samples, sequence length (n_steps), n_features],
             which is time-series data for validation, can contain missing values.
             If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
             key-value pairs like a dict, and it has to include the key 'X'.
@@ -99,33 +103,33 @@ class BaseForecaster(BaseModel):
     def predict(
         self,
         test_set: Union[dict, str],
-        file_type: str = "h5py",
+        file_type: str = "hdf5",
     ) -> dict:
         raise NotImplementedError
 
     @abstractmethod
     def forecast(
         self,
-        X: dict or str,
-        file_type: str = "h5py",
+        test_set: Union[dict, str],
+        file_type: str = "hdf5",
     ) -> np.ndarray:
         """Forecast the future the input with the trained model.
 
         Parameters
         ----------
-        X :
-            Time-series data containing missing values. Shape [n_samples, sequence length (time steps), n_features].
+        test_set :
+            The data samples for testing, should be array-like of shape [n_samples, sequence length (n_steps),
+            n_features], or a path string locating a data file, e.g. h5 file.
 
         file_type :
             The type of the given file if X is a path string.
 
         Returns
         -------
-        array-like, shape [n_samples, prediction_horizon, n_features],
+        array-like, shape [n_samples, n_pred_steps, n_features],
             Forecasting results.
         """
-        # this is for old API compatibility, will be removed in the future.
-        # Please implement predict() instead.
+
         raise NotImplementedError
 
 
@@ -168,6 +172,10 @@ class BaseNNForecaster(BaseNNModel):
         The "better" strategy will automatically save the model during training whenever the model performs
         better than in previous epochs.
         The "all" strategy will save every model after each epoch training.
+
+    verbose :
+        Whether to print out the training logs during the training process.
+
     Notes
     -----
     Optimizers are necessary for training deep-learning neural networks, but we don't put  a parameter ``optimizer``
@@ -188,6 +196,7 @@ class BaseNNForecaster(BaseNNModel):
         device: Optional[Union[str, torch.device, list]] = None,
         saving_path: str = None,
         model_saving_strategy: Optional[str] = "best",
+        verbose: bool = True,
     ):
         super().__init__(
             batch_size,
@@ -197,10 +206,11 @@ class BaseNNForecaster(BaseNNModel):
             device,
             saving_path,
             model_saving_strategy,
+            verbose,
         )
 
     @abstractmethod
-    def _assemble_input_for_training(self, data) -> dict:
+    def _assemble_input_for_training(self, data: list) -> dict:
         """Assemble the given data into a dictionary for training input.
 
         Parameters
@@ -216,7 +226,7 @@ class BaseNNForecaster(BaseNNModel):
         raise NotImplementedError
 
     @abstractmethod
-    def _assemble_input_for_validating(self, data) -> dict:
+    def _assemble_input_for_validating(self, data: list) -> dict:
         """Assemble the given data into a dictionary for validating input.
 
         Parameters
@@ -232,7 +242,7 @@ class BaseNNForecaster(BaseNNModel):
         raise NotImplementedError
 
     @abstractmethod
-    def _assemble_input_for_testing(self, data) -> dict:
+    def _assemble_input_for_testing(self, data: list) -> dict:
         """Assemble the given data into a dictionary for testing input.
 
         Notes
@@ -306,7 +316,7 @@ class BaseNNForecaster(BaseNNModel):
 
                     mean_val_loss = np.mean(forecasting_loss_collector)
 
-                    # save validating loss logs into the tensorboard file for every epoch if in need
+                    # save validation loss logs into the tensorboard file for every epoch if in need
                     if self.summary_writer is not None:
                         val_loss_dict = {
                             "forecasting_loss": mean_val_loss,
@@ -316,7 +326,7 @@ class BaseNNForecaster(BaseNNModel):
                     logger.info(
                         f"Epoch {epoch:03d} - "
                         f"training loss: {mean_train_loss:.4f}, "
-                        f"validating loss: {mean_val_loss:.4f}"
+                        f"validation loss: {mean_val_loss:.4f}"
                     )
                     mean_loss = mean_val_loss
                 else:
@@ -331,6 +341,7 @@ class BaseNNForecaster(BaseNNModel):
                     )
 
                 if mean_loss < self.best_loss:
+                    self.best_epoch = epoch
                     self.best_loss = mean_loss
                     self.best_model_dict = self.model.state_dict()
                     self.patience = self.original_patience
@@ -356,9 +367,11 @@ class BaseNNForecaster(BaseNNModel):
                     )
                     break
 
-        except Exception as e:
+        except KeyboardInterrupt:  # if keyboard interrupt, only warning
+            logger.warning("‼️ Training got interrupted by the user. Exist now ...")
+        except Exception as e:  # other kind of exception follows below processing
             logger.error(f"❌ Exception: {e}")
-            if self.best_model_dict is None:
+            if self.best_model_dict is None:  # if no best model, raise error
                 raise RuntimeError(
                     "Training got interrupted. Model was not trained. Please investigate the error printed above."
                 )
@@ -372,14 +385,16 @@ class BaseNNForecaster(BaseNNModel):
         if np.isnan(self.best_loss):
             raise ValueError("Something is wrong. best_loss is Nan after training.")
 
-        logger.info("Finished training.")
+        logger.info(
+            f"Finished training. The best model is from epoch#{self.best_epoch}."
+        )
 
     @abstractmethod
     def fit(
         self,
         train_set: Union[dict, str],
         val_set: Optional[Union[dict, str]] = None,
-        file_type: str = "h5py",
+        file_type: str = "hdf5",
     ) -> None:
         """Train the classifier on the given data.
 
@@ -388,7 +403,7 @@ class BaseNNForecaster(BaseNNModel):
         train_set :
             The dataset for model training, should be a dictionary including the key 'X',
             or a path string locating a data file.
-            If it is a dict, X should be array-like of shape [n_samples, sequence length (time steps), n_features],
+            If it is a dict, X should be array-like of shape [n_samples, sequence length (n_steps), n_features],
             which is time-series data for training, can contain missing values.
             If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
             key-value pairs like a dict, and it has to include the key 'X'.
@@ -396,7 +411,7 @@ class BaseNNForecaster(BaseNNModel):
         val_set :
             The dataset for model validating, should be a dictionary including the key 'X',
             or a path string locating a data file.
-            If it is a dict, X should be array-like of shape [n_samples, sequence length (time steps), n_features],
+            If it is a dict, X should be array-like of shape [n_samples, sequence length (n_steps), n_features],
             which is time-series data for validation, can contain missing values.
             If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
             key-value pairs like a dict, and it has to include the key 'X'.
@@ -411,35 +426,30 @@ class BaseNNForecaster(BaseNNModel):
     def predict(
         self,
         test_set: Union[dict, str],
-        file_type: str = "h5py",
+        file_type: str = "hdf5",
     ) -> dict:
         raise NotImplementedError
 
     @abstractmethod
     def forecast(
         self,
-        X: dict or str,
-        file_type: str = "h5py",
+        test_set: Union[dict, str],
+        file_type: str = "hdf5",
     ) -> np.ndarray:
         """Forecast the future the input with the trained model.
 
-        Warnings
-        --------
-        The method forecast is deprecated. Please use `predict()` instead.
-
         Parameters
         ----------
-        X :
-            Time-series data containing missing values. Shape [n_samples, sequence length (time steps), n_features].
+        test_set :
+            The data samples for testing, should be array-like of shape [n_samples, sequence length (n_steps),
+            n_features], or a path string locating a data file, e.g. h5 file.
 
         file_type :
             The type of the given file if X is a path string.
 
         Returns
         -------
-        array-like, shape [n_samples, prediction_horizon, n_features],
+        array-like, shape [n_samples, n_pred_steps, n_features],
             Forecasting results.
         """
-        # this is for old API compatibility, will be removed in the future.
-        # Please implement predict() instead.
         raise NotImplementedError

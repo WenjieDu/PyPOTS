@@ -1,9 +1,6 @@
 """
 The implementation of GP-VAE for the partially-observed time-series imputation task.
 
-Refer to the paper Fortuin V, Baranchuk D, Rätsch G, et al.
-GP-VAE: Deep probabilistic time series imputation. AISTATS. PMLR, 2020: 1651-1661.
-
 """
 
 # Created by Jun Wang <jwangfx@connect.ust.hk> and Wenjie Du <wenjay.du@gmail.com>
@@ -23,10 +20,10 @@ except ImportError:
     pass
 
 
+from .core import _GPVAE
 from .data import DatasetForGPVAE
-from .modules import _GPVAE
 from ..base import BaseNNImputer
-from ...data.checking import check_X_ori_in_val_set
+from ...data.checking import key_in_data_set
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
 from ...utils.logging import logger
@@ -34,7 +31,7 @@ from ...utils.metrics import calc_mse
 
 
 class GPVAE(BaseNNImputer):
-    """The PyTorch implementation of the GPVAE model :cite:`fortuin2020GPVAEDeep`.
+    """The PyTorch implementation of the GPVAE model :cite:`fortuin2020gpvae`.
 
     Parameters
     ----------
@@ -115,14 +112,6 @@ class GPVAE(BaseNNImputer):
         The "better" strategy will automatically save the model during training whenever the model performs
         better than in previous epochs.
 
-    References
-    ----------
-    .. [1] `Fortuin, V., Baranchuk, D., Raetsch, G. &amp; Mandt, S.. (2020).
-        "GP-VAE: Deep Probabilistic Time Series Imputation".
-        <i>Proceedings of the Twenty Third International Conference on Artificial Intelligence and Statistics</i>,
-        in <i>Proceedings of Machine Learning Research</i> 108:1651-1661
-        <https://proceedings.mlr.press/v108/fortuin20a.html>`_
-
     """
 
     def __init__(
@@ -148,6 +137,7 @@ class GPVAE(BaseNNImputer):
         device: Optional[Union[str, torch.device, list]] = None,
         saving_path: str = None,
         model_saving_strategy: Optional[str] = "best",
+        verbose: bool = True,
     ):
         super().__init__(
             batch_size,
@@ -157,6 +147,7 @@ class GPVAE(BaseNNImputer):
             device,
             saving_path,
             model_saving_strategy,
+            verbose,
         )
         available_kernel_type = ["cauchy", "diffusion", "rbf", "matern"]
         assert (
@@ -295,7 +286,7 @@ class GPVAE(BaseNNImputer):
 
                     mean_val_loss = np.mean(imputation_loss_collector)
 
-                    # save validating loss logs into the tensorboard file for every epoch if in need
+                    # save validation loss logs into the tensorboard file for every epoch if in need
                     if self.summary_writer is not None:
                         val_loss_dict = {
                             "imputation_loss": mean_val_loss,
@@ -305,7 +296,7 @@ class GPVAE(BaseNNImputer):
                     logger.info(
                         f"Epoch {epoch:03d} - "
                         f"training loss: {mean_train_loss:.4f}, "
-                        f"validating loss: {mean_val_loss:.4f}"
+                        f"validation loss: {mean_val_loss:.4f}"
                     )
                     mean_loss = mean_val_loss
                 else:
@@ -320,6 +311,7 @@ class GPVAE(BaseNNImputer):
                     )
 
                 if mean_loss < self.best_loss:
+                    self.best_epoch = epoch
                     self.best_loss = mean_loss
                     self.best_model_dict = self.model.state_dict()
                     self.patience = self.original_patience
@@ -345,9 +337,11 @@ class GPVAE(BaseNNImputer):
                     )
                     break
 
-        except Exception as e:
+        except KeyboardInterrupt:  # if keyboard interrupt, only warning
+            logger.warning("‼️ Training got interrupted by the user. Exist now ...")
+        except Exception as e:  # other kind of exception follows below processing
             logger.error(f"❌ Exception: {e}")
-            if self.best_model_dict is None:
+            if self.best_model_dict is None:  # if no best model, raise error
                 raise RuntimeError(
                     "Training got interrupted. Model was not trained. Please investigate the error printed above."
                 )
@@ -361,17 +355,19 @@ class GPVAE(BaseNNImputer):
         if np.isnan(self.best_loss):
             raise ValueError("Something is wrong. best_loss is Nan after training.")
 
-        logger.info("Finished training.")
+        logger.info(
+            f"Finished training. The best model is from epoch#{self.best_epoch}."
+        )
 
     def fit(
         self,
         train_set: Union[dict, str],
         val_set: Optional[Union[dict, str]] = None,
-        file_type: str = "h5py",
+        file_type: str = "hdf5",
     ) -> None:
         # Step 1: wrap the input data with classes Dataset and DataLoader
         training_set = DatasetForGPVAE(
-            train_set, return_X_ori=False, return_labels=False, file_type=file_type
+            train_set, return_X_ori=False, return_y=False, file_type=file_type
         )
         training_loader = DataLoader(
             training_set,
@@ -381,10 +377,10 @@ class GPVAE(BaseNNImputer):
         )
         val_loader = None
         if val_set is not None:
-            if not check_X_ori_in_val_set(val_set):
+            if not key_in_data_set("X_ori", val_set):
                 raise ValueError("val_set must contain 'X_ori' for model validation.")
             val_set = DatasetForGPVAE(
-                val_set, return_X_ori=True, return_labels=False, file_type=file_type
+                val_set, return_X_ori=True, return_y=False, file_type=file_type
             )
             val_loader = DataLoader(
                 val_set,
@@ -404,7 +400,7 @@ class GPVAE(BaseNNImputer):
     def predict(
         self,
         test_set: Union[dict, str],
-        file_type: str = "h5py",
+        file_type: str = "hdf5",
         n_sampling_times: int = 1,
     ) -> dict:
         """
@@ -414,13 +410,13 @@ class GPVAE(BaseNNImputer):
         test_set : dict or str
             The dataset for model validating, should be a dictionary including keys as 'X' and 'y',
             or a path string locating a data file.
-            If it is a dict, X should be array-like of shape [n_samples, sequence length (time steps), n_features],
+            If it is a dict, X should be array-like of shape [n_samples, sequence length (n_steps), n_features],
             which is time-series data for validating, can contain missing values, and y should be array-like of shape
             [n_samples], which is classification labels of X.
             If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
             key-value pairs like a dict, and it has to include keys as 'X' and 'y'.
 
-        file_type : str
+        file_type :
             The type of the given file if test_set is a path string.
 
         n_sampling_times:
@@ -437,7 +433,7 @@ class GPVAE(BaseNNImputer):
 
         self.model.eval()  # set the model as eval status to freeze it.
         test_set = DatasetForGPVAE(
-            test_set, return_X_ori=False, return_labels=False, file_type=file_type
+            test_set, return_X_ori=False, return_y=False, file_type=file_type
         )
         test_loader = DataLoader(
             test_set,
@@ -464,20 +460,15 @@ class GPVAE(BaseNNImputer):
 
     def impute(
         self,
-        X: Union[dict, str],
-        file_type="h5py",
-        n_sampling_times: int = 1,
+        test_set: Union[dict, str],
+        file_type: str = "hdf5",
     ) -> np.ndarray:
         """Impute missing values in the given data with the trained model.
 
-        Warnings
-        --------
-        The method impute is deprecated. Please use `predict()` instead.
-
         Parameters
         ----------
-        X :
-            The data samples for testing, should be array-like of shape [n_samples, sequence length (time steps),
+        test_set :
+            The data samples for testing, should be array-like of shape [n_samples, sequence length (n_steps),
             n_features], or a path string locating a data file, e.g. h5 file.
 
         file_type :
@@ -485,13 +476,9 @@ class GPVAE(BaseNNImputer):
 
         Returns
         -------
-        array-like, shape [n_samples, sequence length (time steps), n_features],
+        array-like, shape [n_samples, sequence length (n_steps), n_features],
             Imputed data.
         """
-        logger.warning(
-            "🚨DeprecationWarning: The method impute is deprecated. Please use `predict` instead."
-        )
-        results_dict = self.predict(
-            X, file_type=file_type, n_sampling_times=n_sampling_times
-        )
+
+        results_dict = self.predict(test_set, file_type=file_type)
         return results_dict["imputation"]

@@ -1,6 +1,6 @@
 name: "🤙 New Model Addition"
 description: Submit a request to implement a new model.
-labels: ["new model", "enhancement"]
+labels: ["new algo", "enhancement"]
 
 body:
   - type: textarea

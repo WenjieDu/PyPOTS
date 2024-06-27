@@ -1,13 +1,6 @@
 """
 The implementation of CSDI for the partially-observed time-series imputation task.
 
-Refer to the paper Tashiro, Y., Song, J., Song, Y., & Ermon, S. (2021).
-CSDI: Conditional Score-based Diffusion Models for Probabilistic Time Series Imputation. NeurIPS 2021.
-
-Notes
------
-Partial implementation uses code from the official implementation https://github.com/ermongroup/CSDI.
-
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
@@ -25,10 +18,10 @@ try:
 except ImportError:
     pass
 
+from .core import _CSDI
 from .data import DatasetForCSDI, TestDatasetForCSDI
-from .modules import _CSDI
 from ..base import BaseNNImputer
-from ...data.checking import check_X_ori_in_val_set
+from ...data.checking import key_in_data_set
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
 from ...utils.logging import logger
@@ -39,11 +32,14 @@ class CSDI(BaseNNImputer):
 
     Parameters
     ----------
+    n_steps :
+        The number of time steps in the time-series data sample.
+
     n_features :
         The number of features in the time-series data sample.
 
     n_layers :
-        The number of layers in the 1st and 2nd DMSA blocks in the SAITS model.
+        The number of layers in the CSDI model.
 
     n_heads :
         The number of heads in the multi-head attention mechanism.
@@ -117,17 +113,13 @@ class CSDI(BaseNNImputer):
         better than in previous epochs.
         The "all" strategy will save every model after each epoch training.
 
-    References
-    ----------
-    .. [1] `Yusuke Tashiro, Jiaming Song, Yang Song, Stefano Ermon.
-        "CSDI: Conditional Score-based Diffusion Models for Probabilistic Time Series Imputation".
-        NeurIPS 2021.
-        <https://proceedings.neurips.cc/paper/2021/hash/cfe8504bda37b575c70ee1a8276f3486-Abstract.html>`_
-
+    verbose :
+        Whether to print out the training logs during the training process.
     """
 
     def __init__(
         self,
+        n_steps: int,
         n_features: int,
         n_layers: int,
         n_heads: int,
@@ -149,6 +141,7 @@ class CSDI(BaseNNImputer):
         device: Optional[Union[str, torch.device, list]] = None,
         saving_path: Optional[str] = None,
         model_saving_strategy: Optional[str] = "best",
+        verbose: bool = True,
     ):
         super().__init__(
             batch_size,
@@ -158,17 +151,19 @@ class CSDI(BaseNNImputer):
             device,
             saving_path,
             model_saving_strategy,
+            verbose,
         )
         assert target_strategy in ["mix", "random"]
         assert schedule in ["quad", "linear"]
+        self.n_steps = n_steps
         self.target_strategy = target_strategy
 
         # set up the model
         self.model = _CSDI(
+            n_features,
             n_layers,
             n_heads,
             n_channels,
-            n_features,
             d_time_embedding,
             d_feature_embedding,
             d_diffusion_embedding,
@@ -202,10 +197,10 @@ class CSDI(BaseNNImputer):
         }
         return inputs
 
-    def _assemble_input_for_validating(self, data) -> dict:
+    def _assemble_input_for_validating(self, data: list) -> dict:
         return self._assemble_input_for_training(data)
 
-    def _assemble_input_for_testing(self, data) -> dict:
+    def _assemble_input_for_testing(self, data: list) -> dict:
         (
             indices,
             X,
@@ -264,7 +259,7 @@ class CSDI(BaseNNImputer):
 
                     mean_val_loss = np.asarray(val_loss_collector).mean()
 
-                    # save validating loss logs into the tensorboard file for every epoch if in need
+                    # save validation loss logs into the tensorboard file for every epoch if in need
                     if self.summary_writer is not None:
                         val_loss_dict = {
                             "validating_loss": mean_val_loss,
@@ -274,7 +269,7 @@ class CSDI(BaseNNImputer):
                     logger.info(
                         f"Epoch {epoch:03d} - "
                         f"training loss: {mean_train_loss:.4f}, "
-                        f"validating loss: {mean_val_loss:.4f}"
+                        f"validation loss: {mean_val_loss:.4f}"
                     )
                     mean_loss = mean_val_loss
                 else:
@@ -289,6 +284,7 @@ class CSDI(BaseNNImputer):
                     )
 
                 if mean_loss < self.best_loss:
+                    self.best_epoch = epoch
                     self.best_loss = mean_loss
                     self.best_model_dict = self.model.state_dict()
                     self.patience = self.original_patience
@@ -314,9 +310,11 @@ class CSDI(BaseNNImputer):
                     )
                     break
 
-        except Exception as e:
+        except KeyboardInterrupt:  # if keyboard interrupt, only warning
+            logger.warning("‼️ Training got interrupted by the user. Exist now ...")
+        except Exception as e:  # other kind of exception follows below processing
             logger.error(f"❌ Exception: {e}")
-            if self.best_model_dict is None:
+            if self.best_model_dict is None:  # if no best model, raise error
                 raise RuntimeError(
                     "Training got interrupted. Model was not trained. Please investigate the error printed above."
                 )
@@ -330,13 +328,15 @@ class CSDI(BaseNNImputer):
         if np.isnan(self.best_loss):
             raise ValueError("Something is wrong. best_loss is Nan after training.")
 
-        logger.info("Finished training.")
+        logger.info(
+            f"Finished training. The best model is from epoch#{self.best_epoch}."
+        )
 
     def fit(
         self,
         train_set: Union[dict, str],
         val_set: Optional[Union[dict, str]] = None,
-        file_type: str = "h5py",
+        file_type: str = "hdf5",
         n_sampling_times: int = 1,
     ) -> None:
         # Step 1: wrap the input data with classes Dataset and DataLoader
@@ -344,7 +344,6 @@ class CSDI(BaseNNImputer):
             train_set,
             self.target_strategy,
             return_X_ori=False,
-            return_labels=False,
             file_type=file_type,
         )
         training_loader = DataLoader(
@@ -355,13 +354,12 @@ class CSDI(BaseNNImputer):
         )
         val_loader = None
         if val_set is not None:
-            if not check_X_ori_in_val_set(val_set):
+            if not key_in_data_set("X_ori", val_set):
                 raise ValueError("val_set must contain 'X_ori' for model validation.")
             val_set = DatasetForCSDI(
                 val_set,
                 self.target_strategy,
                 return_X_ori=True,
-                return_labels=False,
                 file_type=file_type,
             )
             val_loader = DataLoader(
@@ -382,7 +380,7 @@ class CSDI(BaseNNImputer):
     def predict(
         self,
         test_set: Union[dict, str],
-        file_type: str = "h5py",
+        file_type: str = "hdf5",
         n_sampling_times: int = 1,
     ) -> dict:
         """
@@ -392,13 +390,13 @@ class CSDI(BaseNNImputer):
         test_set : dict or str
             The dataset for model validating, should be a dictionary including keys as 'X' and 'y',
             or a path string locating a data file.
-            If it is a dict, X should be array-like of shape [n_samples, sequence length (time steps), n_features],
+            If it is a dict, X should be array-like of shape [n_samples, sequence length (n_steps), n_features],
             which is time-series data for validating, can contain missing values, and y should be array-like of shape
             [n_samples], which is classification labels of X.
             If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
             key-value pairs like a dict, and it has to include keys as 'X' and 'y'.
 
-        file_type : str
+        file_type :
             The type of the given file if test_set is a path string.
 
         n_sampling_times:
@@ -415,9 +413,7 @@ class CSDI(BaseNNImputer):
 
         # Step 1: wrap the input data with classes Dataset and DataLoader
         self.model.eval()  # set the model as eval status to freeze it.
-        test_set = TestDatasetForCSDI(
-            test_set, return_X_ori=False, return_labels=False, file_type=file_type
-        )
+        test_set = TestDatasetForCSDI(test_set, return_X_ori=False, file_type=file_type)
         test_loader = DataLoader(
             test_set,
             batch_size=self.batch_size,
@@ -447,19 +443,15 @@ class CSDI(BaseNNImputer):
 
     def impute(
         self,
-        X: Union[dict, str],
-        file_type="h5py",
+        test_set: Union[dict, str],
+        file_type: str = "hdf5",
     ) -> np.ndarray:
         """Impute missing values in the given data with the trained model.
 
-        Warnings
-        --------
-        The method impute is deprecated. Please use `predict()` instead.
-
         Parameters
         ----------
-        X :
-            The data samples for testing, should be array-like of shape [n_samples, sequence length (time steps),
+        test_set :
+            The data samples for testing, should be array-like of shape [n_samples, sequence length (n_steps),
             n_features], or a path string locating a data file, e.g. h5 file.
 
         file_type :
@@ -467,11 +459,9 @@ class CSDI(BaseNNImputer):
 
         Returns
         -------
-        array-like, shape [n_samples, sequence length (time steps), n_features],
+        array-like, shape [n_samples, sequence length (n_steps), n_features],
             Imputed data.
         """
-        logger.warning(
-            "🚨DeprecationWarning: The method impute is deprecated. Please use `predict` instead."
-        )
-        results_dict = self.predict(X, file_type=file_type)
-        return results_dict["imputation"]
+
+        result_dict = self.predict(test_set, file_type=file_type)
+        return result_dict["imputation"]

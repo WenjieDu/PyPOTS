@@ -15,7 +15,7 @@ import torch
 from torch.utils.tensorboard import SummaryWriter
 
 from .utils.file import create_dir_if_not_exist
-from .utils.logging import logger
+from .utils.logging import logger, logger_creator
 
 
 class BaseModel(ABC):
@@ -43,6 +43,9 @@ class BaseModel(ABC):
         better than in previous epochs.
         The "all" strategy will save every model after each epoch training.
 
+    verbose :
+        Whether to print out the training logs during the training process.
+
     Attributes
     ----------
     model : object, default = None
@@ -64,6 +67,7 @@ class BaseModel(ABC):
         device: Optional[Union[str, torch.device, list]] = None,
         saving_path: str = None,
         model_saving_strategy: Optional[str] = "best",
+        verbose: bool = True,
     ):
         saving_strategies = [None, "best", "better", "all"]
         assert (
@@ -73,6 +77,10 @@ class BaseModel(ABC):
         self.device = None  # set up with _setup_device() below
         self.saving_path = None  # set up with _setup_path() below
         self.model_saving_strategy = model_saving_strategy
+        self.verbose = verbose
+
+        if not self.verbose:
+            logger_creator.set_level("warning")
 
         self.model = None
         self.summary_writer = None
@@ -146,6 +154,8 @@ class BaseModel(ABC):
     def _setup_path(self, saving_path) -> None:
         MODEL_NO_NEED_TO_SAVE = [
             "LOCF",
+            "Median",
+            "Mean",
         ]
         # if the model is no need to save (e.g. LOCF), then skip the following steps
         if self.__class__.__name__ in MODEL_NO_NEED_TO_SAVE:
@@ -271,6 +281,8 @@ class BaseModel(ABC):
         """
         # split the saving dir and file name from the given path
         saving_dir, file_name = os.path.split(saving_path)
+        # if parent dir is not given, save in the current dir
+        saving_dir = "." if saving_dir == "" else saving_dir
         # add the suffix ".pypots" if not given
         if file_name.split(".")[-1] != "pypots":
             file_name += ".pypots"
@@ -283,7 +295,10 @@ class BaseModel(ABC):
                     f"‼️ File {saving_path} exists. Argument `overwrite` is True. Overwriting now..."
                 )
             else:
-                logger.error(f"❌ File {saving_path} exists. Saving operation aborted.")
+                logger.error(
+                    f"❌ File {saving_path} exists. Saving operation aborted. "
+                    f"Use the arg `overwrite=True` to force overwrite."
+                )
 
         try:
             create_dir_if_not_exist(saving_dir)
@@ -330,86 +345,36 @@ class BaseModel(ABC):
             raise e
         logger.info(f"Model loaded successfully from {path}")
 
-    def save_model(
-        self,
-        saving_path: str,
-        overwrite: bool = False,
-    ) -> None:
-        """Save the model with current parameters to a disk file.
-
-        A ``.pypots`` extension will be appended to the filename if it does not already have one.
-        Please note that such an extension is not necessary, but to indicate the saved model is from PyPOTS framework
-        so people can distinguish.
-
-        Parameters
-        ----------
-        saving_path :
-            The given path to save the model. The directory will be created if it does not exist.
-
-        overwrite :
-            Whether to overwrite the model file if the path already exists.
-
-        Warnings
-        --------
-        The method save_model is deprecated. Please use `save()` instead.
-        """
-        logger.warning(
-            "🚨DeprecationWarning: The method save_model is deprecated. Please use `save()` instead."
-        )
-        self.save(saving_path, overwrite)
-
-    def load_model(self, path: str) -> None:
-        """Load the saved model from a disk file.
-
-        Parameters
-        ----------
-        path :
-            The local path to a disk file saving the trained model.
-
-        Notes
-        -----
-        If the training environment and the deploying/test environment use the same type of device (GPU/CPU),
-        you can load the model directly with torch.load(model_path).
-
-        Warnings
-        --------
-        The method load_model is deprecated. Please use `load()` instead.
-        """
-        logger.warning(
-            "🚨DeprecationWarning: The method load_model is deprecated. Please use `load()` instead."
-        )
-        self.load(path)
-
     @abstractmethod
     def fit(
         self,
         train_set: Union[dict, str],
         val_set: Optional[Union[dict, str]] = None,
-        file_type: str = "h5py",
+        file_type: str = "hdf5",
     ) -> None:
         """Train the classifier on the given data.
 
         Parameters
         ----------
-        train_set : dict or str
+        train_set :
             The dataset for model training, should be a dictionary including keys as 'X',
             or a path string locating a data file supported by PyPOTS (e.g. h5 file).
-            If it is a dict, X should be array-like of shape [n_samples, sequence length (time steps), n_features],
+            If it is a dict, X should be array-like of shape [n_samples, sequence length (n_steps), n_features],
             which is time-series data for training, can contain missing values, and y should be array-like of shape
             [n_samples], which is classification labels of X.
             If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
             key-value pairs like a dict, and it has to include keys as 'X' and 'y'.
 
-        val_set : dict or str
+        val_set :
             The dataset for model validating, should be a dictionary including keys as 'X',
             or a path string locating a data file supported by PyPOTS (e.g. h5 file).
-            If it is a dict, X should be array-like of shape [n_samples, sequence length (time steps), n_features],
+            If it is a dict, X should be array-like of shape [n_samples, sequence length (n_steps), n_features],
             which is time-series data for validating, can contain missing values, and y should be array-like of shape
             [n_samples], which is classification labels of X.
             If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
             key-value pairs like a dict, and it has to include keys as 'X' and 'y'.
 
-        file_type : str
+        file_type :
             The type of the given file if train_set and val_set are path strings.
 
         """
@@ -419,27 +384,27 @@ class BaseModel(ABC):
     def predict(
         self,
         test_set: Union[dict, str],
-        file_type: str = "h5py",
+        file_type: str = "hdf5",
     ) -> dict:
         """Make predictions for the input data with the trained model.
 
         Parameters
         ----------
-        test_set : dict or str
+        test_set :
             The dataset for model validating, should be a dictionary including keys as 'X',
             or a path string locating a data file supported by PyPOTS (e.g. h5 file).
-            If it is a dict, X should be array-like of shape [n_samples, sequence length (time steps), n_features],
+            If it is a dict, X should be array-like of shape [n_samples, sequence length (n_steps), n_features],
             which is time-series data for validating, can contain missing values, and y should be array-like of shape
             [n_samples], which is classification labels of X.
             If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
             key-value pairs like a dict, and it has to include keys as 'X' and 'y'.
 
-        file_type : str
+        file_type :
             The type of the given file if test_set is a path string.
 
         Returns
         -------
-        result_dict: dict
+        result_dict :
             Prediction results in a Python Dictionary for the given samples.
             It should be a dictionary including keys as 'imputation', 'classification', 'clustering', and 'forecasting'.
             For sure, only the keys that relevant tasks are supported by the model will be returned.
@@ -487,6 +452,8 @@ class BaseNNModel(BaseModel):
         better than in previous epochs.
         The "all" strategy will save every model after each epoch training.
 
+    verbose :
+        Whether to print out the training logs during the training process.
 
     Attributes
     ---------
@@ -498,6 +465,8 @@ class BaseNNModel(BaseModel):
         The criteria to judge whether the model's performance is the best so far.
         Usually the lower, the better.
 
+    best_epoch : int, default = -1,
+        The epoch number when the best loss is got.
 
     Notes
     -----
@@ -518,11 +487,13 @@ class BaseNNModel(BaseModel):
         device: Optional[Union[str, torch.device, list]] = None,
         saving_path: str = None,
         model_saving_strategy: Optional[str] = "best",
+        verbose: bool = True,
     ):
         super().__init__(
             device,
             saving_path,
             model_saving_strategy,
+            verbose,
         )
 
         if patience is None:
@@ -540,17 +511,20 @@ class BaseNNModel(BaseModel):
         self.num_workers = num_workers
 
         self.model = None
+        self.num_params = None
         self.optimizer = None
         self.best_model_dict = None
-        # WDU: may enable users to customize the criteria in the future
         self.best_loss = float("inf")
+        self.best_epoch = -1
 
     def _print_model_size(self) -> None:
         """Print the number of trainable parameters in the initialized NN model."""
-        num_params = sum(p.numel() for p in self.model.parameters() if p.requires_grad)
+        self.num_params = sum(
+            p.numel() for p in self.model.parameters() if p.requires_grad
+        )
         logger.info(
             f"{self.__class__.__name__} initialized with the given hyperparameters, "
-            f"the number of trainable parameters: {num_params:,}"
+            f"the number of trainable parameters: {self.num_params:,}"
         )
 
     @abstractmethod
@@ -558,7 +532,7 @@ class BaseNNModel(BaseModel):
         self,
         train_set: Union[dict, str],
         val_set: Optional[Union[dict, str]] = None,
-        file_type: str = "h5py",
+        file_type: str = "hdf5",
     ) -> None:
         raise NotImplementedError
 
@@ -566,6 +540,6 @@ class BaseNNModel(BaseModel):
     def predict(
         self,
         test_set: Union[dict, str],
-        file_type: str = "h5py",
+        file_type: str = "hdf5",
     ) -> dict:
         raise NotImplementedError

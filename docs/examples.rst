@@ -1,7 +1,7 @@
 Quick-start Examples
 ====================
 
-.. image:: https://pypots.com/figs/pypots_logos/BrewPOTS_logo_FFBG.svg?sanitize=true
+.. image:: https://pypots.com/figs/pypots_logos/BrewPOTS/logo_FFBG.svg
    :width: 160
    :alt: BrewPOTS logo
    :align: right
@@ -10,11 +10,11 @@ Quick-start Examples
 We put some examples here to help our users to get started quickly.
 
 Please refer to `BrewPOTS <https://github.com/WenjieDu/BrewPOTS>`_ for detailed PyPOTS tutorials.
-You can also find a simple and quick-start tutorial notebook on Google Colab with
-`this link <https://colab.research.google.com/drive/1HEFjylEy05-r47jRy0H9jiS_WhD0UWmQ?usp=sharing>`_.
+You can also find a simple and quick-start tutorial notebook on Google Colab
 
 .. raw:: html
 
+    <a href="https://colab.research.google.com/drive/1HEFjylEy05-r47jRy0H9jiS_WhD0UWmQ" target="_blank"><img src="https://img.shields.io/badge/GoogleColab-PyPOTS_Tutorials-F9AB00?logo=googlecolab&logoColor=white"></a>
     <br clear="right">
 
 
@@ -45,7 +45,7 @@ You can also find a simple and quick-start tutorial notebook on Google Colab wit
         n_features=37,
         n_layers=2,
         d_model=256,
-        d_inner=128,
+        d_ffn=128,
         n_heads=4,
         d_k=64,
         d_v=64,

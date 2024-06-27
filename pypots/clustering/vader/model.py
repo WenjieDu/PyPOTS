@@ -1,10 +1,6 @@
 """
 The implementation of VaDER for the partially-observed time-series clustering task.
 
-Refer to the paper "Jong, J.D., Emon, M.A., Wu, P., Karki, R., Sood, M., Godard, P., Ahmad, A., Vrooman, H.A.,
-Hofmann-Apitius, M., & Fröhlich, H. (2019).
-Deep learning for clustering of multivariate clinical patient trajectories with missing values. GigaScience."
-
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
@@ -21,7 +17,7 @@ from sklearn.mixture import GaussianMixture
 from torch.utils.data import DataLoader
 
 from .data import DatasetForVaDER
-from .modules import inverse_softplus, _VaDER
+from .core import inverse_softplus, _VaDER
 from ..base import BaseNNClusterer
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
@@ -92,16 +88,8 @@ class VaDER(BaseNNClusterer):
         better than in previous epochs.
         The "all" strategy will save every model after each epoch training.
 
-    References
-    ----------
-    .. [1] `de Jong, Johann, Mohammad Asif Emon, Ping Wu, Reagon Karki, Meemansa Sood, Patrice Godard,
-    Ashar Ahmad, Henri Vrooman, Martin Hofmann-Apitius, and Holger Fröhlich.
-    "Deep learning for clustering of multivariate clinical patient trajectories with missing values."
-    GigaScience 8, no. 11 (2019): giz134.
-    <https://academic.oup.com/gigascience/article-pdf/8/11/giz134/30797160/giz134.pdf>`_
-
-
-
+    verbose :
+        Whether to print out the training logs during the training process.
     """
 
     def __init__(
@@ -120,6 +108,7 @@ class VaDER(BaseNNClusterer):
         device: Optional[Union[str, torch.device, list]] = None,
         saving_path: str = None,
         model_saving_strategy: Optional[str] = "best",
+        verbose: bool = True,
     ):
         super().__init__(
             n_clusters,
@@ -130,6 +119,7 @@ class VaDER(BaseNNClusterer):
             device,
             saving_path,
             model_saving_strategy,
+            verbose,
         )
 
         assert (
@@ -247,13 +237,13 @@ class VaDER(BaseNNClusterer):
 
             # use trained GMM's parameters to init GMM layer's
             if isinstance(self.device, list):  # if using multi-GPU
-                self.model.module.gmm_layer.set_values(
+                self.model.module.backbone.gmm_layer.set_values(
                     torch.from_numpy(mu).to(device),
                     torch.from_numpy(var).to(device),
                     torch.from_numpy(phi).to(device),
                 )
             else:
-                self.model.gmm_layer.set_values(
+                self.model.backbone.gmm_layer.set_values(
                     torch.from_numpy(mu).to(device),
                     torch.from_numpy(var).to(device),
                     torch.from_numpy(phi).to(device),
@@ -293,7 +283,7 @@ class VaDER(BaseNNClusterer):
 
                     mean_val_loss = np.mean(epoch_val_loss_collector)
 
-                    # save validating loss logs into the tensorboard file for every epoch if in need
+                    # save validation loss logs into the tensorboard file for every epoch if in need
                     if self.summary_writer is not None:
                         val_loss_dict = {
                             "loss": mean_val_loss,
@@ -303,7 +293,7 @@ class VaDER(BaseNNClusterer):
                     logger.info(
                         f"Epoch {epoch:03d} - "
                         f"training loss: {mean_train_loss:.4f}, "
-                        f"validating loss: {mean_val_loss:.4f}"
+                        f"validation loss: {mean_val_loss:.4f}"
                     )
                     mean_loss = mean_val_loss
                 else:
@@ -318,6 +308,7 @@ class VaDER(BaseNNClusterer):
                     )
 
                 if mean_loss < self.best_loss:
+                    self.best_epoch = epoch
                     self.best_loss = mean_loss
                     self.best_model_dict = self.model.state_dict()
                     self.patience = self.original_patience
@@ -343,9 +334,11 @@ class VaDER(BaseNNClusterer):
                     )
                     break
 
-        except Exception as e:
+        except KeyboardInterrupt:  # if keyboard interrupt, only warning
+            logger.warning("‼️ Training got interrupted by the user. Exist now ...")
+        except Exception as e:  # other kind of exception follows below processing
             logger.error(f"❌ Exception: {e}")
-            if self.best_model_dict is None:
+            if self.best_model_dict is None:  # if no best model, raise error
                 raise RuntimeError(
                     "Training got interrupted. Model was not trained. Please investigate the error printed above."
                 )
@@ -359,18 +352,18 @@ class VaDER(BaseNNClusterer):
         if np.isnan(self.best_loss):
             raise ValueError("Something is wrong. best_loss is Nan after training.")
 
-        logger.info("Finished training.")
+        logger.info(
+            f"Finished training. The best model is from epoch#{self.best_epoch}."
+        )
 
     def fit(
         self,
         train_set: Union[dict, str],
         val_set: Optional[Union[dict, str]] = None,
-        file_type: str = "h5py",
+        file_type: str = "hdf5",
     ) -> None:
         # Step 1: wrap the input data with classes Dataset and DataLoader
-        training_set = DatasetForVaDER(
-            train_set, return_labels=False, file_type=file_type
-        )
+        training_set = DatasetForVaDER(train_set, return_y=False, file_type=file_type)
         training_loader = DataLoader(
             training_set,
             batch_size=self.batch_size,
@@ -380,7 +373,7 @@ class VaDER(BaseNNClusterer):
 
         val_loader = None
         if val_set is not None:
-            val_set = DatasetForVaDER(val_set, return_labels=False, file_type=file_type)
+            val_set = DatasetForVaDER(val_set, return_y=False, file_type=file_type)
             val_loader = DataLoader(
                 val_set,
                 batch_size=self.batch_size,
@@ -399,7 +392,7 @@ class VaDER(BaseNNClusterer):
     def predict(
         self,
         test_set: Union[dict, str],
-        file_type: str = "h5py",
+        file_type: str = "hdf5",
         return_latent_vars: bool = False,
     ) -> dict:
         """Make predictions for the input data with the trained model.
@@ -409,13 +402,13 @@ class VaDER(BaseNNClusterer):
         test_set : dict or str
             The dataset for model validating, should be a dictionary including keys as 'X',
             or a path string locating a data file supported by PyPOTS (e.g. h5 file).
-            If it is a dict, X should be array-like of shape [n_samples, sequence length (time steps), n_features],
+            If it is a dict, X should be array-like of shape [n_samples, sequence length (n_steps), n_features],
             which is time-series data for validating, can contain missing values, and y should be array-like of shape
             [n_samples], which is classification labels of X.
             If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
             key-value pairs like a dict, and it has to include keys as 'X' and 'y'.
 
-        file_type : str
+        file_type :
             The type of the given file if test_set is a path string.
 
         return_latent_vars : bool
@@ -423,12 +416,12 @@ class VaDER(BaseNNClusterer):
 
         Returns
         -------
-        result_dict : dict,
+        file_type :
             The dictionary containing the clustering results and latent variables if necessary.
 
         """
         self.model.eval()  # set the model as eval status to freeze it.
-        test_set = DatasetForVaDER(test_set, return_labels=False, file_type=file_type)
+        test_set = DatasetForVaDER(test_set, return_y=False, file_type=file_type)
         test_loader = DataLoader(
             test_set,
             batch_size=self.batch_size,
@@ -508,19 +501,15 @@ class VaDER(BaseNNClusterer):
 
     def cluster(
         self,
-        X: Union[dict, str],
-        file_type: str = "h5py",
+        test_set: Union[dict, str],
+        file_type: str = "hdf5",
     ) -> Union[np.ndarray]:
         """Cluster the input with the trained model.
 
-        Warnings
-        --------
-        The method cluster is deprecated. Please use `predict()` instead.
-
         Parameters
         ----------
-        X :
-            The data samples for testing, should be array-like of shape [n_samples, sequence length (time steps),
+        test_set :
+            The data samples for testing, should be array-like of shape [n_samples, sequence length (n_steps),
             n_features], or a path string locating a data file, e.g. h5 file.
 
         file_type :
@@ -532,9 +521,6 @@ class VaDER(BaseNNClusterer):
             Clustering results.
 
         """
-        logger.warning(
-            "🚨DeprecationWarning: The method cluster is deprecated. Please use `predict` instead."
-        )
 
-        result_dict = self.predict(X, file_type)
+        result_dict = self.predict(test_set, file_type=file_type)
         return result_dict["clustering"]
