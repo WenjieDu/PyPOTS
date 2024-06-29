@@ -14,7 +14,7 @@ class RevIN(nn.Module):
     def __init__(
         self,
         n_features: int,
-        eps: float = 1e-5,
+        eps: float = 1e-9,
         affine: bool = True,
     ):
         """
@@ -60,18 +60,18 @@ class RevIN(nn.Module):
             self.stdev = torch.sqrt(
                 torch.var(x, dim=dim2reduce, keepdim=True, unbiased=False) + self.eps
             ).detach()
-            x = x - self.mean
-            x = x / self.stdev
         else:
             # pypots implementation for POTS data
             missing_sum = (
-                torch.sum(missing_mask == 1, dim=dim2reduce, keepdim=True) + 1e-9
+                torch.sum(missing_mask == 1, dim=dim2reduce, keepdim=True) + self.eps
             )
             self.mean = torch.sum(x, dim=dim2reduce, keepdim=True) / missing_sum
-            x = x - self.mean
             x_enc = x.masked_fill(missing_mask == 0, 0)
-            variance = torch.sum(x_enc * x_enc, dim=dim2reduce, keepdim=True) + 1e-9
+            variance = torch.sum(x_enc * x_enc, dim=dim2reduce, keepdim=True) + self.eps
             self.stdev = torch.sqrt(variance / missing_sum)
+
+        x = x - self.mean
+        x = x / self.stdev
 
         if self.affine:
             x = x * self.affine_weight
@@ -81,7 +81,7 @@ class RevIN(nn.Module):
     def _denormalize(self, x):
         if self.affine:
             x = x - self.affine_bias
-            x = x / (self.affine_weight + self.eps * self.eps)
+            x = x / (self.affine_weight + self.eps)
         x = x * self.stdev
         x = x + self.mean
         return x
