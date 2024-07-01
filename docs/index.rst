@@ -12,7 +12,7 @@ Welcome to PyPOTS docs!
 
 **A Python Toolbox for Machine Learning on Partially-Observed Time Series**
 
-.. image:: https://img.shields.io/badge/Python-v3.7+-E97040?logo=python&logoColor=white
+.. image:: https://img.shields.io/badge/Python-v3.8+-E97040?logo=python&logoColor=white
    :alt: Python version
    :target: https://docs.pypots.com/en/latest/install.html#reasons-of-version-limitations-on-dependencies
 
@@ -306,9 +306,9 @@ or
 
 ..
 
-   Wenjie Du. (2023).
+   Wenjie Du.
    PyPOTS: a Python toolbox for data mining on Partially-Observed Time Series.
-   arXiv, abs/2305.18811. https://doi.org/10.48550/arXiv.2305.18811
+   arXiv, abs/2305.18811, 2023.
 
 
 ❖ Contribution
