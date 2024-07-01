@@ -146,7 +146,7 @@ PyPOTS当前支持多变量POTS数据的插补，预测，分类，聚类以及�
 
 👈 在PyPOTS中，数据可以被看作是咖啡豆，而写的携带缺失值的POTS数据则是不完整的咖啡豆。
 为了让用户能够轻松使用各种开源的时间序列数据集，我们创建了开源时间序列数据集的仓库 Time Series Data Beans (TSDB)（可以将其视为咖啡豆仓库），
-TSDB让加载开源时序数据集变得超级简单！访问 [TSDB](https://github.com/WenjieDu/TSDB)，了解更多关于TSDB的信息，目前总共支持170个开源数据集！
+TSDB让加载开源时序数据集变得超级简单！访问 [TSDB](https://github.com/WenjieDu/TSDB)，了解更多关于TSDB的信息，目前总共支持172个开源数据集！
 
 <a href="https://github.com/WenjieDu/PyGrinder">
     <img src="https://pypots.com/figs/pypots_logos/PyGrinder/logo_FFBG.svg" align="right" width="140" alt="PyGrinder logo"/>

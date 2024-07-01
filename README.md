@@ -294,9 +294,9 @@ year={2023},
 }
 ```
 or
-> Wenjie Du. (2023).
+> Wenjie Du.
 > PyPOTS: a Python toolbox for data mining on Partially-Observed Time Series.
-> arXiv, abs/2305.18811. https://arxiv.org/abs/2305.18811
+> arXiv, abs/2305.18811, 2023.
 
 
 ## ❖ Contribution
