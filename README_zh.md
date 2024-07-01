@@ -98,6 +98,7 @@ PyPOTS当前支持多变量POTS数据的插补，预测，分类，聚类以及�
 
 | **类型**      | **算法**                      | **插补** | **预测** | **分类** | **聚类** | **异常检测** | **年份 - 刊物**      |
 |:--------------|:----------------------------|:------:|:------:|:------:|:------:|:--------:|:-----------------|
+| Neural Net    | ImputeFormer🧑‍🔧[^34]      |    ✅     |          |          |          |          | `2024 - KDD`       |
 | Neural Net    | iTransformer🧑‍🔧[^24]      |    ✅     |          |          |          |          | `2024 - ICLR`      |
 | Neural Net    | SAITS[^1]                   |    ✅     |          |          |          |          | `2023 - ESWA`      |
 | Neural Net    | FreTS🧑‍🔧[^23]             |    ✅     |          |          |          |          | `2023 - NeurIPS`   |
@@ -351,6 +352,7 @@ PyPOTS社区是一个开放、透明、友好的社区，让我们共同努力�
 [^31]: Kim, T., Kim, J., Tae, Y., Park, C., Choi, J. H., & Choo, J. (2022). [Reversible Instance Normalization for Accurate Time-Series Forecasting against Distribution Shift](https://openreview.net/forum?id=cGDAkQo1C0p). *ICLR 2022*.
 [^32]: Kitaev, N., Kaiser, Ł., & Levskaya, A. (2020). [Reformer: The Efficient Transformer](https://openreview.net/forum?id=0EXmFzUn5I). *ICLR 2020*.
 [^33]: Cao, D., Wang, Y., Duan, J., Zhang, C., Zhu, X., Huang, C., Tong, Y., Xu, B., Bai, J., Tong, J., & Zhang, Q. (2020). [Spectral Temporal Graph Neural Network for Multivariate Time-series Forecasting](https://proceedings.neurips.cc/paper/2020/hash/cdf6581cb7aca4b7e19ef136c6e601a5-Abstract.html). *NeurIPS 2020*.
+[^34]: Nie, T., Qin, G., Mei, Y., & Sun, J. (2024). [ImputeFormer: Low Rankness-Induced Transformers for Generalizable Spatiotemporal Imputation](https://arxiv.org/abs/2312.01728). *KDD 2024*.
 
 
 <details>

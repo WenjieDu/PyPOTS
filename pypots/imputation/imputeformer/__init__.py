@@ -1,5 +1,5 @@
 """
-The package of the partially-observed time-series imputation model Imputeformer.
+The package of the partially-observed time-series imputation model ImputeFormer.
 
 Refer to the papers
 `Tong Nie, Guoyang Qin, Wei Ma, Yuewen Mei, Jian Sun.
@@ -9,12 +9,12 @@ KDD 2024.
 
 """
 
-# Created by Wenjie Du <wenjay.du@gmail.com>
+# Created by Tong Nie <nietong@tongji.edu.cn> and Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
 
-from .model import Imputeformer
+from .model import ImputeFormer
 
 __all__ = [
-    "Imputeformer",
+    "ImputeFormer",
 ]

@@ -1,9 +1,9 @@
 """
-The package of the partially-observed time-series imputation model iTransformer.
+The package of the partially-observed time-series imputation model ImputeFormer.
 
 """
 
-# Created by Wenjie Du <wenjay.du@gmail.com>
+# Created by Tong Nie <nietong@tongji.edu.cn> and Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
 from typing import Union, Optional
@@ -12,8 +12,8 @@ import numpy as np
 import torch
 from torch.utils.data import DataLoader
 
-from .core import _Imputeformer
-from .data import DatasetForImputeformer
+from .core import _ImputeFormer
+from .data import DatasetForImputeFormer
 from ..base import BaseNNImputer
 from ...data.checking import key_in_data_set
 from ...data.dataset import BaseDataset
@@ -22,9 +22,9 @@ from ...optim.base import Optimizer
 from ...utils.logging import logger
 
 
-class Imputeformer(BaseNNImputer):
-    """The PyTorch implementation of the Imputeformer model.
-    Imputeformer is originally proposed by Nie et al. in KDD'24: cite:`nie2024imputeformer`.
+class ImputeFormer(BaseNNImputer):
+    """The PyTorch implementation of the ImputeFormer model.
+    ImputeFormer is originally proposed by Nie et al. in KDD'24: cite:`nie2024imputeformer`.
 
 
     Parameters
@@ -58,7 +58,7 @@ class Imputeformer(BaseNNImputer):
     dropout :
         The dropout rate for all fully-connected layers in the model.
 
-    num_temporal_heads :
+    n_temporal_heads :
         The number of attention heads in temporal attention layers.
 
     input_dim :
@@ -125,8 +125,8 @@ class Imputeformer(BaseNNImputer):
         d_learnable_embed: int,
         d_proj: int,
         d_ffn: int,
-        num_temporal_heads: int,
-        dropout: float = 0.,
+        n_temporal_heads: int,
+        dropout: float = 0.0,
         input_dim: int = 1,
         output_dim: int = 1,
         ORT_weight: float = 1,
@@ -152,7 +152,6 @@ class Imputeformer(BaseNNImputer):
             verbose,
         )
 
-
         self.n_steps = n_steps
         self.n_features = n_features
         # model hype-parameters
@@ -161,7 +160,7 @@ class Imputeformer(BaseNNImputer):
         self.d_learnable_embed = d_learnable_embed
         self.d_proj = d_proj
         self.d_ffn = d_ffn
-        self.num_temporal_heads = num_temporal_heads
+        self.n_temporal_heads = n_temporal_heads
         self.dropout = dropout
         self.input_dim = input_dim
         self.output_dim = output_dim
@@ -169,7 +168,7 @@ class Imputeformer(BaseNNImputer):
         self.MIT_weight = MIT_weight
 
         # set up the model
-        self.model = _Imputeformer(
+        self.model = _ImputeFormer(
             self.n_steps,
             self.n_features,
             self.n_layers,
@@ -177,7 +176,7 @@ class Imputeformer(BaseNNImputer):
             self.d_learnable_embed,
             self.d_proj,
             self.d_ffn,
-            self.num_temporal_heads,
+            self.n_temporal_heads,
             self.dropout,
             self.input_dim,
             self.output_dim,
@@ -229,7 +228,7 @@ class Imputeformer(BaseNNImputer):
         file_type: str = "hdf5",
     ) -> None:
         # Step 1: wrap the input data with classes Dataset and DataLoader
-        training_set = DatasetForImputeformer(
+        training_set = DatasetForImputeFormer(
             train_set, return_X_ori=False, return_y=False, file_type=file_type
         )
         training_loader = DataLoader(
@@ -242,7 +241,7 @@ class Imputeformer(BaseNNImputer):
         if val_set is not None:
             if not key_in_data_set("X_ori", val_set):
                 raise ValueError("val_set must contain 'X_ori' for model validation.")
-            val_set = DatasetForImputeformer(
+            val_set = DatasetForImputeFormer(
                 val_set, return_X_ori=True, return_y=False, file_type=file_type
             )
             val_loader = DataLoader(
