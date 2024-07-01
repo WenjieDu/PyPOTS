@@ -1,8 +1,8 @@
 """
-Dataset class for the imputation model Imputeformer.
+Dataset class for the imputation model ImputeFormer.
 """
 
-# Created by Wenjie Du <wenjay.du@gmail.com>
+# Created by Tong Nie <nietong@tongji.edu.cn> and Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
 from typing import Union
@@ -10,7 +10,7 @@ from typing import Union
 from ..saits.data import DatasetForSAITS
 
 
-class DatasetForImputeformer(DatasetForSAITS):
+class DatasetForImputeFormer(DatasetForSAITS):
     def __init__(
         self,
         data: Union[dict, str],

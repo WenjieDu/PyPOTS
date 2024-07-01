@@ -1,5 +1,5 @@
 """
-The package including the modules of Imputeformer.
+The package including the modules of ImputeFormer.
 
 Refer to the paper
 `Tong Nie, Guoyang Qin, Wei Ma, Yuewen Mei, Jian Sun.
@@ -13,7 +13,7 @@ This implementation is inspired by the official one https://github.com/WenjieDu/
 
 """
 
-# Created by Wenjie Du <wenjay.du@gmail.com>
+# Created by Tong Nie <nietong@tongji.edu.cn> and Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
 
@@ -23,5 +23,5 @@ from .mlp import MLP
 __all__ = [
     "EmbeddedAttentionLayer",
     "ProjectedAttentionLayer",
-    "MLP"
+    "MLP",
 ]

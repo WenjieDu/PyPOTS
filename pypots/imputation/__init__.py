@@ -34,6 +34,7 @@ from .micn import MICN
 from .tide import TiDE
 from .grud import GRUD
 from .stemgnn import StemGNN
+from .imputeformer import ImputeFormer
 
 # naive imputation methods
 from .locf import LOCF
@@ -70,6 +71,7 @@ __all__ = [
     "TiDE",
     "GRUD",
     "StemGNN",
+    "ImputeFormer",
     # naive imputation methods
     "LOCF",
     "Mean",

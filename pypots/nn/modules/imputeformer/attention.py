@@ -1,8 +1,8 @@
 """
-The implementation of the customized spatia-temporal modules for Imputeformer :cite:`nie2024imputeformer`
+The implementation of the customized spatia-temporal modules for ImputeFormer :cite:`nie2024imputeformer`
 """
 
-# Created by Wenjie Du <wenjay.du@gmail.com>
+# Created by Tong Nie <nietong@tongji.edu.cn> and Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
 import torch
@@ -82,17 +82,20 @@ class AttentionLayer(nn.Module):
 
 class ProjectedAttentionLayer(nn.Module):
     """
-   Temporal projected attention layer.
-   A low-rank factorization is achieved in the temporal attention matrix.
-   """
-    def __init__(self,
-                 seq_len,
-                 dim_proj,
-                 d_model,
-                 n_heads,
-                 d_ff=None,
-                 dropout=0.1):
-        super(ProjectedAttentionLayer, self).__init__()
+    Temporal projected attention layer.
+    A low-rank factorization is achieved in the temporal attention matrix.
+    """
+
+    def __init__(
+        self,
+        seq_len,
+        dim_proj,
+        d_model,
+        n_heads,
+        d_ff=None,
+        dropout=0.1,
+    ):
+        super().__init__()
         d_ff = d_ff or 4 * d_model
         self.out_attn = AttentionLayer(d_model, n_heads, mask=None)
         self.in_attn = AttentionLayer(d_model, n_heads, mask=None)
@@ -102,20 +105,28 @@ class ProjectedAttentionLayer(nn.Module):
         self.dropout = nn.Dropout(dropout)
         self.norm1 = nn.LayerNorm(d_model)
         self.norm2 = nn.LayerNorm(d_model)
-        self.MLP = nn.Sequential(nn.Linear(d_model, d_ff),
-                                  nn.GELU(),
-                                  nn.Linear(d_ff, d_model))
+        self.MLP = nn.Sequential(
+            nn.Linear(d_model, d_ff), nn.GELU(), nn.Linear(d_ff, d_model)
+        )
         self.seq_len = seq_len
 
     def forward(self, x):
         # x: [b s n d]
         batch = x.shape[0]
-        projector = repeat(self.projector, 'seq_len dim_proj d_model -> repeat seq_len dim_proj d_model', repeat=batch) # [b, s, c, d]
+        projector = repeat(
+            self.projector,
+            "seq_len dim_proj d_model -> repeat seq_len dim_proj d_model",
+            repeat=batch,
+        )  # [b, s, c, d]
         # projector = repeat(self.projector, 'dim_proj d_model -> repeat seq_len dim_proj d_model',
         #                       repeat=batch, seq_len=self.seq_len)  # [b, s, c, d]
 
-        message_out = self.out_attn(projector, x, x)  # [b, s, c, d] <-> [b s n d] -> [b s c d]
-        message_in = self.in_attn(x, projector, message_out)  # [b s n d] <-> [b, s, c, d] -> [b s n d]
+        message_out = self.out_attn(
+            projector, x, x
+        )  # [b, s, c, d] <-> [b s n d] -> [b s c d]
+        message_in = self.in_attn(
+            x, projector, message_out
+        )  # [b s n d] <-> [b, s, c, d] -> [b s n d]
         message = x + self.dropout(message_in)
         message = self.norm1(message)
         message = message + self.dropout(self.MLP(message))
@@ -129,6 +140,7 @@ class EmbeddedAttention(nn.Module):
     Spatial embedded attention layer.
     The node embedding serves as the query and key matrices for attentive aggregation on graphs.
     """
+
     def __init__(self, model_dim, node_embedding_dim):
         super().__init__()
 
@@ -155,8 +167,8 @@ class EmbeddedAttention(nn.Module):
         # re-normalization
         query = torch.softmax(query, dim=-1)
         key = torch.softmax(key, dim=-1)
-        query = repeat(query, 'n s1 s2 -> b n s1 s2', b=batch_size)
-        key = repeat(key, 'n s2 s1 -> b n s2 s1', b=batch_size)
+        query = repeat(query, "n s1 s2 -> b n s1 s2", b=batch_size)
+        key = repeat(key, "n s2 s1 -> b n s2 s1", b=batch_size)
 
         # out = attn_score @ value  # (batch_size, ..., tgt_length, model_dim)
         out = key @ value  # (batch_size, ..., tgt_length, model_dim)
@@ -166,12 +178,14 @@ class EmbeddedAttention(nn.Module):
 
 
 class EmbeddedAttentionLayer(nn.Module):
-    def __init__(self,
-                 model_dim,
-                 node_embedding_dim,
-                 feed_forward_dim=2048,
-                 dropout=0):
-        super(EmbeddedAttentionLayer, self).__init__()
+    def __init__(
+        self,
+        model_dim,
+        node_embedding_dim,
+        feed_forward_dim=2048,
+        dropout=0,
+    ):
+        super().__init__()
 
         self.attn = EmbeddedAttention(model_dim, node_embedding_dim)
         self.feed_forward = nn.Sequential(
