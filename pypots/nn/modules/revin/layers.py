@@ -69,6 +69,8 @@ class RevIN(nn.Module):
             x_enc = x.masked_fill(missing_mask == 0, 0)
             variance = torch.sum(x_enc * x_enc, dim=dim2reduce, keepdim=True) + self.eps
             self.stdev = torch.sqrt(variance / missing_sum)
+            self.mean = self.mean.detach()
+            self.stdev = self.stdev.detach()
 
         x = x - self.mean
         x = x / self.stdev
