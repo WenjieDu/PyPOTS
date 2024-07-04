@@ -59,4 +59,5 @@ def pickle_load(path: str) -> object:
             data = pickle.load(f)
     except Exception as e:
         logger.error(f"❌ Loading data failed. Operation aborted. See info below:\n{e}")
+        return None
     return data
