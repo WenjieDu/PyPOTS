@@ -47,7 +47,7 @@ jobs:
 
             - name: Install other dependencies
               run: |
-                  pip install -r requirements.txt
+                  pip install -r requirements/requirements.txt
 
             - name: Test building package
               # we need to know if the package can be built successfully without optional dependencies
