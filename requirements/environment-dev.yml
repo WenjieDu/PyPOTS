@@ -16,11 +16,12 @@ dependencies:
     - conda-forge::python
     - conda-forge::einops
     - conda-forge::pandas
+    - conda-forge::seaborn
     - conda-forge::matplotlib
     - conda-forge::tensorboard
     - conda-forge::scikit-learn
-    - conda-forge::pygrinder >=0.4
-    - conda-forge::tsdb >=0.2
+    - conda-forge::pygrinder >=0.6
+    - conda-forge::tsdb >=0.6
     - pytorch::pytorch >=1.10.0
     ## Below we install the latest pypots because we need pypots-cli in it for development.
     - conda-forge::pypots
