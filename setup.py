@@ -1,3 +1,5 @@
+import os
+
 from setuptools import find_packages
 from setuptools import setup
 
@@ -5,6 +7,12 @@ from pypots import __version__
 
 with open("./README.md", encoding="utf-8") as f:
     README = f.read()
+
+with open(
+    os.path.join("requirements", "requirements.txt"),
+    encoding="utf-8",
+) as f:
+    requirements = f.read().splitlines()
 
 setup(
     name="pypots",
@@ -45,21 +53,7 @@ setup(
     ],
     packages=find_packages(exclude=["tests"]),
     include_package_data=True,
-    install_requires=[
-        "h5py",
-        "numpy",
-        "scipy",
-        "sympy",
-        "einops",
-        "pandas",
-        "matplotlib",
-        "tensorboard",
-        "scikit-learn",
-        "torch>=1.10.0",
-        "tsdb>=0.4",
-        "pygrinder>=0.6",
-        "benchpots>=0.2",
-    ],
+    install_requires=requirements,
     python_requires=">=3.8.0",
     setup_requires=["setuptools>=38.6.0"],
     entry_points={"console_scripts": ["pypots-cli=pypots.cli.pypots_cli:main"]},
