@@ -40,6 +40,7 @@ from .imputeformer import ImputeFormer
 from .locf import LOCF
 from .mean import Mean
 from .median import Median
+from .lerp import Lerp
 
 __all__ = [
     # neural network imputation methods
@@ -76,4 +77,5 @@ __all__ = [
     "LOCF",
     "Mean",
     "Median",
+    "Lerp",
 ]
