@@ -5,13 +5,11 @@ Data utils.
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-import math
 from typing import Union
 
+import benchpots
 import numpy as np
 import torch
-
-from ..utils.logging import logger
 
 
 def turn_data_into_specified_dtype(
@@ -166,7 +164,11 @@ def parse_delta(
     return delta
 
 
-def sliding_window(time_series, window_len, sliding_len=None):
+def sliding_window(
+    time_series: Union[np.ndarray, torch.Tensor],
+    window_len: int,
+    sliding_len: int = None,
+) -> Union[np.ndarray, torch.Tensor]:
     """Generate time series samples with sliding window method, truncating windows from time-series data
     with a given sequence length.
 
@@ -177,41 +179,27 @@ def sliding_window(time_series, window_len, sliding_len=None):
 
     Parameters
     ----------
-    time_series : np.ndarray,
+    time_series :
         time series data, len(shape)=2, [total_length, feature_num]
 
-    window_len : int,
+    window_len :
         The length of the sliding window, i.e. the number of time steps in the generated data samples.
 
-    sliding_len : int, default = None,
+    sliding_len :
         The sliding length of the window for each moving step. It will be set as the same with n_steps if None.
 
     Returns
     -------
-    samples : np.ndarray,
+    samples :
         The generated time-series data samples of shape [seq_len//sliding_len, n_steps, n_features].
 
     """
-    sliding_len = window_len if sliding_len is None else sliding_len
-    total_len = time_series.shape[0]
-    start_indices = np.asarray(range(total_len // sliding_len)) * sliding_len
 
-    # remove the last one if left length is not enough
-    if total_len - start_indices[-1] < window_len:
-        to_drop = math.ceil(window_len / sliding_len)
-        left_len = total_len - start_indices[-1]
-        start_indices = start_indices[:-to_drop]
-        logger.warning(
-            f"The last {to_drop} samples are dropped due to the left length {left_len} is not enough."
-        )
-
-    sample_collector = []
-    for idx in start_indices:
-        sample_collector.append(time_series[idx : idx + window_len])
-
-    samples = np.asarray(sample_collector).astype("float32")
-
-    return samples
+    return benchpots.utils.sliding_window(
+        time_series,
+        window_len,
+        sliding_len,
+    )
 
 
 def inverse_sliding_window(X, sliding_len):
@@ -238,25 +226,8 @@ def inverse_sliding_window(X, sliding_len):
         The restored time-series data with shape of [total_length, n_features].
 
     """
-    assert len(X.shape) == 3, f"X should be a 3D array, but got {X.shape}"
-    n_samples, window_size, n_features = X.shape
 
-    if sliding_len >= window_size:
-        if sliding_len > window_size:
-            logger.warning(
-                f"sliding_len {sliding_len} is larger than the window size {window_size}, "
-                f"hence there will be gaps between restored data."
-            )
-        restored_data = X.reshape(n_samples * window_size, n_features)
-    else:
-        collector = [X[0][:sliding_len]]
-        overlap = X[0][sliding_len:]
-        for x in X[1:]:
-            overlap_avg = (overlap + x[:-sliding_len]) / 2
-            collector.append(overlap_avg[:sliding_len])
-            overlap = np.concatenate(
-                [overlap_avg[sliding_len:], x[-sliding_len:]], axis=0
-            )
-        collector.append(overlap)
-        restored_data = np.concatenate(collector, axis=0)
-    return restored_data
+    return benchpots.utils.inverse_sliding_window(
+        X,
+        sliding_len,
+    )

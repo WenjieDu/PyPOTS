@@ -6,13 +6,12 @@ Data saving utilities with pickle.
 # License: BSD-3-Clause
 
 import pickle
-from typing import Optional
 
 from ...utils.file import extract_parent_dir, create_dir_if_not_exist
 from ...utils.logging import logger
 
 
-def pickle_dump(data: object, path: str) -> Optional[str]:
+def pickle_dump(data: object, path: str) -> None:
     """Pickle the given object.
 
     Parameters
@@ -39,7 +38,6 @@ def pickle_dump(data: object, path: str) -> Optional[str]:
         )
         return None
     logger.info(f"Successfully saved to {path}")
-    return path
 
 
 def pickle_load(path: str) -> object:
@@ -61,4 +59,5 @@ def pickle_load(path: str) -> object:
             data = pickle.load(f)
     except Exception as e:
         logger.error(f"❌ Loading data failed. Operation aborted. See info below:\n{e}")
+        return None
     return data
