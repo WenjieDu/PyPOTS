@@ -19,10 +19,11 @@ class Lerp(BaseImputer):
     """Linear interpolation (Lerp) imputation method.
 
     Lerp will linearly interpolate missing values between the nearest non-missing values.
-    If there are missing values at the beginning or end of the series, they will be back-filled or forward-filled with the nearest non-missing value, respectively.
+    If there are missing values at the beginning or end of the series, they will be back-filled or
+    forward-filled with the nearest non-missing value, respectively.
     If an entire series is empty, all 'nan' values will be filled with zeros.
     """
-    
+
     def __init__(
         self,
     ):
@@ -95,14 +96,14 @@ class Lerp(BaseImputer):
                 X[nans] = np.interp(nan_index, index, X[~nans])
             elif np.any(nans):
                 X[nans] = 0
-        
+
         if isinstance(X, np.ndarray):
 
             trans_X = X.transpose((0, 2, 1))
             n_samples, n_features, n_steps = trans_X.shape
             reshaped_X = np.reshape(trans_X, (-1, n_steps))
             imputed_X = np.ones(reshaped_X.shape)
-            
+
             for i, univariate_series in enumerate(reshaped_X):
                 t = np.copy(univariate_series)
                 _interpolate_missing_values(t)
@@ -133,7 +134,7 @@ class Lerp(BaseImputer):
             "imputation": imputed_data,
         }
         return result_dict
-    
+
     def impute(
         self,
         test_set: Union[dict, str],
