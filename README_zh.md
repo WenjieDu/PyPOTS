@@ -131,6 +131,7 @@ PyPOTS当前支持多变量POTS数据的插补，预测，分类，聚类以及�
 | Neural Net    | BRITS[^3]                   |    ✅     |          |    ✅     |          |          | `2018 - NeurIPS`   |
 | Neural Net    | GRU-D[^4]                   |    ✅     |          |    ✅     |          |          | `2018 - Sci. Rep.` |
 | Neural Net    | Transformer🧑‍🔧[^2]        |    ✅     |          |          |          |          | `2017 - NeurIPS`   |
+| Naive         | Lerp                        |    ✅     |          |          |          |          |                    |
 | Naive         | LOCF/NOCB                   |    ✅     |          |          |          |          |                    |
 | Naive         | Mean                        |    ✅     |          |          |          |          |                    |
 | Naive         | Median                      |    ✅     |          |          |          |          |                    |

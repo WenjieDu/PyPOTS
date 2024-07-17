@@ -145,6 +145,7 @@ The paper references and links are all listed at the bottom of this file.
 | Neural Net    | BRITS[^3]                   |    ✅     |          |    ✅     |          |          | `2018 - NeurIPS`   |
 | Neural Net    | GRU-D[^4]                   |    ✅     |          |    ✅     |          |          | `2018 - Sci. Rep.` |
 | Neural Net    | Transformer🧑‍🔧[^2]        |    ✅     |          |          |          |          | `2017 - NeurIPS`   |
+| Naive         | Lerp                        |    ✅     |          |          |          |          |                    |
 | Naive         | LOCF/NOCB                   |    ✅     |          |          |          |          |                    |
 | Naive         | Mean                        |    ✅     |          |          |          |          |                    |
 | Naive         | Median                      |    ✅     |          |          |          |          |                    |
