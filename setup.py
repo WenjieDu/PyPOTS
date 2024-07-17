@@ -58,7 +58,7 @@ setup(
         "torch>=1.10.0",
         "tsdb>=0.4",
         "pygrinder>=0.6",
-        "benchpots>=0.1",
+        "benchpots>=0.2",
     ],
     python_requires=">=3.8.0",
     setup_requires=["setuptools>=38.6.0"],

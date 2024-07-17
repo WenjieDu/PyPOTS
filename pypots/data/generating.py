@@ -9,10 +9,13 @@ import math
 from typing import Optional, Tuple
 
 import numpy as np
+from benchpots.datasets import preprocess_physionet2012
 from pygrinder import mcar
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.utils import check_random_state
+
+from ..utils.logging import logger
 
 
 def gene_complete_random_walk(
@@ -318,3 +321,18 @@ def gene_random_walk(
         data["test_X_indicating_mask"] = np.isnan(test_X_ori) ^ np.isnan(test_X)
 
     return data
+
+
+def gene_physionet2012(artificially_missing_rate: float = 0.1):
+    dataset_from_benchpots = preprocess_physionet2012(
+        subset="all", rate=artificially_missing_rate
+    )
+    logger.warning(
+        "🚨 Due to the full release of BenchPOTS package, "
+        "gene_physionet2012() has been deprecated and will be removed in pypots v0.8"
+    )
+    logger.info(
+        "🌟 Please refer to https://github.com/WenjieDu/BenchPOTS and "
+        "check out the func benchpots.datasets.preprocess_physionet2012()"
+    )
+    return dataset_from_benchpots
