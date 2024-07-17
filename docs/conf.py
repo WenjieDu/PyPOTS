@@ -33,6 +33,8 @@ copyright = f"{date_now.year}, {author}"
 release = pypots.__version__
 
 # -- General configuration ---------------------------------------------------
+# Set canonical URL from the Read the Docs Domain
+html_baseurl = os.environ.get("READTHEDOCS_CANONICAL_URL", "")
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
@@ -98,6 +100,9 @@ html_theme = "furo"
 html_context = {
     "last_updated": f"{date_now.year}/{date_now.month}/{date_now.day}",
 }
+# Tell Jinja2 templates the build is running on Read the Docs
+if os.environ.get("READTHEDOCS", "") == "True":
+    html_context["READTHEDOCS"] = True
 
 html_favicon = (
     "https://raw.githubusercontent.com/"
