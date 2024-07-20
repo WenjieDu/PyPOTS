@@ -261,6 +261,15 @@ pypots.imputation.grud
    :show-inheritance:
    :inherited-members:
 
+pypots.imputation.tcn
+------------------------------
+
+.. automodule:: pypots.imputation.tcn
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+
 pypots.imputation.lerp
 -----------------------------
 
