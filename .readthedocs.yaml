@@ -26,9 +26,10 @@ build:
             - pip install -r requirements.txt
             - pip install pypots
             - pip install sphinx==6.2.1 docutils==0.19 sphinxcontrib-bibtex==2.1.4 sphinxcontrib-gtagjs sphinx-autodoc-typehints furo==2023.07.26
-            - git clone https://github.com/WenjieDu/TSDB TSDB_repo --depth 1
-            - git clone https://github.com/WenjieDu/PyGrinder PyGrinder_repo --depth 1
-            - pip install ./TSDB_repo && pip install ./PyGrinder_repo && pip install .
+            - git clone https://github.com/WenjieDu/TSDB TSDB_repo --depth 1 && pip install ./TSDB_repo
+            - git clone https://github.com/WenjieDu/PyGrinder PyGrinder_repo --depth 1 && pip install ./PyGrinder_repo
+            - git clone https://github.com/WenjieDu/BenchPOTS BenchPOTS_repo --depth 1 && pip install ./BenchPOTS_repo
+            - pip install .
 
         post_install:
             # To fix the exception: This documentation is not using `furo.css` as the stylesheet.
