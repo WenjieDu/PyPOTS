@@ -334,7 +334,7 @@ class USGAN(BaseNNImputer):
 
                 # save the model if necessary
                 self._auto_save_model_if_necessary(
-                    confirm_saving=mean_loss < self.best_loss,
+                    confirm_saving=self.best_epoch == epoch,
                     saving_name=f"{self.__class__.__name__}_epoch{epoch}_loss{mean_loss}",
                 )
 
