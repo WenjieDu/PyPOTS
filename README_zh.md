@@ -357,7 +357,7 @@ PyPOTS社区是一个开放、透明、友好的社区，让我们共同努力�
 [^33]: Cao, D., Wang, Y., Duan, J., Zhang, C., Zhu, X., Huang, C., Tong, Y., Xu, B., Bai, J., Tong, J., & Zhang, Q. (2020). [Spectral Temporal Graph Neural Network for Multivariate Time-series Forecasting](https://proceedings.neurips.cc/paper/2020/hash/cdf6581cb7aca4b7e19ef136c6e601a5-Abstract.html). *NeurIPS 2020*.
 [^34]: Nie, T., Qin, G., Mei, Y., & Sun, J. (2024). [ImputeFormer: Low Rankness-Induced Transformers for Generalizable Spatiotemporal Imputation](https://arxiv.org/abs/2312.01728). *KDD 2024*.
 [^35]: Bai, S., Kolter, J. Z., & Koltun, V. (2018). [An empirical evaluation of generic convolutional and recurrent networks for sequence modeling](https://arxiv.org/abs/1803.01271). *arXiv 2018*.
-[^36]: Gungnir项目，世界上第一个时间序列多任务大模型，将很快与大家见面。🚀 数据集存在缺少值且长度可变? 都不再是问题。我们将在近期开放公测申请 ;-) 关注我们，敬请期待!
+[^36]: Gungnir项目，世界上第一个时间序列多任务大模型，将很快与大家见面。🚀 数据集存在缺少值且样本长短不一？多任务建模场景困难？都不再是问题，让我们的大模型来帮你解决。我们将在近期开放公测申请 ;-) 关注我们，敬请期待!
 
 <details>
 <summary>🏠 访问量</summary>
