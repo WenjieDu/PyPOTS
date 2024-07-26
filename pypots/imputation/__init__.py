@@ -23,6 +23,7 @@ from .frets import FreTS
 from .crossformer import Crossformer
 from .informer import Informer
 from .autoformer import Autoformer
+from .tcn import TCN
 from .reformer import Reformer
 from .dlinear import DLinear
 from .patchtst import PatchTST
@@ -40,6 +41,7 @@ from .imputeformer import ImputeFormer
 from .locf import LOCF
 from .mean import Mean
 from .median import Median
+from .lerp import Lerp
 
 __all__ = [
     # neural network imputation methods
@@ -56,6 +58,7 @@ __all__ = [
     "DLinear",
     "Informer",
     "Autoformer",
+    "TCN",
     "Reformer",
     "NonstationaryTransformer",
     "Pyraformer",
@@ -76,4 +79,5 @@ __all__ = [
     "LOCF",
     "Mean",
     "Median",
+    "Lerp",
 ]

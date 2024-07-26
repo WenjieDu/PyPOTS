@@ -19,6 +19,15 @@ pypots.imputation.transformer
    :show-inheritance:
    :inherited-members:
 
+pypots.imputation.imputeformer
+------------------------------------
+
+.. automodule:: pypots.imputation.imputeformer
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+
 pypots.imputation.itransformer
 ------------------------------------
 
@@ -247,6 +256,24 @@ pypots.imputation.grud
 ------------------------------
 
 .. automodule:: pypots.imputation.grud
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+
+pypots.imputation.tcn
+------------------------------
+
+.. automodule:: pypots.imputation.tcn
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+
+pypots.imputation.lerp
+-----------------------------
+
+.. automodule:: pypots.imputation.lerp
    :members:
    :undoc-members:
    :show-inheritance:
