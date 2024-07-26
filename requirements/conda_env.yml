@@ -1,4 +1,4 @@
-name: pypots-dev
+name: pypots
 
 channels:
     - conda-forge
@@ -50,7 +50,7 @@ dependencies:
     - conda-forge::jupyterlab
 
     - pip:
+        # building
+        - build
         # doc
         - sphinxcontrib-gtagjs
-        # hyperparameter tuning
-        - nni
