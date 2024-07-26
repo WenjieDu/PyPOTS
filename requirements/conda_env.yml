@@ -8,12 +8,12 @@ channels:
 
 dependencies:
     # basic
+    - conda-forge::python >=3.8
     - conda-forge::pip
     - conda-forge::h5py
     - conda-forge::numpy
     - conda-forge::scipy
     - conda-forge::sympy
-    - conda-forge::python
     - conda-forge::einops
     - conda-forge::pandas
     - conda-forge::seaborn
@@ -46,6 +46,7 @@ dependencies:
     # dev
     - conda-forge::black
     - conda-forge::flake8
+    - conda-forge::flake8-pyproject
     - conda-forge::pre-commit
     - conda-forge::jupyterlab
 
