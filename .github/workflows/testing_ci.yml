@@ -34,7 +34,8 @@ jobs:
                 check-latest: true
                 cache: pip
                 cache-dependency-path: |
-                  setup.cfg
+                  requirements/requirements.txt
+                  requirements/requirements_dev.txt
 
             - name: Install PyTorch ${{ matrix.pytorch-version }}+cpu
               # we have to install torch in advance because torch_sparse needs it for compilation,
@@ -42,18 +43,20 @@ jobs:
               run: |
                   which python
                   which pip
-                  pip install numpy==1.24 torch==${{ matrix.pytorch-version }} -f https://download.pytorch.org/whl/cpu
+                  pip install torch==${{ matrix.pytorch-version }} -f https://download.pytorch.org/whl/cpu
                   python -c "import torch; print('PyTorch:', torch.__version__)"
 
             - name: Install other dependencies
               run: |
-                  pip install -r requirements.txt
+                  pip install -r requirements/requirements.txt
+                  pip install numpy==1.24  # many libs not compatible with numpy 2.0. Note 3.12 requests for numpy>=2.0
+                  pip install pandas==1.5  # fix pandas version to avoid installing pandas 2.0, the same reason with numpy
 
             - name: Test building package
               # we need to know if the package can be built successfully without optional dependencies
               run: |
                   pip install build wheel
-                  python -m build --no-isolation
+                  python -m build
 
             - name: Continue to install torch-geometric dependencies
               run: |
