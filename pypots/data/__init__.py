@@ -23,6 +23,7 @@ from .utils import (
     sliding_window,
     inverse_sliding_window,
 )
+from .load_specific_datasets import load_specific_dataset
 
 __all__ = [
     # base dataset classes
@@ -33,6 +34,7 @@ __all__ = [
     "gene_complete_random_walk_for_anomaly_detection",
     "gene_complete_random_walk_for_classification",
     "gene_random_walk",
+    "load_specific_dataset",
     # utils
     "parse_delta",
     "sliding_window",
