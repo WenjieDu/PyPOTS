@@ -1,0 +1,40 @@
+name: pypots-dev
+
+channels:
+    - conda-forge
+    - pytorch
+    - pyg
+    - nodefaults
+
+dependencies:
+    ## Below we install the latest pypots because we need pypots-cli in it for development.
+    - conda-forge::pypots >=0.7.1
+
+    # optional
+    - pyg::pyg
+    - pyg::pytorch-sparse
+    - pyg::pytorch-scatter
+
+    # test
+    - conda-forge::pytest-cov
+    - conda-forge::pytest-xdist
+
+    # doc
+    - conda-forge::furo
+    - conda-forge::sphinx
+    - conda-forge::docutils
+    - conda-forge::sphinxcontrib-bibtex
+    - conda-forge::sphinx-autodoc-typehints
+
+    # dev
+    - conda-forge::black
+    - conda-forge::flake8
+    - conda-forge::flake8-pyproject
+    - conda-forge::pre-commit
+    - conda-forge::jupyterlab
+
+    - pip:
+        # building
+        - build
+        # doc
+        - sphinxcontrib-gtagjs
