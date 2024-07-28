@@ -147,7 +147,7 @@ class DevCommand(BaseCommand):
                 shutil.rmtree("dist", ignore_errors=True)
                 shutil.rmtree("pypots.egg-info", ignore_errors=True)
             elif self._build:
-                self.execute_command("python setup.py sdist bdist bdist_wheel")
+                self.execute_command("python -m build")
             elif self._run_tests:
                 pytest_command = (
                     f"pytest -k {self._k}" if self._k is not None else "pytest"
