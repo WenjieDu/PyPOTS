@@ -32,7 +32,7 @@ jobs:
                   miniconda-version: "latest"
                   activate-environment: pypots
                   python-version: ${{ matrix.python-version }}
-                  environment-file: requirements/conda_env.yml
+                  environment-file: requirements/conda_dev_env.yml
                   auto-activate-base: false
 
             - name: Fetch the test environment details
