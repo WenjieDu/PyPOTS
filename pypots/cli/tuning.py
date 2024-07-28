@@ -115,8 +115,8 @@ class TuningCommand(BaseCommand):
 
     Notes
     -----
-    Using this tool supposes that you've already installed `pypots` with at least the scope of `basic` dependencies.
-    Please refer to file setup.cfg in PyPOTS project's root dir for definitions of different dependency scopes.
+    Using this tool supposes that you've already installed `pypots` with at least basic dependencies.
+    Please refer to file requirements/requirements.txt in PyPOTS project's root dir for references.
 
     Examples
     --------
