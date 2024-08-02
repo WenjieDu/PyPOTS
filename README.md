@@ -112,6 +112,7 @@ The paper references and links are all listed at the bottom of this file.
 
 | **Type**      | **Algo**                    | **IMPU** | **FORE** | **CLAS** | **CLUS** | **ANOD** | **Year - Venue**   |
 |:--------------|:----------------------------|:--------:|:--------:|:--------:|:--------:|:--------:|:-------------------|
+| LLM           | Gungnir 🚀 [^36]            |    ✅     |    ✅     |    ✅     |    ✅     |    ✅     | `Later in 2024`    |
 | Neural Net    | ImputeFormer🧑‍🔧[^34]      |    ✅     |          |          |          |          | `2024 - KDD`       |
 | Neural Net    | iTransformer🧑‍🔧[^24]      |    ✅     |          |          |          |          | `2024 - ICLR`      |
 | Neural Net    | SAITS[^1]                   |    ✅     |          |          |          |          | `2023 - ESWA`      |
@@ -385,6 +386,8 @@ PyPOTS community is open, transparent, and surely friendly. Let's work together 
 [^33]: Cao, D., Wang, Y., Duan, J., Zhang, C., Zhu, X., Huang, C., Tong, Y., Xu, B., Bai, J., Tong, J., & Zhang, Q. (2020). [Spectral Temporal Graph Neural Network for Multivariate Time-series Forecasting](https://proceedings.neurips.cc/paper/2020/hash/cdf6581cb7aca4b7e19ef136c6e601a5-Abstract.html). *NeurIPS 2020*.
 [^34]: Nie, T., Qin, G., Mei, Y., & Sun, J. (2024). [ImputeFormer: Low Rankness-Induced Transformers for Generalizable Spatiotemporal Imputation](https://arxiv.org/abs/2312.01728). *KDD 2024*.
 [^35]: Bai, S., Kolter, J. Z., & Koltun, V. (2018). [An empirical evaluation of generic convolutional and recurrent networks for sequence modeling](https://arxiv.org/abs/1803.01271). *arXiv 2018*.
+[^36]: Project Gungnir, the world 1st LLM for time-series multitask modeling, will meet you soon. 🚀 Missing values and variable lengths in your datasets?
+       Hard to perform multitask learning with your time series? Not problems no longer. We'll open application for public beta test recently ;-) Follow us, and stay tuned!
 
 <details>
 <summary>🏠 Visits</summary>
