@@ -69,8 +69,7 @@ class BaseCommand(ABC):
                 ".github",
                 "docs",
                 "pypots",
-                "setup.cfg",
-                "setup.py",
+                "pyproject.toml",
             }
         )
 

@@ -1,3 +1,0 @@
-prune tests
-prune pypots/*/template
-prune pypots/*/README.md

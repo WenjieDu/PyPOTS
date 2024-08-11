@@ -1,0 +1,17 @@
+pypots
+build
+torch-sparse
+torch-scatter
+torch-geometric
+pre-commit
+jupyterlab
+black
+flake8
+flake8-pyproject
+pytest-cov
+pytest-xdist
+furo
+sphinx
+sphinxcontrib-bibtex
+sphinxcontrib-gtagjs
+sphinx-autodoc-typehints
