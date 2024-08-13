@@ -138,6 +138,8 @@ PyPOTS当前支持多变量POTS数据的插补，预测，分类，聚类以及�
 | Naive         | Mean                        |    ✅     |          |          |          |          |                    |
 | Naive         | Median                      |    ✅     |          |          |          |          |                    |
 
+💯 现在贡献你的模型来增加你的研究影响力！PyPOTS的下载量正在迅速增长(**[目前PyPI上总共超过30万次且每日超1000的下载](https://www.pepy.tech/projects/pypots)**),
+你的工作将被社区广泛使用和引用。请参阅[贡献指南](https://github.com/WenjieDu/PyPOTS/blob/main/README_zh.md#-%E8%B4%A1%E7%8C%AE%E5%A3%B0%E6%98%8E)，了解如何将模型包含在PyPOTS中。
 
 ## ❖ PyPOTS生态系统
 在PyPOTS生态系统中，一切都与我们熟悉的咖啡息息相关，甚至可以将其视为一杯咖啡的诞生过程！
