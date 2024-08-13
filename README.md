@@ -152,6 +152,9 @@ The paper references and links are all listed at the bottom of this file.
 | Naive         | Mean                        |    ✅     |          |          |          |          |                    |
 | Naive         | Median                      |    ✅     |          |          |          |          |                    |
 
+💯 Contribute your model right now to increase your research impact! PyPOTS downloads are increasing rapidly (**[300K+ in total and 1K+ daily on PyPI so far](https://www.pepy.tech/projects/pypots)**),
+and your work will be widely used and cited by the community.
+Refer to the [contribution guide](https://github.com/WenjieDu/PyPOTS#-contribution) to see how to include your model in PyPOTS.
 
 ## ❖ PyPOTS Ecosystem
 At PyPOTS, things are related to coffee, which we're familiar with. Yes, this is a coffee universe!
