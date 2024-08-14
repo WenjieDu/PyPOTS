@@ -80,8 +80,8 @@ Welcome to PyPOTS docs!
    :alt: README in English
    :target: https://github.com/WenjieDu/PyPOTS/blob/main/README.md
 
-.. image:: https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2FPyPOTS%2FPyPOTS&count_bg=%23009A0A&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=Visits%20since%20May%202022&edge_flat=false
-   :alt: Visiting number
+.. image:: https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2FPyPOTS%2FPyPOTS&count_bg=%23009A0A&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=Hits&edge_flat=false
+   :alt: Hits number
 
 -----------------
 
@@ -101,12 +101,12 @@ if it helps with your research. This really means a lot to our open-source resea
 
 The rest of this readme file is organized as follows:
 `❖ Available Algorithms <#id1>`_,
-`❖ PyPOTS Ecosystem <#id22>`_,
-`❖ Installation <#id24>`_,
-`❖ Usage <#id26>`_,
-`❖ Citing PyPOTS <#id28>`_,
-`❖ Contribution <#id29>`_,
-`❖ Community <#id30>`_.
+`❖ PyPOTS Ecosystem <#id37>`_,
+`❖ Installation <#id39>`_,
+`❖ Usage <#id41>`_,
+`❖ Citing PyPOTS <#id43>`_,
+`❖ Contribution <#id44>`_,
+`❖ Community <#id45>`_.
 
 
 ❖ Available Algorithms
@@ -212,7 +212,7 @@ The paper references are all listed at the bottom of this readme file.
 
 💯 Contribute your model right now to increase your research impact! PyPOTS downloads are increasing rapidly (`300K+ in total and 1K+ daily on PyPI so far <https://www.pepy.tech/projects/pypots>`_),
 and your work will be widely used and cited by the community.
-Refer to the `contribution guide <https://github.com/WenjieDu/PyPOTS#-contribution>`_ to see how to include your model in PyPOTS.
+Refer to the `contribution guide <#id44>`_ to see how to include your model in PyPOTS.
 
 ❖ PyPOTS Ecosystem
 ^^^^^^^^^^^^^^^^^^^
