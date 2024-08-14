@@ -58,6 +58,9 @@
    <a href="https://github.com/WenjieDu/PyPOTS/blob/main/README.md">
         <img alt="README in English" src="https://pypots.com/figs/pypots_logos/readme/US.svg">
     </a>
+    <a href="https://github.com/WenjieDu/PyPOTS">
+        <img alt="PyPOTS Hits" src="https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2FPyPOTS%2FPyPOTS&count_bg=%23009A0A&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=Hits&edge_flat=false">
+    </a>
 </p>
 
 ⦿ `Motivation`: Due to all kinds of reasons like failure of collection sensors, communication error,
@@ -391,11 +394,3 @@ PyPOTS community is open, transparent, and surely friendly. Let's work together 
 [^35]: Bai, S., Kolter, J. Z., & Koltun, V. (2018). [An empirical evaluation of generic convolutional and recurrent networks for sequence modeling](https://arxiv.org/abs/1803.01271). *arXiv 2018*.
 [^36]: Project Gungnir, the world 1st LLM for time-series multitask modeling, will meet you soon. 🚀 Missing values and variable lengths in your datasets?
        Hard to perform multitask learning with your time series? Not problems no longer. We'll open application for public beta test recently ;-) Follow us, and stay tuned!
-
-<details>
-<summary>🏠 Visits</summary>
-<a href="https://github.com/WenjieDu/PyPOTS">
-    <img alt="PyPOTS visits" align="left" src="https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2FPyPOTS%2FPyPOTS&count_bg=%23009A0A&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=Visits%20since%20May%202022&edge_flat=false">
-</a>
-</details>
-<br>
