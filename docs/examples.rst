@@ -32,8 +32,6 @@ You can also find a simple and quick-start tutorial notebook on Google Colab
     X = data['train_X']
     num_samples = len(X)
     X = StandardScaler().fit_transform(X.reshape(-1, X.shape[-1])).reshape(X.shape)
-
-    X.shape
     X_ori = X  # keep X_ori for validation
     X = mcar(X, 0.1)  # randomly hold out 10% observed values as ground truth
     dataset = {"X": X}  # X for model input
