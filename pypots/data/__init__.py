@@ -6,12 +6,7 @@ Expose all usable data manipulation classes and functions.
 # License: BSD-3-Clause
 
 from .dataset import BaseDataset, SUPPORTED_DATASET_FILE_FORMATS
-from .generating import (
-    gene_complete_random_walk,
-    gene_complete_random_walk_for_anomaly_detection,
-    gene_complete_random_walk_for_classification,
-    gene_random_walk,
-)
+from .generating import gene_random_walk
 from .saving import (
     save_dict_into_h5,
     load_dict_from_h5,
@@ -30,9 +25,6 @@ __all__ = [
     "BaseDataset",
     "SUPPORTED_DATASET_FILE_FORMATS",
     # dataset generation functions
-    "gene_complete_random_walk",
-    "gene_complete_random_walk_for_anomaly_detection",
-    "gene_complete_random_walk_for_classification",
     "gene_random_walk",
     "load_specific_dataset",
     # utils
