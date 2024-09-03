@@ -102,8 +102,9 @@ PyPOTS当前支持多变量POTS数据的插补，预测，分类，聚类以及�
 | **类型**      | **算法**                                                                                                                                                  | **插补** | **预测** | **分类** | **聚类** | **异常检测** | **年份 - 刊物**        |
 |:--------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------|:------:|:------:|:------:|:------:|:--------:|:-------------------|
 | LLM           | <a href="https://time-series.ai"><img src="https://time-series.ai/static/figs/robot.svg" width="26px"> Time-Series.AI</a>  [^36] |    ✅     |    ✅     |    ✅     |    ✅     |    ✅     | `Later in 2024`    |
-| Neural Net    | ImputeFormer🧑‍🔧[^34]                                                                                                                                  |    ✅     |          |          |          |          | `2024 - KDD`       |
+| Neural Net    | TimeMixer[^37]                                                                                                                   |    ✅     |          |          |          |          | `2024 - ICLR`      |
 | Neural Net    | iTransformer🧑‍🔧[^24]                                                                                                                                  |    ✅     |          |          |          |          | `2024 - ICLR`      |
+| Neural Net    | ImputeFormer🧑‍🔧[^34]                                                                                                                                  |    ✅     |          |          |          |          | `2024 - KDD`       |
 | Neural Net    | SAITS[^1]                                                                                                                                               |    ✅     |          |          |          |          | `2023 - ESWA`      |
 | Neural Net    | FreTS🧑‍🔧[^23]                                                                                                                                         |    ✅     |          |          |          |          | `2023 - NeurIPS`   |
 | Neural Net    | Koopa🧑‍🔧[^29]                                                                                                                                         |    ✅     |          |          |          |          | `2023 - NeurIPS`   |
@@ -292,7 +293,7 @@ year={2023},
    [pypots/imputation/template](https://github.com/WenjieDu/PyPOTS/tree/main/pypots/imputation/template))快速启动你的开发;
 2. 成为[PyPOTS贡献者](https://github.com/WenjieDu/PyPOTS/graphs/contributors)之一，
    并在[PyPOTS网站](https://pypots.com/about/#volunteer-developers)上被列为志愿开发者；
-3. 在我们发布新版本的[更新日志](https://github.com/WenjieDu/PyPOTS/releases)中被提及；
+3. 在PyPOTS发布新版本的[更新日志](https://github.com/WenjieDu/PyPOTS/releases)中被提及；
 
 你也可以通过为该项目设置星标🌟，帮助更多人关注它。你的星标🌟既是对PyPOTS的认可，也是对PyPOTS发展所做出的重要贡献！
 
@@ -364,3 +365,4 @@ PyPOTS社区是一个开放、透明、友好的社区，让我们共同努力�
 [^35]: Bai, S., Kolter, J. Z., & Koltun, V. (2018). [An empirical evaluation of generic convolutional and recurrent networks for sequence modeling](https://arxiv.org/abs/1803.01271). *arXiv 2018*.
 [^36]: Gungnir项目，世界上第一个时间序列多任务大模型，将很快与大家见面。🚀 数据集存在缺少值且样本长短不一？多任务建模场景困难？都不再是问题，让我们的大模型来帮你解决。我们将在近期开放公测申请 ;-) 关注我们，敬请期待!
        <a href="https://time-series.ai"><img src="https://time-series.ai/static/figs/robot.svg" width="20px" align="center"> Time-Series.AI</a>
+[^37]: Wang, S., Wu, H., Shi, X., Hu, T., Luo, H., Ma, L., ... & ZHOU, J. (2024). [TimeMixer: Decomposable Multiscale Mixing for Time Series Forecasting](https://openreview.net/forum?id=7oLshfEIC2). *ICLR 2024*
