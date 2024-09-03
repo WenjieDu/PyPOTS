@@ -35,7 +35,7 @@ def list_supported_datasets() -> list:
 
 def load_specific_dataset(dataset_name: str, use_cache: bool = True) -> dict:
     """Load specific datasets supported by PyPOTS.
-    Different from tsdb.load_dataset(), which only produces merely raw data,
+    Different from tsdb.load(), which only produces merely raw data,
     load_specific_dataset here does some preprocessing operations,
     like truncating time series to generate samples with the same length.
 
@@ -45,7 +45,7 @@ def load_specific_dataset(dataset_name: str, use_cache: bool = True) -> dict:
         The name of the dataset to be loaded, which should be supported, i.e. in SUPPORTED_DATASETS.
 
     use_cache :
-        Whether to use cache. This is an argument of tsdb.load_dataset().
+        Whether to use cache. This is an argument of tsdb.load().
 
     Returns
     -------
