@@ -36,6 +36,7 @@ from .tide import TiDE
 from .grud import GRUD
 from .stemgnn import StemGNN
 from .imputeformer import ImputeFormer
+from .timemixer import TimeMixer
 
 # naive imputation methods
 from .locf import LOCF
@@ -75,6 +76,7 @@ __all__ = [
     "GRUD",
     "StemGNN",
     "ImputeFormer",
+    "TimeMixer",
     # naive imputation methods
     "LOCF",
     "Mean",
