@@ -292,7 +292,7 @@ year={2023},
    [pypots/imputation/template](https://github.com/WenjieDu/PyPOTS/tree/main/pypots/imputation/template))快速启动你的开发;
 2. 成为[PyPOTS贡献者](https://github.com/WenjieDu/PyPOTS/graphs/contributors)之一，
    并在[PyPOTS网站](https://pypots.com/about/#volunteer-developers)上被列为志愿开发者；
-3. 在我们发布新版本的[更新日志](https://github.com/WenjieDu/PyPOTS/releases)中被提及；
+3. 在PyPOTS发布新版本的[更新日志](https://github.com/WenjieDu/PyPOTS/releases)中被提及；
 
 你也可以通过为该项目设置星标🌟，帮助更多人关注它。你的星标🌟既是对PyPOTS的认可，也是对PyPOTS发展所做出的重要贡献！
 

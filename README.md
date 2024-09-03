@@ -320,7 +320,7 @@ By committing your code, you'll
    [pypots/imputation/template](https://github.com/WenjieDu/PyPOTS/tree/main/pypots/imputation/template)) to quickly start;
 2. become one of [PyPOTS contributors](https://github.com/WenjieDu/PyPOTS/graphs/contributors) and
    be listed as a volunteer developer [on the PyPOTS website](https://pypots.com/about/#volunteer-developers);
-3. get mentioned in our [release notes](https://github.com/WenjieDu/PyPOTS/releases);
+3. get mentioned in PyPOTS [release notes](https://github.com/WenjieDu/PyPOTS/releases);
 
 You can also contribute to PyPOTS by simply staring🌟 this repo to help more people notice it.
 Your star is your recognition to PyPOTS, and it matters!
