@@ -49,3 +49,5 @@ Project Milestones
 - 2023-12: PyPOTS achieves its first 500 stars 🌟;
 - 2024-02: PyPOTS Research releases its imputation survey paper `Deep Learning for Multivariate Time Series Imputation: A Survey <https://arxiv.org/abs/2402.04059>`_;
 - 2024-06: PyPOTS Research releases the 1st comprehensive time-series imputation benchmark paper `TSI-Bench: Benchmarking Time Series Imputation <https://arxiv.org/abs/2406.12747>`_;
+- 2024-07: PyPOTS achieves its first 300,000 downloads in total;
+- 2024-08: We present the keynote "Learning from Partially Observed Time Series: Towards Reality-Centric AI4TS" `IJCAI'24 AI4TS workshop <https://ai4ts.github.io/ijcai2024>`_;
