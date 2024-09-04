@@ -19,6 +19,15 @@ pypots.imputation.transformer
    :show-inheritance:
    :inherited-members:
 
+pypots.imputation.timemixer
+------------------------------------
+
+.. automodule:: pypots.imputation.timemixer
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+
 pypots.imputation.imputeformer
 ------------------------------------
 

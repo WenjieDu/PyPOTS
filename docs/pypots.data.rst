@@ -28,14 +28,6 @@ pypots.data.generating
    :show-inheritance:
    :inherited-members:
 
-pypots.data.load\_preprocessing
---------------------------------------
-
-.. automodule:: pypots.data.load_preprocessing
-   :members:
-   :undoc-members:
-   :show-inheritance:
-   :inherited-members:
 
 pypots.data.load\_specific\_datasets
 -------------------------------------------

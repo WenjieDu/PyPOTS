@@ -25,7 +25,7 @@ build:
             - pip install torch-geometric==2.3.1 torch-scatter==2.1.1 torch-sparse==0.6.17 -f "https://data.pyg.org/whl/torch-1.13.1+cpu.html"
             - pip install -r requirements/requirements.txt
             - pip install pypots
-            - pip install sphinx==6.2.1 docutils==0.19 sphinxcontrib-bibtex==2.1.4 sphinxcontrib-gtagjs sphinx-autodoc-typehints furo==2023.07.26
+            - pip install sphinx==7.4.7 docutils==0.21.2 sphinxcontrib-bibtex==2.6.2 sphinxcontrib-gtagjs sphinx-autodoc-typehints furo==2024.7.18
             - git clone https://github.com/WenjieDu/TSDB TSDB_repo --depth 1 && pip install ./TSDB_repo
             - git clone https://github.com/WenjieDu/PyGrinder PyGrinder_repo --depth 1 && pip install ./PyGrinder_repo
             - git clone https://github.com/WenjieDu/BenchPOTS BenchPOTS_repo --depth 1 && pip install ./BenchPOTS_repo
@@ -34,7 +34,7 @@ build:
         post_install:
             # To fix the exception: This documentation is not using `furo.css` as the stylesheet.
             #   If you have set `html_style` in your conf.py file, remove it.
-            - pip install sphinx==7.2.6
+            - pip install sphinx==7.4.7
             # this docutils version fixes issue#102, put it in post_install to avoid being
             #   overwritten by other versions (like 0.19) while installing other packages
-            - pip install docutils==0.20
+            - pip install docutils==0.21.2

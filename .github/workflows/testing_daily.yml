@@ -32,7 +32,7 @@ jobs:
                   miniconda-version: "latest"
                   activate-environment: pypots
                   python-version: ${{ matrix.python-version }}
-                  environment-file: requirements/conda_env.yml
+                  environment-file: requirements/conda_dev_env.yml
                   auto-activate-base: false
 
             - name: Fetch the test environment details
@@ -62,6 +62,7 @@ jobs:
 
             - name: Submit the report
               uses: coverallsapp/github-action@master
+              continue-on-error: true
               with:
                   github-token: ${{ secrets.GITHUB_TOKEN }}
                   path-to-lcov: 'coverage.lcov'
