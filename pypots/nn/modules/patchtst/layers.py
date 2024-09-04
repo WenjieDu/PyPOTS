@@ -106,13 +106,13 @@ class PredictionHead(nn.Module):
 
         head_dim = d_model * n_patches
         self.individual = individual
-        self.n_vars = n_features
+        self.n_features = n_features
 
         if self.individual:
             self.linears = nn.ModuleList()
             self.dropouts = nn.ModuleList()
             self.flattens = nn.ModuleList()
-            for i in range(self.n_vars):
+            for i in range(self.n_features):
                 self.flattens.append(nn.Flatten(start_dim=-2))
                 self.linears.append(nn.Linear(head_dim, n_steps_forecast))
                 self.dropouts.append(nn.Dropout(head_dropout))
@@ -128,7 +128,7 @@ class PredictionHead(nn.Module):
         """
         if self.individual:
             x_out = []
-            for i in range(self.n_vars):
+            for i in range(self.n_features):
                 z = self.flattens[i](x[:, i, :, :])  # z: [bs x d_model * num_patch]
                 z = self.linears[i](z)  # z: [bs x forecast_len]
                 z = self.dropouts[i](z)
@@ -139,3 +139,46 @@ class PredictionHead(nn.Module):
             x = self.dropout(x)
             x = self.linear(x)  # x: [bs x nvars x forecast_len]
         return x.transpose(2, 1)  # [bs x forecast_len x nvars]
+
+
+class FlattenHead(nn.Module):
+    def __init__(
+        self,
+        d_input,
+        d_output,
+        n_features,
+        head_dropout=0,
+        individual=False,
+    ):
+        super().__init__()
+
+        self.individual = individual
+        self.n_features = n_features
+
+        if self.individual:
+            self.linears = nn.ModuleList()
+            self.dropouts = nn.ModuleList()
+            self.flattens = nn.ModuleList()
+            for i in range(self.n_features):
+                self.flattens.append(nn.Flatten(start_dim=-2))
+                self.linears.append(nn.Linear(d_input, d_output))
+                self.dropouts.append(nn.Dropout(head_dropout))
+        else:
+            self.flatten = nn.Flatten(start_dim=-2)
+            self.linear = nn.Linear(d_input, d_output)
+            self.dropout = nn.Dropout(head_dropout)
+
+    def forward(self, x):
+        if self.individual:
+            x_out = []
+            for i in range(self.n_features):
+                z = self.flattens[i](x[:, i, :, :])  # z: [bs x d_model * patch_num]
+                z = self.linears[i](z)  # z: [bs x target_window]
+                z = self.dropouts[i](z)
+                x_out.append(z)
+            x = torch.stack(x_out, dim=1)  # x: [bs x nvars x target_window]
+        else:
+            x = self.flatten(x)
+            x = self.linear(x)
+            x = self.dropout(x)
+        return x
