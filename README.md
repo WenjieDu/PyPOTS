@@ -118,6 +118,7 @@ The paper references and links are all listed at the bottom of this file.
 | LLM           | <a href="https://time-series.ai"><img src="https://time-series.ai/static/figs/robot.svg" width="26px"> Time-Series.AI</a>  [^36] |    ✅     |    ✅     |    ✅     |    ✅     |    ✅     | `Later in 2024`    |
 | Neural Net    | TimeMixer[^37]                                                                                                                   |    ✅     |          |          |          |          | `2024 - ICLR`      |
 | Neural Net    | iTransformer🧑‍🔧[^24]                                                                                                           |    ✅     |          |          |          |          | `2024 - ICLR`      |
+| Neural Net    | ModernTCN[^38]                                                                                                                   |    ✅     |          |          |          |          | `2024 - ICLR`      |
 | Neural Net    | ImputeFormer🧑‍🔧[^34]                                                                                                           |    ✅     |          |          |          |          | `2024 - KDD`       |
 | Neural Net    | SAITS[^1]                                                                                                                        |    ✅     |          |          |          |          | `2023 - ESWA`      |
 | Neural Net    | FreTS🧑‍🔧[^23]                                                                                                                  |    ✅     |          |          |          |          | `2023 - NeurIPS`   |
@@ -397,3 +398,4 @@ PyPOTS community is open, transparent, and surely friendly. Let's work together 
        Hard to perform multitask learning with your time series? Not problems no longer. We'll open application for public beta test recently ;-) Follow us, and stay tuned!
        <a href="https://time-series.ai"><img src="https://time-series.ai/static/figs/robot.svg" width="20px" align="center"> Time-Series.AI</a>
 [^37]: Wang, S., Wu, H., Shi, X., Hu, T., Luo, H., Ma, L., ... & ZHOU, J. (2024). [TimeMixer: Decomposable Multiscale Mixing for Time Series Forecasting](https://openreview.net/forum?id=7oLshfEIC2). *ICLR 2024*
+[^38]: Luo, D., & Wang X. (2024). [ModernTCN: A Modern Pure Convolution Structure for General Time Series Analysis](https://openreview.net/forum?id=vpJMJerXHU). *ICLR 2024*
