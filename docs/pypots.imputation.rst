@@ -28,6 +28,15 @@ pypots.imputation.timemixer
    :show-inheritance:
    :inherited-members:
 
+pypots.imputation.moderntcn
+------------------------------------
+
+.. automodule:: pypots.imputation.moderntcn
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+
 pypots.imputation.imputeformer
 ------------------------------------
 
