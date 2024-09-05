@@ -275,7 +275,9 @@ class BaseNNImputer(BaseNNModel):
 
         try:
             training_step = 0
+            print("Training model......................................")
             for epoch in range(1, self.epochs + 1):
+                print(f"Epoch {epoch}......................................")
                 self.model.train()
                 epoch_train_loss_collector = []
                 for idx, data in enumerate(training_loader):
