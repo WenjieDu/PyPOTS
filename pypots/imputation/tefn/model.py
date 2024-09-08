@@ -34,13 +34,11 @@ class TEFN(BaseNNImputer):
         The number of features in the time-series data sample.
 
     n_fod :
-        The number of frame of discernment in the TEFN model.
+        The number of FOD (frame of discernment) in the TEFN model.
 
     apply_nonstationary_norm :
         Whether to apply non-stationary normalization to the input data for TimesNet.
-        Please refer to :cite:`liu2022nonstationary` for details about non-stationary normalization,
-        which is not the idea of the original TimesNet paper. Hence, we make it optional
-        and default not to use here.
+        Please refer to :cite:`liu2022nonstationary` for details about non-stationary normalization.
 
     batch_size :
         The batch size for training and evaluating the model.
