@@ -1,22 +1,18 @@
 """
 
 """
+
+# Created by Tianxiang Zhan <zhantianxianguestc@hotmail.com>
+# License: BSD-3-Clause
+
 import torch
 import torch.nn as nn
 
 from .layers import EvidenceMachineKernel
 
 
-# Created by Tianxiang Zhan <zhantianxianguestc@hotmail.com>>
-# License: BSD-3-Clause
-
-
 class BackboneTEFN(nn.Module):
-
-    def __init__(self,
-                 n_steps,
-                 n_features,
-                 n_fod):
+    def __init__(self, n_steps, n_features, n_fod):
         super().__init__()
 
         self.n_steps = n_steps
@@ -28,5 +24,5 @@ class BackboneTEFN(nn.Module):
 
     def forward(self, X) -> torch.Tensor:
         X = self.T_model(X.permute(0, 2, 1)).permute(0, 2, 1, 3) + self.C_model(X)
-        X = torch.einsum('btcf->btc', X)
+        X = torch.einsum("btcf->btc", X)
         return X

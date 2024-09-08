@@ -84,5 +84,5 @@ __all__ = [
     "Mean",
     "Median",
     "Lerp",
-    "TEFN"
+    "TEFN",
 ]

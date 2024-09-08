@@ -23,83 +23,83 @@ from ...optim.base import Optimizer
 
 class TEFN(BaseNNImputer):
     """The PyTorch implementation of the TEFN model.
-        TEFN is originally proposed by Zhan et al. in :cite:`zhan2024tefn`.
+    TEFN is originally proposed by Zhan et al. in :cite:`zhan2024tefn`.
 
-        Parameters
-        ----------
-        n_steps :
-            The number of time steps in the time-series data sample.
+    Parameters
+    ----------
+    n_steps :
+        The number of time steps in the time-series data sample.
 
-        n_features :
-            The number of features in the time-series data sample.
+    n_features :
+        The number of features in the time-series data sample.
 
-        n_fod :
-            The number of frame of discernment in the TEFN model.
+    n_fod :
+        The number of frame of discernment in the TEFN model.
 
-        apply_nonstationary_norm :
-            Whether to apply non-stationary normalization to the input data for TimesNet.
-            Please refer to :cite:`liu2022nonstationary` for details about non-stationary normalization,
-            which is not the idea of the original TimesNet paper. Hence, we make it optional
-            and default not to use here.
+    apply_nonstationary_norm :
+        Whether to apply non-stationary normalization to the input data for TimesNet.
+        Please refer to :cite:`liu2022nonstationary` for details about non-stationary normalization,
+        which is not the idea of the original TimesNet paper. Hence, we make it optional
+        and default not to use here.
 
-        batch_size :
-            The batch size for training and evaluating the model.
+    batch_size :
+        The batch size for training and evaluating the model.
 
-        epochs :
-            The number of epochs for training the model.
+    epochs :
+        The number of epochs for training the model.
 
-        patience :
-            The patience for the early-stopping mechanism. Given a positive integer, the training process will be
-            stopped when the model does not perform better after that number of epochs.
-            Leaving it default as None will disable the early-stopping.
+    patience :
+        The patience for the early-stopping mechanism. Given a positive integer, the training process will be
+        stopped when the model does not perform better after that number of epochs.
+        Leaving it default as None will disable the early-stopping.
 
-        optimizer :
-            The optimizer for model training.
-            If not given, will use a default Adam optimizer.
+    optimizer :
+        The optimizer for model training.
+        If not given, will use a default Adam optimizer.
 
-        num_workers :
-            The number of subprocesses to use for data loading.
-            `0` means data loading will be in the main process, i.e. there won't be subprocesses.
+    num_workers :
+        The number of subprocesses to use for data loading.
+        `0` means data loading will be in the main process, i.e. there won't be subprocesses.
 
-        device :
-            The device for the model to run on. It can be a string, a :class:`torch.device` object, or a list of them.
-            If not given, will try to use CUDA devices first (will use the default CUDA device if there are multiple),
-            then CPUs, considering CUDA and CPU are so far the main devices for people to train ML models.
-            If given a list of devices, e.g. ['cuda:0', 'cuda:1'], or [torch.device('cuda:0'), torch.device('cuda:1')] ,
-            the model will be parallely trained on the multiple devices (so far only support parallel training on CUDA
-            devices). Other devices like Google TPU and Apple Silicon accelerator MPS may be added in the future.
+    device :
+        The device for the model to run on. It can be a string, a :class:`torch.device` object, or a list of them.
+        If not given, will try to use CUDA devices first (will use the default CUDA device if there are multiple),
+        then CPUs, considering CUDA and CPU are so far the main devices for people to train ML models.
+        If given a list of devices, e.g. ['cuda:0', 'cuda:1'], or [torch.device('cuda:0'), torch.device('cuda:1')] ,
+        the model will be parallely trained on the multiple devices (so far only support parallel training on CUDA
+        devices). Other devices like Google TPU and Apple Silicon accelerator MPS may be added in the future.
 
-        saving_path :
-            The path for automatically saving model checkpoints and tensorboard files (i.e. loss values recorded during
-            training into a tensorboard file). Will not save if not given.
+    saving_path :
+        The path for automatically saving model checkpoints and tensorboard files (i.e. loss values recorded during
+        training into a tensorboard file). Will not save if not given.
 
-        model_saving_strategy :
-            The strategy to save model checkpoints. It has to be one of [None, "best", "better", "all"].
-            No model will be saved when it is set as None.
-            The "best" strategy will only automatically save the best model after the training finished.
-            The "better" strategy will automatically save the model during training whenever the model performs
-            better than in previous epochs.
-            The "all" strategy will save every model after each epoch training.
+    model_saving_strategy :
+        The strategy to save model checkpoints. It has to be one of [None, "best", "better", "all"].
+        No model will be saved when it is set as None.
+        The "best" strategy will only automatically save the best model after the training finished.
+        The "better" strategy will automatically save the model during training whenever the model performs
+        better than in previous epochs.
+        The "all" strategy will save every model after each epoch training.
 
-        verbose :
-            Whether to print out the training logs during the training process.
-        """
+    verbose :
+        Whether to print out the training logs during the training process.
+    """
 
     def __init__(
-            self,
-            n_steps: int,
-            n_features: int,
-            n_fod: int = 2,
-            apply_nonstationary_norm: bool = True,
-            batch_size: int = 32,
-            epochs: int = 100,
-            patience: int = None,
-            optimizer: Optional[Optimizer] = Adam(),
-            num_workers: int = 0,
-            device: Optional[Union[str, torch.device, list]] = None,
-            saving_path: str = None,
-            model_saving_strategy: Optional[str] = "best",
-            verbose: bool = True,
+        self,
+        n_steps: int,
+        n_features: int,
+        n_fod: int = 2,
+        apply_nonstationary_norm: bool = True,
+        batch_size: int = 32,
+        epochs: int = 100,
+        patience: int = None,
+        optimizer: Optional[Optimizer] = Adam(),
+        num_workers: int = 0,
+        device: Optional[Union[str, torch.device, list]] = None,
+        saving_path: str = None,
+        model_saving_strategy: Optional[str] = "best",
+        verbose: bool = True,
     ):
         super().__init__(
             batch_size,
@@ -119,12 +119,7 @@ class TEFN(BaseNNImputer):
         self.n_fod = n_fod
 
         # set up the model
-        self.model = _TEFN(
-            n_steps,
-            n_features,
-            n_fod,
-            self.apply_nonstationary_norm
-        )
+        self.model = _TEFN(n_steps, n_features, n_fod, self.apply_nonstationary_norm)
         self._send_model_to_given_device()
         self._print_model_size()
 
@@ -164,10 +159,10 @@ class TEFN(BaseNNImputer):
         return inputs
 
     def fit(
-            self,
-            train_set: Union[dict, str],
-            val_set: Optional[Union[dict, str]] = None,
-            file_type: str = "hdf5",
+        self,
+        train_set: Union[dict, str],
+        val_set: Optional[Union[dict, str]] = None,
+        file_type: str = "hdf5",
     ) -> None:
         # Step 1: wrap the input data with classes Dataset and DataLoader
         training_set = DatasetForTEFN(
@@ -202,9 +197,9 @@ class TEFN(BaseNNImputer):
         self._auto_save_model_if_necessary(confirm_saving=True)
 
     def predict(
-            self,
-            test_set: Union[dict, str],
-            file_type: str = "hdf5",
+        self,
+        test_set: Union[dict, str],
+        file_type: str = "hdf5",
     ) -> dict:
         """Make predictions for the input data with the trained model.
 
@@ -260,9 +255,9 @@ class TEFN(BaseNNImputer):
         return result_dict
 
     def impute(
-            self,
-            test_set: Union[dict, str],
-            file_type: str = "hdf5",
+        self,
+        test_set: Union[dict, str],
+        file_type: str = "hdf5",
     ) -> np.ndarray:
         """Impute missing values in the given data with the trained model.
 
