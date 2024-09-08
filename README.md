@@ -124,7 +124,7 @@ The paper references and links are all listed at the bottom of this file.
 | **Type**      | **Algo**                                                                                                                         | **IMPU** | **FORE** | **CLAS** | **CLUS** | **ANOD** | **Year - Venue**   |
 |:--------------|:---------------------------------------------------------------------------------------------------------------------------------|:--------:|:--------:|:--------:|:--------:|:--------:|:-------------------|
 | LLM           | <a href="https://time-series.ai"><img src="https://time-series.ai/static/figs/robot.svg" width="26px"> Time-Series.AI</a>  [^36] |    ✅     |    ✅     |    ✅     |    ✅     |    ✅     | `Later in 2024`    |
-| Neural Net    | TEFN[^39]                                                                                                                        |    ✅     |          |          |          |          | `2024 - arXiv`     |
+| Neural Net    | TEFN🧑‍🔧[^39]                                                                                                                   |    ✅     |          |          |          |          | `2024 - arXiv`     |
 | Neural Net    | TimeMixer[^37]                                                                                                                   |    ✅     |          |          |          |          | `2024 - ICLR`      |
 | Neural Net    | iTransformer🧑‍🔧[^24]                                                                                                           |    ✅     |          |          |          |          | `2024 - ICLR`      |
 | Neural Net    | ModernTCN[^38]                                                                                                                   |    ✅     |          |          |          |          | `2024 - ICLR`      |
@@ -161,7 +161,7 @@ The paper references and links are all listed at the bottom of this file.
 | Neural Net    | GRU-D[^4]                                                                                                                        |    ✅     |          |    ✅     |          |          | `2018 - Sci. Rep.` |
 | Neural Net    | TCN🧑‍🔧[^35]                                                                                                                    |    ✅     |          |          |          |          | `2018 - arXiv`     |
 | Neural Net    | Transformer🧑‍🔧[^2]                                                                                                             |    ✅     |          |          |          |          | `2017 - NeurIPS`   |
-| Naive         | Lerp                                                                                                                             |    ✅     |          |          |          |          |                    |
+| Naive         | Lerp[^40]                                                                                                                        |    ✅     |          |          |          |          |                    |
 | Naive         | LOCF/NOCB                                                                                                                        |    ✅     |          |          |          |          |                    |
 | Naive         | Mean                                                                                                                             |    ✅     |          |          |          |          |                    |
 | Naive         | Median                                                                                                                           |    ✅     |          |          |          |          |                    |
@@ -508,4 +508,4 @@ Time-Series.AI</a>
 [^39]: Zhan, T., He, Y., Li, Z., & Deng, Y. (
 2024). [Time Evidence Fusion Network: Multi-source View in Long-Term Time Series Forecasting](https://arxiv.org/abs/2405.06419).
 *arXiv 2024*
-
+[^40]: [Wikipedia: Linear interpolation](https://en.wikipedia.org/wiki/Linear_interpolation)

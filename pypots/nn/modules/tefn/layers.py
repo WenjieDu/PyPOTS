@@ -2,22 +2,21 @@
 
 """
 
+# Created by Tianxiang Zhan <zhantianxianguestc@hotmail.com>
+# License: BSD-3-Clause
+
 import torch
 import torch.nn as nn
 
 
-# Created by Tianxiang Zhan <zhantianxianguestc@hotmail.com>>
-# License: BSD-3-Clause
-
-
 class EvidenceMachineKernel(nn.Module):
     def __init__(self, C, F):
-        super(EvidenceMachineKernel, self).__init__()
+        super().__init__()
         self.C = C
-        self.F = 2 ** F
+        self.F = 2**F
         self.C_weight = nn.Parameter(torch.randn(self.C, self.F))
         self.C_bias = nn.Parameter(torch.randn(self.C, self.F))
 
     def forward(self, x):
-        x = torch.einsum('btc,cf->btcf', x, self.C_weight) + self.C_bias
+        x = torch.einsum("btc,cf->btcf", x, self.C_weight) + self.C_bias
         return x

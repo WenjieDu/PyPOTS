@@ -14,11 +14,11 @@ from ...utils.metrics import calc_mse
 
 class _TEFN(nn.Module):
     def __init__(
-            self,
-            n_steps,
-            n_features,
-            n_fod,
-            apply_nonstationary_norm,
+        self,
+        n_steps,
+        n_features,
+        n_fod,
+        apply_nonstationary_norm,
     ):
         super().__init__()
 
