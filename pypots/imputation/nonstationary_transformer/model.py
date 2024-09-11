@@ -329,9 +329,7 @@ class NonstationaryTransformer(BaseNNImputer):
         array-like, shape [n_samples, sequence length (time steps), n_features],
             Imputed data.
         """
-        logger.warning(
-            "🚨DeprecationWarning: The method impute is deprecated. Please use `predict` instead."
-        )
+        logger.warning("🚨DeprecationWarning: The method impute is deprecated. Please use `predict` instead.")
 
         results_dict = self.predict(X, file_type=file_type)
         return results_dict["imputation"]

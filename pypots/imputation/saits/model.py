@@ -163,9 +163,7 @@ class SAITS(BaseNNImputer):
                 f"and the result should be equal to d_k, but got d_model={d_model}, n_heads={n_heads}, d_k={d_k}"
             )
             d_model = n_heads * d_k
-            logger.warning(
-                f"⚠️ d_model is reset to {d_model} = n_heads ({n_heads}) * d_k ({d_k})"
-            )
+            logger.warning(f"⚠️ d_model is reset to {d_model} = n_heads ({n_heads}) * d_k ({d_k})")
 
         self.n_steps = n_steps
         self.n_features = n_features
@@ -245,9 +243,7 @@ class SAITS(BaseNNImputer):
         file_type: str = "hdf5",
     ) -> None:
         # Step 1: wrap the input data with classes Dataset and DataLoader
-        training_set = DatasetForSAITS(
-            train_set, return_X_ori=False, return_y=False, file_type=file_type
-        )
+        training_set = DatasetForSAITS(train_set, return_X_ori=False, return_y=False, file_type=file_type)
         training_loader = DataLoader(
             training_set,
             batch_size=self.batch_size,
@@ -258,9 +254,7 @@ class SAITS(BaseNNImputer):
         if val_set is not None:
             if not key_in_data_set("X_ori", val_set):
                 raise ValueError("val_set must contain 'X_ori' for model validation.")
-            val_set = DatasetForSAITS(
-                val_set, return_X_ori=True, return_y=False, file_type=file_type
-            )
+            val_set = DatasetForSAITS(val_set, return_X_ori=True, return_y=False, file_type=file_type)
             val_loader = DataLoader(
                 val_set,
                 batch_size=self.batch_size,
@@ -336,21 +330,13 @@ class SAITS(BaseNNImputer):
         with torch.no_grad():
             for idx, data in enumerate(test_loader):
                 inputs = self._assemble_input_for_testing(data)
-                results = self.model.forward(
-                    inputs, diagonal_attention_mask, training=False
-                )
+                results = self.model.forward(inputs, diagonal_attention_mask, training=False)
                 imputation_collector.append(results["imputed_data"])
 
                 if return_latent_vars:
-                    first_DMSA_attn_weights_collector.append(
-                        results["first_DMSA_attn_weights"].cpu().numpy()
-                    )
-                    second_DMSA_attn_weights_collector.append(
-                        results["second_DMSA_attn_weights"].cpu().numpy()
-                    )
-                    combining_weights_collector.append(
-                        results["combining_weights"].cpu().numpy()
-                    )
+                    first_DMSA_attn_weights_collector.append(results["first_DMSA_attn_weights"].cpu().numpy())
+                    second_DMSA_attn_weights_collector.append(results["second_DMSA_attn_weights"].cpu().numpy())
+                    combining_weights_collector.append(results["combining_weights"].cpu().numpy())
 
         # Step 3: output collection and return
         imputation = torch.cat(imputation_collector).cpu().detach().numpy()
@@ -360,12 +346,8 @@ class SAITS(BaseNNImputer):
 
         if return_latent_vars:
             latent_var_collector = {
-                "first_DMSA_attn_weights": np.concatenate(
-                    first_DMSA_attn_weights_collector
-                ),
-                "second_DMSA_attn_weights": np.concatenate(
-                    second_DMSA_attn_weights_collector
-                ),
+                "first_DMSA_attn_weights": np.concatenate(first_DMSA_attn_weights_collector),
+                "second_DMSA_attn_weights": np.concatenate(second_DMSA_attn_weights_collector),
                 "combining_weights": np.concatenate(combining_weights_collector),
             }
             result_dict["latent_vars"] = latent_var_collector

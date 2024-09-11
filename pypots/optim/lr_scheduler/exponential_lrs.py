@@ -43,8 +43,7 @@ class ExponentialLR(LRScheduler):
     def get_lr(self):
         if not self._get_lr_called_within_step:
             logger.warning(
-                "⚠️ To get the last learning rate computed by the scheduler, "
-                "please use `get_last_lr()`.",
+                "⚠️ To get the last learning rate computed by the scheduler, please use `get_last_lr()`.",
             )
 
         if self.last_epoch == 0:

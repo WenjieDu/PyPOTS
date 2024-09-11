@@ -31,12 +31,8 @@ def _check_inputs(
             prediction_shape == target_shape
         ), f"shape of `predictions` and `targets` must match, but got {prediction_shape} and {target_shape}"
     # check NaN
-    assert not lib.isnan(
-        predictions
-    ).any(), "`predictions` mustn't contain NaN values, but detected NaN in it"
-    assert not lib.isnan(
-        targets
-    ).any(), "`targets` mustn't contain NaN values, but detected NaN in it"
+    assert not lib.isnan(predictions).any(), "`predictions` mustn't contain NaN values, but detected NaN in it"
+    assert not lib.isnan(targets).any(), "`targets` mustn't contain NaN values, but detected NaN in it"
 
     if masks is not None:
         # check type
@@ -51,9 +47,7 @@ def _check_inputs(
             f"but got `mask`: {mask_shape} that is different from `targets`: {target_shape}"
         )
         # check NaN
-        assert not lib.isnan(
-            masks
-        ).any(), "`masks` mustn't contain NaN values, but detected NaN in it"
+        assert not lib.isnan(masks).any(), "`masks` mustn't contain NaN values, but detected NaN in it"
 
     return lib
 
@@ -104,9 +98,7 @@ def calc_mae(
     lib = _check_inputs(predictions, targets, masks)
 
     if masks is not None:
-        return lib.sum(lib.abs(predictions - targets) * masks) / (
-            lib.sum(masks) + 1e-12
-        )
+        return lib.sum(lib.abs(predictions - targets) * masks) / (lib.sum(masks) + 1e-12)
     else:
         return lib.mean(lib.abs(predictions - targets))
 
@@ -157,9 +149,7 @@ def calc_mse(
     lib = _check_inputs(predictions, targets, masks)
 
     if masks is not None:
-        return lib.sum(lib.square(predictions - targets) * masks) / (
-            lib.sum(masks) + 1e-12
-        )
+        return lib.sum(lib.square(predictions - targets) * masks) / (lib.sum(masks) + 1e-12)
     else:
         return lib.mean(lib.square(predictions - targets))
 
@@ -259,20 +249,14 @@ def calc_mre(
     lib = _check_inputs(predictions, targets, masks)
 
     if masks is not None:
-        return lib.sum(lib.abs(predictions - targets) * masks) / (
-            lib.sum(lib.abs(targets * masks)) + 1e-12
-        )
+        return lib.sum(lib.abs(predictions - targets) * masks) / (lib.sum(lib.abs(targets * masks)) + 1e-12)
     else:
-        return lib.sum(lib.abs(predictions - targets)) / (
-            lib.sum(lib.abs(targets)) + 1e-12
-        )
+        return lib.sum(lib.abs(predictions - targets)) / (lib.sum(lib.abs(targets)) + 1e-12)
 
 
 def calc_quantile_loss(predictions, targets, q: float, eval_points) -> float:
     quantile_loss = 2 * torch.sum(
-        torch.abs(
-            (predictions - targets) * eval_points * ((targets <= predictions) * 1.0 - q)
-        )
+        torch.abs((predictions - targets) * eval_points * ((targets <= predictions) * 1.0 - q))
     )
     return quantile_loss
 

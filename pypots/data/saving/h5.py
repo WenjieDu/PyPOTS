@@ -48,12 +48,8 @@ def save_dict_into_h5(
             handle.create_dataset(name, data=data)
 
     # check typing
-    assert isinstance(
-        data_dict, dict
-    ), f"`data_dict` should be a Python dictionary, but got {type(data_dict)}"
-    assert isinstance(
-        saving_path, str
-    ), f"`saving_path` should be a string, but got {type(saving_path)}"
+    assert isinstance(data_dict, dict), f"`data_dict` should be a Python dictionary, but got {type(data_dict)}"
+    assert isinstance(saving_path, str), f"`saving_path` should be a string, but got {type(saving_path)}"
 
     if file_name is None:  # if file_name is not given
         # check suffix
@@ -64,9 +60,7 @@ def save_dict_into_h5(
             )
     else:  # if file_name is given
         # check typing
-        assert isinstance(
-            file_name, str
-        ), f"`file_name` should be a string, but got {type(file_name)}."
+        assert isinstance(file_name, str), f"`file_name` should be a string, but got {type(file_name)}."
         # check suffix
         if not file_name.endswith(".h5") or file_name.endswith(".hdf5"):
             logger.warning(
@@ -107,9 +101,7 @@ def load_dict_from_h5(
         The data loaded from the given h5 file.
 
     """
-    assert isinstance(
-        file_path, str
-    ), f"`file_path` should be a string, but got {type(file_path)}."
+    assert isinstance(file_path, str), f"`file_path` should be a string, but got {type(file_path)}."
     assert os.path.exists(file_path), f"file_path {file_path} does not exist."
 
     def load_set(handle, datadict):

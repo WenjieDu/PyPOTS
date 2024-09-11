@@ -122,18 +122,14 @@ class VaDER(BaseNNClusterer):
             verbose,
         )
 
-        assert (
-            pretrain_epochs > 0
-        ), f"pretrain_epochs must be a positive integer, but got {pretrain_epochs}"
+        assert pretrain_epochs > 0, f"pretrain_epochs must be a positive integer, but got {pretrain_epochs}"
 
         self.n_steps = n_steps
         self.n_features = n_features
         self.pretrain_epochs = pretrain_epochs
 
         # set up the model
-        self.model = _VaDER(
-            n_steps, n_features, n_clusters, rnn_hidden_size, d_mu_stddev
-        )
+        self.model = _VaDER(n_steps, n_features, n_clusters, rnn_hidden_size, d_mu_stddev)
         self._send_model_to_given_device()
         self._print_model_size()
 
@@ -181,9 +177,7 @@ class VaDER(BaseNNClusterer):
 
                 # save pre-training loss logs into the tensorboard file for every step if in need
                 if self.summary_writer is not None:
-                    self._save_log_into_tb_file(
-                        pretraining_step, "pretraining", results
-                    )
+                    self._save_log_into_tb_file(pretraining_step, "pretraining", results)
 
         with torch.no_grad():
             sample_collector = []
@@ -212,9 +206,7 @@ class VaDER(BaseNNClusterer):
                     flag = 1
                 except ValueError as e:
                     logger.error(f"❌ Exception: {e}")
-                    logger.warning(
-                        "‼️ Met with ValueError, double `reg_covar` to re-train the GMM model."
-                    )
+                    logger.warning("‼️ Met with ValueError, double `reg_covar` to re-train the GMM model.")
 
                     flag -= 1
                     if flag == -5:
@@ -277,9 +269,7 @@ class VaDER(BaseNNClusterer):
                         for idx, data in enumerate(val_loader):
                             inputs = self._assemble_input_for_validating(data)
                             results = self.model.forward(inputs)
-                            epoch_val_loss_collector.append(
-                                results["loss"].sum().item()
-                            )
+                            epoch_val_loss_collector.append(results["loss"].sum().item())
 
                     mean_val_loss = np.mean(epoch_val_loss_collector)
 
@@ -297,15 +287,11 @@ class VaDER(BaseNNClusterer):
                     )
                     mean_loss = mean_val_loss
                 else:
-                    logger.info(
-                        f"Epoch {epoch:03d} - training loss: {mean_train_loss:.4f}"
-                    )
+                    logger.info(f"Epoch {epoch:03d} - training loss: {mean_train_loss:.4f}")
                     mean_loss = mean_train_loss
 
                 if np.isnan(mean_loss):
-                    logger.warning(
-                        f"‼️ Attention: got NaN loss in Epoch {epoch}. This may lead to unexpected errors."
-                    )
+                    logger.warning(f"‼️ Attention: got NaN loss in Epoch {epoch}. This may lead to unexpected errors.")
 
                 if mean_loss < self.best_loss:
                     self.best_epoch = epoch
@@ -327,9 +313,7 @@ class VaDER(BaseNNClusterer):
                         nni.report_final_result(self.best_loss)
 
                 if self.patience == 0:
-                    logger.info(
-                        "Exceeded the training patience. Terminating the training procedure..."
-                    )
+                    logger.info("Exceeded the training patience. Terminating the training procedure...")
                     break
 
         except KeyboardInterrupt:  # if keyboard interrupt, only warning
@@ -350,9 +334,7 @@ class VaDER(BaseNNClusterer):
         if np.isnan(self.best_loss):
             raise ValueError("Something is wrong. best_loss is Nan after training.")
 
-        logger.info(
-            f"Finished training. The best model is from epoch#{self.best_epoch}."
-        )
+        logger.info(f"Finished training. The best model is from epoch#{self.best_epoch}.")
 
     def fit(
         self,
@@ -457,16 +439,10 @@ class VaDER(BaseNNClusterer):
                 ) -> np.ndarray:
                     # the covariance matrix is diagonal, so we can just take the product
                     return np.log(1e-9 + phi_) + np.log(
-                        1e-9
-                        + multivariate_normal.pdf(mu_t_, mean=mu_, cov=np.diag(stddev_))
+                        1e-9 + multivariate_normal.pdf(mu_t_, mean=mu_, cov=np.diag(stddev_))
                     )
 
-                p = np.array(
-                    [
-                        func_to_apply(mu_tilde, mu[i], var[i], phi[i])
-                        for i in np.arange(mu.shape[0])
-                    ]
-                )
+                p = np.array([func_to_apply(mu_tilde, mu[i], var[i], phi[i]) for i in np.arange(mu.shape[0])])
                 clustering_results = np.argmax(p, axis=0)
                 clustering_results_collector.append(clustering_results)
 

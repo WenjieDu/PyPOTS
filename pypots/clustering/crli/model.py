@@ -216,25 +216,17 @@ class CRLI(BaseNNClusterer):
                     step_train_loss_D_collector = []
                     for _ in range(self.D_steps):
                         self.D_optimizer.zero_grad()
-                        results = self.model.forward(
-                            inputs, training_object="discriminator"
-                        )
+                        results = self.model.forward(inputs, training_object="discriminator")
                         results["discrimination_loss"].backward(retain_graph=True)
                         self.D_optimizer.step()
-                        step_train_loss_D_collector.append(
-                            results["discrimination_loss"].sum().item()
-                        )
+                        step_train_loss_D_collector.append(results["discrimination_loss"].sum().item())
 
                     for _ in range(self.G_steps):
                         self.G_optimizer.zero_grad()
-                        results = self.model.forward(
-                            inputs, training_object="generator"
-                        )
+                        results = self.model.forward(inputs, training_object="generator")
                         results["generation_loss"].backward()
                         self.G_optimizer.step()
-                        step_train_loss_G_collector.append(
-                            results["generation_loss"].sum().item()
-                        )
+                        step_train_loss_G_collector.append(results["generation_loss"].sum().item())
 
                     mean_step_train_D_loss = np.mean(step_train_loss_D_collector)
                     mean_step_train_G_loss = np.mean(step_train_loss_G_collector)
@@ -250,9 +242,7 @@ class CRLI(BaseNNClusterer):
                             "generation_loss": mean_step_train_G_loss,
                             "discrimination_loss": mean_step_train_D_loss,
                         }
-                        self._save_log_into_tb_file(
-                            training_step, "training", loss_results
-                        )
+                        self._save_log_into_tb_file(training_step, "training", loss_results)
 
                 mean_epoch_train_D_loss = np.mean(epoch_train_loss_D_collector)
                 mean_epoch_train_G_loss = np.mean(epoch_train_loss_G_collector)
@@ -264,9 +254,7 @@ class CRLI(BaseNNClusterer):
                         for idx, data in enumerate(val_loader):
                             inputs = self._assemble_input_for_validating(data)
                             results = self.model.forward(inputs, training=True)
-                            epoch_val_loss_G_collector.append(
-                                results["generation_loss"].sum().item()
-                            )
+                            epoch_val_loss_G_collector.append(results["generation_loss"].sum().item())
                     mean_val_G_loss = np.mean(epoch_val_loss_G_collector)
                     # save validation loss logs into the tensorboard file for every epoch if in need
                     if self.summary_writer is not None:
@@ -290,9 +278,7 @@ class CRLI(BaseNNClusterer):
                     mean_loss = mean_epoch_train_G_loss
 
                 if np.isnan(mean_loss):
-                    logger.warning(
-                        f"‼️ Attention: got NaN loss in Epoch {epoch}. This may lead to unexpected errors."
-                    )
+                    logger.warning(f"‼️ Attention: got NaN loss in Epoch {epoch}. This may lead to unexpected errors.")
 
                 if mean_loss < self.best_loss:
                     self.best_epoch = epoch
@@ -314,9 +300,7 @@ class CRLI(BaseNNClusterer):
                 )
 
                 if self.patience == 0:
-                    logger.info(
-                        "Exceeded the training patience. Terminating the training procedure..."
-                    )
+                    logger.info("Exceeded the training patience. Terminating the training procedure...")
                     break
 
         except KeyboardInterrupt:  # if keyboard interrupt, only warning
@@ -337,9 +321,7 @@ class CRLI(BaseNNClusterer):
         if np.isnan(self.best_loss):
             raise ValueError("Something is wrong. best_loss is Nan after training.")
 
-        logger.info(
-            f"Finished training. The best model is from epoch#{self.best_epoch}."
-        )
+        logger.info(f"Finished training. The best model is from epoch#{self.best_epoch}.")
 
     def fit(
         self,
@@ -426,9 +408,7 @@ class CRLI(BaseNNClusterer):
                 if return_latent_vars:
                     imputation_collector.append(inputs["imputation_latent"])
 
-        clustering_latent = (
-            torch.cat(clustering_latent_collector).cpu().detach().numpy()
-        )
+        clustering_latent = torch.cat(clustering_latent_collector).cpu().detach().numpy()
         clustering = self.model.kmeans.fit_predict(clustering_latent)
 
         result_dict = {
