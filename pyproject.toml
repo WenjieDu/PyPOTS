@@ -71,6 +71,9 @@ readme = { file = "README.md", content-type = "text/markdown" }
 dependencies = { file = "requirements/requirements.txt" }
 optional-dependencies.dev = { file = "requirements/requirements_dev.txt" }
 
+[tool.black]
+line-length = 120
+
 [tool.flake8]
 # People may argue that coding style is personal. This may be true if the project is personal and one works like a
 # hermit, but to PyPOTS and its community, the answer is NO.
