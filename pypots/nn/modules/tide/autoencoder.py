@@ -67,9 +67,7 @@ class TiDE(nn.Module):
 
         enc_in = torch.cat([X.reshape(bz, -1), feature.reshape(bz, -1)], dim=-1)
         hidden = self.encoder(enc_in)
-        decoded = self.decoder(hidden).reshape(
-            hidden.shape[0], self.n_steps, self.n_features
-        )
+        decoded = self.decoder(hidden).reshape(hidden.shape[0], self.n_steps, self.n_features)
         temporal_decoder_input = torch.cat([feature, decoded], dim=-1)
         prediction = self.temporal_decoder(temporal_decoder_input)
         prediction += self.residual_proj(X)
@@ -96,10 +94,7 @@ class TideEncoder(nn.Module):
 
         self.encoder_layers = nn.Sequential(
             ResBlock(d_flatten, self.res_hidden, self.d_hidden, dropout),
-            *(
-                [ResBlock(self.d_hidden, self.res_hidden, self.d_hidden, dropout)]
-                * (self.n_layers - 1)
-            ),
+            *([ResBlock(self.d_hidden, self.res_hidden, self.d_hidden, dropout)] * (self.n_layers - 1)),
         )
 
     def forward(self, X):
@@ -146,7 +141,5 @@ class TideDecoder(nn.Module):
         self,
         X,
     ):
-        dec_out = self.decoder_layers(X).reshape(
-            X.shape[0], self.n_pred_steps, self.n_pred_features
-        )
+        dec_out = self.decoder_layers(X).reshape(X.shape[0], self.n_pred_steps, self.n_pred_features)
         return dec_out

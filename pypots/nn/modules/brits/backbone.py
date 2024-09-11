@@ -73,19 +73,13 @@ class BackboneRITS(nn.Module):
         self.rnn_hidden_size = rnn_hidden_size
 
         self.rnn_cell = nn.LSTMCell(self.n_features * 2, self.rnn_hidden_size)
-        self.temp_decay_h = TemporalDecay(
-            input_size=self.n_features, output_size=self.rnn_hidden_size, diag=False
-        )
-        self.temp_decay_x = TemporalDecay(
-            input_size=self.n_features, output_size=self.n_features, diag=True
-        )
+        self.temp_decay_h = TemporalDecay(input_size=self.n_features, output_size=self.rnn_hidden_size, diag=False)
+        self.temp_decay_x = TemporalDecay(input_size=self.n_features, output_size=self.n_features, diag=True)
         self.hist_reg = nn.Linear(self.rnn_hidden_size, self.n_features)
         self.feat_reg = FeatureRegression(self.n_features)
         self.combining_weight = nn.Linear(self.n_features * 2, self.n_features)
 
-    def forward(
-        self, inputs: dict, direction: str
-    ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
+    def forward(self, inputs: dict, direction: str) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
         """
         Parameters
         ----------
@@ -151,9 +145,7 @@ class BackboneRITS(nn.Module):
             estimations.append(c_h.unsqueeze(dim=1))
 
             inputs = torch.cat([c_c, m], dim=1)
-            hidden_states, cell_states = self.rnn_cell(
-                inputs, (hidden_states, cell_states)
-            )
+            hidden_states, cell_states = self.rnn_cell(inputs, (hidden_states, cell_states))
 
         # for each iteration, reconstruction_loss increases its value for 3 times
         reconstruction_loss /= self.n_steps * 3
@@ -204,9 +196,7 @@ class BackboneBRITS(nn.Module):
         self.rits_b = BackboneRITS(n_steps, n_features, rnn_hidden_size)
 
     @staticmethod
-    def _get_consistency_loss(
-        pred_f: torch.Tensor, pred_b: torch.Tensor
-    ) -> torch.Tensor:
+    def _get_consistency_loss(pred_f: torch.Tensor, pred_b: torch.Tensor) -> torch.Tensor:
         """Calculate the consistency loss between the imputation from two RITS models.
 
         Parameters
@@ -234,9 +224,7 @@ class BackboneBRITS(nn.Module):
             if tensor_.dim() <= 1:
                 return tensor_
             indices = range(tensor_.size()[1])[::-1]
-            indices = torch.tensor(
-                indices, dtype=torch.long, device=tensor_.device, requires_grad=False
-            )
+            indices = torch.tensor(indices, dtype=torch.long, device=tensor_.device, requires_grad=False)
             return tensor_.index_select(1, indices)
 
         collector = []

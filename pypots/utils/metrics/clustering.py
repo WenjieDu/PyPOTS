@@ -146,9 +146,7 @@ def calc_cluster_purity(
 
     """
     contingency_matrix = metrics.cluster.contingency_matrix(targets, class_predictions)
-    cluster_purity = np.sum(np.amax(contingency_matrix, axis=0)) / np.sum(
-        contingency_matrix
-    )
+    cluster_purity = np.sum(np.amax(contingency_matrix, axis=0)) / np.sum(contingency_matrix)
     return cluster_purity
 
 
@@ -271,9 +269,7 @@ def calc_dbs(X: np.ndarray, predicted_labels: np.ndarray) -> float:
     return davies_bouldin_score
 
 
-def calc_internal_cluster_validation_metrics(
-    X: np.ndarray, predicted_labels: np.ndarray
-) -> dict:
+def calc_internal_cluster_validation_metrics(X: np.ndarray, predicted_labels: np.ndarray) -> dict:
     """Computer all internal cluster validation metrics available in PyPOTS and return as a dictionary.
 
     Parameters

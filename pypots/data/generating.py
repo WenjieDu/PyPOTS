@@ -115,9 +115,7 @@ def gene_complete_random_walk_for_classification(
     std = 1
 
     for c_ in range(n_classes):
-        ts_samples = gene_complete_random_walk(
-            n_samples_each_class, n_steps, n_features, mu, std, random_state
-        )
+        ts_samples = gene_complete_random_walk(n_samples_each_class, n_steps, n_features, mu, std, random_state)
         label_samples = np.asarray([1 for _ in range(n_samples_each_class)]) * c_
         ts_collector.extend(ts_samples)
         label_collector.extend(label_samples)
@@ -186,12 +184,8 @@ def gene_complete_random_walk_for_anomaly_detection(
     y : array, shape of [n_samples]
         Labels indicating if time-series samples are anomalies.
     """
-    assert (
-        0 < anomaly_proportion < 1
-    ), f"anomaly_proportion should be >0 and <1, but got {anomaly_proportion}"
-    assert (
-        0 < anomaly_fraction < 1
-    ), f"anomaly_fraction should be >0 and <1, but got {anomaly_fraction}"
+    assert 0 < anomaly_proportion < 1, f"anomaly_proportion should be >0 and <1, but got {anomaly_proportion}"
+    assert 0 < anomaly_fraction < 1, f"anomaly_fraction should be >0 and <1, but got {anomaly_fraction}"
     seed = check_random_state(random_state)
     X = seed.randn(n_samples, n_steps, n_features) * std + mu
     n_anomaly = math.floor(n_samples * anomaly_proportion)
@@ -204,9 +198,7 @@ def gene_complete_random_walk_for_anomaly_detection(
         max_difference = min_val - max_val
         n_points = n_steps * n_features
         n_anomaly_points = int(n_points * anomaly_fraction)
-        point_indices = np.random.choice(
-            a=n_points, size=n_anomaly_points, replace=False
-        )
+        point_indices = np.random.choice(a=n_points, size=n_anomaly_points, replace=False)
         for p_i in point_indices:
             anomaly_sample[p_i] = mu + np.random.uniform(
                 low=min_val - anomaly_scale_factor * max_difference,
@@ -304,9 +296,7 @@ def gene_random_walk(
 
     if missing_rate > 0:
         # mask values in the test set as ground truth
-        train_X_ori = scaler.transform(train_X_ori.reshape(-1, n_features)).reshape(
-            -1, n_steps, n_features
-        )
+        train_X_ori = scaler.transform(train_X_ori.reshape(-1, n_features)).reshape(-1, n_steps, n_features)
         data["train_X_ori"] = train_X_ori
 
         val_X_ori = val_X
@@ -324,9 +314,7 @@ def gene_random_walk(
 
 
 def gene_physionet2012(artificially_missing_rate: float = 0.1):
-    dataset_from_benchpots = preprocess_physionet2012(
-        subset="all", rate=artificially_missing_rate
-    )
+    dataset_from_benchpots = preprocess_physionet2012(subset="all", rate=artificially_missing_rate)
     logger.warning(
         "🚨 Due to the full release of BenchPOTS package, "
         "gene_physionet2012() has been deprecated and will be removed in pypots v0.8"

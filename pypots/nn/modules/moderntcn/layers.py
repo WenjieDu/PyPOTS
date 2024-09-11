@@ -9,9 +9,7 @@ import torch
 from torch import nn
 
 
-def get_conv1d(
-    in_channels, out_channels, kernel_size, stride, padding, dilation, groups, bias
-):
+def get_conv1d(in_channels, out_channels, kernel_size, stride, padding, dilation, groups, bias):
     return nn.Conv1d(
         in_channels=in_channels,
         out_channels=out_channels,

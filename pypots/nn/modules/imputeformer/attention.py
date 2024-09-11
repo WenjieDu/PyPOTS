@@ -55,13 +55,9 @@ class AttentionLayer(nn.Module):
         key = torch.cat(torch.split(key, self.head_dim, dim=-1), dim=0)
         value = torch.cat(torch.split(value, self.head_dim, dim=-1), dim=0)
 
-        key = key.transpose(
-            -1, -2
-        )  # (num_heads * batch_size, ..., head_dim, src_length)
+        key = key.transpose(-1, -2)  # (num_heads * batch_size, ..., head_dim, src_length)
 
-        attn_score = (
-            query @ key
-        ) / self.head_dim**0.5  # (num_heads * batch_size, ..., tgt_length, src_length)
+        attn_score = (query @ key) / self.head_dim**0.5  # (num_heads * batch_size, ..., tgt_length, src_length)
 
         if self.mask:
             mask = torch.ones(
@@ -105,9 +101,7 @@ class ProjectedAttentionLayer(nn.Module):
         self.dropout = nn.Dropout(dropout)
         self.norm1 = nn.LayerNorm(d_model)
         self.norm2 = nn.LayerNorm(d_model)
-        self.MLP = nn.Sequential(
-            nn.Linear(d_model, d_ff), nn.GELU(), nn.Linear(d_ff, d_model)
-        )
+        self.MLP = nn.Sequential(nn.Linear(d_model, d_ff), nn.GELU(), nn.Linear(d_ff, d_model))
         self.seq_len = seq_len
 
     def forward(self, x):
@@ -121,12 +115,8 @@ class ProjectedAttentionLayer(nn.Module):
         # projector = repeat(self.projector, 'dim_proj d_model -> repeat seq_len dim_proj d_model',
         #                       repeat=batch, seq_len=self.seq_len)  # [b, s, c, d]
 
-        message_out = self.out_attn(
-            projector, x, x
-        )  # [b, s, c, d] <-> [b s n d] -> [b s c d]
-        message_in = self.in_attn(
-            x, projector, message_out
-        )  # [b s n d] <-> [b, s, c, d] -> [b s n d]
+        message_out = self.out_attn(projector, x, x)  # [b, s, c, d] <-> [b s n d] -> [b s c d]
+        message_in = self.in_attn(x, projector, message_out)  # [b s n d] <-> [b, s, c, d] -> [b s n d]
         message = x + self.dropout(message_in)
         message = self.norm1(message)
         message = message + self.dropout(self.MLP(message))

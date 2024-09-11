@@ -150,9 +150,7 @@ class GPVAE(BaseNNImputer):
             verbose,
         )
         available_kernel_type = ["cauchy", "diffusion", "rbf", "matern"]
-        assert (
-            kernel in available_kernel_type
-        ), f"kernel should be one of {available_kernel_type}, but got {kernel}"
+        assert kernel in available_kernel_type, f"kernel should be one of {available_kernel_type}, but got {kernel}"
 
         self.n_steps = n_steps
         self.n_features = n_features
@@ -268,9 +266,7 @@ class GPVAE(BaseNNImputer):
                     with torch.no_grad():
                         for idx, data in enumerate(val_loader):
                             inputs = self._assemble_input_for_validating(data)
-                            results = self.model.forward(
-                                inputs, training=False, n_sampling_times=1
-                            )
+                            results = self.model.forward(inputs, training=False, n_sampling_times=1)
                             imputed_data = results["imputed_data"].mean(axis=1)
                             imputation_mse = (
                                 calc_mse(
@@ -300,15 +296,11 @@ class GPVAE(BaseNNImputer):
                     )
                     mean_loss = mean_val_loss
                 else:
-                    logger.info(
-                        f"Epoch {epoch:03d} - training loss: {mean_train_loss:.4f}"
-                    )
+                    logger.info(f"Epoch {epoch:03d} - training loss: {mean_train_loss:.4f}")
                     mean_loss = mean_train_loss
 
                 if np.isnan(mean_loss):
-                    logger.warning(
-                        f"‼️ Attention: got NaN loss in Epoch {epoch}. This may lead to unexpected errors."
-                    )
+                    logger.warning(f"‼️ Attention: got NaN loss in Epoch {epoch}. This may lead to unexpected errors.")
 
                 if mean_loss < self.best_loss:
                     self.best_epoch = epoch
@@ -330,9 +322,7 @@ class GPVAE(BaseNNImputer):
                         nni.report_final_result(self.best_loss)
 
                 if self.patience == 0:
-                    logger.info(
-                        "Exceeded the training patience. Terminating the training procedure..."
-                    )
+                    logger.info("Exceeded the training patience. Terminating the training procedure...")
                     break
 
         except KeyboardInterrupt:  # if keyboard interrupt, only warning
@@ -353,9 +343,7 @@ class GPVAE(BaseNNImputer):
         if np.isnan(self.best_loss):
             raise ValueError("Something is wrong. best_loss is Nan after training.")
 
-        logger.info(
-            f"Finished training. The best model is from epoch#{self.best_epoch}."
-        )
+        logger.info(f"Finished training. The best model is from epoch#{self.best_epoch}.")
 
     def fit(
         self,
@@ -364,9 +352,7 @@ class GPVAE(BaseNNImputer):
         file_type: str = "hdf5",
     ) -> None:
         # Step 1: wrap the input data with classes Dataset and DataLoader
-        training_set = DatasetForGPVAE(
-            train_set, return_X_ori=False, return_y=False, file_type=file_type
-        )
+        training_set = DatasetForGPVAE(train_set, return_X_ori=False, return_y=False, file_type=file_type)
         training_loader = DataLoader(
             training_set,
             batch_size=self.batch_size,
@@ -377,9 +363,7 @@ class GPVAE(BaseNNImputer):
         if val_set is not None:
             if not key_in_data_set("X_ori", val_set):
                 raise ValueError("val_set must contain 'X_ori' for model validation.")
-            val_set = DatasetForGPVAE(
-                val_set, return_X_ori=True, return_y=False, file_type=file_type
-            )
+            val_set = DatasetForGPVAE(val_set, return_X_ori=True, return_y=False, file_type=file_type)
             val_loader = DataLoader(
                 val_set,
                 batch_size=self.batch_size,
@@ -430,9 +414,7 @@ class GPVAE(BaseNNImputer):
         assert n_sampling_times > 0, "n_sampling_times should be greater than 0."
 
         self.model.eval()  # set the model as eval status to freeze it.
-        test_set = DatasetForGPVAE(
-            test_set, return_X_ori=False, return_y=False, file_type=file_type
-        )
+        test_set = DatasetForGPVAE(test_set, return_X_ori=False, return_y=False, file_type=file_type)
         test_loader = DataLoader(
             test_set,
             batch_size=self.batch_size,
@@ -444,9 +426,7 @@ class GPVAE(BaseNNImputer):
         with torch.no_grad():
             for idx, data in enumerate(test_loader):
                 inputs = self._assemble_input_for_testing(data)
-                results = self.model.forward(
-                    inputs, training=False, n_sampling_times=n_sampling_times
-                )
+                results = self.model.forward(inputs, training=False, n_sampling_times=n_sampling_times)
                 imputed_data = results["imputed_data"]
                 imputation_collector.append(imputed_data)
 
