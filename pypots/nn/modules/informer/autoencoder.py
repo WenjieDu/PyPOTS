@@ -12,9 +12,7 @@ class InformerEncoder(nn.Module):
     def __init__(self, attn_layers, conv_layers=None, norm_layer=None):
         super().__init__()
         self.attn_layers = nn.ModuleList(attn_layers)
-        self.conv_layers = (
-            nn.ModuleList(conv_layers) if conv_layers is not None else None
-        )
+        self.conv_layers = nn.ModuleList(conv_layers) if conv_layers is not None else None
         self.norm = norm_layer
 
     def forward(self, x, attn_mask=None):

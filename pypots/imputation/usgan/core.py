@@ -47,9 +47,7 @@ class _USGAN(nn.Module):
         results = {}
         if training:
             if training_object == "discriminator":
-                imputed_data, discrimination_loss = self.backbone(
-                    inputs, training_object, training
-                )
+                imputed_data, discrimination_loss = self.backbone(inputs, training_object, training)
                 loss = discrimination_loss
             else:
                 imputed_data, generation_loss = self.backbone(
