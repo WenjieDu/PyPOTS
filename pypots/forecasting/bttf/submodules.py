@@ -48,21 +48,14 @@ def sample_factor_u(tau_sparse_tensor, tau_ind, U, V, X, beta0=1):
     U_bar = np.mean(U, axis=0)
     temp = dim1 / (dim1 + beta0)
     var_mu_hyper = temp * U_bar
-    var_U_hyper = inv(
-        np.eye(rank) + cov_mat(U, U_bar) + temp * beta0 * np.outer(U_bar, U_bar)
-    )
+    var_U_hyper = inv(np.eye(rank) + cov_mat(U, U_bar) + temp * beta0 * np.outer(U_bar, U_bar))
     var_Lambda_hyper = wishart.rvs(df=dim1 + rank, scale=var_U_hyper)
     var_mu_hyper = mvnrnd_pre(var_mu_hyper, (dim1 + beta0) * var_Lambda_hyper)
 
     var1 = kr_prod(X, V).T
     var2 = kr_prod(var1, var1)
-    var3 = (var2 @ ten2mat(tau_ind, 0).T).reshape(
-        [rank, rank, dim1]
-    ) + var_Lambda_hyper[:, :, None]
-    var4 = (
-        var1 @ ten2mat(tau_sparse_tensor, 0).T
-        + (var_Lambda_hyper @ var_mu_hyper)[:, None]
-    )
+    var3 = (var2 @ ten2mat(tau_ind, 0).T).reshape([rank, rank, dim1]) + var_Lambda_hyper[:, :, None]
+    var4 = var1 @ ten2mat(tau_sparse_tensor, 0).T + (var_Lambda_hyper @ var_mu_hyper)[:, None]
     for i in range(dim1):
         U[i, :] = mvnrnd_pre(solve(var3[:, :, i], var4[:, i]), var3[:, :, i])
 
@@ -76,21 +69,14 @@ def sample_factor_v(tau_sparse_tensor, tau_ind, U, V, X, beta0=1):
     V_bar = np.mean(V, axis=0)
     temp = dim2 / (dim2 + beta0)
     var_mu_hyper = temp * V_bar
-    var_V_hyper = inv(
-        np.eye(rank) + cov_mat(V, V_bar) + temp * beta0 * np.outer(V_bar, V_bar)
-    )
+    var_V_hyper = inv(np.eye(rank) + cov_mat(V, V_bar) + temp * beta0 * np.outer(V_bar, V_bar))
     var_Lambda_hyper = wishart.rvs(df=dim2 + rank, scale=var_V_hyper)
     var_mu_hyper = mvnrnd_pre(var_mu_hyper, (dim2 + beta0) * var_Lambda_hyper)
 
     var1 = kr_prod(X, U).T
     var2 = kr_prod(var1, var1)
-    var3 = (var2 @ ten2mat(tau_ind, 1).T).reshape(
-        [rank, rank, dim2]
-    ) + var_Lambda_hyper[:, :, None]
-    var4 = (
-        var1 @ ten2mat(tau_sparse_tensor, 1).T
-        + (var_Lambda_hyper @ var_mu_hyper)[:, None]
-    )
+    var3 = (var2 @ ten2mat(tau_ind, 1).T).reshape([rank, rank, dim2]) + var_Lambda_hyper[:, :, None]
+    var4 = var1 @ ten2mat(tau_sparse_tensor, 1).T + (var_Lambda_hyper @ var_mu_hyper)[:, None]
     for j in range(dim2):
         V[j, :] = mvnrnd_pre(solve(var3[:, :, j], var4[:, j]), var3[:, :, j])
 
@@ -118,9 +104,7 @@ def sample_var_coefficient(X, time_lags):
     Z_mat = X[tmax:dim, :]
     Q_mat = np.zeros((dim - tmax, rank * d))
     for k in range(d):
-        Q_mat[:, k * rank : (k + 1) * rank] = X[
-            tmax - time_lags[k] : dim - time_lags[k], :
-        ]
+        Q_mat[:, k * rank : (k + 1) * rank] = X[tmax - time_lags[k] : dim - time_lags[k], :]
     var_Psi0 = np.eye(rank * d) + Q_mat.T @ Q_mat
     var_Psi = inv(var_Psi0)
     var_M = var_Psi @ Q_mat.T @ Z_mat
@@ -146,9 +130,7 @@ def sample_factor_x(tau_sparse_tensor, tau_ind, time_lags, U, V, X, A, Lambda_x)
 
     var1 = kr_prod(V, U).T
     var2 = kr_prod(var1, var1)
-    var3 = (var2 @ ten2mat(tau_ind, 2).T).reshape([rank, rank, dim3]) + Lambda_x[
-        :, :, None
-    ]
+    var3 = (var2 @ ten2mat(tau_ind, 2).T).reshape([rank, rank, dim3]) + Lambda_x[:, :, None]
     var4 = var1 @ ten2mat(tau_sparse_tensor, 2).T
     for t in range(dim3):
         Mt = np.zeros((rank, rank))
@@ -167,9 +149,7 @@ def sample_factor_x(tau_sparse_tensor, tau_ind, time_lags, U, V, X, A, Lambda_x)
             for k in index:
                 temp[:, n] = X[t + time_lags[k] - time_lags, :].reshape(rank * d)
                 n += 1
-            temp0 = X[t + time_lags[index], :].T - np.einsum(
-                "ijk, ik -> jk", A0[:, :, index], temp
-            )
+            temp0 = X[t + time_lags[index], :].T - np.einsum("ijk, ik -> jk", A0[:, :, index], temp)
             Nt = np.einsum("kij, jk -> i", mat1[index, :, :], temp0)
 
         var3[:, :, t] = var3[:, :, t] + Mt

@@ -31,9 +31,7 @@ class InceptionBlockV1(nn.Module):
         self.num_kernels = num_kernels
         kernels = []
         for i in range(self.num_kernels):
-            kernels.append(
-                nn.Conv2d(in_channels, out_channels, kernel_size=2 * i + 1, padding=i)
-            )
+            kernels.append(nn.Conv2d(in_channels, out_channels, kernel_size=2 * i + 1, padding=i))
         self.kernels = nn.ModuleList(kernels)
         if init_weight:
             self._initialize_weights()
@@ -77,19 +75,13 @@ class TimesBlock(nn.Module):
             # padding
             if (self.seq_len + self.pred_len) % period != 0:
                 length = (((self.seq_len + self.pred_len) // period) + 1) * period
-                padding = torch.zeros(
-                    [x.shape[0], (length - (self.seq_len + self.pred_len)), x.shape[2]]
-                ).to(x.device)
+                padding = torch.zeros([x.shape[0], (length - (self.seq_len + self.pred_len)), x.shape[2]]).to(x.device)
                 out = torch.cat([x, padding], dim=1)
             else:
                 length = self.seq_len + self.pred_len
                 out = x
             # reshape
-            out = (
-                out.reshape(B, length // period, period, N)
-                .permute(0, 3, 1, 2)
-                .contiguous()
-            )
+            out = out.reshape(B, length // period, period, N).permute(0, 3, 1, 2).contiguous()
             # 2D conv: from 1d Variation to 2d Variation
             out = self.conv(out)
             # reshape back

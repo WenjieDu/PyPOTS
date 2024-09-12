@@ -43,15 +43,11 @@ class Interactor(nn.Module):
         self.hidden_size = hidden_size
         self.groups = groups
         if self.kernel_size % 2 == 0:
-            pad_l = (
-                self.dilation * (self.kernel_size - 2) // 2 + 1
-            )  # by default: stride==1
+            pad_l = self.dilation * (self.kernel_size - 2) // 2 + 1  # by default: stride==1
             pad_r = self.dilation * (self.kernel_size) // 2 + 1  # by default: stride==1
 
         else:
-            pad_l = (
-                self.dilation * (self.kernel_size - 1) // 2 + 1
-            )  # we fix the kernel size of the second layer as 3.
+            pad_l = self.dilation * (self.kernel_size - 1) // 2 + 1  # we fix the kernel size of the second layer as 3.
             pad_r = self.dilation * (self.kernel_size - 1) // 2 + 1
         self.splitting = splitting
         self.split = Splitting()
@@ -213,15 +209,11 @@ class LevelSCINet(nn.Module):
 
     def forward(self, x):
         (x_even_update, x_odd_update) = self.interact(x)
-        return x_even_update.permute(0, 2, 1), x_odd_update.permute(
-            0, 2, 1
-        )  # even: B, T, D odd: B, T, D
+        return x_even_update.permute(0, 2, 1), x_odd_update.permute(0, 2, 1)  # even: B, T, D odd: B, T, D
 
 
 class SCINet_Tree(nn.Module):
-    def __init__(
-        self, in_planes, current_level, kernel_size, dropout, groups, hidden_size, INN
-    ):
+    def __init__(self, in_planes, current_level, kernel_size, dropout, groups, hidden_size, INN):
         super().__init__()
         self.current_level = current_level
 
@@ -275,15 +267,11 @@ class SCINet_Tree(nn.Module):
         if self.current_level == 0:
             return self.zip_up_the_pants(x_even_update, x_odd_update)
         else:
-            return self.zip_up_the_pants(
-                self.SCINet_Tree_even(x_even_update), self.SCINet_Tree_odd(x_odd_update)
-            )
+            return self.zip_up_the_pants(self.SCINet_Tree_even(x_even_update), self.SCINet_Tree_odd(x_odd_update))
 
 
 class EncoderTree(nn.Module):
-    def __init__(
-        self, in_planes, num_levels, kernel_size, dropout, groups, hidden_size, INN
-    ):
+    def __init__(self, in_planes, num_levels, kernel_size, dropout, groups, hidden_size, INN):
         super().__init__()
         self.levels = num_levels
         self.SCINet_Tree = SCINet_Tree(
