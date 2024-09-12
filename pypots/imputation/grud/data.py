@@ -67,9 +67,7 @@ class DatasetForGRUD(BaseDataset):
 
             self.X_filledLOCF = locf_torch(X)
             self.deltas = _parse_delta_torch(missing_mask)
-            self.empirical_mean = torch.sum(missing_mask * X, dim=[0, 1]) / torch.sum(
-                missing_mask, dim=[0, 1]
-            )
+            self.empirical_mean = torch.sum(missing_mask * X, dim=[0, 1]) / torch.sum(missing_mask, dim=[0, 1])
             # fill nan with 0, in case some features have no observations
             self.empirical_mean = torch.nan_to_num(self.empirical_mean, 0)
 
@@ -144,9 +142,7 @@ class DatasetForGRUD(BaseDataset):
         X_filledLOCF = locf_torch(X.unsqueeze(dim=0)).squeeze()
         X = torch.nan_to_num(X)
         deltas = _parse_delta_torch(missing_mask)
-        empirical_mean = torch.sum(missing_mask * X, dim=[0]) / torch.sum(
-            missing_mask, dim=[0]
-        )
+        empirical_mean = torch.sum(missing_mask * X, dim=[0]) / torch.sum(missing_mask, dim=[0])
 
         sample = [
             torch.tensor(idx),

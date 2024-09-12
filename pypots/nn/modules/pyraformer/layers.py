@@ -36,15 +36,11 @@ def get_mask(input_size, window_size, inner_size):
     for layer_idx in range(1, len(all_size)):
         start = sum(all_size[:layer_idx])
         for i in range(start, start + all_size[layer_idx]):
-            left_side = (start - all_size[layer_idx - 1]) + (i - start) * window_size[
-                layer_idx - 1
-            ]
+            left_side = (start - all_size[layer_idx - 1]) + (i - start) * window_size[layer_idx - 1]
             if i == (start + all_size[layer_idx] - 1):
                 right_side = start
             else:
-                right_side = (start - all_size[layer_idx - 1]) + (
-                    i - start + 1
-                ) * window_size[layer_idx - 1]
+                right_side = (start - all_size[layer_idx - 1]) + (i - start + 1) * window_size[layer_idx - 1]
             mask[i, left_side:right_side] = 1
             mask[left_side:right_side, i] = 1
 
@@ -64,9 +60,7 @@ def refer_points(all_sizes, window_size):
         for j in range(1, len(all_sizes)):
             start = sum(all_sizes[:j])
             inner_layer_idx = former_index - (start - all_sizes[j - 1])
-            former_index = start + min(
-                inner_layer_idx // window_size[j - 1], all_sizes[j] - 1
-            )
+            former_index = start + min(inner_layer_idx // window_size[j - 1], all_sizes[j] - 1)
             indexes[i][j] = former_index
 
     indexes = indexes.unsqueeze(0).unsqueeze(3)

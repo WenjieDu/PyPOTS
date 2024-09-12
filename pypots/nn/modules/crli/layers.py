@@ -20,9 +20,7 @@ def reverse_tensor(tensor_: torch.Tensor) -> torch.Tensor:
     if tensor_.dim() <= 1:
         return tensor_
     indices = range(tensor_.size()[1])[::-1]
-    indices = torch.tensor(
-        indices, dtype=torch.long, device=tensor_.device, requires_grad=False
-    )
+    indices = torch.tensor(indices, dtype=torch.long, device=tensor_.device, requires_grad=False)
     return tensor_.index_select(1, indices)
 
 
@@ -50,40 +48,27 @@ class MultiRNNCell(nn.Module):
 
         self.output_layer = nn.Linear(d_hidden, d_input)
 
-    def forward(
-        self, X: torch.Tensor, missing_mask: torch.Tensor
-    ) -> Tuple[torch.Tensor, torch.Tensor]:
+    def forward(self, X: torch.Tensor, missing_mask: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
 
         bz, n_steps, _ = X.shape
         device = X.device
 
         hidden_state = torch.zeros((bz, self.d_hidden), device=device)
-        hidden_state_collector = torch.empty(
-            (bz, n_steps, self.d_hidden), device=device
-        )
+        hidden_state_collector = torch.empty((bz, n_steps, self.d_hidden), device=device)
         output_collector = torch.empty((bz, n_steps, self.d_input), device=device)
         if self.cell_type == "LSTM":
-            cell_states = [
-                torch.zeros((bz, self.d_hidden), device=device)
-                for _ in range(self.n_layer)
-            ]
+            cell_states = [torch.zeros((bz, self.d_hidden), device=device) for _ in range(self.n_layer)]
 
             for step in range(n_steps):
                 x = X[:, step, :]
                 estimation = self.output_layer(hidden_state)
                 output_collector[:, step] = estimation
-                imputed_x = (
-                    missing_mask[:, step] * x + (1 - missing_mask[:, step]) * estimation
-                )
+                imputed_x = missing_mask[:, step] * x + (1 - missing_mask[:, step]) * estimation
                 for i in range(self.n_layer):
                     if i == 0:
-                        hidden_state, cell_state = self.model[i](
-                            imputed_x, (hidden_state, cell_states[i])
-                        )
+                        hidden_state, cell_state = self.model[i](imputed_x, (hidden_state, cell_states[i]))
                     else:
-                        hidden_state, cell_state = self.model[i](
-                            hidden_state, (hidden_state, cell_states[i])
-                        )
+                        hidden_state, cell_state = self.model[i](hidden_state, (hidden_state, cell_states[i]))
 
                 hidden_state_collector[:, step, :] = hidden_state
 
@@ -92,9 +77,7 @@ class MultiRNNCell(nn.Module):
                 x = X[:, step, :]
                 estimation = self.output_layer(hidden_state)
                 output_collector[:, step] = estimation
-                imputed_x = (
-                    missing_mask[:, step] * x + (1 - missing_mask[:, step]) * estimation
-                )
+                imputed_x = missing_mask[:, step] * x + (1 - missing_mask[:, step]) * estimation
                 for i in range(self.n_layer):
                     if i == 0:
                         hidden_state = self.model[i](imputed_x, hidden_state)
@@ -121,16 +104,12 @@ class CrliGenerator(nn.Module):
         self.f_rnn = MultiRNNCell(cell_type, n_layers, n_features, d_hidden)
         self.b_rnn = MultiRNNCell(cell_type, n_layers, n_features, d_hidden)
 
-    def forward(
-        self, X: torch.Tensor, missing_mask: torch.Tensor
-    ) -> Tuple[torch.Tensor, torch.Tensor]:
+    def forward(self, X: torch.Tensor, missing_mask: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
         f_outputs, f_final_hidden_state = self.f_rnn(X, missing_mask)
         b_outputs, b_final_hidden_state = self.b_rnn(X, missing_mask)
         b_outputs = reverse_tensor(b_outputs)  # reverse the output of the backward rnn
         imputation_latent = (f_outputs + b_outputs) / 2
-        fb_final_hidden_states = torch.concat(
-            [f_final_hidden_state, b_final_hidden_state], dim=-1
-        )
+        fb_final_hidden_states = torch.concat([f_final_hidden_state, b_final_hidden_state], dim=-1)
         return imputation_latent, fb_final_hidden_states
 
 
@@ -184,13 +163,9 @@ class CrliDiscriminator(nn.Module):
                 x = imputed_X[:, step, :]
                 for i, rnn_cell in enumerate(self.rnn_cell_module_list):
                     if i == 0:
-                        hidden_state, cell_state = rnn_cell(
-                            x, (hidden_states[i], cell_states[i])
-                        )
+                        hidden_state, cell_state = rnn_cell(x, (hidden_states[i], cell_states[i]))
                     else:
-                        hidden_state, cell_state = rnn_cell(
-                            hidden_states[i - 1], (hidden_states[i], cell_states[i])
-                        )
+                        hidden_state, cell_state = rnn_cell(hidden_states[i - 1], (hidden_states[i], cell_states[i]))
                     cell_states[i] = cell_state
                     hidden_states[i] = hidden_state
 
@@ -235,9 +210,7 @@ class CrliDecoder(nn.Module):
         self.rnn_cell = nn.GRUCell(fcn_output_dims[-1], fcn_output_dims[-1])
         self.output_layer = nn.Linear(fcn_output_dims[-1], d_output)
 
-    def forward(
-        self, generator_fb_hidden_states: torch.Tensor
-    ) -> Tuple[torch.Tensor, torch.Tensor]:
+    def forward(self, generator_fb_hidden_states: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
         device = generator_fb_hidden_states.device
         bz, _ = generator_fb_hidden_states.shape
 
@@ -245,9 +218,7 @@ class CrliDecoder(nn.Module):
         for layer in self.fcn:
             fcn_latent = layer(fcn_latent)
         hidden_state = fcn_latent
-        hidden_state_collector = torch.empty(
-            (bz, self.n_steps, self.fcn_output_dims[-1]), device=device
-        )
+        hidden_state_collector = torch.empty((bz, self.n_steps, self.fcn_output_dims[-1]), device=device)
         for i in range(self.n_steps):
             hidden_state = self.rnn_cell(hidden_state, hidden_state)
             hidden_state_collector[:, i, :] = hidden_state

@@ -36,9 +36,7 @@ def gene_random_walk(
 
 
 def gene_physionet2012(artificially_missing_rate: float = 0.1):
-    dataset_from_benchpots = preprocess_physionet2012(
-        subset="all", rate=artificially_missing_rate
-    )
+    dataset_from_benchpots = preprocess_physionet2012(subset="all", rate=artificially_missing_rate)
     logger.warning(
         "🚨 BenchPOTS package now is fully released and includes preprocessing functions for 170+ datasets. "
         "gene_physionet2012() has been deprecated and will be removed in pypots v0.9"

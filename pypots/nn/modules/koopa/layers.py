@@ -99,12 +99,7 @@ class KPLayer(nn.Module):
         self.K = torch.linalg.lstsq(x, y).solution  # B E E
         if torch.isnan(self.K).any():
             print("Encounter K with nan, replace K by identity matrix")
-            self.K = (
-                torch.eye(self.K.shape[1])
-                .to(self.K.device)
-                .unsqueeze(0)
-                .repeat(B, 1, 1)
-            )
+            self.K = torch.eye(self.K.shape[1]).to(self.K.device).unsqueeze(0).repeat(B, 1, 1)
 
         z_pred = torch.bmm(z[:, -1:], self.K)
         if return_rec:
@@ -148,12 +143,7 @@ class KPLayerApprox(nn.Module):
 
         if torch.isnan(self.K).any():
             print("Encounter K with nan, replace K by identity matrix")
-            self.K = (
-                torch.eye(self.K.shape[1])
-                .to(self.K.device)
-                .unsqueeze(0)
-                .repeat(B, 1, 1)
-            )
+            self.K = torch.eye(self.K.shape[1]).to(self.K.device).unsqueeze(0).repeat(B, 1, 1)
 
         z_rec = torch.cat((z[:, :1], torch.bmm(x, self.K)), dim=1)  # B L E
 
@@ -161,23 +151,13 @@ class KPLayerApprox(nn.Module):
             self.K_step = torch.linalg.matrix_power(self.K, pred_len)
             if torch.isnan(self.K_step).any():
                 print("Encounter multistep K with nan, replace it by identity matrix")
-                self.K_step = (
-                    torch.eye(self.K_step.shape[1])
-                    .to(self.K_step.device)
-                    .unsqueeze(0)
-                    .repeat(B, 1, 1)
-                )
+                self.K_step = torch.eye(self.K_step.shape[1]).to(self.K_step.device).unsqueeze(0).repeat(B, 1, 1)
             z_pred = torch.bmm(z[:, -pred_len:, :], self.K_step)
         else:
             self.K_step = torch.linalg.matrix_power(self.K, input_len)
             if torch.isnan(self.K_step).any():
                 print("Encounter multistep K with nan, replace it by identity matrix")
-                self.K_step = (
-                    torch.eye(self.K_step.shape[1])
-                    .to(self.K_step.device)
-                    .unsqueeze(0)
-                    .repeat(B, 1, 1)
-                )
+                self.K_step = torch.eye(self.K_step.shape[1]).to(self.K_step.device).unsqueeze(0).repeat(B, 1, 1)
             temp_z_pred, all_pred = z, []
             for _ in range(math.ceil(pred_len / input_len)):
                 temp_z_pred = torch.bmm(temp_z_pred, self.K_step)
@@ -247,9 +227,7 @@ class TimeInvKP(nn.Module):
     Utilize lookback and forecast window snapshots to predict the future of time-invariant term
     """
 
-    def __init__(
-        self, input_len=96, pred_len=96, dynamic_dim=128, encoder=None, decoder=None
-    ):
+    def __init__(self, input_len=96, pred_len=96, dynamic_dim=128, encoder=None, decoder=None):
         super().__init__()
         self.dynamic_dim = dynamic_dim
         self.input_len = input_len

@@ -59,9 +59,7 @@ class _ImputeFormer(nn.Module):
         self.d_ffn = d_ffn
 
         self.learnable_embedding = nn.init.xavier_uniform_(
-            nn.Parameter(
-                torch.empty(self.in_steps, self.n_nodes, self.learnable_embedding_dim)
-            )
+            nn.Parameter(torch.empty(self.in_steps, self.n_nodes, self.learnable_embedding_dim))
         )
 
         self.readout = MLP(self.model_dim, self.model_dim, output_dim, n_layers=2)
@@ -109,12 +107,8 @@ class _ImputeFormer(nn.Module):
         x = self.input_proj(x)  # (batch_size, in_steps, num_nodes, input_embedding_dim)
 
         # Learnable node embedding
-        node_emb = self.learnable_embedding.expand(
-            batch_size, *self.learnable_embedding.shape
-        )
-        x = torch.cat(
-            [x, node_emb], dim=-1
-        )  # (batch_size, in_steps, num_nodes, model_dim)
+        node_emb = self.learnable_embedding.expand(batch_size, *self.learnable_embedding.shape)
+        x = torch.cat([x, node_emb], dim=-1)  # (batch_size, in_steps, num_nodes, model_dim)
 
         # Spatial and temporal processing with customized attention layers
         x = x.permute(0, 2, 1, 3)  # [b n s c]
@@ -140,9 +134,7 @@ class _ImputeFormer(nn.Module):
         # if in training mode, return results with losses
         if training:
             X_ori, indicating_mask = inputs["X_ori"], inputs["indicating_mask"]
-            loss, ORT_loss, MIT_loss = self.saits_loss_func(
-                reconstruction, X_ori, missing_mask, indicating_mask
-            )
+            loss, ORT_loss, MIT_loss = self.saits_loss_func(reconstruction, X_ori, missing_mask, indicating_mask)
             results["ORT_loss"] = ORT_loss
             results["MIT_loss"] = MIT_loss
             # `loss` is always the item for backward propagating to update the model

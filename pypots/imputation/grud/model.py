@@ -178,9 +178,7 @@ class GRUD(BaseNNImputer):
         file_type: str = "hdf5",
     ) -> None:
         # Step 1: wrap the input data with classes Dataset and DataLoader
-        training_set = DatasetForGRUD(
-            train_set, return_X_ori=False, file_type=file_type
-        )
+        training_set = DatasetForGRUD(train_set, return_X_ori=False, file_type=file_type)
         training_loader = DataLoader(
             training_set,
             batch_size=self.batch_size,

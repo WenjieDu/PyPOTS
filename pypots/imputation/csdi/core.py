@@ -57,9 +57,7 @@ class _CSDI(nn.Module):
     def time_embedding(pos, d_model=128):
         pe = torch.zeros(pos.shape[0], pos.shape[1], d_model).to(pos.device)
         position = pos.unsqueeze(2)
-        div_term = 1 / torch.pow(
-            10000.0, torch.arange(0, d_model, 2, device=pos.device) / d_model
-        )
+        div_term = 1 / torch.pow(10000.0, torch.arange(0, d_model, 2, device=pos.device) / d_model)
         pe[:, :, 0::2] = torch.sin(position * div_term)
         pe[:, :, 1::2] = torch.cos(position * div_term)
         return pe
@@ -67,19 +65,13 @@ class _CSDI(nn.Module):
     def get_side_info(self, observed_tp, cond_mask):
         B, K, L = cond_mask.shape
         device = observed_tp.device
-        time_embed = self.time_embedding(
-            observed_tp, self.d_time_embedding
-        )  # (B,L,emb)
+        time_embed = self.time_embedding(observed_tp, self.d_time_embedding)  # (B,L,emb)
         time_embed = time_embed.to(device)
         time_embed = time_embed.unsqueeze(2).expand(-1, -1, K, -1)
-        feature_embed = self.embed_layer(
-            torch.arange(self.n_features).to(device)
-        )  # (K,emb)
+        feature_embed = self.embed_layer(torch.arange(self.n_features).to(device))  # (K,emb)
         feature_embed = feature_embed.unsqueeze(0).unsqueeze(0).expand(B, L, -1, -1)
 
-        side_info = torch.cat(
-            [time_embed, feature_embed], dim=-1
-        )  # (B,L,K,emb+d_feature_embedding)
+        side_info = torch.cat([time_embed, feature_embed], dim=-1)  # (B,L,K,emb+d_feature_embedding)
         side_info = side_info.permute(0, 3, 2, 1)  # (B,*,K,L)
 
         if not self.is_unconditional:
@@ -98,9 +90,7 @@ class _CSDI(nn.Module):
                 inputs["observed_tp"],
             )
             side_info = self.get_side_info(observed_tp, cond_mask)
-            training_loss = self.backbone.calc_loss(
-                observed_data, cond_mask, indicating_mask, side_info, training
-            )
+            training_loss = self.backbone.calc_loss(observed_data, cond_mask, indicating_mask, side_info, training)
             results["loss"] = training_loss
         elif not training and n_sampling_times == 0:  # for validating
             (observed_data, indicating_mask, cond_mask, observed_tp) = (

@@ -5,7 +5,6 @@ Expose all usable time-series imputation models.
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-# neural network imputation methods
 from .brits import BRITS
 from .csdi import CSDI
 from .gpvae import GPVAE
@@ -36,12 +35,15 @@ from .tide import TiDE
 from .grud import GRUD
 from .stemgnn import StemGNN
 from .imputeformer import ImputeFormer
+from .timemixer import TimeMixer
+from .moderntcn import ModernTCN
 
 # naive imputation methods
 from .locf import LOCF
 from .mean import Mean
 from .median import Median
 from .lerp import Lerp
+from .tefn import TEFN
 
 __all__ = [
     # neural network imputation methods
@@ -75,9 +77,12 @@ __all__ = [
     "GRUD",
     "StemGNN",
     "ImputeFormer",
+    "TimeMixer",
+    "ModernTCN",
     # naive imputation methods
     "LOCF",
     "Mean",
     "Median",
     "Lerp",
+    "TEFN",
 ]

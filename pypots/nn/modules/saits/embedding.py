@@ -47,9 +47,7 @@ class SaitsEmbedding(nn.Module):
         self.dropout_rate = dropout
 
         self.embedding_layer = nn.Linear(d_in, d_out)
-        self.position_enc = (
-            PositionalEncoding(d_out, n_positions=n_max_steps) if with_pos else None
-        )
+        self.position_enc = PositionalEncoding(d_out, n_positions=n_max_steps) if with_pos else None
         self.dropout = nn.Dropout(p=dropout) if dropout > 0 else None
 
     def forward(self, X, missing_mask=None):

@@ -109,9 +109,7 @@ class NonstationaryTransformerEncoder(nn.Module):
             # triangular causal mask
             bz, n_steps, _ = x.shape
             mask_shape = [bz, n_steps, n_steps]
-            src_mask = torch.triu(
-                torch.ones(mask_shape, dtype=torch.bool), diagonal=1
-            ).to(x.device)
+            src_mask = torch.triu(torch.ones(mask_shape, dtype=torch.bool), diagonal=1).to(x.device)
 
         for layer in self.enc_layer_stack:
             enc_output, attn_weights = layer(enc_output, src_mask, **kwargs)

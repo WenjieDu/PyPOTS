@@ -75,9 +75,7 @@ def look_around(x, backward=1, forward=0, pad_value=-1, dim=2):
     t = x.shape[1]
     dims = (len(x.shape) - dim) * (0, 0)
     padded_x = F.pad(x, (*dims, backward, forward), value=pad_value)
-    tensors = [
-        padded_x[:, ind : (ind + t), ...] for ind in range(forward + backward + 1)
-    ]
+    tensors = [padded_x[:, ind : (ind + t), ...] for ind in range(forward + backward + 1)]
     return torch.cat(tensors, dim=dim)
 
 
@@ -92,9 +90,7 @@ class SinusoidalEmbeddings(nn.Module):
         self.use_xpos = use_xpos
         self.scale_base = scale_base
 
-        assert not (
-            use_xpos and not exists(scale_base)
-        ), "scale base must be defined if using xpos"
+        assert not (use_xpos and not exists(scale_base)), "scale base must be defined if using xpos"
 
         scale = (torch.arange(0, dim, 2) + 0.4 * dim) / (1.4 * dim)
         self.register_buffer("scale", scale, persistent=False)
@@ -171,9 +167,7 @@ class LocalAttention(nn.Module):
                 scale_base=default(xpos_scale_base, window_size // 2),
             )
 
-    def forward(
-        self, q, k, v, mask=None, input_mask=None, attn_bias=None, window_size=None
-    ):
+    def forward(self, q, k, v, mask=None, input_mask=None, attn_bias=None, window_size=None):
 
         mask = default(mask, input_mask)
 
@@ -181,15 +175,7 @@ class LocalAttention(nn.Module):
             exists(window_size) and not self.use_xpos
         ), "cannot perform window size extrapolation if xpos is not turned on"
 
-        (
-            autopad,
-            pad_value,
-            window_size,
-            causal,
-            look_backward,
-            look_forward,
-            shared_qk,
-        ) = (
+        (autopad, pad_value, window_size, causal, look_backward, look_forward, shared_qk) = (
             self.autopad,
             -1,
             default(window_size, self.window_size),
@@ -206,9 +192,7 @@ class LocalAttention(nn.Module):
 
         if autopad:
             orig_seq_len = q.shape[1]
-            (needed_pad, q), (_, k), (_, v) = map(
-                lambda t: pad_to_multiple(t, self.window_size, dim=-2), (q, k, v)
-            )
+            (needed_pad, q), (_, k), (_, v) = map(lambda t: pad_to_multiple(t, self.window_size, dim=-2), (q, k, v))
 
         b, n, dim_head, device = *q.shape, q.device
 
@@ -228,15 +212,11 @@ class LocalAttention(nn.Module):
 
         # bucketing
 
-        bq, bk, bv = map(
-            lambda t: rearrange(t, "b (w n) d -> b w n d", w=windows), (q, k, v)
-        )
+        bq, bk, bv = map(lambda t: rearrange(t, "b (w n) d -> b w n d", w=windows), (q, k, v))
 
         bq = bq * scale
 
-        look_around_kwargs = dict(
-            backward=look_backward, forward=look_forward, pad_value=pad_value
-        )
+        look_around_kwargs = dict(backward=look_backward, forward=look_forward, pad_value=pad_value)
 
         bk = look_around(bk, **look_around_kwargs)
         bv = look_around(bv, **look_around_kwargs)
@@ -290,9 +270,7 @@ class LocalAttention(nn.Module):
             max_backward_window_size = self.window_size * self.look_backward
             max_forward_window_size = self.window_size * self.look_forward
             window_mask = (
-                ((bq_k - max_forward_window_size) > bq_t)
-                | (bq_t > (bq_k + max_backward_window_size))
-                | pad_mask
+                ((bq_k - max_forward_window_size) > bq_t) | (bq_t > (bq_k + max_backward_window_size)) | pad_mask
             )
             sim = sim.masked_fill(window_mask, mask_value)
         else:

@@ -34,11 +34,7 @@ class BackboneFiLM(nn.Module):
         self.affine_weight = nn.Parameter(torch.ones(1, 1, in_channels))
         self.affine_bias = nn.Parameter(torch.zeros(1, 1, in_channels))
         self.legts = nn.ModuleList(
-            [
-                HiPPO_LegT(N=n, dt=1.0 / n_pred_steps / i)
-                for n in window_size
-                for i in multiscale
-            ]
+            [HiPPO_LegT(N=n, dt=1.0 / n_pred_steps / i) for n in window_size for i in multiscale]
         )
         self.spec_conv_1 = nn.ModuleList(
             [
@@ -65,14 +61,10 @@ class BackboneFiLM(nn.Module):
             x_in_len = self.multiscale[i % len(self.multiscale)] * self.n_pred_steps
             x_in = x_enc[:, -x_in_len:]
             legt = self.legts[i]
-            x_in_c = legt(x_in.transpose(1, 2)).permute([1, 2, 3, 0])[
-                :, :, :, jump_dist:
-            ]
+            x_in_c = legt(x_in.transpose(1, 2)).permute([1, 2, 3, 0])[:, :, :, jump_dist:]
             out1 = self.spec_conv_1[i](x_in_c)
             if self.n_steps >= self.n_pred_steps:
-                x_dec_c = out1.transpose(2, 3)[
-                    :, :, self.n_pred_steps - 1 - jump_dist, :
-                ]
+                x_dec_c = out1.transpose(2, 3)[:, :, self.n_pred_steps - 1 - jump_dist, :]
             else:
                 x_dec_c = out1.transpose(2, 3)[:, :, -1, :]
             x_dec = x_dec_c @ legt.eval_matrix[-self.n_pred_steps :, :].T
