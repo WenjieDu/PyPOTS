@@ -1,3 +1,5 @@
+# coding=utf-8
+
 """
 
 """
@@ -21,10 +23,7 @@ v{0.1} - building AI for unified time-series analysis, https://time-series.ai
 """
 )
 
-
 from ai4ts.client import TimeSeriesAI
-
-from ..utils.logging import logger
 
 
 class Gungnir(TimeSeriesAI):
