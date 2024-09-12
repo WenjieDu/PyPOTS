@@ -18,9 +18,7 @@ logger.info(
 
 v{0.1} - building AI for unified time-series analysis, https://time-series.ai
 \u001b[0m
-""".decode(
-        "utf-8"
-    )
+"""
 )
 
 
