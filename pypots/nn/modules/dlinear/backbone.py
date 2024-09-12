@@ -32,31 +32,19 @@ class BackboneDLinear(nn.Module):
             for i in range(n_features):
                 self.linear_seasonal.append(nn.Linear(n_steps, n_steps))
                 self.linear_trend.append(nn.Linear(n_steps, n_steps))
-                self.linear_seasonal[i].weight = nn.Parameter(
-                    (1 / n_steps) * torch.ones([n_steps, n_steps])
-                )
-                self.linear_trend[i].weight = nn.Parameter(
-                    (1 / n_steps) * torch.ones([n_steps, n_steps])
-                )
+                self.linear_seasonal[i].weight = nn.Parameter((1 / n_steps) * torch.ones([n_steps, n_steps]))
+                self.linear_trend[i].weight = nn.Parameter((1 / n_steps) * torch.ones([n_steps, n_steps]))
         else:
             if d_model is None:
-                raise ValueError(
-                    "The argument d_model is necessary for DLinear in the non-individual mode."
-                )
+                raise ValueError("The argument d_model is necessary for DLinear in the non-individual mode.")
             self.linear_seasonal = nn.Linear(n_steps, n_steps)
             self.linear_trend = nn.Linear(n_steps, n_steps)
-            self.linear_seasonal.weight = nn.Parameter(
-                (1 / n_steps) * torch.ones([n_steps, n_steps])
-            )
-            self.linear_trend.weight = nn.Parameter(
-                (1 / n_steps) * torch.ones([n_steps, n_steps])
-            )
+            self.linear_seasonal.weight = nn.Parameter((1 / n_steps) * torch.ones([n_steps, n_steps]))
+            self.linear_trend.weight = nn.Parameter((1 / n_steps) * torch.ones([n_steps, n_steps]))
 
     def forward(self, seasonal_init, trend_init):
         if self.individual:
-            seasonal_init, trend_init = seasonal_init.permute(
-                0, 2, 1
-            ), trend_init.permute(0, 2, 1)
+            seasonal_init, trend_init = seasonal_init.permute(0, 2, 1), trend_init.permute(0, 2, 1)
             seasonal_output = torch.zeros(
                 [seasonal_init.size(0), seasonal_init.size(1), self.n_steps],
                 dtype=seasonal_init.dtype,
@@ -66,17 +54,13 @@ class BackboneDLinear(nn.Module):
                 dtype=trend_init.dtype,
             ).to(trend_init.device)
             for i in range(self.n_features):
-                seasonal_output[:, i, :] = self.linear_seasonal[i](
-                    seasonal_init[:, i, :]
-                )
+                seasonal_output[:, i, :] = self.linear_seasonal[i](seasonal_init[:, i, :])
                 trend_output[:, i, :] = self.linear_trend[i](trend_init[:, i, :])
 
             seasonal_output = seasonal_output.permute(0, 2, 1)
             trend_output = trend_output.permute(0, 2, 1)
         else:
-            seasonal_init, trend_init = seasonal_init.permute(
-                0, 2, 1
-            ), trend_init.permute(0, 2, 1)
+            seasonal_init, trend_init = seasonal_init.permute(0, 2, 1), trend_init.permute(0, 2, 1)
 
             seasonal_output = self.linear_seasonal(seasonal_init)
             trend_output = self.linear_trend(trend_init)

@@ -33,20 +33,12 @@ class BackboneFreTS(nn.Module):
         self.scale = 0.02
 
         # self.embeddings = nn.Parameter(torch.randn(1, self.embed_size)) # original embedding method, deprecate here
-        self.r1 = nn.Parameter(
-            self.scale * torch.randn(self.embed_size, self.embed_size)
-        )
-        self.i1 = nn.Parameter(
-            self.scale * torch.randn(self.embed_size, self.embed_size)
-        )
+        self.r1 = nn.Parameter(self.scale * torch.randn(self.embed_size, self.embed_size))
+        self.i1 = nn.Parameter(self.scale * torch.randn(self.embed_size, self.embed_size))
         self.rb1 = nn.Parameter(self.scale * torch.randn(self.embed_size))
         self.ib1 = nn.Parameter(self.scale * torch.randn(self.embed_size))
-        self.r2 = nn.Parameter(
-            self.scale * torch.randn(self.embed_size, self.embed_size)
-        )
-        self.i2 = nn.Parameter(
-            self.scale * torch.randn(self.embed_size, self.embed_size)
-        )
+        self.r2 = nn.Parameter(self.scale * torch.randn(self.embed_size, self.embed_size))
+        self.i2 = nn.Parameter(self.scale * torch.randn(self.embed_size, self.embed_size))
         self.rb2 = nn.Parameter(self.scale * torch.randn(self.embed_size))
         self.ib2 = nn.Parameter(self.scale * torch.randn(self.embed_size))
 
@@ -89,24 +81,12 @@ class BackboneFreTS(nn.Module):
     # dimension: FFT along the dimension, r: the real part of weights, i: the imaginary part of weights
     # rb: the real part of bias, ib: the imaginary part of bias
     def FreMLP(self, B, nd, dimension, x, r, i, rb, ib):
-        o1_real = torch.zeros(
-            [B, nd, dimension // 2 + 1, self.embed_size], device=x.device
-        )
-        o1_imag = torch.zeros(
-            [B, nd, dimension // 2 + 1, self.embed_size], device=x.device
-        )
+        o1_real = torch.zeros([B, nd, dimension // 2 + 1, self.embed_size], device=x.device)
+        o1_imag = torch.zeros([B, nd, dimension // 2 + 1, self.embed_size], device=x.device)
 
-        o1_real = F.relu(
-            torch.einsum("bijd,dd->bijd", x.real, r)
-            - torch.einsum("bijd,dd->bijd", x.imag, i)
-            + rb
-        )
+        o1_real = F.relu(torch.einsum("bijd,dd->bijd", x.real, r) - torch.einsum("bijd,dd->bijd", x.imag, i) + rb)
 
-        o1_imag = F.relu(
-            torch.einsum("bijd,dd->bijd", x.imag, r)
-            + torch.einsum("bijd,dd->bijd", x.real, i)
-            + ib
-        )
+        o1_imag = F.relu(torch.einsum("bijd,dd->bijd", x.imag, r) + torch.einsum("bijd,dd->bijd", x.real, i) + ib)
 
         y = torch.stack([o1_real, o1_imag], dim=-1)
         y = F.softshrink(y, lambd=self.sparsity_threshold)

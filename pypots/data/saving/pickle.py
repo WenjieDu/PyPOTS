@@ -34,9 +34,7 @@ def pickle_dump(data: object, path: str) -> None:
             pickle.dump(data, f, protocol=pickle.HIGHEST_PROTOCOL)
         logger.info(f"Successfully saved to {path}")
     except Exception as e:
-        logger.error(
-            f"❌ Pickling failed. No cache data saved. Investigate the error below:\n{e}"
-        )
+        logger.error(f"❌ Pickling failed. No cache data saved. Investigate the error below:\n{e}")
 
     return None
 
@@ -59,9 +57,7 @@ def pickle_load(path: str) -> object:
         with open(path, "rb") as f:
             data = pickle.load(f)
     except Exception as e:
-        logger.error(
-            f"❌ Loading data failed. Operation aborted. Investigate the error below:\n{e}"
-        )
+        logger.error(f"❌ Loading data failed. Operation aborted. Investigate the error below:\n{e}")
         return None
 
     return data

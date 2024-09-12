@@ -14,9 +14,7 @@ from .tuning import TuningCommand
 
 
 def main():
-    parser = ArgumentParser(
-        "PyPOTS Command-Line-Interface tool", usage="pypots-cli <command> [<args>]"
-    )
+    parser = ArgumentParser("PyPOTS Command-Line-Interface tool", usage="pypots-cli <command> [<args>]")
     commands_parser = parser.add_subparsers(help="pypots-cli command helpers")
 
     # Register commands here

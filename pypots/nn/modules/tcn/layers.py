@@ -69,9 +69,7 @@ class TemporalBlock(nn.Module):
             self.relu2,
             self.dropout2,
         )
-        self.downsample = (
-            nn.Conv1d(n_inputs, n_outputs, 1) if n_inputs != n_outputs else None
-        )
+        self.downsample = nn.Conv1d(n_inputs, n_outputs, 1) if n_inputs != n_outputs else None
         self.relu = nn.ReLU()
         self.init_weights()
 

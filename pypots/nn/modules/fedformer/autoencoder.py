@@ -49,9 +49,7 @@ class FEDformerEncoder(nn.Module):
                 mode_select_method=mode_select,
             )
         else:
-            raise ValueError(
-                f"Unsupported version: {version}. Please choose from ['Wavelets', 'Fourier']."
-            )
+            raise ValueError(f"Unsupported version: {version}. Please choose from ['Wavelets', 'Fourier'].")
 
         self.encoder = InformerEncoder(
             [
@@ -123,9 +121,7 @@ class FEDformerDecoder(nn.Module):
                 num_heads=n_heads,
             )
         else:
-            raise ValueError(
-                f"Unsupported version: {version}. Please choose from ['Wavelets', 'Fourier']."
-            )
+            raise ValueError(f"Unsupported version: {version}. Please choose from ['Wavelets', 'Fourier'].")
 
         self.decoder = InformerDecoder(
             [

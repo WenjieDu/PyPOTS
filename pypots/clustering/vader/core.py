@@ -102,12 +102,7 @@ class _VaDER(nn.Module):
 
         # calculate the reconstruction loss
         unscaled_reconstruction_loss = calc_mse(X_reconstructed, X, missing_mask)
-        reconstruction_loss = (
-            unscaled_reconstruction_loss
-            * self.n_steps
-            * self.d_input
-            / missing_mask.sum()
-        )
+        reconstruction_loss = unscaled_reconstruction_loss * self.n_steps * self.d_input / missing_mask.sum()
 
         if pretrain:
             results["loss"] = reconstruction_loss
@@ -136,9 +131,7 @@ class _VaDER(nn.Module):
             sc_b = var_c.index_select(dim=0, index=ii)
             z_b = z.index_select(dim=0, index=jj)
             log_pdf_z = -0.5 * (lsc_b + log_2pi + torch.square(z_b - mc_b) / sc_b)
-            log_pdf_z = log_pdf_z.reshape(
-                [batch_size, self.n_clusters, self.d_mu_stddev]
-            )
+            log_pdf_z = log_pdf_z.reshape([batch_size, self.n_clusters, self.d_mu_stddev])
 
             log_p = log_phi_c + log_pdf_z.sum(dim=2)
             lse_p = log_p.logsumexp(dim=1, keepdim=True)
@@ -159,9 +152,7 @@ class _VaDER(nn.Module):
                 [batch_size, self.n_clusters, self.d_mu_stddev],
             )
 
-            latent_loss1 = 0.5 * torch.sum(
-                gamma_c * torch.sum(term1 + term2 + term3, dim=2), dim=1
-            )
+            latent_loss1 = 0.5 * torch.sum(gamma_c * torch.sum(term1 + term2 + term3, dim=2), dim=1)
             latent_loss2 = -torch.sum(gamma_c * (log_phi_c - log_gamma_c), dim=1)
             latent_loss3 = -0.5 * torch.sum(1 + stddev_tilde, dim=1)
 

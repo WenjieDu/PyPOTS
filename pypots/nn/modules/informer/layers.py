@@ -21,9 +21,7 @@ class ProbMask:
     def __init__(self, B, H, L, index, scores, device="cpu"):
         _mask = torch.ones(L, scores.shape[-1], dtype=torch.bool).to(device).triu(1)
         _mask_ex = _mask[None, None, :].expand(B, H, L, scores.shape[-1])
-        indicator = _mask_ex[
-            torch.arange(B)[:, None, None], torch.arange(H)[None, :, None], index, :
-        ].to(device)
+        indicator = _mask_ex[torch.arange(B)[:, None, None], torch.arange(H)[None, :, None], index, :].to(device)
         self._mask = indicator.view(scores.shape).to(device)
 
     @property
@@ -76,22 +74,16 @@ class ProbAttention(AttentionOperator):
 
         # calculate the sampled Q_K
         K_expand = K.unsqueeze(-3).expand(B, H, L_Q, L_K, E)
-        index_sample = torch.randint(
-            L_K, (L_Q, sample_k)
-        )  # real U = U_part(factor*ln(L_k))*L_q
+        index_sample = torch.randint(L_K, (L_Q, sample_k))  # real U = U_part(factor*ln(L_k))*L_q
         K_sample = K_expand[:, :, torch.arange(L_Q).unsqueeze(1), index_sample, :]
-        Q_K_sample = torch.matmul(Q.unsqueeze(-2), K_sample.transpose(-2, -1)).squeeze(
-            -2
-        )
+        Q_K_sample = torch.matmul(Q.unsqueeze(-2), K_sample.transpose(-2, -1)).squeeze(-2)
 
         # find the Top_k query with sparisty measurement
         M = Q_K_sample.max(-1)[0] - torch.div(Q_K_sample.sum(-1), L_K)
         M_top = M.topk(n_top, sorted=False)[1]
 
         # use the reduced Q to calculate Q_K
-        Q_reduce = Q[
-            torch.arange(B)[:, None, None], torch.arange(H)[None, :, None], M_top, :
-        ]  # factor*ln(L_q)
+        Q_reduce = Q[torch.arange(B)[:, None, None], torch.arange(H)[None, :, None], M_top, :]  # factor*ln(L_q)
         Q_K = torch.matmul(Q_reduce, K.transpose(-2, -1))  # factor*ln(L_q)*L_k
 
         return Q_K, M_top
@@ -116,14 +108,12 @@ class ProbAttention(AttentionOperator):
 
         attn = torch.softmax(scores, dim=-1)  # nn.Softmax(dim=-1)(scores)
 
-        context_in[
-            torch.arange(B)[:, None, None], torch.arange(H)[None, :, None], index, :
-        ] = torch.matmul(attn, V).type_as(context_in)
+        context_in[torch.arange(B)[:, None, None], torch.arange(H)[None, :, None], index, :] = torch.matmul(
+            attn, V
+        ).type_as(context_in)
 
         attns = (torch.ones([B, H, L_V, L_V]) / L_V).type_as(attn).to(attn.device)
-        attns[
-            torch.arange(B)[:, None, None], torch.arange(H)[None, :, None], index, :
-        ] = attn
+        attns[torch.arange(B)[:, None, None], torch.arange(H)[None, :, None], index, :] = attn
         return context_in, attns
 
     def forward(
@@ -159,9 +149,7 @@ class ProbAttention(AttentionOperator):
         # get the context
         context = self._get_initial_context(v, L_Q)
         # update the context with selected top_k queries
-        context, attn = self._update_context(
-            context, v, scores_top, index, L_Q, attn_mask
-        )
+        context, attn = self._update_context(context, v, scores_top, index, L_Q, attn_mask)
 
         return context.transpose(2, 1).contiguous(), attn
 
@@ -212,16 +200,10 @@ class InformerDecoderLayer(nn.Module):
         self.activation = F.relu if activation == "relu" else F.gelu
 
     def forward(self, x, cross, x_mask=None, cross_mask=None, tau=None, delta=None):
-        x = x + self.dropout(
-            self.self_attention(x, x, x, attn_mask=x_mask, tau=tau, delta=None)[0]
-        )
+        x = x + self.dropout(self.self_attention(x, x, x, attn_mask=x_mask, tau=tau, delta=None)[0])
         x = self.norm1(x)
 
-        x = x + self.dropout(
-            self.cross_attention(
-                x, cross, cross, attn_mask=cross_mask, tau=tau, delta=delta
-            )[0]
-        )
+        x = x + self.dropout(self.cross_attention(x, cross, cross, attn_mask=cross_mask, tau=tau, delta=delta)[0])
 
         y = x = self.norm2(x)
         y = self.dropout(self.activation(self.conv1(y.transpose(-1, 1))))

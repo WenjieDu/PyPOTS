@@ -55,8 +55,7 @@ class StepLR(LRScheduler):
     def get_lr(self):
         if not self._get_lr_called_within_step:
             logger.warning(
-                "⚠️ To get the last learning rate computed by the scheduler, "
-                "please use `get_last_lr()`.",
+                "⚠️ To get the last learning rate computed by the scheduler, please use `get_last_lr()`.",
             )
 
         if (self.last_epoch == 0) or (self.last_epoch % self.step_size != 0):
@@ -64,7 +63,4 @@ class StepLR(LRScheduler):
         return [group["lr"] * self.gamma for group in self.optimizer.param_groups]
 
     def _get_closed_form_lr(self):
-        return [
-            base_lr * self.gamma ** (self.last_epoch // self.step_size)
-            for base_lr in self.base_lrs
-        ]
+        return [base_lr * self.gamma ** (self.last_epoch // self.step_size) for base_lr in self.base_lrs]

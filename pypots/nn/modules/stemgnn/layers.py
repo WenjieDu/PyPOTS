@@ -27,14 +27,10 @@ class StockBlockLayer(nn.Module):
         self.stack_cnt = stack_cnt
         self.multi = multi_layer
         self.weight = nn.Parameter(
-            torch.Tensor(
-                1, 3 + 1, 1, self.time_step * self.multi, self.multi * self.time_step
-            )
+            torch.Tensor(1, 3 + 1, 1, self.time_step * self.multi, self.multi * self.time_step)
         )  # [K+1, 1, in_c, out_c]
         nn.init.xavier_normal_(self.weight)
-        self.forecast = nn.Linear(
-            self.time_step * self.multi, self.time_step * self.multi
-        )
+        self.forecast = nn.Linear(self.time_step * self.multi, self.time_step * self.multi)
         self.forecast_result = nn.Linear(self.time_step * self.multi, self.time_step)
         if self.stack_cnt == 0:
             self.backcast = nn.Linear(self.time_step * self.multi, self.time_step)
@@ -44,12 +40,8 @@ class StockBlockLayer(nn.Module):
         self.output_channel = 4 * self.multi
         for i in range(3):
             if i == 0:
-                self.GLUs.append(
-                    GLU(self.time_step * 4, self.time_step * self.output_channel)
-                )
-                self.GLUs.append(
-                    GLU(self.time_step * 4, self.time_step * self.output_channel)
-                )
+                self.GLUs.append(GLU(self.time_step * 4, self.time_step * self.output_channel))
+                self.GLUs.append(GLU(self.time_step * 4, self.time_step * self.output_channel))
             elif i == 1:
                 self.GLUs.append(
                     GLU(
@@ -81,27 +73,13 @@ class StockBlockLayer(nn.Module):
         batch_size, k, input_channel, node_cnt, time_step = input.size()
         input = input.view(batch_size, -1, node_cnt, time_step)
         # ffted = torch.fft.rfft(input, 1, onesided=False) # original old version, onesided doesn't work in new torch
-        ffted = torch.view_as_real(
-            torch.fft.fft(input, dim=1)
-        )  # WDU: replace the above line with this line
-        real = (
-            ffted[..., 0]
-            .permute(0, 2, 1, 3)
-            .contiguous()
-            .reshape(batch_size, node_cnt, -1)
-        )
-        img = (
-            ffted[..., 1]
-            .permute(0, 2, 1, 3)
-            .contiguous()
-            .reshape(batch_size, node_cnt, -1)
-        )
+        ffted = torch.view_as_real(torch.fft.fft(input, dim=1))  # WDU: replace the above line with this line
+        real = ffted[..., 0].permute(0, 2, 1, 3).contiguous().reshape(batch_size, node_cnt, -1)
+        img = ffted[..., 1].permute(0, 2, 1, 3).contiguous().reshape(batch_size, node_cnt, -1)
         for i in range(3):
             real = self.GLUs[i * 2](real)
             img = self.GLUs[2 * i + 1](img)
-        real = (
-            real.reshape(batch_size, node_cnt, 4, -1).permute(0, 2, 1, 3).contiguous()
-        )
+        real = real.reshape(batch_size, node_cnt, 4, -1).permute(0, 2, 1, 3).contiguous()
         img = img.reshape(batch_size, node_cnt, 4, -1).permute(0, 2, 1, 3).contiguous()
         time_step_as_inner = torch.cat([real.unsqueeze(-1), img.unsqueeze(-1)], dim=-1)
         # iffted = torch.fft.irfft(time_step_as_inner, 1, onesided=False)  # onesided doesn't work in new torch

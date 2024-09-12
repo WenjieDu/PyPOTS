@@ -85,9 +85,7 @@ class BackboneSCINet(nn.Module):
                 m.bias.data.zero_()
             elif isinstance(m, nn.Linear):
                 m.bias.data.zero_()
-        self.projection1 = nn.Conv1d(
-            self.n_in_steps, self.n_out_steps, kernel_size=1, stride=1, bias=False
-        )
+        self.projection1 = nn.Conv1d(self.n_in_steps, self.n_out_steps, kernel_size=1, stride=1, bias=False)
         self.div_projection = nn.ModuleList()
         self.overlap_len = self.n_in_steps // 4
         self.div_len = self.n_in_steps // 6
@@ -97,23 +95,16 @@ class BackboneSCINet(nn.Module):
             for layer_idx in range(self.n_decoder_layers - 1):
                 div_projection = nn.ModuleList()
                 for i in range(6):
-                    lens = (
-                        min(i * self.div_len + self.overlap_len, self.n_in_steps)
-                        - i * self.div_len
-                    )
+                    lens = min(i * self.div_len + self.overlap_len, self.n_in_steps) - i * self.div_len
                     div_projection.append(nn.Linear(lens, self.div_len))
                 self.div_projection.append(div_projection)
 
         if self.single_step_output_One:  # only output the N_th timestep.
             if self.stacks == 2:
                 if self.concat_len:
-                    self.projection2 = nn.Conv1d(
-                        self.concat_len + self.n_out_steps, 1, kernel_size=1, bias=False
-                    )
+                    self.projection2 = nn.Conv1d(self.concat_len + self.n_out_steps, 1, kernel_size=1, bias=False)
                 else:
-                    self.projection2 = nn.Conv1d(
-                        self.n_in_steps + self.n_out_steps, 1, kernel_size=1, bias=False
-                    )
+                    self.projection2 = nn.Conv1d(self.n_in_steps + self.n_out_steps, 1, kernel_size=1, bias=False)
         else:  # output the N timesteps.
             if self.stacks == 2:
                 if self.concat_len:
@@ -140,9 +131,7 @@ class BackboneSCINet(nn.Module):
         max_timescale = 10000.0
         min_timescale = 1.0
 
-        log_timescale_increment = math.log(
-            float(max_timescale) / float(min_timescale)
-        ) / max(num_timescales - 1, 1)
+        log_timescale_increment = math.log(float(max_timescale) / float(min_timescale)) / max(num_timescales - 1, 1)
         # temp = torch.arange(num_timescales, dtype=torch.float32)
         inv_timescales = min_timescale * torch.exp(
             torch.arange(num_timescales, dtype=torch.float32) * -log_timescale_increment
@@ -157,9 +146,7 @@ class BackboneSCINet(nn.Module):
         # temp1 = position.unsqueeze(1)  # 5 1
         # temp2 = self.inv_timescales.unsqueeze(0)  # 1 256
         scaled_time = position.unsqueeze(1) * self.inv_timescales.unsqueeze(0)  # 5 256
-        signal = torch.cat(
-            [torch.sin(scaled_time), torch.cos(scaled_time)], dim=1
-        )  # [T, C]
+        signal = torch.cat([torch.sin(scaled_time), torch.cos(scaled_time)], dim=1)  # [T, C]
         signal = F.pad(signal, (0, 0, 0, self.pe_hidden_size % 2))
         signal = signal.view(1, max_length, self.pe_hidden_size)
 
@@ -187,14 +174,9 @@ class BackboneSCINet(nn.Module):
                     div_x = x[
                         :,
                         :,
-                        i
-                        * self.div_len : min(
-                            i * self.div_len + self.overlap_len, self.n_in_steps
-                        ),
+                        i * self.div_len : min(i * self.div_len + self.overlap_len, self.n_in_steps),
                     ]
-                    output[:, :, i * self.div_len : (i + 1) * self.div_len] = div_layer(
-                        div_x
-                    )
+                    output[:, :, i * self.div_len : (i + 1) * self.div_len] = div_layer(div_x)
                 x = output
             x = self.projection1(x)
             x = x.permute(0, 2, 1)

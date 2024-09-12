@@ -211,9 +211,7 @@ class PastDecomposableMixing(nn.Module):
         out_trend_list = self.mixing_multi_scale_trend(trend_list)
 
         out_list = []
-        for ori, out_season, out_trend, length in zip(
-            x_list, out_season_list, out_trend_list, length_list
-        ):
+        for ori, out_season, out_trend, length in zip(x_list, out_season_list, out_trend_list, length_list):
             out = out_season + out_trend
             if self.channel_independence:
                 out = ori + self.out_cross_layer(out)
