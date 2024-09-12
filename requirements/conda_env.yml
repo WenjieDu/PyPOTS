@@ -19,7 +19,11 @@ dependencies:
     - conda-forge::matplotlib
     - conda-forge::tensorboard
     - conda-forge::scikit-learn
-    - conda-forge::pygrinder >=0.6.2
+    - conda-forge::pygrinder >=0.6.4
     - conda-forge::tsdb >=0.6.1
-    - conda-forge::benchpots >=0.2.1
+    - conda-forge::benchpots >=0.3
     - pytorch::pytorch >=1.10.0
+
+    - pip:
+        # not published on conda-forge yet
+        - ai4ts

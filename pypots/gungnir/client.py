@@ -5,12 +5,9 @@
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
+from ai4ts.client import TimeSeriesAI
+
 from ..utils.logging import logger
-
-
-class TimeSeriesAI:
-    def __init__(self):
-        pass
 
 
 class Gungnir(TimeSeriesAI):

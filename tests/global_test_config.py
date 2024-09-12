@@ -26,9 +26,7 @@ RESULT_SAVING_DIR = "testing_results"
 MODEL_SAVING_DIR = f"{RESULT_SAVING_DIR}/models"
 DATA_SAVING_DIR = f"{RESULT_SAVING_DIR}/datasets"
 RESULT_SAVING_DIR_FOR_IMPUTATION = os.path.join(MODEL_SAVING_DIR, "imputation")
-RESULT_SAVING_DIR_FOR_ANOMALY_DETECTION = os.path.join(
-    MODEL_SAVING_DIR, "anomaly_detection"
-)
+RESULT_SAVING_DIR_FOR_ANOMALY_DETECTION = os.path.join(MODEL_SAVING_DIR, "anomaly_detection")
 RESULT_SAVING_DIR_FOR_CLASSIFICATION = os.path.join(MODEL_SAVING_DIR, "classification")
 RESULT_SAVING_DIR_FOR_CLUSTERING = os.path.join(MODEL_SAVING_DIR, "clustering")
 RESULT_SAVING_DIR_FOR_FORECASTING = os.path.join(MODEL_SAVING_DIR, "forecasting")
@@ -39,15 +37,9 @@ GENERAL_H5_VAL_SET_PATH = os.path.abspath(f"{GENERAL_DATA_SAVING_DIR}/val_set.h5
 GENERAL_H5_TEST_SET_PATH = os.path.abspath(f"{GENERAL_DATA_SAVING_DIR}/test_set.h5")
 # paths to save the generated dataset for testing forecasting models with the lazy-loading strategy
 FORECASTING_DATA_SAVING_DIR = f"{DATA_SAVING_DIR}/forecasting_h5dataset"
-FORECASTING_H5_TRAIN_SET_PATH = os.path.abspath(
-    f"{FORECASTING_DATA_SAVING_DIR}/train_set.h5"
-)
-FORECASTING_H5_VAL_SET_PATH = os.path.abspath(
-    f"{FORECASTING_DATA_SAVING_DIR}/val_set.h5"
-)
-FORECASTING_H5_TEST_SET_PATH = os.path.abspath(
-    f"{FORECASTING_DATA_SAVING_DIR}/test_set.h5"
-)
+FORECASTING_H5_TRAIN_SET_PATH = os.path.abspath(f"{FORECASTING_DATA_SAVING_DIR}/train_set.h5")
+FORECASTING_H5_VAL_SET_PATH = os.path.abspath(f"{FORECASTING_DATA_SAVING_DIR}/val_set.h5")
+FORECASTING_H5_TEST_SET_PATH = os.path.abspath(f"{FORECASTING_DATA_SAVING_DIR}/test_set.h5")
 
 
 set_random_seed(RANDOM_SEED)
@@ -62,6 +54,9 @@ DATA = gene_random_walk(
     missing_rate=0.1,
 )
 # DATA = gene_physionet2012()
+
+DATA["test_X_indicating_mask"] = np.isnan(DATA["test_X"]) ^ np.isnan(DATA["test_X_ori"])
+DATA["test_X_ori"] = np.nan_to_num(DATA["test_X_ori"])
 
 TRAIN_SET = {
     "X": DATA["train_X"],
@@ -78,9 +73,7 @@ TEST_SET = {
     "y": DATA["test_y"].astype(float),
 }
 
-assert (
-    N_PRED_STEPS <= DATA["train_X"].shape[1]
-), "N_PRED_STEPS should be less than the sequence length."
+assert N_PRED_STEPS <= DATA["train_X"].shape[1], "N_PRED_STEPS should be less than the sequence length."
 FORECASTING_TRAIN_SET = {
     "X": DATA["train_X"][:, :-N_PRED_STEPS],
     "X_pred": DATA["train_X_ori"][:, -N_PRED_STEPS:],
@@ -99,9 +92,7 @@ n_cuda_devices = torch.cuda.device_count()
 cuda_devices = [torch.device(i) for i in range(n_cuda_devices)]
 if n_cuda_devices > 1:
     DEVICE = cuda_devices[np.random.randint(n_cuda_devices)]
-    logger.info(
-        f"❗️Detected multiple cuda devices, using one of them {DEVICE} to run testing."
-    )
+    logger.info(f"❗️Detected multiple cuda devices, using one of them {DEVICE} to run testing.")
 else:
     # if having no multiple cuda devices, leave it as None to use the default device
     DEVICE = None
@@ -112,9 +103,7 @@ def check_tb_and_model_checkpoints_existence(model):
     saved_files = os.listdir(model.saving_path)
     if ".DS_Store" in saved_files:  # for macOS
         saved_files.remove(".DS_Store")
-    assert (
-        model.saving_path is not None and len(saved_files) > 0
-    ), "tensorboard file does not exist"
+    assert model.saving_path is not None and len(saved_files) > 0, "tensorboard file does not exist"
     # check the model checkpoints existence
     saved_model_files = [i for i in saved_files if i.endswith(".pypots")]
     assert len(saved_model_files) > 0, "No model checkpoint saved."
@@ -135,9 +124,5 @@ if __name__ == "__main__":
     if not os.path.exists(FORECASTING_H5_TEST_SET_PATH):
         save_dict_into_h5(FORECASTING_TEST_SET, FORECASTING_H5_TEST_SET_PATH)
 
-    logger.info(
-        f"Files under GENERAL_DATA_SAVING_DIR: {os.listdir(GENERAL_DATA_SAVING_DIR)}"
-    )
-    logger.info(
-        f"Files under FORECASTING_DATA_SAVING_DIR: {os.listdir(FORECASTING_DATA_SAVING_DIR)}"
-    )
+    logger.info(f"Files under GENERAL_DATA_SAVING_DIR: {os.listdir(GENERAL_DATA_SAVING_DIR)}")
+    logger.info(f"Files under FORECASTING_DATA_SAVING_DIR: {os.listdir(FORECASTING_DATA_SAVING_DIR)}")
