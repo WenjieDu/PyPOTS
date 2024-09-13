@@ -69,9 +69,7 @@ class MIC(nn.Module):
             ]
         )
 
-        self.decomp = nn.ModuleList(
-            [SeriesDecompositionBlock(k) for k in decomp_kernel]
-        )
+        self.decomp = nn.ModuleList([SeriesDecompositionBlock(k) for k in decomp_kernel])
         self.merge = torch.nn.Conv2d(
             in_channels=feature_size,
             out_channels=feature_size,
@@ -79,12 +77,8 @@ class MIC(nn.Module):
         )
 
         # feedforward network
-        self.conv1 = nn.Conv1d(
-            in_channels=feature_size, out_channels=feature_size * 4, kernel_size=1
-        )
-        self.conv2 = nn.Conv1d(
-            in_channels=feature_size * 4, out_channels=feature_size, kernel_size=1
-        )
+        self.conv1 = nn.Conv1d(in_channels=feature_size, out_channels=feature_size * 4, kernel_size=1)
+        self.conv2 = nn.Conv1d(in_channels=feature_size * 4, out_channels=feature_size, kernel_size=1)
         self.norm1 = nn.LayerNorm(feature_size)
         self.norm2 = nn.LayerNorm(feature_size)
 
@@ -101,9 +95,7 @@ class MIC(nn.Module):
         x = x1
 
         # isometric convolution
-        zeros = torch.zeros(
-            (x.shape[0], x.shape[1], x.shape[2] - 1), device=input.device
-        )
+        zeros = torch.zeros((x.shape[0], x.shape[1], x.shape[2] - 1), device=input.device)
         x = torch.cat((zeros, x), dim=-1)
         x = self.drop(self.act(isometric(x)))
         x = self.norm((x + x1).permute(0, 2, 1)).permute(0, 2, 1)
@@ -120,9 +112,7 @@ class MIC(nn.Module):
         multi = []
         for i in range(len(self.conv_kernel)):
             src_out, trend1 = self.decomp[i](src)
-            src_out = self.conv_trans_conv(
-                src_out, self.conv[i], self.conv_trans[i], self.isometric_conv[i]
-            )
+            src_out = self.conv_trans_conv(src_out, self.conv[i], self.conv_trans[i], self.isometric_conv[i])
             multi.append(src_out)
 
             # merge

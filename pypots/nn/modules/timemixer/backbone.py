@@ -73,17 +73,11 @@ class BackboneTimeMixer(nn.Module):
         self.preprocess = SeriesDecompositionBlock(moving_avg)
 
         if self.channel_independence == 1:
-            self.enc_embedding = DataEmbedding(
-                1, d_model, embed, freq, dropout, with_pos=False
-            )
+            self.enc_embedding = DataEmbedding(1, d_model, embed, freq, dropout, with_pos=False)
         else:
-            self.enc_embedding = DataEmbedding(
-                n_features, d_model, embed, freq, dropout, with_pos=False
-            )
+            self.enc_embedding = DataEmbedding(n_features, d_model, embed, freq, dropout, with_pos=False)
 
-        self.normalize_layers = torch.nn.ModuleList(
-            [RevIN(n_features) for _ in range(downsampling_layers + 1)]
-        )
+        self.normalize_layers = torch.nn.ModuleList([RevIN(n_features) for _ in range(downsampling_layers + 1)])
 
         if task_name == "long_term_forecast" or task_name == "short_term_forecast":
             self.predict_layers = torch.nn.ModuleList(
@@ -152,9 +146,7 @@ class BackboneTimeMixer(nn.Module):
 
     def __multi_scale_process_inputs(self, x_enc, x_mark_enc):
         if self.downsampling_method == "max":
-            down_pool = torch.nn.MaxPool1d(
-                self.downsampling_window, return_indices=False
-            )
+            down_pool = torch.nn.MaxPool1d(self.downsampling_window, return_indices=False)
         elif self.downsampling_method == "avg":
             down_pool = torch.nn.AvgPool1d(self.downsampling_window)
         elif self.downsampling_method == "conv":
@@ -188,12 +180,8 @@ class BackboneTimeMixer(nn.Module):
             x_enc_ori = x_enc_sampling
 
             if x_mark_enc_mark_ori is not None:
-                x_mark_sampling_list.append(
-                    x_mark_enc_mark_ori[:, :: self.downsampling_window, :]
-                )
-                x_mark_enc_mark_ori = x_mark_enc_mark_ori[
-                    :, :: self.downsampling_window, :
-                ]
+                x_mark_sampling_list.append(x_mark_enc_mark_ori[:, :: self.downsampling_window, :])
+                x_mark_enc_mark_ori = x_mark_enc_mark_ori[:, :: self.downsampling_window, :]
 
         x_enc = x_enc_sampling_list
         if x_mark_enc_mark_ori is not None:
@@ -264,28 +252,18 @@ class BackboneTimeMixer(nn.Module):
         if self.channel_independence == 1:
             x_list = x_list[0]
             for i, enc_out in zip(range(len(x_list)), enc_out_list):
-                dec_out = self.predict_layers[i](enc_out.permute(0, 2, 1)).permute(
-                    0, 2, 1
-                )  # align temporal dimension
+                dec_out = self.predict_layers[i](enc_out.permute(0, 2, 1)).permute(0, 2, 1)  # align temporal dimension
                 if self.use_future_temporal_feature:
                     dec_out = dec_out + self.x_mark_dec
                     dec_out = self.projection_layer(dec_out)
                 else:
                     dec_out = self.projection_layer(dec_out)
-                dec_out = (
-                    dec_out.reshape(B, self.c_out, self.n_pred_steps)
-                    .permute(0, 2, 1)
-                    .contiguous()
-                )
+                dec_out = dec_out.reshape(B, self.c_out, self.n_pred_steps).permute(0, 2, 1).contiguous()
                 dec_out_list.append(dec_out)
 
         else:
-            for i, enc_out, out_res in zip(
-                range(len(x_list[0])), enc_out_list, x_list[1]
-            ):
-                dec_out = self.predict_layers[i](enc_out.permute(0, 2, 1)).permute(
-                    0, 2, 1
-                )  # align temporal dimension
+            for i, enc_out, out_res in zip(range(len(x_list[0])), enc_out_list, x_list[1]):
+                dec_out = self.predict_layers[i](enc_out.permute(0, 2, 1)).permute(0, 2, 1)  # align temporal dimension
                 dec_out = self.out_projection(dec_out, i, out_res)
                 dec_out_list.append(dec_out)
 
@@ -385,8 +363,6 @@ class BackboneTimeMixer(nn.Module):
             enc_out_list = self.pdm_blocks[i](enc_out_list)
 
         dec_out = self.projection_layer(enc_out_list[0])
-        dec_out = (
-            dec_out.reshape(B, self.n_pred_features, -1).permute(0, 2, 1).contiguous()
-        )
+        dec_out = dec_out.reshape(B, self.n_pred_features, -1).permute(0, 2, 1).contiguous()
 
         return dec_out

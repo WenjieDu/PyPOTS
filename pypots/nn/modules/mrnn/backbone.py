@@ -36,21 +36,15 @@ class BackboneMRNN(nn.Module):
         device = X_f.device
         batch_size = X_f.size()[0]
 
-        f_hidden_state_0 = torch.zeros(
-            (1, batch_size, self.rnn_hidden_size), device=device
-        )
-        b_hidden_state_0 = torch.zeros(
-            (1, batch_size, self.rnn_hidden_size), device=device
-        )
+        f_hidden_state_0 = torch.zeros((1, batch_size, self.rnn_hidden_size), device=device)
+        b_hidden_state_0 = torch.zeros((1, batch_size, self.rnn_hidden_size), device=device)
         f_input = torch.cat([X_f, M_f, D_f], dim=2)
         b_input = torch.cat([X_b, M_b, D_b], dim=2)
         hidden_states_f, _ = self.f_rnn(f_input, f_hidden_state_0)
         hidden_states_b, _ = self.b_rnn(b_input, b_hidden_state_0)
         hidden_states_b = torch.flip(hidden_states_b, dims=[1])
 
-        feature_estimation = self.concated_hidden_project(
-            torch.cat([hidden_states_f, hidden_states_b], dim=2)
-        )
+        feature_estimation = self.concated_hidden_project(torch.cat([hidden_states_f, hidden_states_b], dim=2))
 
         return feature_estimation, hidden_states_f, hidden_states_b
 
@@ -60,9 +54,7 @@ class BackboneMRNN(nn.Module):
 
         feature_collector = []
         for f in range(self.n_features):
-            feat_estimation, hid_states_f, hid_states_b = self.gene_hidden_states(
-                inputs, f
-            )
+            feat_estimation, hid_states_f, hid_states_b = self.gene_hidden_states(inputs, f)
             feature_collector.append(feat_estimation)
 
         RNN_estimation = torch.concat(feature_collector, dim=2)

@@ -61,14 +61,10 @@ class LinearLR(LRScheduler):
     ):
         super().__init__(last_epoch, verbose)
         if start_factor > 1.0 or start_factor < 0:
-            raise ValueError(
-                "Starting multiplicative factor expected to be between 0 and 1."
-            )
+            raise ValueError("Starting multiplicative factor expected to be between 0 and 1.")
 
         if end_factor > 1.0 or end_factor < 0:
-            raise ValueError(
-                "Ending multiplicative factor expected to be between 0 and 1."
-            )
+            raise ValueError("Ending multiplicative factor expected to be between 0 and 1.")
 
         self.start_factor = start_factor
         self.end_factor = end_factor
@@ -77,14 +73,11 @@ class LinearLR(LRScheduler):
     def get_lr(self):
         if not self._get_lr_called_within_step:
             logger.warning(
-                "⚠️ To get the last learning rate computed by the scheduler, "
-                "please use `get_last_lr()`.",
+                "⚠️ To get the last learning rate computed by the scheduler, please use `get_last_lr()`.",
             )
 
         if self.last_epoch == 0:
-            return [
-                group["lr"] * self.start_factor for group in self.optimizer.param_groups
-            ]
+            return [group["lr"] * self.start_factor for group in self.optimizer.param_groups]
 
         if self.last_epoch > self.total_iters:
             return [group["lr"] for group in self.optimizer.param_groups]
@@ -94,10 +87,7 @@ class LinearLR(LRScheduler):
             * (
                 1.0
                 + (self.end_factor - self.start_factor)
-                / (
-                    self.total_iters * self.start_factor
-                    + (self.last_epoch - 1) * (self.end_factor - self.start_factor)
-                )
+                / (self.total_iters * self.start_factor + (self.last_epoch - 1) * (self.end_factor - self.start_factor))
             )
             for group in self.optimizer.param_groups
         ]
@@ -107,9 +97,7 @@ class LinearLR(LRScheduler):
             base_lr
             * (
                 self.start_factor
-                + (self.end_factor - self.start_factor)
-                * min(self.total_iters, self.last_epoch)
-                / self.total_iters
+                + (self.end_factor - self.start_factor) * min(self.total_iters, self.last_epoch) / self.total_iters
             )
             for base_lr in self.base_lrs
         ]

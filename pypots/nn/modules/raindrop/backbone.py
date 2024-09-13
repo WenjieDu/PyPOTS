@@ -2,7 +2,6 @@
 
 """
 
-
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
@@ -70,15 +69,11 @@ class BackboneRaindrop(nn.Module):
         if self.sensor_wise_mask:
             dim_check = n_features * (self.d_ob + d_pe)
             assert dim_check % n_heads == 0, "dim_check must be divisible by n_heads"
-            encoder_layers = TransformerEncoderLayer(
-                n_features * (self.d_ob + d_pe), n_heads, d_ffn, dropout
-            )
+            encoder_layers = TransformerEncoderLayer(n_features * (self.d_ob + d_pe), n_heads, d_ffn, dropout)
         else:
             dim_check = d_model + d_pe
             assert dim_check % n_heads == 0, "dim_check must be divisible by n_heads"
-            encoder_layers = TransformerEncoderLayer(
-                d_model + d_pe, n_heads, d_ffn, dropout
-            )
+            encoder_layers = TransformerEncoderLayer(d_model + d_pe, n_heads, d_ffn, dropout)
         self.transformer_encoder = TransformerEncoder(encoder_layers, n_layers)
 
         self.R_u = nn.Parameter(torch.Tensor(1, self.n_features * self.d_ob))
@@ -163,9 +158,7 @@ class BackboneRaindrop(nn.Module):
         edge_index = torch.nonzero(adj).T
         edge_weights = adj[edge_index[0], edge_index[1]]
 
-        output = torch.zeros(
-            [max_len, batch_size, self.n_features * self.d_ob], device=device
-        )
+        output = torch.zeros([max_len, batch_size, self.n_features * self.d_ob], device=device)
 
         alpha_all = torch.zeros([edge_index.shape[1], batch_size], device=device)
 
@@ -174,9 +167,7 @@ class BackboneRaindrop(nn.Module):
             step_data = x[:, unit, :]
             p_t = pe[:, unit, :]
 
-            step_data = step_data.reshape(
-                [max_len, self.n_features, self.d_ob]
-            ).permute(1, 0, 2)
+            step_data = step_data.reshape([max_len, self.n_features, self.d_ob]).permute(1, 0, 2)
             step_data = step_data.reshape(self.n_features, max_len * self.d_ob)
 
             step_data, attention_weights = self.ob_propagation(

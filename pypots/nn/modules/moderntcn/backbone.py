@@ -134,13 +134,9 @@ class BackboneModernTCN(nn.Module):
             )
         else:
             if patch_num % pow(downsampling_ratio, (self.num_stage - 1)) == 0:
-                self.head_nf = (
-                    d_model * patch_num // pow(downsampling_ratio, (self.num_stage - 1))
-                )
+                self.head_nf = d_model * patch_num // pow(downsampling_ratio, (self.num_stage - 1))
             else:
-                self.head_nf = d_model * (
-                    patch_num // pow(downsampling_ratio, (self.num_stage - 1)) + 1
-                )
+                self.head_nf = d_model * (patch_num // pow(downsampling_ratio, (self.num_stage - 1)) + 1)
 
             self.head = FlattenHead(
                 self.head_nf,

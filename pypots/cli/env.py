@@ -94,18 +94,14 @@ class EnvCommand(BaseCommand):
         # run checks first
         self.checkup()
 
-        logger.info(
-            f"Installing the dependencies in scope `{self._install}` for you..."
-        )
+        logger.info(f"Installing the dependencies in scope `{self._install}` for you...")
 
         if self._tool == "conda":
             assert (
                 self.execute_command("which conda").returncode == 0
             ), "Conda not installed, cannot set --tool=conda, please check your conda."
 
-            self.execute_command(
-                "conda install pyg pytorch-scatter pytorch-sparse -c pyg"
-            )
+            self.execute_command("conda install pyg pytorch-scatter pytorch-sparse -c pyg")
 
         else:  # self._tool == "pip"
             torch_version = torch.__version__

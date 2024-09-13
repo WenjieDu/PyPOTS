@@ -58,9 +58,7 @@ class _GRUD(nn.Module):
         empirical_mean = inputs["empirical_mean"]
         X_filledLOCF = inputs["X_filledLOCF"]
 
-        _, hidden_state = self.model(
-            X, missing_mask, deltas, empirical_mean, X_filledLOCF
-        )
+        _, hidden_state = self.model(X, missing_mask, deltas, empirical_mean, X_filledLOCF)
 
         logits = self.classifier(hidden_state)
         classification_pred = torch.softmax(logits, dim=1)
@@ -68,9 +66,7 @@ class _GRUD(nn.Module):
 
         # if in training mode, return results with losses
         if training:
-            classification_loss = F.nll_loss(
-                torch.log(classification_pred), inputs["label"]
-            )
+            classification_loss = F.nll_loss(torch.log(classification_pred), inputs["label"])
             results["loss"] = classification_loss
 
         return results

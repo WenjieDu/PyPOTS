@@ -53,12 +53,8 @@ def batched_index_select(values, indices):
 def process_inputs_chunk(fn, chunks=1, dim=0):
     def inner_fn(*args, **kwargs):
         keys, values, len_args = kwargs.keys(), kwargs.values(), len(args)
-        chunked_args = list(
-            zip(*map(lambda x: x.chunk(chunks, dim=dim), list(args) + list(values)))
-        )
-        all_args = map(
-            lambda x: (x[:len_args], dict(zip(keys, x[len_args:]))), chunked_args
-        )
+        chunked_args = list(zip(*map(lambda x: x.chunk(chunks, dim=dim), list(args) + list(values))))
+        all_args = map(lambda x: (x[:len_args], dict(zip(keys, x[len_args:]))), chunked_args)
         outputs = [fn(*c_args, **c_kwargs) for c_args, c_kwargs in all_args]
         return tuple(map(lambda x: torch.cat(x, dim=dim), zip(*outputs)))
 
@@ -101,9 +97,7 @@ def cache_fn(f):
 def cache_method_decorator(cache_attr, cache_namespace, reexecute=False):
     def inner_fn(fn):
         @wraps(fn)
-        def wrapper(
-            self, *args, key_namespace=None, fetch=False, set_cache=True, **kwargs
-        ):
+        def wrapper(self, *args, key_namespace=None, fetch=False, set_cache=True, **kwargs):
             namespace_str = str(default(key_namespace, ""))
             _cache = getattr(self, cache_attr)
             _keyname = f"{cache_namespace}:{namespace_str}"
@@ -150,9 +144,7 @@ class FullQKAttention(nn.Module):
         self.causal = causal
         self.dropout = nn.Dropout(dropout)
 
-    def forward(
-        self, qk, v, query_len=None, input_mask=None, input_attn_mask=None, **kwargs
-    ):
+    def forward(self, qk, v, query_len=None, input_mask=None, input_attn_mask=None, **kwargs):
         b, seq_len, dim = qk.shape
         query_len = default(query_len, seq_len)
         t = query_len
@@ -175,9 +167,7 @@ class FullQKAttention(nn.Module):
 
         # Mask for post qk attention logits of the input sequence
         if input_attn_mask is not None:
-            input_attn_mask = F.pad(
-                input_attn_mask, (0, seq_len - input_attn_mask.shape[-1]), value=True
-            )
+            input_attn_mask = F.pad(input_attn_mask, (0, seq_len - input_attn_mask.shape[-1]), value=True)
             dot.masked_fill_(~input_attn_mask, masked_value)
 
         if self.causal:
@@ -213,10 +203,9 @@ class LSHAttention(nn.Module):
         self.dropout = nn.Dropout(dropout)
         self.dropout_for_hash = nn.Dropout(drop_for_hash_rate)
 
-        assert rehash_each_round or allow_duplicate_attention, (
-            "The setting {allow_duplicate_attention=False, rehash_each_round=False}"
-            " is not implemented."
-        )
+        assert (
+            rehash_each_round or allow_duplicate_attention
+        ), "The setting {allow_duplicate_attention=False, rehash_each_round=False} is not implemented."
 
         self.causal = causal
         self.bucket_size = bucket_size
@@ -253,9 +242,7 @@ class LSHAttention(nn.Module):
             rot_size // 2,
         )
 
-        random_rotations = torch.randn(
-            rotations_shape, dtype=vecs.dtype, device=device
-        ).expand(batch_size, -1, -1, -1)
+        random_rotations = torch.randn(rotations_shape, dtype=vecs.dtype, device=device).expand(batch_size, -1, -1, -1)
 
         dropped_vecs = self.dropout_for_hash(vecs)
         rotated_vecs = torch.einsum("btf,bfhi->bhti", dropped_vecs, random_rotations)
@@ -323,11 +310,7 @@ class LSHAttention(nn.Module):
 
         total_hashes = self.n_hashes
 
-        ticker = (
-            torch.arange(total_hashes * seqlen, device=device)
-            .unsqueeze(0)
-            .expand_as(buckets)
-        )
+        ticker = torch.arange(total_hashes * seqlen, device=device).unsqueeze(0).expand_as(buckets)
         buckets_and_t = seqlen * buckets + (ticker % seqlen)
         buckets_and_t = buckets_and_t.detach()
 
@@ -396,9 +379,7 @@ class LSHAttention(nn.Module):
 
         # Input mask for padding in variable lengthed sequences
         if input_mask is not None:
-            input_mask = F.pad(
-                input_mask, (0, seqlen - input_mask.shape[1]), value=True
-            )
+            input_mask = F.pad(input_mask, (0, seqlen - input_mask.shape[1]), value=True)
             mq = input_mask.gather(1, st).reshape((batch_size, chunk_size, -1))
             mkv = look_one_back(mq)
             mask = mq[:, :, :, None] * mkv[:, :, None, :]
@@ -420,9 +401,7 @@ class LSHAttention(nn.Module):
 
         # Mask out attention to other hash buckets.
         if not self._attend_across_buckets:
-            bq_buckets = bkv_buckets = torch.reshape(
-                sbuckets_and_t // seqlen, (batch_size, chunk_size, -1)
-            )
+            bq_buckets = bkv_buckets = torch.reshape(sbuckets_and_t // seqlen, (batch_size, chunk_size, -1))
             bkv_buckets = look_one_back(bkv_buckets)
             bucket_mask = bq_buckets[:, :, :, None] != bkv_buckets[:, :, None, :]
             dots.masked_fill_(bucket_mask, masked_value)
@@ -448,9 +427,7 @@ class LSHAttention(nn.Module):
             ).permute((0, 2, 1))
 
             slocs = batched_index_select(locs, st)
-            b_locs = torch.reshape(
-                slocs, (batch_size, chunk_size, -1, 2 * total_hashes)
-            )
+            b_locs = torch.reshape(slocs, (batch_size, chunk_size, -1, 2 * total_hashes))
 
             b_locs1 = b_locs[:, :, :, None, :total_hashes]
 
@@ -501,14 +478,10 @@ class LSHAttention(nn.Module):
         if self._return_attn:
             attn_unsort = (bq_t * seqlen)[:, :, :, None] + bkv_t[:, :, None, :]
             attn_unsort = attn_unsort.view(batch_size * total_hashes, -1).long()
-            unsorted_dots = torch.zeros(
-                batch_size * total_hashes, seqlen * seqlen, device=device
-            )
+            unsorted_dots = torch.zeros(batch_size * total_hashes, seqlen * seqlen, device=device)
             unsorted_dots.scatter_add_(1, attn_unsort, dots.view_as(attn_unsort))
             del attn_unsort
-            unsorted_dots = unsorted_dots.reshape(
-                batch_size, total_hashes, seqlen, seqlen
-            )
+            unsorted_dots = unsorted_dots.reshape(batch_size, total_hashes, seqlen, seqlen)
             attn = torch.sum(unsorted_dots[:, :, 0:query_len, :] * probs, dim=1)
 
         # return output, attention matrix, and bucket distribution
@@ -539,12 +512,8 @@ class LSHSelfAttention(nn.Module):
         **kwargs,
     ):
         super().__init__()
-        assert (
-            dim_head or (dim % heads) == 0
-        ), "dimensions must be divisible by number of heads"
-        assert (
-            n_local_attn_heads < heads
-        ), "local attention heads must be less than number of heads"
+        assert dim_head or (dim % heads) == 0, "dimensions must be divisible by number of heads"
+        assert n_local_attn_heads < heads, "local attention heads must be less than number of heads"
 
         dim_head = default(dim_head, dim // heads)
         dim_heads = dim_head * heads
@@ -580,11 +549,7 @@ class LSHSelfAttention(nn.Module):
         self.full_attn_thres = default(full_attn_thres, bucket_size)
 
         self.num_mem_kv = num_mem_kv
-        self.mem_kv = (
-            nn.Parameter(torch.randn(1, num_mem_kv, dim, requires_grad=True))
-            if num_mem_kv > 0
-            else None
-        )
+        self.mem_kv = nn.Parameter(torch.randn(1, num_mem_kv, dim, requires_grad=True)) if num_mem_kv > 0 else None
 
         self.n_local_attn_heads = n_local_attn_heads
         self.local_attn = LocalAttention(
@@ -657,16 +622,12 @@ class LSHSelfAttention(nn.Module):
             masks["input_mask"] = mask
 
         if input_attn_mask is not None:
-            input_attn_mask = merge_batch_and_heads(
-                expand_dim(1, lsh_h, input_attn_mask)
-            )
+            input_attn_mask = merge_batch_and_heads(expand_dim(1, lsh_h, input_attn_mask))
             masks["input_attn_mask"] = input_attn_mask
 
         attn_fn = self.lsh_attn if not use_full_attn else self.full_attn
         partial_attn_fn = partial(attn_fn, query_len=t, pos_emb=pos_emb, **kwargs)
-        attn_fn_in_chunks = process_inputs_chunk(
-            partial_attn_fn, chunks=self.attn_chunks
-        )
+        attn_fn_in_chunks = process_inputs_chunk(partial_attn_fn, chunks=self.attn_chunks)
 
         out, attn, buckets = attn_fn_in_chunks(qk, v, **masks)
 

@@ -62,12 +62,8 @@ class TwoStageAttentionLayer(nn.Module):
         self.norm3 = nn.LayerNorm(d_model)
         self.norm4 = nn.LayerNorm(d_model)
 
-        self.MLP1 = nn.Sequential(
-            nn.Linear(d_model, d_ff), nn.GELU(), nn.Linear(d_ff, d_model)
-        )
-        self.MLP2 = nn.Sequential(
-            nn.Linear(d_model, d_ff), nn.GELU(), nn.Linear(d_ff, d_model)
-        )
+        self.MLP1 = nn.Sequential(nn.Linear(d_model, d_ff), nn.GELU(), nn.Linear(d_ff, d_model))
+        self.MLP2 = nn.Sequential(nn.Linear(d_model, d_ff), nn.GELU(), nn.Linear(d_ff, d_model))
 
     def forward(self, x):
         # Cross Time Stage: Directly apply MSA to each dimension
@@ -82,29 +78,21 @@ class TwoStageAttentionLayer(nn.Module):
 
         # Cross dimension stage: use a small set of learnable vectors to
         # aggregate and distribute messages to build the D-to-D connection
-        dim_send = rearrange(
-            dim_in, "(b ts_d) seg_num d_model -> (b seg_num) ts_d d_model", b=batch
-        )
+        dim_send = rearrange(dim_in, "(b ts_d) seg_num d_model -> (b seg_num) ts_d d_model", b=batch)
         # dim_send = dim_in.reshape()
         batch_router = repeat(
             self.router,
             "seg_num factor d_model -> (repeat seg_num) factor d_model",
             repeat=batch,
         )
-        dim_buffer, attn = self.dim_sender(
-            batch_router, dim_send, dim_send, attn_mask=None
-        )
-        dim_receive, attn = self.dim_receiver(
-            dim_send, dim_buffer, dim_buffer, attn_mask=None
-        )
+        dim_buffer, attn = self.dim_sender(batch_router, dim_send, dim_send, attn_mask=None)
+        dim_receive, attn = self.dim_receiver(dim_send, dim_buffer, dim_buffer, attn_mask=None)
         dim_enc = dim_send + self.dropout(dim_receive)
         dim_enc = self.norm3(dim_enc)
         dim_enc = dim_enc + self.dropout(self.MLP2(dim_enc))
         dim_enc = self.norm4(dim_enc)
 
-        final_out = rearrange(
-            dim_enc, "(b seg_num) ts_d d_model -> b ts_d seg_num d_model", b=batch
-        )
+        final_out = rearrange(dim_enc, "(b seg_num) ts_d d_model -> b ts_d seg_num d_model", b=batch)
 
         return final_out
 
@@ -159,9 +147,7 @@ class ScaleBlock(nn.Module):
 
         for i in range(depth):
             self.encode_layers.append(
-                TwoStageAttentionLayer(
-                    seg_num, factor, d_model, n_heads, d_k, d_k, d_ff, dropout
-                )
+                TwoStageAttentionLayer(seg_num, factor, d_model, n_heads, d_k, d_k, d_ff, dropout)
             )
 
     def forward(self, x, attn_mask=None, tau=None, delta=None):
@@ -177,18 +163,14 @@ class ScaleBlock(nn.Module):
 
 
 class CrossformerDecoderLayer(nn.Module):
-    def __init__(
-        self, self_attention, cross_attention, seg_len, d_model, d_ff=None, dropout=0.1
-    ):
+    def __init__(self, self_attention, cross_attention, seg_len, d_model, d_ff=None, dropout=0.1):
         super().__init__()
         self.self_attention = self_attention
         self.cross_attention = cross_attention
         self.norm1 = nn.LayerNorm(d_model)
         self.norm2 = nn.LayerNorm(d_model)
         self.dropout = nn.Dropout(dropout)
-        self.MLP1 = nn.Sequential(
-            nn.Linear(d_model, d_model), nn.GELU(), nn.Linear(d_model, d_model)
-        )
+        self.MLP1 = nn.Sequential(nn.Linear(d_model, d_model), nn.GELU(), nn.Linear(d_model, d_model))
         self.linear_pred = nn.Linear(d_model, seg_len)
 
     def forward(self, x, cross):
@@ -196,9 +178,7 @@ class CrossformerDecoderLayer(nn.Module):
         x = self.self_attention(x)
         x = rearrange(x, "b ts_d out_seg_num d_model -> (b ts_d) out_seg_num d_model")
 
-        cross = rearrange(
-            cross, "b ts_d in_seg_num d_model -> (b ts_d) in_seg_num d_model"
-        )
+        cross = rearrange(cross, "b ts_d in_seg_num d_model -> (b ts_d) in_seg_num d_model")
         tmp, attn = self.cross_attention(
             x,
             cross,
@@ -218,8 +198,6 @@ class CrossformerDecoderLayer(nn.Module):
             b=batch,
         )
         layer_predict = self.linear_pred(dec_output)
-        layer_predict = rearrange(
-            layer_predict, "b out_d seg_num seg_len -> b (out_d seg_num) seg_len"
-        )
+        layer_predict = rearrange(layer_predict, "b out_d seg_num seg_len -> b (out_d seg_num) seg_len")
 
         return dec_output, layer_predict

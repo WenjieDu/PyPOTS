@@ -26,19 +26,11 @@ class BackboneGRUD(nn.Module):
         self.rnn_hidden_size = rnn_hidden_size
 
         # create models
-        self.rnn_cell = nn.GRUCell(
-            self.n_features * 2 + self.rnn_hidden_size, self.rnn_hidden_size
-        )
-        self.temp_decay_h = TemporalDecay(
-            input_size=self.n_features, output_size=self.rnn_hidden_size, diag=False
-        )
-        self.temp_decay_x = TemporalDecay(
-            input_size=self.n_features, output_size=self.n_features, diag=True
-        )
+        self.rnn_cell = nn.GRUCell(self.n_features * 2 + self.rnn_hidden_size, self.rnn_hidden_size)
+        self.temp_decay_h = TemporalDecay(input_size=self.n_features, output_size=self.rnn_hidden_size, diag=False)
+        self.temp_decay_x = TemporalDecay(input_size=self.n_features, output_size=self.n_features, diag=True)
 
-    def forward(
-        self, X, missing_mask, deltas, empirical_mean, X_filledLOCF
-    ) -> Tuple[torch.Tensor, ...]:
+    def forward(self, X, missing_mask, deltas, empirical_mean, X_filledLOCF) -> Tuple[torch.Tensor, ...]:
         """Forward processing of GRU-D.
 
         Parameters

@@ -50,9 +50,7 @@ class PeepholeLSTMCell(nn.LSTMCell):
         hx: Optional[torch.Tensor] = None,
     ) -> Tuple[torch.Tensor, torch.Tensor]:
         if hx is None:
-            zeros = torch.zeros(
-                X.size(0), self.hidden_size, dtype=X.dtype, device=X.device
-            )
+            zeros = torch.zeros(X.size(0), self.hidden_size, dtype=X.dtype, device=X.device)
             hx = (zeros, zeros)
 
         h, c = hx

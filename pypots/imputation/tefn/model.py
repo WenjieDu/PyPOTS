@@ -34,13 +34,11 @@ class TEFN(BaseNNImputer):
         The number of features in the time-series data sample.
 
     n_fod :
-        The number of frame of discernment in the TEFN model.
+        The number of FOD (frame of discernment) in the TEFN model.
 
     apply_nonstationary_norm :
         Whether to apply non-stationary normalization to the input data for TimesNet.
-        Please refer to :cite:`liu2022nonstationary` for details about non-stationary normalization,
-        which is not the idea of the original TimesNet paper. Hence, we make it optional
-        and default not to use here.
+        Please refer to :cite:`liu2022nonstationary` for details about non-stationary normalization.
 
     batch_size :
         The batch size for training and evaluating the model.
@@ -165,9 +163,7 @@ class TEFN(BaseNNImputer):
         file_type: str = "hdf5",
     ) -> None:
         # Step 1: wrap the input data with classes Dataset and DataLoader
-        training_set = DatasetForTEFN(
-            train_set, return_X_ori=False, return_y=False, file_type=file_type
-        )
+        training_set = DatasetForTEFN(train_set, return_X_ori=False, return_y=False, file_type=file_type)
         training_loader = DataLoader(
             training_set,
             batch_size=self.batch_size,
@@ -178,9 +174,7 @@ class TEFN(BaseNNImputer):
         if val_set is not None:
             if not key_in_data_set("X_ori", val_set):
                 raise ValueError("val_set must contain 'X_ori' for model validation.")
-            val_set = DatasetForTEFN(
-                val_set, return_X_ori=True, return_y=False, file_type=file_type
-            )
+            val_set = DatasetForTEFN(val_set, return_X_ori=True, return_y=False, file_type=file_type)
             val_loader = DataLoader(
                 val_set,
                 batch_size=self.batch_size,

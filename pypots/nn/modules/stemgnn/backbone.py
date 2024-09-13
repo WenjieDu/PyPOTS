@@ -39,12 +39,7 @@ class BackboneStemGNN(nn.Module):
         self.multi_layer = multi_layer
         self.stock_block = nn.ModuleList()
         self.stock_block.extend(
-            [
-                StockBlockLayer(
-                    self.time_step, self.unit, self.multi_layer, stack_cnt=i
-                )
-                for i in range(self.stack_cnt)
-            ]
+            [StockBlockLayer(self.time_step, self.unit, self.multi_layer, stack_cnt=i) for i in range(self.stack_cnt)]
         )
         self.fc = nn.Sequential(
             nn.Linear(int(self.time_step), int(self.time_step)),
@@ -64,9 +59,7 @@ class BackboneStemGNN(nn.Module):
         """
         if normalize:
             D = torch.diag(torch.sum(graph, dim=-1) ** (-1 / 2))
-            L = torch.eye(
-                graph.size(0), device=graph.device, dtype=graph.dtype
-            ) - torch.mm(torch.mm(D, graph), D)
+            L = torch.eye(graph.size(0), device=graph.device, dtype=graph.dtype) - torch.mm(torch.mm(D, graph), D)
         else:
             D = torch.diag(torch.sum(graph, dim=-1))
             L = D - graph
@@ -81,19 +74,11 @@ class BackboneStemGNN(nn.Module):
         """
         N = laplacian.size(0)  # [N, N]
         laplacian = laplacian.unsqueeze(0)
-        first_laplacian = torch.zeros(
-            [1, N, N], device=laplacian.device, dtype=torch.float
-        )
+        first_laplacian = torch.zeros([1, N, N], device=laplacian.device, dtype=torch.float)
         second_laplacian = laplacian
-        third_laplacian = (
-            2 * torch.matmul(laplacian, second_laplacian)
-        ) - first_laplacian
-        forth_laplacian = (
-            2 * torch.matmul(laplacian, third_laplacian) - second_laplacian
-        )
-        multi_order_laplacian = torch.cat(
-            [first_laplacian, second_laplacian, third_laplacian, forth_laplacian], dim=0
-        )
+        third_laplacian = (2 * torch.matmul(laplacian, second_laplacian)) - first_laplacian
+        forth_laplacian = 2 * torch.matmul(laplacian, third_laplacian) - second_laplacian
+        multi_order_laplacian = torch.cat([first_laplacian, second_laplacian, third_laplacian, forth_laplacian], dim=0)
         return multi_order_laplacian
 
     def latent_correlation_layer(self, x):
@@ -106,9 +91,7 @@ class BackboneStemGNN(nn.Module):
         attention = 0.5 * (attention + attention.T)
         degree_l = torch.diag(degree)
         diagonal_degree_hat = torch.diag(1 / (torch.sqrt(degree) + 1e-7))
-        laplacian = torch.matmul(
-            diagonal_degree_hat, torch.matmul(degree_l - attention, diagonal_degree_hat)
-        )
+        laplacian = torch.matmul(diagonal_degree_hat, torch.matmul(degree_l - attention, diagonal_degree_hat))
         mul_L = self.cheb_polynomial(laplacian)
         return mul_L, attention
 
