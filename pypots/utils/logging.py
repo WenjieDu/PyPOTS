@@ -7,6 +7,13 @@ Configure logging here.
 
 import logging
 import os
+import sys
+
+print(f"default encoding: {sys.getdefaultencoding()}")
+if os.getenv("PYTHONIOENCODING") != "UTF-8":
+    cmd = [sys.executable, *sys.argv]
+    os.execvpe(cmd[0], cmd, {**os.environ, "PYTHONIOENCODING": "UTF-8"})
+logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 
 LEVELS = {
     "debug": logging.DEBUG,
