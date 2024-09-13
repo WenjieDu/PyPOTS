@@ -40,9 +40,7 @@ class UsganDiscriminator(nn.Module):
     ):
         super().__init__()
         self.hint_rate = hint_rate
-        self.biRNN = nn.GRU(
-            n_features * 2, rnn_hidden_size, bidirectional=True, batch_first=True
-        )
+        self.biRNN = nn.GRU(n_features * 2, rnn_hidden_size, bidirectional=True, batch_first=True)
         self.dropout = nn.Dropout(dropout_rate)
         self.read_out = nn.Linear(rnn_hidden_size * 2, n_features)
 
@@ -69,10 +67,7 @@ class UsganDiscriminator(nn.Module):
         """
 
         device = imputed_X.device
-        hint = (
-            torch.rand_like(missing_mask, dtype=torch.float, device=device)
-            < self.hint_rate
-        )
+        hint = torch.rand_like(missing_mask, dtype=torch.float, device=device) < self.hint_rate
         hint = hint.int()
         h = hint * missing_mask + (1 - hint) * 0.5
         x_in = torch.cat([imputed_X, h], dim=-1)

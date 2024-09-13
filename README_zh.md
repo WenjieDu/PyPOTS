@@ -147,9 +147,9 @@ PyPOTS当前支持多变量POTS数据的插补，预测，分类，聚类以及�
 | Naive         | Mean                                                                                                                             |   ✅    |        |        |        |          |                    |
 | Naive         | Median                                                                                                                           |   ✅    |        |        |        |          |                    |
 
-💯 现在贡献你的模型来增加你的研究影响力！PyPOTS的下载量正在迅速增长(*
-*[目前PyPI上总共超过30万次且每日超1000的下载](https://www.pepy.tech/projects/pypots)**),
-你的工作将被社区广泛使用和引用。请参阅[贡献指南](https://github.com/WenjieDu/PyPOTS/blob/main/README_zh.md#-%E8%B4%A1%E7%8C%AE%E5%A3%B0%E6%98%8E)
+💯 现在贡献你的模型来增加你的研究影响力！PyPOTS的下载量正在迅速增长
+(**[目前PyPI上总共超过30万次且每日超1000的下载](https://www.pepy.tech/projects/pypots)**),
+你的工作将被社区广泛使用和引用。请参阅[贡献指南](#-%E8%B4%A1%E7%8C%AE%E5%A3%B0%E6%98%8E)
 ，了解如何将模型包含在PyPOTS中。
 
 ## ❖ PyPOTS生态系统
@@ -290,10 +290,10 @@ PyPOTS也已被纳入[PyTorch Ecosystem](https://pytorch.org/ecosystem/)。我�
 
 ```bibtex
 @article{du2023pypots,
-title={{PyPOTS: a Python toolbox for data mining on Partially-Observed Time Series}},
-author={Wenjie Du},
-journal={arXiv preprint arXiv:2305.18811},
-year={2023},
+    title = {{PyPOTS: a Python toolbox for data mining on Partially-Observed Time Series}},
+    author = {Wenjie Du},
+    journal = {arXiv preprint arXiv:2305.18811},
+    year = {2023},
 }
 ```
 
@@ -309,7 +309,7 @@ year={2023},
 通过提交你的代码，你将：
 
 1. 把你开发完善的模型直接提供给PyPOTS的所有用户使用，让你的工作更加广为人知。
-   请查看我们的[纳入标准](https://docs.pypots.com/en/latest/faq.html#inclusion-criteria)。
+   请查看我们的[收录标准](https://docs.pypots.com/en/latest/faq.html#inclusion-criteria)。
    你也可以利用项目文件中的模板`template`(如：
    [pypots/imputation/template](https://github.com/WenjieDu/PyPOTS/tree/main/pypots/imputation/template))快速启动你的开发;
 2. 成为[PyPOTS贡献者](https://github.com/WenjieDu/PyPOTS/graphs/contributors)之一，
@@ -340,8 +340,8 @@ year={2023},
 
 我们非常关心用户的反馈，因此我们正在建立PyPOTS社区:
 
-- [Slack](https://join.slack.com/t/pypots-org/shared_invite/zt-1gq6ufwsi-p0OZdW~e9UW_IA4_f1OfxA)
-  ：你可以在这里进行日常讨论、问答以及与我们的开发团队交流；
+- [Slack](https://join.slack.com/t/pypots-org/shared_invite/zt-1gq6ufwsi-p0OZdW~e9UW_IA4_f1OfxA):
+  你可以在这里进行日常讨论、问答以及与我们的开发团队交流；
 - [领英](https://www.linkedin.com/company/pypots)：你可以在这里获取官方公告和新闻；
 - [微信公众号](https://mp.weixin.qq.com/s/X3ukIgL1QpNH8ZEXq1YifA)：你可以关注官方公众号并加入微信群聊参与讨论以及获取最新动态；
 
@@ -350,122 +350,126 @@ PyPOTS社区是一个开放、透明、友好的社区，让我们共同努力�
 
 
 [//]: # (Use APA reference style below)
-[^1]: Du, W., Cote, D., & Liu, Y. (
-2023). [SAITS: Self-Attention-based Imputation for Time Series](https://doi.org/10.1016/j.eswa.2023.119619). *Expert
-systems with applications*.
+[^1]: Du, W., Cote, D., & Liu, Y. (2023).
+[SAITS: Self-Attention-based Imputation for Time Series](https://doi.org/10.1016/j.eswa.2023.119619).
+*Expert systems with applications*.
 [^2]: Vaswani, A., Shazeer, N.M., Parmar, N., Uszkoreit, J., Jones, L., Gomez, A.N., Kaiser, L., & Polosukhin, I. (
-2017). [Attention is All you Need](https://papers.nips.cc/paper/2017/hash/3f5ee243547dee91fbd053c1c4a845aa-Abstract.html).
+2017).
+[Attention is All you Need](https://papers.nips.cc/paper/2017/hash/3f5ee243547dee91fbd053c1c4a845aa-Abstract.html).
 *NeurIPS 2017*.
-[^3]: Cao, W., Wang, D., Li, J., Zhou, H., Li, L., & Li, Y. (
-2018). [BRITS: Bidirectional Recurrent Imputation for Time Series](https://papers.nips.cc/paper/2018/hash/734e6bfcd358e25ac1db0a4241b95651-Abstract.html).
+[^3]: Cao, W., Wang, D., Li, J., Zhou, H., Li, L., & Li, Y. (2018).
+[BRITS: Bidirectional Recurrent Imputation for Time Series](https://papers.nips.cc/paper/2018/hash/734e6bfcd358e25ac1db0a4241b95651-Abstract.html).
 *NeurIPS 2018*.
-[^4]: Che, Z., Purushotham, S., Cho, K., Sontag, D.A., & Liu, Y. (
-2018). [Recurrent Neural Networks for Multivariate Time Series with Missing Values](https://www.nature.com/articles/s41598-018-24271-9).
+[^4]: Che, Z., Purushotham, S., Cho, K., Sontag, D.A., & Liu, Y. (2018).
+[Recurrent Neural Networks for Multivariate Time Series with Missing Values](https://www.nature.com/articles/s41598-018-24271-9).
 *Scientific Reports*.
-[^5]: Zhang, X., Zeman, M., Tsiligkaridis, T., & Zitnik, M. (
-2022). [Graph-Guided Network for Irregularly Sampled Multivariate Time Series](https://arxiv.org/abs/2110.05357). *ICLR
-2022*.
-[^6]: Ma, Q., Chen, C., Li, S., & Cottrell, G. W. (
-2021). [Learning Representations for Incomplete Time Series Clustering](https://ojs.aaai.org/index.php/AAAI/article/view/17070).
+[^5]: Zhang, X., Zeman, M., Tsiligkaridis, T., & Zitnik, M. (2022).
+[Graph-Guided Network for Irregularly Sampled Multivariate Time Series](https://arxiv.org/abs/2110.05357). *ICLR 2022*.
+[^6]: Ma, Q., Chen, C., Li, S., & Cottrell, G. W. (2021).
+[Learning Representations for Incomplete Time Series Clustering](https://ojs.aaai.org/index.php/AAAI/article/view/17070).
 *AAAI 2021*.
 [^7]: Jong, J.D., Emon, M.A., Wu, P., Karki, R., Sood, M., Godard, P., Ahmad, A., Vrooman, H.A., Hofmann-Apitius, M., &
-Fröhlich, H. (
-2019). [Deep learning for clustering of multivariate clinical patient trajectories with missing values](https://academic.oup.com/gigascience/article/8/11/giz134/5626377).
+Fröhlich, H. (2019).
+[Deep learning for clustering of multivariate clinical patient trajectories with missing values](https://academic.oup.com/gigascience/article/8/11/giz134/5626377).
 *GigaScience*.
-[^8]: Chen, X., & Sun, L. (
-2021). [Bayesian Temporal Factorization for Multidimensional Time Series Prediction](https://arxiv.org/abs/1910.06366).
+[^8]: Chen, X., & Sun, L. (2021).
+[Bayesian Temporal Factorization for Multidimensional Time Series Prediction](https://arxiv.org/abs/1910.06366).
 *IEEE transactions on pattern analysis and machine intelligence*.
-[^9]: Yoon, J., Zame, W. R., & van der Schaar, M. (
-2019). [Estimating Missing Data in Temporal Data Streams Using Multi-Directional Recurrent Neural Networks](https://ieeexplore.ieee.org/document/8485748).
+[^9]: Yoon, J., Zame, W. R., & van der Schaar, M. (2019).
+[Estimating Missing Data in Temporal Data Streams Using Multi-Directional Recurrent Neural Networks](https://ieeexplore.ieee.org/document/8485748).
 *IEEE Transactions on Biomedical Engineering*.
-[^10]: Miao, X., Wu, Y., Wang, J., Gao, Y., Mao, X., & Yin, J. (
-2021). [Generative Semi-supervised Learning for Multivariate Time Series Imputation](https://ojs.aaai.org/index.php/AAAI/article/view/17086).
+[^10]: Miao, X., Wu, Y., Wang, J., Gao, Y., Mao, X., & Yin, J. (2021).
+[Generative Semi-supervised Learning for Multivariate Time Series Imputation](https://ojs.aaai.org/index.php/AAAI/article/view/17086).
 *AAAI 2021*.
-[^11]: Fortuin, V., Baranchuk, D., Raetsch, G. & Mandt, S. (
-2020). [GP-VAE: Deep Probabilistic Time Series Imputation](https://proceedings.mlr.press/v108/fortuin20a.html). *AISTATS
-2020*.
-[^12]: Tashiro, Y., Song, J., Song, Y., & Ermon, S. (
-2021). [CSDI: Conditional Score-based Diffusion Models for Probabilistic Time Series Imputation](https://proceedings.neurips.cc/paper/2021/hash/cfe8504bda37b575c70ee1a8276f3486-Abstract.html).
+[^11]: Fortuin, V., Baranchuk, D., Raetsch, G. & Mandt, S. (2020).
+[GP-VAE: Deep Probabilistic Time Series Imputation](https://proceedings.mlr.press/v108/fortuin20a.html).
+*AISTATS 2020*.
+[^12]: Tashiro, Y., Song, J., Song, Y., & Ermon, S. (2021).
+[CSDI: Conditional Score-based Diffusion Models for Probabilistic Time Series Imputation](https://proceedings.neurips.cc/paper/2021/hash/cfe8504bda37b575c70ee1a8276f3486-Abstract.html).
 *NeurIPS 2021*.
-[^13]: Rubin, D. B. (
-1976). [Inference and missing data](https://academic.oup.com/biomet/article-abstract/63/3/581/270932). *Biometrika*.
-[^14]: Wu, H., Hu, T., Liu, Y., Zhou, H., Wang, J., & Long, M. (
-2023). [TimesNet: Temporal 2d-variation modeling for general time series analysis](https://openreview.net/forum?id=ju_Uqw384Oq).
+[^13]: Rubin, D. B. (1976).
+[Inference and missing data](https://academic.oup.com/biomet/article-abstract/63/3/581/270932).
+*Biometrika*.
+[^14]: Wu, H., Hu, T., Liu, Y., Zhou, H., Wang, J., & Long, M. (2023).
+[TimesNet: Temporal 2d-variation modeling for general time series analysis](https://openreview.net/forum?id=ju_Uqw384Oq).
 *ICLR 2023*
-[^15]: Wu, H., Xu, J., Wang, J., & Long, M. (
-2021). [Autoformer: Decomposition transformers with auto-correlation for long-term series forecasting](https://proceedings.neurips.cc/paper/2021/hash/bcc0d400288793e8bdcd7c19a8ac0c2b-Abstract.html).
+[^15]: Wu, H., Xu, J., Wang, J., & Long, M. (2021).
+[Autoformer: Decomposition transformers with auto-correlation for long-term series forecasting](https://proceedings.neurips.cc/paper/2021/hash/bcc0d400288793e8bdcd7c19a8ac0c2b-Abstract.html).
 *NeurIPS 2021*.
-[^16]: Zhang, Y., & Yan, J. (
-2023). [Crossformer: Transformer utilizing cross-dimension dependency for multivariate time series forecasting](https://openreview.net/forum?id=vSVLM2j9eie).
+[^16]: Zhang, Y., & Yan, J. (2023).
+[Crossformer: Transformer utilizing cross-dimension dependency for multivariate time series forecasting](https://openreview.net/forum?id=vSVLM2j9eie).
 *ICLR 2023*.
-[^17]: Zeng, A., Chen, M., Zhang, L., & Xu, Q. (
-2023). [Are transformers effective for time series forecasting?](https://ojs.aaai.org/index.php/AAAI/article/view/26317).
+[^17]: Zeng, A., Chen, M., Zhang, L., & Xu, Q. (2023).
+[Are transformers effective for time series forecasting?](https://ojs.aaai.org/index.php/AAAI/article/view/26317).
 *AAAI 2023*
-[^18]: Nie, Y., Nguyen, N. H., Sinthong, P., & Kalagnanam, J. (
-2023). [A time series is worth 64 words: Long-term forecasting with transformers](https://openreview.net/forum?id=Jbdc0vTOcol).
+[^18]: Nie, Y., Nguyen, N. H., Sinthong, P., & Kalagnanam, J. (2023).
+[A time series is worth 64 words: Long-term forecasting with transformers](https://openreview.net/forum?id=Jbdc0vTOcol).
 *ICLR 2023*
-[^19]: Woo, G., Liu, C., Sahoo, D., Kumar, A., & Hoi, S. (
-2023). [ETSformer: Exponential Smoothing Transformers for Time-series Forecasting](https://openreview.net/forum?id=5m_3whfo483).
+[^19]: Woo, G., Liu, C., Sahoo, D., Kumar, A., & Hoi, S. (2023).
+[ETSformer: Exponential Smoothing Transformers for Time-series Forecasting](https://openreview.net/forum?id=5m_3whfo483).
 *ICLR 2023*
-[^20]: Zhou, T., Ma, Z., Wen, Q., Wang, X., Sun, L., & Jin, R. (
-2022). [FEDformer: Frequency enhanced decomposed transformer for long-term series forecasting](https://proceedings.mlr.press/v162/zhou22g.html).
+[^20]: Zhou, T., Ma, Z., Wen, Q., Wang, X., Sun, L., & Jin, R. (2022).
+[FEDformer: Frequency enhanced decomposed transformer for long-term series forecasting](https://proceedings.mlr.press/v162/zhou22g.html).
 *ICML 2022*.
-[^21]: Zhou, H., Zhang, S., Peng, J., Zhang, S., Li, J., Xiong, H., & Zhang, W. (
-2021). [Informer: Beyond efficient transformer for long sequence time-series forecasting](https://ojs.aaai.org/index.php/AAAI/article/view/17325).
+[^21]: Zhou, H., Zhang, S., Peng, J., Zhang, S., Li, J., Xiong, H., & Zhang, W. (2021).
+[Informer: Beyond efficient transformer for long sequence time-series forecasting](https://ojs.aaai.org/index.php/AAAI/article/view/17325).
 *AAAI 2021*.
-[^22]: Zhou, T., Ma, Z., Wen, Q., Sun, L., Yao, T., Yin, W., & Jin, R. (
-2022). [FiLM: Frequency improved Legendre Memory Model for Long-term Time Series Forecasting](https://proceedings.neurips.cc/paper_files/paper/2022/hash/524ef58c2bd075775861234266e5e020-Abstract-Conference.html).
+[^22]: Zhou, T., Ma, Z., Wen, Q., Sun, L., Yao, T., Yin, W., & Jin, R. (2022).
+[FiLM: Frequency improved Legendre Memory Model for Long-term Time Series Forecasting](https://proceedings.neurips.cc/paper_files/paper/2022/hash/524ef58c2bd075775861234266e5e020-Abstract-Conference.html).
 *NeurIPS 2022*.
-[^23]: Yi, K., Zhang, Q., Fan, W., Wang, S., Wang, P., He, H., An, N., Lian, D., Cao, L., & Niu, Z. (
-2023). [Frequency-domain MLPs are More Effective Learners in Time Series Forecasting](https://proceedings.neurips.cc/paper_files/paper/2023/hash/f1d16af76939f476b5f040fd1398c0a3-Abstract-Conference.html).
+[^23]: Yi, K., Zhang, Q., Fan, W., Wang, S., Wang, P., He, H., An, N., Lian, D., Cao, L., & Niu, Z. (2023).
+[Frequency-domain MLPs are More Effective Learners in Time Series Forecasting](https://proceedings.neurips.cc/paper_files/paper/2023/hash/f1d16af76939f476b5f040fd1398c0a3-Abstract-Conference.html).
 *NeurIPS 2023*.
-[^24]: Liu, Y., Hu, T., Zhang, H., Wu, H., Wang, S., Ma, L., & Long, M. (
-2024). [iTransformer: Inverted Transformers Are Effective for Time Series Forecasting](https://openreview.net/forum?id=JePfAI8fah).
+[^24]: Liu, Y., Hu, T., Zhang, H., Wu, H., Wang, S., Ma, L., & Long, M. (2024).
+[iTransformer: Inverted Transformers Are Effective for Time Series Forecasting](https://openreview.net/forum?id=JePfAI8fah).
 *ICLR 2024*.
-[^25]: Liu, Y., Wu, H., Wang, J., & Long, M. (
-2022). [Non-stationary Transformers: Exploring the Stationarity in Time Series Forecasting](https://proceedings.neurips.cc/paper_files/paper/2022/hash/4054556fcaa934b0bf76da52cf4f92cb-Abstract-Conference.html).
+[^25]: Liu, Y., Wu, H., Wang, J., & Long, M. (2022).
+[Non-stationary Transformers: Exploring the Stationarity in Time Series Forecasting](https://proceedings.neurips.cc/paper_files/paper/2022/hash/4054556fcaa934b0bf76da52cf4f92cb-Abstract-Conference.html).
 *NeurIPS 2022*.
-[^26]: Liu, S., Yu, H., Liao, C., Li, J., Lin, W., Liu, A. X., & Dustdar, S. (
-2022). [Pyraformer: Low-Complexity Pyramidal Attention for Long-Range Time Series Modeling and Forecasting](https://openreview.net/forum?id=0EXmFzUn5I).
+[^26]: Liu, S., Yu, H., Liao, C., Li, J., Lin, W., Liu, A. X., & Dustdar, S. (2022).
+[Pyraformer: Low-Complexity Pyramidal Attention for Long-Range Time Series Modeling and Forecasting](https://openreview.net/forum?id=0EXmFzUn5I).
 *ICLR 2022*.
-[^27]: Wang, H., Peng, J., Huang, F., Wang, J., Chen, J., & Xiao, Y. (
-2023). [MICN: Multi-scale Local and Global Context Modeling for Long-term Series Forecasting](https://openreview.net/forum?id=zt53IDUR1U).
+[^27]: Wang, H., Peng, J., Huang, F., Wang, J., Chen, J., & Xiao, Y. (2023).
+[MICN: Multi-scale Local and Global Context Modeling for Long-term Series Forecasting](https://openreview.net/forum?id=zt53IDUR1U).
 *ICLR 2023*.
-[^28]: Das, A., Kong, W., Leach, A., Mathur, S., Sen, R., & Yu, R. (
-2023). [Long-term Forecasting with TiDE: Time-series Dense Encoder](https://openreview.net/forum?id=pCbC3aQB5W). *TMLR
-2023*.
-[^29]: Liu, Y., Li, C., Wang, J., & Long, M. (
-2023). [Koopa: Learning Non-stationary Time Series Dynamics with Koopman Predictors](https://proceedings.neurips.cc/paper_files/paper/2023/hash/28b3dc0970fa4624a63278a4268de997-Abstract-Conference.html).
+[^28]: Das, A., Kong, W., Leach, A., Mathur, S., Sen, R., & Yu, R. (2023).
+[Long-term Forecasting with TiDE: Time-series Dense Encoder](https://openreview.net/forum?id=pCbC3aQB5W).
+*TMLR 2023*.
+[^29]: Liu, Y., Li, C., Wang, J., & Long, M. (2023).
+[Koopa: Learning Non-stationary Time Series Dynamics with Koopman Predictors](https://proceedings.neurips.cc/paper_files/paper/2023/hash/28b3dc0970fa4624a63278a4268de997-Abstract-Conference.html).
 *NeurIPS 2023*.
-[^30]: Liu, M., Zeng, A., Chen, M., Xu, Z., Lai, Q., Ma, L., & Xu, Q. (
-2022). [SCINet: Time Series Modeling and Forecasting with Sample Convolution and Interaction](https://proceedings.neurips.cc/paper_files/paper/2022/hash/266983d0949aed78a16fa4782237dea7-Abstract-Conference.html).
+[^30]: Liu, M., Zeng, A., Chen, M., Xu, Z., Lai, Q., Ma, L., & Xu, Q. (2022).
+[SCINet: Time Series Modeling and Forecasting with Sample Convolution and Interaction](https://proceedings.neurips.cc/paper_files/paper/2022/hash/266983d0949aed78a16fa4782237dea7-Abstract-Conference.html).
 *NeurIPS 2022*.
-[^31]: Kim, T., Kim, J., Tae, Y., Park, C., Choi, J. H., & Choo, J. (
-2022). [Reversible Instance Normalization for Accurate Time-Series Forecasting against Distribution Shift](https://openreview.net/forum?id=cGDAkQo1C0p).
+[^31]: Kim, T., Kim, J., Tae, Y., Park, C., Choi, J. H., & Choo, J. (2022).
+[Reversible Instance Normalization for Accurate Time-Series Forecasting against Distribution Shift](https://openreview.net/forum?id=cGDAkQo1C0p).
 *ICLR 2022*.
-[^32]: Kitaev, N., Kaiser, Ł., & Levskaya, A. (
-2020). [Reformer: The Efficient Transformer](https://openreview.net/forum?id=0EXmFzUn5I). *ICLR 2020*.
+[^32]: Kitaev, N., Kaiser, Ł., & Levskaya, A. (2020).
+[Reformer: The Efficient Transformer](https://openreview.net/forum?id=0EXmFzUn5I).
+*ICLR 2020*.
 [^33]: Cao, D., Wang, Y., Duan, J., Zhang, C., Zhu, X., Huang, C., Tong, Y., Xu, B., Bai, J., Tong, J., & Zhang, Q. (
-2020). [Spectral Temporal Graph Neural Network for Multivariate Time-series Forecasting](https://proceedings.neurips.cc/paper/2020/hash/cdf6581cb7aca4b7e19ef136c6e601a5-Abstract.html).
+2020).
+[Spectral Temporal Graph Neural Network for Multivariate Time-series Forecasting](https://proceedings.neurips.cc/paper/2020/hash/cdf6581cb7aca4b7e19ef136c6e601a5-Abstract.html).
 *NeurIPS 2020*.
-[^34]: Nie, T., Qin, G., Mei, Y., & Sun, J. (
-2024). [ImputeFormer: Low Rankness-Induced Transformers for Generalizable Spatiotemporal Imputation](https://arxiv.org/abs/2312.01728).
+[^34]: Nie, T., Qin, G., Mei, Y., & Sun, J. (2024).
+[ImputeFormer: Low Rankness-Induced Transformers for Generalizable Spatiotemporal Imputation](https://arxiv.org/abs/2312.01728).
 *KDD 2024*.
-[^35]: Bai, S., Kolter, J. Z., & Koltun, V. (
-2018). [An empirical evaluation of generic convolutional and recurrent networks for sequence modeling](https://arxiv.org/abs/1803.01271).
+[^35]: Bai, S., Kolter, J. Z., & Koltun, V. (2018).
+[An empirical evaluation of generic convolutional and recurrent networks for sequence modeling](https://arxiv.org/abs/1803.01271).
 *arXiv 2018*.
-[^36]: Gungnir项目，世界上第一个时间序列多任务大模型，将很快与大家见面。🚀
-数据集存在缺少值且样本长短不一？多任务建模场景困难？都不再是问题，让我们的大模型来帮你解决。我们将在近期开放公测申请 ;-)
-关注我们，敬请期待!
+[^36]: Project Gungnir, the world 1st LLM for time-series multitask modeling, will meet you soon. 🚀 Missing values and
+variable lengths in your datasets?
+Hard to perform multitask learning with your time series? Not problems no longer. We'll open application for public beta
+test recently ;-) Follow us, and stay tuned!
 <a href="https://time-series.ai"><img src="https://time-series.ai/static/figs/robot.svg" width="20px" align="center">
 Time-Series.AI</a>
-[^37]: Wang, S., Wu, H., Shi, X., Hu, T., Luo, H., Ma, L., ... & ZHOU, J. (
-2024). [TimeMixer: Decomposable Multiscale Mixing for Time Series Forecasting](https://openreview.net/forum?id=7oLshfEIC2).
-*ICLR 2024*
-[^38]: Luo, D., & Wang X. (
-2024). [ModernTCN: A Modern Pure Convolution Structure for General Time Series Analysis](https://openreview.net/forum?id=vpJMJerXHU).
-*ICLR 2024*
-[^39]: Zhan, T., He, Y., Li, Z., & Deng, Y. (
-2024). [Time Evidence Fusion Network: Multi-source View in Long-Term Time Series Forecasting](https://arxiv.org/abs/2405.06419).
-*arXiv 2024*
-[^40]: [Wikipedia: Linear interpolation](https://en.wikipedia.org/wiki/Linear_interpolation)
+[^37]: Wang, S., Wu, H., Shi, X., Hu, T., Luo, H., Ma, L., ... & ZHOU, J. (2024).
+[TimeMixer: Decomposable Multiscale Mixing for Time Series Forecasting](https://openreview.net/forum?id=7oLshfEIC2).
+*ICLR 2024*.
+[^38]: Luo, D., & Wang X. (2024).
+[ModernTCN: A Modern Pure Convolution Structure for General Time Series Analysis](https://openreview.net/forum?id=vpJMJerXHU).
+*ICLR 2024*.
+[^39]: Zhan, T., He, Y., Li, Z., & Deng, Y. (2024).
+[Time Evidence Fusion Network: Multi-source View in Long-Term Time Series Forecasting](https://arxiv.org/abs/2405.06419).
+*arXiv 2024*.
+[^40]: [Wikipedia: Linear interpolation](https://en.wikipedia.org/wiki/Linear_interpolation)

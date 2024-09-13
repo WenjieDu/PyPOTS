@@ -106,16 +106,12 @@ class DatasetForCSDI(BaseDataset):
                 cond_mask = self.get_rand_mask(observed_mask)
             else:
                 if "for_pattern_mask" in self.data.keys():
-                    for_pattern_mask = torch.from_numpy(
-                        self.data["for_pattern_mask"][idx]
-                    ).to(torch.float32)
+                    for_pattern_mask = torch.from_numpy(self.data["for_pattern_mask"][idx]).to(torch.float32)
                 else:
                     previous_sample = self.X[idx - 1]
                     for_pattern_mask = (~torch.isnan(previous_sample)).to(torch.float32)
 
-                cond_mask = self.get_hist_mask(
-                    observed_mask, for_pattern_mask=for_pattern_mask
-                )
+                cond_mask = self.get_hist_mask(observed_mask, for_pattern_mask=for_pattern_mask)
             indicating_mask = observed_mask - cond_mask
 
         observed_tp = (
@@ -172,42 +168,30 @@ class DatasetForCSDI(BaseDataset):
             self.file_handle = self._open_file_handle()
 
         if self.return_X_ori:
-            observed_data = torch.from_numpy(self.file_handle["X_ori"][idx]).to(
-                torch.float32
-            )
+            observed_data = torch.from_numpy(self.file_handle["X_ori"][idx]).to(torch.float32)
             observed_data, observed_mask = fill_and_get_mask_torch(observed_data)
             X = torch.from_numpy(self.file_handle["X"][idx]).to(torch.float32)
             _, cond_mask = fill_and_get_mask_torch(X)
             indicating_mask = observed_mask - cond_mask
         else:
-            observed_data = torch.from_numpy(self.file_handle["X"][idx]).to(
-                torch.float32
-            )
+            observed_data = torch.from_numpy(self.file_handle["X"][idx]).to(torch.float32)
             observed_data, observed_mask = fill_and_get_mask_torch(observed_data)
             if self.target_strategy == "random":
                 cond_mask = self.get_rand_mask(observed_mask)
             else:
                 if "for_pattern_mask" in self.data.keys():
-                    for_pattern_mask = torch.from_numpy(
-                        self.file_handle["for_pattern_mask"][idx]
-                    ).to(torch.float32)
+                    for_pattern_mask = torch.from_numpy(self.file_handle["for_pattern_mask"][idx]).to(torch.float32)
                 else:
-                    previous_sample = torch.from_numpy(
-                        self.file_handle["X"][idx - 1]
-                    ).to(torch.float32)
+                    previous_sample = torch.from_numpy(self.file_handle["X"][idx - 1]).to(torch.float32)
                     for_pattern_mask = (~torch.isnan(previous_sample)).to(torch.float32)
 
-                cond_mask = self.get_hist_mask(
-                    observed_mask, for_pattern_mask=for_pattern_mask
-                )
+                cond_mask = self.get_hist_mask(observed_mask, for_pattern_mask=for_pattern_mask)
             indicating_mask = observed_mask - cond_mask
 
         observed_tp = (
             torch.arange(0, self.n_steps, dtype=torch.float32)
             if "time_points" not in self.file_handle.keys()
-            else torch.from_numpy(self.file_handle["time_points"][idx]).to(
-                torch.float32
-            )
+            else torch.from_numpy(self.file_handle["time_points"][idx]).to(torch.float32)
         )
 
         sample = [
@@ -321,9 +305,7 @@ class TestDatasetForCSDI(DatasetForCSDI):
         observed_tp = (
             torch.arange(0, self.n_steps, dtype=torch.float32)
             if "time_points" not in self.file_handle.keys()
-            else torch.from_numpy(self.file_handle["time_points"][idx]).to(
-                torch.float32
-            )
+            else torch.from_numpy(self.file_handle["time_points"][idx]).to(torch.float32)
         )
 
         sample = [

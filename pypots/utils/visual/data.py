@@ -53,16 +53,12 @@ def plot_data(
     """
 
     vals_shape = X.shape
-    assert (
-        len(vals_shape) == 3
-    ), "vals_obs should be a 3D array of shape (n_samples, n_steps, n_features)"
+    assert len(vals_shape) == 3, "vals_obs should be a 3D array of shape (n_samples, n_steps, n_features)"
     n_samples, n_steps, n_features = vals_shape
 
     if sample_idx is None:
         sample_idx = np.random.randint(low=0, high=n_samples)
-        logger.warning(
-            f"⚠️ No sample index is specified, a random sample {sample_idx} is selected for visualization."
-        )
+        logger.warning(f"⚠️ No sample index is specified, a random sample {sample_idx} is selected for visualization.")
 
     if fig_size is None:
         fig_size = [24, 36]
@@ -71,9 +67,7 @@ def plot_data(
     K = np.min([n_features, n_k])
     L = n_steps
     plt.rcParams["font.size"] = 16
-    fig, axes = plt.subplots(
-        nrows=n_rows, ncols=n_cols, figsize=(fig_size[0], fig_size[1])
-    )
+    fig, axes = plt.subplots(nrows=n_rows, ncols=n_cols, figsize=(fig_size[0], fig_size[1]))
 
     for k in range(K):
         df = pd.DataFrame({"x": np.arange(0, L), "val": X_imputed[sample_idx, :, k]})
@@ -89,9 +83,7 @@ def plot_data(
         if row == -1:
             plt.setp(axes[-1, col], xlabel="time")
 
-    logger.info(
-        "Plotting finished. Please invoke matplotlib.pyplot.show() to display the plot."
-    )
+    logger.info("Plotting finished. Please invoke matplotlib.pyplot.show() to display the plot.")
 
 
 def plot_missingness(
@@ -170,6 +162,4 @@ def plot_missingness(
     axes[1].set_ylabel("Frequency", fontsize=7)
     axes[1].tick_params(axis="both", labelsize=7)
 
-    logger.info(
-        "Plotting finished. Please invoke matplotlib.pyplot.show() to display the plot."
-    )
+    logger.info("Plotting finished. Please invoke matplotlib.pyplot.show() to display the plot.")

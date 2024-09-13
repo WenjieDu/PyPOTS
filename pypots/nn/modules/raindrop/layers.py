@@ -36,9 +36,7 @@ class PositionalEncoding(nn.Module):
 
     def __init__(self, d_pe: int, max_len: int = 500):
         super().__init__()
-        assert (
-            d_pe % 2 == 0
-        ), "d_pe should be even, otherwise the output dims will be not equal to d_pe"
+        assert d_pe % 2 == 0, "d_pe should be even, otherwise the output dims will be not equal to d_pe"
         self.max_len = max_len
         self._num_timescales = d_pe // 2
 
@@ -58,12 +56,8 @@ class PositionalEncoding(nn.Module):
         timescales = self.max_len ** np.linspace(0, 1, self._num_timescales)
 
         times = time_vectors.unsqueeze(2)
-        scaled_time = times / torch.from_numpy(timescales[None, None, :]).to(
-            time_vectors.device
-        )
-        pe = torch.cat(
-            [torch.sin(scaled_time), torch.cos(scaled_time)], dim=-1
-        )  # T x B x d_model
+        scaled_time = times / torch.from_numpy(timescales[None, None, :]).to(time_vectors.device)
+        pe = torch.cat([torch.sin(scaled_time), torch.cos(scaled_time)], dim=-1)  # T x B x d_model
         pe = pe.type(torch.FloatTensor)
         return pe
 
@@ -126,9 +120,7 @@ class ObservationPropagation(MessagePassing):
         self.bias = Parameter(torch.Tensor(heads * out_channels))
 
         self.n_nodes = n_nodes
-        self.nodewise_weights = Parameter(
-            torch.Tensor(self.n_nodes, heads * out_channels)
-        )
+        self.nodewise_weights = Parameter(torch.Tensor(self.n_nodes, heads * out_channels))
 
         self.increase_dim = Linear(in_channels[1], heads * out_channels * 8)
         self.map_weights = Parameter(torch.Tensor(self.n_nodes, heads * 16))
@@ -183,9 +175,7 @@ class ObservationPropagation(MessagePassing):
         if isinstance(x, Tensor):
             x: PairTensor = (x, x)
 
-        out = self.propagate(
-            edge_index, x=x, edge_weights=edge_weights, edge_attr=edge_attr, size=None
-        )
+        out = self.propagate(edge_index, x=x, edge_weights=edge_weights, edge_attr=edge_attr, size=None)
 
         alpha = self._alpha
         self._alpha = None
@@ -301,9 +291,7 @@ class ObservationPropagation(MessagePassing):
             target_nodes = self.edge_index[1]
             w1 = self.nodewise_weights[source_nodes].unsqueeze(-1)
             w2 = self.nodewise_weights[target_nodes].unsqueeze(1)
-            out = torch.bmm(
-                x_i.view(-1, self.heads, self.out_channels), torch.bmm(w1, w2)
-            )
+            out = torch.bmm(x_i.view(-1, self.heads, self.out_channels), torch.bmm(w1, w2))
         if use_beta:
             out = out * gamma.view(-1, self.heads, out.shape[-1])
         else:
@@ -328,11 +316,7 @@ class ObservationPropagation(MessagePassing):
         :meth:`__init__` by the :obj:`aggr` argument.
         """
         index = self.index
-        return scatter(
-            inputs, index, dim=self.node_dim, dim_size=dim_size, reduce=self.aggr
-        )
+        return scatter(inputs, index, dim=self.node_dim, dim_size=dim_size, reduce=self.aggr)
 
     def __repr__(self):
-        return "{}({}, {}, heads={})".format(
-            self.__class__.__name__, self.in_channels, self.out_channels, self.heads
-        )
+        return "{}({}, {}, heads={})".format(self.__class__.__name__, self.in_channels, self.out_channels, self.heads)

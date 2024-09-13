@@ -42,9 +42,7 @@ class PatchtstEncoder(nn.Module):
 
         enc_out, attns = self.encoder(x, attn_mask)
 
-        enc_out = enc_out.reshape(
-            -1, self.d_model, enc_out.shape[-2], enc_out.shape[-1]
-        )
+        enc_out = enc_out.reshape(-1, self.d_model, enc_out.shape[-2], enc_out.shape[-1])
         # [bz, d_model, d_model, n_patches] ->  [bz, d_model, n_patches, d_model]
         enc_out = enc_out.permute(0, 1, 3, 2)
         return enc_out, attns

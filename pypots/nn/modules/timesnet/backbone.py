@@ -1,6 +1,7 @@
 """
 
 """
+
 import torch
 import torch.nn as nn
 
@@ -29,10 +30,7 @@ class BackboneTimesNet(nn.Module):
 
         self.n_pred_steps = n_pred_steps
         self.model = nn.ModuleList(
-            [
-                TimesBlock(n_steps, n_pred_steps, top_k, d_model, d_ffn, n_kernels)
-                for _ in range(n_layers)
-            ]
+            [TimesBlock(n_steps, n_pred_steps, top_k, d_model, d_ffn, n_kernels) for _ in range(n_layers)]
         )
         self.layer_norm = nn.LayerNorm(d_model)
 

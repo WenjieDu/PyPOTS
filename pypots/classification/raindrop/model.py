@@ -3,7 +3,6 @@ The implementation of Raindrop for the partially-observed time-series classifica
 
 """
 
-
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 

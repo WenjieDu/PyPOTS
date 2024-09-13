@@ -24,9 +24,7 @@ class BackboneCRLI(nn.Module):
         rnn_cell_type: str = "GRU",
     ):
         super().__init__()
-        self.generator = CrliGenerator(
-            n_generator_layers, n_features, rnn_hidden_size, rnn_cell_type
-        )
+        self.generator = CrliGenerator(n_generator_layers, n_features, rnn_hidden_size, rnn_cell_type)
         self.discriminator = CrliDiscriminator(rnn_cell_type, n_features)
         self.decoder = CrliDecoder(
             n_steps, rnn_hidden_size * 2, n_features, decoder_fcn_output_dims

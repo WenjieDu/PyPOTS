@@ -243,21 +243,15 @@ class USGAN(BaseNNImputer):
 
                     if idx % self.G_steps == 0:
                         self.G_optimizer.zero_grad()
-                        results = self.model.forward(
-                            inputs, training_object="generator"
-                        )
+                        results = self.model.forward(inputs, training_object="generator")
                         results["loss"].backward()  # generation loss
                         self.G_optimizer.step()
                         step_train_loss_G_collector.append(results["loss"].item())
 
                     if idx % self.D_steps == 0:
                         self.D_optimizer.zero_grad()
-                        results = self.model.forward(
-                            inputs, training_object="discriminator"
-                        )
-                        results["loss"].backward(
-                            retain_graph=True
-                        )  # discrimination loss
+                        results = self.model.forward(inputs, training_object="discriminator")
+                        results["loss"].backward(retain_graph=True)  # discrimination loss
                         self.D_optimizer.step()
                         step_train_loss_D_collector.append(results["loss"].item())
 
@@ -272,9 +266,7 @@ class USGAN(BaseNNImputer):
                             "generation_loss": mean_step_train_G_loss,
                             "discrimination_loss": mean_step_train_D_loss,
                         }
-                        self._save_log_into_tb_file(
-                            training_step, "training", loss_results
-                        )
+                        self._save_log_into_tb_file(training_step, "training", loss_results)
                 mean_epoch_train_D_loss = np.mean(step_train_loss_D_collector)
                 mean_epoch_train_G_loss = np.mean(step_train_loss_G_collector)
 
@@ -320,9 +312,7 @@ class USGAN(BaseNNImputer):
                     mean_loss = mean_epoch_train_G_loss
 
                 if np.isnan(mean_loss):
-                    logger.warning(
-                        f"‼️ Attention: got NaN loss in Epoch {epoch}. This may lead to unexpected errors."
-                    )
+                    logger.warning(f"‼️ Attention: got NaN loss in Epoch {epoch}. This may lead to unexpected errors.")
 
                 if mean_loss < self.best_loss:
                     self.best_epoch = epoch
@@ -344,9 +334,7 @@ class USGAN(BaseNNImputer):
                         nni.report_final_result(self.best_loss)
 
                 if self.patience == 0:
-                    logger.info(
-                        "Exceeded the training patience. Terminating the training procedure..."
-                    )
+                    logger.info("Exceeded the training patience. Terminating the training procedure...")
                     break
 
         except KeyboardInterrupt:  # if keyboard interrupt, only warning
@@ -367,9 +355,7 @@ class USGAN(BaseNNImputer):
         if np.isnan(self.best_loss):
             raise ValueError("Something is wrong. best_loss is Nan after training.")
 
-        logger.info(
-            f"Finished training. The best model is from epoch#{self.best_epoch}."
-        )
+        logger.info(f"Finished training. The best model is from epoch#{self.best_epoch}.")
 
     def fit(
         self,
@@ -378,9 +364,7 @@ class USGAN(BaseNNImputer):
         file_type: str = "hdf5",
     ) -> None:
         # Step 1: wrap the input data with classes Dataset and DataLoader
-        training_set = DatasetForUSGAN(
-            train_set, return_X_ori=False, return_y=False, file_type=file_type
-        )
+        training_set = DatasetForUSGAN(train_set, return_X_ori=False, return_y=False, file_type=file_type)
         training_loader = DataLoader(
             training_set,
             batch_size=self.batch_size,
@@ -391,9 +375,7 @@ class USGAN(BaseNNImputer):
         if val_set is not None:
             if not key_in_data_set("X_ori", val_set):
                 raise ValueError("val_set must contain 'X_ori' for model validation.")
-            val_set = DatasetForUSGAN(
-                val_set, return_X_ori=True, return_y=False, file_type=file_type
-            )
+            val_set = DatasetForUSGAN(val_set, return_X_ori=True, return_y=False, file_type=file_type)
             val_loader = DataLoader(
                 val_set,
                 batch_size=self.batch_size,
@@ -415,9 +397,7 @@ class USGAN(BaseNNImputer):
         file_type: str = "hdf5",
     ) -> dict:
         self.model.eval()  # set the model as eval status to freeze it.
-        test_set = DatasetForUSGAN(
-            test_set, return_X_ori=False, return_y=False, file_type=file_type
-        )
+        test_set = DatasetForUSGAN(test_set, return_X_ori=False, return_y=False, file_type=file_type)
         test_loader = DataLoader(
             test_set,
             batch_size=self.batch_size,
