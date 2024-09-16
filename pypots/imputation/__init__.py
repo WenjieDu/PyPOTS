@@ -37,6 +37,7 @@ from .stemgnn import StemGNN
 from .imputeformer import ImputeFormer
 from .timemixer import TimeMixer
 from .moderntcn import ModernTCN
+from .csai import CSAI
 
 # naive imputation methods
 from .locf import LOCF
@@ -47,6 +48,7 @@ from .tefn import TEFN
 
 __all__ = [
     # neural network imputation methods
+    "CSAI",
     "SAITS",
     "Transformer",
     "iTransformer",
