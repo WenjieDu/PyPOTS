@@ -27,12 +27,12 @@ class CSAI(BaseNNImputer):
                  step_channels:int,
                  batch_size: int, 
                  epochs: int, 
-                 patience: int | None = None, 
+                 patience: Union[int, None ]= None, 
                  optimizer: Optional[Optimizer] = Adam(),
                  num_workers: int = 0, 
-                 device: str | torch.device | list | None = None, 
+                 device: Union[str, torch.device, list, None ]= None, 
                  saving_path: str = None, 
-                 model_saving_strategy: str | None = "best", 
+                 model_saving_strategy: Union[str, None] = "best", 
                  verbose: bool = True):
         super().__init__(batch_size, epochs, patience, num_workers, device, saving_path, model_saving_strategy, verbose)
         self.n_steps = n_steps
@@ -149,7 +149,7 @@ class CSAI(BaseNNImputer):
                 file_type, self.removal_percent, 
                 self.increase_factor, self.compute_intervals,
                 self.training_set.replacement_probabilities, 
-                self.training_set.mean_set, self.training_set.std_set, False
+                self.training_set.mean_set, self.training_set.std_set, True, False
             )
             val_loader = DataLoader(
                 val_set,
@@ -166,7 +166,8 @@ class CSAI(BaseNNImputer):
                             self.step_channels, 
                             self.training_set.intervals, 
                             self.consistency_weight, 
-                            self.imputation_weight)
+                            self.imputation_weight,
+                            self.device)
         self._send_model_to_given_device()
         self._print_model_size()
 
@@ -182,7 +183,7 @@ class CSAI(BaseNNImputer):
         # Step 3: save the model if necessary
         self._auto_save_model_if_necessary(confirm_saving=True)
 
-    def predict(self, test_set: dict | str, file_type: str = "hdf5") -> dict:
+    def predict(self, test_set: Union[dict, str], file_type: str = "hdf5") -> dict:
         
         if self.model == None:
             raise ValueError("Training must be run before predict")
@@ -193,7 +194,7 @@ class CSAI(BaseNNImputer):
                 file_type, self.removal_percent, 
                 self.increase_factor, self.compute_intervals,
                 self.training_set.replacement_probabilities, 
-                self.training_set.mean_set, self.training_set.std_set, False
+                self.training_set.mean_set, self.training_set.std_set,True, False
             )
         test_loader = DataLoader(
             test_set,

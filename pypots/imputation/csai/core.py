@@ -10,7 +10,8 @@ class _BCSAI(nn.Module):
                  step_channels, 
                  intervals, 
                  consistency_weight, 
-                 imputation_weight) :
+                 imputation_weight,
+                 device) :
         super().__init__()
         self.n_steps = n_steps
         self.n_features = n_features
@@ -19,8 +20,9 @@ class _BCSAI(nn.Module):
         self.intervals = intervals
         self.consistency_weight = consistency_weight
         self.imputation_weight = imputation_weight
+        self.device = device
         
-        self.model = BackboneBCSAI(n_steps, n_features, rnn_hidden_size, step_channels, intervals)
+        self.model = BackboneBCSAI(n_steps, n_features, rnn_hidden_size, step_channels, intervals, self.device)
 
     def forward(self, inputs:dict, training:bool = True) -> dict:
         (

@@ -60,7 +60,7 @@ class _BCSAI(nn.Module):
 
 
         # create models
-        self.model = BackboneBCSAI(n_steps, n_features, rnn_hidden_size, step_channels, intervals)
+        self.model = BackboneBCSAI(n_steps, n_features, rnn_hidden_size, step_channels, intervals, self.device)
         self.classifier = nn.Linear(self.rnn_hidden_size, n_classes)
         self.imputer = nn.Linear(self.rnn_hidden_size, n_features)
         self.dropout = nn.Dropout(dropout)

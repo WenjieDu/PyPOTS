@@ -3,9 +3,10 @@ from ...data.dataset import BaseDataset
 import numpy as np
 import torch
 from ...data.utils import collate_fn_bidirectional, non_uniform_sample_loader_bidirectional, normalize_csai
+from typing import Union
 
 class DatasetForCSAI(BaseDataset):
-    def __init__(self, data: dict | str, 
+    def __init__(self, data: Union[dict, str], 
                  return_X_ori: bool, 
                  return_y: bool, 
                  file_type: str = "hdf5",
@@ -15,6 +16,7 @@ class DatasetForCSAI(BaseDataset):
                  replacement_probabilities = None,
                  normalise_mean : list = [],
                  normalise_std: list = [],
+                 impute_only: bool = True,
                  training: bool = True
                 ):
         super().__init__(data = data, 
@@ -28,6 +30,7 @@ class DatasetForCSAI(BaseDataset):
         self.replacement_probabilities = replacement_probabilities
         self.normalise_mean = normalise_mean
         self.normalise_std = normalise_std
+        self.impute_only = impute_only
         self.training = training
 
         if not isinstance(self.data, str):
@@ -94,8 +97,8 @@ class DatasetForCSAI(BaseDataset):
             self.processed_data["last_obs_b"][idx],
         ]
 
-        # if not self.training:
-        #     sample.extend([self.X_ori[idx], self.indicating_mask[idx]])
+        if not self.training and self.impute_only:
+            sample.extend([self.X_ori[idx], self.indicating_mask[idx]])
 
         if self.return_y:
             sample.append(self.y[idx].to(torch.long))

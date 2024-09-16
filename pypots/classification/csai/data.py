@@ -5,7 +5,7 @@ from ...imputation.csai.data import DatasetForCSAI as DatasetForCSAI_Imputation
 
 class DatasetForCSAI(DatasetForCSAI_Imputation):
     def __init__(self, 
-                 data: dict | str,  
+                 data: Union[dict, str],  
                  file_type: str = "hdf5",
                  return_y: bool = True,
                  removal_percent: float = 0.0,
@@ -27,6 +27,7 @@ class DatasetForCSAI(DatasetForCSAI_Imputation):
             replacement_probabilities=replacement_probabilities,
             normalise_mean=normalise_mean,
             normalise_std=normalise_std,
+            impute_only=False,
             training=training
        )
         

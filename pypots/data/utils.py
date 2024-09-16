@@ -361,7 +361,7 @@ def non_uniform_sample_loader_bidirectional(data, removal_percent, pre_replaceme
         replacement_probabilities = np.full(D, removal_percent / 100)
 
         if increase_factor > 0:
-            print('The increase_factor is {}!'.format(increase_factor))
+            # print('The increase_factor is {}!'.format(increase_factor))
             for feature_idx in range(D):
                 replacement_probabilities[feature_idx] = adjust_probability_vectorized(
                     observations_per_feature[feature_idx],

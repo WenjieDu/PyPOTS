@@ -27,12 +27,12 @@ class CSAI(BaseNNClassifier):
                  batch_size: int,  
                  epochs: int,  
                  dropout: float = 0.5,
-                 patience: int | None = None,  
+                 patience: Union[int, None] = None,  
                  optimizer: Optimizer = Adam(), 
                  num_workers: int = 0,  
                  device: Optional[Union[str, torch.device, list]] = None,  
                  saving_path: str = None,
-                 model_saving_strategy: str | None = "best", 
+                 model_saving_strategy: Union[str, None] = "best", 
                  verbose: bool = True):
         super().__init__(
             n_classes, 

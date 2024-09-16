@@ -16,7 +16,7 @@ from torch.utils.data import DataLoader
 
 from ..base import BaseModel, BaseNNModel
 from ..utils.logging import logger
-
+from sklearn.metrics import roc_auc_score
 try:
     import nni
 except ImportError:
@@ -287,9 +287,9 @@ class BaseNNClassifier(BaseNNModel):
 
         try:
             training_step = 0
-            print("Training model......................................")
+            # print("Training model......................................")
             for epoch in range(1, self.epochs + 1):
-                print(f"Epoch {epoch}......................................")
+                # print(f"Epoch {epoch}......................................")
                 self.model.train()
                 epoch_train_loss_collector = []
                 for idx, data in enumerate(training_loader):
@@ -307,7 +307,8 @@ class BaseNNClassifier(BaseNNModel):
 
                 # mean training loss of the current epoch
                 mean_train_loss = np.mean(epoch_train_loss_collector)
-
+                val_results = []
+                val_labels = []
                 if val_loader is not None:
                     self.model.eval()
                     epoch_val_loss_collector = []
@@ -318,6 +319,8 @@ class BaseNNClassifier(BaseNNModel):
                             epoch_val_loss_collector.append(
                                 results["loss"].sum().item()
                             )
+                            val_results.append(results['classification_pred'])
+                            val_labels.append(inputs['labels'])
 
                     mean_val_loss = np.mean(epoch_val_loss_collector)
 
@@ -327,11 +330,14 @@ class BaseNNClassifier(BaseNNModel):
                             "classification_loss": mean_val_loss,
                         }
                         self._save_log_into_tb_file(epoch, "validating", val_loss_dict)
-
+                    val_classification = torch.cat(val_results).cpu().detach().numpy()
+                    val_labels = torch.cat(val_labels).cpu().detach().numpy()
+                    val_auc = roc_auc_score(val_labels, val_classification)
                     logger.info(
                         f"Epoch {epoch:03d} - "
                         f"training loss: {mean_train_loss:.4f}, "
-                        f"validation loss: {mean_val_loss:.4f}"
+                        f"validation loss: {mean_val_loss:.4f}, "
+                        f"validation AUC: {val_auc}"
                     )
                     mean_loss = mean_val_loss
                 else:
