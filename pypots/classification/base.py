@@ -313,11 +313,8 @@ class BaseNNClassifier(BaseNNModel):
                         for idx, data in enumerate(val_loader):
                             inputs = self._assemble_input_for_validating(data)
                             results = self.model.forward(inputs)
-                            epoch_val_loss_collector.append(
-                                results["loss"].sum().item()
-                            )
+                            epoch_val_loss_collector.append(results["loss"].sum().item())
                             
-
                     mean_val_loss = np.mean(epoch_val_loss_collector)
 
                     # save validation loss logs into the tensorboard file for every epoch if in need
