@@ -191,9 +191,7 @@ class BRITS(BaseNNImputer):
         file_type: str = "hdf5",
     ) -> None:
         # Step 1: wrap the input data with classes Dataset and DataLoader
-        training_set = DatasetForBRITS(
-            train_set, return_X_ori=False, return_y=False, file_type=file_type
-        )
+        training_set = DatasetForBRITS(train_set, return_X_ori=False, return_y=False, file_type=file_type)
         training_loader = DataLoader(
             training_set,
             batch_size=self.batch_size,
@@ -204,9 +202,7 @@ class BRITS(BaseNNImputer):
         if val_set is not None:
             if not key_in_data_set("X_ori", val_set):
                 raise ValueError("val_set must contain 'X_ori' for model validation.")
-            val_set = DatasetForBRITS(
-                val_set, return_X_ori=True, return_y=False, file_type=file_type
-            )
+            val_set = DatasetForBRITS(val_set, return_X_ori=True, return_y=False, file_type=file_type)
             val_loader = DataLoader(
                 val_set,
                 batch_size=self.batch_size,
@@ -228,9 +224,7 @@ class BRITS(BaseNNImputer):
         file_type: str = "hdf5",
     ) -> dict:
         self.model.eval()  # set the model as eval status to freeze it.
-        test_set = DatasetForBRITS(
-            test_set, return_X_ori=False, return_y=False, file_type=file_type
-        )
+        test_set = DatasetForBRITS(test_set, return_X_ori=False, return_y=False, file_type=file_type)
         test_loader = DataLoader(
             test_set,
             batch_size=self.batch_size,

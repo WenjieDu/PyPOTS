@@ -64,9 +64,7 @@ class _SAITS(nn.Module):
         X, missing_mask = inputs["X"], inputs["missing_mask"]
 
         # determine the attention mask
-        if (training and self.diagonal_attention_mask) or (
-            (not training) and diagonal_attention_mask
-        ):
+        if (training and self.diagonal_attention_mask) or ((not training) and diagonal_attention_mask):
             diagonal_attention_mask = (1 - torch.eye(self.n_steps)).to(X.device)
             # then broadcast on the batch axis
             diagonal_attention_mask = diagonal_attention_mask.unsqueeze(0)
@@ -109,9 +107,7 @@ class _SAITS(nn.Module):
             ORT_loss = self.ORT_weight * ORT_loss
 
             # calculate loss for the masked imputation task (MIT)
-            MIT_loss = self.MIT_weight * self.customized_loss_func(
-                X_tilde_3, X_ori, indicating_mask
-            )
+            MIT_loss = self.MIT_weight * self.customized_loss_func(X_tilde_3, X_ori, indicating_mask)
             # `loss` is always the item for backward propagating to update the model
             loss = ORT_loss + MIT_loss
 

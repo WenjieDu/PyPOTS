@@ -115,9 +115,7 @@ class LOCF(BaseImputer):
         elif isinstance(X, torch.Tensor):
             imputed_data = locf_torch(X, self.first_step_imputation)
         else:
-            raise TypeError(
-                "X must be type of list/np.ndarray/torch.Tensor, " f"but got {type(X)}"
-            )
+            raise TypeError("X must be type of list/np.ndarray/torch.Tensor, " f"but got {type(X)}")
 
         result_dict = {
             "imputation": imputed_data,

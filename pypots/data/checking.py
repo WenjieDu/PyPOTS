@@ -35,6 +35,4 @@ def key_in_data_set(key: str, dataset: Union[str, dict]) -> bool:
     elif isinstance(dataset, dict):
         return key in dataset.keys()
     else:
-        raise TypeError(
-            f"dataset must be a str or a Python dictionary, but got {type(dataset)}"
-        )
+        raise TypeError(f"dataset must be a str or a Python dictionary, but got {type(dataset)}")

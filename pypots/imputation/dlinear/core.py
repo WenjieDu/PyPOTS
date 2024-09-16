@@ -36,12 +36,8 @@ class _DLinear(nn.Module):
         self.backbone = BackboneDLinear(n_steps, n_features, individual, d_model)
 
         if not individual:
-            self.seasonal_saits_embedding = SaitsEmbedding(
-                n_features * 2, d_model, with_pos=False
-            )
-            self.trend_saits_embedding = SaitsEmbedding(
-                n_features * 2, d_model, with_pos=False
-            )
+            self.seasonal_saits_embedding = SaitsEmbedding(n_features * 2, d_model, with_pos=False)
+            self.trend_saits_embedding = SaitsEmbedding(n_features * 2, d_model, with_pos=False)
             self.linear_seasonal_output = nn.Linear(d_model, n_features)
             self.linear_trend_output = nn.Linear(d_model, n_features)
 
@@ -80,9 +76,7 @@ class _DLinear(nn.Module):
         # if in training mode, return results with losses
         if training:
             X_ori, indicating_mask = inputs["X_ori"], inputs["indicating_mask"]
-            loss, ORT_loss, MIT_loss = self.saits_loss_func(
-                reconstruction, X_ori, missing_mask, indicating_mask
-            )
+            loss, ORT_loss, MIT_loss = self.saits_loss_func(reconstruction, X_ori, missing_mask, indicating_mask)
             results["ORT_loss"] = ORT_loss
             results["MIT_loss"] = MIT_loss
             # `loss` is always the item for backward propagating to update the model

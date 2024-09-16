@@ -68,12 +68,8 @@ def calc_binary_classification_metrics(
     else:
         raise f"targets dimensions should be 1 or 2, but got targets.shape: {targets.shape}"
 
-    if len(prob_predictions.shape) == 1 or (
-        len(prob_predictions.shape) == 2 and prob_predictions.shape[1] == 1
-    ):
-        prob_predictions = np.asarray(
-            prob_predictions
-        ).flatten()  # turn the array shape into [n_samples]
+    if len(prob_predictions.shape) == 1 or (len(prob_predictions.shape) == 2 and prob_predictions.shape[1] == 1):
+        prob_predictions = np.asarray(prob_predictions).flatten()  # turn the array shape into [n_samples]
         binary_predictions = prob_predictions
         prediction_categories = (prob_predictions >= 0.5).astype(int)
         binary_prediction_categories = prediction_categories
@@ -93,12 +89,8 @@ def calc_binary_classification_metrics(
     binary_targets = np.copy(targets)
     binary_targets[~mask] = mask_val
 
-    precision, recall, f1 = calc_precision_recall_f1(
-        binary_prediction_categories, binary_targets, pos_label
-    )
-    pr_auc, precisions, recalls, _ = calc_pr_auc(
-        binary_predictions, binary_targets, pos_label
-    )
+    precision, recall, f1 = calc_precision_recall_f1(binary_prediction_categories, binary_targets, pos_label)
+    pr_auc, precisions, recalls, _ = calc_pr_auc(binary_predictions, binary_targets, pos_label)
     ROC_AUC, fprs, tprs, _ = calc_roc_auc(binary_predictions, binary_targets, pos_label)
     PR_AUC = metrics.auc(recalls, precisions)
     classification_metrics = {
@@ -147,9 +139,7 @@ def calc_precision_recall_f1(
         The F1 score of model predictions.
 
     """
-    precision, recall, f1, _ = metrics.precision_recall_fscore_support(
-        targets, prob_predictions, pos_label=pos_label
-    )
+    precision, recall, f1, _ = metrics.precision_recall_fscore_support(targets, prob_predictions, pos_label=pos_label)
     precision, recall, f1 = precision[pos_label], recall[pos_label], f1[pos_label]
     return precision, recall, f1
 
@@ -188,9 +178,7 @@ def calc_pr_auc(
 
     """
 
-    precisions, recalls, thresholds = metrics.precision_recall_curve(
-        targets, prob_predictions, pos_label=pos_label
-    )
+    precisions, recalls, thresholds = metrics.precision_recall_curve(targets, prob_predictions, pos_label=pos_label)
     pr_auc = metrics.auc(recalls, precisions)
     return pr_auc, precisions, recalls, thresholds
 
@@ -228,9 +216,7 @@ def calc_roc_auc(
         Increasing thresholds on the decision function used to compute FPR and TPR.
 
     """
-    fprs, tprs, thresholds = metrics.roc_curve(
-        y_true=targets, y_score=prob_predictions, pos_label=pos_label
-    )
+    fprs, tprs, thresholds = metrics.roc_curve(y_true=targets, y_score=prob_predictions, pos_label=pos_label)
     roc_auc = metrics.auc(fprs, tprs)
     return roc_auc, fprs, tprs, thresholds
 
