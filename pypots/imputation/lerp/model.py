@@ -42,10 +42,7 @@ class Lerp(BaseImputer):
         Linear interpolation class does not need to run fit().
         Please run func ``predict()`` directly.
         """
-        warnings.warn(
-            "Linear interpolation class has no parameter to train. "
-            "Please run func `predict()` directly."
-        )
+        warnings.warn("Linear interpolation class has no parameter to train. Please run func `predict()` directly.")
 
     def predict(
         self,

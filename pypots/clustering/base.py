@@ -320,9 +320,7 @@ class BaseNNClusterer(BaseNNModel):
                         for idx, data in enumerate(val_loader):
                             inputs = self._assemble_input_for_validating(data)
                             results = self.model.forward(inputs)
-                            epoch_val_loss_collector.append(
-                                results["loss"].sum().item()
-                            )
+                            epoch_val_loss_collector.append(results["loss"].sum().item())
 
                     mean_val_loss = np.mean(epoch_val_loss_collector)
                     logger.info(
@@ -332,15 +330,11 @@ class BaseNNClusterer(BaseNNModel):
                     )
                     mean_loss = mean_val_loss
                 else:
-                    logger.info(
-                        f"Epoch {epoch:03d} - training loss: {mean_train_loss:.4f}"
-                    )
+                    logger.info(f"Epoch {epoch:03d} - training loss: {mean_train_loss:.4f}")
                     mean_loss = mean_train_loss
 
                 if np.isnan(mean_loss):
-                    logger.warning(
-                        f"‼️ Attention: got NaN loss in Epoch {epoch}. This may lead to unexpected errors."
-                    )
+                    logger.warning(f"‼️ Attention: got NaN loss in Epoch {epoch}. This may lead to unexpected errors.")
 
                 if mean_loss < self.best_loss:
                     self.best_epoch = epoch
@@ -356,9 +350,7 @@ class BaseNNClusterer(BaseNNModel):
                         nni.report_final_result(self.best_loss)
 
                 if self.patience == 0:
-                    logger.info(
-                        "Exceeded the training patience. Terminating the training procedure..."
-                    )
+                    logger.info("Exceeded the training patience. Terminating the training procedure...")
                     break
 
         except KeyboardInterrupt:  # if keyboard interrupt, only warning
@@ -379,9 +371,7 @@ class BaseNNClusterer(BaseNNModel):
         if np.isnan(self.best_loss):
             raise ValueError("Something is wrong. best_loss is Nan after training.")
 
-        logger.info(
-            f"Finished training. The best model is from epoch#{self.best_epoch}."
-        )
+        logger.info(f"Finished training. The best model is from epoch#{self.best_epoch}.")
 
     @abstractmethod
     def fit(

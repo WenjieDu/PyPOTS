@@ -43,13 +43,9 @@ def get_phi_psi(k, base):
     if base == "legendre":
         for ki in range(k):
             coeff_ = Poly(legendre(ki, 2 * x - 1), x).all_coeffs()
-            phi_coeff[ki, : ki + 1] = np.flip(
-                np.sqrt(2 * ki + 1) * np.array(coeff_).astype(np.float64)
-            )
+            phi_coeff[ki, : ki + 1] = np.flip(np.sqrt(2 * ki + 1) * np.array(coeff_).astype(np.float64))
             coeff_ = Poly(legendre(ki, 4 * x - 1), x).all_coeffs()
-            phi_2x_coeff[ki, : ki + 1] = np.flip(
-                np.sqrt(2) * np.sqrt(2 * ki + 1) * np.array(coeff_).astype(np.float64)
-            )
+            phi_2x_coeff[ki, : ki + 1] = np.flip(np.sqrt(2) * np.sqrt(2 * ki + 1) * np.array(coeff_).astype(np.float64))
 
         psi1_coeff = np.zeros((k, k))
         psi2_coeff = np.zeros((k, k))
@@ -60,12 +56,7 @@ def get_phi_psi(k, base):
                 b = phi_coeff[i, : i + 1]
                 prod_ = np.convolve(a, b)
                 prod_[np.abs(prod_) < 1e-8] = 0
-                proj_ = (
-                    prod_
-                    * 1
-                    / (np.arange(len(prod_)) + 1)
-                    * np.power(0.5, 1 + np.arange(len(prod_)))
-                ).sum()
+                proj_ = (prod_ * 1 / (np.arange(len(prod_)) + 1) * np.power(0.5, 1 + np.arange(len(prod_)))).sum()
                 psi1_coeff[ki, :] -= proj_ * phi_coeff[i, :]
                 psi2_coeff[ki, :] -= proj_ * phi_coeff[i, :]
             for j in range(ki):
@@ -73,34 +64,19 @@ def get_phi_psi(k, base):
                 b = psi1_coeff[j, :]
                 prod_ = np.convolve(a, b)
                 prod_[np.abs(prod_) < 1e-8] = 0
-                proj_ = (
-                    prod_
-                    * 1
-                    / (np.arange(len(prod_)) + 1)
-                    * np.power(0.5, 1 + np.arange(len(prod_)))
-                ).sum()
+                proj_ = (prod_ * 1 / (np.arange(len(prod_)) + 1) * np.power(0.5, 1 + np.arange(len(prod_)))).sum()
                 psi1_coeff[ki, :] -= proj_ * psi1_coeff[j, :]
                 psi2_coeff[ki, :] -= proj_ * psi2_coeff[j, :]
 
             a = psi1_coeff[ki, :]
             prod_ = np.convolve(a, a)
             prod_[np.abs(prod_) < 1e-8] = 0
-            norm1 = (
-                prod_
-                * 1
-                / (np.arange(len(prod_)) + 1)
-                * np.power(0.5, 1 + np.arange(len(prod_)))
-            ).sum()
+            norm1 = (prod_ * 1 / (np.arange(len(prod_)) + 1) * np.power(0.5, 1 + np.arange(len(prod_)))).sum()
 
             a = psi2_coeff[ki, :]
             prod_ = np.convolve(a, a)
             prod_[np.abs(prod_) < 1e-8] = 0
-            norm2 = (
-                prod_
-                * 1
-                / (np.arange(len(prod_)) + 1)
-                * (1 - np.power(0.5, 1 + np.arange(len(prod_))))
-            ).sum()
+            norm2 = (prod_ * 1 / (np.arange(len(prod_)) + 1) * (1 - np.power(0.5, 1 + np.arange(len(prod_))))).sum()
             norm_ = np.sqrt(norm1 + norm2)
             psi1_coeff[ki, :] /= norm_
             psi2_coeff[ki, :] /= norm_
@@ -118,15 +94,10 @@ def get_phi_psi(k, base):
                 phi_2x_coeff[ki, : ki + 1] = np.sqrt(2 / np.pi) * np.sqrt(2)
             else:
                 coeff_ = Poly(chebyshevt(ki, 2 * x - 1), x).all_coeffs()
-                phi_coeff[ki, : ki + 1] = np.flip(
-                    2 / np.sqrt(np.pi) * np.array(coeff_).astype(np.float64)
-                )
+                phi_coeff[ki, : ki + 1] = np.flip(2 / np.sqrt(np.pi) * np.array(coeff_).astype(np.float64))
                 coeff_ = Poly(chebyshevt(ki, 4 * x - 1), x).all_coeffs()
                 phi_2x_coeff[ki, : ki + 1] = np.flip(
-                    np.sqrt(2)
-                    * 2
-                    / np.sqrt(np.pi)
-                    * np.array(coeff_).astype(np.float64)
+                    np.sqrt(2) * 2 / np.sqrt(np.pi) * np.array(coeff_).astype(np.float64)
                 )
 
         phi = [partial(phi_, phi_coeff[i, :]) for i in range(k)]
@@ -198,22 +169,10 @@ def get_filter(base, k):
 
         for ki in range(k):
             for kpi in range(k):
-                H0[ki, kpi] = (
-                    1 / np.sqrt(2) * (wm * phi[ki](x_m / 2) * phi[kpi](x_m)).sum()
-                )
-                G0[ki, kpi] = (
-                    1
-                    / np.sqrt(2)
-                    * (wm * psi(psi1, psi2, ki, x_m / 2) * phi[kpi](x_m)).sum()
-                )
-                H1[ki, kpi] = (
-                    1 / np.sqrt(2) * (wm * phi[ki]((x_m + 1) / 2) * phi[kpi](x_m)).sum()
-                )
-                G1[ki, kpi] = (
-                    1
-                    / np.sqrt(2)
-                    * (wm * psi(psi1, psi2, ki, (x_m + 1) / 2) * phi[kpi](x_m)).sum()
-                )
+                H0[ki, kpi] = 1 / np.sqrt(2) * (wm * phi[ki](x_m / 2) * phi[kpi](x_m)).sum()
+                G0[ki, kpi] = 1 / np.sqrt(2) * (wm * psi(psi1, psi2, ki, x_m / 2) * phi[kpi](x_m)).sum()
+                H1[ki, kpi] = 1 / np.sqrt(2) * (wm * phi[ki]((x_m + 1) / 2) * phi[kpi](x_m)).sum()
+                G1[ki, kpi] = 1 / np.sqrt(2) * (wm * psi(psi1, psi2, ki, (x_m + 1) / 2) * phi[kpi](x_m)).sum()
 
         PHI0 = np.eye(k)
         PHI1 = np.eye(k)
@@ -229,27 +188,13 @@ def get_filter(base, k):
 
         for ki in range(k):
             for kpi in range(k):
-                H0[ki, kpi] = (
-                    1 / np.sqrt(2) * (wm * phi[ki](x_m / 2) * phi[kpi](x_m)).sum()
-                )
-                G0[ki, kpi] = (
-                    1
-                    / np.sqrt(2)
-                    * (wm * psi(psi1, psi2, ki, x_m / 2) * phi[kpi](x_m)).sum()
-                )
-                H1[ki, kpi] = (
-                    1 / np.sqrt(2) * (wm * phi[ki]((x_m + 1) / 2) * phi[kpi](x_m)).sum()
-                )
-                G1[ki, kpi] = (
-                    1
-                    / np.sqrt(2)
-                    * (wm * psi(psi1, psi2, ki, (x_m + 1) / 2) * phi[kpi](x_m)).sum()
-                )
+                H0[ki, kpi] = 1 / np.sqrt(2) * (wm * phi[ki](x_m / 2) * phi[kpi](x_m)).sum()
+                G0[ki, kpi] = 1 / np.sqrt(2) * (wm * psi(psi1, psi2, ki, x_m / 2) * phi[kpi](x_m)).sum()
+                H1[ki, kpi] = 1 / np.sqrt(2) * (wm * phi[ki]((x_m + 1) / 2) * phi[kpi](x_m)).sum()
+                G1[ki, kpi] = 1 / np.sqrt(2) * (wm * psi(psi1, psi2, ki, (x_m + 1) / 2) * phi[kpi](x_m)).sum()
 
                 PHI0[ki, kpi] = (wm * phi[ki](2 * x_m) * phi[kpi](2 * x_m)).sum() * 2
-                PHI1[ki, kpi] = (
-                    wm * phi[ki](2 * x_m - 1) * phi[kpi](2 * x_m - 1)
-                ).sum() * 2
+                PHI1[ki, kpi] = (wm * phi[ki](2 * x_m - 1) * phi[kpi](2 * x_m - 1)).sum() * 2
 
         PHI0[np.abs(PHI0) < 1e-8] = 0
         PHI1[np.abs(PHI1) < 1e-8] = 0
@@ -268,12 +213,8 @@ class sparseKernelFT1d(nn.Module):
 
         self.modes1 = alpha
         self.scale = 1 / (c * k * c * k)
-        self.weights1 = nn.Parameter(
-            self.scale * torch.rand(c * k, c * k, self.modes1, dtype=torch.float)
-        )
-        self.weights2 = nn.Parameter(
-            self.scale * torch.rand(c * k, c * k, self.modes1, dtype=torch.float)
-        )
+        self.weights1 = nn.Parameter(self.scale * torch.rand(c * k, c * k, self.modes1, dtype=torch.float))
+        self.weights2 = nn.Parameter(self.scale * torch.rand(c * k, c * k, self.modes1, dtype=torch.float))
         self.weights1.requires_grad = True
         self.weights2.requires_grad = True
         self.k = k
@@ -286,15 +227,11 @@ class sparseKernelFT1d(nn.Module):
             x = torch.complex(x, torch.zeros_like(x).to(x.device))
         if not torch.is_complex(weights):
             w_flag = False
-            weights = torch.complex(
-                weights, torch.zeros_like(weights).to(weights.device)
-            )
+            weights = torch.complex(weights, torch.zeros_like(weights).to(weights.device))
         if x_flag or w_flag:
             return torch.complex(
-                torch.einsum(order, x.real, weights.real)
-                - torch.einsum(order, x.imag, weights.imag),
-                torch.einsum(order, x.real, weights.imag)
-                + torch.einsum(order, x.imag, weights.real),
+                torch.einsum(order, x.real, weights.real) - torch.einsum(order, x.imag, weights.imag),
+                torch.einsum(order, x.real, weights.imag) + torch.einsum(order, x.imag, weights.real),
             )
         else:
             return torch.einsum(order, x.real, weights.real)
@@ -319,9 +256,7 @@ class sparseKernelFT1d(nn.Module):
 
 
 class MWT_CZ1d(nn.Module):
-    def __init__(
-        self, k=3, alpha=64, L=0, c=1, base="legendre", initializer=None, **kwargs
-    ):
+    def __init__(self, k=3, alpha=64, L=0, c=1, base="legendre", initializer=None, **kwargs):
         super().__init__()
 
         self.k = k
@@ -484,15 +419,11 @@ class FourierCrossAttentionW(nn.Module):
             x = torch.complex(x, torch.zeros_like(x).to(x.device))
         if not torch.is_complex(weights):
             w_flag = False
-            weights = torch.complex(
-                weights, torch.zeros_like(weights).to(weights.device)
-            )
+            weights = torch.complex(weights, torch.zeros_like(weights).to(weights.device))
         if x_flag or w_flag:
             return torch.complex(
-                torch.einsum(order, x.real, weights.real)
-                - torch.einsum(order, x.imag, weights.imag),
-                torch.einsum(order, x.real, weights.imag)
-                + torch.einsum(order, x.imag, weights.real),
+                torch.einsum(order, x.real, weights.real) - torch.einsum(order, x.imag, weights.imag),
+                torch.einsum(order, x.real, weights.imag) + torch.einsum(order, x.imag, weights.real),
             )
         else:
             return torch.einsum(order, x.real, weights.real)
@@ -507,16 +438,12 @@ class FourierCrossAttentionW(nn.Module):
         self.index_k_v = list(range(0, min(int(xv.shape[3] // 2), self.modes1)))
 
         # Compute Fourier coefficients
-        xq_ft_ = torch.zeros(
-            B, H, E, len(self.index_q), device=xq.device, dtype=torch.cfloat
-        )
+        xq_ft_ = torch.zeros(B, H, E, len(self.index_q), device=xq.device, dtype=torch.cfloat)
         xq_ft = torch.fft.rfft(xq, dim=-1)
         for i, j in enumerate(self.index_q):
             xq_ft_[:, :, :, i] = xq_ft[:, :, :, j]
 
-        xk_ft_ = torch.zeros(
-            B, H, E, len(self.index_k_v), device=xq.device, dtype=torch.cfloat
-        )
+        xk_ft_ = torch.zeros(B, H, E, len(self.index_k_v), device=xq.device, dtype=torch.cfloat)
         xk_ft = torch.fft.rfft(xk, dim=-1)
         for i, j in enumerate(self.index_k_v):
             xk_ft_[:, :, :, i] = xk_ft[:, :, :, j]
@@ -527,9 +454,7 @@ class FourierCrossAttentionW(nn.Module):
             xqk_ft = torch.softmax(abs(xqk_ft), dim=-1)
             xqk_ft = torch.complex(xqk_ft, torch.zeros_like(xqk_ft))
         else:
-            raise Exception(
-                "{} actiation function is not implemented".format(self.activation)
-            )
+            raise Exception("{} actiation function is not implemented".format(self.activation))
         xqkv_ft = self.compl_mul1d("bhxy,bhey->bhex", xqk_ft, xk_ft_)
 
         xqkvw = xqkv_ft
@@ -537,9 +462,7 @@ class FourierCrossAttentionW(nn.Module):
         for i, j in enumerate(self.index_q):
             out_ft[:, :, :, j] = xqkvw[:, :, :, i]
 
-        out = torch.fft.irfft(
-            out_ft / self.in_channels / self.out_channels, n=xq.size(-1)
-        ).permute(0, 3, 2, 1)
+        out = torch.fft.irfft(out_ft / self.in_channels / self.out_channels, n=xq.size(-1)).permute(0, 3, 2, 1)
         # size = [B, L, H, E]
         return (out, None)
 
@@ -701,10 +624,7 @@ class MultiWaveletCross(AttentionOperator):
             dk, sk = Ud_k[i], Us_k[i]
             dq, sq = Ud_q[i], Us_q[i]
             dv, sv = Ud_v[i], Us_v[i]
-            Ud += [
-                self.attn1(dq[0], dk[0], dv[0], attn_mask)[0]
-                + self.attn2(dq[1], dk[1], dv[1], attn_mask)[0]
-            ]
+            Ud += [self.attn1(dq[0], dk[0], dv[0], attn_mask)[0] + self.attn2(dq[1], dk[1], dv[1], attn_mask)[0]]
             Us += [self.attn3(sq, sk, sv, attn_mask)[0]]
         v = self.attn4(q, k, v, attn_mask)[0]
 
@@ -759,9 +679,7 @@ def get_frequency_modes(seq_len, modes=64, mode_select_method="random"):
 
 # ########## fourier layer #############
 class FourierBlock(AttentionOperator):
-    def __init__(
-        self, in_channels, out_channels, seq_len, modes=0, mode_select_method="random"
-    ):
+    def __init__(self, in_channels, out_channels, seq_len, modes=0, mode_select_method="random"):
         super().__init__()
         # print("fourier enhanced block used!")
         """
@@ -769,9 +687,7 @@ class FourierBlock(AttentionOperator):
         it does FFT, linear transform, and Inverse FFT.
         """
         # get modes on frequency domain
-        self.index = get_frequency_modes(
-            seq_len, modes=modes, mode_select_method=mode_select_method
-        )
+        self.index = get_frequency_modes(seq_len, modes=modes, mode_select_method=mode_select_method)
         # print("modes={}, index={}".format(modes, self.index))
 
         self.scale = 1 / (in_channels * out_channels)
@@ -809,9 +725,7 @@ class FourierBlock(AttentionOperator):
         # Perform Fourier neural operations
         out_ft = torch.zeros(B, H, E, L // 2 + 1, device=x.device, dtype=torch.cfloat)
         for wi, i in enumerate(self.index):
-            out_ft[:, :, :, wi] = self.compl_mul1d(
-                x_ft[:, :, :, i], self.weights1[:, :, :, wi]
-            )
+            out_ft[:, :, :, wi] = self.compl_mul1d(x_ft[:, :, :, i], self.weights1[:, :, :, wi])
         # Return to time domain
         x = torch.fft.irfft(out_ft, n=x.size(-1))
         return x, None
@@ -840,12 +754,8 @@ class FourierCrossAttention(AttentionOperator):
         self.in_channels = in_channels
         self.out_channels = out_channels
         # get modes for queries and keys (& values) on frequency domain
-        self.index_q = get_frequency_modes(
-            seq_len_q, modes=modes, mode_select_method=mode_select_method
-        )
-        self.index_kv = get_frequency_modes(
-            seq_len_kv, modes=modes, mode_select_method=mode_select_method
-        )
+        self.index_q = get_frequency_modes(seq_len_q, modes=modes, mode_select_method=mode_select_method)
+        self.index_kv = get_frequency_modes(seq_len_kv, modes=modes, mode_select_method=mode_select_method)
 
         # print("modes_q={}, index_q={}".format(len(self.index_q), self.index_q))
         # print("modes_kv={}, index_kv={}".format(len(self.index_kv), self.index_kv))
@@ -881,15 +791,11 @@ class FourierCrossAttention(AttentionOperator):
             x = torch.complex(x, torch.zeros_like(x).to(x.device))
         if not torch.is_complex(weights):
             w_flag = False
-            weights = torch.complex(
-                weights, torch.zeros_like(weights).to(weights.device)
-            )
+            weights = torch.complex(weights, torch.zeros_like(weights).to(weights.device))
         if x_flag or w_flag:
             return torch.complex(
-                torch.einsum(order, x.real, weights.real)
-                - torch.einsum(order, x.imag, weights.imag),
-                torch.einsum(order, x.real, weights.imag)
-                + torch.einsum(order, x.imag, weights.real),
+                torch.einsum(order, x.real, weights.real) - torch.einsum(order, x.imag, weights.imag),
+                torch.einsum(order, x.real, weights.imag) + torch.einsum(order, x.imag, weights.real),
             )
         else:
             return torch.einsum(order, x.real, weights.real)
@@ -911,17 +817,13 @@ class FourierCrossAttention(AttentionOperator):
         # xv = v.permute(0, 2, 3, 1)
 
         # Compute Fourier coefficients
-        xq_ft_ = torch.zeros(
-            B, H, E, len(self.index_q), device=xq.device, dtype=torch.cfloat
-        )
+        xq_ft_ = torch.zeros(B, H, E, len(self.index_q), device=xq.device, dtype=torch.cfloat)
         xq_ft = torch.fft.rfft(xq, dim=-1)
         for i, j in enumerate(self.index_q):
             if j >= xq_ft.shape[3]:
                 continue
             xq_ft_[:, :, :, i] = xq_ft[:, :, :, j]
-        xk_ft_ = torch.zeros(
-            B, H, E, len(self.index_kv), device=xq.device, dtype=torch.cfloat
-        )
+        xk_ft_ = torch.zeros(B, H, E, len(self.index_kv), device=xq.device, dtype=torch.cfloat)
         xk_ft = torch.fft.rfft(xk, dim=-1)
         for i, j in enumerate(self.index_kv):
             if j >= xk_ft.shape[3]:
@@ -936,22 +838,16 @@ class FourierCrossAttention(AttentionOperator):
             xqk_ft = torch.softmax(abs(xqk_ft), dim=-1)
             xqk_ft = torch.complex(xqk_ft, torch.zeros_like(xqk_ft))
         else:
-            raise Exception(
-                "{} actiation function is not implemented".format(self.activation)
-            )
+            raise Exception("{} actiation function is not implemented".format(self.activation))
         xqkv_ft = self.compl_mul1d("bhxy,bhey->bhex", xqk_ft, xk_ft_)
-        xqkvw = self.compl_mul1d(
-            "bhex,heox->bhox", xqkv_ft, torch.complex(self.weights1, self.weights2)
-        )
+        xqkvw = self.compl_mul1d("bhex,heox->bhox", xqkv_ft, torch.complex(self.weights1, self.weights2))
         out_ft = torch.zeros(B, H, E, L // 2 + 1, device=xq.device, dtype=torch.cfloat)
         for i, j in enumerate(self.index_q):
             if i >= xqkvw.shape[3] or j >= out_ft.shape[3]:
                 continue
             out_ft[:, :, :, j] = xqkvw[:, :, :, i]
         # Return to time domain
-        out = torch.fft.irfft(
-            out_ft / self.in_channels / self.out_channels, n=xq.size(-1)
-        )
+        out = torch.fft.irfft(out_ft / self.in_channels / self.out_channels, n=xq.size(-1))
         return out, None
 
 
@@ -973,8 +869,6 @@ class SeriesDecompositionMultiBlock(nn.Module):
             moving_avg = func(x)
             moving_mean.append(moving_avg.unsqueeze(-1))
         moving_mean = torch.cat(moving_mean, dim=-1)
-        moving_mean = torch.sum(
-            moving_mean * nn.Softmax(-1)(self.layer(x.unsqueeze(-1))), dim=-1
-        )
+        moving_mean = torch.sum(moving_mean * nn.Softmax(-1)(self.layer(x.unsqueeze(-1))), dim=-1)
         res = x - moving_mean
         return res, moving_mean

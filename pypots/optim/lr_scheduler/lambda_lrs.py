@@ -51,16 +51,12 @@ class LambdaLR(LRScheduler):
         self.lr_lambdas = None
 
     def init_scheduler(self, optimizer):
-        if not isinstance(self.lr_lambda, list) and not isinstance(
-            self.lr_lambda, tuple
-        ):
+        if not isinstance(self.lr_lambda, list) and not isinstance(self.lr_lambda, tuple):
             self.lr_lambdas = [self.lr_lambda] * len(optimizer.param_groups)
         else:
             if len(self.lr_lambda) != len(optimizer.param_groups):
                 raise ValueError(
-                    "Expected {} lr_lambdas, but got {}".format(
-                        len(optimizer.param_groups), len(self.lr_lambda)
-                    )
+                    "Expected {} lr_lambdas, but got {}".format(len(optimizer.param_groups), len(self.lr_lambda))
                 )
             self.lr_lambdas = list(self.lr_lambda)
 
@@ -68,12 +64,6 @@ class LambdaLR(LRScheduler):
 
     def get_lr(self):
         if not self._get_lr_called_within_step:
-            logger.warning(
-                "⚠️ To get the last learning rate computed by the scheduler, "
-                "please use `get_last_lr()`."
-            )
+            logger.warning("⚠️ To get the last learning rate computed by the scheduler, please use `get_last_lr()`.")
 
-        return [
-            base_lr * lmbda(self.last_epoch)
-            for lmbda, base_lr in zip(self.lr_lambdas, self.base_lrs)
-        ]
+        return [base_lr * lmbda(self.last_epoch) for lmbda, base_lr in zip(self.lr_lambdas, self.base_lrs)]

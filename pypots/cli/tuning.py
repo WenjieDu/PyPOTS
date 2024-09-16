@@ -249,12 +249,8 @@ class TuningCommand(BaseCommand):
             model_arguments_set = set(model_all_arguments)
             if_hyperparameter_match = tuner_params_set.issubset(model_arguments_set)
             if not if_hyperparameter_match:  # raise runtime error if mismatch
-                hyperparameter_intersection = tuner_params_set.intersection(
-                    model_arguments_set
-                )
-                mismatched = tuner_params_set.difference(
-                    set(hyperparameter_intersection)
-                )
+                hyperparameter_intersection = tuner_params_set.intersection(model_arguments_set)
+                mismatched = tuner_params_set.difference(set(hyperparameter_intersection))
                 raise RuntimeError(
                     f"Hyperparameters do not match. Mismatched hyperparameters "
                     f"(in the tuning configuration but not in {model_class.__name__}'s arguments): {list(mismatched)}"
@@ -277,9 +273,7 @@ class TuningCommand(BaseCommand):
             if self._lazy_load:
                 train_set, val_set = self._train_set, self._val_set
             else:
-                logger.info(
-                    "Option lazy_load is set as False, hence loading all data from file..."
-                )
+                logger.info("Option lazy_load is set as False, hence loading all data from file...")
                 train_set = load_dict_from_h5(self._train_set)
                 val_set = load_dict_from_h5(self._val_set)
 

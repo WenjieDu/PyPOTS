@@ -26,9 +26,7 @@ def turn_data_into_specified_dtype(
     elif isinstance(data, np.ndarray):
         data = torch.from_numpy(data) if dtype == "tensor" else data
     else:
-        raise TypeError(
-            f"data should be an instance of list/np.ndarray/torch.Tensor, but got {type(data)}"
-        )
+        raise TypeError(f"data should be an instance of list/np.ndarray/torch.Tensor, but got {type(data)}")
     return data
 
 
@@ -62,9 +60,7 @@ def _parse_delta_torch(missing_mask: torch.Tensor) -> torch.Tensor:
         d = [torch.zeros(1, n_features, device=device)]
 
         for step in range(1, n_steps):
-            d.append(
-                torch.ones(1, n_features, device=device) + (1 - mask[step - 1]) * d[-1]
-            )
+            d.append(torch.ones(1, n_features, device=device) + (1 - mask[step - 1]) * d[-1])
         d = torch.concat(d, dim=0)
         return d
 
@@ -130,9 +126,7 @@ def _parse_delta_numpy(missing_mask: np.ndarray) -> np.ndarray:
     return delta
 
 
-def parse_delta(
-    missing_mask: Union[np.ndarray, torch.Tensor]
-) -> Union[np.ndarray, torch.Tensor]:
+def parse_delta(missing_mask: Union[np.ndarray, torch.Tensor]) -> Union[np.ndarray, torch.Tensor]:
     """Generate the time-gap matrix (i.e. the delta metrix) from the missing mask.
     Please refer to :cite:`che2018GRUD` for its math definition.
 

@@ -12,6 +12,7 @@ in one place, which could result in a mess and be not readable;
 2). provide additional functionalities, such as learning rate scheduling, etc.;
 
 """
+
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 

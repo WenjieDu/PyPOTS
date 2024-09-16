@@ -36,9 +36,7 @@ class _PatchTST(nn.Module):
         padding = stride
 
         self.saits_embedding = SaitsEmbedding(n_features * 2, d_model, with_pos=False)
-        self.patch_embedding = PatchEmbedding(
-            d_model, patch_len, stride, padding, dropout
-        )
+        self.patch_embedding = PatchEmbedding(d_model, patch_len, stride, padding, dropout)
         self.encoder = PatchtstEncoder(
             n_layers,
             d_model,
@@ -64,9 +62,7 @@ class _PatchTST(nn.Module):
         input_X = self.saits_embedding(X, missing_mask)
 
         # do patch  embedding
-        enc_out = self.patch_embedding(
-            input_X.permute(0, 2, 1)
-        )  # [bz * d_model, n_patches, d_model]
+        enc_out = self.patch_embedding(input_X.permute(0, 2, 1))  # [bz * d_model, n_patches, d_model]
 
         # PatchTST encoder processing
         enc_out, attns = self.encoder(enc_out)
@@ -82,9 +78,7 @@ class _PatchTST(nn.Module):
 
         if training:
             X_ori, indicating_mask = inputs["X_ori"], inputs["indicating_mask"]
-            loss, ORT_loss, MIT_loss = self.saits_loss_func(
-                reconstruction, X_ori, missing_mask, indicating_mask
-            )
+            loss, ORT_loss, MIT_loss = self.saits_loss_func(reconstruction, X_ori, missing_mask, indicating_mask)
             results["ORT_loss"] = ORT_loss
             results["MIT_loss"] = MIT_loss
             # `loss` is always the item for backward propagating to update the model
