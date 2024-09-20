@@ -14,9 +14,7 @@ import pandas as pd
 import scipy.stats as st
 
 
-def get_cluster_members(
-    test_data: np.ndarray, class_predictions: np.ndarray
-) -> Dict[int, np.ndarray]:
+def get_cluster_members(test_data: np.ndarray, class_predictions: np.ndarray) -> Dict[int, np.ndarray]:
     """
     Subset time series array using predicted cluster membership.
 
@@ -79,18 +77,12 @@ def clusters_for_plotting(
     for i in cluster_members:  # i iterates clusters
         dict_to_plot[i] = {}  # one dict per cluster
         for j in cluster_members[i]:  # j iterates members of each cluster
-            temp = pd.DataFrame(j).to_dict(
-                orient="list"
-            )  # dict of member's time series as lists (one per var)
+            temp = pd.DataFrame(j).to_dict(orient="list")  # dict of member's time series as lists (one per var)
             for key in temp:  # key is a time series var
                 if key not in dict_to_plot[i]:
-                    dict_to_plot[i][key] = [
-                        temp[key]
-                    ]  # create entry in cluster dict for each time series var
+                    dict_to_plot[i][key] = [temp[key]]  # create entry in cluster dict for each time series var
                 else:
-                    dict_to_plot[i][key].append(
-                        temp[key]
-                    )  # add cluster member's time series by var key
+                    dict_to_plot[i][key].append(temp[key])  # add cluster member's time series by var key
     return dict_to_plot
 
 
@@ -189,28 +181,19 @@ def get_cluster_means(dict_to_plot: Dict[int, dict]) -> Dict[int, dict]:
             if j not in cluster_means:
                 cluster_means[j] = {}
 
-            cluster_means[j][
-                i
-            ] = (
-                {}
-            )  # clusters nested within vars (reverse structure to clusters_for_plotting)
+            cluster_means[j][i] = {}  # clusters nested within vars (reverse structure to clusters_for_plotting)
 
             cluster_means[j][i]["mean"] = list(
                 pd.DataFrame(dict_to_plot[i][j]).mean(axis=0, skipna=True)
             )  # cluster mean array of time series var
             # CI calculation, from https://stackoverflow.com/a/34474255
-            (
-                cluster_means[j][i]["CI_low"],
-                cluster_means[j][i]["CI_high"],
-            ) = st.t.interval(
+            (cluster_means[j][i]["CI_low"], cluster_means[j][i]["CI_high"]) = st.t.interval(
                 0.95,
                 len(dict_to_plot[i][j]) - 1,  # degrees of freedom
                 loc=cluster_means[j][i]["mean"],
                 scale=pd.DataFrame(dict_to_plot[i][j]).sem(axis=0, skipna=True),
             )
-            cluster_means[j][i]["n"] = len(
-                dict_to_plot[i][j]
-            )  # save cluster size for downstream tasks/plotting
+            cluster_means[j][i]["n"] = len(dict_to_plot[i][j])  # save cluster size for downstream tasks/plotting
 
     return cluster_means
 
@@ -224,9 +207,7 @@ def plot_cluster_means(cluster_means: Dict[int, dict]) -> None:
     cluster_means :
         Output from get_cluster_means function.
     """
-    colors = plt.rcParams["axes.prop_cycle"].by_key()[
-        "color"
-    ]  # to keep cluster colors consistent
+    colors = plt.rcParams["axes.prop_cycle"].by_key()["color"]  # to keep cluster colors consistent
 
     for i in cluster_means:  # iterate time series vars
         y = cluster_means[i]
@@ -267,9 +248,7 @@ def plot_cluster_means(cluster_means: Dict[int, dict]) -> None:
         plt.xticks(x)
 
         # add dashed line label to legend
-        line_dashed = mlines.Line2D(
-            [], [], color="gray", linestyle="--", linewidth=1.5, label="95% CI"
-        )
+        line_dashed = mlines.Line2D([], [], color="gray", linestyle="--", linewidth=1.5, label="95% CI")
         handles, labels = plt.legend().axes.get_legend_handles_labels()
         handles.append(line_dashed)
         new_lgd = plt.legend(handles=handles)

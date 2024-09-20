@@ -38,10 +38,7 @@ class Mean(BaseImputer):
         Please run func ``predict()`` directly.
 
         """
-        warnings.warn(
-            "Mean imputation class has no parameter to train. "
-            "Please run func `predict()` directly."
-        )
+        warnings.warn("Mean imputation class has no parameter to train. Please run func `predict()` directly.")
 
     def predict(
         self,
@@ -90,17 +87,13 @@ class Mean(BaseImputer):
             X_imputed_reshaped = np.copy(X).reshape(-1, n_features)
             mean_values = np.nanmean(X_imputed_reshaped, axis=0)
             for i, v in enumerate(mean_values):
-                X_imputed_reshaped[:, i] = np.nan_to_num(
-                    X_imputed_reshaped[:, i], nan=v
-                )
+                X_imputed_reshaped[:, i] = np.nan_to_num(X_imputed_reshaped[:, i], nan=v)
             imputed_data = X_imputed_reshaped.reshape(n_samples, n_steps, n_features)
         elif isinstance(X, torch.Tensor):
             X_imputed_reshaped = torch.clone(X).reshape(-1, n_features)
             mean_values = torch.nanmean(X_imputed_reshaped, dim=0).numpy()
             for i, v in enumerate(mean_values):
-                X_imputed_reshaped[:, i] = torch.nan_to_num(
-                    X_imputed_reshaped[:, i], nan=v
-                )
+                X_imputed_reshaped[:, i] = torch.nan_to_num(X_imputed_reshaped[:, i], nan=v)
             imputed_data = X_imputed_reshaped.reshape(n_samples, n_steps, n_features)
         else:
             raise ValueError()

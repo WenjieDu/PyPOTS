@@ -106,9 +106,7 @@ class BaseModel(ABC):
                 self.device = device
             elif isinstance(device, list):
                 if len(device) == 0:
-                    raise ValueError(
-                        "The list of devices should have at least 1 device, but got 0."
-                    )
+                    raise ValueError("The list of devices should have at least 1 device, but got 0.")
                 elif len(device) == 1:
                     return self._setup_device(device[0])
                 # parallely training on multiple CUDA devices
@@ -179,18 +177,14 @@ class BaseModel(ABC):
             logger.info(f"Model files will be saved to {self.saving_path}")
             logger.info(f"Tensorboard file will be saved to {tb_saving_path}")
         else:
-            logger.warning(
-                "‼️ saving_path not given. Model files and tensorboard file will not be saved."
-            )
+            logger.warning("‼️ saving_path not given. Model files and tensorboard file will not be saved.")
 
     def _send_model_to_given_device(self) -> None:
         if isinstance(self.device, list):
             # parallely training on multiple devices
             self.model = torch.nn.DataParallel(self.model, device_ids=self.device)
             self.model = self.model.cuda()
-            logger.info(
-                f"Model has been allocated to the given multiple devices: {self.device}"
-            )
+            logger.info(f"Model has been allocated to the given multiple devices: {self.device}")
         else:
             self.model = self.model.to(self.device)
 
@@ -291,14 +285,13 @@ class BaseModel(ABC):
 
         if os.path.exists(saving_path):
             if overwrite:
-                logger.warning(
-                    f"‼️ File {saving_path} exists. Argument `overwrite` is True. Overwriting now..."
-                )
+                logger.warning(f"‼️ File {saving_path} exists. Argument `overwrite` is True. Overwriting now...")
             else:
                 logger.error(
                     f"❌ File {saving_path} exists. Saving operation aborted. "
                     f"Use the arg `overwrite=True` to force overwrite."
                 )
+                return
 
         try:
             create_dir_if_not_exist(saving_dir)
@@ -309,9 +302,7 @@ class BaseModel(ABC):
                 torch.save(self.model, saving_path)
             logger.info(f"Saved the model to {saving_path}")
         except Exception as e:
-            raise RuntimeError(
-                f'Failed to save the model to "{saving_path}" because of the below error! \n{e}'
-            )
+            raise RuntimeError(f'Failed to save the model to "{saving_path}" because of the below error! \n{e}')
 
     def load(self, path: str) -> None:
         """Load the saved model from a disk file.
@@ -519,9 +510,7 @@ class BaseNNModel(BaseModel):
 
     def _print_model_size(self) -> None:
         """Print the number of trainable parameters in the initialized NN model."""
-        self.num_params = sum(
-            p.numel() for p in self.model.parameters() if p.requires_grad
-        )
+        self.num_params = sum(p.numel() for p in self.model.parameters() if p.requires_grad)
         logger.info(
             f"{self.__class__.__name__} initialized with the given hyperparameters, "
             f"the number of trainable parameters: {self.num_params:,}"

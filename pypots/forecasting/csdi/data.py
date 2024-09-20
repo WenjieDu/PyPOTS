@@ -77,9 +77,7 @@ class DatasetForForecastingCSDI(BaseDataset):
 
         # apply specifically given mask or the hist masking strategy, rather than the random masking strategy
         if "for_pattern_mask" in self.data.keys():
-            for_pattern_mask = torch.from_numpy(self.data["for_pattern_mask"][idx]).to(
-                torch.float32
-            )
+            for_pattern_mask = torch.from_numpy(self.data["for_pattern_mask"][idx]).to(torch.float32)
         else:
             previous_sample = self.X[idx - 1]
             for_pattern_mask = (~torch.isnan(previous_sample)).to(torch.float32)
@@ -93,9 +91,7 @@ class DatasetForForecastingCSDI(BaseDataset):
                 observed_mask,
                 feature_id,
                 cond_mask,
-            ) = self.sample_features(
-                observed_data, observed_mask, feature_id, cond_mask
-            )
+            ) = self.sample_features(observed_data, observed_mask, feature_id, cond_mask)
 
         X_pred = self.X_pred[idx]
         X_pred_missing_mask = self.X_pred_missing_mask[idx]
@@ -103,9 +99,7 @@ class DatasetForForecastingCSDI(BaseDataset):
         observed_data = torch.concat([observed_data, X_pred], dim=0)
         indicating_mask = torch.concat([indicating_mask, X_pred_missing_mask], dim=0)
         cond_mask = torch.concat([cond_mask, torch.zeros(X_pred.shape)], dim=0)
-        observed_tp = torch.arange(
-            0, self.n_steps + self.n_pred_steps, dtype=torch.float32
-        )
+        observed_tp = torch.arange(0, self.n_steps + self.n_pred_steps, dtype=torch.float32)
 
         sample = [
             torch.tensor(idx),
@@ -161,13 +155,9 @@ class DatasetForForecastingCSDI(BaseDataset):
 
         # apply specifically given mask or the hist masking strategy, rather than the random masking strategy
         if "for_pattern_mask" in self.file_handle.keys():
-            for_pattern_mask = torch.from_numpy(
-                self.file_handle["for_pattern_mask"][idx]
-            ).to(torch.float32)
+            for_pattern_mask = torch.from_numpy(self.file_handle["for_pattern_mask"][idx]).to(torch.float32)
         else:
-            previous_sample = torch.from_numpy(self.file_handle["X"][idx - 1]).to(
-                torch.float32
-            )
+            previous_sample = torch.from_numpy(self.file_handle["X"][idx - 1]).to(torch.float32)
             for_pattern_mask = (~torch.isnan(previous_sample)).to(torch.float32)
         cond_mask = observed_mask * for_pattern_mask
 
@@ -179,9 +169,7 @@ class DatasetForForecastingCSDI(BaseDataset):
                 observed_mask,
                 feature_id,
                 cond_mask,
-            ) = self.sample_features(
-                observed_data, observed_mask, feature_id, cond_mask
-            )
+            ) = self.sample_features(observed_data, observed_mask, feature_id, cond_mask)
 
         X_pred = torch.from_numpy(self.file_handle["X_pred"][idx]).to(torch.float32)
         X_pred, X_pred_missing_mask = fill_and_get_mask_torch(X_pred)
@@ -189,9 +177,7 @@ class DatasetForForecastingCSDI(BaseDataset):
         observed_data = torch.concat([observed_data, X_pred], dim=0)
         indicating_mask = torch.concat([indicating_mask, X_pred_missing_mask], dim=0)
         cond_mask = torch.concat([cond_mask, torch.zeros(X_pred.shape)], dim=0)
-        observed_tp = torch.arange(
-            0, self.n_steps + self.n_pred_steps, dtype=torch.float32
-        )
+        observed_tp = torch.arange(0, self.n_steps + self.n_pred_steps, dtype=torch.float32)
 
         sample = [
             torch.tensor(idx),
@@ -262,21 +248,15 @@ class TestDatasetForForecastingCSDI(DatasetForForecastingCSDI):
                 observed_mask,
                 feature_id,
                 cond_mask,
-            ) = self.sample_features(
-                observed_data, observed_mask, feature_id, cond_mask
-            )
+            ) = self.sample_features(observed_data, observed_mask, feature_id, cond_mask)
 
         observed_data = torch.concat(
             [observed_data, torch.zeros([self.n_pred_steps, self.n_pred_features])],
             dim=0,
         )
 
-        cond_mask = torch.concat(
-            [cond_mask, torch.zeros([self.n_pred_steps, self.n_pred_features])], dim=0
-        )
-        observed_tp = torch.arange(
-            0, self.n_steps + self.n_pred_steps, dtype=torch.float32
-        )
+        cond_mask = torch.concat([cond_mask, torch.zeros([self.n_pred_steps, self.n_pred_features])], dim=0)
+        observed_tp = torch.arange(0, self.n_steps + self.n_pred_steps, dtype=torch.float32)
 
         sample = [
             torch.tensor(idx),
@@ -333,21 +313,15 @@ class TestDatasetForForecastingCSDI(DatasetForForecastingCSDI):
                 observed_mask,
                 feature_id,
                 cond_mask,
-            ) = self.sample_features(
-                observed_data, observed_mask, feature_id, cond_mask
-            )
+            ) = self.sample_features(observed_data, observed_mask, feature_id, cond_mask)
 
         observed_data = torch.concat(
             [observed_data, torch.zeros([self.n_pred_steps, self.n_pred_features])],
             dim=0,
         )
 
-        cond_mask = torch.concat(
-            [cond_mask, torch.zeros([self.n_pred_steps, self.n_pred_features])], dim=0
-        )
-        observed_tp = torch.arange(
-            0, self.n_steps + self.n_pred_steps, dtype=torch.float32
-        )
+        cond_mask = torch.concat([cond_mask, torch.zeros([self.n_pred_steps, self.n_pred_features])], dim=0)
+        observed_tp = torch.arange(0, self.n_steps + self.n_pred_steps, dtype=torch.float32)
 
         feature_id = torch.arange(self.n_pred_features)
 

@@ -112,9 +112,7 @@ class BaseDataset(Dataset):
             # open the file handle
             self.file_handle = self._open_file_handle()
             # check if X exists in the file
-            assert (
-                "X" in self.file_handle.keys()
-            ), "The given dataset file doesn't contains X. Please double check."
+            assert "X" in self.file_handle.keys(), "The given dataset file doesn't contains X. Please double check."
             # check whether X_ori, X_pred, and y exist in the file if they are required
             if self.return_X_ori:
                 assert (
@@ -125,18 +123,14 @@ class BaseDataset(Dataset):
                     "X_pred" in self.file_handle.keys()
                 ), "The given dataset file doesn't contains X_pred. Please double check."
             if self.return_y:
-                assert (
-                    "y" in self.file_handle.keys()
-                ), "The given dataset file doesn't contains y. Please double check."
+                assert "y" in self.file_handle.keys(), "The given dataset file doesn't contains y. Please double check."
 
             # set up the function fetch_data() to fetch data from file
             self.fetch_data = self._fetch_data_from_file
 
         else:  # data from array
             # check if X exists in the dictionary
-            assert (
-                "X" in self.data.keys()
-            ), "The given dataset dictionary doesn't contains X. Please double check."
+            assert "X" in self.data.keys(), "The given dataset dictionary doesn't contains X. Please double check."
             # check whether X_ori, X_pred, and y exist in the file if they are required
             if self.return_X_ori:
                 assert (
@@ -147,17 +141,13 @@ class BaseDataset(Dataset):
                     "X_pred" in self.data.keys()
                 ), "The given dataset dictionary doesn't contains X_pred. Please double check."
             if self.return_y:
-                assert (
-                    "y" in self.data.keys()
-                ), "The given dataset dictionary doesn't contains y. Please double check."
+                assert "y" in self.data.keys(), "The given dataset dictionary doesn't contains y. Please double check."
 
             X = data["X"]
             X_ori = None if "X_ori" not in data.keys() else data["X_ori"]
             X_pred = None if "X_pred" not in data.keys() else data["X_pred"]
             y = None if "y" not in data.keys() else data["y"]
-            self.X, self.X_ori, self.X_pred, self.y = self._check_array_input(
-                X, X_ori, X_pred, y, "tensor"
-            )
+            self.X, self.X_ori, self.X_pred, self.y = self._check_array_input(X, X_ori, X_pred, y, "tensor")
 
             if self.return_X_ori:
                 # Only when X_ori is given and fixed, we fill the missing values in X here in advance.
@@ -169,9 +159,7 @@ class BaseDataset(Dataset):
                 self.indicating_mask = indicating_mask.to(torch.float32)
 
             if self.return_X_pred:
-                self.X_pred, self.X_pred_missing_mask = fill_and_get_mask_torch(
-                    self.X_pred
-                )
+                self.X_pred, self.X_pred_missing_mask = fill_and_get_mask_torch(self.X_pred)
 
             # set up the function fetch_data() to fetch data from array
             self.fetch_data = self._fetch_data_from_array
@@ -295,8 +283,7 @@ class BaseDataset(Dataset):
         # check the shape of X here
         X_shape = X.shape
         assert len(X_shape) == 3, (
-            f"input should have 3 dimensions [n_samples, seq_len, n_features],"
-            f"but got X: {X_shape}"
+            f"input should have 3 dimensions [n_samples, seq_len, n_features]," f"but got X: {X_shape}"
         )
         if X_ori is not None:
             X_ori = turn_data_into_specified_dtype(X_ori, out_dtype)
@@ -313,9 +300,7 @@ class BaseDataset(Dataset):
             ), f"X and X_pred must have the same number of samples, but got X: f{X.shape} and X_pred: {X_pred.shape}"
 
         if y is not None:
-            assert len(X) == len(y), (
-                f"lengths of X and y must match, " f"but got f{len(X)} and {len(y)}"
-            )
+            assert len(X) == len(y), f"lengths of X and y must match, " f"but got f{len(X)} and {len(y)}"
             y = turn_data_into_specified_dtype(y, out_dtype)
             y = y.to(torch.long) if out_dtype == "tensor" else y
 
@@ -383,9 +368,7 @@ class BaseDataset(Dataset):
                 "r",
             )  # set swmr=True if the h5 file need to be written into new content during reading
         except ImportError:
-            raise ImportError(
-                "h5py is missing and cannot be imported. Please install it first."
-            )
+            raise ImportError("h5py is missing and cannot be imported. Please install it first.")
         except FileNotFoundError as e:
             raise FileNotFoundError(f"{e}")
         except OSError as e:

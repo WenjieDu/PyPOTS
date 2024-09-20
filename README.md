@@ -69,15 +69,16 @@ This makes partially-observed time series (POTS) a pervasive problem in open-wor
 data analysis. Although this problem is important, the area of machine learning on POTS still lacks a dedicated toolkit.
 PyPOTS is created to fill in this blank.
 
-⦿ `Mission`: PyPOTS (pronounced "Pie Pots") is born to become a handy toolbox that is going to make machine learning on POTS easy rather than
-tedious, to help engineers and researchers focus more on the core problems in their hands rather than on how to deal
-with the missing parts in their data. PyPOTS will keep integrating classical and the latest state-of-the-art machine learning
-algorithms for partially-observed multivariate time series. For sure, besides various algorithms, PyPOTS is going to
-have unified APIs together with detailed documentation and interactive examples across algorithms as tutorials.
+⦿ `Mission`: PyPOTS (pronounced "Pie Pots") is born to become a handy toolbox that is going to make machine learning on
+POTS easy rather than tedious, to help engineers and researchers focus more on the core problems in their hands rather
+than on how to deal with the missing parts in their data. PyPOTS will keep integrating classical and the latest
+state-of-the-art machine learning algorithms for partially-observed multivariate time series. For sure, besides various
+algorithms, PyPOTS is going to have unified APIs together with detailed documentation and interactive examples across
+algorithms as tutorials.
 
 🤗 **Please** star this repo to help others notice PyPOTS if you think it is a useful toolkit.
-**Please** properly [cite PyPOTS](https://github.com/WenjieDu/PyPOTS#-citing-pypots) in your publications
-if it helps with your research. This really means a lot to our open-source research. Thank you!
+**Please** kindly [cite PyPOTS](https://github.com/WenjieDu/PyPOTS#-citing-pypots) in your publications if it helps with your research.
+This really means a lot to our open-source research. Thank you!
 
 The rest of this readme file is organized as follows:
 [**❖ Available Algorithms**](#-available-algorithms),
@@ -88,22 +89,24 @@ The rest of this readme file is organized as follows:
 [**❖ Contribution**](#-contribution),
 [**❖ Community**](#-community).
 
-
 ## ❖ Available Algorithms
-PyPOTS supports imputation, classification, clustering, forecasting, and anomaly detection tasks on multivariate partially-observed
-time series with missing values. The table below shows the availability of each algorithm (sorted by Year) in PyPOTS for different tasks.
-The symbol `✅` indicates the algorithm is available for the corresponding task (note that models will be continuously updated
-in the future to handle tasks that are not currently supported. Stay tuned❗️).
+
+PyPOTS supports imputation, classification, clustering, forecasting, and anomaly detection tasks on multivariate
+partially-observed time series with missing values. The table below shows the availability of each algorithm
+(sorted by Year) in PyPOTS for different tasks. The symbol `✅` indicates the algorithm is available for the
+corresponding task (note that models will be continuously updated in the future to handle tasks that are not
+currently supported. Stay tuned❗️).
 
 🌟 Since **v0.2**, all neural-network models in PyPOTS has got hyperparameter-optimization support.
 This functionality is implemented with the [Microsoft NNI](https://github.com/microsoft/nni) framework. You may want to refer to our time-series
 imputation survey repo [Awesome_Imputation](https://github.com/WenjieDu/Awesome_Imputation) to see how to config and
 tune the hyperparameters.
 
-🔥 Note that all models whose name with `🧑‍🔧` in the table (e.g. Transformer, iTransformer, Informer etc.) are not originally
-proposed as algorithms for POTS data in their papers, and they cannot directly accept time series with missing values as input,
-let alone imputation. **To make them applicable to POTS data, we specifically apply the embedding strategy and
-training approach (ORT+MIT) the same as we did in [the SAITS paper](https://arxiv.org/pdf/2202.08516)[^1].**
+🔥 Note that all models whose name with `🧑‍🔧` in the table (e.g. Transformer, iTransformer, Informer etc.) are not
+originally proposed as algorithms for POTS data in their papers, and they cannot directly accept time series with
+missing values as input, let alone imputation. **To make them applicable to POTS data, we specifically apply the
+embedding strategy and training approach (ORT+MIT) the same as we did in
+[the SAITS paper](https://arxiv.org/pdf/2202.08516)[^1].**
 
 The task types are abbreviated as follows:
 **`IMPU`**: Imputation;
@@ -116,6 +119,7 @@ The paper references and links are all listed at the bottom of this file.
 | **Type**      | **Algo**                                                                                                                         | **IMPU** | **FORE** | **CLAS** | **CLUS** | **ANOD** | **Year - Venue**   |
 |:--------------|:---------------------------------------------------------------------------------------------------------------------------------|:--------:|:--------:|:--------:|:--------:|:--------:|:-------------------|
 | LLM           | <a href="https://time-series.ai"><img src="https://time-series.ai/static/figs/robot.svg" width="26px"> Time-Series.AI</a>  [^36] |    ✅     |    ✅     |    ✅     |    ✅     |    ✅     | `Later in 2024`    |
+| Neural Net    | TEFN🧑‍🔧[^39]                                                                                                                   |    ✅     |          |          |          |          | `2024 - arXiv`     |
 | Neural Net    | TimeMixer[^37]                                                                                                                   |    ✅     |          |          |          |          | `2024 - ICLR`      |
 | Neural Net    | iTransformer🧑‍🔧[^24]                                                                                                           |    ✅     |          |          |          |          | `2024 - ICLR`      |
 | Neural Net    | ModernTCN[^38]                                                                                                                   |    ✅     |          |          |          |          | `2024 - ICLR`      |
@@ -152,35 +156,39 @@ The paper references and links are all listed at the bottom of this file.
 | Neural Net    | GRU-D[^4]                                                                                                                        |    ✅     |          |    ✅     |          |          | `2018 - Sci. Rep.` |
 | Neural Net    | TCN🧑‍🔧[^35]                                                                                                                    |    ✅     |          |          |          |          | `2018 - arXiv`     |
 | Neural Net    | Transformer🧑‍🔧[^2]                                                                                                             |    ✅     |          |          |          |          | `2017 - NeurIPS`   |
-| Naive         | Lerp                                                                                                                             |    ✅     |          |          |          |          |                    |
+| Naive         | Lerp[^40]                                                                                                                        |    ✅     |          |          |          |          |                    |
 | Naive         | LOCF/NOCB                                                                                                                        |    ✅     |          |          |          |          |                    |
 | Naive         | Mean                                                                                                                             |    ✅     |          |          |          |          |                    |
 | Naive         | Median                                                                                                                           |    ✅     |          |          |          |          |                    |
 
-💯 Contribute your model right now to increase your research impact! PyPOTS downloads are increasing rapidly (**[300K+ in total and 1K+ daily on PyPI so far](https://www.pepy.tech/projects/pypots)**),
+💯 Contribute your model right now to increase your research impact! PyPOTS downloads are increasing rapidly
+(**[300K+ in total and 1K+ daily on PyPI so far](https://www.pepy.tech/projects/pypots)**),
 and your work will be widely used and cited by the community.
-Refer to the [contribution guide](https://github.com/WenjieDu/PyPOTS#-contribution) to see how to include your model in PyPOTS.
+Refer to the [contribution guide](https://github.com/WenjieDu/PyPOTS#-contribution) to see how to include your model in
+PyPOTS.
 
 ## ❖ PyPOTS Ecosystem
+
 At PyPOTS, things are related to coffee, which we're familiar with. Yes, this is a coffee universe!
-As you can see, there is a coffee pot in the PyPOTS logo.
-And what else? Please read on ;-)
+As you can see, there is a coffee pot in the PyPOTS logo. And what else? Please read on ;-)
 
 <a href="https://github.com/WenjieDu/TSDB">
     <img src="https://pypots.com/figs/pypots_logos/TSDB/logo_FFBG.svg" align="left" width="140" alt="TSDB logo"/>
 </a>
 
-👈 Time series datasets are taken as coffee beans at PyPOTS, and POTS datasets are incomplete coffee beans with missing parts that have their own meanings.
-To make various public time-series datasets readily available to users,
+👈 Time series datasets are taken as coffee beans at PyPOTS, and POTS datasets are incomplete coffee beans with missing
+parts that have their own meanings. To make various public time-series datasets readily available to users,
 <i>Time Series Data Beans (TSDB)</i> is created to make loading time-series datasets super easy!
-Visit [TSDB](https://github.com/WenjieDu/TSDB) right now to know more about this handy tool 🛠, and it now supports a total of 172 open-source datasets!
+Visit [TSDB](https://github.com/WenjieDu/TSDB) right now to know more about this handy tool 🛠, and it now supports a
+total of 172 open-source datasets!
 
 <a href="https://github.com/WenjieDu/PyGrinder">
     <img src="https://pypots.com/figs/pypots_logos/PyGrinder/logo_FFBG.svg" align="right" width="140" alt="PyGrinder logo"/>
 </a>
 
-👉 To simulate the real-world data beans with missingness, the ecosystem library [PyGrinder](https://github.com/WenjieDu/PyGrinder),
-a toolkit helping grind your coffee beans into incomplete ones, is created. Missing patterns fall into three categories according to Robin's theory[^13]:
+👉 To simulate the real-world data beans with missingness, the ecosystem library
+[PyGrinder](https://github.com/WenjieDu/PyGrinder), a toolkit helping grind your coffee beans into incomplete ones, is
+created. Missing patterns fall into three categories according to Robin's theory[^13]:
 MCAR (missing completely at random), MAR (missing at random), and MNAR (missing not at random).
 PyGrinder supports all of them and additional functionalities related to missingness.
 With PyGrinder, you can introduce synthetic missing values into your datasets with a single line of code.
@@ -189,16 +197,16 @@ With PyGrinder, you can introduce synthetic missing values into your datasets wi
     <img src="https://pypots.com/figs/pypots_logos/BenchPOTS/logo_FFBG.svg" align="left" width="140" alt="BenchPOTS logo"/>
 </a>
 
-👈 To fairly evaluate the performance of PyPOTS algorithms, the benchmarking suite [BenchPOTS](https://github.com/WenjieDu/BenchPOTS) is created,
-which provides standard and unified data-preprocessing pipelines to prepare datasets for measuring the performance of different
-POTS algorithms on various tasks.
+👈 To fairly evaluate the performance of PyPOTS algorithms, the benchmarking suite
+[BenchPOTS](https://github.com/WenjieDu/BenchPOTS) is created, which provides standard and unified data-preprocessing
+pipelines to prepare datasets for measuring the performance of different POTS algorithms on various tasks.
 
 <a href="https://github.com/WenjieDu/BrewPOTS">
     <img src="https://pypots.com/figs/pypots_logos/BrewPOTS/logo_FFBG.svg" align="right" width="140" alt="BrewPOTS logo"/>
 </a>
 
-👉 Now the beans, grinder, and pot are ready, please have a seat on the bench and let's think about how to brew us a cup of coffee.
-Tutorials are necessary! Considering the future workload, PyPOTS tutorials are released in a single repo,
+👉 Now the beans, grinder, and pot are ready, please have a seat on the bench and let's think about how to brew us a cup
+of coffee. Tutorials are necessary! Considering the future workload, PyPOTS tutorials are released in a single repo,
 and you can find them in [BrewPOTS](https://github.com/WenjieDu/BrewPOTS).
 Take a look at it now, and learn how to brew your POTS datasets!
 
@@ -210,11 +218,13 @@ Take a look at it now, and learn how to brew your POTS datasets!
 <b> ☕️ Welcome to the universe of PyPOTS. Enjoy it and have fun!</b>
 </p>
 
-
 ## ❖ Installation
-You can refer to [the installation instruction](https://docs.pypots.com/en/latest/install.html) in PyPOTS documentation for a guideline with more details.
 
-PyPOTS is available on both [PyPI](https://pypi.python.org/pypi/pypots) and [Anaconda](https://anaconda.org/conda-forge/pypots).
+You can refer to [the installation instruction](https://docs.pypots.com/en/latest/install.html) in PyPOTS documentation
+for a guideline with more details.
+
+PyPOTS is available on both [PyPI](https://pypi.python.org/pypi/pypots)
+and [Anaconda](https://anaconda.org/conda-forge/pypots).
 You can install PyPOTS like below as well as TSDB and PyGrinder:
 
 ``` bash
@@ -229,9 +239,10 @@ conda install -c conda-forge pypots  # the first time installation
 conda update  -c conda-forge pypots  # update pypots to the latest version
 ```
 
-
 ## ❖ Usage
-Besides [BrewPOTS](https://github.com/WenjieDu/BrewPOTS), you can also find a simple and quick-start tutorial notebook on Google Colab
+
+Besides [BrewPOTS](https://github.com/WenjieDu/BrewPOTS), you can also find a simple and quick-start tutorial notebook
+on Google Colab
 <a href="https://colab.research.google.com/drive/1HEFjylEy05-r47jRy0H9jiS_WhD0UWmQ">
 <img src="https://img.shields.io/badge/GoogleColab-PyPOTS_Tutorials-F9AB00?logo=googlecolab&logoColor=white" alt="Colab tutorials" align="center"/>
 </a>. If you have further questions, please refer to PyPOTS documentation [docs.pypots.com](https://docs.pypots.com).
@@ -271,23 +282,28 @@ mae = calc_mae(imputation, np.nan_to_num(X_ori), indicating_mask)  # calculate m
 saits.save("save_it_here/saits_physionet2012.pypots")  # save the model for future use
 saits.load("save_it_here/saits_physionet2012.pypots")  # reload the serialized model file for following imputation or training
 ```
+
 </details>
 
-
 ## ❖ Citing PyPOTS
+
 > [!TIP]
 > **[Updates in Jun 2024]** 😎 The 1st comprehensive time-seres imputation benchmark paper
 [TSI-Bench: Benchmarking Time Series Imputation](https://arxiv.org/abs/2406.12747) now is public available.
-The code is open source in the repo [Awesome_Imputation](https://github.com/WenjieDu/Awesome_Imputation).
-With nearly 35,000 experiments, we provide a comprehensive benchmarking study on 28 imputation methods, 3 missing patterns (points, sequences, blocks),
-various missing rates, and 8 real-world datasets.
+> The code is open source in the repo [Awesome_Imputation](https://github.com/WenjieDu/Awesome_Imputation).
+> With nearly 35,000 experiments, we provide a comprehensive benchmarking study on 28 imputation methods, 3 missing
+> patterns (points, sequences, blocks),
+> various missing rates, and 8 real-world datasets.
 >
-> **[Updates in Feb 2024]** 🎉 Our survey paper [Deep Learning for Multivariate Time Series Imputation: A Survey](https://arxiv.org/abs/2402.04059) has been released on arXiv.
-We comprehensively review the literature of the state-of-the-art deep-learning imputation methods for time series,
-provide a taxonomy for them, and discuss the challenges and future directions in this field.
+> **[Updates in Feb 2024]** 🎉 Our survey
+> paper [Deep Learning for Multivariate Time Series Imputation: A Survey](https://arxiv.org/abs/2402.04059) has been
+> released on arXiv.
+> We comprehensively review the literature of the state-of-the-art deep-learning imputation methods for time series,
+> provide a taxonomy for them, and discuss the challenges and future directions in this field.
 
 The paper introducing PyPOTS is available [on arXiv](https://arxiv.org/abs/2305.18811),
-A short version of it is accepted by the 9th SIGKDD international workshop on Mining and Learning from Time Series ([MiLeTS'23](https://kdd-milets.github.io/milets2023/))).
+and a short version of it is accepted by the 9th SIGKDD international workshop on Mining and Learning from Time
+Series ([MiLeTS'23](https://kdd-milets.github.io/milets2023/))).
 **Additionally**, PyPOTS has been included as a [PyTorch Ecosystem](https://pytorch.org/ecosystem/) project.
 We are pursuing to publish it in prestigious academic venues, e.g. JMLR (track for
 [Machine Learning Open Source Software](https://www.jmlr.org/mloss/)). If you use PyPOTS in your work,
@@ -296,21 +312,22 @@ please cite it as below and 🌟star this repository to make others notice this 
 There are scientific research projects using PyPOTS and referencing in their papers.
 Here is [an incomplete list of them](https://scholar.google.com/scholar?as_ylo=2022&q=%E2%80%9CPyPOTS%E2%80%9D&hl=en).
 
-``` bibtex
+```bibtex
 @article{du2023pypots,
-title={{PyPOTS: a Python toolbox for data mining on Partially-Observed Time Series}},
-author={Wenjie Du},
-journal={arXiv preprint arXiv:2305.18811},
-year={2023},
+    title = {{PyPOTS: a Python toolbox for data mining on Partially-Observed Time Series}},
+    author = {Wenjie Du},
+    journal = {arXiv preprint arXiv:2305.18811},
+    year = {2023},
 }
 ```
+
 or
 > Wenjie Du.
 > PyPOTS: a Python toolbox for data mining on Partially-Observed Time Series.
 > arXiv, abs/2305.18811, 2023.
 
-
 ## ❖ Contribution
+
 You're very welcome to contribute to this exciting project!
 
 By committing your code, you'll
@@ -319,7 +336,8 @@ By committing your code, you'll
    and help your work obtain more exposure and impact.
    Take a look at our [inclusion criteria](https://docs.pypots.com/en/latest/faq.html#inclusion-criteria).
    You can utilize the `template` folder in each task package (e.g.
-   [pypots/imputation/template](https://github.com/WenjieDu/PyPOTS/tree/main/pypots/imputation/template)) to quickly start;
+   [pypots/imputation/template](https://github.com/WenjieDu/PyPOTS/tree/main/pypots/imputation/template)) to quickly
+   start;
 2. become one of [PyPOTS contributors](https://github.com/WenjieDu/PyPOTS/graphs/contributors) and
    be listed as a volunteer developer [on the PyPOTS website](https://pypots.com/about/#volunteer-developers);
 3. get mentioned in PyPOTS [release notes](https://github.com/WenjieDu/PyPOTS/releases);
@@ -345,11 +363,12 @@ Your star is your recognition to PyPOTS, and it matters!
 
 👀 Check out a full list of our users' affiliations [on PyPOTS website here](https://pypots.com/users/)!
 
-
 ## ❖ Community
+
 We care about the feedback from our users, so we're building PyPOTS community on
 
-- [Slack](https://join.slack.com/t/pypots-org/shared_invite/zt-1gq6ufwsi-p0OZdW~e9UW_IA4_f1OfxA). General discussion, Q&A, and our development team are here;
+- [Slack](https://join.slack.com/t/pypots-org/shared_invite/zt-1gq6ufwsi-p0OZdW~e9UW_IA4_f1OfxA). General discussion,
+  Q&A, and our development team are here;
 - [LinkedIn](https://www.linkedin.com/company/pypots). Official announcements and news are here;
 - [WeChat (微信公众号)](https://mp.weixin.qq.com/s/X3ukIgL1QpNH8ZEXq1YifA). We also run a group chat on WeChat,
   and you can get the QR code from the official account after following it;
@@ -359,43 +378,127 @@ PyPOTS community is open, transparent, and surely friendly. Let's work together 
 
 
 [//]: # (Use APA reference style below)
-[^1]: Du, W., Cote, D., & Liu, Y. (2023). [SAITS: Self-Attention-based Imputation for Time Series](https://doi.org/10.1016/j.eswa.2023.119619). *Expert systems with applications*.
-[^2]: Vaswani, A., Shazeer, N.M., Parmar, N., Uszkoreit, J., Jones, L., Gomez, A.N., Kaiser, L., & Polosukhin, I. (2017). [Attention is All you Need](https://papers.nips.cc/paper/2017/hash/3f5ee243547dee91fbd053c1c4a845aa-Abstract.html). *NeurIPS 2017*.
-[^3]: Cao, W., Wang, D., Li, J., Zhou, H., Li, L., & Li, Y. (2018). [BRITS: Bidirectional Recurrent Imputation for Time Series](https://papers.nips.cc/paper/2018/hash/734e6bfcd358e25ac1db0a4241b95651-Abstract.html). *NeurIPS 2018*.
-[^4]: Che, Z., Purushotham, S., Cho, K., Sontag, D.A., & Liu, Y. (2018). [Recurrent Neural Networks for Multivariate Time Series with Missing Values](https://www.nature.com/articles/s41598-018-24271-9). *Scientific Reports*.
-[^5]: Zhang, X., Zeman, M., Tsiligkaridis, T., & Zitnik, M. (2022). [Graph-Guided Network for Irregularly Sampled Multivariate Time Series](https://arxiv.org/abs/2110.05357). *ICLR 2022*.
-[^6]: Ma, Q., Chen, C., Li, S., & Cottrell, G. W. (2021). [Learning Representations for Incomplete Time Series Clustering](https://ojs.aaai.org/index.php/AAAI/article/view/17070). *AAAI 2021*.
-[^7]: Jong, J.D., Emon, M.A., Wu, P., Karki, R., Sood, M., Godard, P., Ahmad, A., Vrooman, H.A., Hofmann-Apitius, M., & Fröhlich, H. (2019). [Deep learning for clustering of multivariate clinical patient trajectories with missing values](https://academic.oup.com/gigascience/article/8/11/giz134/5626377). *GigaScience*.
-[^8]: Chen, X., & Sun, L. (2021). [Bayesian Temporal Factorization for Multidimensional Time Series Prediction](https://arxiv.org/abs/1910.06366). *IEEE transactions on pattern analysis and machine intelligence*.
-[^9]: Yoon, J., Zame, W. R., & van der Schaar, M. (2019). [Estimating Missing Data in Temporal Data Streams Using Multi-Directional Recurrent Neural Networks](https://ieeexplore.ieee.org/document/8485748). *IEEE Transactions on Biomedical Engineering*.
-[^10]: Miao, X., Wu, Y., Wang, J., Gao, Y., Mao, X., & Yin, J. (2021). [Generative Semi-supervised Learning for Multivariate Time Series Imputation](https://ojs.aaai.org/index.php/AAAI/article/view/17086). *AAAI 2021*.
-[^11]: Fortuin, V., Baranchuk, D., Raetsch, G. & Mandt, S. (2020). [GP-VAE: Deep Probabilistic Time Series Imputation](https://proceedings.mlr.press/v108/fortuin20a.html). *AISTATS 2020*.
-[^12]: Tashiro, Y., Song, J., Song, Y., & Ermon, S. (2021). [CSDI: Conditional Score-based Diffusion Models for Probabilistic Time Series Imputation](https://proceedings.neurips.cc/paper/2021/hash/cfe8504bda37b575c70ee1a8276f3486-Abstract.html). *NeurIPS 2021*.
-[^13]: Rubin, D. B. (1976). [Inference and missing data](https://academic.oup.com/biomet/article-abstract/63/3/581/270932). *Biometrika*.
-[^14]: Wu, H., Hu, T., Liu, Y., Zhou, H., Wang, J., & Long, M. (2023). [TimesNet: Temporal 2d-variation modeling for general time series analysis](https://openreview.net/forum?id=ju_Uqw384Oq). *ICLR 2023*
-[^15]: Wu, H., Xu, J., Wang, J., & Long, M. (2021). [Autoformer: Decomposition transformers with auto-correlation for long-term series forecasting](https://proceedings.neurips.cc/paper/2021/hash/bcc0d400288793e8bdcd7c19a8ac0c2b-Abstract.html). *NeurIPS 2021*.
-[^16]: Zhang, Y., & Yan, J. (2023). [Crossformer: Transformer utilizing cross-dimension dependency for multivariate time series forecasting](https://openreview.net/forum?id=vSVLM2j9eie). *ICLR 2023*.
-[^17]: Zeng, A., Chen, M., Zhang, L., & Xu, Q. (2023). [Are transformers effective for time series forecasting?](https://ojs.aaai.org/index.php/AAAI/article/view/26317). *AAAI 2023*
-[^18]: Nie, Y., Nguyen, N. H., Sinthong, P., & Kalagnanam, J. (2023). [A time series is worth 64 words: Long-term forecasting with transformers](https://openreview.net/forum?id=Jbdc0vTOcol). *ICLR 2023*
-[^19]: Woo, G., Liu, C., Sahoo, D., Kumar, A., & Hoi, S. (2023). [ETSformer: Exponential Smoothing Transformers for Time-series Forecasting](https://openreview.net/forum?id=5m_3whfo483).  *ICLR 2023*
-[^20]: Zhou, T., Ma, Z., Wen, Q., Wang, X., Sun, L., & Jin, R. (2022). [FEDformer: Frequency enhanced decomposed transformer for long-term series forecasting](https://proceedings.mlr.press/v162/zhou22g.html). *ICML 2022*.
-[^21]: Zhou, H., Zhang, S., Peng, J., Zhang, S., Li, J., Xiong, H., & Zhang, W. (2021). [Informer: Beyond efficient transformer for long sequence time-series forecasting](https://ojs.aaai.org/index.php/AAAI/article/view/17325). *AAAI 2021*.
-[^22]: Zhou, T., Ma, Z., Wen, Q., Sun, L., Yao, T., Yin, W., & Jin, R. (2022). [FiLM: Frequency improved Legendre Memory Model for Long-term Time Series Forecasting](https://proceedings.neurips.cc/paper_files/paper/2022/hash/524ef58c2bd075775861234266e5e020-Abstract-Conference.html). *NeurIPS 2022*.
-[^23]: Yi, K., Zhang, Q., Fan, W., Wang, S., Wang, P., He, H., An, N., Lian, D., Cao, L., & Niu, Z. (2023). [Frequency-domain MLPs are More Effective Learners in Time Series Forecasting](https://proceedings.neurips.cc/paper_files/paper/2023/hash/f1d16af76939f476b5f040fd1398c0a3-Abstract-Conference.html). *NeurIPS 2023*.
-[^24]: Liu, Y., Hu, T., Zhang, H., Wu, H., Wang, S., Ma, L., & Long, M. (2024). [iTransformer: Inverted Transformers Are Effective for Time Series Forecasting](https://openreview.net/forum?id=JePfAI8fah). *ICLR 2024*.
-[^25]: Liu, Y., Wu, H., Wang, J., & Long, M. (2022). [Non-stationary Transformers: Exploring the Stationarity in Time Series Forecasting](https://proceedings.neurips.cc/paper_files/paper/2022/hash/4054556fcaa934b0bf76da52cf4f92cb-Abstract-Conference.html). *NeurIPS 2022*.
-[^26]: Liu, S., Yu, H., Liao, C., Li, J., Lin, W., Liu, A. X., & Dustdar, S. (2022). [Pyraformer: Low-Complexity Pyramidal Attention for Long-Range Time Series Modeling and Forecasting](https://openreview.net/forum?id=0EXmFzUn5I). *ICLR 2022*.
-[^27]: Wang, H., Peng, J., Huang, F., Wang, J., Chen, J., & Xiao, Y. (2023). [MICN: Multi-scale Local and Global Context Modeling for Long-term Series Forecasting](https://openreview.net/forum?id=zt53IDUR1U). *ICLR 2023*.
-[^28]: Das, A., Kong, W., Leach, A., Mathur, S., Sen, R., & Yu, R. (2023). [Long-term Forecasting with TiDE: Time-series Dense Encoder](https://openreview.net/forum?id=pCbC3aQB5W). *TMLR 2023*.
-[^29]: Liu, Y., Li, C., Wang, J., & Long, M. (2023). [Koopa: Learning Non-stationary Time Series Dynamics with Koopman Predictors](https://proceedings.neurips.cc/paper_files/paper/2023/hash/28b3dc0970fa4624a63278a4268de997-Abstract-Conference.html). *NeurIPS 2023*.
-[^30]: Liu, M., Zeng, A., Chen, M., Xu, Z., Lai, Q., Ma, L., & Xu, Q. (2022). [SCINet: Time Series Modeling and Forecasting with Sample Convolution and Interaction](https://proceedings.neurips.cc/paper_files/paper/2022/hash/266983d0949aed78a16fa4782237dea7-Abstract-Conference.html). *NeurIPS 2022*.
-[^31]: Kim, T., Kim, J., Tae, Y., Park, C., Choi, J. H., & Choo, J. (2022). [Reversible Instance Normalization for Accurate Time-Series Forecasting against Distribution Shift](https://openreview.net/forum?id=cGDAkQo1C0p). *ICLR 2022*.
-[^32]: Kitaev, N., Kaiser, Ł., & Levskaya, A. (2020). [Reformer: The Efficient Transformer](https://openreview.net/forum?id=0EXmFzUn5I). *ICLR 2020*.
-[^33]: Cao, D., Wang, Y., Duan, J., Zhang, C., Zhu, X., Huang, C., Tong, Y., Xu, B., Bai, J., Tong, J., & Zhang, Q. (2020). [Spectral Temporal Graph Neural Network for Multivariate Time-series Forecasting](https://proceedings.neurips.cc/paper/2020/hash/cdf6581cb7aca4b7e19ef136c6e601a5-Abstract.html). *NeurIPS 2020*.
-[^34]: Nie, T., Qin, G., Mei, Y., & Sun, J. (2024). [ImputeFormer: Low Rankness-Induced Transformers for Generalizable Spatiotemporal Imputation](https://arxiv.org/abs/2312.01728). *KDD 2024*.
-[^35]: Bai, S., Kolter, J. Z., & Koltun, V. (2018). [An empirical evaluation of generic convolutional and recurrent networks for sequence modeling](https://arxiv.org/abs/1803.01271). *arXiv 2018*.
-[^36]: Project Gungnir, the world 1st LLM for time-series multitask modeling, will meet you soon. 🚀 Missing values and variable lengths in your datasets?
-       Hard to perform multitask learning with your time series? Not problems no longer. We'll open application for public beta test recently ;-) Follow us, and stay tuned!
-       <a href="https://time-series.ai"><img src="https://time-series.ai/static/figs/robot.svg" width="20px" align="center"> Time-Series.AI</a>
-[^37]: Wang, S., Wu, H., Shi, X., Hu, T., Luo, H., Ma, L., ... & ZHOU, J. (2024). [TimeMixer: Decomposable Multiscale Mixing for Time Series Forecasting](https://openreview.net/forum?id=7oLshfEIC2). *ICLR 2024*
-[^38]: Luo, D., & Wang X. (2024). [ModernTCN: A Modern Pure Convolution Structure for General Time Series Analysis](https://openreview.net/forum?id=vpJMJerXHU). *ICLR 2024*
+[^1]: Du, W., Cote, D., & Liu, Y. (2023).
+[SAITS: Self-Attention-based Imputation for Time Series](https://doi.org/10.1016/j.eswa.2023.119619).
+*Expert systems with applications*.
+[^2]: Vaswani, A., Shazeer, N.M., Parmar, N., Uszkoreit, J., Jones, L., Gomez, A.N., Kaiser, L., & Polosukhin, I. (
+2017).
+[Attention is All you Need](https://papers.nips.cc/paper/2017/hash/3f5ee243547dee91fbd053c1c4a845aa-Abstract.html).
+*NeurIPS 2017*.
+[^3]: Cao, W., Wang, D., Li, J., Zhou, H., Li, L., & Li, Y. (2018).
+[BRITS: Bidirectional Recurrent Imputation for Time Series](https://papers.nips.cc/paper/2018/hash/734e6bfcd358e25ac1db0a4241b95651-Abstract.html).
+*NeurIPS 2018*.
+[^4]: Che, Z., Purushotham, S., Cho, K., Sontag, D.A., & Liu, Y. (2018).
+[Recurrent Neural Networks for Multivariate Time Series with Missing Values](https://www.nature.com/articles/s41598-018-24271-9).
+*Scientific Reports*.
+[^5]: Zhang, X., Zeman, M., Tsiligkaridis, T., & Zitnik, M. (2022).
+[Graph-Guided Network for Irregularly Sampled Multivariate Time Series](https://arxiv.org/abs/2110.05357).
+*ICLR 2022*.
+[^6]: Ma, Q., Chen, C., Li, S., & Cottrell, G. W. (2021).
+[Learning Representations for Incomplete Time Series Clustering](https://ojs.aaai.org/index.php/AAAI/article/view/17070).
+*AAAI 2021*.
+[^7]: Jong, J.D., Emon, M.A., Wu, P., Karki, R., Sood, M., Godard, P., Ahmad, A., Vrooman, H.A., Hofmann-Apitius, M., &
+Fröhlich, H. (2019).
+[Deep learning for clustering of multivariate clinical patient trajectories with missing values](https://academic.oup.com/gigascience/article/8/11/giz134/5626377).
+*GigaScience*.
+[^8]: Chen, X., & Sun, L. (2021).
+[Bayesian Temporal Factorization for Multidimensional Time Series Prediction](https://arxiv.org/abs/1910.06366).
+*IEEE transactions on pattern analysis and machine intelligence*.
+[^9]: Yoon, J., Zame, W. R., & van der Schaar, M. (2019).
+[Estimating Missing Data in Temporal Data Streams Using Multi-Directional Recurrent Neural Networks](https://ieeexplore.ieee.org/document/8485748).
+*IEEE Transactions on Biomedical Engineering*.
+[^10]: Miao, X., Wu, Y., Wang, J., Gao, Y., Mao, X., & Yin, J. (2021).
+[Generative Semi-supervised Learning for Multivariate Time Series Imputation](https://ojs.aaai.org/index.php/AAAI/article/view/17086).
+*AAAI 2021*.
+[^11]: Fortuin, V., Baranchuk, D., Raetsch, G. & Mandt, S. (2020).
+[GP-VAE: Deep Probabilistic Time Series Imputation](https://proceedings.mlr.press/v108/fortuin20a.html).
+*AISTATS 2020*.
+[^12]: Tashiro, Y., Song, J., Song, Y., & Ermon, S. (2021).
+[CSDI: Conditional Score-based Diffusion Models for Probabilistic Time Series Imputation](https://proceedings.neurips.cc/paper/2021/hash/cfe8504bda37b575c70ee1a8276f3486-Abstract.html).
+*NeurIPS 2021*.
+[^13]: Rubin, D. B. (1976).
+[Inference and missing data](https://academic.oup.com/biomet/article-abstract/63/3/581/270932).
+*Biometrika*.
+[^14]: Wu, H., Hu, T., Liu, Y., Zhou, H., Wang, J., & Long, M. (2023).
+[TimesNet: Temporal 2d-variation modeling for general time series analysis](https://openreview.net/forum?id=ju_Uqw384Oq).
+*ICLR 2023*
+[^15]: Wu, H., Xu, J., Wang, J., & Long, M. (2021).
+[Autoformer: Decomposition transformers with auto-correlation for long-term series forecasting](https://proceedings.neurips.cc/paper/2021/hash/bcc0d400288793e8bdcd7c19a8ac0c2b-Abstract.html).
+*NeurIPS 2021*.
+[^16]: Zhang, Y., & Yan, J. (2023).
+[Crossformer: Transformer utilizing cross-dimension dependency for multivariate time series forecasting](https://openreview.net/forum?id=vSVLM2j9eie).
+*ICLR 2023*.
+[^17]: Zeng, A., Chen, M., Zhang, L., & Xu, Q. (2023).
+[Are transformers effective for time series forecasting?](https://ojs.aaai.org/index.php/AAAI/article/view/26317).
+*AAAI 2023*
+[^18]: Nie, Y., Nguyen, N. H., Sinthong, P., & Kalagnanam, J. (2023).
+[A time series is worth 64 words: Long-term forecasting with transformers](https://openreview.net/forum?id=Jbdc0vTOcol).
+*ICLR 2023*
+[^19]: Woo, G., Liu, C., Sahoo, D., Kumar, A., & Hoi, S. (2023).
+[ETSformer: Exponential Smoothing Transformers for Time-series Forecasting](https://openreview.net/forum?id=5m_3whfo483).
+*ICLR 2023*
+[^20]: Zhou, T., Ma, Z., Wen, Q., Wang, X., Sun, L., & Jin, R. (2022).
+[FEDformer: Frequency enhanced decomposed transformer for long-term series forecasting](https://proceedings.mlr.press/v162/zhou22g.html).
+*ICML 2022*.
+[^21]: Zhou, H., Zhang, S., Peng, J., Zhang, S., Li, J., Xiong, H., & Zhang, W. (2021).
+[Informer: Beyond efficient transformer for long sequence time-series forecasting](https://ojs.aaai.org/index.php/AAAI/article/view/17325).
+*AAAI 2021*.
+[^22]: Zhou, T., Ma, Z., Wen, Q., Sun, L., Yao, T., Yin, W., & Jin, R. (2022).
+[FiLM: Frequency improved Legendre Memory Model for Long-term Time Series Forecasting](https://proceedings.neurips.cc/paper_files/paper/2022/hash/524ef58c2bd075775861234266e5e020-Abstract-Conference.html).
+*NeurIPS 2022*.
+[^23]: Yi, K., Zhang, Q., Fan, W., Wang, S., Wang, P., He, H., An, N., Lian, D., Cao, L., & Niu, Z. (2023).
+[Frequency-domain MLPs are More Effective Learners in Time Series Forecasting](https://proceedings.neurips.cc/paper_files/paper/2023/hash/f1d16af76939f476b5f040fd1398c0a3-Abstract-Conference.html).
+*NeurIPS 2023*.
+[^24]: Liu, Y., Hu, T., Zhang, H., Wu, H., Wang, S., Ma, L., & Long, M. (2024).
+[iTransformer: Inverted Transformers Are Effective for Time Series Forecasting](https://openreview.net/forum?id=JePfAI8fah).
+*ICLR 2024*.
+[^25]: Liu, Y., Wu, H., Wang, J., & Long, M. (2022).
+[Non-stationary Transformers: Exploring the Stationarity in Time Series Forecasting](https://proceedings.neurips.cc/paper_files/paper/2022/hash/4054556fcaa934b0bf76da52cf4f92cb-Abstract-Conference.html).
+*NeurIPS 2022*.
+[^26]: Liu, S., Yu, H., Liao, C., Li, J., Lin, W., Liu, A. X., & Dustdar, S. (2022).
+[Pyraformer: Low-Complexity Pyramidal Attention for Long-Range Time Series Modeling and Forecasting](https://openreview.net/forum?id=0EXmFzUn5I).
+*ICLR 2022*.
+[^27]: Wang, H., Peng, J., Huang, F., Wang, J., Chen, J., & Xiao, Y. (2023).
+[MICN: Multi-scale Local and Global Context Modeling for Long-term Series Forecasting](https://openreview.net/forum?id=zt53IDUR1U).
+*ICLR 2023*.
+[^28]: Das, A., Kong, W., Leach, A., Mathur, S., Sen, R., & Yu, R. (2023).
+[Long-term Forecasting with TiDE: Time-series Dense Encoder](https://openreview.net/forum?id=pCbC3aQB5W).
+*TMLR 2023*.
+[^29]: Liu, Y., Li, C., Wang, J., & Long, M. (2023).
+[Koopa: Learning Non-stationary Time Series Dynamics with Koopman Predictors](https://proceedings.neurips.cc/paper_files/paper/2023/hash/28b3dc0970fa4624a63278a4268de997-Abstract-Conference.html).
+*NeurIPS 2023*.
+[^30]: Liu, M., Zeng, A., Chen, M., Xu, Z., Lai, Q., Ma, L., & Xu, Q. (2022).
+[SCINet: Time Series Modeling and Forecasting with Sample Convolution and Interaction](https://proceedings.neurips.cc/paper_files/paper/2022/hash/266983d0949aed78a16fa4782237dea7-Abstract-Conference.html).
+*NeurIPS 2022*.
+[^31]: Kim, T., Kim, J., Tae, Y., Park, C., Choi, J. H., & Choo, J. (2022).
+[Reversible Instance Normalization for Accurate Time-Series Forecasting against Distribution Shift](https://openreview.net/forum?id=cGDAkQo1C0p).
+*ICLR 2022*.
+[^32]: Kitaev, N., Kaiser, Ł., & Levskaya, A. (2020).
+[Reformer: The Efficient Transformer](https://openreview.net/forum?id=0EXmFzUn5I).
+*ICLR 2020*.
+[^33]: Cao, D., Wang, Y., Duan, J., Zhang, C., Zhu, X., Huang, C., Tong, Y., Xu, B., Bai, J., Tong, J., & Zhang, Q. (
+2020).
+[Spectral Temporal Graph Neural Network for Multivariate Time-series Forecasting](https://proceedings.neurips.cc/paper/2020/hash/cdf6581cb7aca4b7e19ef136c6e601a5-Abstract.html).
+*NeurIPS 2020*.
+[^34]: Nie, T., Qin, G., Mei, Y., & Sun, J. (2024).
+[ImputeFormer: Low Rankness-Induced Transformers for Generalizable Spatiotemporal Imputation](https://arxiv.org/abs/2312.01728).
+*KDD 2024*.
+[^35]: Bai, S., Kolter, J. Z., & Koltun, V. (2018).
+[An empirical evaluation of generic convolutional and recurrent networks for sequence modeling](https://arxiv.org/abs/1803.01271).
+*arXiv 2018*.
+[^36]: Project Gungnir, the world 1st LLM for time-series multitask modeling, will meet you soon. 🚀 Missing values and
+variable lengths in your datasets?
+Hard to perform multitask learning with your time series? Not problems no longer. We'll open application for public beta
+test recently ;-) Follow us, and stay tuned!
+<a href="https://time-series.ai"><img src="http://time-series.ai/static/figs/robot.svg" width="20px">
+Time-Series.AI</a>
+[^37]: Wang, S., Wu, H., Shi, X., Hu, T., Luo, H., Ma, L., ... & ZHOU, J. (2024).
+[TimeMixer: Decomposable Multiscale Mixing for Time Series Forecasting](https://openreview.net/forum?id=7oLshfEIC2).
+*ICLR 2024*.
+[^38]: Luo, D., & Wang X. (2024).
+[ModernTCN: A Modern Pure Convolution Structure for General Time Series Analysis](https://openreview.net/forum?id=vpJMJerXHU).
+*ICLR 2024*.
+[^39]: Zhan, T., He, Y., Li, Z., & Deng, Y. (2024).
+[Time Evidence Fusion Network: Multi-source View in Long-Term Time Series Forecasting](https://arxiv.org/abs/2405.06419).
+*arXiv 2024*.
+[^40]: [Wikipedia: Linear interpolation](https://en.wikipedia.org/wiki/Linear_interpolation)

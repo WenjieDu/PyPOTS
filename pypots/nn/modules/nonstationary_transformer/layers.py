@@ -40,9 +40,7 @@ class DeStationaryAttention(AttentionOperator):
 
         tau, delta = kwargs["tau"], kwargs["delta"]
         tau = 1.0 if tau is None else tau.unsqueeze(1).unsqueeze(1)  # B x 1 x 1 x 1
-        delta = (
-            0.0 if delta is None else delta.unsqueeze(1).unsqueeze(1)
-        )  # B x 1 x 1 x S
+        delta = 0.0 if delta is None else delta.unsqueeze(1).unsqueeze(1)  # B x 1 x 1 x S
 
         # De-stationary Attention, rescaling pre-softmax score with learned de-stationary factors
         scores = torch.einsum("blhe,bshe->bhls", q, k) * tau + delta

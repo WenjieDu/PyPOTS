@@ -56,22 +56,15 @@ class BackboneCSDI(nn.Module):
 
         # parameters for diffusion models
         if schedule == "quad":
-            self.beta = (
-                np.linspace(beta_start**0.5, beta_end**0.5, self.n_diffusion_steps)
-                ** 2
-            )
+            self.beta = np.linspace(beta_start**0.5, beta_end**0.5, self.n_diffusion_steps) ** 2
         elif schedule == "linear":
             self.beta = np.linspace(beta_start, beta_end, self.n_diffusion_steps)
         else:
-            raise ValueError(
-                f"The argument schedule should be 'quad' or 'linear', but got {schedule}"
-            )
+            raise ValueError(f"The argument schedule should be 'quad' or 'linear', but got {schedule}")
 
         self.alpha_hat = 1 - self.beta
         self.alpha = np.cumprod(self.alpha_hat)
-        self.register_buffer(
-            "alpha_torch", torch.tensor(self.alpha).float().unsqueeze(1).unsqueeze(1)
-        )
+        self.register_buffer("alpha_torch", torch.tensor(self.alpha).float().unsqueeze(1).unsqueeze(1))
 
     def set_input_to_diffmodel(self, noisy_data, observed_data, cond_mask):
         if self.is_unconditional:
@@ -83,20 +76,14 @@ class BackboneCSDI(nn.Module):
 
         return total_input
 
-    def calc_loss_valid(
-        self, observed_data, cond_mask, indicating_mask, side_info, is_train
-    ):
+    def calc_loss_valid(self, observed_data, cond_mask, indicating_mask, side_info, is_train):
         loss_sum = 0
         for t in range(self.n_diffusion_steps):  # calculate loss for all t
-            loss = self.calc_loss(
-                observed_data, cond_mask, indicating_mask, side_info, is_train, set_t=t
-            )
+            loss = self.calc_loss(observed_data, cond_mask, indicating_mask, side_info, is_train, set_t=t)
             loss_sum += loss.detach()
         return loss_sum / self.n_diffusion_steps
 
-    def calc_loss(
-        self, observed_data, cond_mask, indicating_mask, side_info, is_train, set_t=-1
-    ):
+    def calc_loss(self, observed_data, cond_mask, indicating_mask, side_info, is_train, set_t=-1):
         B, K, L = observed_data.shape
         device = observed_data.device
         if is_train != 1:  # for validation
@@ -106,9 +93,7 @@ class BackboneCSDI(nn.Module):
 
         current_alpha = self.alpha_torch[t]  # (B,1,1)
         noise = torch.randn_like(observed_data)
-        noisy_data = (current_alpha**0.5) * observed_data + (
-            1.0 - current_alpha
-        ) ** 0.5 * noise
+        noisy_data = (current_alpha**0.5) * observed_data + (1.0 - current_alpha) ** 0.5 * noise
 
         total_input = self.set_input_to_diffmodel(noisy_data, observed_data, cond_mask)
 
@@ -132,27 +117,20 @@ class BackboneCSDI(nn.Module):
                 noisy_cond_history = []
                 for t in range(self.n_diffusion_steps):
                     noise = torch.randn_like(noisy_obs)
-                    noisy_obs = (self.alpha_hat[t] ** 0.5) * noisy_obs + self.beta[
-                        t
-                    ] ** 0.5 * noise
+                    noisy_obs = (self.alpha_hat[t] ** 0.5) * noisy_obs + self.beta[t] ** 0.5 * noise
                     noisy_cond_history.append(noisy_obs * cond_mask)
 
             current_sample = torch.randn_like(observed_data)
 
             for t in range(self.n_diffusion_steps - 1, -1, -1):
                 if self.is_unconditional:
-                    diff_input = (
-                        cond_mask * noisy_cond_history[t]
-                        + (1.0 - cond_mask) * current_sample
-                    )
+                    diff_input = cond_mask * noisy_cond_history[t] + (1.0 - cond_mask) * current_sample
                     diff_input = diff_input.unsqueeze(1)  # (B,1,K,L)
                 else:
                     cond_obs = (cond_mask * observed_data).unsqueeze(1)
                     noisy_target = ((1 - cond_mask) * current_sample).unsqueeze(1)
                     diff_input = torch.cat([cond_obs, noisy_target], dim=1)  # (B,2,K,L)
-                predicted = self.diff_model(
-                    diff_input, side_info, torch.tensor([t]).to(device)
-                )
+                predicted = self.diff_model(diff_input, side_info, torch.tensor([t]).to(device))
 
                 coeff1 = 1 / self.alpha_hat[t] ** 0.5
                 coeff2 = (1 - self.alpha_hat[t]) / (1 - self.alpha[t]) ** 0.5
@@ -160,9 +138,7 @@ class BackboneCSDI(nn.Module):
 
                 if t > 0:
                     noise = torch.randn_like(current_sample)
-                    sigma = (
-                        (1.0 - self.alpha[t - 1]) / (1.0 - self.alpha[t]) * self.beta[t]
-                    ) ** 0.5
+                    sigma = ((1.0 - self.alpha[t - 1]) / (1.0 - self.alpha[t]) * self.beta[t]) ** 0.5
                     current_sample += sigma * noise
 
             imputed_samples[:, i] = current_sample.detach()
