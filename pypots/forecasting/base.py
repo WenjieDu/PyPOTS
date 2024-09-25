@@ -48,6 +48,8 @@ class BaseForecaster(BaseModel):
         better than in previous epochs.
         The "all" strategy will save every model after each epoch training.
 
+    verbose :
+        Whether to print out the training logs during the training process.
     """
 
     def __init__(
@@ -55,11 +57,13 @@ class BaseForecaster(BaseModel):
         device: Optional[Union[str, torch.device, list]] = None,
         saving_path: str = None,
         model_saving_strategy: Optional[str] = "best",
+        verbose: bool = True,
     ):
         super().__init__(
             device,
             saving_path,
             model_saving_strategy,
+            verbose,
         )
 
     @abstractmethod
@@ -176,6 +180,10 @@ class BaseNNForecaster(BaseNNModel):
         The "better" strategy will automatically save the model during training whenever the model performs
         better than in previous epochs.
         The "all" strategy will save every model after each epoch training.
+
+    verbose :
+        Whether to print out the training logs during the training process.
+
     Notes
     -----
     Optimizers are necessary for training deep-learning neural networks, but we don't put  a parameter ``optimizer``
@@ -198,17 +206,19 @@ class BaseNNForecaster(BaseNNModel):
         device: Optional[Union[str, torch.device, list]] = None,
         saving_path: str = None,
         model_saving_strategy: Optional[str] = "best",
+        verbose: bool = True,
     ):
         super().__init__(
-            batch_size,
-            epochs,
-            patience,
-            train_loss_func,
-            val_metric_func,
-            num_workers,
-            device,
-            saving_path,
-            model_saving_strategy,
+            batch_size=batch_size,
+            epochs=epochs,
+            patience=patience,
+            train_loss_func=train_loss_func,
+            val_metric_func=val_metric_func,
+            num_workers=num_workers,
+            device=device,
+            saving_path=saving_path,
+            model_saving_strategy=model_saving_strategy,
+            verbose=verbose,
         )
 
     @abstractmethod
@@ -338,9 +348,7 @@ class BaseNNForecaster(BaseNNModel):
                     mean_loss = mean_train_loss
 
                 if np.isnan(mean_loss):
-                    logger.warning(
-                        f"‼️ Attention: got NaN loss in Epoch {epoch}. This may lead to unexpected errors."
-                    )
+                    logger.warning(f"‼️ Attention: got NaN loss in Epoch {epoch}. This may lead to unexpected errors.")
 
                 if mean_loss < self.best_loss:
                     self.best_epoch = epoch
@@ -352,8 +360,8 @@ class BaseNNForecaster(BaseNNModel):
 
                 # save the model if necessary
                 self._auto_save_model_if_necessary(
-                    confirm_saving=mean_loss < self.best_loss,
-                    saving_name=f"{self.__class__.__name__}_epoch{epoch}_loss{mean_loss}",
+                    confirm_saving=self.best_epoch == epoch and self.model_saving_strategy == "better",
+                    saving_name=f"{self.__class__.__name__}_epoch{epoch}_loss{mean_loss:.4f}",
                 )
 
                 if os.getenv("enable_tuning", False):
@@ -362,9 +370,7 @@ class BaseNNForecaster(BaseNNModel):
                         nni.report_final_result(self.best_loss)
 
                 if self.patience == 0:
-                    logger.info(
-                        "Exceeded the training patience. Terminating the training procedure..."
-                    )
+                    logger.info("Exceeded the training patience. Terminating the training procedure...")
                     break
 
         except KeyboardInterrupt:  # if keyboard interrupt, only warning
@@ -385,9 +391,7 @@ class BaseNNForecaster(BaseNNModel):
         if np.isnan(self.best_loss):
             raise ValueError("Something is wrong. best_loss is Nan after training.")
 
-        logger.info(
-            f"Finished training. The best model is from epoch#{self.best_epoch}."
-        )
+        logger.info(f"Finished training. The best model is from epoch#{self.best_epoch}.")
 
     @abstractmethod
     def fit(

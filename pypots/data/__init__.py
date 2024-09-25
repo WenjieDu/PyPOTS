@@ -6,36 +6,34 @@ Expose all usable data manipulation classes and functions.
 # License: BSD-3-Clause
 
 from .dataset import BaseDataset, SUPPORTED_DATASET_FILE_FORMATS
-from .generating import (
-    gene_complete_random_walk,
-    gene_complete_random_walk_for_anomaly_detection,
-    gene_complete_random_walk_for_classification,
-    gene_random_walk,
-    gene_physionet2012,
+from .generating import gene_random_walk
+from .saving import (
+    save_dict_into_h5,
+    load_dict_from_h5,
+    pickle_dump,
+    pickle_load,
 )
-from .load_specific_datasets import (
-    list_supported_datasets,
-    load_specific_dataset,
+from .utils import (
+    parse_delta,
+    sliding_window,
+    inverse_sliding_window,
 )
-from .saving import save_dict_into_h5
-from .utils import parse_delta, sliding_window
+from .load_specific_datasets import load_specific_dataset
 
 __all__ = [
     # base dataset classes
     "BaseDataset",
     "SUPPORTED_DATASET_FILE_FORMATS",
     # dataset generation functions
-    "gene_complete_random_walk",
-    "gene_complete_random_walk_for_anomaly_detection",
-    "gene_complete_random_walk_for_classification",
     "gene_random_walk",
-    "gene_physionet2012",
-    # list and load datasets
-    "list_supported_datasets",
     "load_specific_dataset",
     # utils
     "parse_delta",
     "sliding_window",
+    "inverse_sliding_window",
     # saving
     "save_dict_into_h5",
+    "load_dict_from_h5",
+    "pickle_dump",
+    "pickle_load",
 ]

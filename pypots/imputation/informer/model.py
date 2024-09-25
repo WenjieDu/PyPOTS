@@ -104,6 +104,8 @@ class Informer(BaseNNImputer):
         better than in previous epochs.
         The "all" strategy will save every model after each epoch training.
 
+    verbose :
+        Whether to print out the training logs during the training process.
     """
 
     def __init__(
@@ -128,17 +130,19 @@ class Informer(BaseNNImputer):
         device: Optional[Union[str, torch.device, list]] = None,
         saving_path: str = None,
         model_saving_strategy: Optional[str] = "best",
+        verbose: bool = True,
     ):
         super().__init__(
-            batch_size,
-            epochs,
-            patience,
-            train_loss_func,
-            val_metric_func,
-            num_workers,
-            device,
-            saving_path,
-            model_saving_strategy,
+            batch_size=batch_size,
+            epochs=epochs,
+            patience=patience,
+            train_loss_func=train_loss_func,
+            val_metric_func=val_metric_func,
+            num_workers=num_workers,
+            device=device,
+            saving_path=saving_path,
+            model_saving_strategy=model_saving_strategy,
+            verbose=verbose,
         )
         self.n_steps = n_steps
         self.n_features = n_features
@@ -210,9 +214,7 @@ class Informer(BaseNNImputer):
         file_type: str = "hdf5",
     ) -> None:
         # Step 1: wrap the input data with classes Dataset and DataLoader
-        training_set = DatasetForInformer(
-            train_set, return_X_ori=False, return_y=False, file_type=file_type
-        )
+        training_set = DatasetForInformer(train_set, return_X_ori=False, return_y=False, file_type=file_type)
         training_loader = DataLoader(
             training_set,
             batch_size=self.batch_size,
@@ -223,9 +225,7 @@ class Informer(BaseNNImputer):
         if val_set is not None:
             if not key_in_data_set("X_ori", val_set):
                 raise ValueError("val_set must contain 'X_ori' for model validation.")
-            val_set = DatasetForInformer(
-                val_set, return_X_ori=True, return_y=False, file_type=file_type
-            )
+            val_set = DatasetForInformer(val_set, return_X_ori=True, return_y=False, file_type=file_type)
             val_loader = DataLoader(
                 val_set,
                 batch_size=self.batch_size,
@@ -239,7 +239,7 @@ class Informer(BaseNNImputer):
         self.model.eval()  # set the model as eval status to freeze it.
 
         # Step 3: save the model if necessary
-        self._auto_save_model_if_necessary(confirm_saving=True)
+        self._auto_save_model_if_necessary(confirm_saving=self.model_saving_strategy == "best")
 
     def predict(
         self,

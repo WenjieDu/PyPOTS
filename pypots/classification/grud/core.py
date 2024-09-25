@@ -7,8 +7,6 @@ and takes over the forward progress of the algorithm.
 # License: BSD-3-Clause
 
 
-from typing import Union
-
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -23,14 +21,12 @@ class _GRUD(nn.Module):
         n_features: int,
         rnn_hidden_size: int,
         n_classes: int,
-        device: Union[str, torch.device],
     ):
         super().__init__()
         self.n_steps = n_steps
         self.n_features = n_features
         self.rnn_hidden_size = rnn_hidden_size
         self.n_classes = n_classes
-        self.device = device
 
         # create models
         self.model = BackboneGRUD(
@@ -62,9 +58,7 @@ class _GRUD(nn.Module):
         empirical_mean = inputs["empirical_mean"]
         X_filledLOCF = inputs["X_filledLOCF"]
 
-        _, hidden_state = self.model(
-            X, missing_mask, deltas, empirical_mean, X_filledLOCF
-        )
+        _, hidden_state = self.model(X, missing_mask, deltas, empirical_mean, X_filledLOCF)
 
         logits = self.classifier(hidden_state)
         classification_pred = torch.softmax(logits, dim=1)
@@ -72,9 +66,7 @@ class _GRUD(nn.Module):
 
         # if in training mode, return results with losses
         if self.training:
-            classification_loss = F.nll_loss(
-                torch.log(classification_pred), inputs["y"]
-            )
+            classification_loss = F.nll_loss(torch.log(classification_pred), inputs["y"])
             results["loss"] = classification_loss
 
         return results

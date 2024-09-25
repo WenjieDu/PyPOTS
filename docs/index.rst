@@ -12,11 +12,11 @@ Welcome to PyPOTS docs!
 
 **A Python Toolbox for Machine Learning on Partially-Observed Time Series**
 
-.. image:: https://img.shields.io/badge/Python-v3.7+-E97040?logo=python&logoColor=white
+.. image:: https://img.shields.io/badge/Python-v3.8+-E97040?logo=python&logoColor=white
    :alt: Python version
    :target: https://docs.pypots.com/en/latest/install.html#reasons-of-version-limitations-on-dependencies
 
-.. image:: https://img.shields.io/badge/PyTorch-❤️-F8C6B5?logo=pytorch&logoColor=white
+.. image:: https://img.shields.io/badge/PyTorch-%E2%9D%A4%EF%B8%8F-F8C6B5?logo=pytorch&logoColor=white
    :alt: powered by Pytorch
    :target: https://github.com/WenjieDu/PyPOTS
 
@@ -72,12 +72,16 @@ Welcome to PyPOTS docs!
    :alt: arXiv DOI
    :target: https://arxiv.org/abs/2305.18811
 
-.. image:: https://img.shields.io/badge/README-🇨🇳中文版-FCEFE8
+.. image:: https://pypots.com/figs/pypots_logos/readme/CN.svg
    :alt: README in Chinese
    :target: https://github.com/WenjieDu/PyPOTS/blob/main/README_zh.md
 
-.. image:: https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2FPyPOTS%2FPyPOTS&count_bg=%23009A0A&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=Visits%20since%20May%202022&edge_flat=false
-   :alt: Visiting number
+.. image:: https://pypots.com/figs/pypots_logos/readme/US.svg
+   :alt: README in English
+   :target: https://github.com/WenjieDu/PyPOTS/blob/main/README.md
+
+.. image:: https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2FPyPOTS%2FPyPOTS&count_bg=%23009A0A&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=Hits&edge_flat=false
+   :alt: Hits number
 
 -----------------
 
@@ -97,12 +101,12 @@ if it helps with your research. This really means a lot to our open-source resea
 
 The rest of this readme file is organized as follows:
 `❖ Available Algorithms <#id1>`_,
-`❖ PyPOTS Ecosystem <#id22>`_,
-`❖ Installation <#id24>`_,
-`❖ Usage <#id26>`_,
-`❖ Citing PyPOTS <#id28>`_,
-`❖ Contribution <#id29>`_,
-`❖ Community <#id30>`_.
+`❖ PyPOTS Ecosystem <#id37>`_,
+`❖ Installation <#id39>`_,
+`❖ Usage <#id41>`_,
+`❖ Citing PyPOTS <#id43>`_,
+`❖ Contribution <#id44>`_,
+`❖ Community <#id45>`_.
 
 
 ❖ Available Algorithms
@@ -117,75 +121,104 @@ This functionality is implemented with the `Microsoft NNI <https://github.com/mi
 imputation survey repo `Awesome_Imputation <https://github.com/WenjieDu/Awesome_Imputation>`_ to see how to config and
 tune the hyperparameters.
 
-🔥 Note that Transformer, iTransformer, FreTS, Crossformer, PatchTST, DLinear, ETSformer, Pyraformer, Nonstationary Transformer, FiLM, FEDformer, Informer, Autoformer
-are not proposed as imputation methods in their original papers, and they cannot accept POTS as input.
-To make them applicable on POTS data, we apply the embedding strategy and training approach (ORT+MIT)
-the same as we did in `SAITS paper <https://arxiv.org/pdf/2202.08516)>`_.
+🔥 Note that all models whose name with `🧑‍🔧` in the table (e.g. Transformer, iTransformer, Informer etc.) are not originally
+proposed as algorithms for POTS data in their papers, and they cannot directly accept time series with missing values as input, let alone imputation.
+To make them applicable to POTS data, we specifically apply the embedding strategy and training approach (ORT+MIT)
+the same as we did in `the SAITS paper <https://arxiv.org/pdf/2202.08516)>`_ :cite:`du2023SAITS`.
 
 The task types are abbreviated as follows: **IMPU**: Imputation; **FORE**: Forecasting;
 **CLAS**: Classification; **CLUS**: Clustering; **ANOD**: Anomaly Detection.
 The paper references are all listed at the bottom of this readme file.
 
-+----------------+-----------------------------------------------------------+------+------+------+------+------+-------------------+
-| Type           | Algorithm                                                 | IMPU | FORE | CLAS | CLUS | ANOD | Year - Venue      |
-+================+===========================================================+======+======+======+======+======+===================+
-| Neural Net     | iTransformer :cite:`liu2024itransformer`                  |  ✅  |      |      |      |      | 2024 - ICLR       |
-+----------------+-----------------------------------------------------------+------+------+------+------+------+-------------------+
-| Neural Net     | SAITS :cite:`du2023SAITS`                                 |  ✅  |      |      |      |      | 2023 - ESWA       |
-+----------------+-----------------------------------------------------------+------+------+------+------+------+-------------------+
-| Neural Net     | FreTS :cite:`yi2023frets`                                 |  ✅  |      |      |      |      | 2023 - NeurIPS    |
-+----------------+-----------------------------------------------------------+------+------+------+------+------+-------------------+
-| Neural Net     | Crossformer :cite:`nie2023patchtst`                       |  ✅  |      |      |      |      | 2023 - ICLR       |
-+----------------+-----------------------------------------------------------+------+------+------+------+------+-------------------+
-| Neural Net     | TimesNet :cite:`wu2023timesnet`                           |  ✅  |      |      |      |      | 2023 - ICLR       |
-+----------------+-----------------------------------------------------------+------+------+------+------+------+-------------------+
-| Neural Net     | PatchTST :cite:`nie2023patchtst`                          |  ✅  |      |      |      |      | 2023 - ICLR       |
-+----------------+-----------------------------------------------------------+------+------+------+------+------+-------------------+
-| Neural Net     | ETSformer :cite:`woo2023etsformer`                        |  ✅  |      |      |      |      | 2023 - ICLR       |
-+----------------+-----------------------------------------------------------+------+------+------+------+------+-------------------+
-| Neural Net     | DLinear :cite:`zeng2023dlinear`                           |  ✅  |      |      |      |      | 2023 - AAAI       |
-+----------------+-----------------------------------------------------------+------+------+------+------+------+-------------------+
-| Neural Net     | Nonstationary Trans. :cite:`liu2022nonstationary`         |  ✅  |      |      |      |      | 2023 - NeurIPS    |
-+----------------+-----------------------------------------------------------+------+------+------+------+------+-------------------+
-| Neural Net     | FiLM :cite:`zhou2022film`                                 |  ✅  |      |      |      |      | 2023 - NeurIPS    |
-+----------------+-----------------------------------------------------------+------+------+------+------+------+-------------------+
-| Neural Net     | Pyraformer :cite:`liu2022pyraformer`                      |  ✅  |      |      |      |      | 2022 - ICLR       |
-+----------------+-----------------------------------------------------------+------+------+------+------+------+-------------------+
-| Neural Net     | Raindrop :cite:`zhang2022Raindrop`                        |      |      |  ✅  |      |      | 2022 - ICLR       |
-+----------------+-----------------------------------------------------------+------+------+------+------+------+-------------------+
-| Neural Net     | FEDformer :cite:`zhou2022fedformer`                       |  ✅  |      |      |      |      | 2022 - ICML       |
-+----------------+-----------------------------------------------------------+------+------+------+------+------+-------------------+
-| Neural Net     | Autoformer :cite:`wu2021autoformer`                       |  ✅  |      |      |      |      | 2021 - NeurIPS    |
-+----------------+-----------------------------------------------------------+------+------+------+------+------+-------------------+
-| Neural Net     | CSDI :cite:`tashiro2021csdi`                              |  ✅  |  ✅  |      |      |      | 2021 - NeurIPS    |
-+----------------+-----------------------------------------------------------+------+------+------+------+------+-------------------+
-| Neural Net     | Informer :cite:`zhou2021informer`                         |  ✅  |      |      |      |      | 2021 - AAAI       |
-+----------------+-----------------------------------------------------------+------+------+------+------+------+-------------------+
-| Neural Net     | US-GAN :cite:`miao2021SSGAN`                              |  ✅  |      |      |      |      | 2021 - AAAI       |
-+----------------+-----------------------------------------------------------+------+------+------+------+------+-------------------+
-| Neural Net     | CRLI :cite:`ma2021CRLI`                                   |      |      |      |  ✅  |      | 2021 - AAAI       |
-+----------------+-----------------------------------------------------------+------+------+------+------+------+-------------------+
-| Probabilistic  | BTTF :cite:`chen2021BTMF`                                 |      |  ✅  |      |      |      | 2021 - TPAMI      |
-+----------------+-----------------------------------------------------------+------+------+------+------+------+-------------------+
-| Neural Net     | GP-VAE :cite:`fortuin2020gpvae`                           |  ✅  |      |      |      |      | 2020 - AISTATS    |
-+----------------+-----------------------------------------------------------+------+------+------+------+------+-------------------+
-| Neural Net     | VaDER :cite:`dejong2019VaDER`                             |      |      |      |  ✅  |      | 2019 - GigaSci.   |
-+----------------+-----------------------------------------------------------+------+------+------+------+------+-------------------+
-| Neural Net     | M-RNN :cite:`yoon2019MRNN`                                |  ✅  |      |      |      |      | 2019 - TBME       |
-+----------------+-----------------------------------------------------------+------+------+------+------+------+-------------------+
-| Neural Net     | BRITS :cite:`cao2018BRITS`                                |  ✅  |      |  ✅  |      |      | 2018 - NeurIPS    |
-+----------------+-----------------------------------------------------------+------+------+------+------+------+-------------------+
-| Neural Net     | GRU-D :cite:`che2018GRUD`                                 |      |      |  ✅  |      |      | 2018 - Sci. Rep.  |
-+----------------+-----------------------------------------------------------+------+------+------+------+------+-------------------+
-| Neural Net     | Transformer :cite:`vaswani2017Transformer`                |  ✅  |      |      |      |      | 2017 - NeurIPS    |
-+----------------+-----------------------------------------------------------+------+------+------+------+------+-------------------+
-| Naive          | LOCF/NOCB                                                 |  ✅  |      |      |      |      |  /                |
-+----------------+-----------------------------------------------------------+------+------+------+------+------+-------------------+
-| Naive          | Median                                                    |  ✅  |      |      |      |      |  /                |
-+----------------+-----------------------------------------------------------+------+------+------+------+------+-------------------+
-| Naive          | Mean                                                      |  ✅  |      |      |      |      |  /                |
-+----------------+-----------------------------------------------------------+------+------+------+------+------+-------------------+
++----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
+| Type           | Algorithm                                                 | IMPU | FORE | CLAS | CLUS | ANOD | Year - Venue          |
++================+===========================================================+======+======+======+======+======+=======================+
+| Neural Net     | TEFN🧑‍🔧           :cite:`zhan2024tefn`                  |  ✅  |      |      |      |      | ``2024 - arXiv``      |
++----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
+| Neural Net     | TimeMixer      :cite:`wang2024timemixer`                  |  ✅  |      |      |      |      | ``2024 - ICLR``       |
++----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
+| Neural Net     | iTransformer🧑‍🔧 :cite:`liu2024itransformer`             |  ✅  |      |      |      |      | ``2024 - ICLR``       |
++----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
+| Neural Net     | ModernTCN :cite:`luo2024moderntcn`                        |  ✅  |      |      |      |      | ``2024 - ICLR``       |
++----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
+| Neural Net     | ImputeFormer      :cite:`nie2024imputeformer`             |  ✅  |      |      |      |      | ``2024 - KDD``        |
++----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
+| Neural Net     | SAITS :cite:`du2023SAITS`                                 |  ✅  |      |      |      |      | ``2023 - ESWA``       |
++----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
+| Neural Net     | FreTS🧑‍🔧 :cite:`yi2023frets`                            |  ✅  |      |      |      |      | ``2023 - NeurIPS``    |
++----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
+| Neural Net     | Koopa🧑‍🔧 :cite:`liu2023koopa`                           |  ✅  |      |      |      |      | ``2023 - NeurIPS``    |
++----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
+| Neural Net     | Crossformer🧑‍🔧 :cite:`zhang2023crossformer`             |  ✅  |      |      |      |      | ``2023 - ICLR``       |
++----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
+| Neural Net     | TimesNet :cite:`wu2023timesnet`                           |  ✅  |      |      |      |      | ``2023 - ICLR``       |
++----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
+| Neural Net     | PatchTST🧑‍🔧 :cite:`nie2023patchtst`                     |  ✅  |      |      |      |      | ``2023 - ICLR``       |
++----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
+| Neural Net     | ETSformer🧑‍🔧 :cite:`woo2023etsformer`                   |  ✅  |      |      |      |      | ``2023 - ICLR``       |
++----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
+| Neural Net     | MICN🧑‍🔧 :cite:`wang2023micn`                            |  ✅  |      |      |      |      | ``2023 - ICLR``       |
++----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
+| Neural Net     | DLinear🧑‍🔧 :cite:`zeng2023dlinear`                      |  ✅  |      |      |      |      | ``2023 - AAAI``       |
++----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
+| Neural Net     | TiDE🧑‍🔧 :cite:`das2023tide`                             |  ✅  |      |      |      |      | ``2023 - TMLR``       |
++----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
+| Neural Net     | SCINet🧑‍🔧 :cite:`liu2022scinet`                         |  ✅  |      |      |      |      | ``2022 - NeurIPS``    |
++----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
+| Neural Net     | Nonstationary Tr🧑‍🔧 :cite:`liu2022nonstationary`        |  ✅  |      |      |      |      | ``2022 - NeurIPS``    |
++----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
+| Neural Net     | FiLM🧑‍🔧 :cite:`zhou2022film`                            |  ✅  |      |      |      |      | ``2022 - NeurIPS``    |
++----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
+| Neural Net     | RevIN_SCINet🧑‍🔧 :cite:`kim2022revin`                    |  ✅  |      |      |      |      | ``2022 - ICLR``       |
++----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
+| Neural Net     | Pyraformer🧑‍🔧 :cite:`liu2022pyraformer`                 |  ✅  |      |      |      |      | ``2022 - ICLR``       |
++----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
+| Neural Net     | Raindrop :cite:`zhang2022Raindrop`                        |      |      |  ✅  |      |      | ``2022 - ICLR``       |
++----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
+| Neural Net     | FEDformer🧑‍🔧 :cite:`zhou2022fedformer`                  |  ✅  |      |      |      |      | ``2022 - ICML``       |
++----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
+| Neural Net     | Autoformer🧑‍🔧 :cite:`wu2021autoformer`                  |  ✅  |      |      |      |      | ``2021 - NeurIPS``    |
++----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
+| Neural Net     | CSDI :cite:`tashiro2021csdi`                              |  ✅  |  ✅  |      |      |      | ``2021 - NeurIPS``    |
++----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
+| Neural Net     | Informer🧑‍🔧 :cite:`zhou2021informer`                    |  ✅  |      |      |      |      | ``2021 - AAAI``       |
++----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
+| Neural Net     | US-GAN :cite:`miao2021SSGAN`                              |  ✅  |      |      |      |      | ``2021 - AAAI``       |
++----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
+| Neural Net     | CRLI :cite:`ma2021CRLI`                                   |      |      |      |  ✅  |      | ``2021 - AAAI``       |
++----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
+| Probabilistic  | BTTF :cite:`chen2021BTMF`                                 |      |  ✅  |      |      |      | ``2021 - TPAMI``      |
++----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
+| Neural Net     | StemGNN🧑‍🔧 :cite:`cao2020stemgnn`                       |  ✅  |      |      |      |      | ``2020 - NeurIPS``    |
++----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
+| Neural Net     | Reformer🧑‍🔧 :cite:`kitaev2020reformer`                  |  ✅  |      |      |      |      | ``2020 - ICLR``       |
++----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
+| Neural Net     | GP-VAE :cite:`fortuin2020gpvae`                           |  ✅  |      |      |      |      | ``2020 - AISTATS``    |
++----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
+| Neural Net     | VaDER :cite:`dejong2019VaDER`                             |      |      |      |  ✅  |      | ``2019 - GigaSci.``   |
++----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
+| Neural Net     | M-RNN :cite:`yoon2019MRNN`                                |  ✅  |      |      |      |      | ``2019 - TBME``       |
++----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
+| Neural Net     | BRITS :cite:`cao2018BRITS`                                |  ✅  |      |  ✅  |      |      | ``2018 - NeurIPS``    |
++----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
+| Neural Net     | GRU-D :cite:`che2018GRUD`                                 |      |      |  ✅  |      |      | ``2018 - Sci. Rep.``  |
++----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
+| Neural Net     | TCN🧑‍🔧 :cite:`bai2018tcn`                               |  ✅  |      |      |      |      | ``2018 - arXiv``      |
++----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
+| Neural Net     | Transformer🧑‍🔧 :cite:`vaswani2017Transformer`           |  ✅  |      |      |      |      | ``2017 - NeurIPS``    |
++----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
+| Naive          | Lerp (Linear Interpolation)                               |  ✅  |      |      |      |      |                       |
++----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
+| Naive          | LOCF/NOCB                                                 |  ✅  |      |      |      |      |                       |
++----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
+| Naive          | Median                                                    |  ✅  |      |      |      |      |                       |
++----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
+| Naive          | Mean                                                      |  ✅  |      |      |      |      |                       |
++----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
 
+💯 Contribute your model right now to increase your research impact! PyPOTS downloads are increasing rapidly (`300K+ in total and 1K+ daily on PyPI so far <https://www.pepy.tech/projects/pypots>`_),
+and your work will be widely used and cited by the community.
+Refer to the `contribution guide <#id44>`_ to see how to include your model in PyPOTS.
 
 ❖ PyPOTS Ecosystem
 ^^^^^^^^^^^^^^^^^^^
@@ -202,7 +235,7 @@ And what else? Please read on ;-)
 👈 Time series datasets are taken as coffee beans at PyPOTS, and POTS datasets are incomplete coffee beans with missing parts that have their own meanings.
 To make various public time-series datasets readily available to users,
 *Time Series Data Beans (TSDB)* is created to make loading time-series datasets super easy!
-Visit `TSDB <https://github.com/WenjieDu/TSDB>`_ right now to know more about this handy tool 🛠, and it now supports a total of 168 open-source datasets!
+Visit `TSDB <https://github.com/WenjieDu/TSDB>`_ right now to know more about this handy tool 🛠, and it now supports a total of 172 open-source datasets!
 
 .. image:: https://pypots.com/figs/pypots_logos/PyGrinder/logo_FFBG.svg
    :width: 150
@@ -216,14 +249,24 @@ MCAR (missing completely at random), MAR (missing at random), and MNAR (missing 
 PyGrinder supports all of them and additional functionalities related to missingness.
 With PyGrinder, you can introduce synthetic missing values into your datasets with a single line of code.
 
-.. image:: https://pypots.com/figs/pypots_logos/BrewPOTS/logo_FFBG.svg
+.. image:: https://pypots.com/figs/pypots_logos/BenchPOTS/logo_FFBG.svg
    :width: 150
    :alt: BrewPOTS logo
    :align: left
+   :target: https://github.com/WenjieDu/BenchPOTS
+
+👈 To fairly evaluate the performance of PyPOTS algorithms, the benchmarking suite [BenchPOTS](https://github.com/WenjieDu/BenchPOTS) is created,
+which provides standard and unified data-preprocessing pipelines to prepare datasets for measuring the performance of different
+POTS algorithms on various tasks.
+
+.. image:: https://pypots.com/figs/pypots_logos/BrewPOTS/logo_FFBG.svg
+   :width: 150
+   :alt: BrewPOTS logo
+   :align: right
    :target: https://github.com/WenjieDu/BrewPOTS
 
-👈 Now we have the beans, the grinder, and the pot, how to brew us a cup of coffee? Tutorials are necessary!
-Considering the future workload, PyPOTS tutorials is released in a single repo,
+👉 Now the beans, grinder, and pot are ready, please have a seat on the bench and let's think about how to brew us a cup of coffee.
+Tutorials are necessary! Considering the future workload, PyPOTS tutorials is released in a single repo,
 and you can find them in `BrewPOTS <https://github.com/WenjieDu/BrewPOTS>`_.
 Take a look at it now, and learn how to brew your POTS datasets!
 
@@ -270,21 +313,17 @@ please cite it as below and 🌟star `PyPOTS repository <https://github.com/Wenj
    @article{du2023pypots,
    title={{PyPOTS: a Python toolbox for data mining on Partially-Observed Time Series}},
    author={Wenjie Du},
+   journal={arXiv preprint arXiv:2305.18811},
    year={2023},
-   eprint={2305.18811},
-   archivePrefix={arXiv},
-   primaryClass={cs.LG},
-   url={https://arxiv.org/abs/2305.18811},
-   doi={10.48550/arXiv.2305.18811},
    }
 
 or
 
 ..
 
-   Wenjie Du. (2023).
+   Wenjie Du.
    PyPOTS: a Python toolbox for data mining on Partially-Observed Time Series.
-   arXiv, abs/2305.18811. https://doi.org/10.48550/arXiv.2305.18811
+   arXiv, abs/2305.18811, 2023.
 
 
 ❖ Contribution
@@ -300,7 +339,7 @@ By committing your code, you'll
    `pypots/imputation/template <https://github.com/WenjieDu/PyPOTS/tree/main/pypots/imputation/template>`_) to quickly start;
 2. become one of `PyPOTS contributors <https://github.com/WenjieDu/PyPOTS/graphs/contributors>`_ and
    be listed as a volunteer developer `on the PyPOTS website <https://pypots.com/about/#volunteer-developers>`_;
-3. get mentioned in our `release notes <https://github.com/WenjieDu/PyPOTS/releases>`_;
+3. get mentioned in PyPOTS `release notes <https://github.com/WenjieDu/PyPOTS/releases>`_;
 
 You can also contribute to PyPOTS by simply staring🌟 this repo to help more people notice it.
 Your star is your recognition to PyPOTS, and it matters!
@@ -323,7 +362,7 @@ We care about the feedback from our users, so we're building PyPOTS community on
 
 - `Slack <https://join.slack.com/t/pypots-org/shared_invite/zt-1gq6ufwsi-p0OZdW~e9UW_IA4_f1OfxA>`_. General discussion, Q&A, and our development team are here;
 - `LinkedIn <https://www.linkedin.com/company/pypots>`_. Official announcements and news are here;
-- `WeChat (微信公众号) <https://mp.weixin.qq.com/s/sNgZmgAyxDn2sZxXoWJYMA>`_. We also run a group chat on WeChat,
+- `WeChat (微信公众号) <https://mp.weixin.qq.com/s/X3ukIgL1QpNH8ZEXq1YifA>`_. We also run a group chat on WeChat,
   and you can get the QR code from the official account after following it;
 
 If you have any suggestions or want to contribute ideas or share time-series related papers, join us and tell.
@@ -347,6 +386,7 @@ PyPOTS community is open, transparent, and surely friendly. Let's work together 
    pypots
    tsdb
    pygrinder
+   benchpots
 
 .. toctree::
    :maxdepth: 2

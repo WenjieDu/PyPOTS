@@ -51,6 +51,8 @@ class BaseClusterer(BaseModel):
         better than in previous epochs.
         The "all" strategy will save every model after each epoch training.
 
+    verbose :
+        Whether to print out the training logs during the training process.
     """
 
     def __init__(
@@ -59,11 +61,13 @@ class BaseClusterer(BaseModel):
         device: Optional[Union[str, torch.device, list]] = None,
         saving_path: str = None,
         model_saving_strategy: Optional[str] = "best",
+        verbose: bool = True,
     ):
         super().__init__(
             device,
             saving_path,
             model_saving_strategy,
+            verbose,
         )
         self.n_clusters = n_clusters
 
@@ -186,6 +190,8 @@ class BaseNNClusterer(BaseNNModel):
         better than in previous epochs.
         The "all" strategy will save every model after each epoch training.
 
+    verbose :
+        Whether to print out the training logs during the training process.
 
     Notes
     -----
@@ -209,17 +215,19 @@ class BaseNNClusterer(BaseNNModel):
         device: Optional[Union[str, torch.device, list]] = None,
         saving_path: str = None,
         model_saving_strategy: Optional[str] = "best",
+        verbose: bool = True,
     ):
         super().__init__(
-            batch_size,
-            epochs,
-            patience,
-            train_loss_func,
-            val_metric_func,
-            num_workers,
-            device,
-            saving_path,
-            model_saving_strategy,
+            batch_size=batch_size,
+            epochs=epochs,
+            patience=patience,
+            train_loss_func=train_loss_func,
+            val_metric_func=val_metric_func,
+            num_workers=num_workers,
+            device=device,
+            saving_path=saving_path,
+            model_saving_strategy=model_saving_strategy,
+            verbose=verbose,
         )
         self.n_clusters = n_clusters
 
@@ -324,9 +332,7 @@ class BaseNNClusterer(BaseNNModel):
                         for idx, data in enumerate(val_loader):
                             inputs = self._assemble_input_for_validating(data)
                             results = self.model.forward(inputs)
-                            epoch_val_loss_collector.append(
-                                results["loss"].sum().item()
-                            )
+                            epoch_val_loss_collector.append(results["loss"].sum().item())
 
                     mean_val_loss = np.mean(epoch_val_loss_collector)
                     logger.info(
@@ -342,9 +348,7 @@ class BaseNNClusterer(BaseNNModel):
                     mean_loss = mean_train_loss
 
                 if np.isnan(mean_loss):
-                    logger.warning(
-                        f"‼️ Attention: got NaN loss in Epoch {epoch}. This may lead to unexpected errors."
-                    )
+                    logger.warning(f"‼️ Attention: got NaN loss in Epoch {epoch}. This may lead to unexpected errors.")
 
                 if mean_loss < self.best_loss:
                     self.best_epoch = epoch
@@ -360,9 +364,7 @@ class BaseNNClusterer(BaseNNModel):
                         nni.report_final_result(self.best_loss)
 
                 if self.patience == 0:
-                    logger.info(
-                        "Exceeded the training patience. Terminating the training procedure..."
-                    )
+                    logger.info("Exceeded the training patience. Terminating the training procedure...")
                     break
 
         except KeyboardInterrupt:  # if keyboard interrupt, only warning
@@ -383,9 +385,7 @@ class BaseNNClusterer(BaseNNModel):
         if np.isnan(self.best_loss):
             raise ValueError("Something is wrong. best_loss is Nan after training.")
 
-        logger.info(
-            f"Finished training. The best model is from epoch#{self.best_epoch}."
-        )
+        logger.info(f"Finished training. The best model is from epoch#{self.best_epoch}.")
 
     @abstractmethod
     def fit(

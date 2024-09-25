@@ -1,0 +1,15 @@
+h5py
+numpy
+scipy
+sympy
+einops
+pandas
+seaborn
+matplotlib
+tensorboard
+scikit-learn
+torch>=1.10.0
+tsdb>=0.6.1
+pygrinder>=0.6.4
+benchpots>=0.3
+ai4ts

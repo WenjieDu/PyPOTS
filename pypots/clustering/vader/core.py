@@ -101,12 +101,7 @@ class _VaDER(nn.Module):
 
         # calculate the reconstruction loss
         unscaled_reconstruction_loss = calc_mse(X_reconstructed, X, missing_mask)
-        reconstruction_loss = (
-            unscaled_reconstruction_loss
-            * self.n_steps
-            * self.d_input
-            / missing_mask.sum()
-        )
+        reconstruction_loss = unscaled_reconstruction_loss * self.n_steps * self.d_input / missing_mask.sum()
 
         if pretrain:
             results["loss"] = reconstruction_loss
@@ -154,9 +149,7 @@ class _VaDER(nn.Module):
             [batch_size, self.n_clusters, self.d_mu_stddev],
         )
 
-        latent_loss1 = 0.5 * torch.sum(
-            gamma_c * torch.sum(term1 + term2 + term3, dim=2), dim=1
-        )
+        latent_loss1 = 0.5 * torch.sum(gamma_c * torch.sum(term1 + term2 + term3, dim=2), dim=1)
         latent_loss2 = -torch.sum(gamma_c * (log_phi_c - log_gamma_c), dim=1)
         latent_loss3 = -0.5 * torch.sum(1 + stddev_tilde, dim=1)
 

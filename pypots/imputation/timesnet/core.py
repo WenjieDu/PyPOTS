@@ -36,6 +36,7 @@ class _TimesNet(nn.Module):
             n_features,
             d_model,
             dropout=dropout,
+            n_max_steps=n_steps,
         )
         self.model = BackboneTimesNet(
             n_layers,

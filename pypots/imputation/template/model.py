@@ -10,6 +10,7 @@ TODO: modify the above description with your model's information.
 
 from typing import Union, Optional
 
+import numpy as np
 import torch
 
 from .core import _YourNewModel
@@ -41,18 +42,21 @@ class YourNewModel(BaseNNImputer):
         device: Optional[Union[str, torch.device, list]] = None,
         saving_path: Optional[str] = None,
         model_saving_strategy: Optional[str] = "best",
+        verbose: bool = True,
     ):
         super().__init__(
-            batch_size,
-            epochs,
-            patience,
-            train_loss_func,
-            val_metric_func,
-            num_workers,
-            device,
-            saving_path,
-            model_saving_strategy,
-        )  # set up the hyper-parameters
+            batch_size=batch_size,
+            epochs=epochs,
+            patience=patience,
+            train_loss_func=train_loss_func,
+            val_metric_func=val_metric_func,
+            num_workers=num_workers,
+            device=device,
+            saving_path=saving_path,
+            model_saving_strategy=model_saving_strategy,
+            verbose=verbose,
+        )
+        # set up the hyper-parameters
         # TODO: set up your model's hyper-parameters here
 
         # set up the model
@@ -88,4 +92,11 @@ class YourNewModel(BaseNNImputer):
         test_set: Union[dict, str],
         file_type: str = "hdf5",
     ) -> dict:
+        raise NotImplementedError
+
+    def impute(
+        self,
+        test_set: Union[dict, str],
+        file_type: str = "hdf5",
+    ) -> np.ndarray:
         raise NotImplementedError

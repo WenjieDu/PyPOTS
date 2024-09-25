@@ -114,23 +114,13 @@ class BackboneGPVAE(nn.Module):
         kernel_matrices = []
         for i in range(self.kernel_scales):
             if self.kernel == "rbf":
-                kernel_matrices.append(
-                    rbf_kernel(self.time_length, self.length_scale / 2**i)
-                )
+                kernel_matrices.append(rbf_kernel(self.time_length, self.length_scale / 2**i))
             elif self.kernel == "diffusion":
-                kernel_matrices.append(
-                    diffusion_kernel(self.time_length, self.length_scale / 2**i)
-                )
+                kernel_matrices.append(diffusion_kernel(self.time_length, self.length_scale / 2**i))
             elif self.kernel == "matern":
-                kernel_matrices.append(
-                    matern_kernel(self.time_length, self.length_scale / 2**i)
-                )
+                kernel_matrices.append(matern_kernel(self.time_length, self.length_scale / 2**i))
             elif self.kernel == "cauchy":
-                kernel_matrices.append(
-                    cauchy_kernel(
-                        self.time_length, self.sigma, self.length_scale / 2**i
-                    )
-                )
+                kernel_matrices.append(cauchy_kernel(self.time_length, self.sigma, self.length_scale / 2**i))
 
         # Combine kernel matrices for each latent dimension
         tiled_matrices = []
@@ -141,9 +131,7 @@ class BackboneGPVAE(nn.Module):
             else:
                 multiplier = int(np.ceil(self.latent_dim / self.kernel_scales))
                 total += multiplier
-            tiled_matrices.append(
-                torch.unsqueeze(kernel_matrices[i], 0).repeat(multiplier, 1, 1)
-            )
+            tiled_matrices.append(torch.unsqueeze(kernel_matrices[i], 0).repeat(multiplier, 1, 1))
         kernel_matrix_tiled = torch.cat(tiled_matrices)
         assert len(kernel_matrix_tiled) == self.latent_dim
         prior = torch.distributions.MultivariateNormal(
@@ -158,9 +146,7 @@ class BackboneGPVAE(nn.Module):
         missing_mask = missing_mask.repeat(n_sampling_times, 1, 1).type(torch.bool)
         decode_x_mean = self.decode(self.encode(X).mean).mean
         imputed_data = decode_x_mean * ~missing_mask + X * missing_mask
-        imputed_data = imputed_data.reshape(
-            n_sampling_times, n_samples, n_steps, n_features
-        ).permute(1, 0, 2, 3)
+        imputed_data = imputed_data.reshape(n_sampling_times, n_samples, n_steps, n_features).permute(1, 0, 2, 3)
         return imputed_data
 
     def forward(self, X, missing_mask):

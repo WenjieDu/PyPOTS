@@ -6,9 +6,8 @@ Functions to load supported open-source time-series datasets.
 # License: BSD-3-Clause
 
 
-import tsdb
+from benchpots.datasets import preprocess_physionet2012
 
-from .load_preprocessing import preprocess_physionet2012
 from ..utils.logging import logger
 
 # currently supported datasets
@@ -36,7 +35,7 @@ def list_supported_datasets() -> list:
 
 def load_specific_dataset(dataset_name: str, use_cache: bool = True) -> dict:
     """Load specific datasets supported by PyPOTS.
-    Different from tsdb.load_dataset(), which only produces merely raw data,
+    Different from tsdb.load(), which only produces merely raw data,
     load_specific_dataset here does some preprocessing operations,
     like truncating time series to generate samples with the same length.
 
@@ -46,7 +45,7 @@ def load_specific_dataset(dataset_name: str, use_cache: bool = True) -> dict:
         The name of the dataset to be loaded, which should be supported, i.e. in SUPPORTED_DATASETS.
 
     use_cache :
-        Whether to use cache. This is an argument of tsdb.load_dataset().
+        Whether to use cache. This is an argument of tsdb.load().
 
     Returns
     -------
@@ -56,9 +55,7 @@ def load_specific_dataset(dataset_name: str, use_cache: bool = True) -> dict:
         e.g. standardizing and splitting.
 
     """
-    logger.info(
-        f"Loading the dataset {dataset_name} with TSDB (https://github.com/WenjieDu/Time_Series_Data_Beans)..."
-    )
+    logger.info(f"Loading the dataset {dataset_name} with TSDB (https://github.com/WenjieDu/Time_Series_Data_Beans)...")
     assert dataset_name in SUPPORTED_DATASETS, (
         f"Dataset {dataset_name} is not supported. "
         f"If you believe this dataset is valuable to be supported by PyPOTS,"
@@ -66,6 +63,9 @@ def load_specific_dataset(dataset_name: str, use_cache: bool = True) -> dict:
         f"https://github.com/WenjieDu/PyPOTS/issues"
     )
     logger.info(f"Starting preprocessing {dataset_name}...")
-    data = tsdb.load(dataset_name, use_cache)
-    data = PREPROCESSING_FUNC[dataset_name](data)
+    data = PREPROCESSING_FUNC[dataset_name]("all", 0.1)
+    logger.warning(
+        "⚠️ load_specific_dataset() will be deprecated in the near future. Data preprocessing functions "
+        "are moved to BenchPOTS, which now supports processing 170+ public time-series datasets."
+    )
     return data

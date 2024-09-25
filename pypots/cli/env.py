@@ -6,7 +6,6 @@ CLI tools to help initialize environments for running and developing PyPOTS.
 # License: BSD-3-Clause
 
 try:
-    # here try importing all dependencies in the scope `basic` defined in `setup.cfg`
     import torch
 
     # import numpy
@@ -20,12 +19,10 @@ try:
 except ImportError:
     raise ImportError(
         "Torch not installed. Using this tool supposes that you've already installed `pypots` "
-        "with at least the scope of `basic` dependencies."
+        "with at least basic dependencies in requirements/requirements.txt in PyPOTS project's root dir."
     )
 
 from argparse import ArgumentParser, Namespace
-
-from setuptools.config import read_configuration
 
 from .base import BaseCommand
 from ..utils.logging import logger
@@ -43,8 +40,8 @@ class EnvCommand(BaseCommand):
 
     Notes
     -----
-    Using this tool supposes that you've already installed `pypots` with at least the scope of `basic` dependencies.
-    Please refer to file setup.cfg in PyPOTS project's root dir for definitions of different dependency scopes.
+    Using this tool supposes that you've already installed `pypots` with at least basic dependencies.
+    Please refer to file requirements/requirements.txt in PyPOTS project's root dir for references.
 
     Examples
     --------
@@ -97,33 +94,14 @@ class EnvCommand(BaseCommand):
         # run checks first
         self.checkup()
 
-        setup_cfg = read_configuration("setup.cfg")
-
-        logger.info(
-            f"Installing the dependencies in scope `{self._install}` for you..."
-        )
+        logger.info(f"Installing the dependencies in scope `{self._install}` for you...")
 
         if self._tool == "conda":
             assert (
                 self.execute_command("which conda").returncode == 0
             ), "Conda not installed, cannot set --tool=conda, please check your conda."
 
-            self.execute_command(
-                "conda install pyg pytorch-scatter pytorch-sparse -c pyg"
-            )
-
-            if self._install != "optional":
-                dependencies = ""
-                for i in setup_cfg["options"]["extras_require"][self._install]:
-                    dependencies += f"'{i}' "
-
-                if "torch-geometric" in dependencies:
-                    dependencies = dependencies.replace("'torch-geometric'", "")
-                    dependencies = dependencies.replace("'torch-scatter'", "")
-                    dependencies = dependencies.replace("'torch-sparse'", "")
-
-                conda_comm = f"conda install {dependencies} -c conda-forge"
-                self.execute_command(conda_comm)
+            self.execute_command("conda install pyg pytorch-scatter pytorch-sparse -c pyg")
 
         else:  # self._tool == "pip"
             torch_version = torch.__version__

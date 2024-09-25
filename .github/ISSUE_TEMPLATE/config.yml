@@ -1,6 +1,10 @@
 blank_issues_enabled: true
 version: 2.1
 contact_links:
-  - name: PyPOTS Community on Slack
+  - name: 🤗 PyPOTS Community on Slack
     url: https://join.slack.com/t/pypots-org/shared_invite/zt-1gq6ufwsi-p0OZdW~e9UW_IA4_f1OfxA
     about: General usage questions, community discussions, and the development team are here.
+
+  - name: 🇨🇳 PyPOTS微信社区 (Community on WeChat)
+    url: https://mp.weixin.qq.com/s/CGkirx7ODkngk6tGGANksw
+    about: 中文社区讨论群，欢迎加入！

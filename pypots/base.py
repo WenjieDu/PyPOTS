@@ -15,7 +15,7 @@ import torch
 from torch.utils.tensorboard import SummaryWriter
 
 from .utils.file import create_dir_if_not_exist
-from .utils.logging import logger
+from .utils.logging import logger, logger_creator
 
 
 class BaseModel(ABC):
@@ -43,6 +43,9 @@ class BaseModel(ABC):
         better than in previous epochs.
         The "all" strategy will save every model after each epoch training.
 
+    verbose :
+        Whether to print out the training logs during the training process.
+
     Attributes
     ----------
     model : object, default = None
@@ -64,6 +67,7 @@ class BaseModel(ABC):
         device: Optional[Union[str, torch.device, list]] = None,
         saving_path: str = None,
         model_saving_strategy: Optional[str] = "best",
+        verbose: bool = True,
     ):
         saving_strategies = [None, "best", "better", "all"]
         assert (
@@ -73,6 +77,10 @@ class BaseModel(ABC):
         self.device = None  # set up with _setup_device() below
         self.saving_path = None  # set up with _setup_path() below
         self.model_saving_strategy = model_saving_strategy
+        self.verbose = verbose
+
+        if not self.verbose:
+            logger_creator.set_level("warning")
 
         self.model = None
         self.summary_writer = None
@@ -98,9 +106,7 @@ class BaseModel(ABC):
                 self.device = device
             elif isinstance(device, list):
                 if len(device) == 0:
-                    raise ValueError(
-                        "The list of devices should have at least 1 device, but got 0."
-                    )
+                    raise ValueError("The list of devices should have at least 1 device, but got 0.")
                 elif len(device) == 1:
                     return self._setup_device(device[0])
                 # parallely training on multiple CUDA devices
@@ -171,18 +177,14 @@ class BaseModel(ABC):
             logger.info(f"Model files will be saved to {self.saving_path}")
             logger.info(f"Tensorboard file will be saved to {tb_saving_path}")
         else:
-            logger.warning(
-                "‼️ saving_path not given. Model files and tensorboard file will not be saved."
-            )
+            logger.warning("‼️ saving_path not given. Model files and tensorboard file will not be saved.")
 
     def _send_model_to_given_device(self) -> None:
         if isinstance(self.device, list):
             # parallely training on multiple devices
             self.model = torch.nn.DataParallel(self.model, device_ids=self.device)
             self.model = self.model.cuda()
-            logger.info(
-                f"Model has been allocated to the given multiple devices: {self.device}"
-            )
+            logger.info(f"Model has been allocated to the given multiple devices: {self.device}")
         else:
             self.model = self.model.to(self.device)
 
@@ -275,6 +277,8 @@ class BaseModel(ABC):
         """
         # split the saving dir and file name from the given path
         saving_dir, file_name = os.path.split(saving_path)
+        # if parent dir is not given, save in the current dir
+        saving_dir = "." if saving_dir == "" else saving_dir
         # add the suffix ".pypots" if not given
         if file_name.split(".")[-1] != "pypots":
             file_name += ".pypots"
@@ -283,14 +287,13 @@ class BaseModel(ABC):
 
         if os.path.exists(saving_path):
             if overwrite:
-                logger.warning(
-                    f"‼️ File {saving_path} exists. Argument `overwrite` is True. Overwriting now..."
-                )
+                logger.warning(f"‼️ File {saving_path} exists. Argument `overwrite` is True. Overwriting now...")
             else:
                 logger.error(
                     f"❌ File {saving_path} exists. Saving operation aborted. "
                     f"Use the arg `overwrite=True` to force overwrite."
                 )
+                return
 
         try:
             create_dir_if_not_exist(saving_dir)
@@ -301,9 +304,7 @@ class BaseModel(ABC):
                 torch.save(self.model, saving_path)
             logger.info(f"Saved the model to {saving_path}")
         except Exception as e:
-            raise RuntimeError(
-                f'Failed to save the model to "{saving_path}" because of the below error! \n{e}'
-            )
+            raise RuntimeError(f'Failed to save the model to "{saving_path}" because of the below error! \n{e}')
 
     def load(self, path: str) -> None:
         """Load the saved model from a disk file.
@@ -452,6 +453,8 @@ class BaseNNModel(BaseModel):
         better than in previous epochs.
         The "all" strategy will save every model after each epoch training.
 
+    verbose :
+        Whether to print out the training logs during the training process.
 
     Attributes
     ---------
@@ -487,11 +490,13 @@ class BaseNNModel(BaseModel):
         device: Optional[Union[str, torch.device, list]] = None,
         saving_path: str = None,
         model_saving_strategy: Optional[str] = "best",
+        verbose: bool = True,
     ):
         super().__init__(
             device,
             saving_path,
             model_saving_strategy,
+            verbose,
         )
 
         # check patience
@@ -539,6 +544,7 @@ class BaseNNModel(BaseModel):
         self.num_workers = num_workers
 
         self.model = None
+        self.num_params = None
         self.optimizer = None
         self.best_model_dict = None
         self.best_loss = float("inf")
@@ -546,10 +552,10 @@ class BaseNNModel(BaseModel):
 
     def _print_model_size(self) -> None:
         """Print the number of trainable parameters in the initialized NN model."""
-        num_params = sum(p.numel() for p in self.model.parameters() if p.requires_grad)
+        self.num_params = sum(p.numel() for p in self.model.parameters() if p.requires_grad)
         logger.info(
             f"{self.__class__.__name__} initialized with the given hyperparameters, "
-            f"the number of trainable parameters: {num_params:,}"
+            f"the number of trainable parameters: {self.num_params:,}"
         )
 
     @abstractmethod

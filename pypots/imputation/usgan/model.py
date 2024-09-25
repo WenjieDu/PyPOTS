@@ -122,17 +122,19 @@ class USGAN(BaseNNImputer):
         device: Optional[Union[str, torch.device, list]] = None,
         saving_path: Optional[str] = None,
         model_saving_strategy: Optional[str] = "best",
+        verbose: bool = True,
     ):
         super().__init__(
-            batch_size,
-            epochs,
-            patience,
-            train_loss_func,
-            val_metric_func,
-            num_workers,
-            device,
-            saving_path,
-            model_saving_strategy,
+            batch_size=batch_size,
+            epochs=epochs,
+            patience=patience,
+            train_loss_func=train_loss_func,
+            val_metric_func=val_metric_func,
+            num_workers=num_workers,
+            device=device,
+            saving_path=saving_path,
+            model_saving_strategy=model_saving_strategy,
+            verbose=verbose,
         )
         assert G_steps > 0 and D_steps > 0, "G_steps and D_steps should both >0"
 
@@ -245,21 +247,15 @@ class USGAN(BaseNNImputer):
 
                     if idx % self.G_steps == 0:
                         self.G_optimizer.zero_grad()
-                        results = self.model.forward(
-                            inputs, training_object="generator"
-                        )
+                        results = self.model.forward(inputs, training_object="generator")
                         results["loss"].backward()  # generation loss
                         self.G_optimizer.step()
                         step_train_loss_G_collector.append(results["loss"].item())
 
                     if idx % self.D_steps == 0:
                         self.D_optimizer.zero_grad()
-                        results = self.model.forward(
-                            inputs, training_object="discriminator"
-                        )
-                        results["loss"].backward(
-                            retain_graph=True
-                        )  # discrimination loss
+                        results = self.model.forward(inputs, training_object="discriminator")
+                        results["loss"].backward(retain_graph=True)  # discrimination loss
                         self.D_optimizer.step()
                         step_train_loss_D_collector.append(results["loss"].item())
 
@@ -274,9 +270,7 @@ class USGAN(BaseNNImputer):
                             "generation_loss": mean_step_train_G_loss,
                             "discrimination_loss": mean_step_train_D_loss,
                         }
-                        self._save_log_into_tb_file(
-                            training_step, "training", loss_results
-                        )
+                        self._save_log_into_tb_file(training_step, "training", loss_results)
                 mean_epoch_train_D_loss = np.mean(step_train_loss_D_collector)
                 mean_epoch_train_G_loss = np.mean(step_train_loss_G_collector)
 
@@ -322,9 +316,7 @@ class USGAN(BaseNNImputer):
                     mean_loss = mean_epoch_train_G_loss
 
                 if np.isnan(mean_loss):
-                    logger.warning(
-                        f"‼️ Attention: got NaN loss in Epoch {epoch}. This may lead to unexpected errors."
-                    )
+                    logger.warning(f"‼️ Attention: got NaN loss in Epoch {epoch}. This may lead to unexpected errors.")
 
                 if mean_loss < self.best_loss:
                     self.best_epoch = epoch
@@ -336,8 +328,8 @@ class USGAN(BaseNNImputer):
 
                 # save the model if necessary
                 self._auto_save_model_if_necessary(
-                    confirm_saving=mean_loss < self.best_loss,
-                    saving_name=f"{self.__class__.__name__}_epoch{epoch}_loss{mean_loss}",
+                    confirm_saving=self.best_epoch == epoch and self.model_saving_strategy == "better",
+                    saving_name=f"{self.__class__.__name__}_epoch{epoch}_loss{mean_loss:.4f}",
                 )
 
                 if os.getenv("enable_tuning", False):
@@ -346,9 +338,7 @@ class USGAN(BaseNNImputer):
                         nni.report_final_result(self.best_loss)
 
                 if self.patience == 0:
-                    logger.info(
-                        "Exceeded the training patience. Terminating the training procedure..."
-                    )
+                    logger.info("Exceeded the training patience. Terminating the training procedure...")
                     break
 
         except KeyboardInterrupt:  # if keyboard interrupt, only warning
@@ -369,9 +359,7 @@ class USGAN(BaseNNImputer):
         if np.isnan(self.best_loss):
             raise ValueError("Something is wrong. best_loss is Nan after training.")
 
-        logger.info(
-            f"Finished training. The best model is from epoch#{self.best_epoch}."
-        )
+        logger.info(f"Finished training. The best model is from epoch#{self.best_epoch}.")
 
     def fit(
         self,
@@ -380,9 +368,7 @@ class USGAN(BaseNNImputer):
         file_type: str = "hdf5",
     ) -> None:
         # Step 1: wrap the input data with classes Dataset and DataLoader
-        training_set = DatasetForUSGAN(
-            train_set, return_X_ori=False, return_y=False, file_type=file_type
-        )
+        training_set = DatasetForUSGAN(train_set, return_X_ori=False, return_y=False, file_type=file_type)
         training_loader = DataLoader(
             training_set,
             batch_size=self.batch_size,
@@ -393,9 +379,7 @@ class USGAN(BaseNNImputer):
         if val_set is not None:
             if not key_in_data_set("X_ori", val_set):
                 raise ValueError("val_set must contain 'X_ori' for model validation.")
-            val_set = DatasetForUSGAN(
-                val_set, return_X_ori=True, return_y=False, file_type=file_type
-            )
+            val_set = DatasetForUSGAN(val_set, return_X_ori=True, return_y=False, file_type=file_type)
             val_loader = DataLoader(
                 val_set,
                 batch_size=self.batch_size,
@@ -409,7 +393,7 @@ class USGAN(BaseNNImputer):
         self.model.eval()  # set the model as eval status to freeze it.
 
         # Step 3: save the model if necessary
-        self._auto_save_model_if_necessary(confirm_saving=True)
+        self._auto_save_model_if_necessary(confirm_saving=self.model_saving_strategy == "best")
 
     def predict(
         self,
@@ -417,9 +401,7 @@ class USGAN(BaseNNImputer):
         file_type: str = "hdf5",
     ) -> dict:
         self.model.eval()  # set the model as eval status to freeze it.
-        test_set = DatasetForUSGAN(
-            test_set, return_X_ori=False, return_y=False, file_type=file_type
-        )
+        test_set = DatasetForUSGAN(test_set, return_X_ori=False, return_y=False, file_type=file_type)
         test_loader = DataLoader(
             test_set,
             batch_size=self.batch_size,

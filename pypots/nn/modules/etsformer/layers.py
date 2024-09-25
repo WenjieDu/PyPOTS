@@ -84,9 +84,7 @@ class ExponentialSmoothing(nn.Module):
         # \alpha^t for all t = 1, 2, ..., T
         init_weight = self.weight ** (powers + 1)
 
-        return rearrange(init_weight, "h t -> 1 t h 1"), rearrange(
-            weight, "h t -> 1 t h 1"
-        )
+        return rearrange(init_weight, "h t -> 1 t h 1"), rearrange(weight, "h t -> 1 t h 1")
 
     @property
     def weight(self):
@@ -120,9 +118,7 @@ class GrowthLayer(nn.Module):
         self.es = ExponentialSmoothing(self.d_head, self.n_heads, dropout=dropout)
         self.out_proj = nn.Linear(self.d_head * self.n_heads, self.d_model)
 
-        assert (
-            self.d_head * self.n_heads == self.d_model
-        ), "d_model must be divisible by n_heads"
+        assert self.d_head * self.n_heads == self.d_model, "d_model must be divisible by n_heads"
 
     def forward(self, inputs):
         """
@@ -160,17 +156,16 @@ class FourierLayer(nn.Module):
             f = fft.rfftfreq(t)[self.low_freq :]
 
         x_freq, index_tuple = self.topk_freq(x_freq)
-        f = repeat(f, "f -> b f d", b=x_freq.size(0), d=x_freq.size(2))
-        f = rearrange(f[index_tuple], "b f d -> b f () d").to(x_freq.device)
+        device = x_freq.device
+        f = repeat(f, "f -> b f d", b=x_freq.size(0), d=x_freq.size(2)).to(device)
+        f = rearrange(f[index_tuple], "b f d -> b f () d").to(device)
 
         return self.extrapolate(x_freq, f, t)
 
     def extrapolate(self, x_freq, f, t):
         x_freq = torch.cat([x_freq, x_freq.conj()], dim=1)
         f = torch.cat([f, -f], dim=1)
-        t_val = rearrange(
-            torch.arange(t + self.pred_len, dtype=torch.float), "t -> () () t ()"
-        ).to(x_freq.device)
+        t_val = rearrange(torch.arange(t + self.pred_len, dtype=torch.float), "t -> () () t ()").to(x_freq.device)
 
         amp = rearrange(x_freq.abs() / t, "b f d -> b f () d")
         phase = rearrange(x_freq.angle(), "b f d -> b f () d")
@@ -180,12 +175,8 @@ class FourierLayer(nn.Module):
         return reduce(x_time, "b f t d -> b t d", "sum")
 
     def topk_freq(self, x_freq):
-        values, indices = torch.topk(
-            x_freq.abs(), self.k, dim=1, largest=True, sorted=True
-        )
-        mesh_a, mesh_b = torch.meshgrid(
-            torch.arange(x_freq.size(0)), torch.arange(x_freq.size(2))
-        )
+        values, indices = torch.topk(x_freq.abs(), self.k, dim=1, largest=True, sorted=True)
+        mesh_a, mesh_b = torch.meshgrid(torch.arange(x_freq.size(0)), torch.arange(x_freq.size(2)))
         index_tuple = (mesh_a.unsqueeze(1), indices, mesh_b.unsqueeze(1))
         x_freq = x_freq[index_tuple]
 
