@@ -312,8 +312,8 @@ class GPVAE(BaseNNImputer):
 
                 # save the model if necessary
                 self._auto_save_model_if_necessary(
-                    confirm_saving=self.best_epoch == epoch,
-                    saving_name=f"{self.__class__.__name__}_epoch{epoch}_loss{mean_loss}",
+                    confirm_saving=self.best_epoch == epoch and self.model_saving_strategy == "better",
+                    saving_name=f"{self.__class__.__name__}_epoch{epoch}_loss{mean_loss:.4f}",
                 )
 
                 if os.getenv("enable_tuning", False):
@@ -377,7 +377,7 @@ class GPVAE(BaseNNImputer):
         self.model.eval()  # set the model as eval status to freeze it.
 
         # Step 3: save the model if necessary
-        self._auto_save_model_if_necessary(confirm_saving=True)
+        self._auto_save_model_if_necessary(confirm_saving=self.model_saving_strategy == "best")
 
     def predict(
         self,
