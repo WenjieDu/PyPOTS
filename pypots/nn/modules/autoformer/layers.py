@@ -55,11 +55,7 @@ class AutoCorrelation(AttentionOperator):
         for i in range(top_k):
             pattern = torch.roll(tmp_values, -int(index[i]), -1)
             delays_agg = delays_agg + pattern * (
-                tmp_corr[:, i]
-                .unsqueeze(1)
-                .unsqueeze(1)
-                .unsqueeze(1)
-                .repeat(1, head, channel, length)
+                tmp_corr[:, i].unsqueeze(1).unsqueeze(1).unsqueeze(1).repeat(1, head, channel, length)
             )
         return delays_agg
 
@@ -91,16 +87,10 @@ class AutoCorrelation(AttentionOperator):
         tmp_values = values.repeat(1, 1, 1, 2)
         delays_agg = torch.zeros_like(values).float()
         for i in range(top_k):
-            tmp_delay = init_index + delay[:, i].unsqueeze(1).unsqueeze(1).unsqueeze(
-                1
-            ).repeat(1, head, channel, length)
+            tmp_delay = init_index + delay[:, i].unsqueeze(1).unsqueeze(1).unsqueeze(1).repeat(1, head, channel, length)
             pattern = torch.gather(tmp_values, dim=-1, index=tmp_delay)
             delays_agg = delays_agg + pattern * (
-                tmp_corr[:, i]
-                .unsqueeze(1)
-                .unsqueeze(1)
-                .unsqueeze(1)
-                .repeat(1, head, channel, length)
+                tmp_corr[:, i].unsqueeze(1).unsqueeze(1).unsqueeze(1).repeat(1, head, channel, length)
             )
         return delays_agg
 
@@ -164,13 +154,9 @@ class AutoCorrelation(AttentionOperator):
 
         # time delay agg
         if self.training:
-            V = self.time_delay_agg_training(
-                v.permute(0, 2, 3, 1).contiguous(), corr
-            ).permute(0, 3, 1, 2)
+            V = self.time_delay_agg_training(v.permute(0, 2, 3, 1).contiguous(), corr).permute(0, 3, 1, 2)
         else:
-            V = self.time_delay_agg_inference(
-                v.permute(0, 2, 3, 1).contiguous(), corr
-            ).permute(0, 3, 1, 2)
+            V = self.time_delay_agg_inference(v.permute(0, 2, 3, 1).contiguous(), corr).permute(0, 3, 1, 2)
 
         attn = corr.permute(0, 3, 1, 2)
         output = V.contiguous()
@@ -247,12 +233,8 @@ class AutoformerEncoderLayer(nn.Module):
             d_model // n_heads,
             d_model // n_heads,
         )
-        self.conv1 = nn.Conv1d(
-            in_channels=d_model, out_channels=d_ffn, kernel_size=1, bias=False
-        )
-        self.conv2 = nn.Conv1d(
-            in_channels=d_ffn, out_channels=d_model, kernel_size=1, bias=False
-        )
+        self.conv1 = nn.Conv1d(in_channels=d_model, out_channels=d_ffn, kernel_size=1, bias=False)
+        self.conv2 = nn.Conv1d(in_channels=d_ffn, out_channels=d_model, kernel_size=1, bias=False)
         self.series_decomp1 = SeriesDecompositionBlock(moving_avg)
         self.series_decomp2 = SeriesDecompositionBlock(moving_avg)
         self.dropout = nn.Dropout(dropout)
@@ -302,12 +284,8 @@ class AutoformerDecoderLayer(nn.Module):
             d_model // n_heads,
             d_model // n_heads,
         )
-        self.conv1 = nn.Conv1d(
-            in_channels=d_model, out_channels=d_ff, kernel_size=1, bias=False
-        )
-        self.conv2 = nn.Conv1d(
-            in_channels=d_ff, out_channels=d_model, kernel_size=1, bias=False
-        )
+        self.conv1 = nn.Conv1d(in_channels=d_model, out_channels=d_ff, kernel_size=1, bias=False)
+        self.conv2 = nn.Conv1d(in_channels=d_ff, out_channels=d_model, kernel_size=1, bias=False)
         self.series_decomp1 = SeriesDecompositionBlock(moving_avg)
         self.series_decomp2 = SeriesDecompositionBlock(moving_avg)
         self.series_decomp3 = SeriesDecompositionBlock(moving_avg)
@@ -326,9 +304,7 @@ class AutoformerDecoderLayer(nn.Module):
     def forward(self, x, cross, x_mask=None, cross_mask=None):
         x = x + self.dropout(self.self_attention(x, x, x, attn_mask=x_mask)[0])
         x, trend1 = self.series_decomp1(x)
-        x = x + self.dropout(
-            self.cross_attention(x, cross, cross, attn_mask=cross_mask)[0]
-        )
+        x = x + self.dropout(self.cross_attention(x, cross, cross, attn_mask=cross_mask)[0])
         x, trend2 = self.series_decomp2(x)
         y = x
         y = self.dropout(self.activation(self.conv1(y.transpose(-1, 1))))
@@ -336,7 +312,5 @@ class AutoformerDecoderLayer(nn.Module):
         x, trend3 = self.series_decomp3(x + y)
 
         residual_trend = trend1 + trend2 + trend3
-        residual_trend = self.projection(residual_trend.permute(0, 2, 1)).transpose(
-            1, 2
-        )
+        residual_trend = self.projection(residual_trend.permute(0, 2, 1)).transpose(1, 2)
         return x, residual_trend

@@ -33,7 +33,7 @@ class _Pyraformer(nn.Module):
         self.saits_embedding = SaitsEmbedding(
             n_features * 2,
             d_model,
-            with_pos=False,
+            with_pos=True,
             dropout=dropout,
         )
         self.encoder = PyraformerEncoder(
@@ -75,9 +75,7 @@ class _Pyraformer(nn.Module):
         # if in training mode, return results with losses
         if self.training:
             X_ori, indicating_mask = inputs["X_ori"], inputs["indicating_mask"]
-            loss, ORT_loss, MIT_loss = self.saits_loss_func(
-                reconstruction, X_ori, missing_mask, indicating_mask
-            )
+            loss, ORT_loss, MIT_loss = self.saits_loss_func(reconstruction, X_ori, missing_mask, indicating_mask)
             results["ORT_loss"] = ORT_loss
             results["MIT_loss"] = MIT_loss
             # `loss` is always the item for backward propagating to update the model

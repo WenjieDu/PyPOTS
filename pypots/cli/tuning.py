@@ -6,6 +6,7 @@ CLI tools to help initialize environments for running and developing PyPOTS.
 # License: BSD-3-Clause
 
 
+import inspect
 import os
 from argparse import ArgumentParser, Namespace
 
@@ -14,10 +15,39 @@ import torch
 from .base import BaseCommand
 from .utils import load_package_from_path
 from ..classification import BRITS as BRITS_classification
-from ..classification import Raindrop, GRUD
+from ..classification import GRUD as GRUD_classification
+from ..classification import Raindrop
 from ..clustering import CRLI, VaDER
 from ..data.saving.h5 import load_dict_from_h5
-from ..imputation import SAITS, Transformer, CSDI, USGAN, GPVAE, MRNN, BRITS, TimesNet
+from ..imputation import (
+    SAITS,
+    FreTS,
+    Koopa,
+    iTransformer,
+    Crossformer,
+    TimesNet,
+    PatchTST,
+    ETSformer,
+    MICN,
+    DLinear,
+    SCINet,
+    NonstationaryTransformer,
+    FiLM,
+    Pyraformer,
+    Autoformer,
+    CSDI,
+    Informer,
+    USGAN,
+    StemGNN,
+    GPVAE,
+    MRNN,
+    BRITS,
+    GRUD,
+    Transformer,
+    TiDE,
+    Reformer,
+    RevIN_SCINet,
+)
 from ..optim import Adam
 from ..utils.logging import logger
 from ..utils.random import set_random_seed
@@ -31,18 +61,37 @@ except ImportError:
     )
 
 NN_MODELS = {
-    # imputation models
-    "pypots.imputation.SAITS": SAITS,
-    "pypots.imputation.Transformer": Transformer,
-    "pypots.imputation.TimesNet": TimesNet,
-    "pypots.imputation.CSDI": CSDI,
-    "pypots.imputation.USGAN": USGAN,
-    "pypots.imputation.GPVAE": GPVAE,
+    # imputation models, sorted by the first letter of the model name
+    "pypots.imputation.Autoformer": Autoformer,
     "pypots.imputation.BRITS": BRITS,
+    "pypots.imputation.CSDI": CSDI,
+    "pypots.imputation.Crossformer": Crossformer,
+    "pypots.imputation.DLinear": DLinear,
+    "pypots.imputation.ETSformer": ETSformer,
+    "pypots.imputation.FreTS": FreTS,
+    "pypots.imputation.FiLM": FiLM,
+    "pypots.imputation.GPVAE": GPVAE,
+    "pypots.imputation.GRUD": GRUD,
+    "pypots.imputation.Informer": Informer,
+    "pypots.imputation.iTransformer": iTransformer,
+    "pypots.imputation.Koopa": Koopa,
+    "pypots.imputation.MICN": MICN,
     "pypots.imputation.MRNN": MRNN,
+    "pypots.imputation.NonstationaryTransformer": NonstationaryTransformer,
+    "pypots.imputation.PatchTST": PatchTST,
+    "pypots.imputation.Pyraformer": Pyraformer,
+    "pypots.imputation.Reformer": Reformer,
+    "pypots.imputation.RevIN_SCINet": RevIN_SCINet,
+    "pypots.imputation.SAITS": SAITS,
+    "pypots.imputation.SCINet": SCINet,
+    "pypots.imputation.StemGNN": StemGNN,
+    "pypots.imputation.TimesNet": TimesNet,
+    "pypots.imputation.TiDE": TiDE,
+    "pypots.imputation.Transformer": Transformer,
+    "pypots.imputation.USGAN": USGAN,
     # classification models
-    "pypots.classification.GRUD": GRUD,
     "pypots.classification.BRITS": BRITS_classification,
+    "pypots.classification.GRUD": GRUD_classification,
     "pypots.classification.Raindrop": Raindrop,
     # clustering models
     "pypots.clustering.CRLI": CRLI,
@@ -66,8 +115,8 @@ class TuningCommand(BaseCommand):
 
     Notes
     -----
-    Using this tool supposes that you've already installed `pypots` with at least the scope of `basic` dependencies.
-    Please refer to file setup.cfg in PyPOTS project's root dir for definitions of different dependency scopes.
+    Using this tool supposes that you've already installed `pypots` with at least basic dependencies.
+    Please refer to file requirements/requirements.txt in PyPOTS project's root dir for references.
 
     Examples
     --------
@@ -168,7 +217,7 @@ class TuningCommand(BaseCommand):
             if self._model not in NN_MODELS:
                 logger.info(
                     f"The specified model {self._model} is not in PyPOTS. Available models are {NN_MODELS.keys()}. "
-                    f"Trying to fetch it from the given model package {self._model_package_path}."
+                    f"Trying to fetch it from the given model package {self._model_package_path}"
                 )
                 assert self._model_package_path is not None, (
                     f"The given model {self._model} is not in PyPOTS. "
@@ -178,7 +227,7 @@ class TuningCommand(BaseCommand):
                 )
                 model_package = load_package_from_path(self._model_package_path)
                 assert self._model in model_package.__all__, (
-                    f"{self._model} is not in the given model package {self._model_package_path}."
+                    f"{self._model} is not in the given model package {self._model_package_path}"
                     f"Please ensure that the model class is in the __all__ list of the model package."
                 )
                 model_class = getattr(model_package, self._model)
@@ -195,20 +244,16 @@ class TuningCommand(BaseCommand):
             lr = tuner_params.pop("lr")
 
             # check if hyperparameters match
-            model_all_arguments = model_class.__init__.__annotations__.keys()
+            model_all_arguments = inspect.signature(model_class).parameters.keys()
             tuner_params_set = set(tuner_params.keys())
             model_arguments_set = set(model_all_arguments)
             if_hyperparameter_match = tuner_params_set.issubset(model_arguments_set)
             if not if_hyperparameter_match:  # raise runtime error if mismatch
-                hyperparameter_intersection = tuner_params_set.intersection(
-                    model_arguments_set
-                )
-                mismatched = tuner_params_set.difference(
-                    set(hyperparameter_intersection)
-                )
+                hyperparameter_intersection = tuner_params_set.intersection(model_arguments_set)
+                mismatched = tuner_params_set.difference(set(hyperparameter_intersection))
                 raise RuntimeError(
                     f"Hyperparameters do not match. Mismatched hyperparameters "
-                    f"(in the tuning configuration but not in the given model's arguments): {list(mismatched)}"
+                    f"(in the tuning configuration but not in {model_class.__name__}'s arguments): {list(mismatched)}"
                 )
 
             # initializing optimizer and model
@@ -228,9 +273,7 @@ class TuningCommand(BaseCommand):
             if self._lazy_load:
                 train_set, val_set = self._train_set, self._val_set
             else:
-                logger.info(
-                    "Option lazy_load is set as False, hence loading all data from file..."
-                )
+                logger.info("Option lazy_load is set as False, hence loading all data from file...")
                 train_set = load_dict_from_h5(self._train_set)
                 val_set = load_dict_from_h5(self._val_set)
 

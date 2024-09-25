@@ -3,7 +3,6 @@ The core wrapper assembles the submodules of Raindrop classification model
 and takes over the forward progress of the algorithm.
 """
 
-
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
@@ -84,21 +83,13 @@ class _Raindrop(nn.Module):
         lengths2 = lengths.unsqueeze(1).to(device)
         mask2 = mask.permute(1, 0).unsqueeze(2).long()
         if self.sensor_wise_mask:
-            output = torch.zeros(
-                [batch_size, self.n_features, self.d_ob + 16], device=device
-            )
+            output = torch.zeros([batch_size, self.n_features, self.d_ob + 16], device=device)
             extended_missing_mask = missing_mask.view(-1, batch_size, self.n_features)
             for se in range(self.n_features):
-                representation = representation.view(
-                    -1, batch_size, self.n_features, (self.d_ob + 16)
-                )
+                representation = representation.view(-1, batch_size, self.n_features, (self.d_ob + 16))
                 out = representation[:, :, se, :]
-                l_ = torch.sum(extended_missing_mask[:, :, se], dim=0).unsqueeze(
-                    1
-                )  # length
-                out_sensor = torch.sum(
-                    out * (1 - extended_missing_mask[:, :, se].unsqueeze(-1)), dim=0
-                ) / (l_ + 1)
+                l_ = torch.sum(extended_missing_mask[:, :, se], dim=0).unsqueeze(1)  # length
+                out_sensor = torch.sum(out * (1 - extended_missing_mask[:, :, se].unsqueeze(-1)), dim=0) / (l_ + 1)
                 output[:, se, :] = out_sensor
             output = output.view([-1, self.n_features * (self.d_ob + 16)])
         elif self.aggregation == "mean":
@@ -116,9 +107,7 @@ class _Raindrop(nn.Module):
 
         # if in training mode, return results with losses
         if self.training:
-            classification_loss = F.nll_loss(
-                torch.log(classification_pred), inputs["y"]
-            )
+            classification_loss = F.nll_loss(torch.log(classification_pred), inputs["y"])
             results["loss"] = classification_loss
 
         return results

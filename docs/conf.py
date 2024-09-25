@@ -33,6 +33,8 @@ copyright = f"{date_now.year}, {author}"
 release = pypots.__version__
 
 # -- General configuration ---------------------------------------------------
+# Set canonical URL from the Read the Docs Domain
+html_baseurl = os.environ.get("READTHEDOCS_CANONICAL_URL", "")
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
@@ -90,6 +92,9 @@ exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = "sphinx"
 
+# -- Options for PDF output -------------------------------------------------
+latex_engine = "xelatex"
+
 # -- Options for HTML output -------------------------------------------------
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for a list of builtin themes.
@@ -98,10 +103,12 @@ html_theme = "furo"
 html_context = {
     "last_updated": f"{date_now.year}/{date_now.month}/{date_now.day}",
 }
+# Tell Jinja2 templates the build is running on Read the Docs
+if os.environ.get("READTHEDOCS", "") == "True":
+    html_context["READTHEDOCS"] = True
 
 html_favicon = (
-    "https://raw.githubusercontent.com/"
-    "PyPOTS/pypots.github.io/main/static/figs/pypots_logos/PyPOTS/logo_FFBG.svg"
+    "https://raw.githubusercontent.com/PyPOTS/pypots.github.io/main/static/figs/pypots_logos/PyPOTS/logo_FFBG.svg"
 )
 
 html_sidebars = {

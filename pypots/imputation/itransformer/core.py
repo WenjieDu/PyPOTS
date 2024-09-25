@@ -35,9 +35,7 @@ class _iTransformer(nn.Module):
         self.ORT_weight = ORT_weight
         self.MIT_weight = MIT_weight
 
-        self.saits_embedding = SaitsEmbedding(
-            n_steps, d_model, with_pos=False, dropout=dropout
-        )
+        self.saits_embedding = SaitsEmbedding(n_steps, d_model, with_pos=False, dropout=dropout)
         self.encoder = TransformerEncoder(
             n_layers,
             d_model,
@@ -81,9 +79,7 @@ class _iTransformer(nn.Module):
         # if in training mode, return results with losses
         if self.training:
             X_ori, indicating_mask = inputs["X_ori"], inputs["indicating_mask"]
-            loss, ORT_loss, MIT_loss = self.saits_loss_func(
-                reconstruction, X_ori, missing_mask, indicating_mask
-            )
+            loss, ORT_loss, MIT_loss = self.saits_loss_func(reconstruction, X_ori, missing_mask, indicating_mask)
             results["ORT_loss"] = ORT_loss
             results["MIT_loss"] = MIT_loss
             # `loss` is always the item for backward propagating to update the model

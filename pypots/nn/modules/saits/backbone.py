@@ -90,14 +90,10 @@ class BackboneSAITS(nn.Module):
         # for delta decay factor
         self.weight_combine = nn.Linear(n_features + n_steps, n_features)
 
-    def forward(
-        self, X, missing_mask, attn_mask: Optional = None
-    ) -> Tuple[torch.Tensor, ...]:
+    def forward(self, X, missing_mask, attn_mask: Optional = None) -> Tuple[torch.Tensor, ...]:
 
         # first DMSA block
-        enc_output = self.embedding_1(
-            X, missing_mask
-        )  # namely, term e in the math equation
+        enc_output = self.embedding_1(X, missing_mask)  # namely, term e in the math equation
         first_DMSA_attn_weights = None
         for encoder_layer in self.layer_stack_for_first_block:
             enc_output, first_DMSA_attn_weights = encoder_layer(enc_output, attn_mask)
@@ -105,9 +101,7 @@ class BackboneSAITS(nn.Module):
         X_prime = missing_mask * X + (1 - missing_mask) * X_tilde_1
 
         # second DMSA block
-        enc_output = self.embedding_2(
-            X_prime, missing_mask
-        )  # namely term alpha in math algo
+        enc_output = self.embedding_2(X_prime, missing_mask)  # namely term alpha in math algo
         second_DMSA_attn_weights = None
         for encoder_layer in self.layer_stack_for_second_block:
             enc_output, second_DMSA_attn_weights = encoder_layer(enc_output, attn_mask)
@@ -115,9 +109,7 @@ class BackboneSAITS(nn.Module):
 
         # attention-weighted combine
         copy_second_DMSA_weights = second_DMSA_attn_weights.clone()
-        copy_second_DMSA_weights = copy_second_DMSA_weights.squeeze(
-            dim=1
-        )  # namely term A_hat in Eq.
+        copy_second_DMSA_weights = copy_second_DMSA_weights.squeeze(dim=1)  # namely term A_hat in Eq.
         if len(copy_second_DMSA_weights.shape) == 4:
             # if having more than 1 head, then average attention weights from all heads
             copy_second_DMSA_weights = torch.transpose(copy_second_DMSA_weights, 1, 3)
@@ -126,9 +118,7 @@ class BackboneSAITS(nn.Module):
 
         # namely term eta
         combining_weights = torch.sigmoid(
-            self.weight_combine(
-                torch.cat([missing_mask, copy_second_DMSA_weights], dim=2)
-            )
+            self.weight_combine(torch.cat([missing_mask, copy_second_DMSA_weights], dim=2))
         )
         # combine X_tilde_1 and X_tilde_2
         X_tilde_3 = (1 - combining_weights) * X_tilde_2 + combining_weights * X_tilde_1

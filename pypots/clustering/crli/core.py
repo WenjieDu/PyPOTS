@@ -57,9 +57,7 @@ class _CRLI(nn.Module):
         training_object: str = "generator",
     ) -> dict:
         X, missing_mask = inputs["X"], inputs["missing_mask"]
-        imputation_latent, discrimination, reconstruction, fcn_latent = self.backbone(
-            X, missing_mask
-        )
+        imputation_latent, discrimination, reconstruction, fcn_latent = self.backbone(X, missing_mask)
         results = {
             "imputation_latent": imputation_latent,
             "discrimination": discrimination,
@@ -72,23 +70,16 @@ class _CRLI(nn.Module):
             results["discrimination_loss"] = l_D
         else:
             # discrimination = discrimination.detach()
-            l_G = F.binary_cross_entropy_with_logits(
-                discrimination, 1 - missing_mask, weight=1 - missing_mask
-            )
+            l_G = F.binary_cross_entropy_with_logits(discrimination, 1 - missing_mask, weight=1 - missing_mask)
             l_pre = calc_mse(imputation_latent, X, missing_mask)
             l_rec = calc_mse(reconstruction, X, missing_mask)
             HTH = torch.matmul(fcn_latent, fcn_latent.permute(1, 0))
 
-            if (
-                self.counter_for_updating_F == 0
-                or self.counter_for_updating_F % 10 == 0
-            ):
+            if self.counter_for_updating_F == 0 or self.counter_for_updating_F % 10 == 0:
                 U, s, V = torch.linalg.svd(fcn_latent)
                 self.term_F = U[:, : self.n_clusters]
 
-            FTHTHF = torch.matmul(
-                torch.matmul(self.term_F.permute(1, 0), HTH), self.term_F
-            )
+            FTHTHF = torch.matmul(torch.matmul(self.term_F.permute(1, 0), HTH), self.term_F)
             l_kmeans = torch.trace(HTH) - torch.trace(FTHTHF)  # k-means loss
             loss_gene = l_G + l_pre + l_rec + l_kmeans * self.lambda_kmeans
             results["generation_loss"] = loss_gene

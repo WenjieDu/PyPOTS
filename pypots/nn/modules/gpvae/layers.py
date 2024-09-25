@@ -22,10 +22,7 @@ def rbf_kernel(T, length_scale):
 
 
 def diffusion_kernel(T, length_scale):
-    assert length_scale < 0.5, (
-        "length_scale has to be smaller than 0.5 for the "
-        "kernel matrix to be diagonally dominant"
-    )
+    assert length_scale < 0.5, "length_scale has to be smaller than 0.5 for the kernel matrix to be diagonally dominant"
     sigmas = torch.ones(T, T) * length_scale
     sigmas_tridiag = torch.diagonal(sigmas, offset=0, dim1=-2, dim2=-1)
     sigmas_tridiag += torch.diagonal(sigmas, offset=1, dim1=-2, dim2=-1)
@@ -39,9 +36,7 @@ def matern_kernel(T, length_scale):
     xs_in = torch.unsqueeze(xs, 0)
     xs_out = torch.unsqueeze(xs, 1)
     distance_matrix = torch.abs(xs_in - xs_out)
-    distance_matrix_scaled = distance_matrix / torch.sqrt(length_scale).type(
-        torch.float32
-    )
+    distance_matrix_scaled = distance_matrix / torch.sqrt(length_scale).type(torch.float32)
     kernel_matrix = torch.exp(-distance_matrix_scaled)
     return kernel_matrix
 
@@ -81,13 +76,9 @@ def make_nn(input_size, output_size, hidden_sizes):
     layers = []
     for i in range(len(hidden_sizes)):
         if i == 0:
-            layers.append(
-                nn.Linear(in_features=input_size, out_features=hidden_sizes[i])
-            )
+            layers.append(nn.Linear(in_features=input_size, out_features=hidden_sizes[i]))
         else:
-            layers.append(
-                nn.Linear(in_features=hidden_sizes[i - 1], out_features=hidden_sizes[i])
-            )
+            layers.append(nn.Linear(in_features=hidden_sizes[i - 1], out_features=hidden_sizes[i]))
         layers.append(nn.ReLU())
     layers.append(nn.Linear(in_features=hidden_sizes[-1], out_features=output_size))
     return nn.Sequential(*layers)
@@ -137,9 +128,7 @@ def make_cnn(input_size, output_size, hidden_sizes, kernel_size=3):
     """
     padding = kernel_size // 2
 
-    cnn_layer = CustomConv1d(
-        input_size, hidden_sizes[0], kernel_size=kernel_size, padding=padding
-    )
+    cnn_layer = CustomConv1d(input_size, hidden_sizes[0], kernel_size=kernel_size, padding=padding)
     layers = [cnn_layer]
 
     for i, h in zip(hidden_sizes, hidden_sizes[1:]):
@@ -193,9 +182,7 @@ class GpvaeEncoder(nn.Module):
 
         dense_shape = [batch_size, self.z_size, time_length, time_length]
         idxs_1 = np.repeat(np.arange(batch_size), self.z_size * (2 * time_length - 1))
-        idxs_2 = np.tile(
-            np.repeat(np.arange(self.z_size), (2 * time_length - 1)), batch_size
-        )
+        idxs_2 = np.tile(np.repeat(np.arange(self.z_size), (2 * time_length - 1)), batch_size)
         idxs_3 = np.tile(
             np.concatenate([np.arange(time_length), np.arange(time_length - 1)]),
             batch_size * self.z_size,
@@ -222,16 +209,12 @@ class GpvaeEncoder(nn.Module):
         )
         prec_tril = prec_tril + eye
         cov_tril = torch.linalg.solve_triangular(prec_tril, eye, upper=True)
-        cov_tril = torch.where(
-            torch.isfinite(cov_tril), cov_tril, torch.zeros_like(cov_tril)
-        ).to(mapped.device)
+        cov_tril = torch.where(torch.isfinite(cov_tril), cov_tril, torch.zeros_like(cov_tril)).to(mapped.device)
 
         num_dim = len(cov_tril.shape)
         cov_tril_lower = torch.transpose(cov_tril, num_dim - 1, num_dim - 2)
 
-        z_dist = torch.distributions.MultivariateNormal(
-            loc=mapped_mean, scale_tril=cov_tril_lower
-        )
+        z_dist = torch.distributions.MultivariateNormal(loc=mapped_mean, scale_tril=cov_tril_lower)
         return z_dist
 
 

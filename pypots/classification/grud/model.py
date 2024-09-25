@@ -84,6 +84,8 @@ class GRUD(BaseNNClassifier):
         better than in previous epochs.
         The "all" strategy will save every model after each epoch training.
 
+    verbose :
+        Whether to print out the training logs during the training process.
     """
 
     def __init__(
@@ -102,18 +104,20 @@ class GRUD(BaseNNClassifier):
         device: Optional[Union[str, torch.device, list]] = None,
         saving_path: str = None,
         model_saving_strategy: Optional[str] = "best",
+        verbose: bool = True,
     ):
         super().__init__(
-            n_classes,
-            batch_size,
-            epochs,
-            patience,
-            train_loss_func,
-            val_metric_func,
-            num_workers,
-            device,
-            saving_path,
-            model_saving_strategy,
+            n_classes=n_classes,
+            batch_size=batch_size,
+            epochs=epochs,
+            patience=patience,
+            train_loss_func=train_loss_func,
+            val_metric_func=val_metric_func,
+            num_workers=num_workers,
+            device=device,
+            saving_path=saving_path,
+            model_saving_strategy=model_saving_strategy,
+            verbose=verbose,
         )
 
         self.n_steps = n_steps
@@ -126,7 +130,6 @@ class GRUD(BaseNNClassifier):
             self.n_features,
             self.rnn_hidden_size,
             self.n_classes,
-            self.device,
         )
         self._send_model_to_given_device()
         self._print_model_size()
@@ -213,7 +216,7 @@ class GRUD(BaseNNClassifier):
         self.model.eval()  # set the model as eval status to freeze it.
 
         # Step 3: save the model if necessary
-        self._auto_save_model_if_necessary(confirm_saving=True)
+        self._auto_save_model_if_necessary(confirm_saving=self.model_saving_strategy == "best")
 
     def predict(
         self,

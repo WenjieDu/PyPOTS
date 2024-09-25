@@ -46,9 +46,7 @@ def doc_command_factory(args: Namespace):
 
 
 def purge_temp_files():
-    logger.info(
-        f"Directories _build and {CLONED_LATEST_PYPOTS} will be deleted if exist"
-    )
+    logger.info(f"Directories _build and {CLONED_LATEST_PYPOTS} will be deleted if exist")
     shutil.rmtree("docs/_build", ignore_errors=True)
     shutil.rmtree(CLONED_LATEST_PYPOTS, ignore_errors=True)
 
@@ -148,10 +146,9 @@ class DocCommand(BaseCommand):
         self.check_if_under_root_dir(strict=True)
 
         if self._cleanup:
-            assert not self._gene_rst and not self._gene_html and not self._view_doc, (
-                "Argument `--cleanup` should be used alone. "
-                "Try `pypots-cli doc --cleanup`"
-            )
+            assert (
+                not self._gene_rst and not self._gene_html and not self._view_doc
+            ), "Argument `--cleanup` should be used alone. Try `pypots-cli doc --cleanup`"
 
     def run(self):
         """Execute the given command."""
@@ -166,9 +163,7 @@ class DocCommand(BaseCommand):
 
             if self._gene_rst:
                 if os.path.exists(CLONED_LATEST_PYPOTS):
-                    logger.info(
-                        f"Directory {CLONED_LATEST_PYPOTS} exists, deleting it..."
-                    )
+                    logger.info(f"Directory {CLONED_LATEST_PYPOTS} exists, deleting it...")
                     shutil.rmtree(CLONED_LATEST_PYPOTS, ignore_errors=True)
 
                 # Download the latest code from GitHub
@@ -185,18 +180,12 @@ class DocCommand(BaseCommand):
                 for f_ in files_to_move:
                     shutil.move(os.path.join(code_dir, f_), destination_dir)
                 # delete code in tests because we don't need its doc
-                shutil.rmtree(
-                    f"{CLONED_LATEST_PYPOTS}/pypots/tests", ignore_errors=True
-                )
+                shutil.rmtree(f"{CLONED_LATEST_PYPOTS}/pypots/tests", ignore_errors=True)
 
                 # Generate the docs according to the cloned code
                 logger.info("Generating rst files...")
-                os.environ[
-                    "SPHINX_APIDOC_OPTIONS"
-                ] = "members,undoc-members,show-inheritance,inherited-members"
-                self.execute_command(
-                    f"sphinx-apidoc {CLONED_LATEST_PYPOTS} -o {CLONED_LATEST_PYPOTS}/rst"
-                )
+                os.environ["SPHINX_APIDOC_OPTIONS"] = "members,undoc-members,show-inheritance,inherited-members"
+                self.execute_command(f"sphinx-apidoc {CLONED_LATEST_PYPOTS} -o {CLONED_LATEST_PYPOTS}/rst")
 
                 # Only save the files we need.
                 logger.info("Updating the old documentation...")
@@ -217,9 +206,7 @@ class DocCommand(BaseCommand):
                     "docs/_build/html"
                 ), "docs/_build/html does not exists, please run `pypots-cli doc --gene_html` first"
                 logger.info(f"Deploying HTML to http://127.0.0.1:{self._port}...")
-                self.execute_command(
-                    f"python -m http.server {self._port} -d docs/_build/html -b 127.0.0.1"
-                )
+                self.execute_command(f"python -m http.server {self._port} -d docs/_build/html -b 127.0.0.1")
 
         except ImportError:
             raise ImportError(IMPORT_ERROR_MESSAGE)

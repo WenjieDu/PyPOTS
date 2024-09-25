@@ -7,6 +7,7 @@ Data utils.
 
 from typing import Union
 
+import benchpots
 import numpy as np
 import torch
 
@@ -24,9 +25,7 @@ def turn_data_into_specified_dtype(
     elif isinstance(data, np.ndarray):
         data = torch.from_numpy(data) if dtype == "tensor" else data
     else:
-        raise TypeError(
-            f"data should be an instance of list/np.ndarray/torch.Tensor, but got {type(data)}"
-        )
+        raise TypeError(f"data should be an instance of list/np.ndarray/torch.Tensor, but got {type(data)}")
     return data
 
 
@@ -60,9 +59,7 @@ def _parse_delta_torch(missing_mask: torch.Tensor) -> torch.Tensor:
         d = [torch.zeros(1, n_features, device=device)]
 
         for step in range(1, n_steps):
-            d.append(
-                torch.ones(1, n_features, device=device) + (1 - mask[step - 1]) * d[-1]
-            )
+            d.append(torch.ones(1, n_features, device=device) + (1 - mask[step - 1]) * d[-1])
         d = torch.concat(d, dim=0)
         return d
 
@@ -128,9 +125,7 @@ def _parse_delta_numpy(missing_mask: np.ndarray) -> np.ndarray:
     return delta
 
 
-def parse_delta(
-    missing_mask: Union[np.ndarray, torch.Tensor]
-) -> Union[np.ndarray, torch.Tensor]:
+def parse_delta(missing_mask: Union[np.ndarray, torch.Tensor]) -> Union[np.ndarray, torch.Tensor]:
     """Generate the time-gap matrix (i.e. the delta metrix) from the missing mask.
     Please refer to :cite:`che2018GRUD` for its math definition.
 
@@ -163,7 +158,11 @@ def parse_delta(
     return delta
 
 
-def sliding_window(time_series, window_len, sliding_len=None):
+def sliding_window(
+    time_series: Union[np.ndarray, torch.Tensor],
+    window_len: int,
+    sliding_len: int = None,
+) -> Union[np.ndarray, torch.Tensor]:
     """Generate time series samples with sliding window method, truncating windows from time-series data
     with a given sequence length.
 
@@ -174,33 +173,55 @@ def sliding_window(time_series, window_len, sliding_len=None):
 
     Parameters
     ----------
-    time_series : np.ndarray,
+    time_series :
         time series data, len(shape)=2, [total_length, feature_num]
 
-    window_len : int,
+    window_len :
         The length of the sliding window, i.e. the number of time steps in the generated data samples.
 
-    sliding_len : int, default = None,
+    sliding_len :
         The sliding length of the window for each moving step. It will be set as the same with n_steps if None.
 
     Returns
     -------
-    samples : np.ndarray,
+    samples :
         The generated time-series data samples of shape [seq_len//sliding_len, n_steps, n_features].
 
     """
-    sliding_len = window_len if sliding_len is None else sliding_len
-    total_len = time_series.shape[0]
-    start_indices = np.asarray(range(total_len // sliding_len)) * sliding_len
 
-    # remove the last one if left length is not enough
-    if total_len - start_indices[-1] * sliding_len < window_len:
-        start_indices = start_indices[:-1]
+    return benchpots.utils.sliding_window(
+        time_series,
+        window_len,
+        sliding_len,
+    )
 
-    sample_collector = []
-    for idx in start_indices:
-        sample_collector.append(time_series[idx : idx + window_len])
 
-    samples = np.asarray(sample_collector).astype("float32")
+def inverse_sliding_window(X, sliding_len):
+    """Restore the original time-series data from the generated sliding window samples.
+    Note that this is the inverse operation of the `sliding_window` function, but there is no guarantee that
+    the restored data is the same as the original data considering that
+    1. the sliding length may be larger than the window size and there will be gaps between restored data;
+    2. if values in the samples get changed, the overlap part may not be the same as the original data after averaging;
+    3. some incomplete samples at the tail may be dropped during the sliding window operation, hence the restored data
+       may be shorter than the original data.
 
-    return samples
+    Parameters
+    ----------
+    X :
+        The generated time-series samples with sliding window method, shape of [n_samples, n_steps, n_features],
+        where n_steps is the window size of the used sliding window method.
+
+    sliding_len :
+        The sliding length of the window for each moving step in the sliding window method used to generate X.
+
+    Returns
+    -------
+    restored_data :
+        The restored time-series data with shape of [total_length, n_features].
+
+    """
+
+    return benchpots.utils.inverse_sliding_window(
+        X,
+        sliding_len,
+    )

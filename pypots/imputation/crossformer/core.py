@@ -50,9 +50,7 @@ class _Crossformer(nn.Module):
             pad_in_len - n_steps,
             0,
         )
-        self.enc_pos_embedding = nn.Parameter(
-            torch.randn(1, d_model, in_seg_num, d_model)
-        )
+        self.enc_pos_embedding = nn.Parameter(torch.randn(1, d_model, in_seg_num, d_model))
         self.pre_norm = nn.LayerNorm(d_model)
 
         # Encoder
@@ -94,9 +92,7 @@ class _Crossformer(nn.Module):
         input_X = self.saits_embedding(X, missing_mask)
 
         x_enc = self.enc_value_embedding(input_X.permute(0, 2, 1))
-        x_enc = rearrange(
-            x_enc, "(b d) seg_num d_model -> b d seg_num d_model", d=self.d_model
-        )
+        x_enc = rearrange(x_enc, "(b d) seg_num d_model -> b d seg_num d_model", d=self.d_model)
         x_enc += self.enc_pos_embedding
 
         # Crossformer processing
@@ -115,9 +111,7 @@ class _Crossformer(nn.Module):
         # if in training mode, return results with losses
         if self.training:
             X_ori, indicating_mask = inputs["X_ori"], inputs["indicating_mask"]
-            loss, ORT_loss, MIT_loss = self.saits_loss_func(
-                reconstruction, X_ori, missing_mask, indicating_mask
-            )
+            loss, ORT_loss, MIT_loss = self.saits_loss_func(reconstruction, X_ori, missing_mask, indicating_mask)
             results["ORT_loss"] = ORT_loss
             results["MIT_loss"] = MIT_loss
             # `loss` is always the item for backward propagating to update the model

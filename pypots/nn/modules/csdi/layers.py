@@ -13,9 +13,7 @@ import torch.nn.functional as F
 
 
 def get_torch_trans(heads=8, layers=1, channels=64):
-    encoder_layer = nn.TransformerEncoderLayer(
-        d_model=channels, nhead=heads, dim_feedforward=64, activation="gelu"
-    )
+    encoder_layer = nn.TransformerEncoderLayer(d_model=channels, nhead=heads, dim_feedforward=64, activation="gelu")
     return nn.TransformerEncoder(encoder_layer, num_layers=layers)
 
 
@@ -41,11 +39,7 @@ class CsdiDiffusionEmbedding(nn.Module):
     @staticmethod
     def _build_embedding(n_steps, d_embedding=64):
         steps = torch.arange(n_steps).unsqueeze(1)  # (T,1)
-        frequencies = 10.0 ** (
-            torch.arange(d_embedding) / (d_embedding - 1) * 4.0
-        ).unsqueeze(
-            0
-        )  # (1,dim)
+        frequencies = 10.0 ** (torch.arange(d_embedding) / (d_embedding - 1) * 4.0).unsqueeze(0)  # (1,dim)
         table = steps * frequencies  # (T,dim)
         table = torch.cat([torch.sin(table), torch.cos(table)], dim=1)  # (T,dim*2)
         return table
@@ -68,9 +62,7 @@ class CsdiResidualBlock(nn.Module):
         self.output_projection = conv1d_with_init(n_channels, 2 * n_channels, 1)
 
         self.time_layer = get_torch_trans(heads=nheads, layers=1, channels=n_channels)
-        self.feature_layer = get_torch_trans(
-            heads=nheads, layers=1, channels=n_channels
-        )
+        self.feature_layer = get_torch_trans(heads=nheads, layers=1, channels=n_channels)
 
     def forward_time(self, y, base_shape):
         B, channel, K, L = base_shape  # bz, 2, n_features, n_steps
@@ -95,9 +87,7 @@ class CsdiResidualBlock(nn.Module):
         base_shape = x.shape
         x = x.reshape(B, channel, K * L)
 
-        diffusion_emb = self.diffusion_projection(diffusion_emb).unsqueeze(
-            -1
-        )  # (B,channel,1)
+        diffusion_emb = self.diffusion_projection(diffusion_emb).unsqueeze(-1)  # (B,channel,1)
 
         y = x + diffusion_emb
         y = self.forward_time(y, base_shape)

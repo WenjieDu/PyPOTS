@@ -1,0 +1,96 @@
+[build-system]
+requires = ["setuptools>=71"]
+
+[project]
+name = "pypots"
+description = "A Python Toolbox for Machine Learning on Partially-Observed Time Series"
+authors = [{ name = "Wenjie Du", email = "wenjay.du@gmail.com" }]
+dynamic = ["version", "readme", "dependencies", "optional-dependencies"]
+license = { file = "LICENSE" }
+requires-python = ">=3.8"
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Education",
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: Healthcare Industry",
+    "License :: OSI Approved :: BSD License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Software Development :: Libraries :: Application Frameworks",
+]
+keywords = [
+    "data science",
+    "data mining",
+    "neural networks",
+    "machine learning",
+    "deep learning",
+    "artificial intelligence",
+    "time-series analysis",
+    "time series",
+    "imputation",
+    "interpolation",
+    "classification",
+    "clustering",
+    "forecasting",
+    "partially observed",
+    "irregular sampled",
+    "partially-observed time series",
+    "incomplete time series",
+    "missing data",
+    "missing values",
+]
+
+[project.scripts]
+pypots-cli = "pypots.cli.pypots_cli:main"
+
+[project.urls]
+Source = "https://github.com/WenjieDu/PyPOTS"
+Homepage = "https://pypots.com"
+Documentation = "https://docs.pypots.com"
+"Bug Tracker" = "https://github.com/WenjieDu/PyPOTS/issues"
+Download = "https://github.com/WenjieDu/PyPOTS/archive/main.zip"
+
+[tool.setuptools.packages.find]
+exclude = [
+    "*template",
+    "*README.md",
+    "docs*",
+    "test*",
+    "requirements*",
+]
+
+[tool.setuptools.dynamic]
+version = { attr = "pypots.version.__version__" }
+readme = { file = "README.md", content-type = "text/markdown" }
+dependencies = { file = "requirements/requirements.txt" }
+optional-dependencies.dev = { file = "requirements/requirements_dev.txt" }
+
+[tool.black]
+line-length = 120
+
+[tool.flake8]
+# People may argue that coding style is personal. This may be true if the project is personal and one works like a
+# hermit, but to PyPOTS and its community, the answer is NO.
+# We use Black and Flake8 to lint code style and keep the style consistent across all commits and pull requests.
+# Black only reformats the code, and Flake8 is necessary for checking for some other issues not covered by Black.
+
+# The Black line length is default as 88, while the default of Flake8 is 79. However, considering our monitors are
+# much more advanced nowadays, I extend the maximum line length to 120, like other project e.g. transformers. People
+# who prefer the default setting can keep using 88 or 79 while coding. Please ensure your code lines not exceeding 120.
+max-line-length = 120
+# why ignore E203? Refer to https://github.com/PyCQA/pycodestyle/issues/373
+# why ignore E231? Bad trailing comma, conflict with Black
+extend-ignore = """
+    E203,
+    E231,
+"""
+# ignore some errors that are not important in template files
+exclude = [
+    "*/template"
+]
