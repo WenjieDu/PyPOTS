@@ -19,3 +19,8 @@ docs/_build
 # ignore specific kinds of files like all PDFs
 *.pdf
 *.ipynb
+*TODO
+
+# ignore executable and config files
+*.sh
+*.yml
