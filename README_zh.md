@@ -10,7 +10,7 @@
     <a href="https://docs.pypots.com/en/latest/install.html#reasons-of-version-limitations-on-dependencies">
        <img alt="Python version" src="https://img.shields.io/badge/Python-v3.8+-E97040?logo=python&logoColor=white">
     </a>
-    <a href="https://github.com/WenjieDu/PyPOTS">
+    <a href="https://www.google.com/search?q=%22PyPOTS%22+site%3Apytorch.org">
         <img alt="powered by Pytorch" src="https://img.shields.io/badge/PyTorch-%E2%9D%A4%EF%B8%8F-F8C6B5?logo=pytorch&logoColor=white">
     </a>
     <a href="https://github.com/WenjieDu/PyPOTS/releases">
