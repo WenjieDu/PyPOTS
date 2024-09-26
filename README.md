@@ -477,7 +477,7 @@ Fröhlich, H. (2019).
 [Reversible Instance Normalization for Accurate Time-Series Forecasting against Distribution Shift](https://openreview.net/forum?id=cGDAkQo1C0p).
 *ICLR 2022*.
 [^32]: Kitaev, N., Kaiser, Ł., & Levskaya, A. (2020).
-[Reformer: The Efficient Transformer](https://openreview.net/forum?id=0EXmFzUn5I).
+[Reformer: The Efficient Transformer](https://openreview.net/forum?id=rkgNKkHtvB).
 *ICLR 2020*.
 [^33]: Cao, D., Wang, Y., Duan, J., Zhang, C., Zhu, X., Huang, C., Tong, Y., Xu, B., Bai, J., Tong, J., & Zhang, Q. (
 2020).
