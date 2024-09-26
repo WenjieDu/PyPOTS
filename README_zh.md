@@ -10,7 +10,7 @@
     <a href="https://docs.pypots.com/en/latest/install.html#reasons-of-version-limitations-on-dependencies">
        <img alt="Python version" src="https://img.shields.io/badge/Python-v3.8+-E97040?logo=python&logoColor=white">
     </a>
-    <a href="https://github.com/WenjieDu/PyPOTS">
+    <a href="https://www.google.com/search?q=%22PyPOTS%22+site%3Apytorch.org">
         <img alt="powered by Pytorch" src="https://img.shields.io/badge/PyTorch-%E2%9D%A4%EF%B8%8F-F8C6B5?logo=pytorch&logoColor=white">
     </a>
     <a href="https://github.com/WenjieDu/PyPOTS/releases">
@@ -450,7 +450,7 @@ Fröhlich, H. (2019).
 [Reversible Instance Normalization for Accurate Time-Series Forecasting against Distribution Shift](https://openreview.net/forum?id=cGDAkQo1C0p).
 *ICLR 2022*.
 [^32]: Kitaev, N., Kaiser, Ł., & Levskaya, A. (2020).
-[Reformer: The Efficient Transformer](https://openreview.net/forum?id=0EXmFzUn5I).
+[Reformer: The Efficient Transformer](https://openreview.net/forum?id=rkgNKkHtvB).
 *ICLR 2020*.
 [^33]: Cao, D., Wang, Y., Duan, J., Zhang, C., Zhu, X., Huang, C., Tong, Y., Xu, B., Bai, J., Tong, J., & Zhang, Q. (
 2020).
