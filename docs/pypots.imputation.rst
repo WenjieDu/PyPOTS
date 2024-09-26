@@ -19,6 +19,24 @@ pypots.imputation.transformer
    :show-inheritance:
    :inherited-members:
 
+pypots.imputation.tefn
+------------------------------------
+
+.. automodule:: pypots.imputation.tefn
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+
+pypots.imputation.fits
+------------------------------------
+
+.. automodule:: pypots.imputation.fits
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+
 pypots.imputation.timemixer
 ------------------------------------
 
