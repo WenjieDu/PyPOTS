@@ -475,7 +475,7 @@ Time-Series.AI</a>
 [^38]: Luo, D., & Wang X. (2024).
 [ModernTCN: A Modern Pure Convolution Structure for General Time Series Analysis](https://openreview.net/forum?id=vpJMJerXHU).
 *ICLR 2024*.
-[^39]: Zhan, T., He, Y., Li, Z., & Deng, Y. (2024).
+[^39]: Zhan, T., He, Y., Deng, Y., Li, Z., Du, W., & Wen, Q. (2024).
 [Time Evidence Fusion Network: Multi-source View in Long-Term Time Series Forecasting](https://arxiv.org/abs/2405.06419).
 *arXiv 2024*.
 [^40]: [Wikipedia: Linear interpolation](https://en.wikipedia.org/wiki/Linear_interpolation)
