@@ -27,7 +27,7 @@ from ...data.checking import key_in_data_set
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
 from ...utils.logging import logger
-from ...utils.metrics import calc_mse
+from ...nn.functional import calc_mse
 
 
 class GPVAE(BaseNNImputer):
@@ -132,6 +132,8 @@ class GPVAE(BaseNNImputer):
         batch_size: int = 32,
         epochs: int = 100,
         patience: Optional[int] = None,
+        train_loss_func: Optional[dict] = None,
+        val_metric_func: Optional[dict] = None,
         optimizer: Optional[Optimizer] = Adam(),
         num_workers: int = 0,
         device: Optional[Union[str, torch.device, list]] = None,
@@ -140,14 +142,16 @@ class GPVAE(BaseNNImputer):
         verbose: bool = True,
     ):
         super().__init__(
-            batch_size,
-            epochs,
-            patience,
-            num_workers,
-            device,
-            saving_path,
-            model_saving_strategy,
-            verbose,
+            batch_size=batch_size,
+            epochs=epochs,
+            patience=patience,
+            train_loss_func=train_loss_func,
+            val_metric_func=val_metric_func,
+            num_workers=num_workers,
+            device=device,
+            saving_path=saving_path,
+            model_saving_strategy=model_saving_strategy,
+            verbose=verbose,
         )
         available_kernel_type = ["cauchy", "diffusion", "rbf", "matern"]
         assert kernel in available_kernel_type, f"kernel should be one of {available_kernel_type}, but got {kernel}"
@@ -266,7 +270,7 @@ class GPVAE(BaseNNImputer):
                     with torch.no_grad():
                         for idx, data in enumerate(val_loader):
                             inputs = self._assemble_input_for_validating(data)
-                            results = self.model.forward(inputs, training=False, n_sampling_times=1)
+                            results = self.model.forward(inputs, n_sampling_times=1)
                             imputed_data = results["imputed_data"].mean(axis=1)
                             imputation_mse = (
                                 calc_mse(
@@ -291,12 +295,14 @@ class GPVAE(BaseNNImputer):
 
                     logger.info(
                         f"Epoch {epoch:03d} - "
-                        f"training loss: {mean_train_loss:.4f}, "
-                        f"validation loss: {mean_val_loss:.4f}"
+                        f"training loss ({self.train_loss_func_name}): {mean_train_loss:.4f}, "
+                        f"validation {self.val_metric_func_name}: {mean_val_loss:.4f}"
                     )
                     mean_loss = mean_val_loss
                 else:
-                    logger.info(f"Epoch {epoch:03d} - training loss: {mean_train_loss:.4f}")
+                    logger.info(
+                        f"Epoch {epoch:03d} - training loss ({self.train_loss_func_name}): {mean_train_loss:.4f}"
+                    )
                     mean_loss = mean_train_loss
 
                 if np.isnan(mean_loss):
@@ -426,7 +432,7 @@ class GPVAE(BaseNNImputer):
         with torch.no_grad():
             for idx, data in enumerate(test_loader):
                 inputs = self._assemble_input_for_testing(data)
-                results = self.model.forward(inputs, training=False, n_sampling_times=n_sampling_times)
+                results = self.model.forward(inputs, n_sampling_times=n_sampling_times)
                 imputed_data = results["imputed_data"]
                 imputation_collector.append(imputed_data)
 

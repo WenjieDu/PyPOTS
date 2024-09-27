@@ -14,8 +14,8 @@ import torch
 from torch.utils.data import DataLoader
 
 from ..base import BaseModel, BaseNNModel
+from ..nn.functional import calc_mse
 from ..utils.logging import logger
-from ..utils.metrics.error import calc_mse
 
 try:
     import nni
@@ -145,9 +145,17 @@ class BaseNNForecaster(BaseNNModel):
         Training epochs, i.e. the maximum rounds of the model to be trained with.
 
     patience :
-        Number of epochs the training procedure will keep if loss doesn't decrease.
-        Once exceeding the number, the training will stop.
-        Must be smaller than or equal to the value of ``epochs``.
+        The patience for the early-stopping mechanism. Given a positive integer, the training process will be
+        stopped when the model does not perform better after that number of epochs.
+        Leaving it default as None will disable the early-stopping.
+
+    train_loss_func:
+        The customized loss function designed by users for training the model.
+        If not given, will use the default loss as claimed in the original paper.
+
+    val_metric_func:
+        The customized metric function designed by users for validating the model.
+        If not given, will use the default MSE metric.
 
     num_workers :
         The number of subprocesses to use for data loading.
@@ -192,6 +200,8 @@ class BaseNNForecaster(BaseNNModel):
         batch_size: int,
         epochs: int,
         patience: Optional[int] = None,
+        train_loss_func: Optional[dict] = None,
+        val_metric_func: Optional[dict] = None,
         num_workers: int = 0,
         device: Optional[Union[str, torch.device, list]] = None,
         saving_path: str = None,
@@ -199,14 +209,16 @@ class BaseNNForecaster(BaseNNModel):
         verbose: bool = True,
     ):
         super().__init__(
-            batch_size,
-            epochs,
-            patience,
-            num_workers,
-            device,
-            saving_path,
-            model_saving_strategy,
-            verbose,
+            batch_size=batch_size,
+            epochs=epochs,
+            patience=patience,
+            train_loss_func=train_loss_func,
+            val_metric_func=val_metric_func,
+            num_workers=num_workers,
+            device=device,
+            saving_path=saving_path,
+            model_saving_strategy=model_saving_strategy,
+            verbose=verbose,
         )
 
     @abstractmethod
@@ -301,7 +313,7 @@ class BaseNNForecaster(BaseNNModel):
                     with torch.no_grad():
                         for idx, data in enumerate(val_loader):
                             inputs = self._assemble_input_for_validating(data)
-                            results = self.model.forward(inputs, training=False)
+                            results = self.model.forward(inputs)
                             forecasting_mse = (
                                 calc_mse(
                                     results["forecasting_data"],
@@ -325,12 +337,14 @@ class BaseNNForecaster(BaseNNModel):
 
                     logger.info(
                         f"Epoch {epoch:03d} - "
-                        f"training loss: {mean_train_loss:.4f}, "
-                        f"validation loss: {mean_val_loss:.4f}"
+                        f"training loss ({self.train_loss_func_name}): {mean_train_loss:.4f}, "
+                        f"validation {self.val_metric_func_name}: {mean_val_loss:.4f}"
                     )
                     mean_loss = mean_val_loss
                 else:
-                    logger.info(f"Epoch {epoch:03d} - training loss: {mean_train_loss:.4f}")
+                    logger.info(
+                        f"Epoch {epoch:03d} - training loss ({self.train_loss_func_name}): {mean_train_loss:.4f}"
+                    )
                     mean_loss = mean_train_loss
 
                 if np.isnan(mean_loss):
