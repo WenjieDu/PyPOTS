@@ -302,7 +302,7 @@ class SCINet(BaseNNImputer):
         with torch.no_grad():
             for idx, data in enumerate(test_loader):
                 inputs = self._assemble_input_for_testing(data)
-                results = self.model.forward(inputs, training=False)
+                results = self.model.forward(inputs)
                 imputation_collector.append(results["imputed_data"])
 
         # Step 3: output collection and return
