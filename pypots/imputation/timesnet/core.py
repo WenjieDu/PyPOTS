@@ -7,8 +7,8 @@
 
 import torch.nn as nn
 
-from ...nn.functional import calc_mse
 from ...nn.functional import nonstationary_norm, nonstationary_denorm
+from ...nn.functional import calc_mse
 from ...nn.modules.timesnet import BackboneTimesNet
 from ...nn.modules.transformer.embedding import DataEmbedding
 

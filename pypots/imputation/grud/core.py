@@ -9,8 +9,8 @@ and takes over the forward progress of the algorithm.
 
 import torch.nn as nn
 
+from ...nn.functional import calc_mse
 from ...nn.modules.grud import BackboneGRUD
-from ...utils.metrics import calc_mse
 
 
 class _GRUD(nn.Module):
