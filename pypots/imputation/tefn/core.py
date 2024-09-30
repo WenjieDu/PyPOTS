@@ -7,9 +7,9 @@
 
 import torch.nn as nn
 
+from ...nn.functional import calc_mse
 from ...nn.functional import nonstationary_norm, nonstationary_denorm
 from ...nn.modules.tefn import BackboneTEFN
-from ...utils.metrics import calc_mse
 
 
 class _TEFN(nn.Module):

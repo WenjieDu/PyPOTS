@@ -11,8 +11,8 @@ from ...nn.functional import (
     nonstationary_norm,
     nonstationary_denorm,
 )
+from ...nn.functional import calc_mse
 from ...nn.modules.timemixer import BackboneTimeMixer
-from ...utils.metrics import calc_mse
 
 
 class _TimeMixer(nn.Module):

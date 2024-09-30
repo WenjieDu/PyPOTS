@@ -9,9 +9,9 @@ and takes over the forward progress of the algorithm.
 import torch.nn as nn
 
 from ...nn.functional import nonstationary_norm, nonstationary_denorm
+from ...nn.functional import calc_mse
 from ...nn.modules.moderntcn import BackboneModernTCN
 from ...nn.modules.patchtst.layers import FlattenHead
-from ...utils.metrics import calc_mse
 
 
 class _ModernTCN(nn.Module):

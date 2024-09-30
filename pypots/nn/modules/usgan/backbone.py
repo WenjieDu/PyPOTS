@@ -13,7 +13,7 @@ import torch.nn.functional as F
 
 from .layers import UsganDiscriminator
 from ..brits import BackboneBRITS
-from ....utils.metrics import calc_mse
+from ....nn.functional import calc_mse
 
 
 class BackboneUSGAN(nn.Module):
