@@ -13,19 +13,11 @@ This implementation is inspired by the official one the official implementation 
 
 """
 
-# Created by Joseph Arul Raj <joseph_arul_raj@kcl.ac.uk>
+# Created by Linglong Qian, Joseph Arul Raj <linglong.qian@kcl.ac.uk, joseph_arul_raj@kcl.ac.uk>
 # License: BSD-3-Clause
 
-from .backbone import BackboneCSAI, BackboneBCSAI
-from .layers import FeatureRegression, Decay, Decay_obs, PositionalEncoding, Conv1dWithInit, TorchTransformerEncoder
+from .model import CSAI
 
 __all__ = [
-    "BackboneCSAI",
-    "BackboneBCSAI",
-    "FeatureRegression",
-    "Decay", 
-    "Decay_obs", 
-    "PositionalEncoding", 
-    "Conv1dWithInit", 
-    "TorchTransformerEncoder"
+    "CSAI",
 ]

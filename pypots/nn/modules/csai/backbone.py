@@ -2,7 +2,7 @@
 
 """
 
-# Created by Joseph Arul Raj <joseph_arul_raj@kcl.ac.uk>
+# Created by Linglong Qian, Joseph Arul Raj <linglong.qian@kcl.ac.uk, joseph_arul_raj@kcl.ac.uk>
 # License: BSD-3-Clause
 
 import torch
@@ -10,7 +10,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import math
 from .layers import FeatureRegression, Decay, Decay_obs, PositionalEncoding, Conv1dWithInit, TorchTransformerEncoder
-
+from ....utils.metrics import calc_mae
 
 class BackboneCSAI(nn.Module):
     def __init__(self, n_steps, n_features, rnn_hidden_size, step_channels, medians_df=None, device=None):
