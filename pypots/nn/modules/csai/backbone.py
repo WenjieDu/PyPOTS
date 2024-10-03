@@ -13,10 +13,86 @@ from .layers import FeatureRegression, Decay, Decay_obs, PositionalEncoding, Con
 from ....utils.metrics import calc_mae
 
 class BackboneCSAI(nn.Module):
+    """
+    Attributes
+    ----------
+    n_steps :
+        sequence length (number of time steps)
+
+    n_features :
+        number of features (input dimensions)
+
+    rnn_hidden_size :
+        the hidden size of the GRU cell
+
+    step_channels :
+        number of channels for each step in the sequence
+
+    medians_tensor :
+        tensor of median values for features, used to adjust decayed observations
+
+    temp_decay_h :
+        the temporal decay module to decay the hidden state of the GRU
+
+    temp_decay_x :
+        the temporal decay module to decay data in the raw feature space
+
+    hist :
+        the temporal-regression module that projects the GRU hidden state into the raw feature space
+
+    feat_reg_v :
+        the feature-regression module used for feature-based estimation
+
+    weight_combine :
+        the module that generates the weight to combine history regression and feature regression
+
+    weighted_obs :
+        the decay module that computes weighted decay based on observed data and deltas
+
+    gru :
+        the GRU cell that models temporal data for imputation
+
+    pos_encoder :
+        the positional encoding module that adds temporal information to the sequence data
+
+    input_projection :
+        the convolutional module used to project input features into a higher-dimensional space
+
+    output_projection1 :
+        the convolutional module used to project the output from the Transformer layer
+
+    output_projection2 :
+        the final convolutional module used to generate the hidden state from the time-layer's output
+
+    time_layer :
+        the Transformer encoder layer used to model complex temporal dependencies within the sequence
+
+    device :
+        the device (CPU/GPU) used for model computations
+
+    Parameters
+    ----------
+    n_steps :
+        sequence length (number of time steps)
+
+    n_features :
+        number of features (input dimensions)
+
+    rnn_hidden_size :
+        the hidden size of the GRU cell
+
+    step_channels :
+        number of channels for each step in the sequence
+
+    medians_df :
+        dataframe of median values for each feature, optional
+
+    device :
+        the device (CPU/GPU) for running the model, optional
+    """
+
     def __init__(self, n_steps, n_features, rnn_hidden_size, step_channels, medians_df=None, device=None):
         super(BackboneCSAI, self).__init__()
-
-
         if medians_df is not None:
             self.medians_tensor = torch.tensor(list(medians_df.values())).float()
         else:
@@ -98,7 +174,8 @@ class BackboneCSAI(nn.Module):
             beta = self.weight_combine(torch.cat([gamma_x, m_t], dim=1))
             x_comb_t = beta * xu + (1 - beta) * x_h
 
-            x_loss += torch.sum(torch.abs(x_t - x_comb_t) * m_t) / (torch.sum(m_t) + 1e-5)
+            # x_loss += torch.sum(torch.abs(x_t - x_comb_t) * m_t) / (torch.sum(m_t) + 1e-5)
+            x_loss += calc_mae(x_comb_t, x_t, m_t)
 
             # Final Imputation Estimates
             x_imp[:, t, :] = (m_t * x_t) + ((1 - m_t) * x_comb_t)
@@ -121,7 +198,6 @@ class BackboneBCSAI(nn.Module):
         self.model_f = BackboneCSAI(n_steps, n_features, rnn_hidden_size, step_channels, medians_df, device)
         self.model_b = BackboneCSAI(n_steps, n_features, rnn_hidden_size, step_channels, medians_df, device)
         
-
     def forward(self, xdata):
 
         # Fetching forward data from xdata
