@@ -6,6 +6,7 @@ Expose all usable time-series imputation models.
 # License: BSD-3-Clause
 
 from .brits import BRITS
+from .csai import CSAI
 from .csdi import CSDI
 from .gpvae import GPVAE
 from .mrnn import MRNN
@@ -87,4 +88,5 @@ __all__ = [
     "Median",
     "Lerp",
     "TEFN",
+    "CSAI",
 ]

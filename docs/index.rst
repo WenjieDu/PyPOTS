@@ -18,7 +18,7 @@ Welcome to PyPOTS docs!
 
 .. image:: https://img.shields.io/badge/PyTorch-%E2%9D%A4%EF%B8%8F-F8C6B5?logo=pytorch&logoColor=white
    :alt: powered by Pytorch
-   :target: https://github.com/WenjieDu/PyPOTS
+   :target: https://www.google.com/search?q=%22PyPOTS%22+site%3Apytorch.org
 
 .. image:: https://img.shields.io/github/v/release/wenjiedu/pypots?color=EE781F&include_prereleases&label=Release&logo=github&logoColor=white
    :alt: the latest release version
@@ -134,6 +134,8 @@ The paper references are all listed at the bottom of this readme file.
 | Type           | Algorithm                                                 | IMPU | FORE | CLAS | CLUS | ANOD | Year - Venue          |
 +================+===========================================================+======+======+======+======+======+=======================+
 | Neural Net     | TEFN🧑‍🔧           :cite:`zhan2024tefn`                  |  ✅  |      |      |      |      | ``2024 - arXiv``      |
++----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
+| Neural Net     | FITS🧑‍🔧           :cite:`xu2024fits`                    |  ✅  |      |      |      |      | ``2024 - ICLR``       |
 +----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
 | Neural Net     | TimeMixer      :cite:`wang2024timemixer`                  |  ✅  |      |      |      |      | ``2024 - ICLR``       |
 +----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
