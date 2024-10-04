@@ -369,8 +369,7 @@ class DatasetForCSAI(BaseDataset):
 
             self.X_ori = self.processed_data['evals']
             self.indicating_mask = self.processed_data['eval_masks']
-            # if self.return_y:
-            #     self.y = self.processed_data['labels']
+
 
     def _fetch_data_from_array(self, idx: int) -> Iterable:
         """Fetch data from self.X if it is given.
