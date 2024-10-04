@@ -19,6 +19,77 @@ from ...optim.base import Optimizer
 
 
 class CSAI(BaseNNClassifier):
+
+    """
+    The PyTorch implementation of the CSAI model.
+
+    Parameters
+
+    n_steps :
+    The number of time steps in the time-series data sample.
+
+    n_features :
+    The number of features in the time-series data sample.
+
+    rnn_hidden_size :
+    The size of the RNN hidden state.
+
+    imputation_weight :
+    The loss weight for the imputation task.
+
+    consistency_weight :
+    The loss weight for the consistency task.
+
+    classification_weight :
+    The loss weight for the classification task.
+
+    n_classes :
+    The number of classes in the classification task.
+
+    removal_percent :
+    The percentage of data to be removed during training for simulating missingness.
+
+    increase_factor :
+    The factor to increase the frequency of missing value occurrences.
+
+    compute_intervals :
+    Whether to compute time intervals between observations during data processing.
+
+    step_channels :
+    The number of step channels for the model.
+
+    batch_size :
+    The batch size for training and evaluating the model.
+
+    epochs :
+    The number of epochs for training the model.
+
+    dropout :
+    The dropout rate for the model to prevent overfitting. Default is 0.5.
+
+    patience :
+    The patience for the early-stopping mechanism. Given a positive integer, the training process will be stopped when the model does not perform better after that number of epochs. Leaving it default as None will disable the early-stopping.
+
+    optimizer :
+    The optimizer for model training. If not given, will use a default Adam optimizer.
+
+    num_workers :
+    The number of subprocesses to use for data loading. 0 means data loading will be in the main process, i.e. there won't be subprocesses.
+
+    device :
+    The device for the model to run on. It can be a string, a :class:torch.device object, or a list of them. If not given, will try to use CUDA devices first (will use the default CUDA device if there are multiple), then CPUs, considering CUDA and CPU are so far the main devices for people to train ML models. If given a list of devices, e.g. ['cuda:0', 'cuda:1'], or [torch.device('cuda:0'), torch.device('cuda:1')], the model will be parallely trained on the multiple devices (so far only support parallel training on CUDA devices). Other devices like Google TPU and Apple Silicon accelerator MPS may be added in the future.
+
+    saving_path :
+    The path for automatically saving model checkpoints and tensorboard files (i.e. loss values recorded during training into a tensorboard file). Will not save if not given.
+
+    model_saving_strategy :
+    The strategy to save model checkpoints. It has to be one of [None, "best", "better", "all"]. No model will be saved when it is set as None. The "best" strategy will only automatically save the best model after the training finished. The "better" strategy will automatically save the model during training whenever the model performs better than in previous epochs. The "all" strategy will save every model after each epoch training.
+
+    verbose :
+    Whether to print out the training logs during the training process.
+    
+    """
+
     def __init__(self,
                  n_steps: int,
                  n_features: int,
