@@ -1,33 +1,37 @@
+"""
+
+"""
+
+# Created by Linglong Qian, Joseph Arul Raj <linglong.qian@kcl.ac.uk, joseph_arul_raj@kcl.ac.uk>
+# License: BSD-3-Clause
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
 from ...nn.modules.csai import BackboneBCSAI
 
+# class DiceBCELoss(nn.Module):
+#     def __init__(self, weight=None, size_average=True):
+#         super(DiceBCELoss, self).__init__()
+#         self.bcelogits = nn.BCEWithLogitsLoss()
 
-
-
-class DiceBCELoss(nn.Module):
-    def __init__(self, weight=None, size_average=True):
-        super(DiceBCELoss, self).__init__()
-        self.bcelogits = nn.BCEWithLogitsLoss()
-
-    def forward(self, y_score, y_out, targets, smooth=1):
+#     def forward(self, y_score, y_out, targets, smooth=1):
         
-        #comment out if your model contains a sigmoid or equivalent activation layer
-        # inputs = F.sigmoid(inputs)       
+#         #comment out if your model contains a sigmoid or equivalent activation layer
+#         # inputs = F.sigmoid(inputs)       
         
-        #flatten label and prediction tensors
-        BCE = self.bcelogits(y_out, targets)
+#         #flatten label and prediction tensors
+#         BCE = self.bcelogits(y_out, targets)
 
-        y_score = y_score.view(-1)
-        targets = targets.view(-1)
-        intersection = (y_score * targets).sum()
-        dice_loss = 1 - (2.*intersection + smooth)/(y_score.sum() + targets.sum() + smooth)
+#         y_score = y_score.view(-1)
+#         targets = targets.view(-1)
+#         intersection = (y_score * targets).sum()
+#         dice_loss = 1 - (2.*intersection + smooth)/(y_score.sum() + targets.sum() + smooth)
 
-        Dice_BCE = BCE + dice_loss
+#         Dice_BCE = BCE + dice_loss
         
-        return BCE, Dice_BCE
+#         return BCE, Dice_BCE
 
 
 class _BCSAI(nn.Module):
@@ -42,9 +46,7 @@ class _BCSAI(nn.Module):
             n_classes: int,
             step_channels: int,
             dropout: float = 0.5,
-            intervals: list = None,
-            device = None,
-            
+            intervals=None,
     ):
         super().__init__()
         self.n_steps = n_steps
@@ -56,12 +58,11 @@ class _BCSAI(nn.Module):
         self.n_classes = n_classes
         self.step_channels = step_channels
         self.intervals = intervals
-        self.device = device
-
 
         # create models
-        self.model = BackboneBCSAI(n_steps, n_features, rnn_hidden_size, step_channels, intervals, self.device)
-        self.classifier = nn.Linear(self.rnn_hidden_size, n_classes)
+        self.model = BackboneBCSAI(n_steps, n_features, rnn_hidden_size, step_channels, intervals)
+        self.f_classifier = nn.Linear(self.rnn_hidden_size, n_classes)
+        self.b_classifier = nn.Linear(self.rnn_hidden_size, n_classes)
         self.imputer = nn.Linear(self.rnn_hidden_size, n_features)
         self.dropout = nn.Dropout(dropout)
 
@@ -81,12 +82,14 @@ class _BCSAI(nn.Module):
             "imputed_data": imputed_data,
         }
 
-        f_logits = self.classifier(self.dropout(f_hidden_states))
-        b_logits = self.classifier(self.dropout(b_hidden_states))
+        f_logits = self.f_classifier(self.dropout(f_hidden_states))
+        b_logits = self.b_classifier(self.dropout(b_hidden_states))
 
-        f_prediction = torch.sigmoid(f_logits)
-        b_prediction = torch.sigmoid(b_logits)
+        # f_prediction = torch.sigmoid(f_logits)
+        # b_prediction = torch.sigmoid(b_logits)
 
+        f_prediction = torch.softmax(f_logits, dim=1)
+        b_prediction = torch.softmax(b_logits, dim=1)
         classification_pred = (f_prediction + b_prediction) / 2
 
         results = {
@@ -96,12 +99,14 @@ class _BCSAI(nn.Module):
 
         # if in training mode, return results with losses
         if training:
-            criterion = DiceBCELoss().to(self.device)
+            # criterion = DiceBCELoss().to(imputed_data.device)
             results["consistency_loss"] = consistency_loss
             results["reconstruction_loss"] = reconstruction_loss
             # print(inputs["labels"].unsqueeze(1))
-            f_classification_loss, _ = criterion(f_prediction, f_logits, inputs["labels"].unsqueeze(1).float())
-            b_classification_loss, _ = criterion(b_prediction, b_logits, inputs["labels"].unsqueeze(1).float())
+            f_classification_loss = F.nll_loss(torch.log(f_prediction), inputs["labels"])
+            b_classification_loss = F.nll_loss(torch.log(b_prediction), inputs["labels"])
+            # f_classification_loss, _ = criterion(f_prediction, f_logits, inputs["labels"].unsqueeze(1).float())
+            # b_classification_loss, _ = criterion(b_prediction, b_logits, inputs["labels"].unsqueeze(1).float())
             classification_loss = (f_classification_loss + b_classification_loss) 
 
             loss = (
@@ -111,7 +116,6 @@ class _BCSAI(nn.Module):
             )
 
             results["loss"] = loss
-            # results["reconstruction"] = (f_reconstruction + b_reconstruction) / 2
             results["classification_loss"] = classification_loss
             results["f_reconstruction"] = f_reconstruction
             results["b_reconstruction"] = b_reconstruction

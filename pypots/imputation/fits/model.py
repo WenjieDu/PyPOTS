@@ -1,5 +1,5 @@
 """
-The implementation of Autoformer for the partially-observed time-series imputation task.
+The implementation of FITS for the partially-observed time-series imputation task.
 
 """
 
@@ -12,8 +12,8 @@ import numpy as np
 import torch
 from torch.utils.data import DataLoader
 
-from .core import _Autoformer
-from .data import DatasetForAutoformer
+from .core import _FITS
+from .data import DatasetForFITS
 from ..base import BaseNNImputer
 from ...data.checking import key_in_data_set
 from ...data.dataset import BaseDataset
@@ -21,9 +21,9 @@ from ...optim.adam import Adam
 from ...optim.base import Optimizer
 
 
-class Autoformer(BaseNNImputer):
-    """The PyTorch implementation of the Autoformer model.
-    Autoformer is originally proposed by Wu et al. in :cite:`wu2021autoformer`.
+class FITS(BaseNNImputer):
+    """The PyTorch implementation of the FITS model.
+    FITS is originally proposed by Xu et al. in :cite:`xu2024fits`.
 
     Parameters
     ----------
@@ -34,19 +34,19 @@ class Autoformer(BaseNNImputer):
         The number of features in the time-series data sample.
 
     n_layers :
-        The number of layers in the Autoformer model.
+        The number of layers in the FITS model.
 
     d_model :
         The dimension of the model.
 
     n_heads :
-        The number of heads in each layer of Autoformer.
+        The number of heads in each layer of FITS.
 
     d_ffn :
         The dimension of the feed-forward network.
 
     factor :
-        The factor of the auto correlation mechanism for the Autoformer model.
+        The factor of the auto correlation mechanism for the FITS model.
 
     moving_avg_window_size :
         The window size of moving average.
@@ -107,15 +107,11 @@ class Autoformer(BaseNNImputer):
         self,
         n_steps: int,
         n_features: int,
-        n_layers: int,
-        d_model: int,
-        n_heads: int,
-        d_ffn: int,
-        factor: int,
-        moving_avg_window_size: int,
-        dropout: float = 0,
+        cut_freq: int,
+        individual: bool = False,
         ORT_weight: float = 1,
         MIT_weight: float = 1,
+        apply_nonstationary_norm: bool = False,
         batch_size: int = 32,
         epochs: int = 100,
         patience: int = None,
@@ -140,29 +136,21 @@ class Autoformer(BaseNNImputer):
         self.n_steps = n_steps
         self.n_features = n_features
         # model hype-parameters
-        self.n_heads = n_heads
-        self.n_layers = n_layers
-        self.d_model = d_model
-        self.d_ffn = d_ffn
-        self.factor = factor
-        self.moving_avg_window_size = moving_avg_window_size
-        self.dropout = dropout
+        self.individual = individual
+        self.cut_freq = cut_freq
         self.ORT_weight = ORT_weight
         self.MIT_weight = MIT_weight
+        self.apply_nonstationary_norm = apply_nonstationary_norm
 
         # set up the model
-        self.model = _Autoformer(
+        self.model = _FITS(
             self.n_steps,
             self.n_features,
-            self.n_layers,
-            self.d_model,
-            self.n_heads,
-            self.d_ffn,
-            self.factor,
-            self.moving_avg_window_size,
-            self.dropout,
+            self.cut_freq,
+            self.individual,
             self.ORT_weight,
             self.MIT_weight,
+            self.apply_nonstationary_norm,
         )
         self._send_model_to_given_device()
         self._print_model_size()
@@ -209,7 +197,7 @@ class Autoformer(BaseNNImputer):
         file_type: str = "hdf5",
     ) -> None:
         # Step 1: wrap the input data with classes Dataset and DataLoader
-        training_set = DatasetForAutoformer(train_set, return_X_ori=False, return_y=False, file_type=file_type)
+        training_set = DatasetForFITS(train_set, return_X_ori=False, return_y=False, file_type=file_type)
         training_loader = DataLoader(
             training_set,
             batch_size=self.batch_size,
@@ -220,7 +208,7 @@ class Autoformer(BaseNNImputer):
         if val_set is not None:
             if not key_in_data_set("X_ori", val_set):
                 raise ValueError("val_set must contain 'X_ori' for model validation.")
-            val_set = DatasetForAutoformer(val_set, return_X_ori=True, return_y=False, file_type=file_type)
+            val_set = DatasetForFITS(val_set, return_X_ori=True, return_y=False, file_type=file_type)
             val_loader = DataLoader(
                 val_set,
                 batch_size=self.batch_size,
@@ -234,7 +222,7 @@ class Autoformer(BaseNNImputer):
         self.model.eval()  # set the model as eval status to freeze it.
 
         # Step 3: save the model if necessary
-        self._auto_save_model_if_necessary(confirm_saving=self.model_saving_strategy == "best")
+        self._auto_save_model_if_necessary(confirm_saving=True)
 
     def predict(
         self,

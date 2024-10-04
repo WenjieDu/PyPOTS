@@ -10,7 +10,7 @@
     <a href="https://docs.pypots.com/en/latest/install.html#reasons-of-version-limitations-on-dependencies">
        <img alt="Python version" src="https://img.shields.io/badge/Python-v3.8+-E97040?logo=python&logoColor=white">
     </a>
-    <a href="https://github.com/WenjieDu/PyPOTS">
+    <a href="https://www.google.com/search?q=%22PyPOTS%22+site%3Apytorch.org">
         <img alt="powered by Pytorch" src="https://img.shields.io/badge/PyTorch-%E2%9D%A4%EF%B8%8F-F8C6B5?logo=pytorch&logoColor=white">
     </a>
     <a href="https://github.com/WenjieDu/PyPOTS/releases">
@@ -77,7 +77,8 @@ algorithms, PyPOTS is going to have unified APIs together with detailed document
 algorithms as tutorials.
 
 🤗 **Please** star this repo to help others notice PyPOTS if you think it is a useful toolkit.
-**Please** kindly [cite PyPOTS](https://github.com/WenjieDu/PyPOTS#-citing-pypots) in your publications if it helps with your research.
+**Please** kindly [cite PyPOTS](https://github.com/WenjieDu/PyPOTS#-citing-pypots) in your publications if it helps with
+your research.
 This really means a lot to our open-source research. Thank you!
 
 The rest of this readme file is organized as follows:
@@ -98,9 +99,9 @@ corresponding task (note that models will be continuously updated in the future 
 currently supported. Stay tuned❗️).
 
 🌟 Since **v0.2**, all neural-network models in PyPOTS has got hyperparameter-optimization support.
-This functionality is implemented with the [Microsoft NNI](https://github.com/microsoft/nni) framework. You may want to refer to our time-series
-imputation survey repo [Awesome_Imputation](https://github.com/WenjieDu/Awesome_Imputation) to see how to config and
-tune the hyperparameters.
+This functionality is implemented with the [Microsoft NNI](https://github.com/microsoft/nni) framework. You may want to
+refer to our time-series imputation survey repo [Awesome_Imputation](https://github.com/WenjieDu/Awesome_Imputation)
+to see how to config and tune the hyperparameters.
 
 🔥 Note that all models whose name with `🧑‍🔧` in the table (e.g. Transformer, iTransformer, Informer etc.) are not
 originally proposed as algorithms for POTS data in their papers, and they cannot directly accept time series with
@@ -120,6 +121,7 @@ The paper references and links are all listed at the bottom of this file.
 |:--------------|:---------------------------------------------------------------------------------------------------------------------------------|:--------:|:--------:|:--------:|:--------:|:--------:|:-------------------|
 | LLM           | <a href="https://time-series.ai"><img src="https://time-series.ai/static/figs/robot.svg" width="26px"> Time-Series.AI</a>  [^36] |    ✅     |    ✅     |    ✅     |    ✅     |    ✅     | `Later in 2024`    |
 | Neural Net    | TEFN🧑‍🔧[^39]                                                                                                                   |    ✅     |          |          |          |          | `2024 - arXiv`     |
+| Neural Net    | FITS🧑‍🔧[^41]                                                                                                                   |    ✅     |          |          |          |          | `2024 - ICLR`      |
 | Neural Net    | TimeMixer[^37]                                                                                                                   |    ✅     |          |          |          |          | `2024 - ICLR`      |
 | Neural Net    | iTransformer🧑‍🔧[^24]                                                                                                           |    ✅     |          |          |          |          | `2024 - ICLR`      |
 | Neural Net    | ModernTCN[^38]                                                                                                                   |    ✅     |          |          |          |          | `2024 - ICLR`      |
@@ -225,7 +227,9 @@ for a guideline with more details.
 
 PyPOTS is available on both [PyPI](https://pypi.python.org/pypi/pypots)
 and [Anaconda](https://anaconda.org/conda-forge/pypots).
-You can install PyPOTS like below as well as TSDB and PyGrinder:
+You can install PyPOTS like below as well as
+[TSDB](https://github.com/WenjieDu/TSDB),[PyGrinder](https://github.com/WenjieDu/PyGrinder),
+[BenchPOTS](https://github.com/WenjieDu/BenchPOTS), and [AI4TS](https://github.com/WenjieDu/AI4TS):
 
 ``` bash
 # via pip
@@ -235,8 +239,8 @@ pip install pypots --upgrade  # update pypots to the latest version
 pip install https://github.com/WenjieDu/PyPOTS/archive/main.zip
 
 # via conda
-conda install -c conda-forge pypots  # the first time installation
-conda update  -c conda-forge pypots  # update pypots to the latest version
+conda install conda-forge::pypots  # the first time installation
+conda update  conda-forge::pypots  # update pypots to the latest version
 ```
 
 ## ❖ Usage
@@ -474,7 +478,7 @@ Fröhlich, H. (2019).
 [Reversible Instance Normalization for Accurate Time-Series Forecasting against Distribution Shift](https://openreview.net/forum?id=cGDAkQo1C0p).
 *ICLR 2022*.
 [^32]: Kitaev, N., Kaiser, Ł., & Levskaya, A. (2020).
-[Reformer: The Efficient Transformer](https://openreview.net/forum?id=0EXmFzUn5I).
+[Reformer: The Efficient Transformer](https://openreview.net/forum?id=rkgNKkHtvB).
 *ICLR 2020*.
 [^33]: Cao, D., Wang, Y., Duan, J., Zhang, C., Zhu, X., Huang, C., Tong, Y., Xu, B., Bai, J., Tong, J., & Zhang, Q. (
 2020).
@@ -498,7 +502,10 @@ Time-Series.AI</a>
 [^38]: Luo, D., & Wang X. (2024).
 [ModernTCN: A Modern Pure Convolution Structure for General Time Series Analysis](https://openreview.net/forum?id=vpJMJerXHU).
 *ICLR 2024*.
-[^39]: Zhan, T., He, Y., Li, Z., & Deng, Y. (2024).
+[^39]: Zhan, T., He, Y., Deng, Y., Li, Z., Du, W., & Wen, Q. (2024).
 [Time Evidence Fusion Network: Multi-source View in Long-Term Time Series Forecasting](https://arxiv.org/abs/2405.06419).
 *arXiv 2024*.
 [^40]: [Wikipedia: Linear interpolation](https://en.wikipedia.org/wiki/Linear_interpolation)
+[^41]: Xu, Z., Zeng, A., & Xu, Q. (2024).
+[FITS: Modeling Time Series with 10k parameters](https://openreview.net/forum?id=bWcnvZ3qMb).
+*ICLR 2024*.

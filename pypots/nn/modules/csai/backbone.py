@@ -1,19 +1,101 @@
+"""
+
+"""
+
+# Created by Linglong Qian, Joseph Arul Raj <linglong.qian@kcl.ac.uk, joseph_arul_raj@kcl.ac.uk>
+# License: BSD-3-Clause
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import math
 from .layers import FeatureRegression, Decay, Decay_obs, PositionalEncoding, Conv1dWithInit, TorchTransformerEncoder
-
+from ....utils.metrics import calc_mae
 
 class BackboneCSAI(nn.Module):
-    def __init__(self, n_steps, n_features, rnn_hidden_size, step_channels, medians_df=None, device=None):
-        super(BackboneCSAI, self).__init__()
+    """
+    Attributes
+    ----------
+    n_steps :
+        sequence length (number of time steps)
 
+    n_features :
+        number of features (input dimensions)
+
+    rnn_hidden_size :
+        the hidden size of the GRU cell
+
+    step_channels :
+        number of channels for each step in the sequence
+
+    medians_tensor :
+        tensor of median values for features, used to adjust decayed observations
+
+    temp_decay_h :
+        the temporal decay module to decay the hidden state of the GRU
+
+    temp_decay_x :
+        the temporal decay module to decay data in the raw feature space
+
+    hist :
+        the temporal-regression module that projects the GRU hidden state into the raw feature space
+
+    feat_reg_v :
+        the feature-regression module used for feature-based estimation
+
+    weight_combine :
+        the module that generates the weight to combine history regression and feature regression
+
+    weighted_obs :
+        the decay module that computes weighted decay based on observed data and deltas
+
+    gru :
+        the GRU cell that models temporal data for imputation
+
+    pos_encoder :
+        the positional encoding module that adds temporal information to the sequence data
+
+    input_projection :
+        the convolutional module used to project input features into a higher-dimensional space
+
+    output_projection1 :
+        the convolutional module used to project the output from the Transformer layer
+
+    output_projection2 :
+        the final convolutional module used to generate the hidden state from the time-layer's output
+
+    time_layer :
+        the Transformer encoder layer used to model complex temporal dependencies within the sequence
+
+    device :
+        the device (CPU/GPU) used for model computations
+
+    Parameters
+    ----------
+    n_steps :
+        sequence length (number of time steps)
+
+    n_features :
+        number of features (input dimensions)
+
+    rnn_hidden_size :
+        the hidden size of the GRU cell
+
+    step_channels :
+        number of channels for each step in the sequence
+
+    medians_df :
+        dataframe of median values for each feature, optional
+
+    """
+
+    def __init__(self, n_steps, n_features, rnn_hidden_size, step_channels, medians_df=None):
+        super(BackboneCSAI, self).__init__()
 
         if medians_df is not None:
             self.medians_tensor = torch.tensor(list(medians_df.values())).float()
         else:
-            self.medians_tensor = None
+            self.medians_tensor = torch.zeros(n_features).float()
 
         self.n_steps = n_steps
         self.step_channels = step_channels
@@ -32,7 +114,6 @@ class BackboneCSAI(nn.Module):
         self.output_projection1 = Conv1dWithInit(self.step_channels, self.hidden_size, 1)
         self.output_projection2 = Conv1dWithInit(self.n_steps*2, 1, 1)
         self.time_layer = TorchTransformerEncoder(channels=self.step_channels)
-        self.device = device
 
         self.reset_parameters()
     
@@ -48,10 +129,9 @@ class BackboneCSAI(nn.Module):
         # Get dimensionality
         [B, _, _] = x.shape
 
-        if self.medians_tensor is not None:
-            medians_t = self.medians_tensor.unsqueeze(0).repeat(B, 1).to(self.device)
+        medians = self.medians_tensor.unsqueeze(0).repeat(B, 1).to(x.device)
 
-        decay_factor = self.weighted_obs(deltas - medians_t.unsqueeze(1))
+        decay_factor = self.weighted_obs(deltas - medians.unsqueeze(1))
 
         if h == None:
             data_last_obs = self.input_projection(last_obs.permute(0, 2, 1)).permute(0, 2, 1)
@@ -91,7 +171,8 @@ class BackboneCSAI(nn.Module):
             beta = self.weight_combine(torch.cat([gamma_x, m_t], dim=1))
             x_comb_t = beta * xu + (1 - beta) * x_h
 
-            x_loss += torch.sum(torch.abs(x_t - x_comb_t) * m_t) / (torch.sum(m_t) + 1e-5)
+            # x_loss += torch.sum(torch.abs(x_t - x_comb_t) * m_t) / (torch.sum(m_t) + 1e-5)
+            x_loss += calc_mae(x_comb_t, x_t, m_t)
 
             # Final Imputation Estimates
             x_imp[:, t, :] = (m_t * x_t) + ((1 - m_t) * x_comb_t)
@@ -108,13 +189,12 @@ class BackboneCSAI(nn.Module):
 
 
 class BackboneBCSAI(nn.Module):
-    def __init__(self, n_steps, n_features, rnn_hidden_size, step_channels, medians_df=None, device=None):
+    def __init__(self, n_steps, n_features, rnn_hidden_size, step_channels, medians_df=None):
         super(BackboneBCSAI, self).__init__()
 
-        self.model_f = BackboneCSAI(n_steps, n_features, rnn_hidden_size, step_channels, medians_df, device)
-        self.model_b = BackboneCSAI(n_steps, n_features, rnn_hidden_size, step_channels, medians_df, device)
+        self.model_f = BackboneCSAI(n_steps, n_features, rnn_hidden_size, step_channels, medians_df)
+        self.model_b = BackboneCSAI(n_steps, n_features, rnn_hidden_size, step_channels, medians_df)
         
-
     def forward(self, xdata):
 
         # Fetching forward data from xdata

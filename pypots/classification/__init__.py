@@ -6,11 +6,13 @@ Expose all time-series classification models.
 # License: BSD-3-Clause
 
 from .brits import BRITS
+from .csai import CSAI
 from .grud import GRUD
 from .raindrop import Raindrop
 from .csai import CSAI
 
 __all__ = [
+    "CSAI",
     "BRITS",
     "GRUD",
     "Raindrop",

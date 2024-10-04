@@ -1,3 +1,10 @@
+"""
+
+"""
+
+# Created by Joseph Arul Raj <joseph_arul_raj@kcl.ac.uk>
+# License: BSD-3-Clause
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
