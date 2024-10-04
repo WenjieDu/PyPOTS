@@ -10,8 +10,35 @@ from ...nn.modules.csai.backbone import BackboneBCSAI
 
 
 class _BCSAI(nn.Module):
-    """model BRITS: Bidirectional RITS
-    BRITS consists of two RITS, which take time-series data from two directions (forward/backward) respectively.
+    """
+    Attributes
+    ----------
+    n_steps :
+        sequence length (number of time steps)
+
+    n_features :
+        number of features (input dimensions)
+
+    rnn_hidden_size :
+        the hidden size of the GRU cell
+
+    step_channels :
+        number of channels for each step in the sequence
+
+    intervals :
+        time intervals between the observations, used for handling irregular time-series
+
+    consistency_weight :
+        weight assigned to the consistency loss during training
+
+    imputation_weight :
+        weight assigned to the reconstruction loss during training
+
+    model :
+        the underlying BackboneBCSAI model that handles forward and backward pass imputation
+
+    device :
+        the device (CPU/GPU) used for model computations
 
     Parameters
     ----------
@@ -22,17 +49,38 @@ class _BCSAI(nn.Module):
         number of features (input dimensions)
 
     rnn_hidden_size :
-        the hidden size of the RNN cell
+        the hidden size of the GRU cell
+
+    step_channels :
+        number of channels for each step in the sequence
+
+    intervals :
+        time intervals between observations
+
+    consistency_weight :
+        weight assigned to the consistency loss
+
+    imputation_weight :
+        weight assigned to the reconstruction loss
+
+    device :
+        the device (CPU/GPU) for running the model
+
+    Notes
+    -----
+    BCSAI is a bidirectional imputation model that uses forward and backward GRU cells to handle time-series data. It computes consistency and reconstruction losses to improve imputation accuracy. During training, the forward and backward reconstructions are combined, and losses are used to update the model. In evaluation mode, the model also outputs original data and indicating masks for further analysis.
 
     """
-    def __init__(self, n_steps, 
+    def __init__(self, 
+                 n_steps, 
                  n_features, 
                  rnn_hidden_size, 
                  step_channels, 
-                 intervals, 
                  consistency_weight, 
                  imputation_weight,
-                 device) :
+                 device=None,
+                 intervals=None,
+                 ):
         super().__init__()
         self.n_steps = n_steps
         self.n_features = n_features
@@ -43,7 +91,7 @@ class _BCSAI(nn.Module):
         self.imputation_weight = imputation_weight
         self.device = device
         
-        self.model = BackboneBCSAI(n_steps, n_features, rnn_hidden_size, step_channels, intervals, self.device)
+        self.model = BackboneBCSAI(n_steps, n_features, rnn_hidden_size, step_channels, intervals, device)
 
     def forward(self, inputs:dict, training:bool = True) -> dict:
         (
