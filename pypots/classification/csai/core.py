@@ -46,9 +46,7 @@ class _BCSAI(nn.Module):
             n_classes: int,
             step_channels: int,
             dropout: float = 0.5,
-            intervals: list = None,
-            device = None,
-            
+            intervals=None,
     ):
         super().__init__()
         self.n_steps = n_steps
@@ -60,10 +58,9 @@ class _BCSAI(nn.Module):
         self.n_classes = n_classes
         self.step_channels = step_channels
         self.intervals = intervals
-        self.device = device
 
         # create models
-        self.model = BackboneBCSAI(n_steps, n_features, rnn_hidden_size, step_channels, intervals, self.device)
+        self.model = BackboneBCSAI(n_steps, n_features, rnn_hidden_size, step_channels, intervals)
         self.f_classifier = nn.Linear(self.rnn_hidden_size, n_classes)
         self.b_classifier = nn.Linear(self.rnn_hidden_size, n_classes)
         self.imputer = nn.Linear(self.rnn_hidden_size, n_features)

@@ -134,7 +134,6 @@ class CSAI(BaseNNImputer):
             self.step_channels,
             self.consistency_weight, 
             self.imputation_weight,
-            self.device,
             self.intervals,
         )
 
@@ -277,7 +276,6 @@ class CSAI(BaseNNImputer):
             self.step_channels,
             self.consistency_weight, 
             self.imputation_weight,
-            self.device,
             self.intervals,
         )
 

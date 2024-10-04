@@ -87,11 +87,9 @@ class BackboneCSAI(nn.Module):
     medians_df :
         dataframe of median values for each feature, optional
 
-    device :
-        the device (CPU/GPU) for running the model, optional
     """
 
-    def __init__(self, n_steps, n_features, rnn_hidden_size, step_channels, medians_df=None, device=None):
+    def __init__(self, n_steps, n_features, rnn_hidden_size, step_channels, medians_df=None):
         super(BackboneCSAI, self).__init__()
 
         if medians_df is not None:
@@ -116,7 +114,6 @@ class BackboneCSAI(nn.Module):
         self.output_projection1 = Conv1dWithInit(self.step_channels, self.hidden_size, 1)
         self.output_projection2 = Conv1dWithInit(self.n_steps*2, 1, 1)
         self.time_layer = TorchTransformerEncoder(channels=self.step_channels)
-        self.device = device
 
         self.reset_parameters()
     
@@ -132,7 +129,7 @@ class BackboneCSAI(nn.Module):
         # Get dimensionality
         [B, _, _] = x.shape
 
-        medians = self.medians_tensor.unsqueeze(0).repeat(B, 1).to(self.device)
+        medians = self.medians_tensor.unsqueeze(0).repeat(B, 1).to(x.device)
 
         decay_factor = self.weighted_obs(deltas - medians.unsqueeze(1))
 
@@ -192,11 +189,11 @@ class BackboneCSAI(nn.Module):
 
 
 class BackboneBCSAI(nn.Module):
-    def __init__(self, n_steps, n_features, rnn_hidden_size, step_channels, medians_df=None, device=None):
+    def __init__(self, n_steps, n_features, rnn_hidden_size, step_channels, medians_df=None):
         super(BackboneBCSAI, self).__init__()
 
-        self.model_f = BackboneCSAI(n_steps, n_features, rnn_hidden_size, step_channels, medians_df, device)
-        self.model_b = BackboneCSAI(n_steps, n_features, rnn_hidden_size, step_channels, medians_df, device)
+        self.model_f = BackboneCSAI(n_steps, n_features, rnn_hidden_size, step_channels, medians_df)
+        self.model_b = BackboneCSAI(n_steps, n_features, rnn_hidden_size, step_channels, medians_df)
         
     def forward(self, xdata):
 

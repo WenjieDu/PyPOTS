@@ -149,7 +149,6 @@ class CSAI(BaseNNClassifier):
             step_channels=self.step_channels,
             dropout=self.dropout,
             intervals=self.intervals,
-            device=self.device,
         )
 
         self._send_model_to_given_device()
@@ -293,7 +292,6 @@ class CSAI(BaseNNClassifier):
             step_channels=self.step_channels,
             dropout=self.dropout,
             intervals=self.intervals,
-            device=self.device,
         )
         self._send_model_to_given_device()
         self._print_model_size()
