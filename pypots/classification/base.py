@@ -16,6 +16,7 @@ from torch.utils.data import DataLoader
 
 from ..base import BaseModel, BaseNNModel
 from ..utils.logging import logger
+
 try:
     import nni
 except ImportError:
@@ -312,7 +313,7 @@ class BaseNNClassifier(BaseNNModel):
                         for idx, data in enumerate(val_loader):
                             inputs = self._assemble_input_for_validating(data)
                             results = self.model.forward(inputs)
-                            epoch_val_loss_collector.append(results["loss"].sum().item())                            
+                            epoch_val_loss_collector.append(results["loss"].sum().item())
 
                     mean_val_loss = np.mean(epoch_val_loss_collector)
 
@@ -322,10 +323,11 @@ class BaseNNClassifier(BaseNNModel):
                             "classification_loss": mean_val_loss,
                         }
                         self._save_log_into_tb_file(epoch, "validating", val_loss_dict)
+
                     logger.info(
                         f"Epoch {epoch:03d} - "
                         f"training loss: {mean_train_loss:.4f}, "
-                        f"validation loss: {mean_val_loss:.4f},"
+                        f"validation loss: {mean_val_loss:.4f}"
                     )
                     mean_loss = mean_val_loss
                 else:
