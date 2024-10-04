@@ -1,5 +1,5 @@
 """
-
+The implementation of CSAI
 """
 
 # Created by Linglong Qian, Joseph Arul Raj <linglong.qian@kcl.ac.uk, joseph_arul_raj@kcl.ac.uk>
@@ -135,7 +135,7 @@ class CSAI(BaseNNImputer):
             self.consistency_weight, 
             self.imputation_weight,
             self.device,
-            None,
+            self.intervals,
         )
         self._send_model_to_given_device()
         self._print_model_size()
@@ -146,6 +146,7 @@ class CSAI(BaseNNImputer):
     def _assemble_input_for_training(self, data: list, training=True) -> dict:
         # extract data
         sample = data['sample']
+
         (
             indices,
             X,
@@ -225,14 +226,18 @@ class CSAI(BaseNNImputer):
     )-> None:
         
         self.training_set = DatasetForCSAI(
-            train_set, 
-            False, 
-            False,
-            file_type, 
-            self.removal_percent, 
-            self.increase_factor, 
-            self.compute_intervals
-        )
+                        train_set, 
+                        False, 
+                        False,
+                        file_type, 
+                        self.removal_percent, 
+                        self.increase_factor, 
+                        self.compute_intervals
+                    )
+        self.intervals = self.training_set.intervals
+        self.replacement_probabilities = self.training_set.replacement_probabilities
+        self.mean_set = self.training_set.mean_set
+        self.std_set = self.training_set.std_set
 
         training_loader = DataLoader(
             self.training_set,
@@ -243,20 +248,17 @@ class CSAI(BaseNNImputer):
         )
 
         if val_set is not None:
-            # if not key_in_data_set("X_ori", val_set):
-            #     raise ValueError("val_set must contain 'X_ori' for model validation.")
             val_set = DatasetForCSAI(
                 val_set, 
-                False, 
+                True,
                 False,  
                 file_type, 
                 self.removal_percent, 
                 self.increase_factor, 
-                self.compute_intervals,
-                self.training_set.replacement_probabilities, 
-                self.training_set.mean_set, 
-                self.training_set.std_set, 
-                True, 
+                False,
+                self.replacement_probabilities, 
+                self.mean_set, 
+                self.std_set,
                 False,
             )
             val_loader = DataLoader(
@@ -276,7 +278,7 @@ class CSAI(BaseNNImputer):
             self.consistency_weight, 
             self.imputation_weight,
             self.device,
-            self.training_set.intervals,
+            self.intervals,
         )
 
         self._send_model_to_given_device()
@@ -299,22 +301,18 @@ class CSAI(BaseNNImputer):
         file_type: str = "hdf5",
     ) -> dict:
         
-        # if self.model == None:
-        #     raise ValueError("Training must be run before predict")
-
         self.model.eval()
         test_set = DatasetForCSAI(
                 test_set, 
-                False, 
+                True,
                 False, 
                 file_type, 
                 self.removal_percent, 
                 self.increase_factor, 
-                self.compute_intervals,
-                self.training_set.replacement_probabilities, 
-                self.training_set.mean_set, 
-                self.training_set.std_set,
-                True, 
+                False,
+                self.replacement_probabilities, 
+                self.mean_set, 
+                self.std_set,
                 False,
             )
 

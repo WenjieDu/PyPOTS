@@ -167,7 +167,7 @@ def adjust_probability_vectorized(
         # Decrease probability when observed count exceeds average count
         return max(base_prob * (obs_count / avg_count) / increase_factor, 0.0)
 
-def non_uniform_sample_loader_bidirectional(data, removal_percent, pre_replacement_probabilities=None, increase_factor=0.5):
+def non_uniform_sample(data, removal_percent, pre_replacement_probabilities=None, increase_factor=0.5):
     """
     Process time-series data by randomly removing a certain percentage of observed values based on pre-defined 
     replacement probabilities, and compute the necessary features such as forward and backward deltas, masks, 
@@ -313,9 +313,6 @@ class DatasetForCSAI(BaseDataset):
     normalise_std :
         A list of standard deviation values for normalizing the input features. If not provided, they will be computed during initialization.
 
-    impute_only :
-        Whether the dataset is used for imputation tasks only. If `True`, additional label-related operations will be skipped.
-
     training :
         Whether the dataset is used for training. If `False`, it will adjust how data is processed, particularly for evaluation and testing phases.
 
@@ -324,18 +321,18 @@ class DatasetForCSAI(BaseDataset):
     The DatasetForCSAI class is designed for bidirectional imputation of time-series data, handling both forward and backward directions to improve imputation accuracy. It supports on-the-fly data normalization and missing value simulation, making it suitable for training and evaluating deep learning models like CSAI. The class can work with large datasets stored on disk, leveraging lazy-loading to minimize memory usage, and supports both training and testing scenarios, adjusting data handling as needed.
 
     """
-    def __init__(self, data: Union[dict, str], 
-                 return_X_ori: bool, 
-                 return_y: bool, 
-                 file_type: str = "hdf5",
-                 removal_percent: float = 0.0,
-                 increase_factor: float = 0.1,
-                 compute_intervals: bool = False,
-                 replacement_probabilities = None,
-                 normalise_mean : list = [],
-                 normalise_std: list = [],
-                 impute_only: bool = True,
-                 training: bool = True
+    def __init__(self, 
+                data: Union[dict, str], 
+                return_X_ori: bool, 
+                return_y: bool, 
+                file_type: str = "hdf5",
+                removal_percent: float = 0.0,
+                increase_factor: float = 0.1,
+                compute_intervals: bool = False,
+                replacement_probabilities = None,
+                normalise_mean : list = [],
+                normalise_std: list = [],
+                training: bool = True
                 ):
         super().__init__(data = data, 
                          return_X_ori = return_X_ori, 
@@ -349,7 +346,6 @@ class DatasetForCSAI(BaseDataset):
         self.replacement_probabilities = replacement_probabilities
         self.normalise_mean = normalise_mean
         self.normalise_std = normalise_std
-        self.impute_only = impute_only
         self.training = training
 
         if not isinstance(self.data, str):
@@ -360,12 +356,12 @@ class DatasetForCSAI(BaseDataset):
                                                                                         compute_intervals,
                                                                                         )
 
-            self.processed_data, self.replacement_probabilities = non_uniform_sample_loader_bidirectional(
-                                                                                            self.normalized_data, 
-                                                                                            removal_percent, 
-                                                                                            replacement_probabilities, 
-                                                                                            increase_factor,
-                                                                                            )
+            self.processed_data, self.replacement_probabilities = non_uniform_sample(
+                                                                                self.normalized_data, 
+                                                                                removal_percent, 
+                                                                                replacement_probabilities, 
+                                                                                increase_factor,
+                                                                                )
             self.forward_X = self.processed_data['values']
             self.forward_missing_mask = self.processed_data['masks']
             self.backward_X = torch.flip(self.forward_X, dims=[1])
@@ -420,7 +416,7 @@ class DatasetForCSAI(BaseDataset):
             self.processed_data["last_obs_b"][idx],
         ]
 
-        if not self.training and self.impute_only:
+        if not self.training:
             sample.extend([self.X_ori[idx], self.indicating_mask[idx]])
 
         if self.return_y:
@@ -460,12 +456,12 @@ class DatasetForCSAI(BaseDataset):
                                                                 self.compute_intervals,
                                                                 )
                                                                 
-        processed_data, replacement_probabilities = non_uniform_sample_loader_bidirectional(
-                                                                                normalized_data, 
-                                                                                self.removal_percent, 
-                                                                                self.replacement_probabilities, 
-                                                                                self.increase_factor,
-                                                                                )
+        processed_data, replacement_probabilities = non_uniform_sample(
+                                                                normalized_data, 
+                                                                self.removal_percent, 
+                                                                self.replacement_probabilities, 
+                                                                self.increase_factor,
+                                                                )
         forward_X = processed_data['values']
         forward_missing_mask = processed_data['masks']
         backward_X = torch.flip(forward_X, dims=[1])
