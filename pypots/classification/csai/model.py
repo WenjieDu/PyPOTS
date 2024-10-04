@@ -62,12 +62,29 @@ class CSAI(BaseNNClassifier):
         self.increase_factor = increase_factor
         self.step_channels = step_channels
         self.compute_intervals = compute_intervals
-        self.intervals = None
         self.dropout = dropout
         self.device = device
+        self.intervals = None
         
         # Initialise empty model 
-        self.model = None
+        self.model = _BCSAI(
+            n_steps=self.n_steps,
+            n_features=self.n_features,
+            rnn_hidden_size=self.rnn_hidden_size,
+            imputation_weight=self.imputation_weight,
+            consistency_weight=self.consistency_weight,
+            classification_weight=self.classification_weight,
+            n_classes=self.n_classes,
+            step_channels=self.step_channels,
+            dropout=self.dropout,
+            intervals=self.intervals,
+            device=self.device,
+        )
+
+        self._send_model_to_given_device()
+        self._print_model_size()
+
+        # set up the optimizer
         self.optimizer = optimizer
 
     def _assemble_input_for_training(self, data: list, training=True) -> dict:
@@ -102,9 +119,8 @@ class CSAI(BaseNNClassifier):
                 "last_obs": back_last_obs,
             },
         }
-        
-
         return inputs
+
     def _assemble_input_for_validating(self, data: list) -> dict:
         return self._assemble_input_for_training(data)
     
@@ -162,6 +178,11 @@ class CSAI(BaseNNClassifier):
             compute_intervals=self.compute_intervals,
         )
 
+        self.intervals = self.training_set.intervals
+        self.replacement_probabilities = self.training_set.replacement_probabilities
+        self.mean_set = self.training_set.mean_set
+        self.std_set = self.training_set.std_set
+        
         train_loader = DataLoader(
             self.training_set,
             batch_size=self.batch_size,
@@ -178,9 +199,9 @@ class CSAI(BaseNNClassifier):
                 removal_percent=self.removal_percent,
                 increase_factor=self.increase_factor,
                 compute_intervals=self.compute_intervals,
-                replacement_probabilities=self.training_set.replacement_probabilities,
-                normalise_mean=self.training_set.normalise_mean,
-                normalise_std=self.training_set.normalise_std,
+                replacement_probabilities=self.replacement_probabilities,
+                normalise_mean=self.normalise_mean,
+                normalise_std=self.normalise_std,
                 training=False
 
             )
@@ -201,7 +222,7 @@ class CSAI(BaseNNClassifier):
             n_classes=self.n_classes,
             step_channels=self.step_channels,
             dropout=self.dropout,
-            intervals=self.training_set.intervals,
+            intervals=self.intervals,
             device=self.device,
         )
         self._send_model_to_given_device()
@@ -215,7 +236,7 @@ class CSAI(BaseNNClassifier):
         self.model.load_state_dict(self.best_model_dict)
         self.model.eval()
 
-        self._auto_save_model_if_necessary(confirm_saving=True)
+        self._auto_save_model_if_necessary(confirm_saving=self.model_saving_strategy == "best")
 
 
     def predict(
@@ -231,9 +252,9 @@ class CSAI(BaseNNClassifier):
             removal_percent=self.removal_percent,
             increase_factor=self.increase_factor,
             compute_intervals=self.compute_intervals,
-            replacement_probabilities=self.training_set.replacement_probabilities,
-            normalise_mean=self.training_set.normalise_mean,
-            normalise_std=self.training_set.normalise_std,
+            replacement_probabilities=self.replacement_probabilities,
+            normalise_mean=self.normalise_mean,
+            normalise_std=self.normalise_std,
             training=False
         )
         test_loader = DataLoader(
