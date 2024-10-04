@@ -97,7 +97,7 @@ class _BCSAI(nn.Module):
 
         # if in training mode, return results with losses
         if training:
-            criterion = DiceBCELoss().to(self.device)
+            criterion = DiceBCELoss().to(imputed_data.device)
             results["consistency_loss"] = consistency_loss
             results["reconstruction_loss"] = reconstruction_loss
             # print(inputs["labels"].unsqueeze(1))

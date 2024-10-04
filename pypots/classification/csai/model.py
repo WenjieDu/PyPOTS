@@ -90,28 +90,30 @@ class CSAI(BaseNNClassifier):
     
     """
 
-    def __init__(self,
-                 n_steps: int,
-                 n_features: int,
-                 rnn_hidden_size: int,
-                 imputation_weight: float,
-                 consistency_weight: float,
-                 classification_weight: float,
-                 n_classes: int,
-                 removal_percent: int, 
-                 increase_factor: float, 
-                 compute_intervals: bool, 
-                 step_channels:int, 
-                 batch_size: int,  
-                 epochs: int,  
-                 dropout: float = 0.5,
-                 patience: Union[int, None] = None,  
-                 optimizer: Optimizer = Adam(), 
-                 num_workers: int = 0,  
-                 device: Optional[Union[str, torch.device, list]] = None,  
-                 saving_path: str = None,
-                 model_saving_strategy: Union[str, None] = "best", 
-                 verbose: bool = True):
+    def __init__(
+        self,
+        n_steps: int,
+        n_features: int,
+        rnn_hidden_size: int,
+        imputation_weight: float,
+        consistency_weight: float,
+        classification_weight: float,
+        n_classes: int,
+        removal_percent: int, 
+        increase_factor: float, 
+        compute_intervals: bool, 
+        step_channels:int, 
+        batch_size: int,  
+        epochs: int,  
+        dropout: float = 0.5,
+        patience: Union[int, None] = None,  
+        optimizer: Optimizer = Adam(), 
+        num_workers: int = 0,  
+        device: Optional[Union[str, torch.device, list]] = None,  
+        saving_path: str = None,
+        model_saving_strategy: Union[str, None] = "best", 
+        verbose: bool = True
+    ):
         super().__init__(
             n_classes, 
             batch_size, 
@@ -121,7 +123,8 @@ class CSAI(BaseNNClassifier):
             device,
             saving_path, 
             model_saving_strategy, 
-            verbose)
+            verbose,
+        )
             
         self.n_steps = n_steps
         self.n_features = n_features
@@ -134,7 +137,6 @@ class CSAI(BaseNNClassifier):
         self.step_channels = step_channels
         self.compute_intervals = compute_intervals
         self.dropout = dropout
-        self.device = device
         self.intervals = None
         
         # Initialise empty model 
