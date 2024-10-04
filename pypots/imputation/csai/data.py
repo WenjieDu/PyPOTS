@@ -355,6 +355,7 @@ class DatasetForCSAI(BaseDataset):
                          return_X_pred = False, 
                          return_y = return_y, 
                          file_type = file_type)
+        
         self.removal_percent = removal_percent
         self.increase_factor = increase_factor
         self.compute_intervals = compute_intervals

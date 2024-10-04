@@ -146,6 +146,7 @@ class CSAI(BaseNNImputer):
     def _assemble_input_for_training(self, data: list, training=True) -> dict:
         # extract data
         sample = data['sample']
+        
         (
             indices,
             X,

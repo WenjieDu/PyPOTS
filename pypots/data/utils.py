@@ -5,7 +5,6 @@ Data utils.
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-import copy
 from typing import Union
 
 import benchpots
@@ -223,4 +222,5 @@ def inverse_sliding_window(X, sliding_len):
     return benchpots.utils.inverse_sliding_window(
         X,
         sliding_len,
+    
     )
