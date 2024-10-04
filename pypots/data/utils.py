@@ -10,7 +10,6 @@ from typing import Union
 import benchpots
 import numpy as np
 import torch
-from sklearn.preprocessing import StandardScaler
 
 def turn_data_into_specified_dtype(
     data: Union[np.ndarray, torch.Tensor, list],

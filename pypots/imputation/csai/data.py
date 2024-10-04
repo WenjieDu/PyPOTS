@@ -11,13 +11,15 @@ import numpy as np
 import torch
 from typing import Union
 import copy
+from ...data.utils import parse_delta
+from sklearn.preprocessing import StandardScaler
 
 def normalize_csai(
-    data: np.ndarray, 
-    mean: float, 
-    std: float, 
-    compute_intervals: bool = False
-) -> :
+    data, 
+    mean: list = None, 
+    std: list = None, 
+    compute_intervals: bool = False,
+):
     """
     Normalize the data based on the given mean and standard deviation, and optionally compute time intervals between observations.
 
@@ -26,19 +28,19 @@ def normalize_csai(
     data : np.ndarray
         The input time-series data of shape [n_patients, n_hours, n_variables], which may contain missing values (NaNs).
 
-    mean : list of float
+    mean : list of float, optional
         The mean values for each variable, used for normalization. If empty, means will be computed from the data.
 
-    std : list of float
+    std : list of float, optional
         The standard deviation values for each variable, used for normalization. If empty, std values will be computed from the data.
 
     compute_intervals : bool, optional, default=False
-        Whether to compute the time intervals between observations for each variable. 
+        Whether to compute the time intervals between observations for each variable.
 
     Returns
     -------
-    data : np.ndarray
-        The normalized time-series data with the same shape as the input data.
+    data : torch.Tensor
+        The normalized time-series data with the same shape as the input data, moved to the specified device.
 
     mean_set : np.ndarray
         The mean values for each variable after normalization, either computed from the data or passed as input.
@@ -50,25 +52,33 @@ def normalize_csai(
         If `compute_intervals` is True, this will return the median time intervals between observations for each variable.
     """
 
+    # Convert data to numpy array if it is a torch tensor
+    if isinstance(data, torch.Tensor):
+        data = data.cpu().numpy()
+
     n_patients, n_hours, n_variables = data.shape
 
     # Flatten data for easier computation of statistics
-    reshaped_data = copy.deepcopy(data).reshape(-1, n_variables)
+    reshaped_data = data.reshape(-1, n_variables)
 
     # Use StandardScaler for normalization
     scaler = StandardScaler()
 
-    if mean is None or std is None:
+    # Update condition to handle empty list as well
+    if mean is None or std is None or len(mean) == 0 or len(std) == 0:
         # Fit the scaler on the data (ignores NaNs during the fitting process)
-        scaled_data = scaler.fit_transform(reshaped_data)
+        scaler.fit(reshaped_data)
         mean_set = scaler.mean_
         std_set = scaler.scale_
     else:
         # Use provided mean and std by directly setting them in the scaler
         scaler.mean_ = np.array(mean)
         scaler.scale_ = np.array(std)
-        # Transform data using scaler, which ignores NaNs
-        scaled_data = scaler.transform(reshaped_data)
+        mean_set = np.array(mean)
+        std_set = np.array(std)
+
+    # Transform data using scaler, which ignores NaNs
+    scaled_data = scaler.transform(reshaped_data)
 
     # Reshape back to original shape [n_patients, n_hours, n_variables]
     normalized_data = scaled_data.reshape(n_patients, n_hours, n_variables)
@@ -76,20 +86,20 @@ def normalize_csai(
     # Optimized interval calculation considering NaNs in each patient
     if compute_intervals:
         intervals_list = {}
-        
+
         for v in range(n_variables):
             all_intervals = []
             # Loop over each patient
             for p in range(n_patients):
                 # Get non-NaN observation indices for the current patient and variable
                 valid_time_points = np.where(~np.isnan(data[p, :, v]))[0]
-                
+
                 # If the patient has more than one valid observation, compute time intervals
                 if len(valid_time_points) > 1:
                     # Calculate time differences between consecutive observations
                     intervals = np.diff(valid_time_points)
                     all_intervals.extend(intervals)
-            
+
             # Compute the median interval for the current variable
             intervals_list[v] = np.median(all_intervals) if all_intervals else np.nan
     else:
@@ -167,7 +177,13 @@ def adjust_probability_vectorized(
         # Decrease probability when observed count exceeds average count
         return max(base_prob * (obs_count / avg_count) / increase_factor, 0.0)
 
-def non_uniform_sample(data, removal_percent, pre_replacement_probabilities=None, increase_factor=0.5):
+def non_uniform_sample(
+                data, 
+                removal_percent, 
+                pre_replacement_probabilities=None, 
+                increase_factor=0.5
+                ):
+                
     """
     Process time-series data by randomly removing a certain percentage of observed values based on pre-defined 
     replacement probabilities, and compute the necessary features such as forward and backward deltas, masks, 
@@ -351,8 +367,8 @@ class DatasetForCSAI(BaseDataset):
         if not isinstance(self.data, str):
             self.normalized_data, self.mean_set, self.std_set, self.intervals = normalize_csai(
                                                                                         self.data['X'], 
-                                                                                        normalise_mean, 
-                                                                                        normalise_std, 
+                                                                                        self.normalise_mean, 
+                                                                                        self.normalise_std, 
                                                                                         compute_intervals,
                                                                                         )
 
@@ -468,6 +484,7 @@ class DatasetForCSAI(BaseDataset):
 
         X_ori = self.processed_data['evals']
         indicating_mask = self.processed_data['eval_masks']
+        
         if self.return_y:
             y = self.processed_data['labels']  
 

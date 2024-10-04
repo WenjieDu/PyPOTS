@@ -126,7 +126,7 @@ class CSAI(BaseNNImputer):
         self.compute_intervals = compute_intervals
         self.intervals = None
         
-        # Initialise empty model 
+        # Initialise model 
         self.model = _BCSAI(
             self.n_steps, 
             self.n_features, 
@@ -137,6 +137,7 @@ class CSAI(BaseNNImputer):
             self.device,
             self.intervals,
         )
+
         self._send_model_to_given_device()
         self._print_model_size()
         
@@ -219,11 +220,11 @@ class CSAI(BaseNNImputer):
         return self._assemble_input_for_validating(data)
     
     def fit(
-        self,
-        train_set, 
-        val_set, 
-        file_type: str = "hdf5",
-    )-> None:
+            self,
+            train_set, 
+            val_set=None, 
+            file_type: str = "hdf5",
+        )-> None:
         
         self.training_set = DatasetForCSAI(
                         train_set, 
@@ -246,7 +247,6 @@ class CSAI(BaseNNImputer):
             num_workers=self.num_workers,
             # collate_fn=collate_fn_bidirectional
         )
-
         if val_set is not None:
             val_set = DatasetForCSAI(
                 val_set, 
@@ -255,7 +255,7 @@ class CSAI(BaseNNImputer):
                 file_type, 
                 self.removal_percent, 
                 self.increase_factor, 
-                False,
+                self.compute_intervals,
                 self.replacement_probabilities, 
                 self.mean_set, 
                 self.std_set,
@@ -309,7 +309,7 @@ class CSAI(BaseNNImputer):
                 file_type, 
                 self.removal_percent, 
                 self.increase_factor, 
-                False,
+                self.compute_intervals,
                 self.replacement_probabilities, 
                 self.mean_set, 
                 self.std_set,

@@ -236,18 +236,18 @@ class CSAI(BaseNNClassifier):
     def fit(
             self, 
             train_set,
-            val_set=None,
+            val_set= None,
             file_type: str = "hdf5",
-    ):
+        )-> None:
         # Create dataset
         self.training_set = DatasetForCSAI(
-            data=train_set,
-            file_type=file_type,
-            return_y=True,
-            removal_percent=self.removal_percent,
-            increase_factor=self.increase_factor,
-            compute_intervals=self.compute_intervals,
-        )
+                    data=train_set,
+                    file_type=file_type,
+                    return_y=True,
+                    removal_percent=self.removal_percent,
+                    increase_factor=self.increase_factor,
+                    compute_intervals=self.compute_intervals,
+                )
 
         self.intervals = self.training_set.intervals
         self.replacement_probabilities = self.training_set.replacement_probabilities
@@ -260,7 +260,6 @@ class CSAI(BaseNNClassifier):
             shuffle=True,
             num_workers=self.num_workers,
         )
-
         val_loader = None
         if val_set is not None:
             val_set = DatasetForCSAI(
@@ -271,8 +270,8 @@ class CSAI(BaseNNClassifier):
                 increase_factor=self.increase_factor,
                 compute_intervals=self.compute_intervals,
                 replacement_probabilities=self.replacement_probabilities,
-                normalise_mean=self.normalise_mean,
-                normalise_std=self.normalise_std,
+                normalise_mean=self.mean_set,
+                normalise_std=self.std_set,
                 training=False
 
             )
@@ -312,8 +311,9 @@ class CSAI(BaseNNClassifier):
 
     def predict(
             self,
-            test_set,
-            file_type: str = "hdf5"):
+            test_set: Union[dict, str],
+            file_type: str = "hdf5",
+        ) -> dict:
         
         self.model.eval()
         test_set = DatasetForCSAI(
@@ -324,8 +324,8 @@ class CSAI(BaseNNClassifier):
             increase_factor=self.increase_factor,
             compute_intervals=self.compute_intervals,
             replacement_probabilities=self.replacement_probabilities,
-            normalise_mean=self.normalise_mean,
-            normalise_std=self.normalise_std,
+            normalise_mean=self.mean_set,
+            normalise_std=self.std_set,
             training=False
         )
         test_loader = DataLoader(
@@ -353,7 +353,8 @@ class CSAI(BaseNNClassifier):
     def classify(
             self,
             test_set,
-            file_type):
+            file_type: str = "hdf5",
+            ):
         
         result_dict = self.predict(test_set, file_type)
         return result_dict['classification']

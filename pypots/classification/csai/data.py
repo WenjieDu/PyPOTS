@@ -34,7 +34,6 @@ class DatasetForCSAI(DatasetForCSAI_Imputation):
             replacement_probabilities=replacement_probabilities,
             normalise_mean=normalise_mean,
             normalise_std=normalise_std,
-            impute_only=False,
             training=training
        )
         

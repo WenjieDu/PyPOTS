@@ -93,10 +93,11 @@ class BackboneCSAI(nn.Module):
 
     def __init__(self, n_steps, n_features, rnn_hidden_size, step_channels, medians_df=None, device=None):
         super(BackboneCSAI, self).__init__()
+
         if medians_df is not None:
             self.medians_tensor = torch.tensor(list(medians_df.values())).float()
         else:
-            self.medians_tensor = None
+            self.medians_tensor = torch.zeros(n_features).float()
 
         self.n_steps = n_steps
         self.step_channels = step_channels
@@ -131,10 +132,9 @@ class BackboneCSAI(nn.Module):
         # Get dimensionality
         [B, _, _] = x.shape
 
-        if self.medians_tensor is not None:
-            medians_t = self.medians_tensor.unsqueeze(0).repeat(B, 1).to(self.device)
+        medians = self.medians_tensor.unsqueeze(0).repeat(B, 1).to(self.device)
 
-        decay_factor = self.weighted_obs(deltas - medians_t.unsqueeze(1))
+        decay_factor = self.weighted_obs(deltas - medians.unsqueeze(1))
 
         if h == None:
             data_last_obs = self.input_projection(last_obs.permute(0, 2, 1)).permute(0, 2, 1)
