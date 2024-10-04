@@ -209,8 +209,8 @@ class CSAI(BaseNNClassifier):
             back_missing_mask,
             back_deltas,
             back_last_obs,
-            # X_ori,
-            # indicating_mask,
+            X_ori,
+            indicating_mask,
         ) = self._send_data_to_given_device(sample)
 
         # assemble input data
@@ -273,8 +273,6 @@ class CSAI(BaseNNClassifier):
                 replacement_probabilities=self.replacement_probabilities,
                 normalise_mean=self.mean_set,
                 normalise_std=self.std_set,
-                training=False
-
             )
             val_loader = DataLoader(
                 val_set,
@@ -326,7 +324,7 @@ class CSAI(BaseNNClassifier):
             replacement_probabilities=self.replacement_probabilities,
             normalise_mean=self.mean_set,
             normalise_std=self.std_set,
-            training=False
+            training=False,
         )
         test_loader = DataLoader(
             test_set,
