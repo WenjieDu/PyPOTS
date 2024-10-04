@@ -11,6 +11,7 @@ import benchpots
 import numpy as np
 import torch
 
+
 def turn_data_into_specified_dtype(
     data: Union[np.ndarray, torch.Tensor, list],
     dtype: str = "tensor",
@@ -105,6 +106,7 @@ def _parse_delta_numpy(missing_mask: np.ndarray) -> np.ndarray:
         """calculate single sample's delta. The sample's shape is [n_steps, n_features]."""
         # the first step in the delta matrix is all 0
         d = [np.zeros(n_features)]
+
         for step in range(1, seq_len):
             d.append(np.ones(n_features) + (1 - mask[step - 1]) * d[-1])
         d = np.asarray(d)
@@ -222,5 +224,4 @@ def inverse_sliding_window(X, sliding_len):
     return benchpots.utils.inverse_sliding_window(
         X,
         sliding_len,
-    
     )
