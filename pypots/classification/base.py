@@ -449,4 +449,3 @@ class BaseNNClassifier(BaseNNModel):
         """
 
         raise NotImplementedError
-    
