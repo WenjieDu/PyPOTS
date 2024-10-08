@@ -7,7 +7,13 @@ Evaluation metrics related to classification.
 
 
 from ..logging import logger
-from ...nn.functional.classification import *
+from ...nn.functional.classification import (
+    calc_binary_classification_metrics,
+    calc_precision_recall_f1,
+    calc_pr_auc,
+    calc_roc_auc,
+    calc_acc,
+)
 
 # pypots.utils.metrics.classification is deprecated, and moved to pypots.nn.functional.classification
 logger.warning(
