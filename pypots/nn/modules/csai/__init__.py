@@ -23,9 +23,9 @@ __all__ = [
     "BackboneCSAI",
     "BackboneBCSAI",
     "FeatureRegression",
-    "Decay", 
-    "Decay_obs", 
-    "PositionalEncoding", 
-    "Conv1dWithInit", 
-    "TorchTransformerEncoder"
+    "Decay",
+    "Decay_obs",
+    "PositionalEncoding",
+    "Conv1dWithInit",
+    "TorchTransformerEncoder",
 ]

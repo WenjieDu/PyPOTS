@@ -28,6 +28,24 @@ pypots.imputation.tefn
    :show-inheritance:
    :inherited-members:
 
+pypots.imputation.csai
+------------------------------------
+
+.. automodule:: pypots.imputation.csai
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+
+pypots.imputation.segrnn
+------------------------------------
+
+.. automodule:: pypots.imputation.segrnn
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+
 pypots.imputation.fits
 ------------------------------------
 

@@ -17,10 +17,10 @@ from ...nn.modules.csai import BackboneBCSAI
 #         self.bcelogits = nn.BCEWithLogitsLoss()
 
 #     def forward(self, y_score, y_out, targets, smooth=1):
-        
+
 #         #comment out if your model contains a sigmoid or equivalent activation layer
-#         # inputs = F.sigmoid(inputs)       
-        
+#         # inputs = F.sigmoid(inputs)
+
 #         #flatten label and prediction tensors
 #         BCE = self.bcelogits(y_out, targets)
 
@@ -30,23 +30,23 @@ from ...nn.modules.csai import BackboneBCSAI
 #         dice_loss = 1 - (2.*intersection + smooth)/(y_score.sum() + targets.sum() + smooth)
 
 #         Dice_BCE = BCE + dice_loss
-        
+
 #         return BCE, Dice_BCE
 
 
 class _BCSAI(nn.Module):
     def __init__(
-            self,
-            n_steps: int,
-            n_features: int,
-            rnn_hidden_size: int,
-            imputation_weight: float,
-            consistency_weight: float,
-            classification_weight: float,
-            n_classes: int,
-            step_channels: int,
-            dropout: float = 0.5,
-            intervals=None,
+        self,
+        n_steps: int,
+        n_features: int,
+        rnn_hidden_size: int,
+        imputation_weight: float,
+        consistency_weight: float,
+        classification_weight: float,
+        n_classes: int,
+        step_channels: int,
+        dropout: float = 0.5,
+        intervals=None,
     ):
         super().__init__()
         self.n_steps = n_steps
@@ -107,12 +107,12 @@ class _BCSAI(nn.Module):
             b_classification_loss = F.nll_loss(torch.log(b_prediction), inputs["labels"])
             # f_classification_loss, _ = criterion(f_prediction, f_logits, inputs["labels"].unsqueeze(1).float())
             # b_classification_loss, _ = criterion(b_prediction, b_logits, inputs["labels"].unsqueeze(1).float())
-            classification_loss = (f_classification_loss + b_classification_loss) 
+            classification_loss = f_classification_loss + b_classification_loss
 
             loss = (
-                self.consistency_weight * consistency_loss + 
-                self.imputation_weight * reconstruction_loss +
-                self.classification_weight * classification_loss
+                self.consistency_weight * consistency_loss
+                + self.imputation_weight * reconstruction_loss
+                + self.classification_weight * classification_loss
             )
 
             results["loss"] = loss
