@@ -28,10 +28,10 @@ pypots.imputation.tefn
    :show-inheritance:
    :inherited-members:
 
-pypots.imputation.casi
+pypots.imputation.csai
 ------------------------------------
 
-.. automodule:: pypots.imputation.casi
+.. automodule:: pypots.imputation.csai
    :members:
    :undoc-members:
    :show-inheritance:
