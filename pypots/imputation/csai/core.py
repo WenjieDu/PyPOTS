@@ -65,15 +65,17 @@ class _BCSAI(nn.Module):
     BCSAI is a bidirectional imputation model that uses forward and backward GRU cells to handle time-series data. It computes consistency and reconstruction losses to improve imputation accuracy. During training, the forward and backward reconstructions are combined, and losses are used to update the model. In evaluation mode, the model also outputs original data and indicating masks for further analysis.
 
     """
-    def __init__(self, 
-                 n_steps, 
-                 n_features, 
-                 rnn_hidden_size, 
-                 step_channels, 
-                 consistency_weight, 
-                 imputation_weight,
-                 intervals=None,
-                 ):
+
+    def __init__(
+        self,
+        n_steps,
+        n_features,
+        rnn_hidden_size,
+        step_channels,
+        consistency_weight,
+        imputation_weight,
+        intervals=None,
+    ):
         super().__init__()
         self.n_steps = n_steps
         self.n_features = n_features
@@ -82,18 +84,18 @@ class _BCSAI(nn.Module):
         self.intervals = intervals
         self.consistency_weight = consistency_weight
         self.imputation_weight = imputation_weight
-        
+
         self.model = BackboneBCSAI(n_steps, n_features, rnn_hidden_size, step_channels, intervals)
 
-    def forward(self, inputs:dict, training:bool = True) -> dict:
+    def forward(self, inputs: dict, training: bool = True) -> dict:
         (
-        imputed_data,
-        f_reconstruction,
-        b_reconstruction,
-        f_hidden_states,
-        b_hidden_states,
-        consistency_loss,
-        reconstruction_loss,
+            imputed_data,
+            f_reconstruction,
+            b_reconstruction,
+            f_hidden_states,
+            b_hidden_states,
+            consistency_loss,
+            reconstruction_loss,
         ) = self.model(inputs)
 
         results = {

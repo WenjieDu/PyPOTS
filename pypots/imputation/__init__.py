@@ -38,6 +38,7 @@ from .stemgnn import StemGNN
 from .imputeformer import ImputeFormer
 from .timemixer import TimeMixer
 from .moderntcn import ModernTCN
+from .segrnn import SegRNN
 
 # naive imputation methods
 from .locf import LOCF
@@ -87,4 +88,5 @@ __all__ = [
     "Lerp",
     "TEFN",
     "CSAI",
+    "SegRNN",
 ]

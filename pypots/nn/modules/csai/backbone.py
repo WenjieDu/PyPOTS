@@ -12,6 +12,7 @@ import math
 from .layers import FeatureRegression, Decay, Decay_obs, PositionalEncoding, Conv1dWithInit, TorchTransformerEncoder
 from ....utils.metrics import calc_mae
 
+
 class BackboneCSAI(nn.Module):
     """
     Attributes
@@ -101,27 +102,27 @@ class BackboneCSAI(nn.Module):
         self.step_channels = step_channels
         self.input_size = n_features
         self.hidden_size = rnn_hidden_size
-        self.temp_decay_h = Decay(input_size=self.input_size, output_size=self.hidden_size, diag = False)
-        self.temp_decay_x = Decay(input_size=self.input_size, output_size=self.input_size, diag = True)
+        self.temp_decay_h = Decay(input_size=self.input_size, output_size=self.hidden_size, diag=False)
+        self.temp_decay_x = Decay(input_size=self.input_size, output_size=self.input_size, diag=True)
         self.hist = nn.Linear(self.hidden_size, self.input_size)
         self.feat_reg_v = FeatureRegression(self.input_size)
         self.weight_combine = nn.Linear(self.input_size * 2, self.input_size)
         self.weighted_obs = Decay_obs(self.input_size, self.input_size)
         self.gru = nn.GRUCell(self.input_size * 2, self.hidden_size)
-        
+
         self.pos_encoder = PositionalEncoding(self.step_channels)
         self.input_projection = Conv1dWithInit(self.input_size, self.step_channels, 1)
         self.output_projection1 = Conv1dWithInit(self.step_channels, self.hidden_size, 1)
-        self.output_projection2 = Conv1dWithInit(self.n_steps*2, 1, 1)
+        self.output_projection2 = Conv1dWithInit(self.n_steps * 2, 1, 1)
         self.time_layer = TorchTransformerEncoder(channels=self.step_channels)
 
         self.reset_parameters()
-    
+
     def reset_parameters(self):
         for weight in self.parameters():
             if len(weight.size()) == 1:
                 continue
-            stv = 1. / math.sqrt(weight.size(1))
+            stv = 1.0 / math.sqrt(weight.size(1))
             nn.init.uniform_(weight, -stv, stv)
 
     def forward(self, x, mask, deltas, last_obs, h=None):
@@ -139,7 +140,7 @@ class BackboneCSAI(nn.Module):
 
             data_last_obs = self.pos_encoder(data_last_obs.permute(1, 0, 2)).permute(1, 0, 2)
             data_decay_factor = self.pos_encoder(data_decay_factor.permute(1, 0, 2)).permute(1, 0, 2)
-            
+
             data = torch.cat([data_last_obs, data_decay_factor], dim=1)
 
             data = self.time_layer(data)
@@ -158,16 +159,16 @@ class BackboneCSAI(nn.Module):
             # Decayed Hidden States
             gamma_h = self.temp_decay_h(d_t)
             h = h * gamma_h
-            
+
             # history based estimation
-            x_h = self.hist(h)        
-            
+            x_h = self.hist(h)
+
             x_r_t = (m_t * x_t) + ((1 - m_t) * x_h)
 
             # feature based estimation
             xu = self.feat_reg_v(x_r_t)
             gamma_x = self.temp_decay_x(d_t)
-            
+
             beta = self.weight_combine(torch.cat([gamma_x, m_t], dim=1))
             x_comb_t = beta * xu + (1 - beta) * x_h
 
@@ -194,20 +195,20 @@ class BackboneBCSAI(nn.Module):
 
         self.model_f = BackboneCSAI(n_steps, n_features, rnn_hidden_size, step_channels, medians_df)
         self.model_b = BackboneCSAI(n_steps, n_features, rnn_hidden_size, step_channels, medians_df)
-        
+
     def forward(self, xdata):
 
         # Fetching forward data from xdata
-        x = xdata['forward']['X']
-        m = xdata['forward']['missing_mask']
-        d_f = xdata['forward']['deltas']
-        last_obs_f = xdata['forward']['last_obs']
+        x = xdata["forward"]["X"]
+        m = xdata["forward"]["missing_mask"]
+        d_f = xdata["forward"]["deltas"]
+        last_obs_f = xdata["forward"]["last_obs"]
 
         # Fetching backward data from xdata
-        x_b = xdata['backward']['X']
-        m_b = xdata['backward']['missing_mask']
-        d_b = xdata['backward']['deltas']
-        last_obs_b = xdata['backward']['last_obs']
+        x_b = xdata["backward"]["X"]
+        m_b = xdata["backward"]["missing_mask"]
+        d_b = xdata["backward"]["deltas"]
+        last_obs_b = xdata["backward"]["last_obs"]
 
         # Call forward model
         (
@@ -227,7 +228,7 @@ class BackboneBCSAI(nn.Module):
 
         # Averaging the imputations and prediction
         x_imp = (f_imputed_data + b_imputed_data.flip(dims=[1])) / 2
-        imputed_data = (x * m)+ ((1-m) * x_imp)
+        imputed_data = (x * m) + ((1 - m) * x_imp)
 
         # average consistency loss
         consistency_loss = torch.abs(f_imputed_data - b_imputed_data.flip(dims=[1])).mean() * 1e-1
@@ -235,11 +236,11 @@ class BackboneBCSAI(nn.Module):
         # Merge the regression loss
         reconstruction_loss = f_reconstruction_loss + b_reconstruction_loss
         return (
-                imputed_data,
-                f_reconstruction,
-                b_reconstruction,
-                f_hidden_states,
-                b_hidden_states,
-                consistency_loss,
-                reconstruction_loss,
-            )
+            imputed_data,
+            f_reconstruction,
+            b_reconstruction,
+            f_hidden_states,
+            b_hidden_states,
+            consistency_loss,
+            reconstruction_loss,
+        )

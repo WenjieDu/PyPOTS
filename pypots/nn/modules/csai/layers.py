@@ -27,11 +27,11 @@ class FeatureRegression(nn.Module):
         self.W = Parameter(torch.Tensor(input_size, input_size))
         self.b = Parameter(torch.Tensor(input_size))
         m = torch.ones(input_size, input_size) - torch.eye(input_size, input_size)
-        self.register_buffer('m', m)
+        self.register_buffer("m", m)
         self.reset_parameters()
 
     def reset_parameters(self):
-        stdv = 1. / math.sqrt(self.W.size(0))
+        stdv = 1.0 / math.sqrt(self.W.size(0))
         self.W.data.uniform_(-stdv, stdv)
         if self.b is not None:
             self.b.data.uniform_(-stdv, stdv)
@@ -39,6 +39,7 @@ class FeatureRegression(nn.Module):
     def forward(self, x):
         z_h = F.linear(x, self.W * Variable(self.m), self.b)
         return z_h
+
 
 class Decay(nn.Module):
     def __init__(self, input_size, output_size, diag=False):
@@ -51,13 +52,13 @@ class Decay(nn.Module):
         self.b = Parameter(torch.Tensor(output_size))
 
         if self.diag == True:
-            assert(input_size == output_size)
+            assert input_size == output_size
             m = torch.eye(input_size, input_size)
-            self.register_buffer('m', m)
+            self.register_buffer("m", m)
         self.reset_parameters()
 
     def reset_parameters(self):
-        stdv = 1. / math.sqrt(self.W.size(0))
+        stdv = 1.0 / math.sqrt(self.W.size(0))
         self.W.data.uniform_(-stdv, stdv)
         if self.b is not None:
             self.b.data.uniform_(-stdv, stdv)
@@ -69,6 +70,7 @@ class Decay(nn.Module):
             gamma = F.relu(F.linear(d, self.W, self.b))
         gamma = torch.exp(-gamma)
         return gamma
+
 
 class Decay_obs(nn.Module):
     def __init__(self, input_size, output_size):
@@ -87,11 +89,12 @@ class Decay_obs(nn.Module):
         weight_diff = sign * weight_diff
         # Using a tanh activation to squeeze values between -1 and 1
         weight_diff = torch.tanh(weight_diff)
-        # This will move the weight values towards 1 if delta_diff is negative 
+        # This will move the weight values towards 1 if delta_diff is negative
         # and towards 0 if delta_diff is positive
         weight = 0.5 * (1 - weight_diff)
 
         return weight
+
 
 class TorchTransformerEncoder(nn.Module):
     def __init__(self, heads=8, layers=1, channels=64):
@@ -100,18 +103,20 @@ class TorchTransformerEncoder(nn.Module):
             d_model=channels, nhead=heads, dim_feedforward=64, activation="gelu"
         )
         self.transformer_encoder = nn.TransformerEncoder(self.encoder_layer, num_layers=layers)
-    
+
     def forward(self, x):
         return self.transformer_encoder(x)
-    
+
+
 class Conv1dWithInit(nn.Module):
     def __init__(self, in_channels, out_channels, kernel_size):
         super(Conv1dWithInit, self).__init__()
         self.conv = nn.Conv1d(in_channels, out_channels, kernel_size)
         nn.init.kaiming_normal_(self.conv.weight)
-    
+
     def forward(self, x):
         return self.conv(x)
+
 
 class PositionalEncoding(nn.Module):
 
@@ -124,12 +129,12 @@ class PositionalEncoding(nn.Module):
         pe = torch.zeros(max_len, 1, d_model)
         pe[:, 0, 0::2] = torch.sin(position * div_term)
         pe[:, 0, 1::2] = torch.cos(position * div_term)
-        self.register_buffer('pe', pe)
+        self.register_buffer("pe", pe)
 
     def forward(self, x):
         """
         Arguments:
             x: Tensor, shape ``[seq_len, batch_size, embedding_dim]``
         """
-        x = x + self.pe[:x.size(0)]
+        x = x + self.pe[: x.size(0)]
         return self.dropout(x)
