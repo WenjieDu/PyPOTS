@@ -21,7 +21,8 @@ from ...optim.base import Optimizer
 
 
 class CSAI(BaseNNImputer):
-    """
+    """The PyTorch implementation of the CSAI model :cite:`qian2023csai`.
+
     Parameters
     ----------
     n_steps :
@@ -58,29 +59,48 @@ class CSAI(BaseNNImputer):
         The number of epochs for training the model.
 
     patience :
-        The patience for the early-stopping mechanism. Given a positive integer, training will stop when no improvement is observed after the specified number of epochs. If set to None, early-stopping is disabled.
+        The patience for the early-stopping mechanism. Given a positive integer, the training process will be
+        stopped when the model does not perform better after that number of epochs.
+        Leaving it default as None will disable the early-stopping.
 
     optimizer :
-        The optimizer used for model training. Defaults to the Adam optimizer if not specified.
+        The optimizer for model training.
+        If not given, will use a default Adam optimizer.
 
     num_workers :
-        The number of subprocesses used for data loading. Setting this to `0` means that data loading is performed in the main process without using subprocesses.
+        The number of subprocesses to use for data loading.
+        `0` means data loading will be in the main process, i.e. there won't be subprocesses.
 
     device :
-        The device for the model to run on, which can be a string, a :class:`torch.device` object, or a list of devices. If not provided, the model will attempt to use available CUDA devices first, then default to CPUs.
+        The device for the model to run on. It can be a string, a :class:`torch.device` object, or a list of them.
+        If not given, will try to use CUDA devices first (will use the default CUDA device if there are multiple),
+        then CPUs, considering CUDA and CPU are so far the main devices for people to train ML models.
+        If given a list of devices, e.g. ['cuda:0', 'cuda:1'], or [torch.device('cuda:0'), torch.device('cuda:1')] , the
+        model will be parallely trained on the multiple devices (so far only support parallel training on CUDA devices).
+        Other devices like Google TPU and Apple Silicon accelerator MPS may be added in the future.
 
     saving_path :
-        The path for saving model checkpoints and tensorboard files during training. If not provided, models will not be saved automatically.
+        The path for automatically saving model checkpoints and tensorboard files (i.e. loss values recorded during
+        training into a tensorboard file). Will not save if not given.
 
     model_saving_strategy :
-        The strategy for saving model checkpoints. Can be one of [None, "best", "better", "all"]. "best" saves the best model after training, "better" saves any model that improves during training, and "all" saves models after each epoch. If set to None, no models will be saved.
+        The strategy to save model checkpoints. It has to be one of [None, "best", "better", "all"].
+        No model will be saved when it is set as None.
+        The "best" strategy will only automatically save the best model after the training finished.
+        The "better" strategy will automatically save the model during training whenever the model performs
+        better than in previous epochs.
+        The "all" strategy will save every model after each epoch training.
 
     verbose :
-        Whether to print training logs during the training process.
+        Whether to print out the training logs during the training process.
 
     Notes
     -----
-    CSAI (Consistent Sequential Imputation) is a bidirectional model designed for time-series imputation. It employs a forward and backward GRU network to handle missing data, using consistency and reconstruction losses to improve accuracy. The model supports various training configurations, such as interval computations, early-stopping, and multiple devices for training. Results can be saved based on the specified saving strategy, and tensorboard files are generated for tracking the model's performance over time.
+    CSAI (Consistent Sequential Imputation) is a bidirectional model designed for time-series imputation.
+    It employs a forward and backward GRU network to handle missing data, using consistency and reconstruction losses
+    to improve accuracy. The model supports various training configurations, such as interval computations,
+    early-stopping, and multiple devices for training. Results can be saved based on the specified saving strategy,
+    and tensorboard files are generated for tracking the model's performance over time.
 
     """
     
