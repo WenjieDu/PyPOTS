@@ -5,22 +5,18 @@
 # Created by Joseph Arul Raj <joseph_arul_raj@kcl.ac.uk>
 # License: BSD-3-Clause
 
+import math
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.autograd import Variable
 from torch.nn.parameter import Parameter
-import math
-import numpy as np
-import os
-import copy
-import pandas as pd
-from torch.nn.modules import TransformerEncoderLayer
 
 
 class FeatureRegression(nn.Module):
     def __init__(self, input_size):
-        super(FeatureRegression, self).__init__()
+        super().__init__()
         self.build(input_size)
 
     def build(self, input_size):
@@ -43,7 +39,9 @@ class FeatureRegression(nn.Module):
 
 class Decay(nn.Module):
     def __init__(self, input_size, output_size, diag=False):
-        super(Decay, self).__init__()
+        super().__init__()
+        self.W = None
+        self.b = None
         self.diag = diag
         self.build(input_size, output_size)
 
@@ -51,7 +49,7 @@ class Decay(nn.Module):
         self.W = Parameter(torch.Tensor(output_size, input_size))
         self.b = Parameter(torch.Tensor(output_size))
 
-        if self.diag == True:
+        if self.diag:
             assert input_size == output_size
             m = torch.eye(input_size, input_size)
             self.register_buffer("m", m)
@@ -64,7 +62,7 @@ class Decay(nn.Module):
             self.b.data.uniform_(-stdv, stdv)
 
     def forward(self, d):
-        if self.diag == True:
+        if self.diag:
             gamma = F.relu(F.linear(d, self.W * Variable(self.m), self.b))
         else:
             gamma = F.relu(F.linear(d, self.W, self.b))
@@ -74,7 +72,7 @@ class Decay(nn.Module):
 
 class Decay_obs(nn.Module):
     def __init__(self, input_size, output_size):
-        super(Decay_obs, self).__init__()
+        super().__init__()
         self.linear = nn.Linear(input_size, output_size)
 
     def forward(self, delta_diff):
@@ -98,7 +96,7 @@ class Decay_obs(nn.Module):
 
 class TorchTransformerEncoder(nn.Module):
     def __init__(self, heads=8, layers=1, channels=64):
-        super(TorchTransformerEncoder, self).__init__()
+        super().__init__()
         self.encoder_layer = nn.TransformerEncoderLayer(
             d_model=channels, nhead=heads, dim_feedforward=64, activation="gelu"
         )
@@ -110,7 +108,7 @@ class TorchTransformerEncoder(nn.Module):
 
 class Conv1dWithInit(nn.Module):
     def __init__(self, in_channels, out_channels, kernel_size):
-        super(Conv1dWithInit, self).__init__()
+        super().__init__()
         self.conv = nn.Conv1d(in_channels, out_channels, kernel_size)
         nn.init.kaiming_normal_(self.conv.weight)
 
