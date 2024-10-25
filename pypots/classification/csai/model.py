@@ -1,4 +1,3 @@
-
 """
 
 """
@@ -19,7 +18,6 @@ from ...optim.base import Optimizer
 
 
 class CSAI(BaseNNClassifier):
-
     """
     The PyTorch implementation of the CSAI model.
 
@@ -87,7 +85,7 @@ class CSAI(BaseNNClassifier):
 
     verbose :
     Whether to print out the training logs during the training process.
-    
+
     """
 
     def __init__(
@@ -99,33 +97,33 @@ class CSAI(BaseNNClassifier):
         consistency_weight: float,
         classification_weight: float,
         n_classes: int,
-        removal_percent: int, 
-        increase_factor: float, 
-        compute_intervals: bool, 
-        step_channels:int, 
-        batch_size: int,  
-        epochs: int,  
+        removal_percent: int,
+        increase_factor: float,
+        compute_intervals: bool,
+        step_channels: int,
+        batch_size: int,
+        epochs: int,
         dropout: float = 0.5,
-        patience: Union[int, None] = None,  
-        optimizer: Optimizer = Adam(), 
-        num_workers: int = 0,  
-        device: Optional[Union[str, torch.device, list]] = None,  
+        patience: Union[int, None] = None,
+        optimizer: Optimizer = Adam(),
+        num_workers: int = 0,
+        device: Optional[Union[str, torch.device, list]] = None,
         saving_path: str = None,
-        model_saving_strategy: Union[str, None] = "best", 
-        verbose: bool = True
+        model_saving_strategy: Union[str, None] = "best",
+        verbose: bool = True,
     ):
         super().__init__(
-            n_classes, 
-            batch_size, 
-            epochs, 
+            n_classes,
+            batch_size,
+            epochs,
             patience,
-            num_workers, 
+            num_workers,
             device,
-            saving_path, 
-            model_saving_strategy, 
+            saving_path,
+            model_saving_strategy,
             verbose,
         )
-            
+
         self.n_steps = n_steps
         self.n_features = n_features
         self.rnn_hidden_size = rnn_hidden_size
@@ -138,8 +136,8 @@ class CSAI(BaseNNClassifier):
         self.compute_intervals = compute_intervals
         self.dropout = dropout
         self.intervals = None
-        
-        # Initialise empty model 
+
+        # Initialise empty model
         self.model = _BCSAI(
             n_steps=self.n_steps,
             n_features=self.n_features,
@@ -161,19 +159,10 @@ class CSAI(BaseNNClassifier):
 
     def _assemble_input_for_training(self, data: list, training=True) -> dict:
         # extract data
-        sample = data['sample']
-        (
-            indices,
-            X,
-            missing_mask,
-            deltas,
-            last_obs,
-            back_X,
-            back_missing_mask,
-            back_deltas,
-            back_last_obs,
-            labels
-        ) = self._send_data_to_given_device(sample)
+        sample = data["sample"]
+        (indices, X, missing_mask, deltas, last_obs, back_X, back_missing_mask, back_deltas, back_last_obs, labels) = (
+            self._send_data_to_given_device(sample)
+        )
 
         inputs = {
             "indices": indices,
@@ -195,10 +184,10 @@ class CSAI(BaseNNClassifier):
 
     def _assemble_input_for_validating(self, data: list) -> dict:
         return self._assemble_input_for_training(data)
-    
+
     def _assemble_input_for_testing(self, data: list) -> dict:
         # extract data
-        sample = data['sample']
+        sample = data["sample"]
         (
             indices,
             X,
@@ -231,30 +220,30 @@ class CSAI(BaseNNClassifier):
             # "X_ori": X_ori,
             # "indicating_mask": indicating_mask,
         }
-        
+
         return inputs
-    
+
     def fit(
-            self, 
-            train_set,
-            val_set= None,
-            file_type: str = "hdf5",
-        )-> None:
+        self,
+        train_set,
+        val_set=None,
+        file_type: str = "hdf5",
+    ) -> None:
         # Create dataset
         self.training_set = DatasetForCSAI(
-                    data=train_set,
-                    file_type=file_type,
-                    return_y=True,
-                    removal_percent=self.removal_percent,
-                    increase_factor=self.increase_factor,
-                    compute_intervals=self.compute_intervals,
-                )
+            data=train_set,
+            file_type=file_type,
+            return_y=True,
+            removal_percent=self.removal_percent,
+            increase_factor=self.increase_factor,
+            compute_intervals=self.compute_intervals,
+        )
 
         self.intervals = self.training_set.intervals
         self.replacement_probabilities = self.training_set.replacement_probabilities
         self.mean_set = self.training_set.mean_set
         self.std_set = self.training_set.std_set
-        
+
         train_loader = DataLoader(
             self.training_set,
             batch_size=self.batch_size,
@@ -297,7 +286,7 @@ class CSAI(BaseNNClassifier):
         self._print_model_size()
 
         # set up the optimizer
-        self.optimizer.init_optimizer(self.model.parameters())    
+        self.optimizer.init_optimizer(self.model.parameters())
 
         # train the model
         self._train_model(train_loader, val_loader)
@@ -306,13 +295,12 @@ class CSAI(BaseNNClassifier):
 
         self._auto_save_model_if_necessary(confirm_saving=self.model_saving_strategy == "best")
 
-
     def predict(
-            self,
-            test_set: Union[dict, str],
-            file_type: str = "hdf5",
-        ) -> dict:
-        
+        self,
+        test_set: Union[dict, str],
+        file_type: str = "hdf5",
+    ) -> dict:
+
         self.model.eval()
         test_set = DatasetForCSAI(
             data=test_set,
@@ -339,20 +327,19 @@ class CSAI(BaseNNClassifier):
             for idx, data in enumerate(test_loader):
                 inputs = self._assemble_input_for_testing(data)
                 results = self.model.forward(inputs, training=False)
-                classificaion_results.append(results['classification_pred'])
-            
-        
+                classificaion_results.append(results["classification_pred"])
+
         classification = torch.cat(classificaion_results).cpu().detach().numpy()
         result_dict = {
             "classification": classification,
-        }  
+        }
         return result_dict
-    
+
     def classify(
-            self,
-            test_set,
-            file_type: str = "hdf5",
-            ):
-        
+        self,
+        test_set,
+        file_type: str = "hdf5",
+    ):
+
         result_dict = self.predict(test_set, file_type)
-        return result_dict['classification']
+        return result_dict["classification"]

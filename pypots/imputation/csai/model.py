@@ -103,35 +103,36 @@ class CSAI(BaseNNImputer):
     and tensorboard files are generated for tracking the model's performance over time.
 
     """
-    
-    def __init__(self,
-                 n_steps: int,
-                 n_features: int,
-                 rnn_hidden_size: int,
-                 imputation_weight: float,
-                 consistency_weight: float,
-                 removal_percent: int,
-                 increase_factor: float,
-                 compute_intervals: bool,
-                 step_channels:int,
-                 batch_size: int, 
-                 epochs: int, 
-                 patience: Union[int, None ]= None, 
-                 optimizer: Optional[Optimizer] = Adam(),
-                 num_workers: int = 0, 
-                 device: Union[str, torch.device, list, None ]= None, 
-                 saving_path: str = None, 
-                 model_saving_strategy: Union[str, None] = "best", 
-                 verbose: bool = True,
+
+    def __init__(
+        self,
+        n_steps: int,
+        n_features: int,
+        rnn_hidden_size: int,
+        imputation_weight: float,
+        consistency_weight: float,
+        removal_percent: int,
+        increase_factor: float,
+        compute_intervals: bool,
+        step_channels: int,
+        batch_size: int,
+        epochs: int,
+        patience: Union[int, None] = None,
+        optimizer: Optional[Optimizer] = Adam(),
+        num_workers: int = 0,
+        device: Union[str, torch.device, list, None] = None,
+        saving_path: str = None,
+        model_saving_strategy: Union[str, None] = "best",
+        verbose: bool = True,
     ):
         super().__init__(
-            batch_size, 
-            epochs, 
-            patience, 
-            num_workers, 
-            device, 
-            saving_path, 
-            model_saving_strategy, 
+            batch_size,
+            epochs,
+            patience,
+            num_workers,
+            device,
+            saving_path,
+            model_saving_strategy,
             verbose,
         )
 
@@ -145,39 +146,31 @@ class CSAI(BaseNNImputer):
         self.step_channels = step_channels
         self.compute_intervals = compute_intervals
         self.intervals = None
-        
-        # Initialise model 
+
+        # Initialise model
         self.model = _BCSAI(
-            self.n_steps, 
-            self.n_features, 
-            self.rnn_hidden_size, 
+            self.n_steps,
+            self.n_features,
+            self.rnn_hidden_size,
             self.step_channels,
-            self.consistency_weight, 
+            self.consistency_weight,
             self.imputation_weight,
             self.intervals,
         )
 
         self._send_model_to_given_device()
         self._print_model_size()
-        
+
         # set up the optimizer
         self.optimizer = optimizer
 
     def _assemble_input_for_training(self, data: list, training=True) -> dict:
         # extract data
-        sample = data['sample']
-        
-        (
-            indices,
-            X,
-            missing_mask,
-            deltas,
-            last_obs,
-            back_X,
-            back_missing_mask,
-            back_deltas,
-            back_last_obs
-        ) = self._send_data_to_given_device(sample)
+        sample = data["sample"]
+
+        (indices, X, missing_mask, deltas, last_obs, back_X, back_missing_mask, back_deltas, back_last_obs) = (
+            self._send_data_to_given_device(sample)
+        )
 
         # assemble input data
         inputs = {
@@ -200,7 +193,7 @@ class CSAI(BaseNNImputer):
 
     def _assemble_input_for_validating(self, data: list) -> dict:
         # extract data
-        sample = data['sample']
+        sample = data["sample"]
         (
             indices,
             X,
@@ -237,23 +230,17 @@ class CSAI(BaseNNImputer):
 
     def _assemble_input_for_testing(self, data: list) -> dict:
         return self._assemble_input_for_validating(data)
-    
+
     def fit(
-            self,
-            train_set, 
-            val_set=None, 
-            file_type: str = "hdf5",
-        )-> None:
-        
+        self,
+        train_set,
+        val_set=None,
+        file_type: str = "hdf5",
+    ) -> None:
+
         self.training_set = DatasetForCSAI(
-                        train_set, 
-                        False, 
-                        False,
-                        file_type, 
-                        self.removal_percent, 
-                        self.increase_factor, 
-                        self.compute_intervals
-                    )
+            train_set, False, False, file_type, self.removal_percent, self.increase_factor, self.compute_intervals
+        )
         self.intervals = self.training_set.intervals
         self.replacement_probabilities = self.training_set.replacement_probabilities
         self.mean_set = self.training_set.mean_set
@@ -268,15 +255,15 @@ class CSAI(BaseNNImputer):
         )
         if val_set is not None:
             val_set = DatasetForCSAI(
-                val_set, 
+                val_set,
                 True,
-                False,  
-                file_type, 
-                self.removal_percent, 
-                self.increase_factor, 
+                False,
+                file_type,
+                self.removal_percent,
+                self.increase_factor,
                 self.compute_intervals,
-                self.replacement_probabilities, 
-                self.mean_set, 
+                self.replacement_probabilities,
+                self.mean_set,
                 self.std_set,
                 False,
             )
@@ -290,11 +277,11 @@ class CSAI(BaseNNImputer):
 
         # Reset the model
         self.model = _BCSAI(
-            self.n_steps, 
-            self.n_features, 
-            self.rnn_hidden_size, 
+            self.n_steps,
+            self.n_features,
+            self.rnn_hidden_size,
             self.step_channels,
-            self.consistency_weight, 
+            self.consistency_weight,
             self.imputation_weight,
             self.intervals,
         )
@@ -314,25 +301,25 @@ class CSAI(BaseNNImputer):
         self._auto_save_model_if_necessary(confirm_saving=self.model_saving_strategy == "best")
 
     def predict(
-        self, 
-        test_set: Union[dict, str], 
+        self,
+        test_set: Union[dict, str],
         file_type: str = "hdf5",
     ) -> dict:
-        
+
         self.model.eval()
         test_set = DatasetForCSAI(
-                test_set, 
-                True,
-                False, 
-                file_type, 
-                self.removal_percent, 
-                self.increase_factor, 
-                self.compute_intervals,
-                self.replacement_probabilities, 
-                self.mean_set, 
-                self.std_set,
-                False,
-            )
+            test_set,
+            True,
+            False,
+            file_type,
+            self.removal_percent,
+            self.increase_factor,
+            self.compute_intervals,
+            self.replacement_probabilities,
+            self.mean_set,
+            self.std_set,
+            False,
+        )
 
         test_loader = DataLoader(
             test_set,
@@ -345,7 +332,7 @@ class CSAI(BaseNNImputer):
         imputation_collector = []
         x_ori_collector = []
         indicating_mask_collector = []
-        
+
         with torch.no_grad():
             for idx, data in enumerate(test_loader):
                 inputs = self._assemble_input_for_testing(data)

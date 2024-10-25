@@ -16,7 +16,6 @@ This implementation is inspired by the official one https://github.com/lss-1138/
 # Created by Shengsheng Lin
 
 
-
 from .model import SegRNN
 
 __all__ = [

@@ -13,6 +13,7 @@ import torch.nn as nn
 from ...nn.modules.segrnn import BackboneSegRNN
 from ...nn.modules.saits import SaitsLoss
 
+
 class _SegRNN(nn.Module):
     def __init__(
         self,
