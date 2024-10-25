@@ -72,12 +72,10 @@ class TestCSAI(unittest.TestCase):
     def test_1_classify(self):
         # Classify test set using the trained CSAI model
         results = self.csai.classify(TEST_SET)
-        
+
         # Calculate binary classification metrics
-        metrics = calc_binary_classification_metrics(
-            results, DATA["test_y"]
-        )
-        
+        metrics = calc_binary_classification_metrics(results, DATA["test_y"])
+
         logger.info(
             f'CSAI ROC_AUC: {metrics["roc_auc"]}, '
             f'PR_AUC: {metrics["pr_auc"]}, '
@@ -85,7 +83,7 @@ class TestCSAI(unittest.TestCase):
             f'Precision: {metrics["precision"]}, '
             f'Recall: {metrics["recall"]}'
         )
-        
+
         assert metrics["roc_auc"] >= 0.5, "ROC-AUC < 0.5"
 
     @pytest.mark.xdist_group(name="classification-csai")
@@ -98,17 +96,12 @@ class TestCSAI(unittest.TestCase):
         assert hasattr(self.csai, "best_loss")
         self.assertNotEqual(self.csai.best_loss, float("inf"))
 
-        assert (
-            hasattr(self.csai, "best_model_dict")
-            and self.csai.best_model_dict is not None
-        )
+        assert hasattr(self.csai, "best_model_dict") and self.csai.best_model_dict is not None
 
     @pytest.mark.xdist_group(name="classification-csai")
     def test_3_saving_path(self):
         # Ensure the root saving directory exists
-        assert os.path.exists(
-            self.saving_path
-        ), f"file {self.saving_path} does not exist"
+        assert os.path.exists(self.saving_path), f"file {self.saving_path} does not exist"
 
         # Check if the tensorboard file and model checkpoints exist
         check_tb_and_model_checkpoints_existence(self.csai)
@@ -124,15 +117,13 @@ class TestCSAI(unittest.TestCase):
     def test_4_lazy_loading(self):
         # Fit the CSAI model using lazy-loading datasets from H5 files
         self.csai.fit(GENERAL_H5_TRAIN_SET_PATH, GENERAL_H5_VAL_SET_PATH)
-        
+
         # Perform classification using lazy-loaded data
         results = self.csai.classify(GENERAL_H5_TEST_SET_PATH)
-        
+
         # Calculate binary classification metrics
-        metrics = calc_binary_classification_metrics(
-            results, DATA["test_y"]
-        )
-        
+        metrics = calc_binary_classification_metrics(results, DATA["test_y"])
+
         logger.info(
             f'Lazy-loading CSAI ROC_AUC: {metrics["roc_auc"]}, '
             f'PR_AUC: {metrics["pr_auc"]}, '
@@ -140,7 +131,7 @@ class TestCSAI(unittest.TestCase):
             f'Precision: {metrics["precision"]}, '
             f'Recall: {metrics["recall"]}'
         )
-        
+
         assert metrics["roc_auc"] >= 0.5, "ROC-AUC < 0.5"
 
 

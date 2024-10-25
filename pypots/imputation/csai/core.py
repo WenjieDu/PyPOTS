@@ -62,7 +62,10 @@ class _BCSAI(nn.Module):
 
     Notes
     -----
-    BCSAI is a bidirectional imputation model that uses forward and backward GRU cells to handle time-series data. It computes consistency and reconstruction losses to improve imputation accuracy. During training, the forward and backward reconstructions are combined, and losses are used to update the model. In evaluation mode, the model also outputs original data and indicating masks for further analysis.
+    CSAI is a bidirectional imputation model that uses forward and backward GRU cells to handle time-series data.
+    It computes consistency and reconstruction losses to improve imputation accuracy.
+    During training, the forward and backward reconstructions are combined, and losses are used to update the model.
+    In evaluation mode, the model also outputs original data and indicating masks for further analysis.
 
     """
 

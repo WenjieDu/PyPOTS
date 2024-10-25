@@ -11,11 +11,9 @@ import numpy as np
 import torch
 from torch.utils.data import DataLoader
 
-
 from .core import _BCSAI
 from .data import DatasetForCSAI
 from ..base import BaseNNImputer
-from ...data.checking import key_in_data_set
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
 
@@ -146,6 +144,9 @@ class CSAI(BaseNNImputer):
         self.step_channels = step_channels
         self.compute_intervals = compute_intervals
         self.intervals = None
+        self.replacement_probabilities = None
+        self.mean_set = None
+        self.std_set = None
 
         # Initialise model
         self.model = _BCSAI(
@@ -238,16 +239,16 @@ class CSAI(BaseNNImputer):
         file_type: str = "hdf5",
     ) -> None:
 
-        self.training_set = DatasetForCSAI(
+        training_set = DatasetForCSAI(
             train_set, False, False, file_type, self.removal_percent, self.increase_factor, self.compute_intervals
         )
-        self.intervals = self.training_set.intervals
-        self.replacement_probabilities = self.training_set.replacement_probabilities
-        self.mean_set = self.training_set.mean_set
-        self.std_set = self.training_set.std_set
+        self.intervals = training_set.intervals
+        self.replacement_probabilities = training_set.replacement_probabilities
+        self.mean_set = training_set.mean_set
+        self.std_set = training_set.std_set
 
         training_loader = DataLoader(
-            self.training_set,
+            training_set,
             batch_size=self.batch_size,
             shuffle=True,
             num_workers=self.num_workers,
