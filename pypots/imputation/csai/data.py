@@ -369,13 +369,18 @@ class DatasetForCSAI(BaseDataset):
         increase_factor: float = 0.1,
         compute_intervals: bool = False,
         replacement_probabilities=None,
-        normalise_mean: list = [],
-        normalise_std: list = [],
+        normalise_mean=None,
+        normalise_std=None,
         training: bool = True,
     ):
         super().__init__(
             data=data, return_X_ori=return_X_ori, return_X_pred=False, return_y=return_y, file_type=file_type
         )
+
+        if normalise_std is None:
+            normalise_std = []
+        if normalise_mean is None:
+            normalise_mean = []
 
         self.removal_percent = removal_percent
         self.increase_factor = increase_factor
@@ -384,6 +389,11 @@ class DatasetForCSAI(BaseDataset):
         self.normalise_mean = normalise_mean
         self.normalise_std = normalise_std
         self.training = training
+
+        self.normalized_data = None
+        self.mean_set = None
+        self.std_set = None
+        self.intervals = None
 
         if not isinstance(self.data, str):
             self.normalized_data, self.mean_set, self.std_set, self.intervals = normalize_csai(
@@ -465,73 +475,6 @@ class DatasetForCSAI(BaseDataset):
         }
 
     def _fetch_data_from_file(self, idx: int) -> Iterable:
-        """Fetch data with the lazy-loading strategy, i.e. only loading data from the file while requesting for samples.
-        Here the opened file handle doesn't load the entire dataset into RAM but only load the currently accessed slice.
-
-        Parameters
-        ----------
-        idx :
-            The index of the sample to be return.
-
-        Returns
-        -------
-        sample :
-            The collated data sample, a list including all necessary sample info.
-        """
-
-        if self.file_handle is None:
-            self.file_handle = self._open_file_handle()
-
-        X = torch.from_numpy(self.file_handle["X"][idx])
-        normalized_data, mean_set, std_set, intervals = normalize_csai(
-            X,
-            self.normalise_mean,
-            self.normalise_std,
-            self.compute_intervals,
+        raise NotImplementedError(
+            "CSAI does not support lazy loading because normalise mean and std need to be calculated ahead."
         )
-
-        processed_data, replacement_probabilities = non_uniform_sample(
-            normalized_data,
-            self.removal_percent,
-            self.replacement_probabilities,
-            self.increase_factor,
-        )
-        forward_X = processed_data["values"]
-        forward_missing_mask = processed_data["masks"]
-        backward_X = torch.flip(forward_X, dims=[1])
-        backward_missing_mask = torch.flip(forward_missing_mask, dims=[1])
-
-        X_ori = self.processed_data["evals"]
-        indicating_mask = self.processed_data["eval_masks"]
-
-        if self.return_y:
-            y = self.processed_data["labels"]
-
-        sample = [
-            torch.tensor(idx),
-            # for forward
-            forward_X,
-            forward_missing_mask,
-            processed_data["deltas_f"],
-            processed_data["last_obs_f"],
-            # for backward
-            backward_X,
-            backward_missing_mask,
-            processed_data["deltas_b"],
-            processed_data["last_obs_b"],
-        ]
-
-        if self.return_X_ori:
-            sample.extend([X_ori, indicating_mask])
-
-        # if the dataset has labels and is for training, then fetch it from the file
-        if self.return_y:
-            sample.append(y)
-
-        return {
-            "sample": sample,
-            "replacement_probabilities": replacement_probabilities,
-            "mean_set": mean_set,
-            "std_set": std_set,
-            "intervals": intervals,
-        }
