@@ -6,7 +6,6 @@ The implementation of CSAI
 # License: BSD-3-Clause
 
 from typing import Union, Optional
-from venv import logger
 
 import numpy as np
 import torch
@@ -19,6 +18,7 @@ from ...data.checking import key_in_data_set
 from ...data.saving.h5 import load_dict_from_h5
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
+from ...utils.logging import logger
 
 
 class CSAI(BaseNNImputer):
