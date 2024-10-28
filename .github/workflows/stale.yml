@@ -9,11 +9,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/stale@v8
+      - uses: actions/stale@v9
         with:
           stale-issue-message: 'This issue had no activity for **14 days**. It will be closed in **1 week** unless there is some new activity. Is this issue already resolved?'
           stale-issue-label: 'stale'
           exempt-issue-labels: bug, enhancement, new feature, new model, good first issue, keep
+          exempt-pr-labels: bug, enhancement, new feature, new model, keep
           stale-pr-message: 'This pull request had no activity for **14 days**. It will be closed in **1 week** unless there is some new activity.'
           stale-pr-label: 'stale'
           days-before-stale: 14
