@@ -11,13 +11,14 @@ import numpy as np
 import torch
 from torch.utils.data import DataLoader
 
-
 from .core import _BCSAI
 from .data import DatasetForCSAI
 from ..base import BaseNNImputer
 from ...data.checking import key_in_data_set
+from ...data.saving.h5 import load_dict_from_h5
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
+from ...utils.logging import logger
 
 
 class CSAI(BaseNNImputer):
@@ -103,35 +104,36 @@ class CSAI(BaseNNImputer):
     and tensorboard files are generated for tracking the model's performance over time.
 
     """
-    
-    def __init__(self,
-                 n_steps: int,
-                 n_features: int,
-                 rnn_hidden_size: int,
-                 imputation_weight: float,
-                 consistency_weight: float,
-                 removal_percent: int,
-                 increase_factor: float,
-                 compute_intervals: bool,
-                 step_channels:int,
-                 batch_size: int, 
-                 epochs: int, 
-                 patience: Union[int, None ]= None, 
-                 optimizer: Optional[Optimizer] = Adam(),
-                 num_workers: int = 0, 
-                 device: Union[str, torch.device, list, None ]= None, 
-                 saving_path: str = None, 
-                 model_saving_strategy: Union[str, None] = "best", 
-                 verbose: bool = True,
+
+    def __init__(
+        self,
+        n_steps: int,
+        n_features: int,
+        rnn_hidden_size: int,
+        imputation_weight: float,
+        consistency_weight: float,
+        removal_percent: int,
+        increase_factor: float,
+        compute_intervals: bool,
+        step_channels: int,
+        batch_size: int = 32,
+        epochs: int = 100,
+        patience: Optional[int] = None,
+        optimizer: Optional[Optimizer] = Adam(),
+        num_workers: int = 0,
+        device: Union[str, torch.device, list, None] = None,
+        saving_path: str = None,
+        model_saving_strategy: Union[str, None] = "best",
+        verbose: bool = True,
     ):
         super().__init__(
-            batch_size, 
-            epochs, 
-            patience, 
-            num_workers, 
-            device, 
-            saving_path, 
-            model_saving_strategy, 
+            batch_size,
+            epochs,
+            patience,
+            num_workers,
+            device,
+            saving_path,
+            model_saving_strategy,
             verbose,
         )
 
@@ -145,39 +147,35 @@ class CSAI(BaseNNImputer):
         self.step_channels = step_channels
         self.compute_intervals = compute_intervals
         self.intervals = None
-        
-        # Initialise model 
+        self.replacement_probabilities = None
+        self.mean_set = None
+        self.std_set = None
+
+        # Initialise model
         self.model = _BCSAI(
-            self.n_steps, 
-            self.n_features, 
-            self.rnn_hidden_size, 
+            self.n_steps,
+            self.n_features,
+            self.rnn_hidden_size,
             self.step_channels,
-            self.consistency_weight, 
+            self.consistency_weight,
             self.imputation_weight,
             self.intervals,
         )
 
         self._send_model_to_given_device()
         self._print_model_size()
-        
+
         # set up the optimizer
         self.optimizer = optimizer
+        self.optimizer.init_optimizer(self.model.parameters())
 
     def _assemble_input_for_training(self, data: list, training=True) -> dict:
         # extract data
-        sample = data['sample']
-        
-        (
-            indices,
-            X,
-            missing_mask,
-            deltas,
-            last_obs,
-            back_X,
-            back_missing_mask,
-            back_deltas,
-            back_last_obs
-        ) = self._send_data_to_given_device(sample)
+        sample = data["sample"]
+
+        (indices, X, missing_mask, deltas, last_obs, back_X, back_missing_mask, back_deltas, back_last_obs) = (
+            self._send_data_to_given_device(sample)
+        )
 
         # assemble input data
         inputs = {
@@ -200,7 +198,7 @@ class CSAI(BaseNNImputer):
 
     def _assemble_input_for_validating(self, data: list) -> dict:
         # extract data
-        sample = data['sample']
+        sample = data["sample"]
         (
             indices,
             X,
@@ -237,46 +235,63 @@ class CSAI(BaseNNImputer):
 
     def _assemble_input_for_testing(self, data: list) -> dict:
         return self._assemble_input_for_validating(data)
-    
+
     def fit(
-            self,
-            train_set, 
-            val_set=None, 
-            file_type: str = "hdf5",
-        )-> None:
-        
-        self.training_set = DatasetForCSAI(
-                        train_set, 
-                        False, 
-                        False,
-                        file_type, 
-                        self.removal_percent, 
-                        self.increase_factor, 
-                        self.compute_intervals
-                    )
-        self.intervals = self.training_set.intervals
-        self.replacement_probabilities = self.training_set.replacement_probabilities
-        self.mean_set = self.training_set.mean_set
-        self.std_set = self.training_set.std_set
+        self,
+        train_set,
+        val_set=None,
+        file_type: str = "hdf5",
+    ) -> None:
+
+        if isinstance(train_set, str):
+            logger.warning(
+                "CSAI does not support lazy loading because normalise mean and std need to be calculated ahead. "
+                "Hence the whole train set will be loaded into memory."
+            )
+            train_set = load_dict_from_h5(train_set)
+
+        training_set = DatasetForCSAI(
+            train_set,
+            False,
+            False,
+            file_type,
+            self.removal_percent,
+            self.increase_factor,
+            self.compute_intervals,
+        )
+        self.intervals = training_set.intervals
+        self.replacement_probabilities = training_set.replacement_probabilities
+        self.mean_set = training_set.mean_set
+        self.std_set = training_set.std_set
 
         training_loader = DataLoader(
-            self.training_set,
+            training_set,
             batch_size=self.batch_size,
             shuffle=True,
             num_workers=self.num_workers,
             # collate_fn=collate_fn_bidirectional
         )
+        val_loader = None
         if val_set is not None:
+            if isinstance(val_set, str):
+                logger.warning(
+                    "CSAI does not support lazy loading because normalise mean and std need to be calculated ahead. "
+                    "Hence the whole val set will be loaded into memory."
+                )
+                val_set = load_dict_from_h5(val_set)
+
+            if not key_in_data_set("X_ori", val_set):
+                raise ValueError("val_set must contain 'X_ori' for model validation.")
             val_set = DatasetForCSAI(
-                val_set, 
+                val_set,
                 True,
-                False,  
-                file_type, 
-                self.removal_percent, 
-                self.increase_factor, 
+                False,
+                file_type,
+                self.removal_percent,
+                self.increase_factor,
                 self.compute_intervals,
-                self.replacement_probabilities, 
-                self.mean_set, 
+                self.replacement_probabilities,
+                self.mean_set,
                 self.std_set,
                 False,
             )
@@ -288,23 +303,6 @@ class CSAI(BaseNNImputer):
                 # collate_fn=collate_fn_bidirectional
             )
 
-        # Reset the model
-        self.model = _BCSAI(
-            self.n_steps, 
-            self.n_features, 
-            self.rnn_hidden_size, 
-            self.step_channels,
-            self.consistency_weight, 
-            self.imputation_weight,
-            self.intervals,
-        )
-
-        self._send_model_to_given_device()
-        self._print_model_size()
-
-        # set up the optimizer
-        self.optimizer.init_optimizer(self.model.parameters())
-
         # train the model
         self._train_model(training_loader, val_loader)
         self.model.load_state_dict(self.best_model_dict)
@@ -314,25 +312,32 @@ class CSAI(BaseNNImputer):
         self._auto_save_model_if_necessary(confirm_saving=self.model_saving_strategy == "best")
 
     def predict(
-        self, 
-        test_set: Union[dict, str], 
+        self,
+        test_set: Union[dict, str],
         file_type: str = "hdf5",
     ) -> dict:
-        
+
         self.model.eval()
-        test_set = DatasetForCSAI(
-                test_set, 
-                True,
-                False, 
-                file_type, 
-                self.removal_percent, 
-                self.increase_factor, 
-                self.compute_intervals,
-                self.replacement_probabilities, 
-                self.mean_set, 
-                self.std_set,
-                False,
+
+        if isinstance(test_set, str):
+            logger.warning(
+                "CSAI does not support lazy loading because normalise mean and std need to be calculated ahead. "
+                "Hence the whole test set will be loaded into memory."
             )
+            test_set = load_dict_from_h5(test_set)
+        test_set = DatasetForCSAI(
+            test_set,
+            True,
+            False,
+            file_type,
+            self.removal_percent,
+            self.increase_factor,
+            self.compute_intervals,
+            self.replacement_probabilities,
+            self.mean_set,
+            self.std_set,
+            False,
+        )
 
         test_loader = DataLoader(
             test_set,
@@ -345,7 +350,7 @@ class CSAI(BaseNNImputer):
         imputation_collector = []
         x_ori_collector = []
         indicating_mask_collector = []
-        
+
         with torch.no_grad():
             for idx, data in enumerate(test_loader):
                 inputs = self._assemble_input_for_testing(data)

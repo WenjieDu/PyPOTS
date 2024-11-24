@@ -5,13 +5,11 @@ and takes over the forward progress of the algorithm.
 
 # Created by Shengsheng Lin
 
-from typing import Optional
-
-from typing import Callable
 import torch.nn as nn
 
-from ...nn.modules.segrnn import BackboneSegRNN
 from ...nn.modules.saits import SaitsLoss
+from ...nn.modules.segrnn import BackboneSegRNN
+
 
 class _SegRNN(nn.Module):
     def __init__(
