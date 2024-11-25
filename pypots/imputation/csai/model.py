@@ -11,13 +11,14 @@ import numpy as np
 import torch
 from torch.utils.data import DataLoader
 
-
 from .core import _BCSAI
 from .data import DatasetForCSAI
 from ..base import BaseNNImputer
 from ...data.checking import key_in_data_set
+from ...data.saving.h5 import load_dict_from_h5
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
+from ...utils.logging import logger
 
 
 class CSAI(BaseNNImputer):
@@ -115,9 +116,9 @@ class CSAI(BaseNNImputer):
         increase_factor: float,
         compute_intervals: bool,
         step_channels: int,
-        batch_size: int,
-        epochs: int,
-        patience: Union[int, None] = None,
+        batch_size: int = 32,
+        epochs: int = 100,
+        patience: Optional[int] = None,
         optimizer: Optional[Optimizer] = Adam(),
         num_workers: int = 0,
         device: Union[str, torch.device, list, None] = None,
@@ -146,6 +147,9 @@ class CSAI(BaseNNImputer):
         self.step_channels = step_channels
         self.compute_intervals = compute_intervals
         self.intervals = None
+        self.replacement_probabilities = None
+        self.mean_set = None
+        self.std_set = None
 
         # Initialise model
         self.model = _BCSAI(
@@ -163,6 +167,7 @@ class CSAI(BaseNNImputer):
 
         # set up the optimizer
         self.optimizer = optimizer
+        self.optimizer.init_optimizer(self.model.parameters())
 
     def _assemble_input_for_training(self, data: list, training=True) -> dict:
         # extract data
@@ -238,22 +243,45 @@ class CSAI(BaseNNImputer):
         file_type: str = "hdf5",
     ) -> None:
 
-        self.training_set = DatasetForCSAI(
-            train_set, False, False, file_type, self.removal_percent, self.increase_factor, self.compute_intervals
+        if isinstance(train_set, str):
+            logger.warning(
+                "CSAI does not support lazy loading because normalise mean and std need to be calculated ahead. "
+                "Hence the whole train set will be loaded into memory."
+            )
+            train_set = load_dict_from_h5(train_set)
+
+        training_set = DatasetForCSAI(
+            train_set,
+            False,
+            False,
+            file_type,
+            self.removal_percent,
+            self.increase_factor,
+            self.compute_intervals,
         )
-        self.intervals = self.training_set.intervals
-        self.replacement_probabilities = self.training_set.replacement_probabilities
-        self.mean_set = self.training_set.mean_set
-        self.std_set = self.training_set.std_set
+        self.intervals = training_set.intervals
+        self.replacement_probabilities = training_set.replacement_probabilities
+        self.mean_set = training_set.mean_set
+        self.std_set = training_set.std_set
 
         training_loader = DataLoader(
-            self.training_set,
+            training_set,
             batch_size=self.batch_size,
             shuffle=True,
             num_workers=self.num_workers,
             # collate_fn=collate_fn_bidirectional
         )
+        val_loader = None
         if val_set is not None:
+            if isinstance(val_set, str):
+                logger.warning(
+                    "CSAI does not support lazy loading because normalise mean and std need to be calculated ahead. "
+                    "Hence the whole val set will be loaded into memory."
+                )
+                val_set = load_dict_from_h5(val_set)
+
+            if not key_in_data_set("X_ori", val_set):
+                raise ValueError("val_set must contain 'X_ori' for model validation.")
             val_set = DatasetForCSAI(
                 val_set,
                 True,
@@ -275,23 +303,6 @@ class CSAI(BaseNNImputer):
                 # collate_fn=collate_fn_bidirectional
             )
 
-        # Reset the model
-        self.model = _BCSAI(
-            self.n_steps,
-            self.n_features,
-            self.rnn_hidden_size,
-            self.step_channels,
-            self.consistency_weight,
-            self.imputation_weight,
-            self.intervals,
-        )
-
-        self._send_model_to_given_device()
-        self._print_model_size()
-
-        # set up the optimizer
-        self.optimizer.init_optimizer(self.model.parameters())
-
         # train the model
         self._train_model(training_loader, val_loader)
         self.model.load_state_dict(self.best_model_dict)
@@ -307,6 +318,13 @@ class CSAI(BaseNNImputer):
     ) -> dict:
 
         self.model.eval()
+
+        if isinstance(test_set, str):
+            logger.warning(
+                "CSAI does not support lazy loading because normalise mean and std need to be calculated ahead. "
+                "Hence the whole test set will be loaded into memory."
+            )
+            test_set = load_dict_from_h5(test_set)
         test_set = DatasetForCSAI(
             test_set,
             True,

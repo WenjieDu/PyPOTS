@@ -11,28 +11,6 @@ import torch.nn.functional as F
 
 from ...nn.modules.csai import BackboneBCSAI
 
-# class DiceBCELoss(nn.Module):
-#     def __init__(self, weight=None, size_average=True):
-#         super(DiceBCELoss, self).__init__()
-#         self.bcelogits = nn.BCEWithLogitsLoss()
-
-#     def forward(self, y_score, y_out, targets, smooth=1):
-
-#         #comment out if your model contains a sigmoid or equivalent activation layer
-#         # inputs = F.sigmoid(inputs)
-
-#         #flatten label and prediction tensors
-#         BCE = self.bcelogits(y_out, targets)
-
-#         y_score = y_score.view(-1)
-#         targets = targets.view(-1)
-#         intersection = (y_score * targets).sum()
-#         dice_loss = 1 - (2.*intersection + smooth)/(y_score.sum() + targets.sum() + smooth)
-
-#         Dice_BCE = BCE + dice_loss
-
-#         return BCE, Dice_BCE
-
 
 class _BCSAI(nn.Module):
     def __init__(
