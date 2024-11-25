@@ -5,10 +5,11 @@
 # Created by Linglong Qian, Joseph Arul Raj <linglong.qian@kcl.ac.uk, joseph_arul_raj@kcl.ac.uk>
 # License: BSD-3-Clause
 
+import math
+
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
-import math
+
 from .layers import FeatureRegression, Decay, Decay_obs, PositionalEncoding, Conv1dWithInit, TorchTransformerEncoder
 from ....utils.metrics import calc_mae
 
@@ -91,7 +92,7 @@ class BackboneCSAI(nn.Module):
     """
 
     def __init__(self, n_steps, n_features, rnn_hidden_size, step_channels, medians_df=None):
-        super(BackboneCSAI, self).__init__()
+        super().__init__()
 
         if medians_df is not None:
             self.medians_tensor = torch.tensor(list(medians_df.values())).float()
@@ -134,7 +135,7 @@ class BackboneCSAI(nn.Module):
 
         decay_factor = self.weighted_obs(deltas - medians.unsqueeze(1))
 
-        if h == None:
+        if h is None:
             data_last_obs = self.input_projection(last_obs.permute(0, 2, 1)).permute(0, 2, 1)
             data_decay_factor = self.input_projection(decay_factor.permute(0, 2, 1)).permute(0, 2, 1)
 
@@ -191,7 +192,7 @@ class BackboneCSAI(nn.Module):
 
 class BackboneBCSAI(nn.Module):
     def __init__(self, n_steps, n_features, rnn_hidden_size, step_channels, medians_df=None):
-        super(BackboneBCSAI, self).__init__()
+        super().__init__()
 
         self.model_f = BackboneCSAI(n_steps, n_features, rnn_hidden_size, step_channels, medians_df)
         self.model_b = BackboneCSAI(n_steps, n_features, rnn_hidden_size, step_channels, medians_df)

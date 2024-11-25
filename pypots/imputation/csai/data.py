@@ -5,14 +5,16 @@
 # Created by Linglong Qian, Joseph Arul Raj <linglong.qian@kcl.ac.uk, joseph_arul_raj@kcl.ac.uk>
 # License: BSD-3-Clause
 
+import copy
 from typing import Iterable
-from ...data.dataset import BaseDataset
+from typing import Union
+
 import numpy as np
 import torch
-from typing import Union
-import copy
-from ...data.utils import parse_delta
 from sklearn.preprocessing import StandardScaler
+
+from ...data.dataset import BaseDataset
+from ...data.utils import parse_delta
 
 
 def normalize_csai(
@@ -22,7 +24,8 @@ def normalize_csai(
     compute_intervals: bool = False,
 ):
     """
-    Normalize the data based on the given mean and standard deviation, and optionally compute time intervals between observations.
+    Normalize the data based on the given mean and standard deviation,
+    and optionally compute time intervals between observations.
 
     Parameters
     ----------
@@ -33,7 +36,8 @@ def normalize_csai(
         The mean values for each variable, used for normalization. If empty, means will be computed from the data.
 
     std : list of float, optional
-        The standard deviation values for each variable, used for normalization. If empty, std values will be computed from the data.
+        The standard deviation values for each variable, used for normalization.
+        If empty, std values will be computed from the data.
 
     compute_intervals : bool, optional, default=False
         Whether to compute the time intervals between observations for each variable.
@@ -47,10 +51,12 @@ def normalize_csai(
         The mean values for each variable after normalization, either computed from the data or passed as input.
 
     std_set : np.ndarray
-        The standard deviation values for each variable after normalization, either computed from the data or passed as input.
+        The standard deviation values for each variable after normalization,
+        either computed from the data or passed as input.
 
     intervals_list : dict of int to float, optional
-        If `compute_intervals` is True, this will return the median time intervals between observations for each variable.
+        If `compute_intervals` is True, this will return the median time intervals between observations
+        for each variable.
     """
 
     # Convert data to numpy array if it is a torch tensor
@@ -296,13 +302,23 @@ class DatasetForCSAI(BaseDataset):
     Parameters
     ----------
     data :
-        The dataset for model input, which can be either a dictionary or a path string to a data file. If it's a dictionary, `X` should be an array-like structure with shape [n_samples, sequence length (n_steps), n_features], containing the time-series data, and it can have missing values. Optionally, the dictionary can include `y`, an array-like structure with shape [n_samples], representing the labels of `X`. If `data` is a path string, it should point to a data file (e.g., h5 file) that contains key-value pairs like a dictionary, including keys for `X` and possibly `y`.
+        The dataset for model input, which can be either a dictionary or a path string to a data file.
+        If it's a dictionary, `X` should be an array-like structure
+        with shape [n_samples, sequence length (n_steps), n_features], containing the time-series data,
+        and it can have missing values. Optionally, the dictionary can include `y`,
+        an array-like structure with shape [n_samples], representing the labels of `X`.
+        If `data` is a path string, it should point to a data file (e.g., h5 file) that contains key-value pairs like
+        a dictionary, including keys for `X` and possibly `y`.
 
     return_X_ori :
-        Whether to return the original time-series data (`X_ori`) when fetching data samples, useful for evaluation purposes.
+        Whether to return the original time-series data (`X_ori`) when fetching data samples,
+        useful for evaluation purposes.
 
     return_y :
-        Whether to return classification labels in the `__getitem__()` method if they exist in the dataset. If `True`, labels will be included in the returned data samples, which is useful for training classification models. If `False`, the labels won't be returned, suitable for testing or validation stages.
+        Whether to return classification labels in the `__getitem__()` method if they exist in the dataset.
+        If `True`, labels will be included in the returned data samples,
+        which is useful for training classification models.
+        If `False`, the labels won't be returned, suitable for testing or validation stages.
 
     file_type :
         The type of the data file if `data` is a path string, such as "hdf5".
@@ -317,20 +333,29 @@ class DatasetForCSAI(BaseDataset):
         Whether to compute time intervals between observations for handling irregular time-series data.
 
     replacement_probabilities :
-        Optional precomputed probabilities for sampling missing values. If not provided, they will be calculated during the initialization of the dataset.
+        Optional precomputed probabilities for sampling missing values.
+        If not provided, they will be calculated during the initialization of the dataset.
 
     normalise_mean :
-        A list of mean values for normalizing the input features. If not provided, they will be computed during initialization.
+        A list of mean values for normalizing the input features.
+        If not provided, they will be computed during initialization.
 
     normalise_std :
-        A list of standard deviation values for normalizing the input features. If not provided, they will be computed during initialization.
+        A list of standard deviation values for normalizing the input features.
+        If not provided, they will be computed during initialization.
 
     training :
-        Whether the dataset is used for training. If `False`, it will adjust how data is processed, particularly for evaluation and testing phases.
+        Whether the dataset is used for training.
+        If `False`, it will adjust how data is processed, particularly for evaluation and testing phases.
 
     Notes
     -----
-    The DatasetForCSAI class is designed for bidirectional imputation of time-series data, handling both forward and backward directions to improve imputation accuracy. It supports on-the-fly data normalization and missing value simulation, making it suitable for training and evaluating deep learning models like CSAI. The class can work with large datasets stored on disk, leveraging lazy-loading to minimize memory usage, and supports both training and testing scenarios, adjusting data handling as needed.
+    The DatasetForCSAI class is designed for bidirectional imputation of time-series data,
+    handling both forward and backward directions to improve imputation accuracy.
+    It supports on-the-fly data normalization and missing value simulation,
+    making it suitable for training and evaluating deep learning models like CSAI.
+    The class can work with large datasets stored on disk, leveraging lazy-loading to minimize memory usage,
+    and supports both training and testing scenarios, adjusting data handling as needed.
 
     """
 
@@ -344,13 +369,18 @@ class DatasetForCSAI(BaseDataset):
         increase_factor: float = 0.1,
         compute_intervals: bool = False,
         replacement_probabilities=None,
-        normalise_mean: list = [],
-        normalise_std: list = [],
+        normalise_mean=None,
+        normalise_std=None,
         training: bool = True,
     ):
         super().__init__(
             data=data, return_X_ori=return_X_ori, return_X_pred=False, return_y=return_y, file_type=file_type
         )
+
+        if normalise_std is None:
+            normalise_std = []
+        if normalise_mean is None:
+            normalise_mean = []
 
         self.removal_percent = removal_percent
         self.increase_factor = increase_factor
@@ -359,6 +389,11 @@ class DatasetForCSAI(BaseDataset):
         self.normalise_mean = normalise_mean
         self.normalise_std = normalise_std
         self.training = training
+
+        self.normalized_data = None
+        self.mean_set = None
+        self.std_set = None
+        self.intervals = None
 
         if not isinstance(self.data, str):
             self.normalized_data, self.mean_set, self.std_set, self.intervals = normalize_csai(
@@ -440,73 +475,6 @@ class DatasetForCSAI(BaseDataset):
         }
 
     def _fetch_data_from_file(self, idx: int) -> Iterable:
-        """Fetch data with the lazy-loading strategy, i.e. only loading data from the file while requesting for samples.
-        Here the opened file handle doesn't load the entire dataset into RAM but only load the currently accessed slice.
-
-        Parameters
-        ----------
-        idx :
-            The index of the sample to be return.
-
-        Returns
-        -------
-        sample :
-            The collated data sample, a list including all necessary sample info.
-        """
-
-        if self.file_handle is None:
-            self.file_handle = self._open_file_handle()
-
-        X = torch.from_numpy(self.file_handle["X"][idx])
-        normalized_data, mean_set, std_set, intervals = normalize_csai(
-            X,
-            self.normalise_mean,
-            self.normalise_std,
-            self.compute_intervals,
+        raise NotImplementedError(
+            "CSAI does not support lazy loading because normalise mean and std need to be calculated ahead."
         )
-
-        processed_data, replacement_probabilities = non_uniform_sample(
-            normalized_data,
-            self.removal_percent,
-            self.replacement_probabilities,
-            self.increase_factor,
-        )
-        forward_X = processed_data["values"]
-        forward_missing_mask = processed_data["masks"]
-        backward_X = torch.flip(forward_X, dims=[1])
-        backward_missing_mask = torch.flip(forward_missing_mask, dims=[1])
-
-        X_ori = self.processed_data["evals"]
-        indicating_mask = self.processed_data["eval_masks"]
-
-        if self.return_y:
-            y = self.processed_data["labels"]
-
-        sample = [
-            torch.tensor(idx),
-            # for forward
-            forward_X,
-            forward_missing_mask,
-            processed_data["deltas_f"],
-            processed_data["last_obs_f"],
-            # for backward
-            backward_X,
-            backward_missing_mask,
-            processed_data["deltas_b"],
-            processed_data["last_obs_b"],
-        ]
-
-        if self.return_X_ori:
-            sample.extend([X_ori, indicating_mask])
-
-        # if the dataset has labels and is for training, then fetch it from the file
-        if self.return_y:
-            sample.append(y)
-
-        return {
-            "sample": sample,
-            "replacement_probabilities": replacement_probabilities,
-            "mean_set": mean_set,
-            "std_set": std_set,
-            "intervals": intervals,
-        }

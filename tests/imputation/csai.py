@@ -45,17 +45,15 @@ class TestCSAI(unittest.TestCase):
     csai = CSAI(
         n_steps=DATA["n_steps"],
         n_features=DATA["n_features"],
-        rnn_hidden_size=32,
+        rnn_hidden_size=64,
         imputation_weight=0.7,
         consistency_weight=0.3,
         removal_percent=10,  # Assume we are removing 10% of the data
         increase_factor=0.1,
         compute_intervals=True,
         step_channels=16,
-        batch_size=64,
         epochs=EPOCHS,
         optimizer=optimizer,
-        num_workers=0,
         device=DEVICE,
         saving_path=saving_path,
         model_saving_strategy="best",
@@ -71,14 +69,10 @@ class TestCSAI(unittest.TestCase):
     def test_1_impute(self):
         # Impute missing values using the trained CSAI model
         imputed_X = self.csai.impute(TEST_SET)
-        assert not np.isnan(
-            imputed_X
-        ).any(), "Output still has missing values after running impute()."
-        
+        assert not np.isnan(imputed_X).any(), "Output still has missing values after running impute()."
+
         # Calculate mean squared error (MSE) for the test set
-        test_MSE = calc_mse(
-            imputed_X, DATA["test_X_ori"], DATA["test_X_indicating_mask"]
-        )
+        test_MSE = calc_mse(imputed_X, DATA["test_X_ori"], DATA["test_X_indicating_mask"])
         logger.info(f"CSAI test_MSE: {test_MSE}")
 
     @pytest.mark.xdist_group(name="imputation-csai")
@@ -91,17 +85,12 @@ class TestCSAI(unittest.TestCase):
         assert hasattr(self.csai, "best_loss")
         self.assertNotEqual(self.csai.best_loss, float("inf"))
 
-        assert (
-            hasattr(self.csai, "best_model_dict")
-            and self.csai.best_model_dict is not None
-        )
+        assert hasattr(self.csai, "best_model_dict") and self.csai.best_model_dict is not None
 
     @pytest.mark.xdist_group(name="imputation-csai")
     def test_3_saving_path(self):
         # Ensure the root saving directory exists
-        assert os.path.exists(
-            self.saving_path
-        ), f"file {self.saving_path} does not exist"
+        assert os.path.exists(self.saving_path), f"file {self.saving_path} does not exist"
 
         # Check if the tensorboard file and model checkpoints exist
         check_tb_and_model_checkpoints_existence(self.csai)
@@ -117,7 +106,7 @@ class TestCSAI(unittest.TestCase):
     def test_4_lazy_loading(self):
         # Fit the CSAI model using lazy-loading datasets from H5 files
         self.csai.fit(GENERAL_H5_TRAIN_SET_PATH, GENERAL_H5_VAL_SET_PATH)
-        
+
         # Perform imputation using lazy-loaded data
         imputation_results = self.csai.predict(GENERAL_H5_TEST_SET_PATH)
         assert not np.isnan(
