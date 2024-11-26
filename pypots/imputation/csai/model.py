@@ -91,6 +91,13 @@ class CSAI(BaseNNImputer):
         The "better" strategy will automatically save the model during training whenever the model performs
         better than in previous epochs.
         The "all" strategy will save every model after each epoch training.
+    
+    is_normalise:
+        Whether to normalize the input data. Set this flag to False if the the data is already normalised.
+
+    non_uniform : 
+        Whether to apply non-uniform sampling to simulate missing values. If `True`, non-uniform sampling will be 
+        applied. 
 
     verbose :
         Whether to print out the training logs during the training process.
@@ -124,6 +131,8 @@ class CSAI(BaseNNImputer):
         device: Union[str, torch.device, list, None] = None,
         saving_path: str = None,
         model_saving_strategy: Union[str, None] = "best",
+        is_normalise: bool = False,
+        non_uniform: bool = False,
         verbose: bool = True,
     ):
         super().__init__(
@@ -150,6 +159,8 @@ class CSAI(BaseNNImputer):
         self.replacement_probabilities = None
         self.mean_set = None
         self.std_set = None
+        self.is_normalise = is_normalise
+        self.non_uniform = non_uniform
 
         # Initialise model
         self.model = _BCSAI(
@@ -167,14 +178,12 @@ class CSAI(BaseNNImputer):
 
         # set up the optimizer
         self.optimizer = optimizer
-        self.optimizer.init_optimizer(self.model.parameters())
 
-    def _assemble_input_for_training(self, data: list, training=True) -> dict:
+    def _assemble_input_for_training(self, data: list) -> dict:
         # extract data
-        sample = data["sample"]
 
         (indices, X, missing_mask, deltas, last_obs, back_X, back_missing_mask, back_deltas, back_last_obs) = (
-            self._send_data_to_given_device(sample)
+            self._send_data_to_given_device(data)
         )
 
         # assemble input data
@@ -198,7 +207,6 @@ class CSAI(BaseNNImputer):
 
     def _assemble_input_for_validating(self, data: list) -> dict:
         # extract data
-        sample = data["sample"]
         (
             indices,
             X,
@@ -211,7 +219,7 @@ class CSAI(BaseNNImputer):
             back_last_obs,
             X_ori,
             indicating_mask,
-        ) = self._send_data_to_given_device(sample)
+        ) = self._send_data_to_given_device(data)
 
         # assemble input data
         inputs = {
@@ -243,21 +251,24 @@ class CSAI(BaseNNImputer):
         file_type: str = "hdf5",
     ) -> None:
 
-        if isinstance(train_set, str):
+        if isinstance(train_set, str) and self.non_uniform:
             logger.warning(
-                "CSAI does not support lazy loading because normalise mean and std need to be calculated ahead. "
-                "Hence the whole train set will be loaded into memory."
+                "CSAI does not support lazy loading with non uniform sampling because normalise mean and std "
+                "need to be calculated ahead. Hence the whole train set will be loaded into memory."
             )
+
             train_set = load_dict_from_h5(train_set)
 
         training_set = DatasetForCSAI(
-            train_set,
-            False,
-            False,
-            file_type,
-            self.removal_percent,
-            self.increase_factor,
-            self.compute_intervals,
+            data=train_set,
+            return_X_ori=False,
+            return_y=False,
+            file_type=file_type,
+            removal_percent=self.removal_percent,
+            increase_factor=self.increase_factor,
+            compute_intervals=self.compute_intervals,
+            is_normalise=self.is_normalise,
+            non_uniform=self.non_uniform,
         )
         self.intervals = training_set.intervals
         self.replacement_probabilities = training_set.replacement_probabilities
@@ -273,27 +284,28 @@ class CSAI(BaseNNImputer):
         )
         val_loader = None
         if val_set is not None:
-            if isinstance(val_set, str):
+            if isinstance(val_set, str) and self.non_uniform:
                 logger.warning(
-                    "CSAI does not support lazy loading because normalise mean and std need to be calculated ahead. "
-                    "Hence the whole val set will be loaded into memory."
+                "CSAI does not support lazy loading with non uniform sampling because normalise mean and std "
+                "need to be calculated ahead. Hence the whole train set will be loaded into memory."
                 )
                 val_set = load_dict_from_h5(val_set)
 
             if not key_in_data_set("X_ori", val_set):
                 raise ValueError("val_set must contain 'X_ori' for model validation.")
             val_set = DatasetForCSAI(
-                val_set,
-                True,
-                False,
-                file_type,
-                self.removal_percent,
-                self.increase_factor,
-                self.compute_intervals,
-                self.replacement_probabilities,
-                self.mean_set,
-                self.std_set,
-                False,
+                data=val_set,
+                return_X_ori=True,
+                return_y=False,
+                file_type=file_type,
+                removal_percent=self.removal_percent,
+                increase_factor=self.increase_factor,
+                compute_intervals=self.compute_intervals,
+                replacement_probabilities=self.replacement_probabilities,
+                normalise_mean=self.mean_set,
+                normalise_std=self.std_set,
+                is_normalise=self.is_normalise,
+                non_uniform=self.non_uniform,
             )
             val_loader = DataLoader(
                 val_set,
@@ -302,6 +314,23 @@ class CSAI(BaseNNImputer):
                 num_workers=self.num_workers,
                 # collate_fn=collate_fn_bidirectional
             )
+
+        # Reset the model
+        self.model = _BCSAI(
+            self.n_steps,
+            self.n_features,
+            self.rnn_hidden_size,
+            self.step_channels,
+            self.consistency_weight,
+            self.imputation_weight,
+            self.intervals,
+        )
+
+        self._send_model_to_given_device()
+        self._print_model_size()
+
+        # set up the optimizer
+        self.optimizer.init_optimizer(self.model.parameters())
 
         # train the model
         self._train_model(training_loader, val_loader)
@@ -319,24 +348,25 @@ class CSAI(BaseNNImputer):
 
         self.model.eval()
 
-        if isinstance(test_set, str):
+        if isinstance(test_set, str) and self.non_uniform:
             logger.warning(
-                "CSAI does not support lazy loading because normalise mean and std need to be calculated ahead. "
-                "Hence the whole test set will be loaded into memory."
+                "CSAI does not support lazy loading with non uniform sampling because normalise mean and std "
+                "need to be calculated ahead. Hence the whole train set will be loaded into memory."
             )
             test_set = load_dict_from_h5(test_set)
         test_set = DatasetForCSAI(
-            test_set,
-            True,
-            False,
-            file_type,
-            self.removal_percent,
-            self.increase_factor,
-            self.compute_intervals,
-            self.replacement_probabilities,
-            self.mean_set,
-            self.std_set,
-            False,
+            data=test_set,
+            return_X_ori=True,
+            return_y=False,
+            file_type=file_type,
+            removal_percent=self.removal_percent,
+            increase_factor=self.increase_factor,
+            compute_intervals=self.compute_intervals,
+            replacement_probabilities=self.replacement_probabilities,
+            normalise_mean=self.mean_set,
+            normalise_std=self.std_set,
+            is_normalise=self.is_normalise,
+            non_uniform=self.non_uniform,
         )
 
         test_loader = DataLoader(

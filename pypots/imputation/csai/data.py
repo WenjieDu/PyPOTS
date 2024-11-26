@@ -12,10 +12,11 @@ from typing import Union
 import numpy as np
 import torch
 from sklearn.preprocessing import StandardScaler
+from pygrinder import fill_and_get_mask_torch
 
 from ...data.dataset import BaseDataset
-from ...data.utils import parse_delta
-
+from ...data.utils import _parse_delta_torch, parse_delta
+from ...utils.logging import logger
 
 def normalize_csai(
     data,
@@ -343,10 +344,13 @@ class DatasetForCSAI(BaseDataset):
     normalise_std :
         A list of standard deviation values for normalizing the input features.
         If not provided, they will be computed during initialization.
+    
+    is_normalise :
+        Whether to normalise the input data. Set this flag to False if the the data is already normalised.
 
-    training :
-        Whether the dataset is used for training.
-        If `False`, it will adjust how data is processed, particularly for evaluation and testing phases.
+    non_uniform :
+        Whether to apply non-uniform sampling to simulate missing values. If set `True`, non-uniform 
+        sampling will be applied.
 
     Notes
     -----
@@ -371,7 +375,8 @@ class DatasetForCSAI(BaseDataset):
         replacement_probabilities=None,
         normalise_mean=None,
         normalise_std=None,
-        training: bool = True,
+        is_normalise: bool = False,
+        non_uniform: bool = False,
     ):
         super().__init__(
             data=data, return_X_ori=return_X_ori, return_X_pred=False, return_y=return_y, file_type=file_type
@@ -388,7 +393,8 @@ class DatasetForCSAI(BaseDataset):
         self.replacement_probabilities = replacement_probabilities
         self.normalise_mean = normalise_mean
         self.normalise_std = normalise_std
-        self.training = training
+        self.is_normalise = is_normalise
+        self.non_uniform = non_uniform
 
         self.normalized_data = None
         self.mean_set = None
@@ -396,27 +402,68 @@ class DatasetForCSAI(BaseDataset):
         self.intervals = None
 
         if not isinstance(self.data, str):
-            self.normalized_data, self.mean_set, self.std_set, self.intervals = normalize_csai(
-                self.data["X"],
-                self.normalise_mean,
-                self.normalise_std,
-                compute_intervals,
-            )
+            if self.is_normalise:
+                self.normalized_data, self.mean_set, self.std_set, self.intervals = normalize_csai(
+                    self.data["X"],
+                    self.normalise_mean,
+                    self.normalise_std,
+                    compute_intervals,
+                )
+            else:
+                self.normalized_data = self.data["X"]
+                self.mean_set = self.normalise_mean
+                self.std_set = self.normalise_std
+                self.intervals = {}
+                if compute_intervals:
+                    for v in range(self.normalized_data.shape[2]):
+                        all_intervals = []
+                        for p in range(self.normalized_data.shape[0]):
+                            valid_time_points = np.where(~np.isnan(self.normalized_data[p, :, v]))[0]
+                            if len(valid_time_points) > 1:
+                                intervals = np.diff(valid_time_points)
+                                all_intervals.extend(intervals)
+                        self.intervals[v] = np.median(all_intervals) if all_intervals else np.nan
 
-            self.processed_data, self.replacement_probabilities = non_uniform_sample(
-                self.normalized_data,
-                removal_percent,
-                replacement_probabilities,
-                increase_factor,
-            )
-            self.forward_X = self.processed_data["values"]
-            self.forward_missing_mask = self.processed_data["masks"]
-            self.backward_X = torch.flip(self.forward_X, dims=[1])
-            self.backward_missing_mask = torch.flip(self.forward_missing_mask, dims=[1])
+            if self.non_uniform:
+                self.processed_data, self.replacement_probabilities = non_uniform_sample(
+                    self.normalized_data,
+                    removal_percent,
+                    replacement_probabilities,
+                    increase_factor,
+                )
+                self.forward_X = self.processed_data["values"]
+                self.forward_missing_mask = self.processed_data["masks"]
+                self.backward_X = torch.flip(self.forward_X, dims=[1])
+                self.backward_missing_mask = torch.flip(self.forward_missing_mask, dims=[1])
 
-            self.X_ori = self.processed_data["evals"]
-            self.indicating_mask = self.processed_data["eval_masks"]
+                self.X_ori = self.processed_data["evals"]
+                self.indicating_mask = self.processed_data["eval_masks"]
+            else:
+                if self.return_X_ori:
+                    self.forward_missing_mask = self.missing_mask
+                    self.forward_X = self.X
+                else:
+                    self.forward_X, self.forward_missing_mask = fill_and_get_mask_torch(self.X)
 
+
+                deltas_f = parse_delta(self.forward_missing_mask)
+                self.backward_X = torch.flip(self.forward_X, dims=[1])
+                self.backward_missing_mask = torch.flip(self.forward_missing_mask, dims=[1])
+                deltas_b = parse_delta(self.backward_missing_mask)
+
+                B, _, _ = self.forward_X.shape
+
+                last_obs_f = np.array(np.nan_to_num([compute_last_obs(self.forward_X[b], self.forward_missing_mask[b].bool()) for b in range(B)])).astype(np.float32)
+                last_obs_b = np.array(np.nan_to_num([compute_last_obs(self.backward_X[b], self.backward_missing_mask[b].bool()) for b in range(B)])).astype(np.float32)
+
+                self.processed_data = {
+                    "deltas_f": deltas_f,
+                    "deltas_b": deltas_b,
+                    "last_obs_f": torch.FloatTensor(last_obs_f),
+                    "last_obs_b": torch.FloatTensor(last_obs_b),
+                }            
+                # self.replacement_probabilities = 0.0
+            
     def _fetch_data_from_array(self, idx: int) -> Iterable:
         """Fetch data from self.X if it is given.
 
@@ -460,21 +507,72 @@ class DatasetForCSAI(BaseDataset):
             self.processed_data["last_obs_b"][idx],
         ]
 
-        if not self.training:
+        if self.return_X_ori:
             sample.extend([self.X_ori[idx], self.indicating_mask[idx]])
 
         if self.return_y:
             sample.append(self.y[idx].to(torch.long))
 
-        return {
-            "sample": sample,
-            "replacement_probabilities": self.replacement_probabilities,
-            "mean_set": self.mean_set,
-            "std_set": self.std_set,
-            "intervals": self.intervals,
-        }
+        return sample
 
     def _fetch_data_from_file(self, idx: int) -> Iterable:
-        raise NotImplementedError(
-            "CSAI does not support lazy loading because normalise mean and std need to be calculated ahead."
-        )
+        """Fetch data with the lazy-loading strategy, i.e. only loading data from the file while requesting for samples.
+        Here the opened file handle doesn't load the entire dataset into RAM but only load the currently accessed slice.
+        Parameters
+        ----------
+        idx :
+            The index of the sample to be return.
+        Returns
+        -------
+        sample :
+            The collated data sample, a list including all necessary sample info.
+        """
+
+        if self.file_handle is None:
+            self.file_handle = self._open_file_handle()
+        
+        X = torch.from_numpy(self.file_handle["X"][idx]).to(torch.float32)
+        X, missing_mask = fill_and_get_mask_torch(X)
+
+        forward = {
+            "X": X,
+            "missing_mask": missing_mask,
+            "deltas": _parse_delta_torch(missing_mask),
+        }
+
+        backward = {
+            "X": torch.flip(forward["X"], dims=[0]),
+            "missing_mask": torch.flip(forward["missing_mask"], dims=[0]),
+        }
+        backward["deltas"] = _parse_delta_torch(backward["missing_mask"])
+        # B, _, _ = forward['X'].shape
+
+        last_obs_f = np.nan_to_num(compute_last_obs(forward['X'], forward['missing_mask'].bool())).astype(np.float32)
+        last_obs_b = np.nan_to_num(compute_last_obs(backward['X'], backward['missing_mask'].bool())).astype(np.float32)
+
+        sample = [
+            torch.tensor(idx),
+            # for forward
+            forward["X"],
+            forward["missing_mask"],
+            forward["deltas"],
+            torch.FloatTensor(last_obs_f),
+            # for backward
+            backward["X"],
+            backward["missing_mask"],
+            backward["deltas"],
+            torch.FloatTensor(last_obs_b),
+        ]
+
+        if self.return_X_ori:
+            X_ori = torch.from_numpy(self.file_handle["X_ori"][idx]).to(torch.float32)
+            X_ori, X_ori_missing_mask = fill_and_get_mask_torch(X_ori)
+            indicating_mask = X_ori_missing_mask - missing_mask
+            sample.extend([X_ori, indicating_mask])
+
+        # if the dataset has labels and is for training, then fetch it from the file
+        if self.return_y:
+            sample.append(torch.tensor(self.file_handle["y"][idx], dtype=torch.long))
+
+        return sample
+

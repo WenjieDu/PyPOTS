@@ -57,6 +57,8 @@ class TestCSAI(unittest.TestCase):
         device=DEVICE,
         saving_path=saving_path,
         model_saving_strategy="best",
+        is_normalise=False,
+        non_uniform=False,
         verbose=True,
     )
 
@@ -97,7 +99,7 @@ class TestCSAI(unittest.TestCase):
 
         # Save the trained model to file, and verify the file existence
         saved_model_path = os.path.join(self.saving_path, self.model_save_name)
-        self.csai.save(saved_model_path)
+        self.csai.save(saved_model_path, overwrite=True)
 
         # Test loading the saved model
         self.csai.load(saved_model_path)

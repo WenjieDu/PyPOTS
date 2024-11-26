@@ -22,7 +22,8 @@ class DatasetForCSAI(DatasetForCSAI_Imputation):
         replacement_probabilities=None,
         normalise_mean: list = [],
         normalise_std: list = [],
-        training: bool = True,
+        is_normalise: bool = False,
+        non_uniform: bool = False,
     ):
         super().__init__(
             data=data,
@@ -35,5 +36,6 @@ class DatasetForCSAI(DatasetForCSAI_Imputation):
             replacement_probabilities=replacement_probabilities,
             normalise_mean=normalise_mean,
             normalise_std=normalise_std,
-            training=training,
+            is_normalise=is_normalise,
+            non_uniform=non_uniform,
         )

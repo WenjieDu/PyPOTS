@@ -16,6 +16,7 @@ from .base import BaseCommand
 from .utils import load_package_from_path
 from ..classification import BRITS as BRITS_classification
 from ..classification import GRUD as GRUD_classification
+from ..classification import CSAI as CSAI_classification
 from ..classification import Raindrop
 from ..clustering import CRLI, VaDER
 from ..data.saving.h5 import load_dict_from_h5
@@ -47,6 +48,7 @@ from ..imputation import (
     TiDE,
     Reformer,
     RevIN_SCINet,
+    CSAI,
 )
 from ..optim import Adam
 from ..utils.logging import logger
@@ -89,10 +91,12 @@ NN_MODELS = {
     "pypots.imputation.TiDE": TiDE,
     "pypots.imputation.Transformer": Transformer,
     "pypots.imputation.USGAN": USGAN,
+    "pypots.imputation.CSAI": CSAI,
     # classification models
     "pypots.classification.BRITS": BRITS_classification,
     "pypots.classification.GRUD": GRUD_classification,
     "pypots.classification.Raindrop": Raindrop,
+    "pypots.classification.CSAI": CSAI_classification,
     # clustering models
     "pypots.clustering.CRLI": CRLI,
     "pypots.clustering.VaDER": VaDER,
