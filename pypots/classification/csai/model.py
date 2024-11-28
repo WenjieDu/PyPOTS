@@ -53,9 +53,6 @@ class CSAI(BaseNNClassifier):
     increase_factor :
     The factor to increase the frequency of missing value occurrences.
 
-    compute_intervals :
-    Whether to compute time intervals between observations during data processing.
-
     step_channels :
     The number of step channels for the model.
 
@@ -114,7 +111,6 @@ class CSAI(BaseNNClassifier):
         n_classes: int,
         removal_percent: int,
         increase_factor: float,
-        compute_intervals: bool,
         step_channels: int,
         dropout: float = 0.5,
         batch_size: int = 32,
@@ -148,12 +144,7 @@ class CSAI(BaseNNClassifier):
         self.removal_percent = removal_percent
         self.increase_factor = increase_factor
         self.step_channels = step_channels
-        self.compute_intervals = compute_intervals
         self.dropout = dropout
-        self.intervals = None
-        self.replacement_probabilities = None
-        self.mean_set = None
-        self.std_set = None
 
         # Initialise empty model
         self.model = _BCSAI(
@@ -166,7 +157,6 @@ class CSAI(BaseNNClassifier):
             n_classes=self.n_classes,
             step_channels=self.step_channels,
             dropout=self.dropout,
-            intervals=self.intervals,
         )
 
         self._send_model_to_given_device()
@@ -198,6 +188,7 @@ class CSAI(BaseNNClassifier):
                 "deltas": back_deltas,
                 "last_obs": back_last_obs,
             },
+            "intervals": self.intervals,
         }
         return inputs
 
@@ -217,8 +208,6 @@ class CSAI(BaseNNClassifier):
             back_missing_mask,
             back_deltas,
             back_last_obs,
-            X_ori,
-            indicating_mask,
         ) = self._send_data_to_given_device(sample)
 
         # assemble input data
@@ -236,8 +225,7 @@ class CSAI(BaseNNClassifier):
                 "deltas": back_deltas,
                 "last_obs": back_last_obs,
             },
-            # "X_ori": X_ori,
-            # "indicating_mask": indicating_mask,
+            "intervals": self.intervals,
         }
 
         return inputs
@@ -251,7 +239,7 @@ class CSAI(BaseNNClassifier):
         # Create dataset
         if isinstance(train_set, str):
             logger.warning(
-                "CSAI does not support lazy loading because normalise mean and std need to be calculated ahead. "
+                "CSAI does not support lazy loading because intervals need to be calculated ahead. "
                 "Hence the whole train set will be loaded into memory."
             )
             train_set = load_dict_from_h5(train_set)
@@ -261,13 +249,10 @@ class CSAI(BaseNNClassifier):
             return_y=True,
             removal_percent=self.removal_percent,
             increase_factor=self.increase_factor,
-            compute_intervals=self.compute_intervals,
         )
 
         self.intervals = training_set.intervals
         self.replacement_probabilities = training_set.replacement_probabilities
-        self.mean_set = training_set.mean_set
-        self.std_set = training_set.std_set
 
         train_loader = DataLoader(
             training_set,
@@ -279,7 +264,7 @@ class CSAI(BaseNNClassifier):
         if val_set is not None:
             if isinstance(val_set, str):
                 logger.warning(
-                    "CSAI does not support lazy loading because normalise mean and std need to be calculated ahead. "
+                    "CSAI does not support lazy loading because intervals need to be calculated ahead. "
                     "Hence the whole val set will be loaded into memory."
                 )
                 val_set = load_dict_from_h5(val_set)
@@ -292,10 +277,7 @@ class CSAI(BaseNNClassifier):
                 return_y=True,
                 removal_percent=self.removal_percent,
                 increase_factor=self.increase_factor,
-                compute_intervals=self.compute_intervals,
                 replacement_probabilities=self.replacement_probabilities,
-                normalise_mean=self.mean_set,
-                normalise_std=self.std_set,
             )
             val_loader = DataLoader(
                 val_set,
@@ -321,7 +303,7 @@ class CSAI(BaseNNClassifier):
 
         if isinstance(test_set, str):
             logger.warning(
-                "CSAI does not support lazy loading because normalise mean and std need to be calculated ahead. "
+                "CSAI does not support lazy loading because intervals need to be calculated ahead. "
                 "Hence the whole test set will be loaded into memory."
             )
             test_set = load_dict_from_h5(test_set)
@@ -331,11 +313,7 @@ class CSAI(BaseNNClassifier):
             return_y=False,
             removal_percent=self.removal_percent,
             increase_factor=self.increase_factor,
-            compute_intervals=self.compute_intervals,
             replacement_probabilities=self.replacement_probabilities,
-            normalise_mean=self.mean_set,
-            normalise_std=self.std_set,
-            training=False,
         )
         test_loader = DataLoader(
             test_set,

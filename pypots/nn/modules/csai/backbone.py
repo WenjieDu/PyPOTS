@@ -86,18 +86,10 @@ class BackboneCSAI(nn.Module):
     step_channels :
         number of channels for each step in the sequence
 
-    medians_df :
-        dataframe of median values for each feature, optional
-
     """
 
-    def __init__(self, n_steps, n_features, rnn_hidden_size, step_channels, medians_df=None):
+    def __init__(self, n_steps, n_features, rnn_hidden_size, step_channels):
         super().__init__()
-
-        if medians_df is not None:
-            self.medians_tensor = torch.tensor(list(medians_df.values())).float()
-        else:
-            self.medians_tensor = torch.zeros(n_features).float()
 
         self.n_steps = n_steps
         self.step_channels = step_channels
@@ -126,12 +118,14 @@ class BackboneCSAI(nn.Module):
             stv = 1.0 / math.sqrt(weight.size(1))
             nn.init.uniform_(weight, -stv, stv)
 
-    def forward(self, x, mask, deltas, last_obs, h=None):
+    def forward(self, x, mask, deltas, last_obs, intervals, h=None):
 
-        # Get dimensionality
-        [B, _, _] = x.shape
+        if intervals is not None:
+            medians_tensor = torch.tensor(list(intervals.values())).float()
+        else:
+            medians_tensor = torch.zeros(x.shape[2]).float()
 
-        medians = self.medians_tensor.unsqueeze(0).repeat(B, 1).to(x.device)
+        medians = medians_tensor.unsqueeze(0).repeat(x.shape[0], 1).to(x.device)
 
         decay_factor = self.weighted_obs(deltas - medians.unsqueeze(1))
 
@@ -191,11 +185,11 @@ class BackboneCSAI(nn.Module):
 
 
 class BackboneBCSAI(nn.Module):
-    def __init__(self, n_steps, n_features, rnn_hidden_size, step_channels, medians_df=None):
+    def __init__(self, n_steps, n_features, rnn_hidden_size, step_channels):
         super().__init__()
 
-        self.model_f = BackboneCSAI(n_steps, n_features, rnn_hidden_size, step_channels, medians_df)
-        self.model_b = BackboneCSAI(n_steps, n_features, rnn_hidden_size, step_channels, medians_df)
+        self.model_f = BackboneCSAI(n_steps, n_features, rnn_hidden_size, step_channels)
+        self.model_b = BackboneCSAI(n_steps, n_features, rnn_hidden_size, step_channels)
 
     def forward(self, xdata):
 
@@ -211,13 +205,15 @@ class BackboneBCSAI(nn.Module):
         d_b = xdata["backward"]["deltas"]
         last_obs_b = xdata["backward"]["last_obs"]
 
+        intervals = xdata["intervals"]
+
         # Call forward model
         (
             f_imputed_data,
             f_reconstruction,
             f_hidden_states,
             f_reconstruction_loss,
-        ) = self.model_f(x, m, d_f, last_obs_f)
+        ) = self.model_f(x, m, d_f, last_obs_f, intervals)
 
         # Call backward model
         (
@@ -225,7 +221,7 @@ class BackboneBCSAI(nn.Module):
             b_reconstruction,
             b_hidden_states,
             b_reconstruction_loss,
-        ) = self.model_b(x_b, m_b, d_b, last_obs_b)
+        ) = self.model_b(x_b, m_b, d_b, last_obs_b, intervals)
 
         # Averaging the imputations and prediction
         x_imp = (f_imputed_data + b_imputed_data.flip(dims=[1])) / 2

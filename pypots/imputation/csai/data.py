@@ -15,105 +15,42 @@ from sklearn.preprocessing import StandardScaler
 
 from ...data.dataset import BaseDataset
 from ...data.utils import parse_delta
+from pygrinder import mnar_num
 
-
-def normalize_csai(
-    data,
-    mean: list = None,
-    std: list = None,
-    compute_intervals: bool = False,
-):
+def compute_intervals(data):
     """
-    Normalize the data based on the given mean and standard deviation,
-    and optionally compute time intervals between observations.
+    Compute the time intervals between observations for each variable in the dataset.
 
     Parameters
     ----------
     data : np.ndarray
         The input time-series data of shape [n_patients, n_hours, n_variables], which may contain missing values (NaNs).
 
-    mean : list of float, optional
-        The mean values for each variable, used for normalization. If empty, means will be computed from the data.
-
-    std : list of float, optional
-        The standard deviation values for each variable, used for normalization.
-        If empty, std values will be computed from the data.
-
-    compute_intervals : bool, optional, default=False
-        Whether to compute the time intervals between observations for each variable.
-
     Returns
     -------
-    data : torch.Tensor
-        The normalized time-series data with the same shape as the input data, moved to the specified device.
-
-    mean_set : np.ndarray
-        The mean values for each variable after normalization, either computed from the data or passed as input.
-
-    std_set : np.ndarray
-        The standard deviation values for each variable after normalization,
-        either computed from the data or passed as input.
-
-    intervals_list : dict of int to float, optional
-        If `compute_intervals` is True, this will return the median time intervals between observations
-        for each variable.
+    intervals_list : dict of int to float
+        A dictionary containing the median time intervals between observations for each variable.
     """
+    n_patients, _, n_variables = data.shape
+    intervals_list = {}
 
-    # Convert data to numpy array if it is a torch tensor
-    if isinstance(data, torch.Tensor):
-        data = data.cpu().numpy()
+    for v in range(n_variables):
+        all_intervals = []
+        # Loop over each patient
+        for p in range(n_patients):
+            # Get non-NaN observation indices for the current patient and variable
+            valid_time_points = np.where(~np.isnan(data[p, :, v]))[0]
 
-    n_patients, n_hours, n_variables = data.shape
+            # If the patient has more than one valid observation, compute time intervals
+            if len(valid_time_points) > 1:
+                # Calculate time differences between consecutive observations
+                intervals = np.diff(valid_time_points)
+                all_intervals.extend(intervals)
 
-    # Flatten data for easier computation of statistics
-    reshaped_data = data.reshape(-1, n_variables)
+        # Compute the median interval for the current variable
+        intervals_list[v] = np.median(all_intervals) if all_intervals else np.nan
 
-    # Use StandardScaler for normalization
-    scaler = StandardScaler()
-
-    # Update condition to handle empty list as well
-    if mean is None or std is None or len(mean) == 0 or len(std) == 0:
-        # Fit the scaler on the data (ignores NaNs during the fitting process)
-        scaler.fit(reshaped_data)
-        mean_set = scaler.mean_
-        std_set = scaler.scale_
-    else:
-        # Use provided mean and std by directly setting them in the scaler
-        scaler.mean_ = np.array(mean)
-        scaler.scale_ = np.array(std)
-        mean_set = np.array(mean)
-        std_set = np.array(std)
-
-    # Transform data using scaler, which ignores NaNs
-    scaled_data = scaler.transform(reshaped_data)
-
-    # Reshape back to original shape [n_patients, n_hours, n_variables]
-    normalized_data = scaled_data.reshape(n_patients, n_hours, n_variables)
-
-    # Optimized interval calculation considering NaNs in each patient
-    if compute_intervals:
-        intervals_list = {}
-
-        for v in range(n_variables):
-            all_intervals = []
-            # Loop over each patient
-            for p in range(n_patients):
-                # Get non-NaN observation indices for the current patient and variable
-                valid_time_points = np.where(~np.isnan(data[p, :, v]))[0]
-
-                # If the patient has more than one valid observation, compute time intervals
-                if len(valid_time_points) > 1:
-                    # Calculate time differences between consecutive observations
-                    intervals = np.diff(valid_time_points)
-                    all_intervals.extend(intervals)
-
-            # Compute the median interval for the current variable
-            intervals_list[v] = np.median(all_intervals) if all_intervals else np.nan
-    else:
-        intervals_list = None
-
-    return normalized_data, mean_set, std_set, intervals_list
-
+    return intervals_list
 
 def compute_last_obs(data, masks):
     """
@@ -138,50 +75,6 @@ def compute_last_obs(data, masks):
         last_obs[t] = last_obs_val
 
     return last_obs
-
-
-def adjust_probability_vectorized(
-    obs_count: Union[int, float], avg_count: Union[int, float], base_prob: float, increase_factor: float = 0.5
-) -> float:
-    """
-    Adjusts the base probability based on observed and average counts using a scaling factor.
-
-    Parameters
-    ----------
-    obs_count : int or float
-        The observed count of an event or observation in the dataset.
-
-    avg_count : int or float
-        The average count of the event or observation across the dataset.
-
-    base_prob : float
-        The base probability of the event or observation occurring.
-
-    increase_factor : float, optional, default=0.5
-        A scaling factor applied to adjust the probability when `obs_count` is below `avg_count`.
-        This factor influences how much to increase or decrease the probability.
-
-    Returns
-    -------
-    float
-        The adjusted probability, scaled based on the ratio between the observed count and the average count.
-        The adjusted probability will be within the range [0, 1].
-
-    Notes
-    -----
-    This function adjusts a base probability based on the observed count (`obs_count`) compared to the average count
-    (`avg_count`). If the observed count is lower than the average, the probability is increased proportionally,
-    but capped at a maximum of 1.0. Conversely, if the observed count exceeds the average, the probability is reduced,
-    but not below 0. The `increase_factor` controls the sensitivity of the probability adjustment when the observed
-    count is less than the average count.
-    """
-    if obs_count < avg_count:
-        # Increase probability when observed count is lower than average count
-        return min(base_prob * (avg_count / obs_count) * increase_factor, 1.0)
-    else:
-        # Decrease probability when observed count exceeds average count
-        return max(base_prob * (obs_count / avg_count) / increase_factor, 0.0)
-
 
 def non_uniform_sample(data, removal_percent, pre_replacement_probabilities=None, increase_factor=0.5):
     """
@@ -216,46 +109,15 @@ def non_uniform_sample(data, removal_percent, pre_replacement_probabilities=None
     replacement_probabilities : np.ndarray
         The computed or provided replacement probabilities for each feature.
     """
-    # Get dimensionality
-    [N, T, D] = data.shape
-
-    # Compute replacement probabilities if not provided
-    if pre_replacement_probabilities is None:
-        observations_per_feature = np.sum(~np.isnan(data), axis=(0, 1))
-        average_observations = np.mean(observations_per_feature)
-        replacement_probabilities = np.full(D, removal_percent / 100)
-
-        if increase_factor > 0:
-            for feature_idx in range(D):
-                replacement_probabilities[feature_idx] = adjust_probability_vectorized(
-                    observations_per_feature[feature_idx],
-                    average_observations,
-                    replacement_probabilities[feature_idx],
-                    increase_factor=increase_factor,
-                )
-
-            total_observations = np.sum(observations_per_feature)
-            total_replacement_target = total_observations * removal_percent / 100
-
-            for _ in range(1000):  # Limit iterations to prevent infinite loop
-                total_replacement = np.sum(replacement_probabilities * observations_per_feature)
-                if np.isclose(total_replacement, total_replacement_target, rtol=1e-3):
-                    break
-                adjustment_factor = total_replacement_target / total_replacement
-                replacement_probabilities *= adjustment_factor
-    else:
-        replacement_probabilities = pre_replacement_probabilities
-
     # Prepare data structures
     recs = []
     values = copy.deepcopy(data)
 
-    # Randomly remove data points based on replacement probabilities
-    random_matrix = np.random.rand(N, T, D)
-    values[(~np.isnan(values)) & (random_matrix < replacement_probabilities)] = np.nan
+    # Generate missing values based on replacement probabilities
+    values, replacement_probabilities = mnar_num(values, removal_percent, pre_replacement_probabilities, increase_factor)
 
     # Generate records and features for each sample
-    for i in range(N):
+    for i in range(data.shape[0]):
         masks = ~np.isnan(values[i, :, :])
         eval_masks = (~np.isnan(values[i, :, :])) ^ (~np.isnan(data[i, :, :]))
         evals = data[i, :, :]
@@ -329,24 +191,9 @@ class DatasetForCSAI(BaseDataset):
     increase_factor :
         A scaling factor to increase the probability of missing data during training.
 
-    compute_intervals :
-        Whether to compute time intervals between observations for handling irregular time-series data.
-
     replacement_probabilities :
         Optional precomputed probabilities for sampling missing values.
         If not provided, they will be calculated during the initialization of the dataset.
-
-    normalise_mean :
-        A list of mean values for normalizing the input features.
-        If not provided, they will be computed during initialization.
-
-    normalise_std :
-        A list of standard deviation values for normalizing the input features.
-        If not provided, they will be computed during initialization.
-
-    training :
-        Whether the dataset is used for training.
-        If `False`, it will adjust how data is processed, particularly for evaluation and testing phases.
 
     Notes
     -----
@@ -367,48 +214,33 @@ class DatasetForCSAI(BaseDataset):
         file_type: str = "hdf5",
         removal_percent: float = 0.0,
         increase_factor: float = 0.1,
-        compute_intervals: bool = False,
         replacement_probabilities=None,
-        normalise_mean=None,
-        normalise_std=None,
-        training: bool = True,
     ):
         super().__init__(
             data=data, return_X_ori=return_X_ori, return_X_pred=False, return_y=return_y, file_type=file_type
         )
 
-        if normalise_std is None:
-            normalise_std = []
-        if normalise_mean is None:
-            normalise_mean = []
-
         self.removal_percent = removal_percent
         self.increase_factor = increase_factor
-        self.compute_intervals = compute_intervals
-        self.replacement_probabilities = replacement_probabilities
-        self.normalise_mean = normalise_mean
-        self.normalise_std = normalise_std
-        self.training = training
-
-        self.normalized_data = None
-        self.mean_set = None
-        self.std_set = None
-        self.intervals = None
 
         if not isinstance(self.data, str):
-            self.normalized_data, self.mean_set, self.std_set, self.intervals = normalize_csai(
-                self.data["X"],
-                self.normalise_mean,
-                self.normalise_std,
-                compute_intervals,
-            )
+            self.intervals = compute_intervals(self.data["X"])
 
-            self.processed_data, self.replacement_probabilities = non_uniform_sample(
-                self.normalized_data,
-                removal_percent,
-                replacement_probabilities,
-                increase_factor,
-            )
+            if replacement_probabilities is None:
+                self.processed_data, self.replacement_probabilities = non_uniform_sample(
+                    data = self.data["X"],
+                    removal_percent = self.removal_percent,
+                    increase_factor = self.increase_factor,
+                )
+            else:
+                self.replacement_probabilities = replacement_probabilities
+                self.processed_data, _ = non_uniform_sample(
+                    data = self.data["X"],
+                    removal_percent = self.removal_percent,
+                    pre_replacement_probabilities = self.replacement_probabilities,
+                    increase_factor = self.increase_factor,
+                )
+
             self.forward_X = self.processed_data["values"]
             self.forward_missing_mask = self.processed_data["masks"]
             self.backward_X = torch.flip(self.forward_X, dims=[1])
@@ -444,6 +276,16 @@ class DatasetForCSAI(BaseDataset):
 
             label (optional) : tensor,
                 The target label of the time-series sample.
+
+            last_obs : tensor,
+                The last observed values for each time step.
+        
+            replacement_probabilities : np.ndarray,
+                The computed or provided replacement probabilities for each feature.
+            
+            intervals : dict of int to float,
+                A dictionary containing the median time intervals between observations for each variable.
+                
         """
 
         sample = [
@@ -460,7 +302,7 @@ class DatasetForCSAI(BaseDataset):
             self.processed_data["last_obs_b"][idx],
         ]
 
-        if not self.training:
+        if self.return_X_ori:
             sample.extend([self.X_ori[idx], self.indicating_mask[idx]])
 
         if self.return_y:
@@ -469,8 +311,6 @@ class DatasetForCSAI(BaseDataset):
         return {
             "sample": sample,
             "replacement_probabilities": self.replacement_probabilities,
-            "mean_set": self.mean_set,
-            "std_set": self.std_set,
             "intervals": self.intervals,
         }
 
