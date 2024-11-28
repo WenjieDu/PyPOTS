@@ -9,8 +9,8 @@ and takes over the forward progress of the algorithm.
 
 import torch.nn as nn
 
+from ...nn.functional import calc_mse
 from ...nn.modules.grud import BackboneGRUD
-from ...utils.metrics import calc_mse
 
 
 class _GRUD(nn.Module):
@@ -33,7 +33,7 @@ class _GRUD(nn.Module):
         )
         self.output_projection = nn.Linear(rnn_hidden_size, n_features)
 
-    def forward(self, inputs: dict, training: bool = True) -> dict:
+    def forward(self, inputs: dict) -> dict:
         """Forward processing of GRU-D.
 
         Parameters
@@ -66,7 +66,7 @@ class _GRUD(nn.Module):
         }
 
         # if in training mode, return results with losses
-        if training:
+        if self.training:
             results["loss"] = calc_mse(reconstruction, X, missing_mask)
 
         return results

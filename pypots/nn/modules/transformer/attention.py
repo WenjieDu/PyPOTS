@@ -11,12 +11,12 @@ and https://github.com/jadore801120/attention-is-all-you-need-pytorch.
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
+from abc import abstractmethod
 from typing import Tuple, Optional
 
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from abc import abstractmethod
 
 
 class AttentionOperator(nn.Module):
