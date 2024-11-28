@@ -47,9 +47,6 @@ class CSAI(BaseNNImputer):
     increase_factor :
         A scaling factor used to adjust the amount of missing data during training.
 
-    compute_intervals :
-        Whether to compute time intervals between observations for handling irregular time-series.
-
     step_channels :
         The number of channels for each step in the sequence.
 
@@ -114,7 +111,6 @@ class CSAI(BaseNNImputer):
         consistency_weight: float,
         removal_percent: int,
         increase_factor: float,
-        compute_intervals: bool,
         step_channels: int,
         batch_size: int = 32,
         epochs: int = 100,
@@ -145,11 +141,6 @@ class CSAI(BaseNNImputer):
         self.removal_percent = removal_percent
         self.increase_factor = increase_factor
         self.step_channels = step_channels
-        self.compute_intervals = compute_intervals
-        self.intervals = None
-        self.replacement_probabilities = None
-        self.mean_set = None
-        self.std_set = None
 
         # Initialise model
         self.model = _BCSAI(
@@ -159,7 +150,6 @@ class CSAI(BaseNNImputer):
             self.step_channels,
             self.consistency_weight,
             self.imputation_weight,
-            self.intervals,
         )
 
         self._send_model_to_given_device()
@@ -169,7 +159,7 @@ class CSAI(BaseNNImputer):
         self.optimizer = optimizer
         self.optimizer.init_optimizer(self.model.parameters())
 
-    def _assemble_input_for_training(self, data: list, training=True) -> dict:
+    def _assemble_input_for_training(self, data: list) -> dict:
         # extract data
         sample = data["sample"]
 
@@ -192,6 +182,7 @@ class CSAI(BaseNNImputer):
                 "deltas": back_deltas,
                 "last_obs": back_last_obs,
             },
+            "intervals": self.intervals,
         }
 
         return inputs
@@ -230,6 +221,7 @@ class CSAI(BaseNNImputer):
             },
             "X_ori": X_ori,
             "indicating_mask": indicating_mask,
+            "intervals": self.intervals,
         }
         return inputs
 
@@ -245,7 +237,7 @@ class CSAI(BaseNNImputer):
 
         if isinstance(train_set, str):
             logger.warning(
-                "CSAI does not support lazy loading because normalise mean and std need to be calculated ahead. "
+                "CSAI does not support lazy loading because intervals need to be calculated ahead. "
                 "Hence the whole train set will be loaded into memory."
             )
             train_set = load_dict_from_h5(train_set)
@@ -257,50 +249,41 @@ class CSAI(BaseNNImputer):
             file_type,
             self.removal_percent,
             self.increase_factor,
-            self.compute_intervals,
         )
         self.intervals = training_set.intervals
         self.replacement_probabilities = training_set.replacement_probabilities
-        self.mean_set = training_set.mean_set
-        self.std_set = training_set.std_set
 
         training_loader = DataLoader(
             training_set,
             batch_size=self.batch_size,
             shuffle=True,
             num_workers=self.num_workers,
-            # collate_fn=collate_fn_bidirectional
         )
         val_loader = None
         if val_set is not None:
             if isinstance(val_set, str):
                 logger.warning(
-                    "CSAI does not support lazy loading because normalise mean and std need to be calculated ahead. "
+                    "CSAI does not support lazy loading because intervals need to be calculated ahead. "
                     "Hence the whole val set will be loaded into memory."
                 )
                 val_set = load_dict_from_h5(val_set)
 
             if not key_in_data_set("X_ori", val_set):
                 raise ValueError("val_set must contain 'X_ori' for model validation.")
-            val_set = DatasetForCSAI(
+            validating_set = DatasetForCSAI(
                 val_set,
                 True,
                 False,
                 file_type,
                 self.removal_percent,
                 self.increase_factor,
-                self.compute_intervals,
                 self.replacement_probabilities,
-                self.mean_set,
-                self.std_set,
-                False,
             )
             val_loader = DataLoader(
-                val_set,
+                validating_set,
                 batch_size=self.batch_size,
                 shuffle=False,
                 num_workers=self.num_workers,
-                # collate_fn=collate_fn_bidirectional
             )
 
         # train the model
@@ -321,30 +304,25 @@ class CSAI(BaseNNImputer):
 
         if isinstance(test_set, str):
             logger.warning(
-                "CSAI does not support lazy loading because normalise mean and std need to be calculated ahead. "
+                "CSAI does not support lazy loading because intervals need to be calculated ahead. "
                 "Hence the whole test set will be loaded into memory."
             )
             test_set = load_dict_from_h5(test_set)
-        test_set = DatasetForCSAI(
+        testing_set = DatasetForCSAI(
             test_set,
             True,
             False,
             file_type,
             self.removal_percent,
             self.increase_factor,
-            self.compute_intervals,
             self.replacement_probabilities,
-            self.mean_set,
-            self.std_set,
-            False,
         )
 
         test_loader = DataLoader(
-            test_set,
+            testing_set,
             batch_size=self.batch_size,
             shuffle=False,
             num_workers=self.num_workers,
-            # collate_fn=collate_fn_bidirectional
         )
 
         imputation_collector = []
@@ -352,7 +330,7 @@ class CSAI(BaseNNImputer):
         indicating_mask_collector = []
 
         with torch.no_grad():
-            for idx, data in enumerate(test_loader):
+            for _, data in enumerate(test_loader):
                 inputs = self._assemble_input_for_testing(data)
                 results = self.model.forward(inputs, training=False)
                 imputed_data = results["imputed_data"]
