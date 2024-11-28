@@ -16,6 +16,7 @@ from .base import BaseCommand
 from .utils import load_package_from_path
 from ..classification import BRITS as BRITS_classification
 from ..classification import GRUD as GRUD_classification
+from ..classification import CSAI as CSAI_classification
 from ..classification import Raindrop
 from ..clustering import CRLI, VaDER
 from ..data.saving.h5 import load_dict_from_h5
@@ -35,6 +36,7 @@ from ..imputation import (
     FiLM,
     Pyraformer,
     Autoformer,
+    CSAI,
     CSDI,
     Informer,
     USGAN,
@@ -64,6 +66,7 @@ NN_MODELS = {
     # imputation models, sorted by the first letter of the model name
     "pypots.imputation.Autoformer": Autoformer,
     "pypots.imputation.BRITS": BRITS,
+    "pypots.imputation.CSAI": CSAI,
     "pypots.imputation.CSDI": CSDI,
     "pypots.imputation.Crossformer": Crossformer,
     "pypots.imputation.DLinear": DLinear,
@@ -91,6 +94,7 @@ NN_MODELS = {
     "pypots.imputation.USGAN": USGAN,
     # classification models
     "pypots.classification.BRITS": BRITS_classification,
+    "pypots.classification.CSAI": CSAI_classification,
     "pypots.classification.GRUD": GRUD_classification,
     "pypots.classification.Raindrop": Raindrop,
     # clustering models
