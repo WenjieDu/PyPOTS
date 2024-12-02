@@ -164,7 +164,7 @@ class BaseNNClusterer(BaseNNModel):
 
     val_metric_func:
         The customized metric function designed by users for validating the model.
-        If not given, will use the default MSE metric.
+        If not given, will use the default loss from the original paper as the metric.
 
     num_workers :
         The number of subprocesses to use for data loading.

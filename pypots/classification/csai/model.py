@@ -76,7 +76,7 @@ class CSAI(BaseNNClassifier):
 
     val_metric_func:
         The customized metric function designed by users for validating the model.
-        If not given, will use the default loss as metric as claimed in the original paper.
+        If not given, will use the default loss from the original paper as the metric.
 
     optimizer :
         The optimizer for model training.

@@ -59,7 +59,7 @@ class BRITS(BaseNNClassifier):
 
     val_metric_func:
         The customized metric function designed by users for validating the model.
-        If not given, will use the default MSE metric.
+        If not given, will use the default loss from the original paper as the metric.
 
     optimizer :
         The optimizer for model training.
@@ -132,10 +132,6 @@ class BRITS(BaseNNClassifier):
         self.rnn_hidden_size = rnn_hidden_size
         self.classification_weight = classification_weight
         self.reconstruction_weight = reconstruction_weight
-
-        # CSDI has its own defined loss function, so we set them as None here
-        self.train_loss_func = None
-        self.train_loss_func_name = "default"
 
         # set up the model
         self.model = _BRITS(

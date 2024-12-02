@@ -80,7 +80,7 @@ class CRLI(BaseNNClusterer):
 
     val_metric_func:
         The customized metric function designed by users for validating the model.
-        If not given, will use the default MSE metric.
+        If not given, will use the default loss from the original paper as the metric.
 
     G_optimizer :
         The optimizer for the generator training.
