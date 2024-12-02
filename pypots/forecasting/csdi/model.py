@@ -178,7 +178,7 @@ class CSDI(BaseNNForecaster):
         self.train_loss_func = None
         self.train_loss_func_name = "default"
         self.val_metric_func = None
-        self.val_metric_func_name = "loss (default)"
+        self.val_metric_func_name = "metric (default)"
 
         # set up the model
         self.model = _CSDI(
