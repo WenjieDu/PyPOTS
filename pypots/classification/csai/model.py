@@ -185,7 +185,7 @@ class CSAI(BaseNNClassifier):
 
         inputs = {
             "indices": indices,
-            "labels": labels,
+            "y": labels,
             "forward": {
                 "X": X,
                 "missing_mask": missing_mask,
