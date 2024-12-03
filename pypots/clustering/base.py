@@ -231,6 +231,17 @@ class BaseNNClusterer(BaseNNModel):
         )
         self.n_clusters = n_clusters
 
+        # training loss function and validation metric function are quite different in clustering models,
+        # hence we don't set default loss and metric functions here. So the below lines are commented out.
+
+        # # set default training loss function and validation metric function if not given
+        # if train_loss_func is None:
+        #     self.train_loss_func =
+        #     self.train_loss_func_name = self.train_loss_func.__class__.__name__
+        # if val_metric_func is None:
+        #     self.val_metric_func =
+        #     self.val_metric_func_name =
+
     @abstractmethod
     def _assemble_input_for_training(self, data: list) -> dict:
         """Assemble the given data into a dictionary for training input.
