@@ -15,7 +15,6 @@ from . import (
     data,
     utils,
 )
-from .gungnir import Gungnir
 from .version import __version__
 
 __all__ = [
@@ -26,6 +25,5 @@ __all__ = [
     "optim",
     "data",
     "utils",
-    "Gungnir",
     "__version__",
 ]
