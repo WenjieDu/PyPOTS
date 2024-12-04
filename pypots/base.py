@@ -510,14 +510,12 @@ class BaseNNModel(BaseModel):
         # check train_loss_func and val_metric_func
         train_loss_func_name, val_metric_func_name = "default", "loss (default)"
         if train_loss_func is not None:
-            assert len(train_loss_func) == 1, f"train_loss_func should have only 1 item, but got {len(train_loss_func)}"
-            train_loss_func_name, train_loss_func = train_loss_func.popitem()
-            assert isinstance(train_loss_func, Callable), "train_loss_func should be a callable function"
+            train_loss_func_name = train_loss_func.__class__.__name__
+            assert isinstance(train_loss_func, Callable), "train_loss_func should be a callable instance"
             logger.info(f"Using customized {train_loss_func_name} as the training loss function.")
         if val_metric_func is not None:
-            assert len(val_metric_func) == 1, f"val_metric_func should have only 1 item, but got {len(val_metric_func)}"
-            val_metric_func_name, val_metric_func = val_metric_func.popitem()
-            assert isinstance(val_metric_func, Callable), "val_metric_func should be a callable function"
+            val_metric_func_name = val_metric_func.__class__.__name__
+            assert isinstance(val_metric_func, Callable), "val_metric_func should be a callable instance"
             logger.info(f"Using customized {val_metric_func_name} as the validation metric function.")
 
         # set up the hype-parameters
