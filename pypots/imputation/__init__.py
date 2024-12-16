@@ -39,6 +39,7 @@ from .imputeformer import ImputeFormer
 from .timemixer import TimeMixer
 from .moderntcn import ModernTCN
 from .segrnn import SegRNN
+from .trmf import TRMF
 
 # naive imputation methods
 from .locf import LOCF
@@ -89,4 +90,5 @@ __all__ = [
     "TEFN",
     "CSAI",
     "SegRNN",
+    "TRMF"
 ]
