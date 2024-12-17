@@ -218,13 +218,13 @@ class BackboneTRMF(nn.Module):
             Returns self.
         """
 
-        for l in range(self.L):
-            lag = self.lags[l]
-            W_l = self.W[:, l].repeat(self.T, axis=0).reshape(self.K, self.T)
-            X_l = self.X * W_l
-            z_1 = self.X - np.roll(X_l, lag, axis=1)
+        for i in range(self.L):
+            lag = self.lags[i]
+            W_i = self.W[:, i].repeat(self.T, axis=0).reshape(self.K, self.T)
+            X_i = self.X * W_i
+            z_1 = self.X - np.roll(X_i, lag, axis=1)
             z_1[:, : max(self.lags)] = 0.0
-            z_2 = -(np.roll(self.X, -lag, axis=1) - X_l) * W_l
+            z_2 = -(np.roll(self.X, -lag, axis=1) - X_i) * W_i
             z_2[:, -lag:] = 0.0
 
         grad_T_x = z_1 + z_2
@@ -271,14 +271,14 @@ class BackboneTRMF(nn.Module):
         """
 
         grad = np.zeros((self.K, self.L))
-        for l in range(self.L):
-            lag = self.lags[l]
-            W_l = self.W[:, l].repeat(self.T, axis=0).reshape(self.K, self.T)
-            X_l = self.X * W_l
-            z_1 = self.X - np.roll(X_l, lag, axis=1)
+        for i in range(self.L):
+            lag = self.lags[i]
+            W_i = self.W[:, i].repeat(self.T, axis=0).reshape(self.K, self.T)
+            X_i = self.X * W_i
+            z_1 = self.X - np.roll(X_i, lag, axis=1)
             z_1[:, : max(self.lags)] = 0.0
             z_2 = -(z_1 * np.roll(self.X, lag, axis=1)).sum(axis=1)
-            grad[:, l] = z_2
+            grad[:, i] = z_2
         return (
             grad
             + self.W * 2 * self.lambda_w / self.lambda_x
