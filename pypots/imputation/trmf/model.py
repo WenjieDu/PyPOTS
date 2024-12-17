@@ -1,5 +1,6 @@
 """
-The implementation of TRMF for the partially-observed time-series imputation task, which is mainly based on the implementation of TRMF in https://github.com/SemenovAlex/trmf/blob/master/trmf.py
+The implementation of TRMF for the partially-observed time-series imputation task,
+which is mainly based on the implementation of TRMF in https://github.com/SemenovAlex/trmf/blob/master/trmf.py
 
 """
 
@@ -7,41 +8,45 @@ The implementation of TRMF for the partially-observed time-series imputation tas
 # License: BSD-3-Clause
 
 
-import warnings
 from typing import Union, Optional
 
-import h5py
 import numpy as np
 import torch
+from pygrinder import fill_and_get_mask_numpy
 
+from .core import _TRMF
+from .data import DatasetForTRMF
 from ..base import BaseImputer
+from ...data import inverse_sliding_window, sliding_window
+from ...data.dataset import BaseDataset
+from ...utils.logging import logger
 
 
-class TRMF:
+class TRMF(BaseImputer):
     """Temporal Regularized Matrix Factorization (TRMF) imputation method.
 
     Parameters
     ----------
-    
+
     lags : array-like, shape (n_lags,)
         Set of lag indices to use in model.
-    
+
     K : int
         Length of latent embedding dimension
-    
+
     lambda_f : float
         Regularization parameter used for matrix F.
-    
+
     lambda_x : float
         Regularization parameter used for matrix X.
-    
+
     lambda_w : float
         Regularization parameter used for matrix W.
 
     alpha : float
         Regularization parameter used for make the sum of lag coefficient close to 1.
         That helps to avoid big deviations when forecasting.
-    
+
     eta : float
         Regularization parameter used for X when undercovering autoregressive dependencies.
 
@@ -57,270 +62,182 @@ class TRMF:
     W_step : float
         Step of gradient descent when updating matrix W.
 
+    saving_path :
+        The path for automatically saving model checkpoints and tensorboard files (i.e. loss values recorded during
+        training into a tensorboard file). Will not save if not given.
 
-    Attributes
-    ----------
+    model_saving_strategy :
+        The strategy to save model checkpoints. It has to be one of [None, "best", "better", "all"].
+        No model will be saved when it is set as None.
+        The "best" strategy will only automatically save the best model after the training finished.
+        The "better" strategy will automatically save the model during training whenever the model performs
+        better than in previous epochs.
+        The "all" strategy will save every model after each epoch training.
 
-    F : ndarray, shape (n_timeseries, K)
-        Latent embedding of timeseries.
+    verbose :
+        Whether to print out the training logs during the training process.
 
-    X : ndarray, shape (K, n_timepoints)
-        Latent embedding of timepoints.
-
-    W : ndarray, shape (K, n_lags)
-        Matrix of autoregressive coefficients.
     """
 
-    def __init__(self, lags, L,  K, lambda_f, lambda_x, lambda_w, alpha, eta, max_iter=1000, 
-                 F_step=0.0001, X_step=0.0001, W_step=0.0001
-        ):
-        super(TRMF, self).__init__()
+    def __init__(
+        self,
+        lags,
+        K,
+        lambda_f,
+        lambda_x,
+        lambda_w,
+        alpha,
+        eta,
+        max_iter=1000,
+        F_step=0.0001,
+        X_step=0.0001,
+        W_step=0.0001,
+        saving_path: Optional[str] = None,
+        model_saving_strategy: Optional[str] = "best",
+        verbose: bool = True,
+    ):
+        super().__init__(
+            saving_path=saving_path,
+            model_saving_strategy=model_saving_strategy,
+            verbose=verbose,
+        )
 
-        self.lags = lags
-        self.L = L
-        self.K = K
-        self.lambda_f = lambda_f
-        self.lambda_x = lambda_x
-        self.lambda_w = lambda_w
-        self.alpha = alpha
-        self.eta = eta
-        self.max_iter = max_iter
-        self.F_step = F_step
-        self.X_step = X_step
-        self.W_step = W_step
-        
-        self.W = None
-        self.F = None
-        self.X = None
+        self.model = _TRMF(
+            lags,
+            K,
+            lambda_f,
+            lambda_x,
+            lambda_w,
+            alpha,
+            eta,
+            max_iter,
+            F_step,
+            X_step,
+            W_step,
+        )
 
+        logger.warning(
+            "‼️Note that, as a traditional matrix factorization function, TRMF does not support validation set. "
+            "Also, it only accepts 2-dim (time dim, feature dim) time series data, hence PyPOTS auto runs "
+            "inverse_sliding_window func for your input in the unified format with 3-dim (sample dim, time dim, "
+            "feature dim) and it assumes your samples window_len == sliding_len. If you generate samples "
+            "using sliding_window func with window_len != sliding_len, it may produce non-ideal results."
+        )
 
-    def fit(self, 
+    def fit(
+        self,
         train_set: Union[dict, str],
         val_set: Optional[Union[dict, str]] = None,
         file_type: str = "hdf5",
-        resume: bool = False,
     ) -> None:
-        """Fit the TRMF model according to the given training data.
+        # Step 1: wrap the input data with classes Dataset and DataLoader
+        training_set = DatasetForTRMF(train_set)
+        if val_set is not None:
+            raise RuntimeError("TRMF does not support validation set.")
 
-        Model fits through sequential updating three matrices:
-            -   matrix self.F;
-            -   matrix self.X;
-            -   matrix self.W.
-            
-        Each matrix updated with gradient descent.
+        # Step 2: train the model and freeze it
+        X = training_set.fetch_entire_dataset()["X"]
+        X = inverse_sliding_window(X, training_set.n_steps)
+        if isinstance(X, torch.Tensor):
+            X = X.numpy()
+        X, missing_mask = fill_and_get_mask_numpy(X)
+
+        inputs = {
+            "X": X,
+            "missing_mask": missing_mask,
+        }
+
+        self.model.forward(inputs)
+
+        # Step 3: save the model if necessary
+        self._auto_save_model_if_necessary(confirm_saving=self.model_saving_strategy == "best")
+
+    def predict(
+        self,
+        test_set: Union[dict, str],
+        file_type: str = "hdf5",
+        diagonal_attention_mask: bool = True,
+        return_latent_vars: bool = False,
+    ) -> dict:
+        """Make predictions for the input data with the trained model.
 
         Parameters
         ----------
-        train_set : ndarray, shape (n_timeseries, n_timepoints)
-            Training data.
-
-        val_set : ndarray, shape (n_timeseries, n_timepoints)
-            Validation data.
+        test_set :
+            The dataset for model validating, should be a dictionary including keys as 'X',
+            or a path string locating a data file supported by PyPOTS (e.g. h5 file).
+            If it is a dict, X should be array-like of shape [n_samples, sequence length (n_steps), n_features],
+            which is time-series data for validating, can contain missing values, and y should be array-like of shape
+            [n_samples], which is classification labels of X.
+            If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
+            key-value pairs like a dict, and it has to include keys as 'X' and 'y'.
 
         file_type :
-            The type of the given file if train_set and val_set are path strings.
+            The type of the given file if test_set is a path string.
 
-        resume : bool
-            Used to continue fitting.
+        diagonal_attention_mask :
+            Whether to apply a diagonal attention mask to the self-attention mechanism in the testing stage.
+
+        return_latent_vars :
+            Whether to return the latent variables in SAITS, e.g. attention weights of two DMSA blocks and
+            the weight matrix from the combination block, etc.
 
         Returns
         -------
-        self : object
-            Returns self.
+        file_type :
+            The dictionary containing the clustering results and latent variables if necessary.
+
         """
-
-        if isinstance(train_set, str):
-            with h5py.File(train_set, "r") as f:
-                X = f["X"][:]
-        else:
-            X = train_set["X"]
-
-        assert len(X.shape) == 2, (
-            f"Input X should have 2 dimensions [n_samples, n_features], "
-            f"but the actual shape of X: {X.shape}"
+        # Step 1: wrap the input data with classes Dataset and DataLoader
+        # self.model.eval()  # set the model as eval status to freeze it.
+        test_set = BaseDataset(
+            test_set,
+            return_X_ori=False,
+            return_X_pred=False,
+            return_y=False,
+            file_type=file_type,
         )
-        if isinstance(X, list):
-            X = np.asarray(X)
 
-        if not resume:
-            self.Y = X.copy()
-            mask = np.array((~np.isnan(self.Y)).astype(int))
-            self.mask = mask
-            self.Y[self.mask == 0] = 0.
-            self.N, self.T = self.Y.shape
-            self.W = np.random.randn(self.K, self.L) / self.L
-            self.F = np.random.randn(self.N, self.K)
-            self.X = np.random.randn(self.K, self.T)
-
-        for _ in range(self.max_iter):
-            self._update_F(step=self.F_step)
-            self._update_X(step=self.X_step)
-            self._update_W(step=self.W_step)
-
-
-    def impute_missings(self):
-        """Impute each missing element in timeseries.
-
-        Model uses matrix X and F to get all missing elements.
-
-        Parameters
-        ----------
-
-        Returns
-        -------
-        data : ndarray, shape (n_timeseries, T)
-            Predictions.
-        """
-        data = self.Y
-        data[self.mask == 0] = np.dot(self.F, self.X)[self.mask == 0]
-        result_dict = {
-            "imputation": data,
+        X = test_set.fetch_entire_dataset()["X"]
+        X = inverse_sliding_window(X, test_set.n_steps)
+        if isinstance(X, torch.Tensor):
+            X = X.numpy()
+        X, missing_mask = fill_and_get_mask_numpy(X)
+        inputs = {
+            "X": X,
+            "missing_mask": missing_mask,
         }
+
+        # Step 3: output collection and return
+        results = self.model.forward(inputs)
+        imputation = sliding_window(results["imputed_data"], test_set.n_steps)
+        result_dict = {
+            "imputation": imputation,
+        }
+
         return result_dict
 
-    
     def impute(
         self,
+        test_set: Union[dict, str],
+        file_type: str = "hdf5",
     ) -> np.ndarray:
-        result_dict = self.impute_missings()
+        """Impute missing values in the given data with the trained model.
+
+        Parameters
+        ----------
+        test_set :
+            The data samples for testing, should be array-like of shape [n_samples, sequence length (n_steps),
+            n_features], or a path string locating a data file, e.g. h5 file.
+
+        file_type :
+            The type of the given file if X is a path string.
+
+        Returns
+        -------
+        array-like, shape [n_samples, sequence length (n_steps), n_features],
+            Imputed data.
+        """
+
+        result_dict = self.predict(test_set, file_type=file_type)
         return result_dict["imputation"]
-
-
-    def _update_F(self, step, n_iter=1):
-        """Gradient descent of matrix F.
-
-        n_iter steps of gradient descent of matrix F.
-
-        Parameters
-        ----------
-        step : float
-            Step of gradient descent when updating matrix.
-
-        n_iter : int
-            Number of gradient steps to be made.
-
-        Returns
-        -------
-        self : objects
-            Returns self.
-        """
-
-        for _ in range(n_iter):
-            self.F -= step * self._grad_F()
-
-
-    def _update_X(self, step, n_iter=1):
-        """Gradient descent of matrix X.
-
-        n_iter steps of gradient descent of matrix X.
-
-        Parameters
-        ----------
-        step : float
-            Step of gradient descent when updating matrix.
-
-        n_iter : int
-            Number of gradient steps to be made.
-
-        Returns
-        -------
-        self : objects
-            Returns self.
-        """
-
-        for _ in range(n_iter):
-            self.X -= step * self._grad_X()
-
-
-    def _update_W(self, step, n_iter=1):
-        """Gradient descent of matrix W.
-
-        n_iter steps of gradient descent of matrix W.
-
-        Parameters
-        ----------
-        step : float
-            Step of gradient descent when updating matrix.
-
-        n_iter : int
-            Number of gradient steps to be made.
-
-        Returns
-        -------
-        self : objects
-            Returns self.
-        """
-
-        for _ in range(n_iter):
-            self.W -= step * self._grad_W()
-
-
-    def _grad_F(self):
-        """Gradient of matrix F.
-
-        Evaluating gradient of matrix F.
-
-        Parameters
-        ----------
-
-        Returns
-        -------
-        self : objects
-            Returns self.
-        """
-
-        return - 2 * np.dot((self.Y - np.dot(self.F, self.X)) * self.mask, self.X.T) + 2 * self.lambda_f * self.F
-
-
-    def _grad_X(self):
-        """Gradient of matrix X.
-
-        Evaluating gradient of matrix X.
-
-        Parameters
-        ----------
-
-        Returns
-        -------
-        self : objects
-            Returns self.
-        """
-
-        for l in range(self.L):
-            lag = self.lags[l]
-            W_l = self.W[:, l].repeat(self.T, axis=0).reshape(self.K, self.T)
-            X_l = self.X * W_l
-            z_1 = self.X - np.roll(X_l, lag, axis=1)
-            z_1[:, :max(self.lags)] = 0.
-            z_2 = - (np.roll(self.X, -lag, axis=1) - X_l) * W_l
-            z_2[:, -lag:] = 0.
-
-        grad_T_x = z_1 + z_2
-        return - 2 * np.dot(self.F.T, self.mask * (self.Y - np.dot(self.F, self.X))) + self.lambda_x * grad_T_x + self.eta * self.X
-
-
-    def _grad_W(self):
-        """Gradient of matrix W.
-
-        Evaluating gradient of matrix W.
-
-        Parameters
-        ----------
-
-        Returns
-        -------
-        self : objects
-            Returns self.
-        """
-
-        grad = np.zeros((self.K, self.L))
-        for l in range(self.L):
-            lag = self.lags[l]
-            W_l = self.W[:, l].repeat(self.T, axis=0).reshape(self.K, self.T)
-            X_l = self.X * W_l
-            z_1 = self.X - np.roll(X_l, lag, axis=1)
-            z_1[:, :max(self.lags)] = 0.
-            z_2 = - (z_1 * np.roll(self.X, lag, axis=1)).sum(axis=1)
-            grad[:, l] = z_2
-        return grad + self.W * 2 * self.lambda_w / self.lambda_x -\
-               self.alpha * 2 * (1 - self.W.sum(axis=1)).repeat(self.L).reshape(self.W.shape)
