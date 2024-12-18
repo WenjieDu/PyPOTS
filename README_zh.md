@@ -145,13 +145,14 @@ PyPOTS当前支持多变量POTS数据的插补, 预测, 分类, 聚类以及异�
 | Neural Net    | GRU-D[^4]                                                                                                                        |   ✅    |        |   ✅    |        |          | `2018 - Sci. Rep.` |
 | Neural Net    | TCN🧑‍🔧[^35]                                                                                                                    |   ✅    |        |        |        |          | `2018 - arXiv`     |
 | Neural Net    | Transformer🧑‍🔧[^2]                                                                                                             |   ✅    |        |        |        |          | `2017 - NeurIPS`   |
+| MF            | TRMF🧑‍🔧[^44]                                                                                                                   |    ✅     |          |          |          |          | `2016 - NeurIPS`   |
 | Naive         | Lerp[^40]                                                                                                                        |   ✅    |        |        |        |          |                    |
 | Naive         | LOCF/NOCB                                                                                                                        |   ✅    |        |        |        |          |                    |
 | Naive         | Mean                                                                                                                             |   ✅    |        |        |        |          |                    |
 | Naive         | Median                                                                                                                           |   ✅    |        |        |        |          |                    |
 
 💯 现在贡献你的模型来增加你的研究影响力！PyPOTS的下载量正在迅速增长
-(**[目前PyPI上总共超过30万次且每日超1000的下载](https://www.pepy.tech/projects/pypots)**),
+(**[目前PyPI上总共超过60万次且每日超1000的下载](https://www.pepy.tech/projects/pypots)**),
 你的工作将被社区广泛使用和引用. 请参阅[贡献指南](#-%E8%B4%A1%E7%8C%AE%E5%A3%B0%E6%98%8E)
 , 了解如何将模型包含在PyPOTS中.
 
@@ -490,3 +491,6 @@ Time-Series.AI</a>
 [^43]: Lin, S., Lin, W., Wu, W., Zhao, F., Mo, R., & Zhang, H. (2023). 
 [SegRNN: Segment Recurrent Neural Network for Long-Term Time Series Forecasting](https://arxiv.org/abs/2308.11200).
 *arXiv 2023*.
+[^44]: Yu, H. F., Rao, N., & Dhillon, I. S. (2016). 
+[Temporal regularized matrix factorization for high-dimensional time series prediction](https://papers.nips.cc/paper_files/paper/2016/file/85422afb467e9456013a2a51d4dff702-Paper.pdf).
+*NeurIPS 2016*.
