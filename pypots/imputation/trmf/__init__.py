@@ -2,10 +2,10 @@
 The package including the modules of TRMF.
 
 Refer to the paper
-Yu, H. F., Rao, N., & Dhillon, I. S.
-Temporal regularized matrix factorization for high-dimensional time series prediction.
-In Advances in neural information processing systems 2016.
-<https://www.cs.utexas.edu/~rofuyu/papers/tr-mf-nips.pdf>`_
+`Hsiang-Fu Yu, Nikhil Rao, and Inderjit S. Dhillon.
+"Temporal regularized matrix factorization for high-dimensional time series prediction."
+In NeurIPS 2016.
+<https://papers.nips.cc/paper_files/paper/2016/file/85422afb467e9456013a2a51d4dff702-Paper.pdf>`_
 
 """
 
