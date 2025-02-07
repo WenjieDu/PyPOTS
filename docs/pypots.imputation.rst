@@ -324,6 +324,15 @@ pypots.imputation.tcn
    :show-inheritance:
    :inherited-members:
 
+pypots.imputation.trmf
+------------------------------
+
+.. automodule:: pypots.imputation.trmf
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+
 pypots.imputation.lerp
 -----------------------------
 

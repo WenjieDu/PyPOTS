@@ -213,6 +213,8 @@ The paper references are all listed at the bottom of this readme file.
 +----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
 | Neural Net     | Transformer🧑‍🔧 :cite:`vaswani2017Transformer`           |  ✅  |      |      |      |      | ``2017 - NeurIPS``    |
 +----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
+| MF             | TRMF :cite:`yu2016trmf`                                   |  ✅  |      |      |      |      | ``2016 - NeurIPS``    |
++----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
 | Naive          | Lerp (Linear Interpolation)                               |  ✅  |      |      |      |      |                       |
 +----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
 | Naive          | LOCF/NOCB                                                 |  ✅  |      |      |      |      |                       |
@@ -222,7 +224,7 @@ The paper references are all listed at the bottom of this readme file.
 | Naive          | Mean                                                      |  ✅  |      |      |      |      |                       |
 +----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
 
-💯 Contribute your model right now to increase your research impact! PyPOTS downloads are increasing rapidly (`300K+ in total and 1K+ daily on PyPI so far <https://www.pepy.tech/projects/pypots>`_),
+💯 Contribute your model right now to increase your research impact! PyPOTS downloads are increasing rapidly (`600K+ in total and 1K+ daily on PyPI so far <https://www.pepy.tech/projects/pypots>`_),
 and your work will be widely used and cited by the community.
 Refer to the `contribution guide <#id44>`_ to see how to include your model in PyPOTS.
 

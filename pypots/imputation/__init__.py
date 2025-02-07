@@ -39,13 +39,14 @@ from .imputeformer import ImputeFormer
 from .timemixer import TimeMixer
 from .moderntcn import ModernTCN
 from .segrnn import SegRNN
+from .tefn import TEFN
+from .trmf import TRMF
 
 # naive imputation methods
 from .locf import LOCF
 from .mean import Mean
 from .median import Median
 from .lerp import Lerp
-from .tefn import TEFN
 
 __all__ = [
     # neural network imputation methods
@@ -81,12 +82,13 @@ __all__ = [
     "ImputeFormer",
     "TimeMixer",
     "ModernTCN",
+    "TEFN",
+    "CSAI",
+    "SegRNN",
+    "TRMF",
     # naive imputation methods
     "LOCF",
     "Mean",
     "Median",
     "Lerp",
-    "TEFN",
-    "CSAI",
-    "SegRNN",
 ]
