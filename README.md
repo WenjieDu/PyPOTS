@@ -160,13 +160,14 @@ The paper references and links are all listed at the bottom of this file.
 | Neural Net    | GRU-D[^4]                                                                                                                        |    ✅     |          |    ✅     |          |          | `2018 - Sci. Rep.` |
 | Neural Net    | TCN🧑‍🔧[^35]                                                                                                                    |    ✅     |          |          |          |          | `2018 - arXiv`     |
 | Neural Net    | Transformer🧑‍🔧[^2]                                                                                                             |    ✅     |          |          |          |          | `2017 - NeurIPS`   |
+| MF            | TRMF🧑‍🔧[^44]                                                                                                                   |    ✅     |          |          |          |          | `2016 - NeurIPS`   |
 | Naive         | Lerp[^40]                                                                                                                        |    ✅     |          |          |          |          |                    |
 | Naive         | LOCF/NOCB                                                                                                                        |    ✅     |          |          |          |          |                    |
 | Naive         | Mean                                                                                                                             |    ✅     |          |          |          |          |                    |
 | Naive         | Median                                                                                                                           |    ✅     |          |          |          |          |                    |
 
 💯 Contribute your model right now to increase your research impact! PyPOTS downloads are increasing rapidly
-(**[300K+ in total and 1K+ daily on PyPI so far](https://www.pepy.tech/projects/pypots)**),
+(**[600K+ in total and 1K+ daily on PyPI so far](https://www.pepy.tech/projects/pypots)**),
 and your work will be widely used and cited by the community.
 Refer to the [contribution guide](https://github.com/WenjieDu/PyPOTS#-contribution) to see how to include your model in
 PyPOTS.
@@ -517,3 +518,6 @@ Time-Series.AI</a>
 [^43]: Lin, S., Lin, W., Wu, W., Zhao, F., Mo, R., & Zhang, H. (2023). 
 [SegRNN: Segment Recurrent Neural Network for Long-Term Time Series Forecasting](https://arxiv.org/abs/2308.11200).
 *arXiv 2023*.
+[^44]: Yu, H. F., Rao, N., & Dhillon, I. S. (2016). 
+[Temporal regularized matrix factorization for high-dimensional time series prediction](https://papers.nips.cc/paper_files/paper/2016/file/85422afb467e9456013a2a51d4dff702-Paper.pdf).
+*NeurIPS 2016*.
