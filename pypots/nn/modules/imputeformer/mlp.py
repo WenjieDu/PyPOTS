@@ -12,7 +12,7 @@ class Dense(nn.Module):
     """A simple fully-connected layer."""
 
     def __init__(self, input_size, output_size, dropout=0.0, bias=True):
-        super(Dense, self).__init__()
+        super().__init__()
         self.layer = nn.Sequential(
             nn.Linear(input_size, output_size, bias=bias),
             nn.ReLU(),
@@ -29,7 +29,7 @@ class MLP(nn.Module):
     """
 
     def __init__(self, input_size, hidden_size, output_size=None, n_layers=1, dropout=0.0):
-        super(MLP, self).__init__()
+        super().__init__()
 
         layers = [
             Dense(
