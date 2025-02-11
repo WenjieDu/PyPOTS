@@ -12,10 +12,10 @@ import torch
 
 
 def _check_inputs(
-    predictions: Union[np.ndarray, torch.Tensor, list],
-    targets: Union[np.ndarray, torch.Tensor, list],
-    masks: Optional[Union[np.ndarray, torch.Tensor, list]] = None,
-    check_shape: bool = True,
+        predictions: Union[np.ndarray, torch.Tensor, list],
+        targets: Union[np.ndarray, torch.Tensor, list],
+        masks: Optional[Union[np.ndarray, torch.Tensor, list]] = None,
+        check_shape: bool = True,
 ):
     # check type
     assert isinstance(predictions, type(targets)), (
@@ -28,11 +28,8 @@ def _check_inputs(
     target_shape = targets.shape
     if check_shape:
         assert (
-            prediction_shape == target_shape
+                prediction_shape == target_shape
         ), f"shape of `predictions` and `targets` must match, but got {prediction_shape} and {target_shape}"
-    # check NaN
-    assert not lib.isnan(predictions).any(), "`predictions` mustn't contain NaN values, but detected NaN in it"
-    assert not lib.isnan(targets).any(), "`targets` mustn't contain NaN values, but detected NaN in it"
 
     if masks is not None:
         # check type
@@ -48,14 +45,30 @@ def _check_inputs(
         )
         # check NaN
         assert not lib.isnan(masks).any(), "`masks` mustn't contain NaN values, but detected NaN in it"
+        # check that the mask covers all the NaN values
+        if isinstance(masks, list):
+            assert not any([lib.where(lib.isnan(predictions) * (1 - mask)).any() for mask in masks]), (
+                "Some NaN values in `predictions` are not covered by the mask"
+            )
+        else:
+            if prediction_shape == mask_shape:
+                # assert not any(dim.shape[0] for dim in lib.where(lib.isnan(predictions) * (1 - masks))), (
+                assert not any((dim.size if isinstance(dim, np.ndarray) else dim.numel()) > 0 for dim in lib.where(lib.isnan(predictions) * lib.logical_not(masks))), (
+                    "Some NaN values in `predictions` are not covered by the mask"
+                )
+
+    else:
+        # check NaN
+        assert not lib.isnan(predictions).any(), "`predictions` mustn't contain NaN values, but detected NaN in it"
+        assert not lib.isnan(targets).any(), "`targets` mustn't contain NaN values, but detected NaN in it"
 
     return lib
 
 
 def calc_mae(
-    predictions: Union[np.ndarray, torch.Tensor],
-    targets: Union[np.ndarray, torch.Tensor],
-    masks: Optional[Union[np.ndarray, torch.Tensor]] = None,
+        predictions: Union[np.ndarray, torch.Tensor],
+        targets: Union[np.ndarray, torch.Tensor],
+        masks: Optional[Union[np.ndarray, torch.Tensor]] = None,
 ) -> Union[float, torch.Tensor]:
     """Calculate the Mean Absolute Error between ``predictions`` and ``targets``.
     ``masks`` can be used for filtering. For values==0 in ``masks``,
@@ -104,9 +117,9 @@ def calc_mae(
 
 
 def calc_mse(
-    predictions: Union[np.ndarray, torch.Tensor],
-    targets: Union[np.ndarray, torch.Tensor],
-    masks: Optional[Union[np.ndarray, torch.Tensor]] = None,
+        predictions: Union[np.ndarray, torch.Tensor],
+        targets: Union[np.ndarray, torch.Tensor],
+        masks: Optional[Union[np.ndarray, torch.Tensor]] = None,
 ) -> Union[float, torch.Tensor]:
     """Calculate the Mean Square Error between ``predictions`` and ``targets``.
     ``masks`` can be used for filtering. For values==0 in ``masks``,
@@ -149,15 +162,21 @@ def calc_mse(
     lib = _check_inputs(predictions, targets, masks)
 
     if masks is not None:
-        return lib.sum(lib.square(predictions - targets) * masks) / (lib.sum(masks) + 1e-12)
+        # exploit nan_to_num as multiplying the masks by NaN will make the result NaN
+        return lib.sum(
+            lib.square(predictions - lib.nan_to_num(targets) * masks)
+        ) / max(lib.sum(masks), 1)
+
     else:
-        return lib.mean(lib.square(predictions - targets))
+        return lib.mean(
+            lib.square(predictions - targets)
+        )
 
 
 def calc_rmse(
-    predictions: Union[np.ndarray, torch.Tensor],
-    targets: Union[np.ndarray, torch.Tensor],
-    masks: Optional[Union[np.ndarray, torch.Tensor]] = None,
+        predictions: Union[np.ndarray, torch.Tensor],
+        targets: Union[np.ndarray, torch.Tensor],
+        masks: Optional[Union[np.ndarray, torch.Tensor]] = None,
 ) -> Union[float, torch.Tensor]:
     """Calculate the Root Mean Square Error between ``predictions`` and ``targets``.
     ``masks`` can be used for filtering. For values==0 in ``masks``,
@@ -203,9 +222,9 @@ def calc_rmse(
 
 
 def calc_mre(
-    predictions: Union[np.ndarray, torch.Tensor],
-    targets: Union[np.ndarray, torch.Tensor],
-    masks: Optional[Union[np.ndarray, torch.Tensor]] = None,
+        predictions: Union[np.ndarray, torch.Tensor],
+        targets: Union[np.ndarray, torch.Tensor],
+        masks: Optional[Union[np.ndarray, torch.Tensor]] = None,
 ) -> Union[float, torch.Tensor]:
     """Calculate the Mean Relative Error between ``predictions`` and ``targets``.
     ``masks`` can be used for filtering. For values==0 in ``masks``,
@@ -262,11 +281,11 @@ def calc_quantile_loss(predictions, targets, q: float, eval_points) -> float:
 
 
 def calc_quantile_crps(
-    predictions: Union[np.ndarray, torch.Tensor],
-    targets: Union[np.ndarray, torch.Tensor],
-    masks: Union[np.ndarray, torch.Tensor],
-    scaler_mean=0,
-    scaler_stddev=1,
+        predictions: Union[np.ndarray, torch.Tensor],
+        targets: Union[np.ndarray, torch.Tensor],
+        masks: Union[np.ndarray, torch.Tensor],
+        scaler_mean=0,
+        scaler_stddev=1,
 ) -> float:
     """Continuous rank probability score for distributional predictions.
 
@@ -313,7 +332,7 @@ def calc_quantile_crps(
     for i in range(len(quantiles)):
         q_pred = []
         for j in range(len(predictions)):
-            q_pred.append(torch.quantile(predictions[j : j + 1], quantiles[i], dim=1))
+            q_pred.append(torch.quantile(predictions[j: j + 1], quantiles[i], dim=1))
         q_pred = torch.cat(q_pred, 0)
         q_loss = calc_quantile_loss(targets, q_pred, quantiles[i], masks)
         CRPS += q_loss / denominator
@@ -321,11 +340,11 @@ def calc_quantile_crps(
 
 
 def calc_quantile_crps_sum(
-    predictions: Union[np.ndarray, torch.Tensor],
-    targets: Union[np.ndarray, torch.Tensor],
-    masks: Union[np.ndarray, torch.Tensor],
-    scaler_mean=0,
-    scaler_stddev=1,
+        predictions: Union[np.ndarray, torch.Tensor],
+        targets: Union[np.ndarray, torch.Tensor],
+        masks: Union[np.ndarray, torch.Tensor],
+        scaler_mean=0,
+        scaler_stddev=1,
 ) -> float:
     """Sum continuous rank probability score for distributional predictions.
 
