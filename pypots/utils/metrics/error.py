@@ -52,7 +52,6 @@ def _check_inputs(
             )
         else:
             if prediction_shape == mask_shape:
-                # assert not any(dim.shape[0] for dim in lib.where(lib.isnan(predictions) * (1 - masks))), (
                 assert not any((dim.size if isinstance(dim, np.ndarray) else dim.numel()) > 0 for dim in lib.where(lib.isnan(predictions) * lib.logical_not(masks))), (
                     "Some NaN values in `predictions` are not covered by the mask"
                 )
