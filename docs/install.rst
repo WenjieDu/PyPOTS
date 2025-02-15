@@ -14,8 +14,8 @@ It is recommended to use **pip** or **conda** for PyPOTS installation as shown b
     pip install https://github.com/WenjieDu/PyPOTS/archive/main.zip
 
     # via conda
-    conda install -c conda-forge pypots  # the first time installation
-    conda update  -c conda-forge pypots  # update pypots to the latest version
+    conda install conda-forge::pypots  # the first time installation
+    conda update  conda-forge::pypots  # update pypots to the latest version
 
 
 Required Dependencies
@@ -31,9 +31,9 @@ Required Dependencies
 * tensorboard
 * scikit-learn
 * torch >=1.10.0
-* tsdb >=0.6
-* pygrinder >=0.6
-* benchpots >=0.2
+* tsdb >=0.6.1
+* pygrinder >=0.6.4
+* benchpots >=0.3.2
 
 
 Optional Dependencies
