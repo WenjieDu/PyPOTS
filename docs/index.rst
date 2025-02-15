@@ -18,7 +18,7 @@ Welcome to PyPOTS docs!
 
 .. image:: https://img.shields.io/badge/PyTorch-%E2%9D%A4%EF%B8%8F-F8C6B5?logo=pytorch&logoColor=white
    :alt: powered by Pytorch
-   :target: https://github.com/WenjieDu/PyPOTS
+   :target: https://www.google.com/search?q=%22PyPOTS%22+site%3Apytorch.org
 
 .. image:: https://img.shields.io/github/v/release/wenjiedu/pypots?color=EE781F&include_prereleases&label=Release&logo=github&logoColor=white
    :alt: the latest release version
@@ -135,6 +135,8 @@ The paper references are all listed at the bottom of this readme file.
 +================+===========================================================+======+======+======+======+======+=======================+
 | Neural Net     | TEFN🧑‍🔧           :cite:`zhan2024tefn`                  |  ✅  |      |      |      |      | ``2024 - arXiv``      |
 +----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
+| Neural Net     | FITS🧑‍🔧           :cite:`xu2024fits`                    |  ✅  |      |      |      |      | ``2024 - ICLR``       |
++----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
 | Neural Net     | TimeMixer      :cite:`wang2024timemixer`                  |  ✅  |      |      |      |      | ``2024 - ICLR``       |
 +----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
 | Neural Net     | iTransformer🧑‍🔧 :cite:`liu2024itransformer`             |  ✅  |      |      |      |      | ``2024 - ICLR``       |
@@ -162,6 +164,10 @@ The paper references are all listed at the bottom of this readme file.
 | Neural Net     | DLinear🧑‍🔧 :cite:`zeng2023dlinear`                      |  ✅  |      |      |      |      | ``2023 - AAAI``       |
 +----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
 | Neural Net     | TiDE🧑‍🔧 :cite:`das2023tide`                             |  ✅  |      |      |      |      | ``2023 - TMLR``       |
++----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
+| Neural Net     | CSAI :cite:`qian2023csai`                                 |  ✅  |      |  ✅  |      |      | ``2023 - arXiv``      |
++----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
+| Neural Net     | SegRNN🧑‍🔧 :cite:`lin2023segrnn`                         |  ✅  |      |      |      |      | ``2023 - arXiv``      |
 +----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
 | Neural Net     | SCINet🧑‍🔧 :cite:`liu2022scinet`                         |  ✅  |      |      |      |      | ``2022 - NeurIPS``    |
 +----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
@@ -207,6 +213,8 @@ The paper references are all listed at the bottom of this readme file.
 +----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
 | Neural Net     | Transformer🧑‍🔧 :cite:`vaswani2017Transformer`           |  ✅  |      |      |      |      | ``2017 - NeurIPS``    |
 +----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
+| MF             | TRMF :cite:`yu2016trmf`                                   |  ✅  |      |      |      |      | ``2016 - NeurIPS``    |
++----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
 | Naive          | Lerp (Linear Interpolation)                               |  ✅  |      |      |      |      |                       |
 +----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
 | Naive          | LOCF/NOCB                                                 |  ✅  |      |      |      |      |                       |
@@ -216,7 +224,7 @@ The paper references are all listed at the bottom of this readme file.
 | Naive          | Mean                                                      |  ✅  |      |      |      |      |                       |
 +----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
 
-💯 Contribute your model right now to increase your research impact! PyPOTS downloads are increasing rapidly (`300K+ in total and 1K+ daily on PyPI so far <https://www.pepy.tech/projects/pypots>`_),
+💯 Contribute your model right now to increase your research impact! PyPOTS downloads are increasing rapidly (`600K+ in total and 1K+ daily on PyPI so far <https://www.pepy.tech/projects/pypots>`_),
 and your work will be widely used and cited by the community.
 Refer to the `contribution guide <#id44>`_ to see how to include your model in PyPOTS.
 

@@ -19,6 +19,42 @@ pypots.imputation.transformer
    :show-inheritance:
    :inherited-members:
 
+pypots.imputation.tefn
+------------------------------------
+
+.. automodule:: pypots.imputation.tefn
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+
+pypots.imputation.csai
+------------------------------------
+
+.. automodule:: pypots.imputation.csai
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+
+pypots.imputation.segrnn
+------------------------------------
+
+.. automodule:: pypots.imputation.segrnn
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+
+pypots.imputation.fits
+------------------------------------
+
+.. automodule:: pypots.imputation.fits
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+
 pypots.imputation.timemixer
 ------------------------------------
 
@@ -283,6 +319,15 @@ pypots.imputation.tcn
 ------------------------------
 
 .. automodule:: pypots.imputation.tcn
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+
+pypots.imputation.trmf
+------------------------------
+
+.. automodule:: pypots.imputation.trmf
    :members:
    :undoc-members:
    :show-inheritance:
