@@ -16,8 +16,8 @@ from scipy.stats import multivariate_normal
 from sklearn.mixture import GaussianMixture
 from torch.utils.data import DataLoader
 
-from .data import DatasetForVaDER
 from .core import inverse_softplus, _VaDER
+from .data import DatasetForVaDER
 from ..base import BaseNNClusterer
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
@@ -63,6 +63,14 @@ class VaDER(BaseNNClusterer):
         stopped when the model does not perform better after that number of epochs.
         Leaving it default as None will disable the early-stopping.
 
+    train_loss_func:
+        The customized loss function designed by users for training the model.
+        If not given, will use the default loss as claimed in the original paper.
+
+    val_metric_func:
+        The customized metric function designed by users for validating the model.
+        If not given, will use the default MSE metric.
+
     optimizer :
         The optimizer for model training.
         If not given, will use a default Adam optimizer.
@@ -103,6 +111,8 @@ class VaDER(BaseNNClusterer):
         epochs: int = 100,
         pretrain_epochs: int = 10,
         patience: Optional[int] = None,
+        train_loss_func: Optional[dict] = None,
+        val_metric_func: Optional[dict] = None,
         optimizer: Optional[Optimizer] = Adam(),
         num_workers: int = 0,
         device: Optional[Union[str, torch.device, list]] = None,
@@ -111,15 +121,17 @@ class VaDER(BaseNNClusterer):
         verbose: bool = True,
     ):
         super().__init__(
-            n_clusters,
-            batch_size,
-            epochs,
-            patience,
-            num_workers,
-            device,
-            saving_path,
-            model_saving_strategy,
-            verbose,
+            n_clusters=n_clusters,
+            batch_size=batch_size,
+            epochs=epochs,
+            patience=patience,
+            train_loss_func=train_loss_func,
+            val_metric_func=val_metric_func,
+            num_workers=num_workers,
+            device=device,
+            saving_path=saving_path,
+            model_saving_strategy=model_saving_strategy,
+            verbose=verbose,
         )
 
         assert pretrain_epochs > 0, f"pretrain_epochs must be a positive integer, but got {pretrain_epochs}"
@@ -282,12 +294,14 @@ class VaDER(BaseNNClusterer):
 
                     logger.info(
                         f"Epoch {epoch:03d} - "
-                        f"training loss: {mean_train_loss:.4f}, "
-                        f"validation loss: {mean_val_loss:.4f}"
+                        f"training loss ({self.train_loss_func_name}): {mean_train_loss:.4f}, "
+                        f"validation {self.val_metric_func_name}: {mean_val_loss:.4f}"
                     )
                     mean_loss = mean_val_loss
                 else:
-                    logger.info(f"Epoch {epoch:03d} - training loss: {mean_train_loss:.4f}")
+                    logger.info(
+                        f"Epoch {epoch:03d} - training loss ({self.train_loss_func_name}): {mean_train_loss:.4f}"
+                    )
                     mean_loss = mean_train_loss
 
                 if np.isnan(mean_loss):
@@ -420,7 +434,7 @@ class VaDER(BaseNNClusterer):
         with torch.no_grad():
             for idx, data in enumerate(test_loader):
                 inputs = self._assemble_input_for_testing(data)
-                results = self.model.forward(inputs, training=False)
+                results = self.model.forward(inputs)
 
                 mu_tilde = results["mu_tilde"].cpu().numpy()
                 mu_tilde_collector.append(mu_tilde)

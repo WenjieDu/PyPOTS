@@ -152,14 +152,16 @@ class CSDI(BaseNNForecaster):
         verbose: bool = True,
     ):
         super().__init__(
-            batch_size,
-            epochs,
-            patience,
-            num_workers,
-            device,
-            saving_path,
-            model_saving_strategy,
-            verbose,
+            batch_size=batch_size,
+            epochs=epochs,
+            patience=patience,
+            train_loss_func=None,
+            val_metric_func=None,
+            num_workers=num_workers,
+            device=device,
+            saving_path=saving_path,
+            model_saving_strategy=model_saving_strategy,
+            verbose=verbose,
         )
         assert n_pred_features == n_features, (
             f"currently n_pred_features of CSDI forecasting model should be equal to n_features, "
@@ -172,6 +174,11 @@ class CSDI(BaseNNForecaster):
         self.n_pred_steps = n_pred_steps
         self.n_pred_features = n_pred_features
         self.target_strategy = target_strategy
+        # CSDI has its own defined loss function and validation loss, so we set them as None here
+        self.train_loss_func = None
+        self.train_loss_func_name = "default"
+        self.val_metric_func = None
+        self.val_metric_func_name = "loss (default)"
 
         # set up the model
         self.model = _CSDI(
@@ -272,7 +279,7 @@ class CSDI(BaseNNForecaster):
                     with torch.no_grad():
                         for idx, data in enumerate(val_loader):
                             inputs = self._assemble_input_for_validating(data)
-                            results = self.model.forward(inputs, training=False, n_sampling_times=0)
+                            results = self.model.forward(inputs, n_sampling_times=0)
                             val_loss_collector.append(results["loss"].sum().item())
 
                     mean_val_loss = np.asarray(val_loss_collector).mean()
@@ -286,12 +293,14 @@ class CSDI(BaseNNForecaster):
 
                     logger.info(
                         f"Epoch {epoch:03d} - "
-                        f"training loss: {mean_train_loss:.4f}, "
-                        f"validation loss: {mean_val_loss:.4f}"
+                        f"training loss ({self.train_loss_func_name}): {mean_train_loss:.4f}, "
+                        f"validation {self.val_metric_func_name}: {mean_val_loss:.4f}"
                     )
                     mean_loss = mean_val_loss
                 else:
-                    logger.info(f"Epoch {epoch:03d} - training loss: {mean_train_loss:.4f}")
+                    logger.info(
+                        f"Epoch {epoch:03d} - training loss ({self.train_loss_func_name}): {mean_train_loss:.4f}"
+                    )
                     mean_loss = mean_train_loss
 
                 if np.isnan(mean_loss):
@@ -437,7 +446,6 @@ class CSDI(BaseNNForecaster):
                 inputs = self._assemble_input_for_testing(data)
                 results = self.model(
                     inputs,
-                    training=False,
                     n_sampling_times=n_sampling_times,
                 )
                 forecasting_data = results["forecasting_data"][:, :, -self.n_pred_steps :]
