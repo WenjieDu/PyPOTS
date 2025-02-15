@@ -36,7 +36,7 @@ class _BRITS(nn.Module):
         self.f_classifier = nn.Linear(self.rnn_hidden_size, n_classes)
         self.b_classifier = nn.Linear(self.rnn_hidden_size, n_classes)
 
-    def forward(self, inputs: dict, training: bool = True) -> dict:
+    def forward(self, inputs: dict) -> dict:
         (
             imputed_data,
             f_reconstruction,
@@ -59,11 +59,11 @@ class _BRITS(nn.Module):
         }
 
         # if in training mode, return results with losses
-        if training:
+        if self.training:
             results["consistency_loss"] = consistency_loss
             results["reconstruction_loss"] = reconstruction_loss
-            f_classification_loss = F.nll_loss(torch.log(f_prediction), inputs["label"])
-            b_classification_loss = F.nll_loss(torch.log(b_prediction), inputs["label"])
+            f_classification_loss = F.nll_loss(torch.log(f_prediction), inputs["y"])
+            b_classification_loss = F.nll_loss(torch.log(b_prediction), inputs["y"])
             classification_loss = (f_classification_loss + b_classification_loss) / 2
             loss = (
                 consistency_loss

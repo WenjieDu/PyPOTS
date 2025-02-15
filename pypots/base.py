@@ -9,7 +9,7 @@ import os
 from abc import ABC
 from abc import abstractmethod
 from datetime import datetime
-from typing import Optional, Union, Iterable
+from typing import Optional, Union, Iterable, Callable
 
 import torch
 from torch.utils.tensorboard import SummaryWriter
@@ -221,7 +221,9 @@ class BaseModel(ABC):
             # save all items containing "loss" or "error" in the name
             # WDU: may enable customization keywords in the future
             if ("loss" in item_name) or ("error" in item_name):
-                self.summary_writer.add_scalar(f"{stage}/{item_name}", loss.sum(), step)
+                if isinstance(loss, torch.Tensor):
+                    loss = loss.sum()
+                self.summary_writer.add_scalar(f"{stage}/{item_name}", loss, step)
 
     def _auto_save_model_if_necessary(
         self,
@@ -415,9 +417,17 @@ class BaseNNModel(BaseModel):
         Training epochs, i.e. the maximum rounds of the model to be trained with.
 
     patience :
-        Number of epochs the training procedure will keep if loss doesn't decrease.
-        Once exceeding the number, the training will stop.
-        Must be smaller than or equal to the value of ``epochs``.
+        The patience for the early-stopping mechanism. Given a positive integer, the training process will be
+        stopped when the model does not perform better after that number of epochs.
+        Leaving it default as None will disable the early-stopping.
+
+    train_loss_func:
+        The customized loss function designed by users for training the model.
+        If not given, will use the default loss as claimed in the original paper.
+
+    val_metric_func:
+        The customized metric function designed by users for validating the model.
+        If not given, will use the default MSE metric.
 
     num_workers :
         The number of subprocesses to use for data loading.
@@ -474,6 +484,8 @@ class BaseNNModel(BaseModel):
         batch_size: int,
         epochs: int,
         patience: Optional[int] = None,
+        train_loss_func: Optional[dict] = None,
+        val_metric_func: Optional[dict] = None,
         num_workers: int = 0,
         device: Optional[Union[str, torch.device, list]] = None,
         saving_path: str = None,
@@ -487,6 +499,7 @@ class BaseNNModel(BaseModel):
             verbose,
         )
 
+        # check patience
         if patience is None:
             patience = -1  # early stopping on patience won't work if it is set as < 0
         else:
@@ -494,10 +507,39 @@ class BaseNNModel(BaseModel):
                 patience <= epochs
             ), f"patience must be smaller than epochs which is {epochs}, but got patience={patience}"
 
-        # training hype-parameters
+        # check train_loss_func and val_metric_func
+        train_loss_func_name, val_metric_func_name = "default", "loss (default)"
+        if train_loss_func is not None:
+            assert (
+                len(train_loss_func) == 1
+            ), f"train_loss_func should have only 1 item, but got {len(train_loss_func)}"
+            train_loss_func_name, train_loss_func = train_loss_func.popitem()
+            assert isinstance(
+                train_loss_func, Callable
+            ), "train_loss_func should be a callable function"
+            logger.info(
+                f"Using customized {train_loss_func_name} as the training loss function."
+            )
+        if val_metric_func is not None:
+            assert (
+                len(val_metric_func) == 1
+            ), f"val_metric_func should have only 1 item, but got {len(val_metric_func)}"
+            val_metric_func_name, val_metric_func = val_metric_func.popitem()
+            assert isinstance(
+                val_metric_func, Callable
+            ), "val_metric_func should be a callable function"
+            logger.info(
+                f"Using customized {val_metric_func_name} as the validation metric function."
+            )
+
+        # set up the hype-parameters
         self.batch_size = batch_size
         self.epochs = epochs
         self.patience = patience
+        self.train_loss_func = train_loss_func
+        self.train_loss_func_name = train_loss_func_name
+        self.val_metric_func = val_metric_func
+        self.val_metric_func_name = val_metric_func_name
         self.original_patience = patience
         self.num_workers = num_workers
 
