@@ -14,7 +14,7 @@ import torch
 
 from pypots.imputation import Mean
 from pypots.utils.logging import logger
-from pypots.utils.metrics import calc_mse
+from pypots.nn.functional import calc_mse
 from tests.global_test_config import (
     DATA,
     TEST_SET,
@@ -32,25 +32,17 @@ class TestMean(unittest.TestCase):
     def test_0_impute(self):
         # if input data is numpy ndarray
         test_X_imputed = self.mean.predict(TEST_SET)["imputation"]
-        assert not np.isnan(
-            test_X_imputed
-        ).any(), "Output still has missing values after running impute()."
-        test_MSE = calc_mse(
-            test_X_imputed, DATA["test_X_ori"], DATA["test_X_indicating_mask"]
-        )
+        assert not np.isnan(test_X_imputed).any(), "Output still has missing values after running impute()."
+        test_MSE = calc_mse(test_X_imputed, DATA["test_X_ori"], DATA["test_X_indicating_mask"])
         logger.info(f"Mean test_MSE: {test_MSE}")
 
         # if input data is torch tensor
         X = torch.from_numpy(np.copy(TEST_SET["X"]))
         test_X_ori = torch.from_numpy(np.copy(DATA["test_X_ori"]))
-        test_X_indicating_mask = torch.from_numpy(
-            np.copy(DATA["test_X_indicating_mask"])
-        )
+        test_X_indicating_mask = torch.from_numpy(np.copy(DATA["test_X_indicating_mask"]))
 
         test_X_imputed = self.mean.predict({"X": X})["imputation"]
-        assert not torch.isnan(
-            test_X_imputed
-        ).any(), "Output still has missing values after running impute()."
+        assert not torch.isnan(test_X_imputed).any(), "Output still has missing values after running impute()."
         test_MSE = calc_mse(test_X_imputed, test_X_ori, test_X_indicating_mask)
         logger.info(f"Mean test_MSE: {test_MSE}")
 
