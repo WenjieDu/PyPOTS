@@ -10,7 +10,7 @@ __all__ = [
     # content files in this package
     "file",
     "logging",
-    "metrics",
+    # "metrics", # deprecated and everything is moved to nn.functional, hence do not import it by default
     "random",
     "visual",
 ]

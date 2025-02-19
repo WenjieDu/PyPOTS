@@ -12,8 +12,8 @@ from typing import Callable
 import torch
 import torch.nn as nn
 
+from ...nn.functional import calc_mae
 from ...nn.modules.saits import BackboneSAITS
-from ...utils.metrics import calc_mae
 
 
 class _SAITS(nn.Module):
@@ -32,7 +32,7 @@ class _SAITS(nn.Module):
         diagonal_attention_mask: bool = True,
         ORT_weight: float = 1,
         MIT_weight: float = 1,
-        customized_loss_func: Callable = calc_mae,
+        loss_func: Callable = calc_mae,
     ):
         super().__init__()
         self.n_layers = n_layers
@@ -40,7 +40,7 @@ class _SAITS(nn.Module):
         self.diagonal_attention_mask = diagonal_attention_mask
         self.ORT_weight = ORT_weight
         self.MIT_weight = MIT_weight
-        self.customized_loss_func = customized_loss_func
+        self.loss_func = loss_func
 
         self.encoder = BackboneSAITS(
             n_steps,
@@ -59,12 +59,11 @@ class _SAITS(nn.Module):
         self,
         inputs: dict,
         diagonal_attention_mask: bool = True,
-        training: bool = True,
     ) -> dict:
         X, missing_mask = inputs["X"], inputs["missing_mask"]
 
         # determine the attention mask
-        if (training and self.diagonal_attention_mask) or ((not training) and diagonal_attention_mask):
+        if (self.training and self.diagonal_attention_mask) or ((not self.training) and diagonal_attention_mask):
             diagonal_attention_mask = (1 - torch.eye(self.n_steps)).to(X.device)
             # then broadcast on the batch axis
             diagonal_attention_mask = diagonal_attention_mask.unsqueeze(0)
@@ -93,21 +92,21 @@ class _SAITS(nn.Module):
         }
 
         # if in training mode, return results with losses
-        if training:
+        if self.training:
             X_ori, indicating_mask = inputs["X_ori"], inputs["indicating_mask"]
 
             # calculate loss for the observed reconstruction task (ORT)
             # this calculation is more complicated that pypots.nn.modules.saits.SaitsLoss because
             # SAITS model structure has three parts of representation
             ORT_loss = 0
-            ORT_loss += self.customized_loss_func(X_tilde_1, X, missing_mask)
-            ORT_loss += self.customized_loss_func(X_tilde_2, X, missing_mask)
-            ORT_loss += self.customized_loss_func(X_tilde_3, X, missing_mask)
+            ORT_loss += self.loss_func(X_tilde_1, X, missing_mask)
+            ORT_loss += self.loss_func(X_tilde_2, X, missing_mask)
+            ORT_loss += self.loss_func(X_tilde_3, X, missing_mask)
             ORT_loss /= 3
             ORT_loss = self.ORT_weight * ORT_loss
 
             # calculate loss for the masked imputation task (MIT)
-            MIT_loss = self.MIT_weight * self.customized_loss_func(X_tilde_3, X_ori, indicating_mask)
+            MIT_loss = self.MIT_weight * self.loss_func(X_tilde_3, X_ori, indicating_mask)
             # `loss` is always the item for backward propagating to update the model
             loss = ORT_loss + MIT_loss
 

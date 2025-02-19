@@ -154,9 +154,17 @@ class BaseNNClusterer(BaseNNModel):
         Training epochs, i.e. the maximum rounds of the model to be trained with.
 
     patience :
-        Number of epochs the training procedure will keep if loss doesn't decrease.
-        Once exceeding the number, the training will stop.
-        Must be smaller than or equal to the value of ``epochs``.
+        The patience for the early-stopping mechanism. Given a positive integer, the training process will be
+        stopped when the model does not perform better after that number of epochs.
+        Leaving it default as None will disable the early-stopping.
+
+    train_loss_func:
+        The customized loss function designed by users for training the model.
+        If not given, will use the default loss as claimed in the original paper.
+
+    val_metric_func:
+        The customized metric function designed by users for validating the model.
+        If not given, will use the default loss from the original paper as the metric.
 
     num_workers :
         The number of subprocesses to use for data loading.
@@ -199,8 +207,10 @@ class BaseNNClusterer(BaseNNModel):
         self,
         n_clusters: int,
         batch_size: int,
-        epochs: int,
+        epochs: int = 100,
         patience: Optional[int] = None,
+        train_loss_func: Optional[dict] = None,
+        val_metric_func: Optional[dict] = None,
         num_workers: int = 0,
         device: Optional[Union[str, torch.device, list]] = None,
         saving_path: str = None,
@@ -208,16 +218,29 @@ class BaseNNClusterer(BaseNNModel):
         verbose: bool = True,
     ):
         super().__init__(
-            batch_size,
-            epochs,
-            patience,
-            num_workers,
-            device,
-            saving_path,
-            model_saving_strategy,
-            verbose,
+            batch_size=batch_size,
+            epochs=epochs,
+            patience=patience,
+            train_loss_func=train_loss_func,
+            val_metric_func=val_metric_func,
+            num_workers=num_workers,
+            device=device,
+            saving_path=saving_path,
+            model_saving_strategy=model_saving_strategy,
+            verbose=verbose,
         )
         self.n_clusters = n_clusters
+
+        # training loss function and validation metric function are quite different in clustering models,
+        # hence we don't set default loss and metric functions here. So the below lines are commented out.
+
+        # # set default training loss function and validation metric function if not given
+        # if train_loss_func is None:
+        #     self.train_loss_func =
+        #     self.train_loss_func_name = self.train_loss_func.__class__.__name__
+        # if val_metric_func is None:
+        #     self.val_metric_func =
+        #     self.val_metric_func_name =
 
     @abstractmethod
     def _assemble_input_for_training(self, data: list) -> dict:
@@ -325,12 +348,14 @@ class BaseNNClusterer(BaseNNModel):
                     mean_val_loss = np.mean(epoch_val_loss_collector)
                     logger.info(
                         f"Epoch {epoch:03d} - "
-                        f"training loss: {mean_train_loss:.4f}, "
-                        f"validation loss: {mean_val_loss:.4f}"
+                        f"training loss ({self.train_loss_func_name}): {mean_train_loss:.4f}, "
+                        f"validation {self.val_metric_func_name}: {mean_val_loss:.4f}"
                     )
                     mean_loss = mean_val_loss
                 else:
-                    logger.info(f"Epoch {epoch:03d} - training loss: {mean_train_loss:.4f}")
+                    logger.info(
+                        f"Epoch {epoch:03d} - training loss ({self.train_loss_func_name}): {mean_train_loss:.4f}"
+                    )
                     mean_loss = mean_train_loss
 
                 if np.isnan(mean_loss):
