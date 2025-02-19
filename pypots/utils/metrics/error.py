@@ -373,6 +373,6 @@ def calc_quantile_crps_sum(
     CRPS = torch.tensor(0.0)
     for i in range(len(quantiles)):
         q_pred = torch.quantile(predictions.sum(-1), quantiles[i], dim=1)
-        q_loss = calc_quantile_loss(targets, q_pred, quantiles[i], masks)
+        q_loss = calc_quantile_loss(q_pred, targets, quantiles[i], masks)
         CRPS += q_loss / denominator
     return CRPS.item() / len(quantiles)
