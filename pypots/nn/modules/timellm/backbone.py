@@ -71,7 +71,7 @@ class BackboneTimeLLM(nn.Module):
 
         assert n_steps > patch_len, "The length of the time series must be greater than the patch length."
         assert llm_model_type in SUPPORTED_LLM, f"The LLM model type must be one of {SUPPORTED_LLM}."
-        assert task_name in SUPPORTED_LLM, f"The LLM model type must be one of {SUPPORTED_LLM}."
+        assert task_name in SUPPORTED_TASKS, f"The task name must be one of {SUPPORTED_TASKS}."
 
         if llm_model_type == "LLaMA":
             self.llama_config = LlamaConfig.from_pretrained("huggyllama/llama-7b")
