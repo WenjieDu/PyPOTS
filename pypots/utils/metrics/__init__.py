@@ -34,7 +34,7 @@ from ...nn.functional.error import (
     calc_quantile_crps_sum,
 )
 
-logger.warning("‼️ `pypots.utils.metrics` is deprecated. Please import from `pypots.nn.functional` instead.")
+logger.warning("‼️ `pypots.nn.functional` is deprecated. Please import from `pypots.nn.functional` instead.")
 
 __all__ = [
     # error

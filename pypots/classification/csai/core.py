@@ -81,8 +81,8 @@ class _BCSAI(nn.Module):
             results["consistency_loss"] = consistency_loss
             results["reconstruction_loss"] = reconstruction_loss
             # print(inputs["labels"].unsqueeze(1))
-            f_classification_loss = F.nll_loss(torch.log(f_prediction), inputs["labels"])
-            b_classification_loss = F.nll_loss(torch.log(b_prediction), inputs["labels"])
+            f_classification_loss = F.nll_loss(torch.log(f_prediction), inputs["y"])
+            b_classification_loss = F.nll_loss(torch.log(b_prediction), inputs["y"])
             # f_classification_loss, _ = criterion(f_prediction, f_logits, inputs["labels"].unsqueeze(1).float())
             # b_classification_loss, _ = criterion(b_prediction, b_logits, inputs["labels"].unsqueeze(1).float())
             classification_loss = f_classification_loss + b_classification_loss

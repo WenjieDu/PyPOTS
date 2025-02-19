@@ -15,8 +15,8 @@ from ...nn.functional.error import (
     calc_quantile_crps_sum,
 )
 
-# pypots.utils.metrics.error is deprecated, and moved to pypots.nn.functional.error
-logger.warning("🚨 Please import from pypots.nn.functional.error instead of pypots.utils.metrics.error")
+# pypots.nn.functional.error is deprecated, and moved to pypots.nn.functional.error
+logger.warning("🚨 Please import from pypots.nn.functional.error instead of pypots.nn.functional.error")
 
 __all__ = [
     "calc_mae",

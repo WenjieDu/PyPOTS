@@ -15,7 +15,8 @@ import torch
 from torch.utils.data import DataLoader
 
 from ..base import BaseModel, BaseNNModel
-from ..nn.functional import calc_acc
+from ..nn.modules.loss import CrossEntropy
+from ..nn.modules.metric import Accuracy
 from ..utils.logging import logger
 
 try:
@@ -166,7 +167,7 @@ class BaseNNClassifier(BaseNNModel):
 
     val_metric_func:
         The customized metric function designed by users for validating the model.
-        If not given, will use the default MSE metric.
+        If not given, will use the default loss from the original paper as the metric.
 
     num_workers :
         The number of subprocesses to use for data loading.
@@ -235,11 +236,11 @@ class BaseNNClassifier(BaseNNModel):
 
         # set default training loss function and validation metric function if not given
         if train_loss_func is None:
-            self.train_loss_func = torch.nn.functional.cross_entropy
-            self.train_loss_func_name = "CrossEntropy"
+            self.train_loss_func = CrossEntropy()
+            self.train_loss_func_name = self.train_loss_func.__class__.__name__
         if val_metric_func is None:
-            self.val_metric_func = calc_acc
-            self.val_metric_func_name = "Accuracy"
+            self.val_metric_func = Accuracy()
+            self.val_metric_func_name = self.val_metric_func.__class__.__name__
 
     @abstractmethod
     def _assemble_input_for_training(self, data: list) -> dict:

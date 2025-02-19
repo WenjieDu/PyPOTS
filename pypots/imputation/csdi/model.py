@@ -159,11 +159,12 @@ class CSDI(BaseNNImputer):
         assert schedule in ["quad", "linear"]
         self.n_steps = n_steps
         self.target_strategy = target_strategy
+
         # CSDI has its own defined loss function and validation loss, so we set them as None here
         self.train_loss_func = None
         self.train_loss_func_name = "default"
         self.val_metric_func = None
-        self.val_metric_func_name = "loss (default)"
+        self.val_metric_func_name = "metric (default)"
 
         # set up the model
         self.model = _CSDI(
