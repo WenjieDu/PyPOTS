@@ -15,7 +15,7 @@ import pytest
 from pypots.forecasting import CSDI
 from pypots.optim import Adam
 from pypots.utils.logging import logger
-from pypots.utils.metrics import calc_mse, calc_quantile_crps
+from pypots.nn.functional import calc_mse, calc_quantile_crps
 
 from tests.global_test_config import (
     DATA,
@@ -68,9 +68,7 @@ class TestCSDI(unittest.TestCase):
 
     @pytest.mark.xdist_group(name="forecasting-csdi")
     def test_1_forecasting(self):
-        forecasting_X = self.csdi.predict(FORECASTING_TEST_SET, n_sampling_times=2)[
-            "forecasting"
-        ]
+        forecasting_X = self.csdi.predict(FORECASTING_TEST_SET, n_sampling_times=2)["forecasting"]
         test_CRPS = calc_quantile_crps(
             forecasting_X,
             FORECASTING_TEST_SET["X_pred"],
@@ -79,9 +77,7 @@ class TestCSDI(unittest.TestCase):
         forecasting_X = forecasting_X.mean(axis=1)  # mean over sampling times
         assert not np.isnan(
             forecasting_X
-        ).any(), (
-            "Output has missing values in the forecasting results that should not be."
-        )
+        ).any(), "Output has missing values in the forecasting results that should not be."
         test_MSE = calc_mse(
             forecasting_X,
             FORECASTING_TEST_SET["X_pred"],
@@ -98,17 +94,12 @@ class TestCSDI(unittest.TestCase):
         assert hasattr(self.csdi, "best_loss")
         self.assertNotEqual(self.csdi.best_loss, float("inf"))
 
-        assert (
-            hasattr(self.csdi, "best_model_dict")
-            and self.csdi.best_model_dict is not None
-        )
+        assert hasattr(self.csdi, "best_model_dict") and self.csdi.best_model_dict is not None
 
     @pytest.mark.xdist_group(name="forecasting-csdi")
     def test_3_saving_path(self):
         # whether the root saving dir exists, which should be created by save_log_into_tb_file
-        assert os.path.exists(
-            self.saving_path
-        ), f"file {self.saving_path} does not exist"
+        assert os.path.exists(self.saving_path), f"file {self.saving_path} does not exist"
 
         # check if the tensorboard file and model checkpoints exist
         check_tb_and_model_checkpoints_existence(self.csdi)
@@ -133,9 +124,7 @@ class TestCSDI(unittest.TestCase):
         forecasting_X = forecasting_X.mean(axis=1)  # mean over sampling times
         assert not np.isnan(
             forecasting_X
-        ).any(), (
-            "Output has missing values in the forecasting results that should not be."
-        )
+        ).any(), "Output has missing values in the forecasting results that should not be."
 
         test_MSE = calc_mse(
             forecasting_X,

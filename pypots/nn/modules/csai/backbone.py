@@ -11,7 +11,7 @@ import torch
 import torch.nn as nn
 
 from .layers import FeatureRegression, Decay, Decay_obs, PositionalEncoding, Conv1dWithInit, TorchTransformerEncoder
-from ....utils.metrics import calc_mae
+from ....nn.functional import calc_mae
 
 
 class BackboneCSAI(nn.Module):

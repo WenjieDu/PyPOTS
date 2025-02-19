@@ -15,7 +15,7 @@ import pytest
 from pypots.imputation import GPVAE
 from pypots.optim import Adam
 from pypots.utils.logging import logger
-from pypots.utils.metrics import calc_mse
+from pypots.nn.functional import calc_mse
 from tests.global_test_config import (
     DATA,
     EPOCHS,
@@ -60,12 +60,8 @@ class TestGPVAE(unittest.TestCase):
     def test_1_impute(self):
         imputed_X = self.gp_vae.predict(TEST_SET, n_sampling_times=2)["imputation"]
         imputed_X = imputed_X.mean(axis=1)
-        assert not np.isnan(
-            imputed_X
-        ).any(), "Output still has missing values after running impute()."
-        test_MSE = calc_mse(
-            imputed_X, DATA["test_X_ori"], DATA["test_X_indicating_mask"]
-        )
+        assert not np.isnan(imputed_X).any(), "Output still has missing values after running impute()."
+        test_MSE = calc_mse(imputed_X, DATA["test_X_ori"], DATA["test_X_indicating_mask"])
         logger.info(f"GP-VAE test_MSE: {test_MSE}")
 
     @pytest.mark.xdist_group(name="imputation-gpvae")
@@ -77,17 +73,12 @@ class TestGPVAE(unittest.TestCase):
         assert hasattr(self.gp_vae, "best_loss")
         self.assertNotEqual(self.gp_vae.best_loss, float("inf"))
 
-        assert (
-            hasattr(self.gp_vae, "best_model_dict")
-            and self.gp_vae.best_model_dict is not None
-        )
+        assert hasattr(self.gp_vae, "best_model_dict") and self.gp_vae.best_model_dict is not None
 
     @pytest.mark.xdist_group(name="imputation-gpvae")
     def test_3_saving_path(self):
         # whether the root saving dir exists, which should be created by save_log_into_tb_file
-        assert os.path.exists(
-            self.saving_path
-        ), f"file {self.saving_path} does not exist"
+        assert os.path.exists(self.saving_path), f"file {self.saving_path} does not exist"
 
         # check if the tensorboard file and model checkpoints exist
         check_tb_and_model_checkpoints_existence(self.gp_vae)
@@ -102,13 +93,9 @@ class TestGPVAE(unittest.TestCase):
     @pytest.mark.xdist_group(name="imputation-gpvae")
     def test_4_lazy_loading(self):
         self.gp_vae.fit(GENERAL_H5_TRAIN_SET_PATH, GENERAL_H5_VAL_SET_PATH)
-        imputed_X = self.gp_vae.predict(GENERAL_H5_TEST_SET_PATH, n_sampling_times=2)[
-            "imputation"
-        ]
+        imputed_X = self.gp_vae.predict(GENERAL_H5_TEST_SET_PATH, n_sampling_times=2)["imputation"]
         imputed_X = imputed_X.mean(axis=1)
-        assert not np.isnan(
-            imputed_X
-        ).any(), "Output still has missing values after running impute()."
+        assert not np.isnan(imputed_X).any(), "Output still has missing values after running impute()."
 
         test_MSE = calc_mse(
             imputed_X,

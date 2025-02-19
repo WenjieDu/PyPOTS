@@ -9,8 +9,8 @@ and takes over the forward progress of the algorithm.
 
 import torch.nn as nn
 
+from ...nn.functional import calc_rmse
 from ...nn.modules.mrnn import BackboneMRNN
-from ...utils.metrics import calc_rmse
 
 
 class _MRNN(nn.Module):
@@ -18,7 +18,7 @@ class _MRNN(nn.Module):
         super().__init__()
         self.backbone = BackboneMRNN(n_steps, n_features, rnn_hidden_size)
 
-    def forward(self, inputs: dict, training: bool = True) -> dict:
+    def forward(self, inputs: dict) -> dict:
         X = inputs["forward"]["X"]
         M = inputs["forward"]["missing_mask"]
 
@@ -30,7 +30,7 @@ class _MRNN(nn.Module):
         }
 
         # if in training mode, return results with losses
-        if training:
+        if self.training:
             RNN_loss = calc_rmse(RNN_estimation, X, M)
             FCN_loss = calc_rmse(FCN_estimation, RNN_imputed_data)
             reconstruction_loss = RNN_loss + FCN_loss
