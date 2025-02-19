@@ -13,9 +13,9 @@ import numpy as np
 import pytest
 
 from pypots.imputation import TimeLLM
+from pypots.nn.functional import calc_mse
 from pypots.optim import Adam
 from pypots.utils.logging import logger
-from pypots.utils.metrics import calc_mse
 from tests.global_test_config import (
     DATA,
     EPOCHS,
@@ -52,7 +52,6 @@ class TestTimeLLM(unittest.TestCase):
         d_ffn=128,
         d_llm=768,
         n_heads=8,
-        top_k=5,
         llm_model_type="GPT2",
         dropout=0.1,
         domain_prompt_content="The next value in a random walk is a modification of the previous value in the "

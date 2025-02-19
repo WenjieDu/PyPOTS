@@ -30,7 +30,7 @@ class PatchEmbedding(nn.Module):
         self.value_embedding = nn.Linear(patch_len, d_model, bias=False)
         # positional embedding
         if positional_embedding:
-            self.position_embedding = PositionalEncoding(d_model)
+            self.positional_embedding = PositionalEncoding(d_model)
         else:
             self.positional_embedding = None
         # Residual dropout
@@ -44,7 +44,7 @@ class PatchEmbedding(nn.Module):
         # input encoding
         x = self.value_embedding(x)
         if self.positional_embedding is not None:
-            x = self.position_embedding(x)
+            x = self.positional_embedding(x)
         x = self.dropout(x)
         return x
 
