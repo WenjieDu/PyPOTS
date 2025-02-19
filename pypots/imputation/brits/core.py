@@ -41,7 +41,7 @@ class _BRITS(nn.Module):
 
         self.model = BackboneBRITS(n_steps, n_features, rnn_hidden_size)
 
-    def forward(self, inputs: dict, training: bool = True) -> dict:
+    def forward(self, inputs: dict) -> dict:
         (
             imputed_data,
             f_reconstruction,
@@ -57,7 +57,7 @@ class _BRITS(nn.Module):
         }
 
         # if in training mode, return results with losses
-        if training:
+        if self.training:
             results["consistency_loss"] = consistency_loss
             results["reconstruction_loss"] = reconstruction_loss
             loss = consistency_loss + reconstruction_loss

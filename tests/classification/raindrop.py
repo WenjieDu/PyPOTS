@@ -12,7 +12,7 @@ import pytest
 
 from pypots.classification import Raindrop
 from pypots.utils.logging import logger
-from pypots.utils.metrics import calc_binary_classification_metrics
+from pypots.nn.functional import calc_binary_classification_metrics
 from tests.global_test_config import (
     DATA,
     EPOCHS,
@@ -75,24 +75,17 @@ class TestRaindrop(unittest.TestCase):
     def test_2_parameters(self):
         assert hasattr(self.raindrop, "model") and self.raindrop.model is not None
 
-        assert (
-            hasattr(self.raindrop, "optimizer") and self.raindrop.optimizer is not None
-        )
+        assert hasattr(self.raindrop, "optimizer") and self.raindrop.optimizer is not None
 
         assert hasattr(self.raindrop, "best_loss")
         self.assertNotEqual(self.raindrop.best_loss, float("inf"))
 
-        assert (
-            hasattr(self.raindrop, "best_model_dict")
-            and self.raindrop.best_model_dict is not None
-        )
+        assert hasattr(self.raindrop, "best_model_dict") and self.raindrop.best_model_dict is not None
 
     @pytest.mark.xdist_group(name="classification-raindrop")
     def test_3_saving_path(self):
         # whether the root saving dir exists, which should be created by save_log_into_tb_file
-        assert os.path.exists(
-            self.saving_path
-        ), f"file {self.saving_path} does not exist"
+        assert os.path.exists(self.saving_path), f"file {self.saving_path} does not exist"
 
         # check if the tensorboard file and model checkpoints exist
         check_tb_and_model_checkpoints_existence(self.raindrop)
@@ -108,9 +101,7 @@ class TestRaindrop(unittest.TestCase):
     def test_4_lazy_loading(self):
         self.raindrop.fit(GENERAL_H5_TRAIN_SET_PATH, GENERAL_H5_VAL_SET_PATH)
         results = self.raindrop.predict(GENERAL_H5_TEST_SET_PATH)
-        metrics = calc_binary_classification_metrics(
-            results["classification"], DATA["test_y"]
-        )
+        metrics = calc_binary_classification_metrics(results["classification"], DATA["test_y"])
         logger.info(
             f'Lazy-loading Raindrop ROC_AUC: {metrics["roc_auc"]}, '
             f'PR_AUC: {metrics["pr_auc"]}, '

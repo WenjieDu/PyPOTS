@@ -12,7 +12,7 @@ import torch.nn as nn
 
 from .layers import FeatureRegression
 from ..grud.layers import TemporalDecay
-from ....utils.metrics import calc_mae
+from ....nn.functional import calc_mae
 
 
 class BackboneRITS(nn.Module):

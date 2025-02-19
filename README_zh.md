@@ -261,7 +261,7 @@ print(X.shape)  # X的形状为(11988, 48, 37), 即11988个样本, 每个样本�
 
 # 模型训练. PyPOTS的好戏上演了！
 from pypots.imputation import SAITS
-from pypots.utils.metrics import calc_mae
+from pypots.nn.functional import calc_mae
 saits = SAITS(n_steps=48, n_features=37, n_layers=2, d_model=256, n_heads=4, d_k=64, d_v=64, d_ffn=128, dropout=0.1, epochs=10)
 # 因为基准数据对模型不可知, 将整个数据集作为训练集, 也可以把数据集分为训练/验证/测试集
 saits.fit(dataset)  # 基于数据集训练模型

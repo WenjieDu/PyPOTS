@@ -279,7 +279,7 @@ print(X.shape)  # (11988, 48, 37), 11988 samples and each sample has 48 time ste
 
 # Model training. This is PyPOTS showtime.
 from pypots.imputation import SAITS
-from pypots.utils.metrics import calc_mae
+from pypots.nn.functional import calc_mae
 saits = SAITS(n_steps=48, n_features=37, n_layers=2, d_model=256, n_heads=4, d_k=64, d_v=64, d_ffn=128, dropout=0.1, epochs=10)
 # Here I use the whole dataset as the training set because ground truth is not visible to the model, you can also split it into train/val/test sets
 saits.fit(dataset)  # train the model on the dataset
