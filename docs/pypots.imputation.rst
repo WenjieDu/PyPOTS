@@ -37,6 +37,15 @@ pypots.imputation.csai
    :show-inheritance:
    :inherited-members:
 
+pypots.imputation.timellm
+------------------------------------
+
+.. automodule:: pypots.imputation.timellm
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+
 pypots.imputation.segrnn
 ------------------------------------
 
