@@ -15,7 +15,7 @@ import pytest
 from pypots.imputation import SAITS
 from pypots.optim import Adam
 from pypots.utils.logging import logger
-from pypots.utils.metrics import calc_mse
+from pypots.nn.functional import calc_mse
 from pypots.utils.visual.data import plot_data, plot_missingness
 from tests.global_test_config import (
     DATA,
@@ -81,9 +81,7 @@ class TestSAITS(unittest.TestCase):
         logger.info(f"SAITS test_MSE: {test_MSE}")
 
         # plot the missingness and imputed data
-        plot_missingness(
-            ~np.isnan(TEST_SET["X"]), 0, imputation_results["imputation"].shape[1]
-        )
+        plot_missingness(~np.isnan(TEST_SET["X"]), 0, imputation_results["imputation"].shape[1])
         plot_data(TEST_SET["X"], TEST_SET["X_ori"], imputation_results["imputation"])
 
     @pytest.mark.xdist_group(name="imputation-saits")
@@ -95,17 +93,12 @@ class TestSAITS(unittest.TestCase):
         assert hasattr(self.saits, "best_loss")
         self.assertNotEqual(self.saits.best_loss, float("inf"))
 
-        assert (
-            hasattr(self.saits, "best_model_dict")
-            and self.saits.best_model_dict is not None
-        )
+        assert hasattr(self.saits, "best_model_dict") and self.saits.best_model_dict is not None
 
     @pytest.mark.xdist_group(name="imputation-saits")
     def test_3_saving_path(self):
         # whether the root saving dir exists, which should be created by save_log_into_tb_file
-        assert os.path.exists(
-            self.saving_path
-        ), f"file {self.saving_path} does not exist"
+        assert os.path.exists(self.saving_path), f"file {self.saving_path} does not exist"
 
         # check if the tensorboard file and model checkpoints exist
         check_tb_and_model_checkpoints_existence(self.saits)

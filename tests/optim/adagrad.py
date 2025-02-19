@@ -13,7 +13,7 @@ import pytest
 from pypots.imputation import SAITS
 from pypots.optim import Adagrad
 from pypots.utils.logging import logger
-from pypots.utils.metrics import calc_mae
+from pypots.nn.functional import calc_mae
 from tests.global_test_config import DATA
 from tests.optim.config import EPOCHS, TEST_SET, TRAIN_SET, VAL_SET
 
@@ -43,12 +43,8 @@ class TestAdagrad(unittest.TestCase):
     def test_0_fit(self):
         self.saits.fit(TRAIN_SET, VAL_SET)
         imputed_X = self.saits.impute(TEST_SET)
-        assert not np.isnan(
-            imputed_X
-        ).any(), "Output still has missing values after running impute()."
-        test_MAE = calc_mae(
-            imputed_X, DATA["test_X_ori"], DATA["test_X_indicating_mask"]
-        )
+        assert not np.isnan(imputed_X).any(), "Output still has missing values after running impute()."
+        test_MAE = calc_mae(imputed_X, DATA["test_X_ori"], DATA["test_X_indicating_mask"])
         logger.info(f"SAITS test_MAE: {test_MAE}")
 
 

@@ -12,7 +12,15 @@ from ....nn.modules.transformer.embedding import PositionalEncoding
 
 
 class PatchEmbedding(nn.Module):
-    def __init__(self, d_model, patch_len, stride, padding, dropout):
+    def __init__(
+        self,
+        d_model,
+        patch_len,
+        stride,
+        padding,
+        dropout,
+        positional_embedding=True,
+    ):
         super().__init__()
         # patching
         self.patch_len = patch_len
@@ -21,7 +29,10 @@ class PatchEmbedding(nn.Module):
         # input projection, project the feature vectors into a vector space with d_model dimensions
         self.value_embedding = nn.Linear(patch_len, d_model, bias=False)
         # positional embedding
-        self.position_embedding = PositionalEncoding(d_model)
+        if positional_embedding:
+            self.positional_embedding = PositionalEncoding(d_model)
+        else:
+            self.positional_embedding = None
         # Residual dropout
         self.dropout = nn.Dropout(dropout)
 
@@ -32,7 +43,8 @@ class PatchEmbedding(nn.Module):
         x = x.reshape(x.shape[0] * x.shape[1], x.shape[2], x.shape[3])
         # input encoding
         x = self.value_embedding(x)
-        x = self.position_embedding(x)
+        if self.positional_embedding is not None:
+            x = self.positional_embedding(x)
         x = self.dropout(x)
         return x
 

@@ -51,7 +51,7 @@ class _PatchTST(nn.Module):
         self.output_projection = nn.Linear(d_model, n_features)
         self.saits_loss_func = SaitsLoss(ORT_weight, MIT_weight)
 
-    def forward(self, inputs: dict, training: bool = True) -> dict:
+    def forward(self, inputs: dict) -> dict:
         X, missing_mask = inputs["X"], inputs["missing_mask"]
 
         # WDU: the original PatchTST paper isn't proposed for imputation task. Hence the model doesn't take
@@ -76,7 +76,7 @@ class _PatchTST(nn.Module):
             "imputed_data": imputed_data,
         }
 
-        if training:
+        if self.training:
             X_ori, indicating_mask = inputs["X_ori"], inputs["indicating_mask"]
             loss, ORT_loss, MIT_loss = self.saits_loss_func(reconstruction, X_ori, missing_mask, indicating_mask)
             results["ORT_loss"] = ORT_loss

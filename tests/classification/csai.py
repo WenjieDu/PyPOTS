@@ -13,7 +13,7 @@ import pytest
 from pypots.classification import CSAI
 from pypots.optim import Adam
 from pypots.utils.logging import logger
-from pypots.utils.metrics import calc_binary_classification_metrics
+from pypots.nn.functional import calc_binary_classification_metrics
 from tests.global_test_config import (
     DATA,
     EPOCHS,

@@ -15,7 +15,7 @@ import pytest
 from pypots.imputation import DLinear
 from pypots.optim import Adam
 from pypots.utils.logging import logger
-from pypots.utils.metrics import calc_mse
+from pypots.nn.functional import calc_mse
 from tests.global_test_config import (
     DATA,
     EPOCHS,
@@ -103,17 +103,12 @@ class TestDLinear(unittest.TestCase):
         assert hasattr(self.dlinear, "best_loss")
         self.assertNotEqual(self.dlinear.best_loss, float("inf"))
 
-        assert (
-            hasattr(self.dlinear, "best_model_dict")
-            and self.dlinear.best_model_dict is not None
-        )
+        assert hasattr(self.dlinear, "best_model_dict") and self.dlinear.best_model_dict is not None
 
     @pytest.mark.xdist_group(name="imputation-dlinear")
     def test_3_saving_path(self):
         # whether the root saving dir exists, which should be created by save_log_into_tb_file
-        assert os.path.exists(
-            self.saving_path
-        ), f"file {self.saving_path} does not exist"
+        assert os.path.exists(self.saving_path), f"file {self.saving_path} does not exist"
 
         # check if the tensorboard file and model checkpoints exist
         check_tb_and_model_checkpoints_existence(self.dlinear)
