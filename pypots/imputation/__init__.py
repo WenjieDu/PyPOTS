@@ -41,6 +41,7 @@ from .moderntcn import ModernTCN
 from .segrnn import SegRNN
 from .tefn import TEFN
 from .trmf import TRMF
+from .timellm import TimeLLM
 
 # naive imputation methods
 from .locf import LOCF
@@ -86,6 +87,7 @@ __all__ = [
     "CSAI",
     "SegRNN",
     "TRMF",
+    "TimeLLM",
     # naive imputation methods
     "LOCF",
     "Mean",
