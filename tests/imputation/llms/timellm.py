@@ -31,7 +31,6 @@ from tests.global_test_config import (
 )
 
 
-@pytest.mark.xdist_group(name="imputation-timellm")
 class TestTimeLLM(unittest.TestCase):
     logger.info("Running tests for an imputation model TimeLLM...")
 
