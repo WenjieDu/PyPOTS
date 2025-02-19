@@ -77,7 +77,7 @@ def calc_mae(
     --------
 
     >>> import numpy as np
-    >>> from pypots.utils.metrics import calc_mae
+    >>> from pypots.nn.functional import calc_mae
     >>> targets = np.array([1, 2, 3, 4, 5])
     >>> predictions = np.array([1, 2, 1, 4, 6])
     >>> mae = calc_mae(predictions, targets)
@@ -128,7 +128,7 @@ def calc_mse(
     --------
 
     >>> import numpy as np
-    >>> from pypots.utils.metrics import calc_mse
+    >>> from pypots.nn.functional import calc_mse
     >>> targets = np.array([1, 2, 3, 4, 5])
     >>> predictions = np.array([1, 2, 1, 4, 6])
     >>> mse = calc_mse(predictions, targets)
@@ -179,7 +179,7 @@ def calc_rmse(
     --------
 
     >>> import numpy as np
-    >>> from pypots.utils.metrics import calc_rmse
+    >>> from pypots.nn.functional import calc_rmse
     >>> targets = np.array([1, 2, 3, 4, 5])
     >>> predictions = np.array([1, 2, 1, 4, 6])
     >>> rmse = calc_rmse(predictions, targets)
@@ -227,7 +227,7 @@ def calc_mre(
     --------
 
     >>> import numpy as np
-    >>> from pypots.utils.metrics import calc_mre
+    >>> from pypots.nn.functional import calc_mre
     >>> targets = np.array([1, 2, 3, 4, 5])
     >>> predictions = np.array([1, 2, 1, 4, 6])
     >>> mre = calc_mre(predictions, targets)
@@ -254,7 +254,12 @@ def calc_mre(
         return lib.sum(lib.abs(predictions - targets)) / (lib.sum(lib.abs(targets)) + 1e-12)
 
 
-def calc_quantile_loss(predictions, targets, q: float, eval_points) -> float:
+def calc_quantile_loss(
+    predictions: Union[np.ndarray, torch.Tensor],
+    targets: Union[np.ndarray, torch.Tensor],
+    q: float,
+    eval_points: Union[np.ndarray, torch.Tensor],
+) -> Union[float, torch.Tensor]:
     quantile_loss = 2 * torch.sum(
         torch.abs((predictions - targets) * eval_points * ((targets <= predictions) * 1.0 - q))
     )

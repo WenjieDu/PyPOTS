@@ -15,9 +15,9 @@ from ...nn.functional.classification import (
     calc_acc,
 )
 
-# pypots.utils.metrics.classification is deprecated, and moved to pypots.nn.functional.classification
+# pypots.nn.functional.classification is deprecated, and moved to pypots.nn.functional.classification
 logger.warning(
-    "🚨 Please import from pypots.nn.functional.classification instead of pypots.utils.metrics.classification"
+    "🚨 Please import from pypots.nn.functional.classification instead of pypots.nn.functional.classification"
 )
 
 __all__ = [

@@ -25,7 +25,7 @@ You can also find a simple and quick-start tutorial notebook on Google Colab
     from pygrinder import mcar
     from pypots.data import load_specific_dataset
     from pypots.imputation import SAITS
-    from pypots.utils.metrics import calc_mae
+    from pypots.nn.functional import calc_mae
 
     # Data preprocessing. Tedious, but PyPOTS can help. 🤓
     data = load_specific_dataset('physionet_2012')  # PyPOTS will automatically download and extract it.
