@@ -8,8 +8,8 @@ and takes over the forward progress of the algorithm.
 
 import torch.nn as nn
 
+from ...nn.modules.saits import SaitsLoss
 from ...nn.modules.timellm import BackboneTimeLLM
-from ...nn.modules.saits import SaitsLoss, SaitsEmbedding
 
 
 class _TimeLLM(nn.Module):
