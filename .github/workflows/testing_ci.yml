@@ -76,7 +76,7 @@ jobs:
               run: |
                   rm -rf testing_results && rm -rf tests/__pycache__ && rm -rf tests/*/__pycache__
                   python tests/global_test_config.py
-                  python -m pytest -rA tests/*/* -k 'not timellm' -s -n auto --cov=pypots --dist=loadgroup --cov-config=.coveragerc
+                  python -m pytest -rA tests/*/* --ignore tests/*/llms -s -n auto --cov=pypots --dist=loadgroup --cov-config=.coveragerc
 
             - name: Generate the LCOV report
               run: |
