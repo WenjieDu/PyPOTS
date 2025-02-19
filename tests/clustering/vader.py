@@ -15,7 +15,7 @@ import pytest
 from pypots.clustering import VaDER
 from pypots.optim import Adam
 from pypots.utils.logging import logger
-from pypots.utils.metrics import (
+from pypots.nn.functional import (
     calc_external_cluster_validation_metrics,
     calc_internal_cluster_validation_metrics,
 )
@@ -75,10 +75,7 @@ class TestVaDER(unittest.TestCase):
             logger.info(f"VaDER external_metrics: {external_metrics}")
             logger.info(f"VaDER internal_metrics: {internal_metrics}")
         except np.linalg.LinAlgError as e:
-            logger.error(
-                f"❌ Exception: {e}\n"
-                "Got singular matrix, please try to retrain the model to fix this"
-            )
+            logger.error(f"❌ Exception: {e}\n" "Got singular matrix, please try to retrain the model to fix this")
 
     @pytest.mark.xdist_group(name="clustering-vader")
     def test_2_parameters(self):
@@ -89,17 +86,12 @@ class TestVaDER(unittest.TestCase):
         assert hasattr(self.vader, "best_loss")
         self.assertNotEqual(self.vader.best_loss, float("inf"))
 
-        assert (
-            hasattr(self.vader, "best_model_dict")
-            and self.vader.best_model_dict is not None
-        )
+        assert hasattr(self.vader, "best_model_dict") and self.vader.best_model_dict is not None
 
     @pytest.mark.xdist_group(name="clustering-vader")
     def test_3_saving_path(self):
         # whether the root saving dir exists, which should be created by save_log_into_tb_file
-        assert os.path.exists(
-            self.saving_path
-        ), f"file {self.saving_path} does not exist"
+        assert os.path.exists(self.saving_path), f"file {self.saving_path} does not exist"
 
         # check if the tensorboard file and model checkpoints exist
         check_tb_and_model_checkpoints_existence(self.vader)
@@ -114,12 +106,8 @@ class TestVaDER(unittest.TestCase):
     @pytest.mark.xdist_group(name="clustering-vader")
     def test_4_lazy_loading(self):
         self.vader.fit(GENERAL_H5_TRAIN_SET_PATH, GENERAL_H5_VAL_SET_PATH)
-        clustering_results = self.vader.predict(
-            GENERAL_H5_TEST_SET_PATH, return_latent_vars=True
-        )
-        external_metrics = calc_external_cluster_validation_metrics(
-            clustering_results["clustering"], DATA["test_y"]
-        )
+        clustering_results = self.vader.predict(GENERAL_H5_TEST_SET_PATH, return_latent_vars=True)
+        external_metrics = calc_external_cluster_validation_metrics(clustering_results["clustering"], DATA["test_y"])
         internal_metrics = calc_internal_cluster_validation_metrics(
             clustering_results["latent_vars"]["z"], DATA["test_y"]
         )
