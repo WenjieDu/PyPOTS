@@ -15,7 +15,7 @@ import pytest
 from pypots.imputation import NonstationaryTransformer
 from pypots.optim import Adam
 from pypots.utils.logging import logger
-from pypots.utils.metrics import calc_mse
+from pypots.nn.functional import calc_mse
 from tests.global_test_config import (
     DATA,
     EPOCHS,
@@ -35,9 +35,7 @@ class TestNonstationaryTransformer(unittest.TestCase):
     logger.info("Running tests for an imputation model NonstationaryTransformer...")
 
     # set the log and model saving path
-    saving_path = os.path.join(
-        RESULT_SAVING_DIR_FOR_IMPUTATION, "NonstationaryTransformer"
-    )
+    saving_path = os.path.join(RESULT_SAVING_DIR_FOR_IMPUTATION, "NonstationaryTransformer")
     model_save_name = "saved_nonstationary_transformer_model.pypots"
 
     # initialize an Adam optimizer
@@ -80,10 +78,7 @@ class TestNonstationaryTransformer(unittest.TestCase):
 
     @pytest.mark.xdist_group(name="imputation-nonstationary_transformer")
     def test_2_parameters(self):
-        assert (
-            hasattr(self.nonstationary_transformer, "model")
-            and self.nonstationary_transformer.model is not None
-        )
+        assert hasattr(self.nonstationary_transformer, "model") and self.nonstationary_transformer.model is not None
 
         assert (
             hasattr(self.nonstationary_transformer, "optimizer")
@@ -101,9 +96,7 @@ class TestNonstationaryTransformer(unittest.TestCase):
     @pytest.mark.xdist_group(name="imputation-nonstationary_transformer")
     def test_3_saving_path(self):
         # whether the root saving dir exists, which should be created by save_log_into_tb_file
-        assert os.path.exists(
-            self.saving_path
-        ), f"file {self.saving_path} does not exist"
+        assert os.path.exists(self.saving_path), f"file {self.saving_path} does not exist"
 
         # check if the tensorboard file and model checkpoints exist
         check_tb_and_model_checkpoints_existence(self.nonstationary_transformer)
@@ -117,12 +110,8 @@ class TestNonstationaryTransformer(unittest.TestCase):
 
     @pytest.mark.xdist_group(name="imputation-nonstationary_transformer")
     def test_4_lazy_loading(self):
-        self.nonstationary_transformer.fit(
-            GENERAL_H5_TRAIN_SET_PATH, GENERAL_H5_VAL_SET_PATH
-        )
-        imputation_results = self.nonstationary_transformer.predict(
-            GENERAL_H5_TEST_SET_PATH
-        )
+        self.nonstationary_transformer.fit(GENERAL_H5_TRAIN_SET_PATH, GENERAL_H5_VAL_SET_PATH)
+        imputation_results = self.nonstationary_transformer.predict(GENERAL_H5_TEST_SET_PATH)
         assert not np.isnan(
             imputation_results["imputation"]
         ).any(), "Output still has missing values after running impute()."

@@ -18,8 +18,8 @@ from ...nn.functional.clustering import (
     calc_external_cluster_validation_metrics,
 )
 
-# pypots.utils.metrics.clustering is deprecated, and moved to pypots.nn.functional.clustering
-logger.warning("🚨 Please import from pypots.nn.functional.clustering instead of pypots.utils.metrics.clustering")
+# pypots.nn.functional.clustering is deprecated, and moved to pypots.nn.functional.clustering
+logger.warning("🚨 Please import from pypots.nn.functional.clustering instead of pypots.nn.functional.clustering")
 
 __all__ = [
     "calc_rand_index",

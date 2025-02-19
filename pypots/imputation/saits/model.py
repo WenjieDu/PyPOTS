@@ -17,7 +17,6 @@ from .data import DatasetForSAITS
 from ..base import BaseNNImputer
 from ...data.checking import key_in_data_set
 from ...data.dataset import BaseDataset
-from ...nn.functional import calc_mae, calc_mse
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
 from ...utils.logging import logger
@@ -171,14 +170,6 @@ class SAITS(BaseNNImputer):
             )
             d_model = n_heads * d_k
             logger.warning(f"⚠️ d_model is reset to {d_model} = n_heads ({n_heads}) * d_k ({d_k})")
-
-        # set default training loss function and validation metric function if not given
-        if train_loss_func is None:
-            self.train_loss_func = calc_mae
-            self.train_loss_func_name = "MAE"
-        if val_metric_func is None:
-            self.val_metric_func = calc_mse
-            self.val_metric_func_name = "MSE"
 
         self.n_steps = n_steps
         self.n_features = n_features
