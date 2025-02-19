@@ -76,17 +76,17 @@ class BackboneCSDI(nn.Module):
 
         return total_input
 
-    def calc_loss_valid(self, observed_data, cond_mask, indicating_mask, side_info, is_train):
+    def calc_loss_valid(self, observed_data, cond_mask, indicating_mask, side_info):
         loss_sum = 0
         for t in range(self.n_diffusion_steps):  # calculate loss for all t
-            loss = self.calc_loss(observed_data, cond_mask, indicating_mask, side_info, is_train, set_t=t)
+            loss = self.calc_loss(observed_data, cond_mask, indicating_mask, side_info, set_t=t)
             loss_sum += loss.detach()
         return loss_sum / self.n_diffusion_steps
 
-    def calc_loss(self, observed_data, cond_mask, indicating_mask, side_info, is_train, set_t=-1):
+    def calc_loss(self, observed_data, cond_mask, indicating_mask, side_info, set_t=-1):
         B, K, L = observed_data.shape
         device = observed_data.device
-        if is_train != 1:  # for validation
+        if self.training != 1:  # for validation
             t = (torch.ones(B) * set_t).long().to(device)
         else:
             t = torch.randint(0, self.n_diffusion_steps, [B]).to(device)

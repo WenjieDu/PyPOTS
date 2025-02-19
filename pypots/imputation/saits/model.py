@@ -6,7 +6,7 @@ The implementation of SAITS for the partially-observed time-series imputation ta
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-from typing import Union, Optional, Callable
+from typing import Union, Optional
 
 import numpy as np
 import torch
@@ -20,7 +20,6 @@ from ...data.dataset import BaseDataset
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
 from ...utils.logging import logger
-from ...utils.metrics import calc_mae
 
 
 class SAITS(BaseNNImputer):
@@ -84,9 +83,13 @@ class SAITS(BaseNNImputer):
         stopped when the model does not perform better after that number of epochs.
         Leaving it default as None will disable the early-stopping.
 
-    customized_loss_func:
-        The customized loss function designed by users for the model to optimize.
-        If not given, will use the default MAE loss as claimed in the original paper.
+    train_loss_func:
+        The customized loss function designed by users for training the model.
+        If not given, will use the default loss as claimed in the original paper.
+
+    val_metric_func:
+        The customized metric function designed by users for validating the model.
+        If not given, will use the default MSE metric.
 
     optimizer :
         The optimizer for model training.
@@ -138,7 +141,8 @@ class SAITS(BaseNNImputer):
         batch_size: int = 32,
         epochs: int = 100,
         patience: Optional[int] = None,
-        customized_loss_func: Callable = calc_mae,
+        train_loss_func: Optional[dict] = None,
+        val_metric_func: Optional[dict] = None,
         optimizer: Optional[Optimizer] = Adam(),
         num_workers: int = 0,
         device: Optional[Union[str, torch.device, list]] = None,
@@ -147,14 +151,16 @@ class SAITS(BaseNNImputer):
         verbose: bool = True,
     ):
         super().__init__(
-            batch_size,
-            epochs,
-            patience,
-            num_workers,
-            device,
-            saving_path,
-            model_saving_strategy,
-            verbose,
+            batch_size=batch_size,
+            epochs=epochs,
+            patience=patience,
+            train_loss_func=train_loss_func,
+            val_metric_func=val_metric_func,
+            num_workers=num_workers,
+            device=device,
+            saving_path=saving_path,
+            model_saving_strategy=model_saving_strategy,
+            verbose=verbose,
         )
 
         if d_model != n_heads * d_k:
@@ -195,12 +201,10 @@ class SAITS(BaseNNImputer):
             self.diagonal_attention_mask,
             self.ORT_weight,
             self.MIT_weight,
+            self.train_loss_func,
         )
         self._print_model_size()
         self._send_model_to_given_device()
-
-        # set up the loss function
-        self.customized_loss_func = customized_loss_func
 
         # set up the optimizer
         self.optimizer = optimizer
@@ -330,7 +334,7 @@ class SAITS(BaseNNImputer):
         with torch.no_grad():
             for idx, data in enumerate(test_loader):
                 inputs = self._assemble_input_for_testing(data)
-                results = self.model.forward(inputs, diagonal_attention_mask, training=False)
+                results = self.model.forward(inputs, diagonal_attention_mask)
                 imputation_collector.append(results["imputed_data"])
 
                 if return_latent_vars:

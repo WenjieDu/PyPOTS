@@ -14,7 +14,7 @@ import pytest
 
 from pypots.imputation import TRMF
 from pypots.utils.logging import logger
-from pypots.utils.metrics import calc_mse
+from pypots.nn.functional import calc_mse
 from pypots.utils.visual.data import plot_data, plot_missingness
 from tests.global_test_config import (
     DATA,

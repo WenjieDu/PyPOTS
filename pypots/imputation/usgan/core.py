@@ -37,7 +37,6 @@ class _USGAN(nn.Module):
         self,
         inputs: dict,
         training_object: str = "generator",
-        training: bool = True,
     ) -> dict:
         assert training_object in [
             "generator",
@@ -45,24 +44,16 @@ class _USGAN(nn.Module):
         ], 'training_object should be "generator" or "discriminator"'
 
         results = {}
-        if training:
+        if self.training:
             if training_object == "discriminator":
-                imputed_data, discrimination_loss = self.backbone(inputs, training_object, training)
+                imputed_data, discrimination_loss = self.backbone(inputs, training_object)
                 loss = discrimination_loss
             else:
-                imputed_data, generation_loss = self.backbone(
-                    inputs,
-                    training_object,
-                    training,
-                )
+                imputed_data, generation_loss = self.backbone(inputs, training_object)
                 loss = generation_loss
             results["loss"] = loss
         else:
-            imputed_data = self.backbone(
-                inputs,
-                training_object,
-                training,
-            )
+            imputed_data = self.backbone(inputs, training_object)
 
         results["imputed_data"] = imputed_data
         return results

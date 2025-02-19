@@ -15,7 +15,7 @@ import pytest
 from pypots.imputation import BRITS
 from pypots.optim import Adam
 from pypots.utils.logging import logger
-from pypots.utils.metrics import calc_mse
+from pypots.nn.functional import calc_mse
 from tests.global_test_config import (
     DATA,
     EPOCHS,
@@ -59,12 +59,8 @@ class TestBRITS(unittest.TestCase):
     @pytest.mark.xdist_group(name="imputation-brits")
     def test_1_impute(self):
         imputed_X = self.brits.impute(TEST_SET)
-        assert not np.isnan(
-            imputed_X
-        ).any(), "Output still has missing values after running impute()."
-        test_MSE = calc_mse(
-            imputed_X, DATA["test_X_ori"], DATA["test_X_indicating_mask"]
-        )
+        assert not np.isnan(imputed_X).any(), "Output still has missing values after running impute()."
+        test_MSE = calc_mse(imputed_X, DATA["test_X_ori"], DATA["test_X_indicating_mask"])
         logger.info(f"BRITS test_MSE: {test_MSE}")
 
     @pytest.mark.xdist_group(name="imputation-brits")
@@ -76,17 +72,12 @@ class TestBRITS(unittest.TestCase):
         assert hasattr(self.brits, "best_loss")
         self.assertNotEqual(self.brits.best_loss, float("inf"))
 
-        assert (
-            hasattr(self.brits, "best_model_dict")
-            and self.brits.best_model_dict is not None
-        )
+        assert hasattr(self.brits, "best_model_dict") and self.brits.best_model_dict is not None
 
     @pytest.mark.xdist_group(name="imputation-brits")
     def test_3_saving_path(self):
         # whether the root saving dir exists, which should be created by save_log_into_tb_file
-        assert os.path.exists(
-            self.saving_path
-        ), f"file {self.saving_path} does not exist"
+        assert os.path.exists(self.saving_path), f"file {self.saving_path} does not exist"
 
         # check if the tensorboard file and model checkpoints exist
         check_tb_and_model_checkpoints_existence(self.brits)

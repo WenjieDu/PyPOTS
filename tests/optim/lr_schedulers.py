@@ -22,7 +22,7 @@ from pypots.optim.lr_scheduler import (
     MultiplicativeLR,
 )
 from pypots.utils.logging import logger
-from pypots.utils.metrics import calc_mae
+from pypots.nn.functional import calc_mae
 from tests.global_test_config import DATA
 from tests.optim.config import EPOCHS, TEST_SET, TRAIN_SET, VAL_SET
 
@@ -71,12 +71,8 @@ class TestLRSchedulers(unittest.TestCase):
         )
         saits.fit(TRAIN_SET, VAL_SET)
         imputed_X = saits.impute(TEST_SET)
-        assert not np.isnan(
-            imputed_X
-        ).any(), "Output still has missing values after running impute()."
-        test_MAE = calc_mae(
-            imputed_X, DATA["test_X_ori"], DATA["test_X_indicating_mask"]
-        )
+        assert not np.isnan(imputed_X).any(), "Output still has missing values after running impute()."
+        test_MAE = calc_mae(imputed_X, DATA["test_X_ori"], DATA["test_X_indicating_mask"])
         logger.info(f"SAITS test_MAE: {test_MAE}")
 
     @pytest.mark.xdist_group(name="lrs-multiplicative")
@@ -99,12 +95,8 @@ class TestLRSchedulers(unittest.TestCase):
         )
         saits.fit(TRAIN_SET, VAL_SET)
         imputed_X = saits.impute(TEST_SET)
-        assert not np.isnan(
-            imputed_X
-        ).any(), "Output still has missing values after running impute()."
-        test_MAE = calc_mae(
-            imputed_X, DATA["test_X_ori"], DATA["test_X_indicating_mask"]
-        )
+        assert not np.isnan(imputed_X).any(), "Output still has missing values after running impute()."
+        test_MAE = calc_mae(imputed_X, DATA["test_X_ori"], DATA["test_X_indicating_mask"])
         logger.info(f"SAITS test_MAE: {test_MAE}")
 
     @pytest.mark.xdist_group(name="lrs-step")
@@ -127,12 +119,8 @@ class TestLRSchedulers(unittest.TestCase):
         )
         saits.fit(TRAIN_SET, VAL_SET)
         imputed_X = saits.impute(TEST_SET)
-        assert not np.isnan(
-            imputed_X
-        ).any(), "Output still has missing values after running impute()."
-        test_MAE = calc_mae(
-            imputed_X, DATA["test_X_ori"], DATA["test_X_indicating_mask"]
-        )
+        assert not np.isnan(imputed_X).any(), "Output still has missing values after running impute()."
+        test_MAE = calc_mae(imputed_X, DATA["test_X_ori"], DATA["test_X_indicating_mask"])
         logger.info(f"SAITS test_MAE: {test_MAE}")
 
     @pytest.mark.xdist_group(name="lrs-multistep")
@@ -155,12 +143,8 @@ class TestLRSchedulers(unittest.TestCase):
         )
         saits.fit(TRAIN_SET, VAL_SET)
         imputed_X = saits.impute(TEST_SET)
-        assert not np.isnan(
-            imputed_X
-        ).any(), "Output still has missing values after running impute()."
-        test_MAE = calc_mae(
-            imputed_X, DATA["test_X_ori"], DATA["test_X_indicating_mask"]
-        )
+        assert not np.isnan(imputed_X).any(), "Output still has missing values after running impute()."
+        test_MAE = calc_mae(imputed_X, DATA["test_X_ori"], DATA["test_X_indicating_mask"])
         logger.info(f"SAITS test_MAE: {test_MAE}")
 
     @pytest.mark.xdist_group(name="lrs-constant")
@@ -184,12 +168,8 @@ class TestLRSchedulers(unittest.TestCase):
         )
         saits.fit(TRAIN_SET, VAL_SET)
         imputed_X = saits.impute(TEST_SET)
-        assert not np.isnan(
-            imputed_X
-        ).any(), "Output still has missing values after running impute()."
-        test_MAE = calc_mae(
-            imputed_X, DATA["test_X_ori"], DATA["test_X_indicating_mask"]
-        )
+        assert not np.isnan(imputed_X).any(), "Output still has missing values after running impute()."
+        test_MAE = calc_mae(imputed_X, DATA["test_X_ori"], DATA["test_X_indicating_mask"])
         logger.info(f"SAITS test_MAE: {test_MAE}")
 
     @pytest.mark.xdist_group(name="lrs-linear")
@@ -212,12 +192,8 @@ class TestLRSchedulers(unittest.TestCase):
         )
         saits.fit(TRAIN_SET, VAL_SET)
         imputed_X = saits.impute(TEST_SET)
-        assert not np.isnan(
-            imputed_X
-        ).any(), "Output still has missing values after running impute()."
-        test_MAE = calc_mae(
-            imputed_X, DATA["test_X_ori"], DATA["test_X_indicating_mask"]
-        )
+        assert not np.isnan(imputed_X).any(), "Output still has missing values after running impute()."
+        test_MAE = calc_mae(imputed_X, DATA["test_X_ori"], DATA["test_X_indicating_mask"])
         logger.info(f"SAITS test_MAE: {test_MAE}")
 
     @pytest.mark.xdist_group(name="lrs-exponential")
@@ -240,10 +216,6 @@ class TestLRSchedulers(unittest.TestCase):
         )
         saits.fit(TRAIN_SET, VAL_SET)
         imputed_X = saits.impute(TEST_SET)
-        assert not np.isnan(
-            imputed_X
-        ).any(), "Output still has missing values after running impute()."
-        test_MAE = calc_mae(
-            imputed_X, DATA["test_X_ori"], DATA["test_X_indicating_mask"]
-        )
+        assert not np.isnan(imputed_X).any(), "Output still has missing values after running impute()."
+        test_MAE = calc_mae(imputed_X, DATA["test_X_ori"], DATA["test_X_indicating_mask"])
         logger.info(f"SAITS test_MAE: {test_MAE}")

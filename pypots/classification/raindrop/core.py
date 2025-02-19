@@ -63,7 +63,7 @@ class _Raindrop(nn.Module):
             nn.Linear(d_final, n_classes),
         )
 
-    def forward(self, inputs, training=True):
+    def forward(self, inputs):
         X, missing_mask, static, timestamps, lengths = (
             inputs["X"],
             inputs["missing_mask"],
@@ -106,8 +106,8 @@ class _Raindrop(nn.Module):
         results = {"classification_pred": classification_pred}
 
         # if in training mode, return results with losses
-        if training:
-            classification_loss = F.nll_loss(torch.log(classification_pred), inputs["label"])
+        if self.training:
+            classification_loss = F.nll_loss(torch.log(classification_pred), inputs["y"])
             results["loss"] = classification_loss
 
         return results
