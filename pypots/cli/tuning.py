@@ -16,6 +16,7 @@ from .base import BaseCommand
 from .utils import load_package_from_path
 from ..classification import BRITS as BRITS_classification
 from ..classification import GRUD as GRUD_classification
+from ..classification import CSAI as CSAI_classification
 from ..classification import Raindrop
 from ..clustering import CRLI, VaDER
 from ..data.saving.h5 import load_dict_from_h5
@@ -47,6 +48,16 @@ from ..imputation import (
     TiDE,
     Reformer,
     RevIN_SCINet,
+    FEDformer,
+    TCN,
+    ImputeFormer,
+    TimeMixer,
+    ModernTCN,
+    TEFN,
+    CSAI,
+    SegRNN,
+    TRMF,
+    TimeLLM,
 )
 from ..optim import Adam
 from ..utils.logging import logger
@@ -89,10 +100,21 @@ NN_MODELS = {
     "pypots.imputation.TiDE": TiDE,
     "pypots.imputation.Transformer": Transformer,
     "pypots.imputation.USGAN": USGAN,
+    "pypots.imputation.FEDformer": FEDformer,
+    "pypots.imputation.TCN": TCN,
+    "pypots.imputation.ImputeFormer": ImputeFormer,
+    "pypots.imputation.TimeMixer": TimeMixer,
+    "pypots.imputation.ModernTCN": ModernTCN,
+    "pypots.imputation.TEFN": TEFN,
+    "pypots.imputation.CSAI": CSAI,
+    "pypots.imputation.SegRNN": SegRNN,
+    "pypots.imputation.TRMF": TRMF,
+    "pypots.imputation.TimeLLM": TimeLLM,
     # classification models
     "pypots.classification.BRITS": BRITS_classification,
     "pypots.classification.GRUD": GRUD_classification,
     "pypots.classification.Raindrop": Raindrop,
+    "pypots.classification.CSAI": CSAI,
     # clustering models
     "pypots.clustering.CRLI": CRLI,
     "pypots.clustering.VaDER": VaDER,
