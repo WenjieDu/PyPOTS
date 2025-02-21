@@ -11,8 +11,8 @@ from ...nn.functional import (
     nonstationary_norm,
     nonstationary_denorm,
 )
+from ...nn.functional import calc_mse
 from ...nn.modules.timemixer import BackboneTimeMixer
-from ...utils.metrics import calc_mse
 
 
 class _TimeMixer(nn.Module):
@@ -56,7 +56,7 @@ class _TimeMixer(nn.Module):
             use_future_temporal_feature=False,
         )
 
-    def forward(self, inputs: dict, training: bool = True) -> dict:
+    def forward(self, inputs: dict) -> dict:
         X, missing_mask = inputs["X"], inputs["missing_mask"]
 
         if self.apply_nonstationary_norm:
@@ -75,7 +75,8 @@ class _TimeMixer(nn.Module):
             "imputed_data": imputed_data,
         }
 
-        if training:
+        # if in training mode, return results with losses
+        if self.training:
             # `loss` is always the item for backward propagating to update the model
             loss = calc_mse(dec_out, inputs["X_ori"], inputs["indicating_mask"])
             results["loss"] = loss
