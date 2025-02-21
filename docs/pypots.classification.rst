@@ -10,6 +10,15 @@ pypots.classification.brits
    :show-inheritance:
    :inherited-members:
 
+pypots.classification.csai
+----------------------------------
+
+.. automodule:: pypots.classification.csai
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+
 pypots.classification.grud
 ---------------------------------
 

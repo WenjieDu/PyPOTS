@@ -36,7 +36,7 @@ class _GRUD(nn.Module):
         )
         self.classifier = nn.Linear(self.rnn_hidden_size, self.n_classes)
 
-    def forward(self, inputs: dict, training: bool = True) -> dict:
+    def forward(self, inputs: dict) -> dict:
         """Forward processing of GRU-D.
 
         Parameters
@@ -65,8 +65,8 @@ class _GRUD(nn.Module):
         results = {"classification_pred": classification_pred}
 
         # if in training mode, return results with losses
-        if training:
-            classification_loss = F.nll_loss(torch.log(classification_pred), inputs["label"])
+        if self.training:
+            classification_loss = F.nll_loss(torch.log(classification_pred), inputs["y"])
             results["loss"] = classification_loss
 
         return results

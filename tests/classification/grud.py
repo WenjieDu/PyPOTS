@@ -13,7 +13,7 @@ import pytest
 from pypots.classification import GRUD
 from pypots.optim import Adam
 from pypots.utils.logging import logger
-from pypots.utils.metrics import calc_binary_classification_metrics
+from pypots.nn.functional import calc_binary_classification_metrics
 from tests.global_test_config import (
     DATA,
     EPOCHS,
@@ -77,17 +77,12 @@ class TestGRUD(unittest.TestCase):
         assert hasattr(self.grud, "best_loss")
         self.assertNotEqual(self.grud.best_loss, float("inf"))
 
-        assert (
-            hasattr(self.grud, "best_model_dict")
-            and self.grud.best_model_dict is not None
-        )
+        assert hasattr(self.grud, "best_model_dict") and self.grud.best_model_dict is not None
 
     @pytest.mark.xdist_group(name="classification-grud")
     def test_3_saving_path(self):
         # whether the root saving dir exists, which should be created by save_log_into_tb_file
-        assert os.path.exists(
-            self.saving_path
-        ), f"file {self.saving_path} does not exist"
+        assert os.path.exists(self.saving_path), f"file {self.saving_path} does not exist"
 
         # check if the tensorboard file and model checkpoints exist
         check_tb_and_model_checkpoints_existence(self.grud)
@@ -103,9 +98,7 @@ class TestGRUD(unittest.TestCase):
     def test_4_lazy_loading(self):
         self.grud.fit(GENERAL_H5_TRAIN_SET_PATH, GENERAL_H5_VAL_SET_PATH)
         results = self.grud.predict(GENERAL_H5_TEST_SET_PATH)
-        metrics = calc_binary_classification_metrics(
-            results["classification"], DATA["test_y"]
-        )
+        metrics = calc_binary_classification_metrics(results["classification"], DATA["test_y"])
         logger.info(
             f'GRU-D ROC_AUC: {metrics["roc_auc"]}, '
             f'PR_AUC: {metrics["pr_auc"]}, '
