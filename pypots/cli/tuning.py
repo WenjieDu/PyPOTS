@@ -114,7 +114,7 @@ NN_MODELS = {
     "pypots.classification.BRITS": BRITS_classification,
     "pypots.classification.GRUD": GRUD_classification,
     "pypots.classification.Raindrop": Raindrop,
-    "pypots.classification.CSAI": CSAI,
+    "pypots.classification.CSAI": CSAI_classification,
     # clustering models
     "pypots.clustering.CRLI": CRLI,
     "pypots.clustering.VaDER": VaDER,
