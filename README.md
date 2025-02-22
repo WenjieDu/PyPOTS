@@ -119,7 +119,7 @@ The paper references and links are all listed at the bottom of this file.
 
 | **Type**      | **Algo**                                                                                                                         | **IMPU** | **FORE** | **CLAS** | **CLUS** | **ANOD** | **Year - Venue**                                   |
 |:--------------|:---------------------------------------------------------------------------------------------------------------------------------|:--------:|:--------:|:--------:|:--------:|:--------:|:---------------------------------------------------|
-| LLM&PFM       | <a href="https://time-series.ai"><img src="https://time-series.ai/static/figs/robot.svg" width="26px"> Time-Series.AI</a>  [^36] |    ✅     |    ✅     |    ✅     |    ✅     |    ✅     | <a href="https://time-series.ai">Join waitlist</a> |
+| LLM&TSFM      | <a href="https://time-series.ai"><img src="https://time-series.ai/static/figs/robot.svg" width="26px"> Time-Series.AI</a>  [^36] |    ✅     |    ✅     |    ✅     |    ✅     |    ✅     | <a href="https://time-series.ai">Join waitlist</a> |
 | LLM           | Time-LLM[^45]                                                                                                                    |    ✅     |          |          |          |          | `2024 - ICLR`                                      |
 | Neural Net    | TEFN🧑‍🔧[^39]                                                                                                                   |    ✅     |          |          |          |          | `2024 - arXiv`                                     |
 | Neural Net    | FITS🧑‍🔧[^41]                                                                                                                   |    ✅     |          |          |          |          | `2024 - ICLR`                                      |
@@ -167,10 +167,10 @@ The paper references and links are all listed at the bottom of this file.
 | Naive         | Mean                                                                                                                             |    ✅     |          |          |          |          |                                                    |
 | Naive         | Median                                                                                                                           |    ✅     |          |          |          |          |                                                    |
 
-🙋 Differences between `LLM (Large Language Model)`, `PFM (Pre-trained Foundation Model)` and `Neural Net` in the above table:
+🙋 Differences between `LLM (Large Language Model)` and `TSFM (Time-Series Foundation Model)` in the above table:
 `LLM` refers to the models that are pre-trained on large-scale text data and can be fine-tuned for specific tasks.
-`PFM` refers to the models that are pre-trained on large-scale time series data and can be fine-tuned for specific tasks.
-`Neural Net` refers to the models that are specifically designed for specific time series tasks and are not pre-trained on large-scale data.
+`TSFM` refers to the models that are pre-trained on large-scale time series data, inspired by recent achievements 
+of foundation models in CV and NLP. 
 
 💯 Contribute your model right now to increase your research impact! PyPOTS downloads are increasing rapidly
 (**[600K+ in total and 1K+ daily on PyPI so far](https://www.pepy.tech/projects/pypots)**),
