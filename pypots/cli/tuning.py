@@ -36,6 +36,7 @@ from ..imputation import (
     FiLM,
     Pyraformer,
     Autoformer,
+    CSAI,
     CSDI,
     Informer,
     USGAN,
@@ -75,6 +76,7 @@ NN_MODELS = {
     # imputation models, sorted by the first letter of the model name
     "pypots.imputation.Autoformer": Autoformer,
     "pypots.imputation.BRITS": BRITS,
+    "pypots.imputation.CSAI": CSAI,
     "pypots.imputation.CSDI": CSDI,
     "pypots.imputation.Crossformer": Crossformer,
     "pypots.imputation.DLinear": DLinear,
@@ -112,6 +114,7 @@ NN_MODELS = {
     "pypots.imputation.TimeLLM": TimeLLM,
     # classification models
     "pypots.classification.BRITS": BRITS_classification,
+    "pypots.classification.CSAI": CSAI_classification,
     "pypots.classification.GRUD": GRUD_classification,
     "pypots.classification.Raindrop": Raindrop,
     "pypots.classification.CSAI": CSAI_classification,
