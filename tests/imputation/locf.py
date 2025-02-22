@@ -14,7 +14,7 @@ import torch
 
 from pypots.imputation import LOCF
 from pypots.utils.logging import logger
-from pypots.utils.metrics import calc_mse
+from pypots.nn.functional import calc_mse
 from tests.global_test_config import (
     DATA,
     DEVICE,
@@ -36,18 +36,12 @@ class TestLOCF(unittest.TestCase):
     def test_0_impute(self):
         # if input data is numpy ndarray
         test_X_imputed_zero = self.locf_zero.predict(TEST_SET)["imputation"]
-        assert not np.isnan(
-            test_X_imputed_zero
-        ).any(), "Output still has missing values after running impute()."
-        test_MSE = calc_mse(
-            test_X_imputed_zero, DATA["test_X_ori"], DATA["test_X_indicating_mask"]
-        )
+        assert not np.isnan(test_X_imputed_zero).any(), "Output still has missing values after running impute()."
+        test_MSE = calc_mse(test_X_imputed_zero, DATA["test_X_ori"], DATA["test_X_indicating_mask"])
         logger.info(f"LOCF (zero) test_MSE: {test_MSE}")
 
         test_X_imputed_backward = self.locf_backward.predict(TEST_SET)["imputation"]
-        assert not np.isnan(
-            test_X_imputed_backward
-        ).any(), "Output still has missing values after running impute()."
+        assert not np.isnan(test_X_imputed_backward).any(), "Output still has missing values after running impute()."
         test_MSE = calc_mse(
             test_X_imputed_backward,
             DATA["test_X_ori"],
@@ -56,9 +50,7 @@ class TestLOCF(unittest.TestCase):
         logger.info(f"LOCF (backward) test_MSE: {test_MSE}")
 
         test_X_imputed_median = self.locf_median.predict(TEST_SET)["imputation"]
-        assert not np.isnan(
-            test_X_imputed_median
-        ).any(), "Output still has missing values after running impute()."
+        assert not np.isnan(test_X_imputed_median).any(), "Output still has missing values after running impute()."
         test_MSE = calc_mse(
             test_X_imputed_median,
             DATA["test_X_ori"],
@@ -74,21 +66,15 @@ class TestLOCF(unittest.TestCase):
         # if input data is torch tensor
         X = torch.from_numpy(np.copy(TEST_SET["X"]))
         test_X_ori = torch.from_numpy(np.copy(DATA["test_X_ori"]))
-        test_X_indicating_mask = torch.from_numpy(
-            np.copy(DATA["test_X_indicating_mask"])
-        )
+        test_X_indicating_mask = torch.from_numpy(np.copy(DATA["test_X_indicating_mask"]))
 
         test_X_imputed_zero = self.locf_zero.predict({"X": X})["imputation"]
-        assert not torch.isnan(
-            test_X_imputed_zero
-        ).any(), "Output still has missing values after running impute()."
+        assert not torch.isnan(test_X_imputed_zero).any(), "Output still has missing values after running impute()."
         test_MSE = calc_mse(test_X_imputed_zero, test_X_ori, test_X_indicating_mask)
         logger.info(f"LOCF (zero) test_MSE: {test_MSE}")
 
         test_X_imputed_backward = self.locf_backward.predict({"X": X})["imputation"]
-        assert not torch.isnan(
-            test_X_imputed_backward
-        ).any(), "Output still has missing values after running impute()."
+        assert not torch.isnan(test_X_imputed_backward).any(), "Output still has missing values after running impute()."
         test_MSE = calc_mse(
             test_X_imputed_backward,
             test_X_ori,
@@ -97,9 +83,7 @@ class TestLOCF(unittest.TestCase):
         logger.info(f"LOCF (backward) test_MSE: {test_MSE}")
 
         test_X_imputed_median = self.locf_median.predict({"X": X})["imputation"]
-        assert not torch.isnan(
-            test_X_imputed_median
-        ).any(), "Output still has missing values after running impute()."
+        assert not torch.isnan(test_X_imputed_median).any(), "Output still has missing values after running impute()."
         test_MSE = calc_mse(
             test_X_imputed_median,
             test_X_ori,

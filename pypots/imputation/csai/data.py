@@ -15,7 +15,8 @@ from sklearn.preprocessing import StandardScaler
 
 from ...data.dataset import BaseDataset
 from ...data.utils import parse_delta
-from pygrinder import mnar_num
+from pygrinder import mnar_nonuniform
+
 
 def compute_intervals(data):
     """
@@ -52,6 +53,7 @@ def compute_intervals(data):
 
     return intervals_list
 
+
 def compute_last_obs(data, masks):
     """
     Compute the last observed values for each time step.
@@ -75,6 +77,7 @@ def compute_last_obs(data, masks):
         last_obs[t] = last_obs_val
 
     return last_obs
+
 
 def non_uniform_sample(data, removal_percent, pre_replacement_probabilities=None, increase_factor=0.5):
     """
@@ -114,7 +117,9 @@ def non_uniform_sample(data, removal_percent, pre_replacement_probabilities=None
     values = copy.deepcopy(data)
 
     # Generate missing values based on replacement probabilities
-    values, replacement_probabilities = mnar_num(values, removal_percent, pre_replacement_probabilities, increase_factor)
+    values, replacement_probabilities = mnar_nonuniform(
+        values, removal_percent, pre_replacement_probabilities, increase_factor
+    )
 
     # Generate records and features for each sample
     for i in range(data.shape[0]):
@@ -228,17 +233,17 @@ class DatasetForCSAI(BaseDataset):
 
             if replacement_probabilities is None:
                 self.processed_data, self.replacement_probabilities = non_uniform_sample(
-                    data = self.data["X"],
-                    removal_percent = self.removal_percent,
-                    increase_factor = self.increase_factor,
+                    data=self.data["X"],
+                    removal_percent=self.removal_percent,
+                    increase_factor=self.increase_factor,
                 )
             else:
                 self.replacement_probabilities = replacement_probabilities
                 self.processed_data, _ = non_uniform_sample(
-                    data = self.data["X"],
-                    removal_percent = self.removal_percent,
-                    pre_replacement_probabilities = self.replacement_probabilities,
-                    increase_factor = self.increase_factor,
+                    data=self.data["X"],
+                    removal_percent=self.removal_percent,
+                    pre_replacement_probabilities=self.replacement_probabilities,
+                    increase_factor=self.increase_factor,
                 )
 
             self.forward_X = self.processed_data["values"]
@@ -279,13 +284,13 @@ class DatasetForCSAI(BaseDataset):
 
             last_obs : tensor,
                 The last observed values for each time step.
-        
+
             replacement_probabilities : np.ndarray,
                 The computed or provided replacement probabilities for each feature.
-            
+
             intervals : dict of int to float,
                 A dictionary containing the median time intervals between observations for each variable.
-                
+
         """
 
         sample = [

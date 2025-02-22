@@ -11,7 +11,7 @@ import pytest
 
 from pypots.forecasting import BTTF
 from pypots.utils.logging import logger
-from pypots.utils.metrics import calc_mse
+from pypots.nn.functional import calc_mse
 from tests.global_test_config import DATA, FORECASTING_TEST_SET, N_PRED_STEPS
 
 

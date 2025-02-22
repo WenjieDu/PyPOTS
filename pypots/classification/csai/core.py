@@ -70,8 +70,8 @@ class _BCSAI(nn.Module):
             # criterion = DiceBCELoss().to(imputed_data.device)
             results["consistency_loss"] = consistency_loss
             results["reconstruction_loss"] = reconstruction_loss
-            f_classification_loss = F.nll_loss(torch.log(f_prediction), inputs["labels"])
-            b_classification_loss = F.nll_loss(torch.log(b_prediction), inputs["labels"])
+            f_classification_loss = F.nll_loss(torch.log(f_prediction), inputs["y"])
+            b_classification_loss = F.nll_loss(torch.log(b_prediction), inputs["y"])
             classification_loss = f_classification_loss + b_classification_loss
 
             loss = (

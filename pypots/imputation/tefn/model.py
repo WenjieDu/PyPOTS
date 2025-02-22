@@ -51,6 +51,14 @@ class TEFN(BaseNNImputer):
         stopped when the model does not perform better after that number of epochs.
         Leaving it default as None will disable the early-stopping.
 
+    train_loss_func:
+        The customized loss function designed by users for training the model.
+        If not given, will use the default loss as claimed in the original paper.
+
+    val_metric_func:
+        The customized metric function designed by users for validating the model.
+        If not given, will use the default MSE metric.
+
     optimizer :
         The optimizer for model training.
         If not given, will use a default Adam optimizer.
@@ -63,9 +71,9 @@ class TEFN(BaseNNImputer):
         The device for the model to run on. It can be a string, a :class:`torch.device` object, or a list of them.
         If not given, will try to use CUDA devices first (will use the default CUDA device if there are multiple),
         then CPUs, considering CUDA and CPU are so far the main devices for people to train ML models.
-        If given a list of devices, e.g. ['cuda:0', 'cuda:1'], or [torch.device('cuda:0'), torch.device('cuda:1')] ,
-        the model will be parallely trained on the multiple devices (so far only support parallel training on CUDA
-        devices). Other devices like Google TPU and Apple Silicon accelerator MPS may be added in the future.
+        If given a list of devices, e.g. ['cuda:0', 'cuda:1'], or [torch.device('cuda:0'), torch.device('cuda:1')] , the
+        model will be parallely trained on the multiple devices (so far only support parallel training on CUDA devices).
+        Other devices like Google TPU and Apple Silicon accelerator MPS may be added in the future.
 
     saving_path :
         The path for automatically saving model checkpoints and tensorboard files (i.e. loss values recorded during
@@ -91,23 +99,27 @@ class TEFN(BaseNNImputer):
         apply_nonstationary_norm: bool = True,
         batch_size: int = 32,
         epochs: int = 100,
-        patience: int = None,
+        patience: Optional[int] = None,
+        train_loss_func: Optional[dict] = None,
+        val_metric_func: Optional[dict] = None,
         optimizer: Optional[Optimizer] = Adam(),
         num_workers: int = 0,
         device: Optional[Union[str, torch.device, list]] = None,
-        saving_path: str = None,
+        saving_path: Optional[str] = None,
         model_saving_strategy: Optional[str] = "best",
         verbose: bool = True,
     ):
         super().__init__(
-            batch_size,
-            epochs,
-            patience,
-            num_workers,
-            device,
-            saving_path,
-            model_saving_strategy,
-            verbose,
+            batch_size=batch_size,
+            epochs=epochs,
+            patience=patience,
+            train_loss_func=train_loss_func,
+            val_metric_func=val_metric_func,
+            num_workers=num_workers,
+            device=device,
+            saving_path=saving_path,
+            model_saving_strategy=model_saving_strategy,
+            verbose=verbose,
         )
 
         self.n_steps = n_steps
@@ -238,7 +250,7 @@ class TEFN(BaseNNImputer):
         with torch.no_grad():
             for idx, data in enumerate(test_loader):
                 inputs = self._assemble_input_for_testing(data)
-                results = self.model.forward(inputs, training=False)
+                results = self.model.forward(inputs)
                 imputation_collector.append(results["imputed_data"])
 
         # Step 3: output collection and return

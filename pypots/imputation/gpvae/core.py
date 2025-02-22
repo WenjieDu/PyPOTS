@@ -89,11 +89,11 @@ class _GPVAE(nn.Module):
             window_size,
         )
 
-    def forward(self, inputs, training=True, n_sampling_times=1):
+    def forward(self, inputs, n_sampling_times=1):
         X, missing_mask = inputs["X"], inputs["missing_mask"]
         results = {}
 
-        if training:
+        if self.training:
             elbo_loss = self.backbone(X, missing_mask)
             results["loss"] = elbo_loss
         else:
