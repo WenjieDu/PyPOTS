@@ -2,14 +2,14 @@
 
 """
 
+# Created by Wenjie Du <wenjay.du@gmail.com>
+# License: BSD-3-Clause
+
+
 import torch
 import torch.nn as nn
 
 from .layers import TimesBlock
-
-
-# Created by Wenjie Du <wenjay.du@gmail.com>
-# License: BSD-3-Clause
 
 
 class BackboneTimesNet(nn.Module):

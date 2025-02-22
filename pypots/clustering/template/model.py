@@ -43,15 +43,17 @@ class YourNewModel(BaseNNClusterer):
         verbose: bool = True,
     ):
         super().__init__(
-            n_clusters,
-            batch_size,
-            epochs,
-            patience,
-            num_workers,
-            device,
-            saving_path,
-            model_saving_strategy,
-            verbose,
+            n_clusters=n_clusters,
+            batch_size=batch_size,
+            epochs=epochs,
+            patience=patience,
+            train_loss_func=None,
+            val_metric_func=None,
+            num_workers=num_workers,
+            device=device,
+            saving_path=saving_path,
+            model_saving_strategy=model_saving_strategy,
+            verbose=verbose,
         )
         # set up the hyper-parameters
         # TODO: set up your model's hyper-parameters here

@@ -16,6 +16,7 @@ from torch import Tensor
 from torch.utils.data import Dataset
 
 from .config import SUPPORTED_DATASET_FILE_FORMATS
+from ..saving import load_dict_from_h5
 from ..utils import turn_data_into_specified_dtype
 
 
@@ -434,6 +435,21 @@ class BaseDataset(Dataset):
             sample.append(self.file_handle["y"][idx].to(torch.long))
 
         return sample
+
+    def fetch_entire_dataset(self) -> dict:
+        """Fetch the entire dataset from the given data source.
+
+        Returns
+        -------
+        data :
+            The entire dataset in a dictionary fetched from the given data source.
+
+        """
+        if isinstance(self.data, str):  # data from file
+            data = load_dict_from_h5(self.data)
+        else:
+            data = self.data
+        return data
 
     def __getitem__(self, idx: int) -> Iterable:
         """Fetch data according to index.

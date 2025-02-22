@@ -10,10 +10,10 @@ pypots.utils.file
    :show-inheritance:
    :inherited-members:
 
-pypots.utils.metrics
+pypots.nn.functional
 ---------------------------
 
-.. automodule:: pypots.utils.metrics
+.. automodule:: pypots.nn.functional
    :members:
    :undoc-members:
    :show-inheritance:

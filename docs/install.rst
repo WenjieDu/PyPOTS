@@ -31,9 +31,9 @@ Required Dependencies
 * tensorboard
 * scikit-learn
 * torch >=1.10.0
-* tsdb >=0.6
-* pygrinder >=0.6
-* benchpots >=0.2
+* tsdb >=0.6.1
+* pygrinder >=0.6.4
+* benchpots >=0.3.2
 
 
 Optional Dependencies

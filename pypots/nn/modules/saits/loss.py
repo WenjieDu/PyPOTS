@@ -10,7 +10,7 @@ from typing import Callable
 
 import torch.nn as nn
 
-from ....utils.metrics import calc_mae
+from ....nn.functional import calc_mae
 
 
 class SaitsLoss(nn.Module):

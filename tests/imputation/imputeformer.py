@@ -15,7 +15,7 @@ import pytest
 from pypots.imputation import ImputeFormer
 from pypots.optim import Adam
 from pypots.utils.logging import logger
-from pypots.utils.metrics import calc_mse
+from pypots.nn.functional import calc_mse
 from tests.global_test_config import (
     DATA,
     EPOCHS,
@@ -78,29 +78,19 @@ class TestImputeFormer(unittest.TestCase):
 
     @pytest.mark.xdist_group(name="imputation-imputeformer")
     def test_2_parameters(self):
-        assert (
-            hasattr(self.imputeformer, "model") and self.imputeformer.model is not None
-        )
+        assert hasattr(self.imputeformer, "model") and self.imputeformer.model is not None
 
-        assert (
-            hasattr(self.imputeformer, "optimizer")
-            and self.imputeformer.optimizer is not None
-        )
+        assert hasattr(self.imputeformer, "optimizer") and self.imputeformer.optimizer is not None
 
         assert hasattr(self.imputeformer, "best_loss")
         self.assertNotEqual(self.imputeformer.best_loss, float("inf"))
 
-        assert (
-            hasattr(self.imputeformer, "best_model_dict")
-            and self.imputeformer.best_model_dict is not None
-        )
+        assert hasattr(self.imputeformer, "best_model_dict") and self.imputeformer.best_model_dict is not None
 
     @pytest.mark.xdist_group(name="imputation-imputeformer")
     def test_3_saving_path(self):
         # whether the root saving dir exists, which should be created by save_log_into_tb_file
-        assert os.path.exists(
-            self.saving_path
-        ), f"file {self.saving_path} does not exist"
+        assert os.path.exists(self.saving_path), f"file {self.saving_path} does not exist"
 
         # check if the tensorboard file and model checkpoints exist
         check_tb_and_model_checkpoints_existence(self.imputeformer)
