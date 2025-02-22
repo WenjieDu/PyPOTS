@@ -6,16 +6,14 @@
 # License: BSD-3-Clause
 
 import copy
-from typing import Iterable
-from typing import Union
+from typing import Iterable, Union
 
 import numpy as np
 import torch
-from sklearn.preprocessing import StandardScaler
+from pygrinder import mnar_nonuniform
 
 from ...data.dataset import BaseDataset
 from ...data.utils import parse_delta
-from pygrinder import mnar_nonuniform
 
 
 def compute_intervals(data):
