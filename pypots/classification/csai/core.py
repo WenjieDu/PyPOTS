@@ -53,7 +53,6 @@ class _BCSAI(nn.Module):
             reconstruction_loss,
         ) = self.model(inputs)
 
-
         f_logits = self.f_classifier(self.dropout(f_hidden_states))
         b_logits = self.b_classifier(self.dropout(b_hidden_states))
         f_prediction = torch.softmax(f_logits, dim=1)
@@ -84,5 +83,5 @@ class _BCSAI(nn.Module):
             results["classification_loss"] = classification_loss
             results["f_reconstruction"] = f_reconstruction
             results["b_reconstruction"] = b_reconstruction
-            
+
         return results
