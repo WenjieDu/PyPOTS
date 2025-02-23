@@ -15,8 +15,8 @@ import torch
 from .base import BaseCommand
 from .utils import load_package_from_path
 from ..classification import BRITS as BRITS_classification
-from ..classification import GRUD as GRUD_classification
 from ..classification import CSAI as CSAI_classification
+from ..classification import GRUD as GRUD_classification
 from ..classification import Raindrop
 from ..clustering import CRLI, VaDER
 from ..data.saving.h5 import load_dict_from_h5
@@ -112,9 +112,9 @@ NN_MODELS = {
     "pypots.imputation.TimeLLM": TimeLLM,
     # classification models
     "pypots.classification.BRITS": BRITS_classification,
+    "pypots.classification.CSAI": CSAI_classification,
     "pypots.classification.GRUD": GRUD_classification,
     "pypots.classification.Raindrop": Raindrop,
-    "pypots.classification.CSAI": CSAI_classification,
     # clustering models
     "pypots.clustering.CRLI": CRLI,
     "pypots.clustering.VaDER": VaDER,
