@@ -41,7 +41,7 @@ class _BCSAI(nn.Module):
         self.b_classifier = nn.Linear(self.rnn_hidden_size, n_classes)
         self.dropout = nn.Dropout(dropout)
 
-    def forward(self, inputs: dict, training: bool = True) -> dict:
+    def forward(self, inputs: dict) -> dict:
 
         (
             imputed_data,
@@ -65,7 +65,7 @@ class _BCSAI(nn.Module):
         }
 
         # if in training mode, return results with losses
-        if training:
+        if self.training:
             # criterion = DiceBCELoss().to(imputed_data.device)
             results["consistency_loss"] = consistency_loss
             results["reconstruction_loss"] = reconstruction_loss
