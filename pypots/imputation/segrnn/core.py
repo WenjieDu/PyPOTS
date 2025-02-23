@@ -35,7 +35,7 @@ class _SegRNN(nn.Module):
         # apply SAITS loss function to Transformer on the imputation task
         self.saits_loss_func = SaitsLoss(ORT_weight, MIT_weight)
 
-    def forward(self, inputs: dict, training: bool = True) -> dict:
+    def forward(self, inputs: dict) -> dict:
         X, missing_mask = inputs["X"], inputs["missing_mask"]
 
         reconstruction = self.backbone(X)
@@ -46,7 +46,7 @@ class _SegRNN(nn.Module):
         }
 
         # if in training mode, return results with losses
-        if training:
+        if self.training:
             X_ori, indicating_mask = inputs["X_ori"], inputs["indicating_mask"]
             loss, ORT_loss, MIT_loss = self.saits_loss_func(reconstruction, X_ori, missing_mask, indicating_mask)
             results["ORT_loss"] = ORT_loss
