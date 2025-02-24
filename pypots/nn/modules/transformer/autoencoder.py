@@ -174,7 +174,6 @@ class TransformerDecoder(nn.Module):
         enc_output: torch.Tensor,
         trg_mask: Optional[torch.Tensor] = None,
         src_mask: Optional[torch.Tensor] = None,
-        return_attn_weights: bool = False,
     ) -> Union[torch.Tensor, Tuple[torch.Tensor, list, list]]:
         """Forward processing of the decoder.
 
@@ -191,9 +190,6 @@ class TransformerDecoder(nn.Module):
 
         src_mask:
             Masking tensor for the encoding attention module.
-
-        return_attn_weights:
-            Whether to return the attention map.
 
         Returns
         -------
@@ -221,7 +217,4 @@ class TransformerDecoder(nn.Module):
             dec_slf_attn_collector.append(dec_slf_attn)
             dec_enc_attn_collector.append(dec_enc_attn)
 
-        if return_attn_weights:
-            return trg_seq, dec_slf_attn_collector, dec_enc_attn_collector
-
-        return trg_seq
+        return trg_seq, dec_slf_attn_collector, dec_enc_attn_collector
