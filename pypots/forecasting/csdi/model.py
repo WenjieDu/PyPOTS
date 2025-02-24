@@ -19,7 +19,7 @@ except ImportError:
     pass
 
 from .core import _CSDI
-from .data import DatasetForForecastingCSDI, TestDatasetForForecastingCSDI
+from .data import DatasetForCSDI, TestDatasetForCSDI
 from ..base import BaseNNForecaster
 from ...data.checking import key_in_data_set
 from ...optim.adam import Adam
@@ -357,7 +357,7 @@ class CSDI(BaseNNForecaster):
         n_sampling_times: int = 1,
     ) -> None:
         # Step 1: wrap the input data with classes Dataset and DataLoader
-        training_set = DatasetForForecastingCSDI(
+        training_set = DatasetForCSDI(
             train_set,
             file_type=file_type,
         )
@@ -371,7 +371,7 @@ class CSDI(BaseNNForecaster):
         if val_set is not None:
             if not key_in_data_set("X_pred", val_set):
                 raise ValueError("val_set must contain 'X_pred' for model validation.")
-            val_set = DatasetForForecastingCSDI(
+            val_set = DatasetForCSDI(
                 val_set,
                 file_type=file_type,
             )
@@ -426,7 +426,7 @@ class CSDI(BaseNNForecaster):
 
         # Step 1: wrap the input data with classes Dataset and DataLoader
         self.model.eval()  # set the model as eval status to freeze it.
-        test_set = TestDatasetForForecastingCSDI(
+        test_set = TestDatasetForCSDI(
             test_set,
             self.n_pred_steps,
             self.n_pred_features,
