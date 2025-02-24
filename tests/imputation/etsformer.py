@@ -45,8 +45,8 @@ class TestETSformer(unittest.TestCase):
     etsformer = ETSformer(
         DATA["n_steps"],
         DATA["n_features"],
-        n_e_layers=2,
-        n_d_layers=2,
+        n_encoder_layers=2,
+        n_decoder_layers=2,
         d_model=32,
         n_heads=2,
         d_ffn=32,

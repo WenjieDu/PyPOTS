@@ -33,10 +33,10 @@ class ETSformer(BaseNNImputer):
     n_features :
         The number of features in the time-series data sample.
 
-    n_e_layers :
+    n_encoder_layers :
         The number of layers in the ETSformer encoder.
 
-    n_d_layers :
+    n_decoder_layers :
         The number of layers in the ETSformer decoder.
 
     d_model :
@@ -115,8 +115,8 @@ class ETSformer(BaseNNImputer):
         self,
         n_steps: int,
         n_features: int,
-        n_e_layers: int,
-        n_d_layers: int,
+        n_encoder_layers: int,
+        n_decoder_layers: int,
         d_model: int,
         n_heads: int,
         d_ffn: int,
@@ -152,8 +152,8 @@ class ETSformer(BaseNNImputer):
         self.n_features = n_features
         # model hype-parameters
         self.n_heads = n_heads
-        self.n_e_layers = n_e_layers
-        self.n_d_layers = n_d_layers
+        self.n_encoder_layers = n_encoder_layers
+        self.n_decoder_layers = n_decoder_layers
         self.d_model = d_model
         self.d_ffn = d_ffn
         self.dropout = dropout
@@ -165,8 +165,8 @@ class ETSformer(BaseNNImputer):
         self.model = _ETSformer(
             self.n_steps,
             self.n_features,
-            self.n_e_layers,
-            self.n_d_layers,
+            self.n_encoder_layers,
+            self.n_decoder_layers,
             self.d_model,
             self.n_heads,
             self.d_ffn,
