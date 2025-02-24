@@ -9,8 +9,8 @@ import os
 
 import numpy as np
 import torch
+from benchpots.datasets import preprocess_random_walk
 
-from pypots.data.generating import gene_random_walk
 from pypots.data.saving import save_dict_into_h5
 from pypots.utils.logging import logger
 from pypots.utils.random import set_random_seed
@@ -46,7 +46,7 @@ set_random_seed(RANDOM_SEED)
 
 # Generate the unified data for testing and cache it first, DATA here is a singleton
 # Otherwise, file lock will cause bug if running test parallely with pytest-xdist.
-DATA = gene_random_walk(
+DATA = preprocess_random_walk(
     n_steps=8,
     n_features=5,
     n_classes=2,
