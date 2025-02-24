@@ -11,7 +11,6 @@ import torch
 import torch.nn as nn
 
 from .attention import ScaledDotProductAttention
-from .embedding import PositionalEncoding
 from .layers import TransformerEncoderLayer, TransformerDecoderLayer
 
 
@@ -114,12 +113,6 @@ class TransformerDecoder(nn.Module):
 
     Parameters
     ----------
-    n_steps:
-        The number of time steps in the input tensor.
-
-    n_features:
-        The number of features in the input tensor.
-
     n_layers:
         The number of layers in the decoder.
 
@@ -149,8 +142,6 @@ class TransformerDecoder(nn.Module):
 
     def __init__(
         self,
-        n_steps: int,
-        n_features: int,
         n_layers: int,
         d_model: int,
         n_heads: int,
@@ -161,9 +152,6 @@ class TransformerDecoder(nn.Module):
         attn_dropout: float,
     ):
         super().__init__()
-        self.embedding = nn.Linear(n_features, d_model)
-        self.dropout = nn.Dropout(dropout)
-        self.position_enc = PositionalEncoding(d_model, n_positions=n_steps)
         self.layer_stack = nn.ModuleList(
             [
                 TransformerDecoderLayer(
@@ -219,15 +207,13 @@ class TransformerDecoder(nn.Module):
             A list containing the encoding attention map from each decoder layer.
 
         """
-        trg_seq = self.embedding(trg_seq)
-        dec_output = self.dropout(self.position_enc(trg_seq))
 
         dec_slf_attn_collector = []
         dec_enc_attn_collector = []
 
         for layer in self.layer_stack:
-            dec_output, dec_slf_attn, dec_enc_attn = layer(
-                dec_output,
+            trg_seq, dec_slf_attn, dec_enc_attn = layer(
+                trg_seq,
                 enc_output,
                 slf_attn_mask=trg_mask,
                 dec_enc_attn_mask=src_mask,
@@ -236,6 +222,6 @@ class TransformerDecoder(nn.Module):
             dec_enc_attn_collector.append(dec_enc_attn)
 
         if return_attn_weights:
-            return dec_output, dec_slf_attn_collector, dec_enc_attn_collector
+            return trg_seq, dec_slf_attn_collector, dec_enc_attn_collector
 
-        return dec_output
+        return trg_seq
