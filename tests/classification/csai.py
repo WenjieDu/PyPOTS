@@ -13,7 +13,7 @@ import pytest
 from pypots.classification import CSAI
 from pypots.optim import Adam
 from pypots.utils.logging import logger
-from pypots.utils.metrics import calc_binary_classification_metrics
+from pypots.nn.functional import calc_binary_classification_metrics
 from tests.global_test_config import (
     DATA,
     EPOCHS,
@@ -48,9 +48,8 @@ class TestCSAI(unittest.TestCase):
         imputation_weight=0.7,
         consistency_weight=0.3,
         classification_weight=1.0,
-        removal_percent=10,
+        removal_percent=0.1,
         increase_factor=0.1,
-        compute_intervals=True,
         step_channels=16,
         epochs=EPOCHS,
         dropout=0.5,

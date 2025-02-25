@@ -13,7 +13,7 @@ import torch.nn.functional as F
 
 from .layers import UsganDiscriminator
 from ..brits import BackboneBRITS
-from ....utils.metrics import calc_mse
+from ....nn.functional import calc_mse
 
 
 class BackboneUSGAN(nn.Module):
@@ -43,7 +43,6 @@ class BackboneUSGAN(nn.Module):
         self,
         inputs: dict,
         training_object: str = "generator",
-        training: bool = True,
     ) -> Tuple[torch.Tensor, ...]:
         (
             imputed_data,
@@ -56,7 +55,7 @@ class BackboneUSGAN(nn.Module):
         ) = self.generator(inputs)
 
         # if in training mode, return results with losses
-        if training:
+        if self.training:
             forward_X = inputs["forward"]["X"]
             forward_missing_mask = inputs["forward"]["missing_mask"]
 

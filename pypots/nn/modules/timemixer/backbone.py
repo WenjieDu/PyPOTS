@@ -114,15 +114,17 @@ class BackboneTimeMixer(nn.Module):
                         for i in range(downsampling_layers + 1)
                     ]
                 )
-        if task_name == "imputation" or task_name == "anomaly_detection":
+        elif task_name == "imputation" or task_name == "anomaly_detection":
             if self.channel_independence == 1:
                 self.projection_layer = nn.Linear(d_model, 1, bias=True)
             else:
                 self.projection_layer = nn.Linear(d_model, n_pred_features, bias=True)
-        if task_name == "classification":
+        elif task_name == "classification":
             self.act = F.gelu
             self.dropout = nn.Dropout(dropout)
             self.projection = nn.Linear(d_model * n_steps, n_classes)
+        else:
+            raise NotImplementedError("Task not supported")
 
     def out_projection(self, dec_out, i, out_res):
         dec_out = self.projection_layer(dec_out)

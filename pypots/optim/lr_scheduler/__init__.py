@@ -9,14 +9,13 @@ to initialize schedulers together with optimizers.
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-from .lambda_lrs import LambdaLR
-from .multiplicative_lrs import MultiplicativeLR
-from .step_lrs import StepLR
-from .multistep_lrs import MultiStepLR
 from .constant_lrs import ConstantLR
 from .exponential_lrs import ExponentialLR
+from .lambda_lrs import LambdaLR
 from .linear_lrs import LinearLR
-
+from .multiplicative_lrs import MultiplicativeLR
+from .multistep_lrs import MultiStepLR
+from .step_lrs import StepLR
 
 __all__ = [
     "LambdaLR",

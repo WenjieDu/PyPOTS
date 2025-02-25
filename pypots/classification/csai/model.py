@@ -53,9 +53,6 @@ class CSAI(BaseNNClassifier):
     increase_factor :
     The factor to increase the frequency of missing value occurrences.
 
-    compute_intervals :
-    Whether to compute time intervals between observations during data processing.
-
     step_channels :
     The number of step channels for the model.
 
@@ -69,6 +66,14 @@ class CSAI(BaseNNClassifier):
         The patience for the early-stopping mechanism. Given a positive integer, the training process will be
         stopped when the model does not perform better after that number of epochs.
         Leaving it default as None will disable the early-stopping.
+
+    train_loss_func:
+        The customized loss function designed by users for training the model.
+        If not given, will use the default loss as claimed in the original paper.
+
+    val_metric_func:
+        The customized metric function designed by users for validating the model.
+        If not given, will use the default loss from the original paper as the metric.
 
     optimizer :
         The optimizer for model training.
@@ -114,12 +119,13 @@ class CSAI(BaseNNClassifier):
         n_classes: int,
         removal_percent: int,
         increase_factor: float,
-        compute_intervals: bool,
         step_channels: int,
         dropout: float = 0.5,
         batch_size: int = 32,
         epochs: int = 100,
         patience: Optional[int] = None,
+        train_loss_func: Optional[dict] = None,
+        val_metric_func: Optional[dict] = None,
         optimizer: Optimizer = Adam(),
         num_workers: int = 0,
         device: Optional[Union[str, torch.device, list]] = None,
@@ -128,15 +134,17 @@ class CSAI(BaseNNClassifier):
         verbose: bool = True,
     ):
         super().__init__(
-            n_classes,
-            batch_size,
-            epochs,
-            patience,
-            num_workers,
-            device,
-            saving_path,
-            model_saving_strategy,
-            verbose,
+            n_classes=n_classes,
+            batch_size=batch_size,
+            epochs=epochs,
+            patience=patience,
+            train_loss_func=train_loss_func,
+            val_metric_func=val_metric_func,
+            num_workers=num_workers,
+            device=device,
+            saving_path=saving_path,
+            model_saving_strategy=model_saving_strategy,
+            verbose=verbose,
         )
 
         self.n_steps = n_steps
@@ -148,12 +156,7 @@ class CSAI(BaseNNClassifier):
         self.removal_percent = removal_percent
         self.increase_factor = increase_factor
         self.step_channels = step_channels
-        self.compute_intervals = compute_intervals
         self.dropout = dropout
-        self.intervals = None
-        self.replacement_probabilities = None
-        self.mean_set = None
-        self.std_set = None
 
         # Initialise empty model
         self.model = _BCSAI(
@@ -166,7 +169,6 @@ class CSAI(BaseNNClassifier):
             n_classes=self.n_classes,
             step_channels=self.step_channels,
             dropout=self.dropout,
-            intervals=self.intervals,
         )
 
         self._send_model_to_given_device()
@@ -176,7 +178,7 @@ class CSAI(BaseNNClassifier):
         self.optimizer = optimizer
         self.optimizer.init_optimizer(self.model.parameters())
 
-    def _assemble_input_for_training(self, data: list, training=True) -> dict:
+    def _assemble_input_for_training(self, data: list) -> dict:
         # extract data
         sample = data["sample"]
         (indices, X, missing_mask, deltas, last_obs, back_X, back_missing_mask, back_deltas, back_last_obs, labels) = (
@@ -185,7 +187,7 @@ class CSAI(BaseNNClassifier):
 
         inputs = {
             "indices": indices,
-            "labels": labels,
+            "y": labels,
             "forward": {
                 "X": X,
                 "missing_mask": missing_mask,
@@ -198,6 +200,7 @@ class CSAI(BaseNNClassifier):
                 "deltas": back_deltas,
                 "last_obs": back_last_obs,
             },
+            "intervals": self.intervals,
         }
         return inputs
 
@@ -217,8 +220,6 @@ class CSAI(BaseNNClassifier):
             back_missing_mask,
             back_deltas,
             back_last_obs,
-            X_ori,
-            indicating_mask,
         ) = self._send_data_to_given_device(sample)
 
         # assemble input data
@@ -236,8 +237,7 @@ class CSAI(BaseNNClassifier):
                 "deltas": back_deltas,
                 "last_obs": back_last_obs,
             },
-            # "X_ori": X_ori,
-            # "indicating_mask": indicating_mask,
+            "intervals": self.intervals,
         }
 
         return inputs
@@ -251,7 +251,7 @@ class CSAI(BaseNNClassifier):
         # Create dataset
         if isinstance(train_set, str):
             logger.warning(
-                "CSAI does not support lazy loading because normalise mean and std need to be calculated ahead. "
+                "CSAI does not support lazy loading because intervals need to be calculated ahead. "
                 "Hence the whole train set will be loaded into memory."
             )
             train_set = load_dict_from_h5(train_set)
@@ -261,13 +261,10 @@ class CSAI(BaseNNClassifier):
             return_y=True,
             removal_percent=self.removal_percent,
             increase_factor=self.increase_factor,
-            compute_intervals=self.compute_intervals,
         )
 
         self.intervals = training_set.intervals
         self.replacement_probabilities = training_set.replacement_probabilities
-        self.mean_set = training_set.mean_set
-        self.std_set = training_set.std_set
 
         train_loader = DataLoader(
             training_set,
@@ -279,7 +276,7 @@ class CSAI(BaseNNClassifier):
         if val_set is not None:
             if isinstance(val_set, str):
                 logger.warning(
-                    "CSAI does not support lazy loading because normalise mean and std need to be calculated ahead. "
+                    "CSAI does not support lazy loading because intervals need to be calculated ahead. "
                     "Hence the whole val set will be loaded into memory."
                 )
                 val_set = load_dict_from_h5(val_set)
@@ -292,10 +289,7 @@ class CSAI(BaseNNClassifier):
                 return_y=True,
                 removal_percent=self.removal_percent,
                 increase_factor=self.increase_factor,
-                compute_intervals=self.compute_intervals,
                 replacement_probabilities=self.replacement_probabilities,
-                normalise_mean=self.mean_set,
-                normalise_std=self.std_set,
             )
             val_loader = DataLoader(
                 val_set,
@@ -321,7 +315,7 @@ class CSAI(BaseNNClassifier):
 
         if isinstance(test_set, str):
             logger.warning(
-                "CSAI does not support lazy loading because normalise mean and std need to be calculated ahead. "
+                "CSAI does not support lazy loading because intervals need to be calculated ahead. "
                 "Hence the whole test set will be loaded into memory."
             )
             test_set = load_dict_from_h5(test_set)
@@ -331,11 +325,7 @@ class CSAI(BaseNNClassifier):
             return_y=False,
             removal_percent=self.removal_percent,
             increase_factor=self.increase_factor,
-            compute_intervals=self.compute_intervals,
             replacement_probabilities=self.replacement_probabilities,
-            normalise_mean=self.mean_set,
-            normalise_std=self.std_set,
-            training=False,
         )
         test_loader = DataLoader(
             test_set,
@@ -349,7 +339,7 @@ class CSAI(BaseNNClassifier):
         with torch.no_grad():
             for idx, data in enumerate(test_loader):
                 inputs = self._assemble_input_for_testing(data)
-                results = self.model.forward(inputs, training=False)
+                results = self.model.forward(inputs)
                 classification_results.append(results["classification_pred"])
 
         classification = torch.cat(classification_results).cpu().detach().numpy()

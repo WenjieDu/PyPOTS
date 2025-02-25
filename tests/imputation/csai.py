@@ -15,7 +15,7 @@ import pytest
 from pypots.imputation import CSAI
 from pypots.optim import Adam
 from pypots.utils.logging import logger
-from pypots.utils.metrics import calc_mse
+from pypots.nn.functional import calc_mse
 from tests.global_test_config import (
     DATA,
     EPOCHS,
@@ -48,9 +48,8 @@ class TestCSAI(unittest.TestCase):
         rnn_hidden_size=64,
         imputation_weight=0.7,
         consistency_weight=0.3,
-        removal_percent=10,  # Assume we are removing 10% of the data
+        removal_percent=0.1,  # Assume we are removing 10% of the data
         increase_factor=0.1,
-        compute_intervals=True,
         step_channels=16,
         epochs=EPOCHS,
         optimizer=optimizer,

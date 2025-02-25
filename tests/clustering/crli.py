@@ -14,7 +14,7 @@ import pytest
 from pypots.clustering import CRLI
 from pypots.optim import Adam
 from pypots.utils.logging import logger
-from pypots.utils.metrics import (
+from pypots.nn.functional import (
     calc_external_cluster_validation_metrics,
     calc_internal_cluster_validation_metrics,
 )
@@ -85,50 +85,30 @@ class TestCRLI(unittest.TestCase):
         # GRU cell
         assert hasattr(self.crli_gru, "model") and self.crli_gru.model is not None
 
-        assert (
-            hasattr(self.crli_gru, "G_optimizer")
-            and self.crli_gru.G_optimizer is not None
-        )
-        assert (
-            hasattr(self.crli_gru, "D_optimizer")
-            and self.crli_gru.D_optimizer is not None
-        )
+        assert hasattr(self.crli_gru, "G_optimizer") and self.crli_gru.G_optimizer is not None
+        assert hasattr(self.crli_gru, "D_optimizer") and self.crli_gru.D_optimizer is not None
 
         assert hasattr(self.crli_gru, "best_loss")
         self.assertNotEqual(self.crli_gru.best_loss, float("inf"))
 
-        assert (
-            hasattr(self.crli_gru, "best_model_dict")
-            and self.crli_gru.best_model_dict is not None
-        )
+        assert hasattr(self.crli_gru, "best_model_dict") and self.crli_gru.best_model_dict is not None
 
         # LSTM cell
         assert hasattr(self.crli_lstm, "model") and self.crli_lstm.model is not None
 
-        assert (
-            hasattr(self.crli_lstm, "G_optimizer")
-            and self.crli_lstm.G_optimizer is not None
-        )
-        assert (
-            hasattr(self.crli_lstm, "D_optimizer")
-            and self.crli_lstm.D_optimizer is not None
-        )
+        assert hasattr(self.crli_lstm, "G_optimizer") and self.crli_lstm.G_optimizer is not None
+        assert hasattr(self.crli_lstm, "D_optimizer") and self.crli_lstm.D_optimizer is not None
 
         assert hasattr(self.crli_lstm, "best_loss")
         self.assertNotEqual(self.crli_lstm.best_loss, float("inf"))
 
-        assert (
-            hasattr(self.crli_lstm, "best_model_dict")
-            and self.crli_lstm.best_model_dict is not None
-        )
+        assert hasattr(self.crli_lstm, "best_model_dict") and self.crli_lstm.best_model_dict is not None
 
     @pytest.mark.xdist_group(name="clustering-crli")
     def test_2_cluster(self):
         # GRU cell
         clustering_results = self.crli_gru.predict(TEST_SET, return_latent_vars=True)
-        external_metrics = calc_external_cluster_validation_metrics(
-            clustering_results["clustering"], DATA["test_y"]
-        )
+        external_metrics = calc_external_cluster_validation_metrics(clustering_results["clustering"], DATA["test_y"])
         internal_metrics = calc_internal_cluster_validation_metrics(
             clustering_results["latent_vars"]["clustering_latent"], DATA["test_y"]
         )
@@ -137,9 +117,7 @@ class TestCRLI(unittest.TestCase):
 
         # LSTM cell
         clustering_results = self.crli_lstm.predict(TEST_SET, return_latent_vars=True)
-        external_metrics = calc_external_cluster_validation_metrics(
-            clustering_results["clustering"], DATA["test_y"]
-        )
+        external_metrics = calc_external_cluster_validation_metrics(clustering_results["clustering"], DATA["test_y"])
         internal_metrics = calc_internal_cluster_validation_metrics(
             clustering_results["latent_vars"]["clustering_latent"], DATA["test_y"]
         )
@@ -149,9 +127,7 @@ class TestCRLI(unittest.TestCase):
     @pytest.mark.xdist_group(name="clustering-crli")
     def test_3_saving_path(self):
         # whether the root saving dir exists, which should be created by save_log_into_tb_file
-        assert os.path.exists(
-            self.saving_path
-        ), f"file {self.saving_path} does not exist"
+        assert os.path.exists(self.saving_path), f"file {self.saving_path} does not exist"
 
         # check if the tensorboard file and model checkpoints exist
         check_tb_and_model_checkpoints_existence(self.crli_gru)
@@ -166,12 +142,8 @@ class TestCRLI(unittest.TestCase):
     @pytest.mark.xdist_group(name="clustering-crli")
     def test_4_lazy_loading(self):
         self.crli_lstm.fit(GENERAL_H5_TRAIN_SET_PATH, GENERAL_H5_VAL_SET_PATH)
-        clustering_results = self.crli_lstm.predict(
-            GENERAL_H5_TEST_SET_PATH, return_latent_vars=True
-        )
-        external_metrics = calc_external_cluster_validation_metrics(
-            clustering_results["clustering"], DATA["test_y"]
-        )
+        clustering_results = self.crli_lstm.predict(GENERAL_H5_TEST_SET_PATH, return_latent_vars=True)
+        external_metrics = calc_external_cluster_validation_metrics(clustering_results["clustering"], DATA["test_y"])
         internal_metrics = calc_internal_cluster_validation_metrics(
             clustering_results["latent_vars"]["clustering_latent"], DATA["test_y"]
         )

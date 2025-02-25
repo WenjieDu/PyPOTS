@@ -100,7 +100,7 @@ currently supported. Stay tuned❗️).
 
 🌟 Since **v0.2**, all neural-network models in PyPOTS has got hyperparameter-optimization support.
 This functionality is implemented with the [Microsoft NNI](https://github.com/microsoft/nni) framework. You may want to
-refer to our time-series imputation survey repo [Awesome_Imputation](https://github.com/WenjieDu/Awesome_Imputation)
+refer to our time-series imputation survey and benchmark repo [Awesome_Imputation](https://github.com/WenjieDu/Awesome_Imputation)
 to see how to config and tune the hyperparameters.
 
 🔥 Note that all models whose name with `🧑‍🔧` in the table (e.g. Transformer, iTransformer, Informer etc.) are not
@@ -119,7 +119,8 @@ The paper references and links are all listed at the bottom of this file.
 
 | **Type**      | **Algo**                                                                                                                         | **IMPU** | **FORE** | **CLAS** | **CLUS** | **ANOD** | **Year - Venue**                                   |
 |:--------------|:---------------------------------------------------------------------------------------------------------------------------------|:--------:|:--------:|:--------:|:--------:|:--------:|:---------------------------------------------------|
-| LLM           | <a href="https://time-series.ai"><img src="https://time-series.ai/static/figs/robot.svg" width="26px"> Time-Series.AI</a>  [^36] |    ✅     |    ✅     |    ✅     |    ✅     |    ✅     | <a href="https://time-series.ai">Join waitlist</a> |
+| LLM&TSFM      | <a href="https://time-series.ai"><img src="https://time-series.ai/static/figs/robot.svg" width="26px"> Time-Series.AI</a>  [^36] |    ✅     |    ✅     |    ✅     |    ✅     |    ✅     | <a href="https://time-series.ai">Join waitlist</a> |
+| LLM           | Time-LLM[^45]                                                                                                                    |    ✅     |          |          |          |          | `2024 - ICLR`                                      |
 | Neural Net    | TEFN🧑‍🔧[^39]                                                                                                                   |    ✅     |          |          |          |          | `2024 - arXiv`                                     |
 | Neural Net    | FITS🧑‍🔧[^41]                                                                                                                   |    ✅     |          |          |          |          | `2024 - ICLR`                                      |
 | Neural Net    | TimeMixer[^37]                                                                                                                   |    ✅     |          |          |          |          | `2024 - ICLR`                                      |
@@ -165,6 +166,11 @@ The paper references and links are all listed at the bottom of this file.
 | Naive         | LOCF/NOCB                                                                                                                        |    ✅     |          |          |          |          |                                                    |
 | Naive         | Mean                                                                                                                             |    ✅     |          |          |          |          |                                                    |
 | Naive         | Median                                                                                                                           |    ✅     |          |          |          |          |                                                    |
+
+🙋 Differences between `LLM (Large Language Model)` and `TSFM (Time-Series Foundation Model)` in the above table:
+`LLM` refers to the models that are pre-trained on large-scale text data and can be fine-tuned for specific tasks.
+`TSFM` refers to the models that are pre-trained on large-scale time series data, inspired by recent achievements 
+of foundation models in CV and NLP. 
 
 💯 Contribute your model right now to increase your research impact! PyPOTS downloads are increasing rapidly
 (**[600K+ in total and 1K+ daily on PyPI so far](https://www.pepy.tech/projects/pypots)**),
@@ -279,7 +285,7 @@ print(X.shape)  # (11988, 48, 37), 11988 samples and each sample has 48 time ste
 
 # Model training. This is PyPOTS showtime.
 from pypots.imputation import SAITS
-from pypots.utils.metrics import calc_mae
+from pypots.nn.functional import calc_mae
 saits = SAITS(n_steps=48, n_features=37, n_layers=2, d_model=256, n_heads=4, d_k=64, d_v=64, d_ffn=128, dropout=0.1, epochs=10)
 # Here I use the whole dataset as the training set because ground truth is not visible to the model, you can also split it into train/val/test sets
 saits.fit(dataset)  # train the model on the dataset
@@ -519,5 +525,8 @@ Time-Series.AI</a>
 [SegRNN: Segment Recurrent Neural Network for Long-Term Time Series Forecasting](https://arxiv.org/abs/2308.11200).
 *arXiv 2023*.
 [^44]: Yu, H. F., Rao, N., & Dhillon, I. S. (2016). 
-[Temporal regularized matrix factorization for high-dimensional time series prediction](https://papers.nips.cc/paper_files/paper/2016/file/85422afb467e9456013a2a51d4dff702-Paper.pdf).
+[Temporal regularized matrix factorization for high-dimensional time series prediction](https://papers.nips.cc/paper_files/paper/2016/hash/85422afb467e9456013a2a51d4dff702-Abstract.html).
 *NeurIPS 2016*.
+[^45]: Jin, M., Wang, S., Ma, L., Chu, Z., Zhang, J. Y., Shi, X., ... & Wen, Q. (2024). 
+[Time-LLM: Time Series Forecasting by Reprogramming Large Language Models](https://openreview.net/forum?id=Unb5CVPtae).
+*ICLR 2024*.

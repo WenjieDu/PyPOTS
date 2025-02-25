@@ -80,9 +80,9 @@ class _CSDI(nn.Module):
 
         return side_info
 
-    def forward(self, inputs, training=True, n_sampling_times=1):
+    def forward(self, inputs, n_sampling_times=1):
         results = {}
-        if training:  # for training
+        if self.training:  # for training
             (observed_data, indicating_mask, cond_mask, observed_tp) = (
                 inputs["X_ori"],
                 inputs["indicating_mask"],
@@ -90,9 +90,9 @@ class _CSDI(nn.Module):
                 inputs["observed_tp"],
             )
             side_info = self.get_side_info(observed_tp, cond_mask)
-            training_loss = self.backbone.calc_loss(observed_data, cond_mask, indicating_mask, side_info, training)
+            training_loss = self.backbone.calc_loss(observed_data, cond_mask, indicating_mask, side_info)
             results["loss"] = training_loss
-        elif not training and n_sampling_times == 0:  # for validating
+        elif not self.training and n_sampling_times == 0:  # for validating
             (observed_data, indicating_mask, cond_mask, observed_tp) = (
                 inputs["X_ori"],
                 inputs["indicating_mask"],
@@ -100,11 +100,9 @@ class _CSDI(nn.Module):
                 inputs["observed_tp"],
             )
             side_info = self.get_side_info(observed_tp, cond_mask)
-            validating_loss = self.backbone.calc_loss_valid(
-                observed_data, cond_mask, indicating_mask, side_info, training
-            )
+            validating_loss = self.backbone.calc_loss_valid(observed_data, cond_mask, indicating_mask, side_info)
             results["loss"] = validating_loss
-        elif not training and n_sampling_times > 0:  # for testing
+        elif not self.training and n_sampling_times > 0:  # for testing
             observed_data, cond_mask, observed_tp = (
                 inputs["X"],
                 inputs["cond_mask"],

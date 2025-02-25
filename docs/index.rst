@@ -133,6 +133,8 @@ The paper references are all listed at the bottom of this readme file.
 +----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
 | Type           | Algorithm                                                 | IMPU | FORE | CLAS | CLUS | ANOD | Year - Venue          |
 +================+===========================================================+======+======+======+======+======+=======================+
+| Neural Net     | TimeLLM        :cite:`jin2024timellm`                     |  ✅  |      |      |      |      | ``2024 - ICLR``       |
++----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
 | Neural Net     | TEFN🧑‍🔧           :cite:`zhan2024tefn`                  |  ✅  |      |      |      |      | ``2024 - arXiv``      |
 +----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
 | Neural Net     | FITS🧑‍🔧           :cite:`xu2024fits`                    |  ✅  |      |      |      |      | ``2024 - ICLR``       |
@@ -224,9 +226,15 @@ The paper references are all listed at the bottom of this readme file.
 | Naive          | Mean                                                      |  ✅  |      |      |      |      |                       |
 +----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
 
+🙋 Differences between ``LLM (Large Language Model)`` and ``TSFM (Time-Series Foundation Model)`` in the above table:
+``LLM`` refers to the models that are pre-trained on large-scale text data and can be fine-tuned for specific tasks.
+``TSFM`` refers to the models that are pre-trained on large-scale time series data, inspired by recent achievements
+of foundation models in CV and NLP.
+
 💯 Contribute your model right now to increase your research impact! PyPOTS downloads are increasing rapidly (`600K+ in total and 1K+ daily on PyPI so far <https://www.pepy.tech/projects/pypots>`_),
 and your work will be widely used and cited by the community.
 Refer to the `contribution guide <#id44>`_ to see how to include your model in PyPOTS.
+
 
 ❖ PyPOTS Ecosystem
 ^^^^^^^^^^^^^^^^^^^
