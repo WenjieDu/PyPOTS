@@ -47,7 +47,7 @@ class TimeLLM(BaseNNImputer):
 
     d_llm :
         The dimension of the LLM model.
-        Given llm_model_type, it should be 4096 for LLaMA, 68 for GPT2 and BERT.
+        Given llm_model_type, it should be 4096 for LLaMA, 768 for GPT2 and BERT.
 
     d_model :
         The dimension of the model.
