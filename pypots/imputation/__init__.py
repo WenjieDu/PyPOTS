@@ -42,6 +42,7 @@ from .segrnn import SegRNN
 from .tefn import TEFN
 from .trmf import TRMF
 from .timellm import TimeLLM
+from .gpt4ts import GPT4TS
 
 # naive imputation methods
 from .locf import LOCF
@@ -88,6 +89,7 @@ __all__ = [
     "SegRNN",
     "TRMF",
     "TimeLLM",
+    "GPT4TS",
     # naive imputation methods
     "LOCF",
     "Mean",
