@@ -32,7 +32,7 @@ Required Dependencies
 * scikit-learn
 * torch >=1.10.0
 * tsdb >=0.6.1
-* pygrinder >=0.6.4
+* pygrinder >=0.7
 * benchpots >=0.3.2
 
 
