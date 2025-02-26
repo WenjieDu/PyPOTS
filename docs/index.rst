@@ -1,6 +1,6 @@
 .. PyPOTS documentation index page
-   Created by Wenjie Du <wenjay.du@gmail.com>
-   License: BSD-3-Clause
+Created by Wenjie Du <wenjay.du@gmail.com>
+License: BSD-3-Clause
 
 Welcome to PyPOTS docs!
 ===============================
@@ -148,6 +148,8 @@ The paper references are all listed at the bottom of this readme file.
 | Neural Net     | ImputeFormer      :cite:`nie2024imputeformer`             |  ✅  |      |      |      |      | ``2024 - KDD``        |
 +----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
 | Neural Net     | SAITS :cite:`du2023SAITS`                                 |  ✅  |      |      |      |      | ``2023 - ESWA``       |
++----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
+| LLM            | GPT4TS :cite:`zhou2024gpt4ts`                             |  ✅  |      |      |      |      | ``2023 - NeurIPS``    |
 +----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
 | Neural Net     | FreTS🧑‍🔧 :cite:`yi2023frets`                            |  ✅  |      |      |      |      | ``2023 - NeurIPS``    |
 +----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
