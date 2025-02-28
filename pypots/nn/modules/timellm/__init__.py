@@ -1,5 +1,5 @@
 """
-The package of the partially-observed time-series imputation model TimeLLM.
+The package including the modules of Time-LLM.
 
 Refer to the paper
 `Ming Jin, Shiyu Wang, Lintao Ma, Zhixuan Chu, James Y. Zhang, Xiaoming Shi, Pin-Yu Chen, Yuxuan Liang,
