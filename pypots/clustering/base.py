@@ -60,15 +60,17 @@ class BaseClusterer(BaseModel):
         self,
         n_clusters: int,
         device: Optional[Union[str, torch.device, list]] = None,
+        enable_amp: bool = False,
         saving_path: str = None,
         model_saving_strategy: Optional[str] = "best",
         verbose: bool = True,
     ):
         super().__init__(
-            device,
-            saving_path,
-            model_saving_strategy,
-            verbose,
+            device=device,
+            enable_amp=enable_amp,
+            saving_path=saving_path,
+            model_saving_strategy=model_saving_strategy,
+            verbose=verbose,
         )
         self.n_clusters = n_clusters
 
@@ -179,6 +181,10 @@ class BaseNNClusterer(BaseNNModel):
         model will be parallely trained on the multiple devices (so far only support parallel training on CUDA devices).
         Other devices like Google TPU and Apple Silicon accelerator MPS may be added in the future.
 
+    enable_amp :
+        Whether to enable automatic mixed precision (AMP), default as False.
+        If the implemented model is based on LLMs that need large-scale operation and AMP, please set it as True.
+
     saving_path :
         The path for automatically saving model checkpoints and tensorboard files (i.e. loss values recorded during
         training into a tensorboard file). Will not save if not given.
@@ -214,6 +220,7 @@ class BaseNNClusterer(BaseNNModel):
         val_metric_func: Optional[dict] = None,
         num_workers: int = 0,
         device: Optional[Union[str, torch.device, list]] = None,
+        enable_amp: bool = False,
         saving_path: str = None,
         model_saving_strategy: Optional[str] = "best",
         verbose: bool = True,
@@ -226,6 +233,7 @@ class BaseNNClusterer(BaseNNModel):
             val_metric_func=val_metric_func,
             num_workers=num_workers,
             device=device,
+            enable_amp=enable_amp,
             saving_path=saving_path,
             model_saving_strategy=model_saving_strategy,
             verbose=verbose,
@@ -323,12 +331,16 @@ class BaseNNClusterer(BaseNNModel):
         self.best_model_dict = None
 
         try:
+            training_step = 0
             for epoch in range(1, self.epochs + 1):
                 self.model.train()
                 epoch_train_loss_collector = []
                 for idx, data in enumerate(training_loader):
+                    training_step += 1
                     inputs = self._assemble_input_for_training(data)
-                    if os.getenv("ENABLE_AMP", False):
+
+                    # model forward propagation processing
+                    if os.getenv("ENABLE_AMP", False) and self.enable_amp:
                         with autocast():
                             self.optimizer.zero_grad()
                             results = self.model.forward(inputs)
@@ -341,6 +353,10 @@ class BaseNNClusterer(BaseNNModel):
                         self.optimizer.step()
                     epoch_train_loss_collector.append(results["loss"].sum().item())
 
+                    # save training loss logs into the tensorboard file for every step if in need
+                    if self.summary_writer is not None:
+                        self._save_log_into_tb_file(training_step, "training", results)
+
                 # mean training loss of the current epoch
                 mean_train_loss = np.mean(epoch_train_loss_collector)
 
@@ -350,7 +366,13 @@ class BaseNNClusterer(BaseNNModel):
                     with torch.no_grad():
                         for idx, data in enumerate(val_loader):
                             inputs = self._assemble_input_for_validating(data)
-                            results = self.model.forward(inputs)
+
+                            # model forward propagation processing
+                            if os.getenv("ENABLE_AMP", False) and self.enable_amp:
+                                with autocast():
+                                    results = self.model.forward(inputs)
+                            else:
+                                results = self.model.forward(inputs)
                             epoch_val_loss_collector.append(results["loss"].sum().item())
 
                     mean_val_loss = np.mean(epoch_val_loss_collector)

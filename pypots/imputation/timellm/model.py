@@ -151,6 +151,7 @@ class TimeLLM(BaseNNImputer):
             val_metric_func=val_metric_func,
             num_workers=num_workers,
             device=device,
+            enable_amp=True,
             saving_path=saving_path,
             model_saving_strategy=model_saving_strategy,
             verbose=verbose,
@@ -311,7 +312,7 @@ class TimeLLM(BaseNNImputer):
         with torch.no_grad():
             for idx, data in enumerate(test_loader):
                 inputs = self._assemble_input_for_testing(data)
-                if os.getenv("ENABLE_AMP", False):
+                if os.getenv("ENABLE_AMP", False) and self.enable_amp:
                     with autocast():
                         results = self.model.forward(inputs)
                 else:
