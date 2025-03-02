@@ -6,6 +6,7 @@ The implementation of TimeLLM for the partially-observed time-series imputation 
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
+import os
 from typing import Union, Optional
 
 import numpy as np
@@ -17,6 +18,7 @@ from .data import DatasetForTimeLLM
 from ..base import BaseNNImputer
 from ...data.checking import key_in_data_set
 from ...data.dataset import BaseDataset
+from ...nn.functional.cuda import autocast
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
 
@@ -309,7 +311,11 @@ class TimeLLM(BaseNNImputer):
         with torch.no_grad():
             for idx, data in enumerate(test_loader):
                 inputs = self._assemble_input_for_testing(data)
-                results = self.model.forward(inputs)
+                if os.getenv("ENABLE_AMP", False):
+                    with autocast():
+                        results = self.model.forward(inputs)
+                else:
+                    results = self.model.forward(inputs)
                 imputation_collector.append(results["imputed_data"])
 
         # Step 3: output collection and return

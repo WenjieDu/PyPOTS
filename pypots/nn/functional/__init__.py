@@ -23,6 +23,7 @@ from .clustering import (
     calc_internal_cluster_validation_metrics,
     calc_external_cluster_validation_metrics,
 )
+from .cuda import autocast
 from .error import (
     calc_mae,
     calc_mse,
@@ -34,6 +35,8 @@ from .error import (
 from .normalization import nonstationary_norm, nonstationary_denorm
 
 __all__ = [
+    # cuda functions
+    "autocast",
     # normalization functions
     "nonstationary_norm",
     "nonstationary_denorm",

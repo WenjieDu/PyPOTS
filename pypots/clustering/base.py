@@ -15,6 +15,7 @@ import torch
 from torch.utils.data import DataLoader
 
 from ..base import BaseModel, BaseNNModel
+from ..nn.functional import autocast
 from ..utils.logging import logger
 
 try:
@@ -327,10 +328,17 @@ class BaseNNClusterer(BaseNNModel):
                 epoch_train_loss_collector = []
                 for idx, data in enumerate(training_loader):
                     inputs = self._assemble_input_for_training(data)
-                    self.optimizer.zero_grad()
-                    results = self.model.forward(inputs)
-                    results["loss"].sum().backward()
-                    self.optimizer.step()
+                    if os.getenv("ENABLE_AMP", False):
+                        with autocast():
+                            self.optimizer.zero_grad()
+                            results = self.model.forward(inputs)
+                            results["loss"].sum().backward()  # sum() before backward() in case of multi-gpu training
+                            self.optimizer.step()
+                    else:
+                        self.optimizer.zero_grad()
+                        results = self.model.forward(inputs)
+                        results["loss"].sum().backward()  # sum() before backward() in case of multi-gpu training
+                        self.optimizer.step()
                     epoch_train_loss_collector.append(results["loss"].sum().item())
 
                 # mean training loss of the current epoch
