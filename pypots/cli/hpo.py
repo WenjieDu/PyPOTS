@@ -67,7 +67,7 @@ try:
     import nni
 except ImportError:
     logger.error(
-        "❌ Hyperparameter tuning mode needs NNI (https://github.com/microsoft/nni) installed, "
+        "❌ Hyperparameter optimization mode needs NNI (https://github.com/microsoft/nni) installed, "
         "but is missing in the current environment."
     )
 
@@ -122,7 +122,7 @@ NN_MODELS = {
 
 
 def env_command_factory(args: Namespace):
-    return TuningCommand(
+    return HPOCommand(
         args.model,
         args.model_package_path,
         args.train_set,
@@ -132,7 +132,7 @@ def env_command_factory(args: Namespace):
     )
 
 
-class TuningCommand(BaseCommand):
+class HPOCommand(BaseCommand):
     """CLI tools helping users and developer setup python environments for running and developing PyPOTS.
 
     Notes
@@ -142,15 +142,15 @@ class TuningCommand(BaseCommand):
 
     Examples
     --------
-    $ pypots-cli tuning --model pypots.imputation.SAITS --train_set path_to_the_train_set --val_set path_to_the_val_set
+    $ pypots-cli hpo --model pypots.imputation.SAITS --train_set path_to_the_train_set --val_set path_to_the_val_set
 
     """
 
     @staticmethod
     def register_subcommand(parser: ArgumentParser):
         sub_parser = parser.add_parser(
-            "tuning",
-            help="CLI tools helping run hyper-parameter tuning for specified models",
+            "hpo",
+            help="CLI tools helping run hyper-parameter optimization for specified models",
             allow_abbrev=True,
         )
         sub_parser.add_argument(
@@ -233,8 +233,8 @@ class TuningCommand(BaseCommand):
 
         if os.getenv("ENABLE_HPO", False):
             # fetch a new set of hyperparameters from NNI tuner
-            tuner_params = nni.get_next_parameter()
-            logger.info(f"The tunner assigns a new group of params: {tuner_params}")
+            new_param_group = nni.get_next_parameter()
+            logger.info(f"The dispatcher assigns a new group of params: {new_param_group}")
             # get the specified model class
             if self._model not in NN_MODELS:
                 logger.info(
@@ -263,11 +263,11 @@ class TuningCommand(BaseCommand):
 
                 model_class = NN_MODELS[self._model]
             # pop out the learning rate
-            lr = tuner_params.pop("lr")
+            lr = new_param_group.pop("lr")
 
             # check if hyperparameters match
             model_all_arguments = inspect.signature(model_class).parameters.keys()
-            tuner_params_set = set(tuner_params.keys())
+            tuner_params_set = set(new_param_group.keys())
             model_arguments_set = set(model_all_arguments)
             if_hyperparameter_match = tuner_params_set.issubset(model_arguments_set)
             if not if_hyperparameter_match:  # raise runtime error if mismatch
@@ -275,21 +275,21 @@ class TuningCommand(BaseCommand):
                 mismatched = tuner_params_set.difference(set(hyperparameter_intersection))
                 raise RuntimeError(
                     f"Hyperparameters do not match. Mismatched hyperparameters "
-                    f"(in the tuning configuration but not in {model_class.__name__}'s arguments): {list(mismatched)}"
+                    f"(in the hpo configuration but not in {model_class.__name__}'s arguments): {list(mismatched)}"
                 )
 
             # initializing optimizer and model
-            # if tuning a GAN model, we need two optimizers
+            # if optimize hyperparameters for a GAN model, we need two optimizers
             if "G_optimizer" in model_all_arguments:
                 # optimizer for the generator
-                tuner_params["G_optimizer"] = Adam(lr=lr)
+                new_param_group["G_optimizer"] = Adam(lr=lr)
                 # optimizer for the discriminator
-                tuner_params["D_optimizer"] = Adam(lr=lr)
+                new_param_group["D_optimizer"] = Adam(lr=lr)
             else:
-                tuner_params["optimizer"] = Adam(lr=lr)
+                new_param_group["optimizer"] = Adam(lr=lr)
 
             # init an instance with the given hyperparameters for the model class
-            model = model_class(**tuner_params)
+            model = model_class(**new_param_group)
 
             # load the dataset
             if self._lazy_load:
@@ -302,4 +302,4 @@ class TuningCommand(BaseCommand):
             # train the model and report to NNI
             model.fit(train_set=train_set, val_set=val_set)
         else:
-            raise RuntimeError("Argument `enable_tuning` is not set. Aborting...")
+            raise RuntimeError("Argument `ENABLE_HPO` is not set. Aborting...")
