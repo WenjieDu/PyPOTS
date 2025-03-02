@@ -57,7 +57,7 @@ class BaseModel(ABC):
 
         It is designed as being set up while initializing the model because it's created to
         1). help visualize the model's training procedure (during training not after) and
-        2). assist users to tune the model's hype-parameters.
+        2). assist users to optimize the model's hype-parameters.
         If only setting it up after training with a function like setter(), it cannot achieve the 1st purpose.
 
     """
