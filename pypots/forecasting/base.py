@@ -14,7 +14,7 @@ import torch
 from torch.utils.data import DataLoader
 
 from ..base import BaseModel, BaseNNModel
-from ..nn.functional import calc_mse
+from ..nn.functional import calc_mse, autocast
 from ..utils.logging import logger
 
 try:
@@ -293,11 +293,17 @@ class BaseNNForecaster(BaseNNModel):
                 for idx, data in enumerate(training_loader):
                     training_step += 1
                     inputs = self._assemble_input_for_training(data)
-                    self.optimizer.zero_grad()
-                    results = self.model.forward(inputs)
-                    # use sum() before backward() in case of multi-gpu training
-                    results["loss"].sum().backward()
-                    self.optimizer.step()
+                    if os.getenv("ENABLE_AMP", False):
+                        with autocast():
+                            self.optimizer.zero_grad()
+                            results = self.model.forward(inputs)
+                            results["loss"].sum().backward()  # sum() before backward() in case of multi-gpu training
+                            self.optimizer.step()
+                    else:
+                        self.optimizer.zero_grad()
+                        results = self.model.forward(inputs)
+                        results["loss"].sum().backward()  # sum() before backward() in case of multi-gpu training
+                        self.optimizer.step()
                     epoch_train_loss_collector.append(results["loss"].sum().item())
 
                     # save training loss logs into the tensorboard file for every step if in need

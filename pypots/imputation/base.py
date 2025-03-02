@@ -15,6 +15,7 @@ import torch
 from torch.utils.data import DataLoader
 
 from ..base import BaseModel, BaseNNModel
+from ..nn.functional.cuda import autocast
 from ..nn.modules.loss import MSE
 from ..utils.logging import logger
 
@@ -297,15 +298,22 @@ class BaseNNImputer(BaseNNModel):
             training_step = 0
             for epoch in range(1, self.epochs + 1):
                 self.model.train()
+
                 epoch_train_loss_collector = []
                 for idx, data in enumerate(training_loader):
                     training_step += 1
                     inputs = self._assemble_input_for_training(data)
-                    self.optimizer.zero_grad()
-                    results = self.model.forward(inputs)
-                    # use sum() before backward() in case of multi-gpu training
-                    results["loss"].sum().backward()
-                    self.optimizer.step()
+                    if os.getenv("ENABLE_AMP", False):
+                        with autocast():
+                            self.optimizer.zero_grad()
+                            results = self.model.forward(inputs)
+                            results["loss"].sum().backward()  # sum() before backward() in case of multi-gpu training
+                            self.optimizer.step()
+                    else:
+                        self.optimizer.zero_grad()
+                        results = self.model.forward(inputs)
+                        results["loss"].sum().backward()  # sum() before backward() in case of multi-gpu training
+                        self.optimizer.step()
                     epoch_train_loss_collector.append(results["loss"].sum().item())
 
                     # save training loss logs into the tensorboard file for every step if in need
@@ -321,7 +329,11 @@ class BaseNNImputer(BaseNNModel):
                     with torch.no_grad():
                         for idx, data in enumerate(val_loader):
                             inputs = self._assemble_input_for_validating(data)
-                            results = self.model.forward(inputs)
+                            if os.getenv("ENABLE_AMP", False):
+                                with autocast():
+                                    results = self.model.forward(inputs)
+                            else:
+                                results = self.model.forward(inputs)
                             imputation_error = (
                                 self.val_metric_func(
                                     results["imputed_data"],

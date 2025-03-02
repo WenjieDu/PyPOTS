@@ -148,6 +148,11 @@ class BaseModel(ABC):
             assert (
                 torch.cuda.is_available() and torch.cuda.device_count() > 0
             ), "You are trying to use CUDA for model training, but CUDA is not available in your environment."
+        else:
+            if os.getenv("ENABLE_AMP", False):
+                logger.warning(
+                    "‼️ You are trying to use AMP, but CUDA is not available in your environment. AMP will be disabled."
+                )
 
     def _setup_path(self, saving_path) -> None:
         MODEL_NO_NEED_TO_SAVE = [
