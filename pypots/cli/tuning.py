@@ -222,7 +222,7 @@ class TuningCommand(BaseCommand):
         """Execute the given command."""
 
         # set with PyPOTS default random seed
-        random_seed = os.getenv("random_seed", False)
+        random_seed = os.getenv("RANDOM_SEED", False)
         if random_seed:
             set_random_seed(int(random_seed))
         else:
@@ -231,7 +231,7 @@ class TuningCommand(BaseCommand):
         # set the number of threads for torch, avoid using too many CPU cores
         torch.set_num_threads(self._torch_n_threads)
 
-        if os.getenv("enable_tuning", False):
+        if os.getenv("ENABLE_HPO", False):
             # fetch a new set of hyperparameters from NNI tuner
             tuner_params = nni.get_next_parameter()
             logger.info(f"The tunner assigns a new group of params: {tuner_params}")
