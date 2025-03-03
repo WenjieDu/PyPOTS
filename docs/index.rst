@@ -1,6 +1,4 @@
-.. PyPOTS documentation index page
-Created by Wenjie Du <wenjay.du@gmail.com>
-License: BSD-3-Clause
+.. PyPOTS documentation index page created by Wenjie Du <wenjay.du@gmail.com>
 
 Welcome to PyPOTS docs!
 ===============================
