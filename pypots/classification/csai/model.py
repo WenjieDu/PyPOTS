@@ -178,7 +178,7 @@ class CSAI(BaseNNClassifier):
         self.optimizer = optimizer
         self.optimizer.init_optimizer(self.model.parameters())
 
-    def _assemble_input_for_training(self, data: list, training=True) -> dict:
+    def _assemble_input_for_training(self, data: list) -> dict:
         # extract data
         sample = data["sample"]
         (indices, X, missing_mask, deltas, last_obs, back_X, back_missing_mask, back_deltas, back_last_obs, labels) = (
@@ -339,7 +339,7 @@ class CSAI(BaseNNClassifier):
         with torch.no_grad():
             for idx, data in enumerate(test_loader):
                 inputs = self._assemble_input_for_testing(data)
-                results = self.model.forward(inputs, training=False)
+                results = self.model.forward(inputs)
                 classification_results.append(results["classification_pred"])
 
         classification = torch.cat(classification_results).cpu().detach().numpy()

@@ -46,6 +46,15 @@ pypots.imputation.timellm
    :show-inheritance:
    :inherited-members:
 
+pypots.imputation.gpt4ts
+------------------------------------
+
+.. automodule:: pypots.imputation.gpt4ts
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+
 pypots.imputation.segrnn
 ------------------------------------
 

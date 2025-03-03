@@ -1,5 +1,5 @@
 """
-The package of the partially-observed time-series imputation model iTransformer.
+The implementation of GPT4TS for the partially-observed time-series imputation task.
 
 """
 
@@ -12,20 +12,18 @@ import numpy as np
 import torch
 from torch.utils.data import DataLoader
 
-from .core import _iTransformer
-from .data import DatasetForiTransformer
+from .core import _GPT4TS
+from .data import DatasetForGPT4TS
 from ..base import BaseNNImputer
 from ...data.checking import key_in_data_set
 from ...data.dataset import BaseDataset
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
-from ...utils.logging import logger
 
 
-class iTransformer(BaseNNImputer):
-    """The PyTorch implementation of the iTransformer model.
-    iTransformer is originally proposed by Liu et al. in :cite:`liu2024itransformer`.
-
+class GPT4TS(BaseNNImputer):
+    """The PyTorch implementation of the GPT4TS model.
+    GPT4TS is originally proposed by Zhou et al. in :cite:`zhou2023gpt4ts`.
 
     Parameters
     ----------
@@ -35,40 +33,29 @@ class iTransformer(BaseNNImputer):
     n_features :
         The number of features in the time-series data sample.
 
+    patch_size :
+        The size of the patch for the patching mechanism.
+
+    patch_stride :
+        The stride for the patching mechanism.
+
     n_layers :
-        The number of layers in the iTransformer model.
+        The number of hidden layers to use in GPT2.
 
-    d_model :
-        The dimension of the model's backbone.
-        It is the input dimension of the multi-head self-attention layers.
-
-    n_heads :
-        The number of heads in the multi-head self-attention mechanism.
-        ``d_model`` must be divisible by ``n_heads``, and the result should be equal to ``d_k``.
-
-    d_k :
-        The dimension of the `keys` (K) and the `queries` (Q) in the DMSA mechanism.
-        ``d_k`` should be the result of ``d_model`` divided by ``n_heads``. Although ``d_k`` can be directly calculated
-        with given ``d_model`` and ``n_heads``, we want it be explicitly given together with ``d_v`` by users to ensure
-        users be aware of them and to avoid any potential mistakes.
-
-    d_v :
-        The dimension of the `values` (V) in the DMSA mechanism.
+    train_gpt_mlp :
+        Whether to train the MLP in GPT2 during tuning.
 
     d_ffn :
-        The dimension of the layer in the Feed-Forward Networks (FFN).
+        The hidden size of the feed-forward network .
 
     dropout :
-        The dropout rate for all fully-connected layers in the model.
+        The dropout rate for the model.
 
-    attn_dropout :
-        The dropout rate for DMSA.
+    embed :
+        The embedding method for the model.
 
-    ORT_weight :
-        The weight for the ORT loss.
-
-    MIT_weight :
-        The weight for the MIT loss.
+    freq :
+        The frequency of the time-series data.
 
     batch_size :
         The batch size for training and evaluating the model.
@@ -80,14 +67,6 @@ class iTransformer(BaseNNImputer):
         The patience for the early-stopping mechanism. Given a positive integer, the training process will be
         stopped when the model does not perform better after that number of epochs.
         Leaving it default as None will disable the early-stopping.
-
-    train_loss_func:
-        The customized loss function designed by users for training the model.
-        If not given, will use the default loss as claimed in the original paper.
-
-    val_metric_func:
-        The customized metric function designed by users for validating the model.
-        If not given, will use the default MSE metric.
 
     optimizer :
         The optimizer for model training.
@@ -125,16 +104,14 @@ class iTransformer(BaseNNImputer):
         self,
         n_steps: int,
         n_features: int,
+        patch_size: int,
+        patch_stride: int,
         n_layers: int,
-        d_model: int,
-        n_heads: int,
-        d_k: int,
-        d_v: int,
+        train_gpt_mlp: bool,
         d_ffn: int,
-        dropout: float = 0,
-        attn_dropout: float = 0,
-        ORT_weight: int = 1,
-        MIT_weight: int = 1,
+        dropout: float,
+        embed: str = "fixed",
+        freq="h",
         batch_size: int = 32,
         epochs: int = 100,
         patience: Optional[int] = None,
@@ -143,7 +120,7 @@ class iTransformer(BaseNNImputer):
         optimizer: Optional[Optimizer] = Adam(),
         num_workers: int = 0,
         device: Optional[Union[str, torch.device, list]] = None,
-        saving_path: str = None,
+        saving_path: Optional[str] = None,
         model_saving_strategy: Optional[str] = "best",
         verbose: bool = True,
     ):
@@ -159,42 +136,22 @@ class iTransformer(BaseNNImputer):
             model_saving_strategy=model_saving_strategy,
             verbose=verbose,
         )
-        if d_model != n_heads * d_k:
-            logger.warning(
-                "‼️ d_model must = n_heads * d_k, it should be divisible by n_heads "
-                f"and the result should be equal to d_k, but got d_model={d_model}, n_heads={n_heads}, d_k={d_k}"
-            )
-            d_model = n_heads * d_k
-            logger.warning(f"⚠️ d_model is reset to {d_model} = n_heads ({n_heads}) * d_k ({d_k})")
 
         self.n_steps = n_steps
         self.n_features = n_features
-        # model hype-parameters
-        self.n_layers = n_layers
-        self.d_model = d_model
-        self.d_ffn = d_ffn
-        self.n_heads = n_heads
-        self.d_k = d_k
-        self.d_v = d_v
-        self.dropout = dropout
-        self.attn_dropout = attn_dropout
-        self.ORT_weight = ORT_weight
-        self.MIT_weight = MIT_weight
 
         # set up the model
-        self.model = _iTransformer(
-            self.n_steps,
-            self.n_features,
-            self.n_layers,
-            self.d_model,
-            self.n_heads,
-            self.d_k,
-            self.d_v,
-            self.d_ffn,
-            self.dropout,
-            self.attn_dropout,
-            self.ORT_weight,
-            self.MIT_weight,
+        self.model = _GPT4TS(
+            n_steps,
+            n_features,
+            n_layers,
+            patch_size,
+            patch_stride,
+            train_gpt_mlp,
+            d_ffn,
+            dropout,
+            embed,
+            freq,
         )
         self._send_model_to_given_device()
         self._print_model_size()
@@ -241,7 +198,7 @@ class iTransformer(BaseNNImputer):
         file_type: str = "hdf5",
     ) -> None:
         # Step 1: wrap the input data with classes Dataset and DataLoader
-        training_set = DatasetForiTransformer(train_set, return_X_ori=False, return_y=False, file_type=file_type)
+        training_set = DatasetForGPT4TS(train_set, return_X_ori=False, return_y=False, file_type=file_type)
         training_loader = DataLoader(
             training_set,
             batch_size=self.batch_size,
@@ -252,7 +209,7 @@ class iTransformer(BaseNNImputer):
         if val_set is not None:
             if not key_in_data_set("X_ori", val_set):
                 raise ValueError("val_set must contain 'X_ori' for model validation.")
-            val_set = DatasetForiTransformer(val_set, return_X_ori=True, return_y=False, file_type=file_type)
+            val_set = DatasetForGPT4TS(val_set, return_X_ori=True, return_y=False, file_type=file_type)
             val_loader = DataLoader(
                 val_set,
                 batch_size=self.batch_size,
@@ -273,6 +230,29 @@ class iTransformer(BaseNNImputer):
         test_set: Union[dict, str],
         file_type: str = "hdf5",
     ) -> dict:
+        """Make predictions for the input data with the trained model.
+
+        Parameters
+        ----------
+        test_set : dict or str
+            The dataset for model validating, should be a dictionary including keys as 'X',
+            or a path string locating a data file supported by PyPOTS (e.g. h5 file).
+            If it is a dict, X should be array-like of shape [n_samples, sequence length (n_steps), n_features],
+            which is time-series data for validating, can contain missing values, and y should be array-like of shape
+            [n_samples], which is classification labels of X.
+            If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
+            key-value pairs like a dict, and it has to include keys as 'X' and 'y'.
+
+        file_type :
+            The type of the given file if test_set is a path string.
+
+        Returns
+        -------
+        file_type :
+            The dictionary containing the clustering results and latent variables if necessary.
+
+        """
+        # Step 1: wrap the input data with classes Dataset and DataLoader
         self.model.eval()  # set the model as eval status to freeze it.
         test_set = BaseDataset(
             test_set,
@@ -289,13 +269,14 @@ class iTransformer(BaseNNImputer):
         )
         imputation_collector = []
 
+        # Step 2: process the data with the model
         with torch.no_grad():
             for idx, data in enumerate(test_loader):
                 inputs = self._assemble_input_for_testing(data)
                 results = self.model.forward(inputs)
-                imputed_data = results["imputed_data"]
-                imputation_collector.append(imputed_data)
+                imputation_collector.append(results["imputed_data"])
 
+        # Step 3: output collection and return
         imputation = torch.cat(imputation_collector).cpu().detach().numpy()
         result_dict = {
             "imputation": imputation,
@@ -304,19 +285,15 @@ class iTransformer(BaseNNImputer):
 
     def impute(
         self,
-        X: Union[dict, str],
+        test_set: Union[dict, str],
         file_type: str = "hdf5",
     ) -> np.ndarray:
         """Impute missing values in the given data with the trained model.
 
-        Warnings
-        --------
-        The method impute is deprecated. Please use `predict()` instead.
-
         Parameters
         ----------
-        X :
-            The data samples for testing, should be array-like of shape [n_samples, sequence length (time steps),
+        test_set :
+            The data samples for testing, should be array-like of shape [n_samples, sequence length (n_steps),
             n_features], or a path string locating a data file, e.g. h5 file.
 
         file_type :
@@ -324,9 +301,9 @@ class iTransformer(BaseNNImputer):
 
         Returns
         -------
-        array-like, shape [n_samples, sequence length (time steps), n_features],
+        array-like, shape [n_samples, sequence length (n_steps), n_features],
             Imputed data.
         """
-        logger.warning("🚨DeprecationWarning: The method impute is deprecated. Please use `predict` instead.")
-        results_dict = self.predict(X, file_type=file_type)
-        return results_dict["imputation"]
+
+        result_dict = self.predict(test_set, file_type=file_type)
+        return result_dict["imputation"]
