@@ -50,11 +50,7 @@ class _Koopa(nn.Module):
         # for the imputation task, the output dim is the same as input dim
         self.saits_loss_func = SaitsLoss(ORT_weight, MIT_weight)
 
-    def forward(
-        self,
-        inputs: dict,
-        training=False,
-    ) -> dict:
+    def forward(self, inputs: dict) -> dict:
         X, missing_mask = inputs["X"], inputs["missing_mask"]
 
         # WDU: the original Koopa paper isn't proposed for imputation task. Hence the model doesn't take

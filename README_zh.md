@@ -104,15 +104,16 @@ PyPOTS当前支持多变量POTS数据的插补, 预测, 分类, 聚类以及异�
 
 | **类型**        | **算法**                                                                                                                           | **插补** | **预测** | **分类** | **聚类** | **异常检测** | **年份 - 刊物**                                        |
 |:--------------|:---------------------------------------------------------------------------------------------------------------------------------|:------:|:------:|:------:|:------:|:--------:|:---------------------------------------------------|
-| LLM&PFM       | <a href="https://time-series.ai"><img src="https://time-series.ai/static/figs/robot.svg" width="26px"> Time-Series.AI</a>  [^36] |    ✅     |    ✅     |    ✅     |    ✅     |    ✅     | <a href="https://time-series.ai">Join waitlist</a> |
-| Neural Net    | TEFN🧑‍🔧[^39]                                                                                                                   |    ✅     |          |          |          |          | `2024 - arXiv`                                     |
+| LLM&TSFM      | <a href="https://time-series.ai"><img src="https://time-series.ai/static/figs/robot.svg" width="26px"> Time-Series.AI</a>  [^36] |    ✅     |    ✅     |    ✅     |    ✅     |    ✅     | <a href="https://time-series.ai">Join waitlist</a> |
 | LLM           | Time-LLM[^45]                                                                                                                    |    ✅     |          |          |          |          | `2024 - ICLR`                                      |
+| Neural Net    | TEFN🧑‍🔧[^39]                                                                                                                   |    ✅     |          |          |          |          | `2024 - arXiv`                                     |
 | Neural Net    | FITS🧑‍🔧[^41]                                                                                                                   |    ✅     |          |          |          |          | `2024 - ICLR`                                      |
 | Neural Net    | TimeMixer[^37]                                                                                                                   |    ✅     |          |          |          |          | `2024 - ICLR`                                      |
 | Neural Net    | iTransformer🧑‍🔧[^24]                                                                                                           |    ✅     |          |          |          |          | `2024 - ICLR`                                      |
 | Neural Net    | ModernTCN[^38]                                                                                                                   |    ✅     |          |          |          |          | `2024 - ICLR`                                      |
 | Neural Net    | ImputeFormer🧑‍🔧[^34]                                                                                                           |    ✅     |          |          |          |          | `2024 - KDD`                                       |
 | Neural Net    | SAITS[^1]                                                                                                                        |    ✅     |          |          |          |          | `2023 - ESWA`                                      |
+| LLM           | GPT4TS[^46]                                                                                                                      |    ✅     |          |          |          |          | `2023 - NeurIPS`                                   |
 | Neural Net    | FreTS🧑‍🔧[^23]                                                                                                                  |    ✅     |          |          |          |          | `2023 - NeurIPS`                                   |
 | Neural Net    | Koopa🧑‍🔧[^29]                                                                                                                  |    ✅     |          |          |          |          | `2023 - NeurIPS`                                   |
 | Neural Net    | Crossformer🧑‍🔧[^16]                                                                                                            |    ✅     |          |          |          |          | `2023 - ICLR`                                      |
@@ -152,10 +153,9 @@ PyPOTS当前支持多变量POTS数据的插补, 预测, 分类, 聚类以及异�
 | Naive         | Mean                                                                                                                             |    ✅     |          |          |          |          |                                                    |
 | Naive         | Median                                                                                                                           |    ✅     |          |          |          |          |                                                    |
 
-🙋 上表中`LLM (Large Language Model)`, `PFM (Pre-trained Foundation Model)`和`Neural Net`之间的区别LLM:
+🙋 上表中`LLM (Large Language Model)`, `TSFM (Time-Series Foundation Model)`之间的区别:
 `LLM`是指在大规模文本数据上进行预训练的模型, 可以针对特定任务进行微调.
-`PFM`是指在大规模时间序列数据上进行预训练的模型, 可以针对特定任务进行微调.
-`Neural Net`是指专门为特定时间序列任务设计的模型, 而不是在大规模数据上进行预训练的模型.
+`TSFM`是指在大规模时间序列数据上进行预训练的模型，其灵感来自CV和NLP领域中基座模型的最新成就.
 
 💯 现在贡献你的模型来增加你的研究影响力！PyPOTS的下载量正在迅速增长
 (**[目前PyPI上总共超过60万次且每日超1000的下载](https://www.pepy.tech/projects/pypots)**),
@@ -503,3 +503,6 @@ Time-Series.AI</a>
 [^45]: Jin, M., Wang, S., Ma, L., Chu, Z., Zhang, J. Y., Shi, X., ... & Wen, Q. (2024). 
 [Time-LLM: Time Series Forecasting by Reprogramming Large Language Models](https://openreview.net/forum?id=Unb5CVPtae).
 *ICLR 2024*.
+[^46]: Zhou, T., Niu, P., Sun, L., & Jin, R. (2023). 
+[One Fits All: Power General Time Series Analysis by Pretrained LM](https://openreview.net/forum?id=gMS6FVZvmF).
+*NeurIPS 2023*.
