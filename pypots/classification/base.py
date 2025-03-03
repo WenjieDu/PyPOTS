@@ -382,7 +382,7 @@ class BaseNNClassifier(BaseNNModel):
                     saving_name=f"{self.__class__.__name__}_epoch{epoch}_loss{mean_loss:.4f}",
                 )
 
-                if os.getenv("enable_tuning", False):
+                if os.getenv("ENABLE_HPO", False):
                     nni.report_intermediate_result(mean_loss)
                     if epoch == self.epochs - 1 or self.patience == 0:
                         nni.report_final_result(self.best_loss)

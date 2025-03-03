@@ -290,7 +290,7 @@ class CRLI(BaseNNClusterer):
                 else:
                     self.patience -= 1
 
-                if os.getenv("enable_tuning", False):
+                if os.getenv("ENABLE_HPO", False):
                     nni.report_intermediate_result(mean_loss)
                     if epoch == self.epochs - 1 or self.patience == 0:
                         nni.report_final_result(self.best_loss)
