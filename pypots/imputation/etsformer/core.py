@@ -22,8 +22,8 @@ class _ETSformer(nn.Module):
         self,
         n_steps,
         n_features,
-        n_e_layers,
-        n_d_layers,
+        n_encoder_layers,
+        n_decoder_layers,
         d_model,
         n_heads,
         d_ffn,
@@ -57,7 +57,7 @@ class _ETSformer(nn.Module):
                     dropout=dropout,
                     activation=activation,
                 )
-                for _ in range(n_e_layers)
+                for _ in range(n_encoder_layers)
             ]
         )
         # Decoder
@@ -70,7 +70,7 @@ class _ETSformer(nn.Module):
                     n_steps,
                     dropout=dropout,
                 )
-                for _ in range(n_d_layers)
+                for _ in range(n_decoder_layers)
             ],
         )
 

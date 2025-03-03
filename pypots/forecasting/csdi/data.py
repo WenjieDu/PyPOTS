@@ -14,7 +14,7 @@ from pygrinder import fill_and_get_mask_torch
 from ...data.dataset import BaseDataset
 
 
-class DatasetForForecastingCSDI(BaseDataset):
+class DatasetForCSDI(BaseDataset):
     """Dataset for CSDI forecasting model."""
 
     def __init__(
@@ -194,7 +194,7 @@ class DatasetForForecastingCSDI(BaseDataset):
         return sample
 
 
-class TestDatasetForForecastingCSDI(DatasetForForecastingCSDI):
+class TestDatasetForCSDI(DatasetForCSDI):
     """Test dataset for CSDI forecasting model."""
 
     def __init__(
