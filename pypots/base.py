@@ -189,13 +189,14 @@ class BaseModel(ABC):
             self.model = self.model.to(self.device)
 
     def _send_data_to_given_device(self, data) -> Iterable:
-        if isinstance(self.device, torch.device):  # single device
-            data = map(lambda x: x.to(self.device), data)
-        else:  # parallely training on multiple devices
-            # randomly choose one device to balance the workload
-            # device = np.random.choice(self.device)
+        if isinstance(self.device, (torch.device, list)):  # single device or parallely training on multiple devices
+            if isinstance(self.device, list):
+                data = map(lambda x: x.cuda(), data)
+            else:
+                data = map(lambda x: x.to(self.device), data)
 
-            data = map(lambda x: x.cuda(), data)
+        else:  # CPU
+            data = map(lambda x: x.to("cpu"), data)
 
         return data
 
@@ -403,6 +404,18 @@ class BaseModel(ABC):
             For sure, only the keys that relevant tasks are supported by the model will be returned.
         """
         raise NotImplementedError
+
+    def to(self, device: Union[str, torch.device]) -> None:
+        """Move the model to the given device.
+
+        Parameters
+        ----------
+        device :
+            The device to move the model to. It can be a string or a :class:`torch.device` object.
+
+        """
+        self.device = device
+        self._send_model_to_given_device()
 
 
 class BaseNNModel(BaseModel):

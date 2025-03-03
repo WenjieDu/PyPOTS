@@ -58,6 +58,7 @@ from ..imputation import (
     SegRNN,
     TRMF,
     TimeLLM,
+    GPT4TS,
 )
 from ..optim import Adam
 from ..utils.logging import logger
@@ -110,6 +111,7 @@ NN_MODELS = {
     "pypots.imputation.SegRNN": SegRNN,
     "pypots.imputation.TRMF": TRMF,
     "pypots.imputation.TimeLLM": TimeLLM,
+    "pypots.imputation.GPT4TS": GPT4TS,
     # classification models
     "pypots.classification.BRITS": BRITS_classification,
     "pypots.classification.CSAI": CSAI_classification,
