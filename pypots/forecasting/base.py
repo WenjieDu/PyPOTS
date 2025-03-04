@@ -353,8 +353,8 @@ class BaseNNForecaster(BaseNNModel):
                             forecasting_mse = (
                                 calc_mse(
                                     results["forecasting_data"],
-                                    inputs["X_ori"],
-                                    inputs["indicating_mask"],
+                                    inputs["X_pred"],
+                                    inputs["X_pred_missing_mask"],
                                 )
                                 .sum()
                                 .detach()
