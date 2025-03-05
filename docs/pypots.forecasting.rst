@@ -1,6 +1,24 @@
 pypots.forecasting package
 ==========================
 
+pypots.forecasting.transformer
+------------------------------
+
+.. automodule:: pypots.forecasting.transformer
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+
+pypots.forecasting.csdi
+------------------------------
+
+.. automodule:: pypots.forecasting.csdi
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+
 pypots.forecasting.bttf
 ------------------------------
 
