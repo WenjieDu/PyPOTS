@@ -15,6 +15,7 @@ from torch.utils.data import DataLoader
 
 from ..base import BaseModel, BaseNNModel
 from ..nn.functional import calc_mse, autocast
+from ..nn.modules.loss import MSE
 from ..utils.logging import logger
 
 try:
@@ -233,6 +234,14 @@ class BaseNNForecaster(BaseNNModel):
             verbose=verbose,
         )
 
+        # set default training loss function and validation metric function if not given
+        if train_loss_func is None:
+            self.train_loss_func = MSE()
+            self.train_loss_func_name = self.train_loss_func.__class__.__name__
+        if val_metric_func is None:
+            self.val_metric_func = MSE()
+            self.val_metric_func_name = self.val_metric_func.__class__.__name__
+
     @abstractmethod
     def _assemble_input_for_training(self, data: list) -> dict:
         """Assemble the given data into a dictionary for training input.
@@ -344,8 +353,8 @@ class BaseNNForecaster(BaseNNModel):
                             forecasting_mse = (
                                 calc_mse(
                                     results["forecasting_data"],
-                                    inputs["X_ori"],
-                                    inputs["indicating_mask"],
+                                    inputs["X_pred"],
+                                    inputs["X_pred_missing_mask"],
                                 )
                                 .sum()
                                 .detach()
