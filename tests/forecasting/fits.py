@@ -33,7 +33,7 @@ from tests.global_test_config import (
 
 
 class TestFITS(unittest.TestCase):
-    logger.info("Running tests for an forecasting model FITS...")
+    logger.info("Running tests for a forecasting model FITS...")
 
     # set the log and model saving path
     saving_path = os.path.join(RESULT_SAVING_DIR_FOR_FORECASTING, "FITS")

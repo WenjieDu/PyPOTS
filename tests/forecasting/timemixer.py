@@ -33,7 +33,7 @@ from tests.global_test_config import (
 
 
 class TestTimeMixer(unittest.TestCase):
-    logger.info("Running tests for an forecasting model TimeMixer...")
+    logger.info("Running tests for a forecasting model TimeMixer...")
 
     # set the log and model saving path
     saving_path = os.path.join(RESULT_SAVING_DIR_FOR_FORECASTING, "TimeMixer")
