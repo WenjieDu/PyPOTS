@@ -7,13 +7,14 @@ Expose all time-series forecasting models.
 
 from .bttf import BTTF
 from .csdi import CSDI
-from .transformer import Transformer
 from .fits import FITS
-
+from .tefn import TEFN
+from .transformer import Transformer
 
 __all__ = [
     "BTTF",
     "CSDI",
     "Transformer",
     "FITS",
+    "TEFN",
 ]
