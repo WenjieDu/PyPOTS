@@ -10,6 +10,15 @@ pypots.forecasting.transformer
    :show-inheritance:
    :inherited-members:
 
+pypots.forecasting.tefn
+------------------------------
+
+.. automodule:: pypots.forecasting.tefn
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+
 pypots.forecasting.fits
 ------------------------------
 
