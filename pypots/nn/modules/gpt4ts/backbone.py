@@ -141,7 +141,7 @@ class BackboneGPT4TS(nn.Module):
         # enc_out = rearrange(enc_out, 'b m n p -> b n (m p)')
 
         dec_out = self.gpt2(inputs_embeds=enc_out).last_hidden_state
-        dec_out = dec_out[:, :, : self.d_ff]
+        dec_out = dec_out[:, :, : self.d_ffn]
         # dec_out = dec_out.reshape(B, -1)
 
         # dec_out = self.ln(dec_out)
@@ -179,7 +179,7 @@ class BackboneGPT4TS(nn.Module):
 
         outputs = self.gpt2(inputs_embeds=enc_out).last_hidden_state
 
-        outputs = outputs[:, :, : self.d_ff]
+        outputs = outputs[:, :, : self.d_ffn]
         # outputs = self.ln_proj(outputs)
         dec_out = self.out_layer(outputs)
 

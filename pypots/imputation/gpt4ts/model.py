@@ -132,6 +132,7 @@ class GPT4TS(BaseNNImputer):
             val_metric_func=val_metric_func,
             num_workers=num_workers,
             device=device,
+            enable_amp=True,
             saving_path=saving_path,
             model_saving_strategy=model_saving_strategy,
             verbose=verbose,
@@ -139,19 +140,27 @@ class GPT4TS(BaseNNImputer):
 
         self.n_steps = n_steps
         self.n_features = n_features
+        self.n_layers = n_layers
+        self.patch_size = patch_size
+        self.patch_stride = patch_stride
+        self.train_gpt_mlp = train_gpt_mlp
+        self.d_ffn = d_ffn
+        self.dropout = dropout
+        self.embed = embed
+        self.freq = freq
 
         # set up the model
         self.model = _GPT4TS(
-            n_steps,
-            n_features,
-            n_layers,
-            patch_size,
-            patch_stride,
-            train_gpt_mlp,
-            d_ffn,
-            dropout,
-            embed,
-            freq,
+            self.n_steps,
+            self.n_features,
+            self.n_layers,
+            self.patch_size,
+            self.patch_stride,
+            self.train_gpt_mlp,
+            self.d_ffn,
+            self.dropout,
+            self.embed,
+            self.freq,
         )
         self._send_model_to_given_device()
         self._print_model_size()
