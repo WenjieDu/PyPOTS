@@ -173,9 +173,9 @@ class TimeMixer(BaseNNImputer):
 
         # set up the model
         self.model = _TimeMixer(
-            self.n_layers,
             self.n_steps,
             self.n_features,
+            self.n_layers,
             self.d_model,
             self.d_ffn,
             self.dropout,
