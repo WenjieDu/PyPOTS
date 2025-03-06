@@ -10,6 +10,15 @@ pypots.forecasting.transformer
    :show-inheritance:
    :inherited-members:
 
+pypots.forecasting.fits
+------------------------------
+
+.. automodule:: pypots.forecasting.fits
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+
 pypots.forecasting.csdi
 ------------------------------
 

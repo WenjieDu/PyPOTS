@@ -1,5 +1,5 @@
 """
-The core wrapper assembles the submodules of Transformer imputation model
+The core wrapper assembles the submodules of Transformer forecasting model
 and takes over the forward progress of the algorithm.
 
 """
@@ -11,7 +11,7 @@ import torch
 import torch.nn as nn
 
 from ...nn.functional.error import calc_mse
-from ...nn.modules.saits import SaitsLoss, SaitsEmbedding
+from ...nn.modules.saits import SaitsEmbedding
 from ...nn.modules.transformer import TransformerEncoder, TransformerDecoder
 
 
@@ -31,8 +31,6 @@ class _Transformer(nn.Module):
         d_ffn: int,
         dropout: float,
         attn_dropout: float,
-        ORT_weight: float = 1,
-        MIT_weight: float = 1,
     ):
         super().__init__()
 
@@ -77,9 +75,6 @@ class _Transformer(nn.Module):
             attn_dropout,
         )
         self.output_projection = nn.Linear(d_model, n_pred_features)
-
-        # apply SAITS loss function to Transformer on the imputation task
-        self.saits_loss_func = SaitsLoss(ORT_weight, MIT_weight)
 
     def forward(self, inputs: dict) -> dict:
         X, missing_mask = inputs["X"], inputs["missing_mask"]
