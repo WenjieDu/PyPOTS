@@ -1,5 +1,5 @@
 """
-The implementation of GPT4TS for the partially-observed time-series imputation task.
+The implementation of GPT4TS for the partially-observed time-series forecasting task.
 
 """
 
@@ -14,16 +14,14 @@ from torch.utils.data import DataLoader
 
 from .core import _GPT4TS
 from .data import DatasetForGPT4TS
-from ..base import BaseNNImputer
+from ..base import BaseNNForecaster
 from ...data.checking import key_in_data_set
-from ...data.dataset import BaseDataset
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
 
 
-class GPT4TS(BaseNNImputer):
-    """The PyTorch implementation of the GPT4TS model.
-    GPT4TS is originally proposed by Zhou et al. in :cite:`zhou2023gpt4ts`.
+class GPT4TS(BaseNNForecaster):
+    """The PyTorch implementation of the GPT4TS forecasting model :cite:`zhou2023gpt4ts`.
 
     Parameters
     ----------
@@ -32,6 +30,15 @@ class GPT4TS(BaseNNImputer):
 
     n_features :
         The number of features in the time-series data sample.
+
+    n_pred_steps :
+        The number of steps in the forecasting time series.
+
+    n_pred_features :
+        The number of features in the forecasting time series.
+
+    term :
+        The forecasting term, which can be either 'long' or 'short'.
 
     patch_size :
         The size of the patch for the patching mechanism.
@@ -56,7 +63,6 @@ class GPT4TS(BaseNNImputer):
 
     freq :
         The frequency of the time-series data.
-
     batch_size :
         The batch size for training and evaluating the model.
 
@@ -67,6 +73,14 @@ class GPT4TS(BaseNNImputer):
         The patience for the early-stopping mechanism. Given a positive integer, the training process will be
         stopped when the model does not perform better after that number of epochs.
         Leaving it default as None will disable the early-stopping.
+
+    train_loss_func:
+        The customized loss function designed by users for training the model.
+        If not given, will use the default loss as claimed in the original paper.
+
+    val_metric_func:
+        The customized metric function designed by users for validating the model.
+        If not given, will use the default MSE metric.
 
     optimizer :
         The optimizer for model training.
@@ -104,6 +118,9 @@ class GPT4TS(BaseNNImputer):
         self,
         n_steps: int,
         n_features: int,
+        n_pred_steps: int,
+        n_pred_features: int,
+        term: str,
         patch_size: int,
         patch_stride: int,
         n_layers: int,
@@ -140,6 +157,9 @@ class GPT4TS(BaseNNImputer):
 
         self.n_steps = n_steps
         self.n_features = n_features
+        self.n_pred_steps = n_pred_steps
+        self.n_pred_features = n_pred_features
+        self.term = term
         self.n_layers = n_layers
         self.patch_size = patch_size
         self.patch_stride = patch_stride
@@ -153,6 +173,9 @@ class GPT4TS(BaseNNImputer):
         self.model = _GPT4TS(
             self.n_steps,
             self.n_features,
+            self.n_pred_steps,
+            self.n_pred_features,
+            self.term,
             self.n_layers,
             self.patch_size,
             self.patch_stride,
@@ -162,8 +185,8 @@ class GPT4TS(BaseNNImputer):
             self.embed,
             self.freq,
         )
-        self._send_model_to_given_device()
         self._print_model_size()
+        self._send_model_to_given_device()
 
         # set up the optimizer
         self.optimizer = optimizer
@@ -174,30 +197,32 @@ class GPT4TS(BaseNNImputer):
             indices,
             X,
             missing_mask,
-            X_ori,
-            indicating_mask,
+            X_pred,
+            X_pred_missing_mask,
         ) = self._send_data_to_given_device(data)
 
         inputs = {
             "X": X,
             "missing_mask": missing_mask,
-            "X_ori": X_ori,
-            "indicating_mask": indicating_mask,
+            "X_pred": X_pred,
+            "X_pred_missing_mask": X_pred_missing_mask,
         }
-
         return inputs
 
     def _assemble_input_for_validating(self, data: list) -> dict:
         return self._assemble_input_for_training(data)
 
     def _assemble_input_for_testing(self, data: list) -> dict:
-        indices, X, missing_mask = self._send_data_to_given_device(data)
+        (
+            indices,
+            X,
+            missing_mask,
+        ) = self._send_data_to_given_device(data)
 
         inputs = {
             "X": X,
             "missing_mask": missing_mask,
         }
-
         return inputs
 
     def fit(
@@ -207,7 +232,10 @@ class GPT4TS(BaseNNImputer):
         file_type: str = "hdf5",
     ) -> None:
         # Step 1: wrap the input data with classes Dataset and DataLoader
-        training_set = DatasetForGPT4TS(train_set, return_X_ori=False, return_y=False, file_type=file_type)
+        training_set = DatasetForGPT4TS(
+            train_set,
+            file_type=file_type,
+        )
         training_loader = DataLoader(
             training_set,
             batch_size=self.batch_size,
@@ -216,9 +244,12 @@ class GPT4TS(BaseNNImputer):
         )
         val_loader = None
         if val_set is not None:
-            if not key_in_data_set("X_ori", val_set):
-                raise ValueError("val_set must contain 'X_ori' for model validation.")
-            val_set = DatasetForGPT4TS(val_set, return_X_ori=True, return_y=False, file_type=file_type)
+            if not key_in_data_set("X_pred", val_set):
+                raise ValueError("val_set must contain 'X_pred' for model validation.")
+            val_set = DatasetForGPT4TS(
+                val_set,
+                file_type=file_type,
+            )
             val_loader = DataLoader(
                 val_set,
                 batch_size=self.batch_size,
@@ -239,13 +270,13 @@ class GPT4TS(BaseNNImputer):
         test_set: Union[dict, str],
         file_type: str = "hdf5",
     ) -> dict:
-        """Make predictions for the input data with the trained model.
+        """
 
         Parameters
         ----------
         test_set : dict or str
-            The dataset for model validating, should be a dictionary including keys as 'X',
-            or a path string locating a data file supported by PyPOTS (e.g. h5 file).
+            The dataset for model validating, should be a dictionary including keys as 'X' and 'y',
+            or a path string locating a data file.
             If it is a dict, X should be array-like of shape [n_samples, sequence length (n_steps), n_features],
             which is time-series data for validating, can contain missing values, and y should be array-like of shape
             [n_samples], which is classification labels of X.
@@ -257,47 +288,49 @@ class GPT4TS(BaseNNImputer):
 
         Returns
         -------
-        file_type :
-            The dictionary containing the clustering results and latent variables if necessary.
+        result_dict: dict
+            Prediction results in a Python Dictionary for the given samples.
+            It should be a dictionary including a key named 'imputation'.
 
         """
+
         # Step 1: wrap the input data with classes Dataset and DataLoader
         self.model.eval()  # set the model as eval status to freeze it.
-        test_set = BaseDataset(
+        test_set = DatasetForGPT4TS(
             test_set,
-            return_X_ori=False,
             return_X_pred=False,
-            return_y=False,
             file_type=file_type,
         )
+
         test_loader = DataLoader(
             test_set,
             batch_size=self.batch_size,
             shuffle=False,
             num_workers=self.num_workers,
         )
-        imputation_collector = []
+        forecasting_collector = []
 
         # Step 2: process the data with the model
         with torch.no_grad():
             for idx, data in enumerate(test_loader):
                 inputs = self._assemble_input_for_testing(data)
-                results = self.model.forward(inputs)
-                imputation_collector.append(results["imputed_data"])
+                results = self.model(inputs)
+                forecasting_data = results["forecasting_data"]
+                forecasting_collector.append(forecasting_data)
 
         # Step 3: output collection and return
-        imputation = torch.cat(imputation_collector).cpu().detach().numpy()
+        forecasting_data = torch.cat(forecasting_collector).cpu().detach().numpy()
         result_dict = {
-            "imputation": imputation,
+            "forecasting": forecasting_data,  # [bz, n_pred_steps, n_features]
         }
         return result_dict
 
-    def impute(
+    def forecast(
         self,
         test_set: Union[dict, str],
         file_type: str = "hdf5",
     ) -> np.ndarray:
-        """Impute missing values in the given data with the trained model.
+        """Forecast the future of the input with the trained model.
 
         Parameters
         ----------
@@ -310,9 +343,9 @@ class GPT4TS(BaseNNImputer):
 
         Returns
         -------
-        array-like, shape [n_samples, sequence length (n_steps), n_features],
-            Imputed data.
+        array-like, shape [n_samples, n_pred_steps, n_features],
+            Forecasting results.
         """
 
         result_dict = self.predict(test_set, file_type=file_type)
-        return result_dict["imputation"]
+        return result_dict["forecasting"]
