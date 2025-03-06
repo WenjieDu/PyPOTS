@@ -22,7 +22,7 @@ from ...optim.base import Optimizer
 
 
 class FITS(BaseNNImputer):
-    """The PyTorch implementation of the FITS model.
+    """The PyTorch implementation of the FITS imputation model.
     FITS is originally proposed by Xu et al. in :cite:`xu2024fits`.
 
     Parameters
@@ -44,6 +44,9 @@ class FITS(BaseNNImputer):
 
     MIT_weight :
         The weight for the MIT loss, the same as SAITS.
+
+    apply_nonstationary_norm :
+        Whether to apply the non-stationary normalization to the input data.
 
     batch_size :
         The batch size for training and evaluating the model.
