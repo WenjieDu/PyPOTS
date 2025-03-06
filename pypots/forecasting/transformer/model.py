@@ -185,8 +185,6 @@ class Transformer(BaseNNForecaster):
             d_ffn,
             dropout,
             attn_dropout,
-            1,
-            1,
         )
         self._print_model_size()
         self._send_model_to_given_device()
