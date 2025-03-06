@@ -20,7 +20,7 @@ RANDOM_SEED = 2023
 # set the number of epochs for all model training
 EPOCHS = 2
 # set the number of prediction steps for forecasting models
-N_STEPS = 10
+N_STEPS = 12
 N_PRED_STEPS = 3
 N_FEATURES = 5
 # tensorboard and model files saving directory
