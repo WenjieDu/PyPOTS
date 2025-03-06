@@ -12,14 +12,21 @@ from .layers import EvidenceMachineKernel
 
 
 class BackboneTEFN(nn.Module):
-    def __init__(self, n_steps, n_features, n_fod):
+    def __init__(
+        self,
+        n_steps,
+        n_features,
+        n_pred_steps,
+        n_fod,
+    ):
         super().__init__()
 
         self.n_steps = n_steps
         self.n_features = n_features
+        self.n_pred_steps = n_pred_steps
         self.n_fod = n_fod
 
-        self.T_model = EvidenceMachineKernel(self.n_steps, self.n_fod)
+        self.T_model = EvidenceMachineKernel(self.n_steps + self.n_pred_steps, self.n_fod)
         self.C_model = EvidenceMachineKernel(self.n_features, self.n_fod)
 
     def forward(self, X) -> torch.Tensor:
