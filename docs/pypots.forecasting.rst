@@ -19,6 +19,15 @@ pypots.forecasting.timellm
    :show-inheritance:
    :inherited-members:
 
+pypots.forecasting.gpt4ts
+------------------------------
+
+.. automodule:: pypots.forecasting.gpt4ts
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+
 pypots.forecasting.tefn
 ------------------------------
 
