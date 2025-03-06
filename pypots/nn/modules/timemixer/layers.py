@@ -154,6 +154,8 @@ class PastDecomposableMixing(nn.Module):
         self.dropout = nn.Dropout(dropout)
         self.channel_independence = channel_independence
 
+        assert decomp_method in ["moving_avg", "dft_decomp"], 'decomp_method should be in ["moving_avg", "dft_decomp"]'
+
         if decomp_method == "moving_avg":
             self.decompsition = SeriesDecompositionBlock(moving_avg)
         elif decomp_method == "dft_decomp":
