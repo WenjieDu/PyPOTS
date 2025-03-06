@@ -1,5 +1,5 @@
 """
-The implementation of Transformer for the partially-observed time-series forecasting task.
+The implementation of FITS for the partially-observed time-series forecasting task.
 
 """
 
