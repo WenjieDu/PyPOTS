@@ -28,6 +28,15 @@ pypots.forecasting.fits
    :show-inheritance:
    :inherited-members:
 
+pypots.forecasting.timemixer
+------------------------------
+
+.. automodule:: pypots.forecasting.timemixer
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+
 pypots.forecasting.csdi
 ------------------------------
 
