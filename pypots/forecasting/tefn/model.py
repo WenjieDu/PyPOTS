@@ -12,11 +12,6 @@ import numpy as np
 import torch
 from torch.utils.data import DataLoader
 
-try:
-    import nni
-except ImportError:
-    pass
-
 from .core import _TEFN
 from .data import DatasetForTEFN
 from ..base import BaseNNForecaster
