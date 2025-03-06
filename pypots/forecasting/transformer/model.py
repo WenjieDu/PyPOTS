@@ -12,11 +12,6 @@ import numpy as np
 import torch
 from torch.utils.data import DataLoader
 
-try:
-    import nni
-except ImportError:
-    pass
-
 from .core import _Transformer
 from .data import DatasetForTransformer
 from ..base import BaseNNForecaster
@@ -185,8 +180,6 @@ class Transformer(BaseNNForecaster):
             d_ffn,
             dropout,
             attn_dropout,
-            1,
-            1,
         )
         self._print_model_size()
         self._send_model_to_given_device()

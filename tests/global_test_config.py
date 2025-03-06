@@ -20,7 +20,7 @@ RANDOM_SEED = 2023
 # set the number of epochs for all model training
 EPOCHS = 2
 # set the number of prediction steps for forecasting models
-N_PRED_STEPS = 1
+N_PRED_STEPS = 2
 # tensorboard and model files saving directory
 RESULT_SAVING_DIR = "testing_results"
 MODEL_SAVING_DIR = f"{RESULT_SAVING_DIR}/models"
