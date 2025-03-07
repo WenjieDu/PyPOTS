@@ -65,7 +65,8 @@ class _TimeMixer(nn.Module):
         self.output_projection = nn.Linear(n_features, n_pred_features)
 
     def forward(self, inputs: dict) -> dict:
-        X, missing_mask = inputs["X"], inputs["missing_mask"]
+        X = inputs["X"]
+        # missing_mask = inputs["missing_mask"]
 
         if self.training:
             X_pred, X_pred_missing_mask = inputs["X_pred"], inputs["X_pred_missing_mask"]
