@@ -9,6 +9,7 @@ from .bttf import BTTF
 from .csdi import CSDI
 from .fits import FITS
 from .tefn import TEFN
+from .timellm import TimeLLM
 from .timemixer import TimeMixer
 from .transformer import Transformer
 
@@ -19,4 +20,5 @@ __all__ = [
     "FITS",
     "TEFN",
     "TimeMixer",
+    "TimeLLM",
 ]
