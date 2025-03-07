@@ -269,7 +269,6 @@ class SAITS(BaseNNImputer):
         # Step 2: train the model and freeze it
         self._train_model(training_loader, val_loader)
         self.model.load_state_dict(self.best_model_dict)
-        self.model.eval()  # set the model as eval status to freeze it.
 
         # Step 3: save the model if necessary
         self._auto_save_model_if_necessary(confirm_saving=self.model_saving_strategy == "best")
