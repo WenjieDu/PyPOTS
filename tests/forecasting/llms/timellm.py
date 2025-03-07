@@ -33,7 +33,7 @@ from tests.global_test_config import (
 
 
 class TestTimeLLM(unittest.TestCase):
-    logger.info("Running tests for an forecasting model TimeLLM...")
+    logger.info("Running tests for a forecasting model TimeLLM...")
 
     # set the log and model saving path
     saving_path = os.path.join(RESULT_SAVING_DIR_FOR_FORECASTING, "TimeLLM")
