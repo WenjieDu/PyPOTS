@@ -301,7 +301,6 @@ class CSAI(BaseNNClassifier):
         # train the model
         self._train_model(train_loader, val_loader)
         self.model.load_state_dict(self.best_model_dict)
-        self.model.eval()
 
         self._auto_save_model_if_necessary(confirm_saving=self.model_saving_strategy == "best")
 

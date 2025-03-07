@@ -352,6 +352,7 @@ class BaseModel(ABC):
                     self.model.module.load_state_dict(loaded_model.state_dict())
             else:
                 self.model = loaded_model.model
+            self.model.eval()  # set the model as eval status to freeze it.
         except Exception as e:
             raise e
         logger.info(f"Model loaded successfully from {path}")
