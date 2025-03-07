@@ -70,10 +70,8 @@ class TimeMixer(BaseNNForecaster):
     downsampling_window :
         The window size for downsampling.
 
-    apply_nonstationary_norm :
-        Whether to apply non-stationary normalization to the input data for TimeMixer.
-        Please refer to :cite:`liu2022nonstationary` for details about non-stationary normalization,
-        which is not the idea of the original TimeMixer paper. Hence, we make it optional and default not to use here.
+    use_norm :
+        Whether to apply RevIN to the input data for TimeMixer.
 
     batch_size :
         The batch size for training and evaluating the model.
@@ -143,7 +141,7 @@ class TimeMixer(BaseNNForecaster):
         moving_avg: int = 5,
         downsampling_layers: int = 3,
         downsampling_window: int = 2,
-        apply_nonstationary_norm: bool = False,
+        use_norm: bool = False,
         batch_size: int = 32,
         epochs: int = 100,
         patience: Optional[int] = None,
@@ -184,7 +182,7 @@ class TimeMixer(BaseNNForecaster):
         self.moving_avg = moving_avg
         self.downsampling_layers = downsampling_layers
         self.downsampling_window = downsampling_window
-        self.apply_nonstationary_norm = apply_nonstationary_norm
+        self.use_norm = use_norm
 
         # set up the model
         self.model = _TimeMixer(
@@ -203,7 +201,7 @@ class TimeMixer(BaseNNForecaster):
             self.moving_avg,
             self.downsampling_layers,
             self.downsampling_window,
-            self.apply_nonstationary_norm,
+            self.use_norm,
         )
         self._print_model_size()
         self._send_model_to_given_device()

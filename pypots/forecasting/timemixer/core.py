@@ -10,7 +10,6 @@ and takes over the forward progress of the algorithm.
 import torch
 import torch.nn as nn
 
-from ...nn.functional import nonstationary_norm, nonstationary_denorm
 from ...nn.functional.error import calc_mse
 from ...nn.modules.timemixer import BackboneTimeMixer
 
@@ -33,13 +32,12 @@ class _TimeMixer(nn.Module):
         moving_avg: int,
         downsampling_layers: int,
         downsampling_window: int,
-        apply_nonstationary_norm: bool = False,
+        use_norm: bool = False,
     ):
         super().__init__()
 
         self.n_pred_steps = n_pred_steps
         self.n_pred_features = n_pred_features
-        self.apply_nonstationary_norm = apply_nonstationary_norm
 
         assert term in ["long", "short"], "forecasting term should be either 'long' or 'short'"
         self.model = BackboneTimeMixer(
@@ -60,6 +58,7 @@ class _TimeMixer(nn.Module):
             downsampling_window=downsampling_window,
             downsampling_method="avg",
             use_future_temporal_feature=False,
+            use_norm=use_norm,
         )
 
         # for the imputation task, the output dim is the same as input dim
@@ -77,16 +76,12 @@ class _TimeMixer(nn.Module):
                 torch.ones(batch_size, self.n_pred_steps, self.n_pred_features),
             )
 
-        if self.apply_nonstationary_norm:
-            # Normalization from Non-stationary Transformer
-            X, means, stdev = nonstationary_norm(X, missing_mask)
-
         # TimesMixer processing
-        enc_out = self.model.forecast(X, missing_mask)
-
-        if self.apply_nonstationary_norm:
-            # De-Normalization from Non-stationary Transformer
-            enc_out = nonstationary_denorm(enc_out, means, stdev)
+        # WDU: missing_mask should not be passed into the model forward processing because the official implementation
+        # does not accept POTS on the forecasting task. And if pass in, it will result in
+        # x and x_mark shape not consistent bug
+        # enc_out = self.model.forecast(X, missing_mask)
+        enc_out = self.model.forecast(X, None)
 
         # project back the original data space
         forecasting_result = self.output_projection(enc_out)
