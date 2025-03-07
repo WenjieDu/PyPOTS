@@ -17,6 +17,7 @@ from .data import DatasetForTCN
 from ..base import BaseNNImputer
 from ...data.checking import key_in_data_set
 from ...data.dataset import BaseDataset
+from ...nn.modules.loss import BaseCriterion
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
 
@@ -107,8 +108,8 @@ class TCN(BaseNNImputer):
         batch_size: int = 32,
         epochs: int = 100,
         patience: Optional[int] = None,
-        train_loss_func: Optional[dict] = None,
-        val_metric_func: Optional[dict] = None,
+        training_loss: Optional[BaseCriterion] = None,
+        validation_metric: Optional[BaseCriterion] = None,
         optimizer: Optional[Optimizer] = Adam(),
         num_workers: int = 0,
         device: Optional[Union[str, torch.device, list]] = None,
@@ -120,8 +121,8 @@ class TCN(BaseNNImputer):
             batch_size=batch_size,
             epochs=epochs,
             patience=patience,
-            train_loss_func=train_loss_func,
-            val_metric_func=val_metric_func,
+            training_loss=training_loss,
+            validation_metric=validation_metric,
             num_workers=num_workers,
             device=device,
             saving_path=saving_path,

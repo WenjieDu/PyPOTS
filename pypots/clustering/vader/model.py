@@ -116,8 +116,8 @@ class VaDER(BaseNNClusterer):
             batch_size=batch_size,
             epochs=epochs,
             patience=patience,
-            train_loss_func=None,
-            val_metric_func=None,
+            training_loss=None,
+            validation_metric=None,
             num_workers=num_workers,
             device=device,
             saving_path=saving_path,
@@ -285,14 +285,12 @@ class VaDER(BaseNNClusterer):
 
                     logger.info(
                         f"Epoch {epoch:03d} - "
-                        f"training loss ({self.train_loss_func_name}): {mean_train_loss:.4f}, "
-                        f"validation {self.val_metric_func_name}: {mean_val_loss:.4f}"
+                        f"training loss ({self.training_loss_name}): {mean_train_loss:.4f}, "
+                        f"validation {self.validation_metric_name}: {mean_val_loss:.4f}"
                     )
                     mean_loss = mean_val_loss
                 else:
-                    logger.info(
-                        f"Epoch {epoch:03d} - training loss ({self.train_loss_func_name}): {mean_train_loss:.4f}"
-                    )
+                    logger.info(f"Epoch {epoch:03d} - training loss ({self.training_loss_name}): {mean_train_loss:.4f}")
                     mean_loss = mean_train_loss
 
                 if np.isnan(mean_loss):
