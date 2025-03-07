@@ -9,16 +9,19 @@ import torch.nn as nn
 
 from ...nn.functional import calc_mse
 from ...nn.functional import nonstationary_norm, nonstationary_denorm
+from ...nn.modules.saits import SaitsLoss, SaitsEmbedding
 from ...nn.modules.tefn import BackboneTEFN
 
 
 class _TEFN(nn.Module):
     def __init__(
         self,
-        n_steps,
-        n_features,
-        n_fod,
-        apply_nonstationary_norm,
+        n_steps: int,
+        n_features: int,
+        n_fod: int,
+        apply_nonstationary_norm: bool = False,
+        ORT_weight: float = 1,
+        MIT_weight: float = 1,
     ):
         super().__init__()
 
@@ -26,11 +29,20 @@ class _TEFN(nn.Module):
         self.n_fod = n_fod
         self.apply_nonstationary_norm = apply_nonstationary_norm
 
+        self.saits_embedding = SaitsEmbedding(
+            n_features * 2,
+            n_features,
+            with_pos=False,
+        )
         self.model = BackboneTEFN(
             n_steps,
             n_features,
+            0,
             n_fod,
         )
+
+        # apply SAITS loss function to Transformer on the imputation task
+        self.saits_loss_func = SaitsLoss(ORT_weight, MIT_weight)
 
     def forward(self, inputs: dict) -> dict:
         X, missing_mask = inputs["X"], inputs["missing_mask"]
@@ -39,8 +51,15 @@ class _TEFN(nn.Module):
             # Normalization from Non-stationary Transformer
             X, means, stdev = nonstationary_norm(X, missing_mask)
 
+        # WDU: the original FITS paper isn't proposed for imputation task. Hence the model doesn't take
+        # the missing mask into account, which means, in the process, the model doesn't know which part of
+        # the input data is missing, and this may hurt the model's imputation performance. Therefore, I apply the
+        # SAITS embedding method to project the concatenation of features and masks into a hidden space, as well as
+        # the output layers to project back from the hidden space to the original space.
+        enc_out = self.saits_embedding(X, missing_mask)
+
         # TEFN processing
-        out = self.model(X)
+        out = self.model(enc_out)
 
         if self.apply_nonstationary_norm:
             # De-Normalization from Non-stationary Transformer
