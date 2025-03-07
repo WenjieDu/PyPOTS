@@ -7,8 +7,8 @@
 
 
 import torch
+from torch.nn.modules.loss import _Loss
 
-from .metric import BaseMetric
 from ..functional import (
     calc_mae,
     calc_mse,
@@ -19,17 +19,15 @@ from ..functional import (
 )
 
 
-class BaseLoss(BaseMetric):
-    def __init__(
-        self,
-    ):
-        super().__init__()
+class BaseCriterion(_Loss):
+    def __init__(self, size_average=None, reduce=None, reduction: str = "mean"):
+        super().__init__(size_average, reduce, reduction)
 
     def forward(self, prediction, target):
         raise NotImplementedError
 
 
-class MSE(BaseLoss):
+class MSE(BaseCriterion):
     def __init__(self):
         super().__init__()
 
@@ -38,7 +36,7 @@ class MSE(BaseLoss):
         return value
 
 
-class MAE(BaseLoss):
+class MAE(BaseCriterion):
     def __init__(self):
         super().__init__()
 
@@ -47,7 +45,7 @@ class MAE(BaseLoss):
         return value
 
 
-class RMSE(BaseLoss):
+class RMSE(BaseCriterion):
     def __init__(self):
         super().__init__()
 
@@ -56,7 +54,7 @@ class RMSE(BaseLoss):
         return value
 
 
-class MRE(BaseLoss):
+class MRE(BaseCriterion):
     def __init__(self):
         super().__init__()
 
@@ -65,7 +63,7 @@ class MRE(BaseLoss):
         return value
 
 
-class QuantileCRPS(BaseLoss):
+class QuantileCRPS(BaseCriterion):
     def __init__(self):
         super().__init__()
 
@@ -74,7 +72,7 @@ class QuantileCRPS(BaseLoss):
         return value
 
 
-class QuantileCRPS_Sum(BaseLoss):
+class QuantileCRPS_Sum(BaseCriterion):
     def __init__(self):
         super().__init__()
 
@@ -83,7 +81,7 @@ class QuantileCRPS_Sum(BaseLoss):
         return value
 
 
-class CrossEntropy(BaseLoss):
+class CrossEntropy(BaseCriterion):
     def __init__(self):
         super().__init__()
 
