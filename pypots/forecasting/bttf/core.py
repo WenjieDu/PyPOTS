@@ -200,7 +200,7 @@ def BTTF_forecast(
         "start_time should be larger than -1, "
         "namely the number of the input tensor's time steps should be larger than pred_step."
     )
-    assert start_time >= np.max(time_lags), "start_time should be >= max(time_lags)"
+    assert start_time >= np.max(time_lags), f"start_time {start_time} should be >= max(time_lags) {np.max(time_lags)}"
     max_count = int(np.ceil(pred_step / multi_step))
     tensor_hat = np.zeros((dim1, dim2, max_count * multi_step))
 

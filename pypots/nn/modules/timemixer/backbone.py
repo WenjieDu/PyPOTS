@@ -18,23 +18,23 @@ from ..transformer.embedding import DataEmbedding
 class BackboneTimeMixer(nn.Module):
     def __init__(
         self,
-        task_name,
-        n_steps,
-        n_features,
-        n_pred_steps,
-        n_pred_features,
-        n_layers,
-        d_model,
-        d_ffn,
-        dropout,
-        channel_independence,
-        decomp_method,
-        top_k,
-        moving_avg,
-        downsampling_layers,
-        downsampling_window,
-        downsampling_method,
-        use_future_temporal_feature,
+        task_name: str,
+        n_steps: int,
+        n_features: int,
+        n_pred_steps: int,
+        n_pred_features: int,
+        n_layers: int,
+        d_model: int,
+        d_ffn: int,
+        dropout: float,
+        top_k: int,
+        channel_independence: bool,
+        decomp_method: str,
+        moving_avg: int,
+        downsampling_layers: int,
+        downsampling_window: int,
+        downsampling_method: str,
+        use_future_temporal_feature: bool,
         embed="fixed",
         freq="h",
         n_classes=None,
@@ -51,6 +51,8 @@ class BackboneTimeMixer(nn.Module):
         self.downsampling_layers = downsampling_layers
         self.downsampling_method = downsampling_method
         self.use_future_temporal_feature = use_future_temporal_feature
+
+        assert downsampling_method in ["max", "avg", "conv"], "downsampling_method must be in ['max', 'avg', 'conv']"
 
         self.pdm_blocks = nn.ModuleList(
             [
@@ -193,7 +195,7 @@ class BackboneTimeMixer(nn.Module):
 
         return x_enc, x_mark_enc
 
-    def forecast(self, x_enc, x_mark_enc, x_dec, x_mark_dec):
+    def forecast(self, x_enc, x_mark_enc, x_dec=None, x_mark_dec=None):
         if self.use_future_temporal_feature:
             if self.channel_independence == 1:
                 B, T, N = x_enc.size()
@@ -209,7 +211,7 @@ class BackboneTimeMixer(nn.Module):
         if x_mark_enc is not None:
             for i, x, x_mark in zip(range(len(x_enc)), x_enc, x_mark_enc):
                 B, T, N = x.size()
-                x = self.normalize_layers[i](x, "norm")
+                x = self.normalize_layers[i](x, x_mark, mode="norm")
                 if self.channel_independence == 1:
                     x = x.permute(0, 2, 1).contiguous().reshape(B * N, T, 1)
                     x_mark = x_mark.repeat(N, 1, 1)
@@ -221,7 +223,7 @@ class BackboneTimeMixer(nn.Module):
                 x_enc,
             ):
                 B, T, N = x.size()
-                x = self.normalize_layers[i](x, "norm")
+                x = self.normalize_layers[i](x, mode="norm")
                 if self.channel_independence == 1:
                     x = x.permute(0, 2, 1).contiguous().reshape(B * N, T, 1)
                 x_list.append(x)
@@ -239,14 +241,14 @@ class BackboneTimeMixer(nn.Module):
                 enc_out_list.append(enc_out)
 
         # Past Decomposable Mixing as encoder for past
-        for i in range(self.layer):
+        for i in range(self.n_layers):
             enc_out_list = self.pdm_blocks[i](enc_out_list)
 
         # Future Multipredictor Mixing as decoder for future
         dec_out_list = self.future_multi_mixing(B, enc_out_list, x_list)
 
         dec_out = torch.stack(dec_out_list, dim=-1).sum(-1)
-        dec_out = self.normalize_layers[0](dec_out, "denorm")
+        dec_out = self.normalize_layers[0](dec_out, mode="denorm")
         return dec_out
 
     def future_multi_mixing(self, B, enc_out_list, x_list):
@@ -282,7 +284,7 @@ class BackboneTimeMixer(nn.Module):
             enc_out_list.append(enc_out)
 
         # MultiScale-CrissCrossAttention  as encoder for past
-        for i in range(self.layer):
+        for i in range(self.n_layer):
             enc_out_list = self.pdm_blocks[i](enc_out_list)
 
         enc_out = enc_out_list[0]
@@ -320,7 +322,7 @@ class BackboneTimeMixer(nn.Module):
             enc_out_list.append(enc_out)
 
         # MultiScale-CrissCrossAttention  as encoder for past
-        for i in range(self.layer):
+        for i in range(self.n_layers):
             enc_out_list = self.pdm_blocks[i](enc_out_list)
 
         dec_out = self.projection_layer(enc_out_list[0])
@@ -345,10 +347,7 @@ class BackboneTimeMixer(nn.Module):
                 x_mark = x_mark.repeat(N, 1, 1)
                 x_mark_list.append(x_mark)
         else:
-            for i, x in zip(
-                range(len(x_enc)),
-                x_enc,
-            ):
+            for i, x in zip(range(len(x_enc)), x_enc):
                 B, T, N = x.size()
                 if self.channel_independence == 1:
                     x = x.permute(0, 2, 1).contiguous().reshape(B * N, T, 1)
