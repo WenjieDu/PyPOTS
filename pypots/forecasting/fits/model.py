@@ -16,7 +16,7 @@ from .core import _FITS
 from .data import DatasetForFITS
 from ..base import BaseNNForecaster
 from ...data.checking import key_in_data_set
-from ...nn.modules.loss import BaseCriterion
+from ...nn.modules.loss import Criterion, MSE
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
 
@@ -110,9 +110,9 @@ class FITS(BaseNNForecaster):
         batch_size: int = 32,
         epochs: int = 100,
         patience: Optional[int] = None,
-        training_loss: Optional[BaseCriterion] = None,
-        validation_metric: Optional[BaseCriterion] = None,
-        optimizer: Optional[Optimizer] = Adam(),
+        training_loss: Criterion = MSE(),
+        validation_metric: Criterion = MSE(),
+        optimizer: Optimizer = Adam(),
         num_workers: int = 0,
         device: Optional[Union[str, torch.device, list]] = None,
         saving_path: Optional[str] = None,
@@ -149,6 +149,7 @@ class FITS(BaseNNForecaster):
             self.cut_freq,
             self.individual,
             self.apply_nonstationary_norm,
+            self.training_loss,
         )
         self._print_model_size()
         self._send_model_to_given_device()

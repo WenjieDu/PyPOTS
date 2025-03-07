@@ -17,7 +17,7 @@ from .data import DatasetForTEFN
 from ..base import BaseNNImputer
 from ...data.checking import key_in_data_set
 from ...data.dataset import BaseDataset
-from ...nn.modules.loss import BaseCriterion
+from ...nn.modules.loss import Criterion, MAE, MSE
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
 
@@ -40,6 +40,12 @@ class TEFN(BaseNNImputer):
     apply_nonstationary_norm :
         Whether to apply non-stationary normalization to the input data for TimesNet.
         Please refer to :cite:`liu2022nonstationary` for details about non-stationary normalization.
+
+    ORT_weight :
+        The weight for the ORT loss, the same as SAITS.
+
+    MIT_weight :
+        The weight for the MIT loss, the same as SAITS.
 
     batch_size :
         The batch size for training and evaluating the model.
@@ -98,12 +104,14 @@ class TEFN(BaseNNImputer):
         n_features: int,
         n_fod: int = 2,
         apply_nonstationary_norm: bool = True,
+        ORT_weight: float = 1,
+        MIT_weight: float = 1,
         batch_size: int = 32,
         epochs: int = 100,
         patience: Optional[int] = None,
-        training_loss: Optional[BaseCriterion] = None,
-        validation_metric: Optional[BaseCriterion] = None,
-        optimizer: Optional[Optimizer] = Adam(),
+        training_loss: Criterion = MAE(),
+        validation_metric: Criterion = MSE(),
+        optimizer: Optimizer = Adam(),
         num_workers: int = 0,
         device: Optional[Union[str, torch.device, list]] = None,
         saving_path: Optional[str] = None,
@@ -126,11 +134,21 @@ class TEFN(BaseNNImputer):
         self.n_steps = n_steps
         self.n_features = n_features
         # model hype-parameters
-        self.apply_nonstationary_norm = apply_nonstationary_norm
         self.n_fod = n_fod
+        self.ORT_weight = ORT_weight
+        self.MIT_weight = MIT_weight
+        self.apply_nonstationary_norm = apply_nonstationary_norm
 
         # set up the model
-        self.model = _TEFN(n_steps, n_features, n_fod, self.apply_nonstationary_norm)
+        self.model = _TEFN(
+            self.n_steps,
+            self.n_features,
+            self.n_fod,
+            self.apply_nonstationary_norm,
+            self.ORT_weight,
+            self.MIT_weight,
+            self.training_loss,
+        )
         self._send_model_to_given_device()
         self._print_model_size()
 

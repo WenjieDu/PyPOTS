@@ -9,7 +9,7 @@ and takes over the forward progress of the algorithm.
 import torch.nn as nn
 
 from ...nn.functional import nonstationary_norm, nonstationary_denorm
-from ...nn.functional import calc_mse
+from ...nn.modules.loss import Criterion, MAE
 from ...nn.modules.moderntcn import BackboneModernTCN
 from ...nn.modules.patchtst.layers import FlattenHead
 
@@ -33,10 +33,12 @@ class _ModernTCN(nn.Module):
         use_multi_scale: bool = True,
         individual: bool = False,
         apply_nonstationary_norm: bool = False,
+        training_loss: Criterion = MAE(),
     ):
         super().__init__()
 
         self.apply_nonstationary_norm = apply_nonstationary_norm
+        self.training_loss = training_loss
 
         self.backbone = BackboneModernTCN(
             n_steps,
@@ -89,7 +91,7 @@ class _ModernTCN(nn.Module):
 
         # if in training mode, return results with losses
         if self.training:
-            loss = calc_mse(reconstruction, inputs["X_ori"], inputs["indicating_mask"])
+            loss = self.training_loss(reconstruction, inputs["X_ori"], inputs["indicating_mask"])
             results["loss"] = loss
 
         return results

@@ -16,8 +16,8 @@ from torch.utils.data import DataLoader
 
 from ..base import BaseModel, BaseNNModel
 from ..nn.functional import autocast
-from ..nn.modules.loss import BaseCriterion, CrossEntropy
-from ..nn.modules.metric import Accuracy
+from ..nn.modules.loss import Criterion, CrossEntropy
+from ..nn.modules.metric import PR_AUC
 from ..utils.logging import logger
 
 try:
@@ -219,8 +219,8 @@ class BaseNNClassifier(BaseNNModel):
         batch_size: int,
         epochs: int,
         patience: Optional[int] = None,
-        training_loss: Optional[BaseCriterion] = None,
-        validation_metric: Optional[BaseCriterion] = None,
+        training_loss: Optional[Criterion] = CrossEntropy(),
+        validation_metric: Optional[Criterion] = PR_AUC(),
         num_workers: int = 0,
         device: Optional[Union[str, torch.device, list]] = None,
         enable_amp: bool = False,
@@ -243,13 +243,9 @@ class BaseNNClassifier(BaseNNModel):
         )
         self.n_classes = n_classes
 
-        # set default training loss function and validation metric function if not given
-        if training_loss is None:
-            self.training_loss = CrossEntropy()
-            self.training_loss_name = self.training_loss.__class__.__name__
-        if validation_metric is None:
-            self.validation_metric = Accuracy()
-            self.validation_metric_name = self.validation_metric.__class__.__name__
+        # fetch the names of training loss and validation metric
+        self.training_loss_name = self.training_loss.__class__.__name__
+        self.validation_metric_name = self.validation_metric.__class__.__name__
 
     @abstractmethod
     def _assemble_input_for_training(self, data: list) -> dict:
@@ -369,7 +365,7 @@ class BaseNNClassifier(BaseNNModel):
 
                     # TODO: refactor the following code to a function
                     epoch_val_pred_collector = np.argmax(epoch_val_pred_collector, axis=1)
-                    mean_val_loss = self.validation_metric(epoch_val_pred_collector, epoch_val_label_collector.numpy())
+                    mean_val_loss = self.validation_metric(epoch_val_pred_collector, epoch_val_label_collector)
 
                     # save validation loss logs into the tensorboard file for every epoch if in need
                     if self.summary_writer is not None:

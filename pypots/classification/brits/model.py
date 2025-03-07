@@ -15,7 +15,8 @@ from torch.utils.data import DataLoader
 from .core import _BRITS
 from .data import DatasetForBRITS
 from ..base import BaseNNClassifier
-from ...nn.modules.loss import BaseCriterion
+from ...nn.modules.loss import Criterion, CrossEntropy
+from ...nn.modules.metric import PR_AUC
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
 
@@ -105,9 +106,9 @@ class BRITS(BaseNNClassifier):
         batch_size: int = 32,
         epochs: int = 100,
         patience: Optional[int] = None,
-        training_loss: Optional[BaseCriterion] = None,
-        validation_metric: Optional[BaseCriterion] = None,
-        optimizer: Optional[Optimizer] = Adam(),
+        training_loss: Criterion = CrossEntropy(),
+        validation_metric: Criterion = PR_AUC(),
+        optimizer: Optimizer = Adam(),
         num_workers: int = 0,
         device: Optional[Union[str, torch.device, list]] = None,
         saving_path: str = None,

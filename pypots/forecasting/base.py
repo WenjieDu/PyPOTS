@@ -14,8 +14,8 @@ import torch
 from torch.utils.data import DataLoader
 
 from ..base import BaseModel, BaseNNModel
-from ..nn.functional import calc_mse, autocast
-from ..nn.modules.loss import BaseCriterion, MSE
+from ..nn.functional import autocast
+from ..nn.modules.loss import Criterion, MSE
 from ..utils.logging import logger
 
 try:
@@ -211,8 +211,8 @@ class BaseNNForecaster(BaseNNModel):
         batch_size: int,
         epochs: int,
         patience: Optional[int] = None,
-        training_loss: Optional[BaseCriterion] = None,
-        validation_metric: Optional[BaseCriterion] = None,
+        training_loss: Optional[Criterion] = MSE(),
+        validation_metric: Optional[Criterion] = MSE(),
         num_workers: int = 0,
         device: Optional[Union[str, torch.device, list]] = None,
         enable_amp: bool = False,
@@ -234,13 +234,9 @@ class BaseNNForecaster(BaseNNModel):
             verbose=verbose,
         )
 
-        # set default training loss function and validation metric function if not given
-        if training_loss is None:
-            self.training_loss = MSE()
-            self.training_loss_name = self.training_loss.__class__.__name__
-        if validation_metric is None:
-            self.validation_metric = MSE()
-            self.validation_metric_name = self.validation_metric.__class__.__name__
+        # fetch the names of training loss and validation metric
+        self.training_loss_name = self.training_loss.__class__.__name__
+        self.validation_metric_name = self.validation_metric.__class__.__name__
 
     @abstractmethod
     def _assemble_input_for_training(self, data: list) -> dict:
@@ -338,7 +334,7 @@ class BaseNNForecaster(BaseNNModel):
 
                 if val_loader is not None:
                     self.model.eval()
-                    forecasting_loss_collector = []
+                    val_loss_collector = []
                     with torch.no_grad():
                         for idx, data in enumerate(val_loader):
                             inputs = self._assemble_input_for_validating(data)
@@ -350,8 +346,8 @@ class BaseNNForecaster(BaseNNModel):
                             else:
                                 results = self.model.forward(inputs)
 
-                            forecasting_mse = (
-                                calc_mse(
+                            val_loss = (
+                                self.validation_metric(
                                     results["forecasting_data"],
                                     inputs["X_pred"],
                                     inputs["X_pred_missing_mask"],
@@ -360,9 +356,9 @@ class BaseNNForecaster(BaseNNModel):
                                 .detach()
                                 .item()
                             )
-                            forecasting_loss_collector.append(forecasting_mse)
+                            val_loss_collector.append(val_loss)
 
-                    mean_val_loss = np.mean(forecasting_loss_collector)
+                    mean_val_loss = np.mean(val_loss_collector)
 
                     # save validation loss logs into the tensorboard file for every epoch if in need
                     if self.summary_writer is not None:

@@ -9,6 +9,7 @@ and takes over the forward progress of the algorithm.
 import torch.nn as nn
 
 from ...nn.modules.brits import BackboneBRITS
+from ...nn.modules.loss import Criterion, MAE
 
 
 class _BRITS(nn.Module):
@@ -33,13 +34,19 @@ class _BRITS(nn.Module):
         n_steps: int,
         n_features: int,
         rnn_hidden_size: int,
+        training_loss: Criterion = MAE(),
     ):
         super().__init__()
         self.n_steps = n_steps
         self.n_features = n_features
         self.rnn_hidden_size = rnn_hidden_size
 
-        self.model = BackboneBRITS(n_steps, n_features, rnn_hidden_size)
+        self.model = BackboneBRITS(
+            n_steps,
+            n_features,
+            rnn_hidden_size,
+            training_loss,
+        )
 
     def forward(self, inputs: dict) -> dict:
         (

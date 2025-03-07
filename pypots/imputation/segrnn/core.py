@@ -7,6 +7,7 @@ and takes over the forward progress of the algorithm.
 
 import torch.nn as nn
 
+from ...nn.modules.loss import Criterion, MAE
 from ...nn.modules.saits import SaitsLoss
 from ...nn.modules.segrnn import BackboneSegRNN
 
@@ -21,6 +22,7 @@ class _SegRNN(nn.Module):
         dropout: float = 0.5,
         ORT_weight: float = 1,
         MIT_weight: float = 1,
+        training_loss: Criterion = MAE(),
     ):
         super().__init__()
 
@@ -33,7 +35,7 @@ class _SegRNN(nn.Module):
         self.backbone = BackboneSegRNN(n_steps, n_features, seg_len, d_model, dropout)
 
         # apply SAITS loss function to Transformer on the imputation task
-        self.saits_loss_func = SaitsLoss(ORT_weight, MIT_weight)
+        self.saits_training_loss = SaitsLoss(ORT_weight, MIT_weight, training_loss)
 
     def forward(self, inputs: dict) -> dict:
         X, missing_mask = inputs["X"], inputs["missing_mask"]
@@ -48,7 +50,7 @@ class _SegRNN(nn.Module):
         # if in training mode, return results with losses
         if self.training:
             X_ori, indicating_mask = inputs["X_ori"], inputs["indicating_mask"]
-            loss, ORT_loss, MIT_loss = self.saits_loss_func(reconstruction, X_ori, missing_mask, indicating_mask)
+            loss, ORT_loss, MIT_loss = self.saits_training_loss(reconstruction, X_ori, missing_mask, indicating_mask)
             results["ORT_loss"] = ORT_loss
             results["MIT_loss"] = MIT_loss
             # `loss` is always the item for backward propagating to update the model

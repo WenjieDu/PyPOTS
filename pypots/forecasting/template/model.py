@@ -19,7 +19,7 @@ from .core import _YourNewModel
 #  You should make your model inherent BaseForecaster if it is not a NN.
 # from ..base import BaseForecaster
 from ..base import BaseNNForecaster
-from ...nn.modules.loss import BaseCriterion
+from ...nn.modules.loss import Criterion
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
 
@@ -35,9 +35,9 @@ class YourNewModel(BaseNNForecaster):
         batch_size: int = 32,
         epochs: int = 100,
         patience: Optional[int] = None,
-        training_loss: Optional[BaseCriterion] = None,
-        validation_metric: Optional[BaseCriterion] = None,
-        optimizer: Optional[Optimizer] = Adam(),
+        training_loss: Criterion = MSE(),
+        validation_metric: Criterion = MSE(),
+        optimizer: Optimizer = Adam(),
         num_workers: int = 0,
         device: Optional[Union[str, torch.device, list]] = None,
         saving_path: Optional[str] = None,

@@ -10,7 +10,7 @@ and takes over the forward progress of the algorithm.
 import torch
 import torch.nn as nn
 
-from ...nn.functional.error import calc_mse
+from ...nn.modules.loss import Criterion, MSE
 from ...nn.modules.timellm import BackboneTimeLLM
 
 
@@ -32,12 +32,14 @@ class _TimeLLM(nn.Module):
         llm_model_type: str,
         dropout: float,
         domain_prompt_content: str,
+        training_loss: Criterion = MSE(),
     ):
         super().__init__()
 
         assert term in ["long", "short"], "forecasting term should be either 'long' or 'short'"
         self.n_pred_steps = n_pred_steps
         self.n_pred_features = n_pred_features
+        self.training_loss = training_loss
 
         self.backbone = BackboneTimeLLM(
             n_steps,
@@ -80,6 +82,6 @@ class _TimeLLM(nn.Module):
         # if in training mode, return results with losses
         if self.training:
             # `loss` is always the item for backward propagating to update the model
-            results["loss"] = calc_mse(X_pred, forecasting_result, X_pred_missing_mask)
+            results["loss"] = self.training_loss(X_pred, forecasting_result, X_pred_missing_mask)
 
         return results
