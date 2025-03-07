@@ -237,6 +237,7 @@ class TimesNet(BaseNNImputer):
         # Step 3: save the model if necessary
         self._auto_save_model_if_necessary(confirm_saving=self.model_saving_strategy == "best")
 
+    @torch.no_grad()
     def predict(
         self,
         test_set: Union[dict, str],
@@ -265,7 +266,6 @@ class TimesNet(BaseNNImputer):
 
         """
         # Step 1: wrap the input data with classes Dataset and DataLoader
-        self.model.eval()  # set the model as eval status to freeze it.
         test_set = BaseDataset(
             test_set,
             return_X_ori=False,
@@ -282,11 +282,10 @@ class TimesNet(BaseNNImputer):
         imputation_collector = []
 
         # Step 2: process the data with the model
-        with torch.no_grad():
-            for idx, data in enumerate(test_loader):
-                inputs = self._assemble_input_for_testing(data)
-                results = self.model.forward(inputs)
-                imputation_collector.append(results["imputed_data"])
+        for idx, data in enumerate(test_loader):
+            inputs = self._assemble_input_for_testing(data)
+            results = self.model.forward(inputs)
+            imputation_collector.append(results["imputed_data"])
 
         # Step 3: output collection and return
         imputation = torch.cat(imputation_collector).cpu().detach().numpy()

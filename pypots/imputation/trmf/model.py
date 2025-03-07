@@ -189,7 +189,6 @@ class TRMF(BaseImputer):
 
         """
         # Step 1: wrap the input data with classes Dataset and DataLoader
-        # self.model.eval()  # set the model as eval status to freeze it.
         test_set = BaseDataset(
             test_set,
             return_X_ori=False,

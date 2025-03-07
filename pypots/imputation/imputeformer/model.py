@@ -259,12 +259,34 @@ class ImputeFormer(BaseNNImputer):
         # Step 3: save the model if necessary
         self._auto_save_model_if_necessary(confirm_saving=self.model_saving_strategy == "best")
 
+    @torch.no_grad()
     def predict(
         self,
         test_set: Union[dict, str],
         file_type: str = "hdf5",
     ) -> dict:
-        self.model.eval()  # set the model as eval status to freeze it.
+        """Make predictions for the input data with the trained model.
+
+        Parameters
+        ----------
+        test_set : dict or str
+            The dataset for model validating, should be a dictionary including keys as 'X',
+            or a path string locating a data file supported by PyPOTS (e.g. h5 file).
+            If it is a dict, X should be array-like of shape [n_samples, sequence length (n_steps), n_features],
+            which is time-series data for validating, can contain missing values, and y should be array-like of shape
+            [n_samples], which is classification labels of X.
+            If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
+            key-value pairs like a dict, and it has to include keys as 'X' and 'y'.
+
+        file_type :
+            The type of the given file if test_set is a path string.
+
+        Returns
+        -------
+        file_type :
+            The dictionary containing the clustering results and latent variables if necessary.
+
+        """
         test_set = BaseDataset(
             test_set,
             return_X_ori=False,
@@ -280,12 +302,11 @@ class ImputeFormer(BaseNNImputer):
         )
         imputation_collector = []
 
-        with torch.no_grad():
-            for idx, data in enumerate(test_loader):
-                inputs = self._assemble_input_for_testing(data)
-                results = self.model.forward(inputs)
-                imputed_data = results["imputed_data"]
-                imputation_collector.append(imputed_data)
+        for idx, data in enumerate(test_loader):
+            inputs = self._assemble_input_for_testing(data)
+            results = self.model.forward(inputs)
+            imputed_data = results["imputed_data"]
+            imputation_collector.append(imputed_data)
 
         imputation = torch.cat(imputation_collector).cpu().detach().numpy()
         result_dict = {

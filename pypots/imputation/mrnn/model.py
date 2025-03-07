@@ -231,12 +231,12 @@ class MRNN(BaseNNImputer):
         # Step 3: save the model if necessary
         self._auto_save_model_if_necessary(confirm_saving=self.model_saving_strategy == "best")
 
+    @torch.no_grad()
     def predict(
         self,
         test_set: Union[dict, str],
         file_type: str = "hdf5",
     ) -> dict:
-        self.model.eval()  # set the model as eval status to freeze it.
         test_set = DatasetForMRNN(test_set, return_X_ori=False, return_y=False, file_type=file_type)
         test_loader = DataLoader(
             test_set,
@@ -246,12 +246,11 @@ class MRNN(BaseNNImputer):
         )
         imputation_collector = []
 
-        with torch.no_grad():
-            for idx, data in enumerate(test_loader):
-                inputs = self._assemble_input_for_testing(data)
-                results = self.model.forward(inputs)
-                imputed_data = results["imputed_data"]
-                imputation_collector.append(imputed_data)
+        for idx, data in enumerate(test_loader):
+            inputs = self._assemble_input_for_testing(data)
+            results = self.model.forward(inputs)
+            imputed_data = results["imputed_data"]
+            imputation_collector.append(imputed_data)
 
         imputation = torch.cat(imputation_collector).cpu().detach().numpy()
         result_dict = {

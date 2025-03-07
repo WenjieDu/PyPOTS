@@ -283,18 +283,19 @@ class TimeMixer(BaseNNForecaster):
         # Step 3: save the model if necessary
         self._auto_save_model_if_necessary(confirm_saving=self.model_saving_strategy == "best")
 
+    @torch.no_grad()
     def predict(
         self,
         test_set: Union[dict, str],
         file_type: str = "hdf5",
     ) -> dict:
-        """
+        """Make predictions for the input data with the trained model.
 
         Parameters
         ----------
         test_set : dict or str
-            The dataset for model validating, should be a dictionary including keys as 'X' and 'y',
-            or a path string locating a data file.
+            The dataset for model validating, should be a dictionary including keys as 'X',
+            or a path string locating a data file supported by PyPOTS (e.g. h5 file).
             If it is a dict, X should be array-like of shape [n_samples, sequence length (n_steps), n_features],
             which is time-series data for validating, can contain missing values, and y should be array-like of shape
             [n_samples], which is classification labels of X.
@@ -306,14 +307,12 @@ class TimeMixer(BaseNNForecaster):
 
         Returns
         -------
-        result_dict: dict
-            Prediction results in a Python Dictionary for the given samples.
-            It should be a dictionary including a key named 'imputation'.
+        file_type :
+            The dictionary containing the clustering results and latent variables if necessary.
 
         """
 
         # Step 1: wrap the input data with classes Dataset and DataLoader
-        self.model.eval()  # set the model as eval status to freeze it.
         test_set = DatasetForTimeMixer(
             test_set,
             return_X_pred=False,
@@ -329,12 +328,11 @@ class TimeMixer(BaseNNForecaster):
         forecasting_collector = []
 
         # Step 2: process the data with the model
-        with torch.no_grad():
-            for idx, data in enumerate(test_loader):
-                inputs = self._assemble_input_for_testing(data)
-                results = self.model(inputs)
-                forecasting_data = results["forecasting_data"]
-                forecasting_collector.append(forecasting_data)
+        for idx, data in enumerate(test_loader):
+            inputs = self._assemble_input_for_testing(data)
+            results = self.model(inputs)
+            forecasting_data = results["forecasting_data"]
+            forecasting_collector.append(forecasting_data)
 
         # Step 3: output collection and return
         forecasting_data = torch.cat(forecasting_collector).cpu().detach().numpy()
