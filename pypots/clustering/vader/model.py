@@ -374,6 +374,7 @@ class VaDER(BaseNNClusterer):
         # Step 3: save the model if necessary
         self._auto_save_model_if_necessary(confirm_saving=self.model_saving_strategy == "best")
 
+    @torch.no_grad()
     def predict(
         self,
         test_set: Union[dict, str],
@@ -405,7 +406,6 @@ class VaDER(BaseNNClusterer):
             The dictionary containing the clustering results and latent variables if necessary.
 
         """
-        self.model.eval()  # set the model as eval status to freeze it.
         test_set = DatasetForVaDER(test_set, return_y=False, file_type=file_type)
         test_loader = DataLoader(
             test_set,
@@ -422,42 +422,41 @@ class VaDER(BaseNNClusterer):
         imputation_latent_collector = []
         clustering_results_collector = []
 
-        with torch.no_grad():
-            for idx, data in enumerate(test_loader):
-                inputs = self._assemble_input_for_testing(data)
-                results = self.model.forward(inputs)
+        for idx, data in enumerate(test_loader):
+            inputs = self._assemble_input_for_testing(data)
+            results = self.model.forward(inputs)
 
-                mu_tilde = results["mu_tilde"].cpu().numpy()
-                mu_tilde_collector.append(mu_tilde)
-                mu = results["mu"].cpu().numpy()
-                mu_collector.append(mu)
-                var = results["var"].cpu().numpy()
-                var_collector.append(var)
-                phi = results["phi"].cpu().numpy()
-                phi_collector.append(phi)
+            mu_tilde = results["mu_tilde"].cpu().numpy()
+            mu_tilde_collector.append(mu_tilde)
+            mu = results["mu"].cpu().numpy()
+            mu_collector.append(mu)
+            var = results["var"].cpu().numpy()
+            var_collector.append(var)
+            phi = results["phi"].cpu().numpy()
+            phi_collector.append(phi)
 
-                def func_to_apply(
-                    mu_t_: np.ndarray,
-                    mu_: np.ndarray,
-                    stddev_: np.ndarray,
-                    phi_: np.ndarray,
-                ) -> np.ndarray:
-                    # the covariance matrix is diagonal, so we can just take the product
-                    return np.log(1e-9 + phi_) + np.log(
-                        1e-9 + multivariate_normal.pdf(mu_t_, mean=mu_, cov=np.diag(stddev_))
-                    )
+            def func_to_apply(
+                mu_t_: np.ndarray,
+                mu_: np.ndarray,
+                stddev_: np.ndarray,
+                phi_: np.ndarray,
+            ) -> np.ndarray:
+                # the covariance matrix is diagonal, so we can just take the product
+                return np.log(1e-9 + phi_) + np.log(
+                    1e-9 + multivariate_normal.pdf(mu_t_, mean=mu_, cov=np.diag(stddev_))
+                )
 
-                p = np.array([func_to_apply(mu_tilde, mu[i], var[i], phi[i]) for i in np.arange(mu.shape[0])])
-                clustering_results = np.argmax(p, axis=0)
-                clustering_results_collector.append(clustering_results)
+            p = np.array([func_to_apply(mu_tilde, mu[i], var[i], phi[i]) for i in np.arange(mu.shape[0])])
+            clustering_results = np.argmax(p, axis=0)
+            clustering_results_collector.append(clustering_results)
 
-                if return_latent_vars:
-                    stddev_tilde = results["stddev_tilde"].cpu().numpy()
-                    stddev_tilde_collector.append(stddev_tilde)
-                    z = results["z"].cpu().numpy()
-                    z_collector.append(z)
-                    imputation_latent = results["imputation_latent"].cpu().numpy()
-                    imputation_latent_collector.append(imputation_latent)
+            if return_latent_vars:
+                stddev_tilde = results["stddev_tilde"].cpu().numpy()
+                stddev_tilde_collector.append(stddev_tilde)
+                z = results["z"].cpu().numpy()
+                z_collector.append(z)
+                imputation_latent = results["imputation_latent"].cpu().numpy()
+                imputation_latent_collector.append(imputation_latent)
 
         clustering = np.concatenate(clustering_results_collector)
         result_dict = {

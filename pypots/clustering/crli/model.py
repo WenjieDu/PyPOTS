@@ -358,6 +358,7 @@ class CRLI(BaseNNClusterer):
         # Step 3: save the model if necessary
         self._auto_save_model_if_necessary(confirm_saving=self.model_saving_strategy == "best")
 
+    @torch.no_grad()
     def predict(
         self,
         test_set: Union[dict, str],
@@ -390,8 +391,6 @@ class CRLI(BaseNNClusterer):
             The dictionary containing the clustering results and latent variables if necessary.
 
         """
-
-        self.model.eval()  # set the model as eval status to freeze it.
         test_set = DatasetForCRLI(test_set, return_y=False, file_type=file_type)
         test_loader = DataLoader(
             test_set,
@@ -402,13 +401,12 @@ class CRLI(BaseNNClusterer):
         clustering_latent_collector = []
         imputation_collector = []
 
-        with torch.no_grad():
-            for idx, data in enumerate(test_loader):
-                inputs = self._assemble_input_for_testing(data)
-                inputs = self.model.forward(inputs)
-                clustering_latent_collector.append(inputs["fcn_latent"])
-                if return_latent_vars:
-                    imputation_collector.append(inputs["imputation_latent"])
+        for idx, data in enumerate(test_loader):
+            inputs = self._assemble_input_for_testing(data)
+            inputs = self.model.forward(inputs)
+            clustering_latent_collector.append(inputs["fcn_latent"])
+            if return_latent_vars:
+                imputation_collector.append(inputs["imputation_latent"])
 
         clustering_latent = torch.cat(clustering_latent_collector).cpu().detach().numpy()
         clustering = self.model.kmeans.fit_predict(clustering_latent)

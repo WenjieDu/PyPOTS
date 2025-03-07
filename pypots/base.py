@@ -590,6 +590,7 @@ class BaseNNModel(BaseModel):
         raise NotImplementedError
 
     @abstractmethod
+    @torch.no_grad()
     def predict(
         self,
         test_set: Union[dict, str],

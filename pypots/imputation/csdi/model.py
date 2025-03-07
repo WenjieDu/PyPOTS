@@ -375,6 +375,7 @@ class CSDI(BaseNNImputer):
         # Step 3: save the model if necessary
         self._auto_save_model_if_necessary(confirm_saving=self.model_saving_strategy == "best")
 
+    @torch.no_grad()
     def predict(
         self,
         test_set: Union[dict, str],
@@ -410,7 +411,6 @@ class CSDI(BaseNNImputer):
         assert n_sampling_times > 0, "n_sampling_times should be greater than 0."
 
         # Step 1: wrap the input data with classes Dataset and DataLoader
-        self.model.eval()  # set the model as eval status to freeze it.
         test_set = TestDatasetForCSDI(test_set, return_X_ori=False, file_type=file_type)
         test_loader = DataLoader(
             test_set,
@@ -421,15 +421,14 @@ class CSDI(BaseNNImputer):
         imputation_collector = []
 
         # Step 2: process the data with the model
-        with torch.no_grad():
-            for idx, data in enumerate(test_loader):
-                inputs = self._assemble_input_for_testing(data)
-                results = self.model(
-                    inputs,
-                    n_sampling_times=n_sampling_times,
-                )
-                imputed_data = results["imputed_data"]
-                imputation_collector.append(imputed_data)
+        for idx, data in enumerate(test_loader):
+            inputs = self._assemble_input_for_testing(data)
+            results = self.model(
+                inputs,
+                n_sampling_times=n_sampling_times,
+            )
+            imputed_data = results["imputed_data"]
+            imputation_collector.append(imputed_data)
 
         # Step 3: output collection and return
         imputation = torch.cat(imputation_collector).cpu().detach().numpy()
