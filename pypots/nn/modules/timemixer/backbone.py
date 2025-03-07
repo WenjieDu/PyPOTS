@@ -35,6 +35,7 @@ class BackboneTimeMixer(nn.Module):
         downsampling_window: int,
         downsampling_method: str,
         use_future_temporal_feature: bool,
+        use_norm: bool = False,
         embed="fixed",
         freq="h",
         n_classes=None,
@@ -50,6 +51,7 @@ class BackboneTimeMixer(nn.Module):
         self.downsampling_window = downsampling_window
         self.downsampling_layers = downsampling_layers
         self.downsampling_method = downsampling_method
+        self.use_norm = use_norm
         self.use_future_temporal_feature = use_future_temporal_feature
 
         assert downsampling_method in ["max", "avg", "conv"], "downsampling_method must be in ['max', 'avg', 'conv']"
@@ -74,12 +76,13 @@ class BackboneTimeMixer(nn.Module):
         )
         self.preprocess = SeriesDecompositionBlock(moving_avg)
 
-        if self.channel_independence == 1:
+        if self.channel_independence:
             self.enc_embedding = DataEmbedding(1, d_model, embed, freq, dropout, with_pos=False)
         else:
             self.enc_embedding = DataEmbedding(n_features, d_model, embed, freq, dropout, with_pos=False)
 
-        self.normalize_layers = torch.nn.ModuleList([RevIN(n_features) for _ in range(downsampling_layers + 1)])
+        if self.use_norm:
+            self.normalize_layers = torch.nn.ModuleList([RevIN(n_features) for _ in range(downsampling_layers + 1)])
 
         if task_name == "long_term_forecast" or task_name == "short_term_forecast":
             self.predict_layers = torch.nn.ModuleList(
@@ -92,7 +95,7 @@ class BackboneTimeMixer(nn.Module):
                 ]
             )
 
-            if self.channel_independence == 1:
+            if self.channel_independence:
                 self.projection_layer = nn.Linear(d_model, 1, bias=True)
             else:
                 self.projection_layer = nn.Linear(d_model, n_pred_features, bias=True)
@@ -117,7 +120,7 @@ class BackboneTimeMixer(nn.Module):
                     ]
                 )
         elif task_name == "imputation" or task_name == "anomaly_detection":
-            if self.channel_independence == 1:
+            if self.channel_independence:
                 self.projection_layer = nn.Linear(d_model, 1, bias=True)
             else:
                 self.projection_layer = nn.Linear(d_model, n_pred_features, bias=True)
@@ -137,7 +140,7 @@ class BackboneTimeMixer(nn.Module):
         return dec_out
 
     def pre_enc(self, x_list):
-        if self.channel_independence == 1:
+        if self.channel_independence:
             return x_list, None
         else:
             out1_list = []
@@ -197,7 +200,7 @@ class BackboneTimeMixer(nn.Module):
 
     def forecast(self, x_enc, x_mark_enc, x_dec=None, x_mark_dec=None):
         if self.use_future_temporal_feature:
-            if self.channel_independence == 1:
+            if self.channel_independence:
                 B, T, N = x_enc.size()
                 x_mark_dec = x_mark_dec.repeat(N, 1, 1)
                 self.x_mark_dec = self.enc_embedding(None, x_mark_dec)
@@ -211,8 +214,8 @@ class BackboneTimeMixer(nn.Module):
         if x_mark_enc is not None:
             for i, x, x_mark in zip(range(len(x_enc)), x_enc, x_mark_enc):
                 B, T, N = x.size()
-                x = self.normalize_layers[i](x, x_mark, mode="norm")
-                if self.channel_independence == 1:
+                x = self.normalize_layers[i](x, x_mark, mode="norm") if self.use_norm else x
+                if self.channel_independence:
                     x = x.permute(0, 2, 1).contiguous().reshape(B * N, T, 1)
                     x_mark = x_mark.repeat(N, 1, 1)
                 x_list.append(x)
@@ -223,8 +226,8 @@ class BackboneTimeMixer(nn.Module):
                 x_enc,
             ):
                 B, T, N = x.size()
-                x = self.normalize_layers[i](x, mode="norm")
-                if self.channel_independence == 1:
+                x = self.normalize_layers[i](x, mode="norm") if self.use_norm else x
+                if self.channel_independence:
                     x = x.permute(0, 2, 1).contiguous().reshape(B * N, T, 1)
                 x_list.append(x)
 
@@ -248,12 +251,12 @@ class BackboneTimeMixer(nn.Module):
         dec_out_list = self.future_multi_mixing(B, enc_out_list, x_list)
 
         dec_out = torch.stack(dec_out_list, dim=-1).sum(-1)
-        dec_out = self.normalize_layers[0](dec_out, mode="denorm")
+        dec_out = self.normalize_layers[0](dec_out, mode="denorm") if self.use_norm else dec_out
         return dec_out
 
     def future_multi_mixing(self, B, enc_out_list, x_list):
         dec_out_list = []
-        if self.channel_independence == 1:
+        if self.channel_independence:
             x_list = x_list[0]
             for i, enc_out in zip(range(len(x_list)), enc_out_list):
                 dec_out = self.predict_layers[i](enc_out.permute(0, 2, 1)).permute(0, 2, 1)  # align temporal dimension
@@ -310,8 +313,8 @@ class BackboneTimeMixer(nn.Module):
             x_enc,
         ):
             B, T, N = x.size()
-            x = self.normalize_layers[i](x, "norm")
-            if self.channel_independence == 1:
+            x = self.normalize_layers[i](x, "norm") if self.use_norm else x
+            if self.channel_independence:
                 x = x.permute(0, 2, 1).contiguous().reshape(B * N, T, 1)
             x_list.append(x)
 
@@ -328,7 +331,7 @@ class BackboneTimeMixer(nn.Module):
         dec_out = self.projection_layer(enc_out_list[0])
         dec_out = dec_out.reshape(B, self.c_out, -1).permute(0, 2, 1).contiguous()
 
-        dec_out = self.normalize_layers[0](dec_out, "denorm")
+        dec_out = self.normalize_layers[0](dec_out, "denorm") if self.use_norm else dec_out
         return dec_out
 
     def imputation(self, x_enc, x_mark_enc):
@@ -341,7 +344,7 @@ class BackboneTimeMixer(nn.Module):
         if x_mark_enc is not None:
             for i, x, x_mark in zip(range(len(x_enc)), x_enc, x_mark_enc):
                 B, T, N = x.size()
-                if self.channel_independence == 1:
+                if self.channel_independence:
                     x = x.permute(0, 2, 1).contiguous().reshape(B * N, T, 1)
                 x_list.append(x)
                 x_mark = x_mark.repeat(N, 1, 1)
@@ -349,7 +352,7 @@ class BackboneTimeMixer(nn.Module):
         else:
             for i, x in zip(range(len(x_enc)), x_enc):
                 B, T, N = x.size()
-                if self.channel_independence == 1:
+                if self.channel_independence:
                     x = x.permute(0, 2, 1).contiguous().reshape(B * N, T, 1)
                 x_list.append(x)
 
