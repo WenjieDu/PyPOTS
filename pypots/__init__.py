@@ -15,9 +15,11 @@ from . import (
     data,
     utils,
 )
+from .timeseries_ai import TimeSeriesAI
 from .version import __version__
 
 __all__ = [
+    "TimeSeriesAI",
     "imputation",
     "classification",
     "clustering",

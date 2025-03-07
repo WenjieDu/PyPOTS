@@ -104,7 +104,7 @@ class ScaledDotProductAttention(AttentionOperator):
 
         # apply masking on the attention map, this is optional
         if attn_mask is not None:
-            attn = attn.masked_fill(attn_mask == 0, -1e9)
+            attn = attn.masked_fill(attn_mask == 0, -torch.inf)
 
         # compute attention score [0, 1], then apply dropout
         attn = F.softmax(attn, dim=-1)

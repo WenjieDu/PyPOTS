@@ -34,7 +34,7 @@ class _TimeLLM(nn.Module):
 
         self.n_steps = n_steps
 
-        self.encoder = BackboneTimeLLM(
+        self.backbone = BackboneTimeLLM(
             n_steps,
             n_features,
             n_steps,
@@ -49,15 +49,15 @@ class _TimeLLM(nn.Module):
             dropout,
             domain_prompt_content,
             "imputation",
-        ).float()
+        )
 
         self.saits_loss_func = SaitsLoss(ORT_weight, MIT_weight)
 
     def forward(self, inputs: dict) -> dict:
         X, missing_mask = inputs["X"], inputs["missing_mask"]
 
-        # TimeLLM encoder processing
-        reconstruction = self.encoder(X, missing_mask)
+        # TimeLLM processing
+        reconstruction = self.backbone(X, missing_mask)
 
         imputed_data = missing_mask * X + (1 - missing_mask) * reconstruction
         results = {

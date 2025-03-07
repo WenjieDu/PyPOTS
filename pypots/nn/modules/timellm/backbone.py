@@ -5,6 +5,7 @@
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
+import os
 
 import torch
 import torch.nn as nn
@@ -81,7 +82,6 @@ class BackboneTimeLLM(nn.Module):
             try:
                 self.llm_model = LlamaModel.from_pretrained(
                     "huggyllama/llama-7b",
-                    trust_remote_code=True,
                     local_files_only=True,
                     config=self.llama_config,
                     # load_in_4bit=True
@@ -90,7 +90,6 @@ class BackboneTimeLLM(nn.Module):
                 logger.warning("Local model files not found. Attempting to download...")
                 self.llm_model = LlamaModel.from_pretrained(
                     "huggyllama/llama-7b",
-                    trust_remote_code=True,
                     local_files_only=False,
                     config=self.llama_config,
                     # load_in_4bit=True
@@ -98,14 +97,12 @@ class BackboneTimeLLM(nn.Module):
             try:
                 self.tokenizer = LlamaTokenizer.from_pretrained(
                     "huggyllama/llama-7b",
-                    trust_remote_code=True,
                     local_files_only=True,
                 )
             except EnvironmentError:  # downloads the tokenizer from HF if not already done
                 logger.warning("Local tokenizer files not found. Atempting to download them..")
                 self.tokenizer = LlamaTokenizer.from_pretrained(
                     "huggyllama/llama-7b",
-                    trust_remote_code=True,
                     local_files_only=False,
                 )
         elif llm_model_type == "GPT2":
@@ -116,7 +113,6 @@ class BackboneTimeLLM(nn.Module):
             try:
                 self.llm_model = GPT2Model.from_pretrained(
                     "openai-community/gpt2",
-                    trust_remote_code=True,
                     local_files_only=True,
                     config=self.gpt2_config,
                 )
@@ -124,21 +120,18 @@ class BackboneTimeLLM(nn.Module):
                 logger.warning("Local model files not found. Attempting to download...")
                 self.llm_model = GPT2Model.from_pretrained(
                     "openai-community/gpt2",
-                    trust_remote_code=True,
                     local_files_only=False,
                     config=self.gpt2_config,
                 )
             try:
                 self.tokenizer = GPT2Tokenizer.from_pretrained(
                     "openai-community/gpt2",
-                    trust_remote_code=True,
                     local_files_only=True,
                 )
             except EnvironmentError:  # downloads the tokenizer from HF if not already done
                 logger.warning("Local tokenizer files not found. Atempting to download them..")
                 self.tokenizer = GPT2Tokenizer.from_pretrained(
                     "openai-community/gpt2",
-                    trust_remote_code=True,
                     local_files_only=False,
                 )
         elif llm_model_type == "BERT":
@@ -150,7 +143,6 @@ class BackboneTimeLLM(nn.Module):
             try:
                 self.llm_model = BertModel.from_pretrained(
                     "google-bert/bert-base-uncased",
-                    trust_remote_code=True,
                     local_files_only=True,
                     config=self.bert_config,
                 )
@@ -158,21 +150,18 @@ class BackboneTimeLLM(nn.Module):
                 logger.warning("Local model files not found. Attempting to download...")
                 self.llm_model = BertModel.from_pretrained(
                     "google-bert/bert-base-uncased",
-                    trust_remote_code=True,
                     local_files_only=False,
                     config=self.bert_config,
                 )
             try:
                 self.tokenizer = BertTokenizer.from_pretrained(
                     "google-bert/bert-base-uncased",
-                    trust_remote_code=True,
                     local_files_only=True,
                 )
             except EnvironmentError:  # downloads the tokenizer from HF if not already done
                 logger.warning("Local tokenizer files not found. Atempting to download them..")
                 self.tokenizer = BertTokenizer.from_pretrained(
                     "google-bert/bert-base-uncased",
-                    trust_remote_code=True,
                     local_files_only=False,
                 )
         else:
@@ -207,14 +196,7 @@ class BackboneTimeLLM(nn.Module):
         self.n_patches = int((n_steps - self.patch_len) / self.stride + 2)
         self.revin_layer = RevIN(n_features, affine=False)
 
-        if self.task_name == "long_term_forecast" or self.task_name == "short_term_forecast":
-            self.output_projection = FlattenHead(
-                n_features,
-                d_ffn * self.n_patches,
-                n_pred_steps,
-                head_dropout=dropout,
-            )
-        elif self.task_name == "imputation":
+        if self.task_name in ["long_term_forecast", "short_term_forecast", "imputation"]:
             self.output_projection = FlattenHead(
                 d_ffn * self.n_patches,
                 n_pred_steps,
@@ -293,7 +275,11 @@ class BackboneTimeLLM(nn.Module):
         source_embeddings = self.mapping_layer(self.word_embeddings.permute(1, 0)).permute(1, 0)
 
         x_enc = x_enc.permute(0, 2, 1).contiguous()
-        enc_out = self.patch_embedding(x_enc)
+
+        if os.getenv("ENABLE_AMP", False):
+            enc_out = self.patch_embedding(x_enc.to(torch.bfloat16))
+        else:
+            enc_out = self.patch_embedding(x_enc)
         enc_out = self.reprogramming_layer(enc_out, source_embeddings, source_embeddings)
 
         llama_enc_out = torch.cat([prompt_embeddings, enc_out], dim=1)

@@ -20,7 +20,9 @@ RANDOM_SEED = 2023
 # set the number of epochs for all model training
 EPOCHS = 2
 # set the number of prediction steps for forecasting models
-N_PRED_STEPS = 1
+N_STEPS = 14
+N_PRED_STEPS = 2
+N_FEATURES = 5
 # tensorboard and model files saving directory
 RESULT_SAVING_DIR = "testing_results"
 MODEL_SAVING_DIR = f"{RESULT_SAVING_DIR}/models"
@@ -47,8 +49,8 @@ set_random_seed(RANDOM_SEED)
 # Generate the unified data for testing and cache it first, DATA here is a singleton
 # Otherwise, file lock will cause bug if running test parallely with pytest-xdist.
 DATA = preprocess_random_walk(
-    n_steps=8,
-    n_features=5,
+    n_steps=N_STEPS + N_PRED_STEPS,  # the total sequence length
+    n_features=N_FEATURES,
     n_classes=2,
     n_samples_each_class=100,
     missing_rate=0.1,
@@ -58,6 +60,7 @@ DATA = preprocess_random_walk(
 DATA["test_X_indicating_mask"] = np.isnan(DATA["test_X"]) ^ np.isnan(DATA["test_X_ori"])
 DATA["test_X_ori"] = np.nan_to_num(DATA["test_X_ori"])
 
+# for imputation/classification/clustering tasks, we feed all N_STEPS + N_PRED_STEPS data into the model
 TRAIN_SET = {
     "X": DATA["train_X"],
     "y": DATA["train_y"].astype(float),
@@ -72,8 +75,7 @@ TEST_SET = {
     "X_ori": DATA["test_X_ori"],
     "y": DATA["test_y"].astype(float),
 }
-
-assert N_PRED_STEPS <= DATA["train_X"].shape[1], "N_PRED_STEPS should be less than the sequence length."
+# for forecasting task, we feed only N_STEPS data into the model and let it predict the following N_PRED_STEPS
 FORECASTING_TRAIN_SET = {
     "X": DATA["train_X"][:, :-N_PRED_STEPS],
     "X_pred": DATA["train_X_ori"][:, -N_PRED_STEPS:],

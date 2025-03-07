@@ -7,29 +7,29 @@
 
 import torch.nn as nn
 
+from ...nn.functional import calc_mse
 from ...nn.functional import (
     nonstationary_norm,
     nonstationary_denorm,
 )
-from ...nn.functional import calc_mse
 from ...nn.modules.timemixer import BackboneTimeMixer
 
 
 class _TimeMixer(nn.Module):
     def __init__(
         self,
-        n_layers,
-        n_steps,
-        n_features,
-        d_model,
-        d_ffn,
-        dropout,
-        top_k,
-        channel_independence,
-        decomp_method,
-        moving_avg,
-        downsampling_layers,
-        downsampling_window,
+        n_steps: int,
+        n_features: int,
+        n_layers: int,
+        d_model: int,
+        d_ffn: int,
+        dropout: float,
+        top_k: int,
+        channel_independence: bool,
+        decomp_method: str,
+        moving_avg: int,
+        downsampling_layers: int,
+        downsampling_window: int,
         apply_nonstationary_norm: bool = False,
     ):
         super().__init__()
@@ -40,7 +40,7 @@ class _TimeMixer(nn.Module):
             task_name="imputation",
             n_steps=n_steps,
             n_features=n_features,
-            n_pred_steps=None,
+            n_pred_steps=0,
             n_pred_features=n_features,
             n_layers=n_layers,
             d_model=d_model,
