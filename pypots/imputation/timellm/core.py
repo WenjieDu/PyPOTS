@@ -8,6 +8,7 @@ and takes over the forward progress of the algorithm.
 
 import torch.nn as nn
 
+from ...nn.modules.loss import Criterion, MAE
 from ...nn.modules.saits import SaitsLoss
 from ...nn.modules.timellm import BackboneTimeLLM
 
@@ -29,6 +30,7 @@ class _TimeLLM(nn.Module):
         domain_prompt_content,
         ORT_weight: float = 1,
         MIT_weight: float = 1,
+        training_loss: Criterion = MAE(),
     ):
         super().__init__()
 
@@ -51,7 +53,7 @@ class _TimeLLM(nn.Module):
             "imputation",
         )
 
-        self.saits_loss_func = SaitsLoss(ORT_weight, MIT_weight)
+        self.saits_training_loss = SaitsLoss(ORT_weight, MIT_weight, training_loss)
 
     def forward(self, inputs: dict) -> dict:
         X, missing_mask = inputs["X"], inputs["missing_mask"]
@@ -67,7 +69,7 @@ class _TimeLLM(nn.Module):
         # if in training mode, return results with losses
         if self.training:
             X_ori, indicating_mask = inputs["X_ori"], inputs["indicating_mask"]
-            loss, ORT_loss, MIT_loss = self.saits_loss_func(reconstruction, X_ori, missing_mask, indicating_mask)
+            loss, ORT_loss, MIT_loss = self.saits_training_loss(reconstruction, X_ori, missing_mask, indicating_mask)
             results["ORT_loss"] = ORT_loss
             results["MIT_loss"] = MIT_loss
             # `loss` is always the item for backward propagating to update the model

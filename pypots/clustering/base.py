@@ -16,7 +16,7 @@ from torch.utils.data import DataLoader
 
 from ..base import BaseModel, BaseNNModel
 from ..nn.functional import autocast
-from ..nn.modules.loss import BaseCriterion
+from ..nn.modules.loss import Criterion
 from ..utils.logging import logger
 
 try:
@@ -217,8 +217,8 @@ class BaseNNClusterer(BaseNNModel):
         batch_size: int,
         epochs: int = 100,
         patience: Optional[int] = None,
-        training_loss: Optional[BaseCriterion] = None,
-        validation_metric: Optional[BaseCriterion] = None,
+        training_loss: Optional[Criterion] = None,
+        validation_metric: Optional[Criterion] = None,
         num_workers: int = 0,
         device: Optional[Union[str, torch.device, list]] = None,
         enable_amp: bool = False,
@@ -244,7 +244,7 @@ class BaseNNClusterer(BaseNNModel):
         # training loss function and validation metric function are quite different in clustering models,
         # hence we don't set default loss and metric functions here. So the below lines are commented out.
 
-        # # set default training loss function and validation metric function if not given
+        # # fetch the names of training loss and validation metric
         # if training_loss is None:
         #     self.training_loss =
         #     self.training_loss_name = self.training_loss.__class__.__name__

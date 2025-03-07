@@ -16,7 +16,7 @@ from .core import _Transformer
 from .data import DatasetForTransformer
 from ..base import BaseNNForecaster
 from ...data.checking import key_in_data_set
-from ...nn.modules.loss import BaseCriterion
+from ...nn.modules.loss import Criterion, MSE
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
 
@@ -139,9 +139,9 @@ class Transformer(BaseNNForecaster):
         batch_size: int = 32,
         epochs: int = 100,
         patience: Optional[int] = None,
-        training_loss: Optional[BaseCriterion] = None,
-        validation_metric: Optional[BaseCriterion] = None,
-        optimizer: Optional[Optimizer] = Adam(),
+        training_loss: Criterion = MSE(),
+        validation_metric: Criterion = MSE(),
+        optimizer: Optimizer = Adam(),
         num_workers: int = 0,
         device: Optional[Union[str, torch.device, list]] = None,
         saving_path: Optional[str] = None,
@@ -165,22 +165,32 @@ class Transformer(BaseNNForecaster):
         self.n_features = n_features
         self.n_pred_steps = n_pred_steps
         self.n_pred_features = n_pred_features
+        self.n_encoder_layers = n_encoder_layers
+        self.n_decoder_layers = n_decoder_layers
+        self.d_model = d_model
+        self.d_ffn = d_ffn
+        self.n_heads = n_heads
+        self.d_k = d_k
+        self.d_v = d_v
+        self.dropout = dropout
+        self.attn_dropout = attn_dropout
 
         # set up the model
         self.model = _Transformer(
-            n_steps,
-            n_features,
-            n_pred_steps,
-            n_pred_features,
-            n_encoder_layers,
-            n_decoder_layers,
-            d_model,
-            n_heads,
-            d_k,
-            d_v,
-            d_ffn,
-            dropout,
-            attn_dropout,
+            self.n_steps,
+            self.n_features,
+            self.n_pred_steps,
+            self.n_pred_features,
+            self.n_encoder_layers,
+            self.n_decoder_layers,
+            self.d_model,
+            self.n_heads,
+            self.d_k,
+            self.d_v,
+            self.d_ffn,
+            self.dropout,
+            self.attn_dropout,
+            self.training_loss,
         )
         self._print_model_size()
         self._send_model_to_given_device()

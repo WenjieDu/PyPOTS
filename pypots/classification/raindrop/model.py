@@ -16,7 +16,8 @@ from torch.utils.data import DataLoader
 from .core import _Raindrop
 from .data import DatasetForRaindrop
 from ...classification.base import BaseNNClassifier
-from ...nn.modules.loss import BaseCriterion
+from ...nn.modules.loss import Criterion, CrossEntropy
+from ...nn.modules.metric import PR_AUC
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
 
@@ -131,9 +132,9 @@ class Raindrop(BaseNNClassifier):
         batch_size=32,
         epochs=100,
         patience: Optional[int] = None,
-        training_loss: Optional[BaseCriterion] = None,
-        validation_metric: Optional[BaseCriterion] = None,
-        optimizer: Optional[Optimizer] = Adam(),
+        training_loss: Criterion = CrossEntropy(),
+        validation_metric: Criterion = PR_AUC(),
+        optimizer: Optimizer = Adam(),
         num_workers: int = 0,
         device: Optional[Union[str, torch.device, list]] = None,
         saving_path: str = None,
@@ -171,6 +172,7 @@ class Raindrop(BaseNNClassifier):
             aggregation,
             sensor_wise_mask,
             static,
+            self.training_loss,
         )
         self._send_model_to_given_device()
         self._print_model_size()

@@ -16,7 +16,7 @@ from torch.utils.data import DataLoader
 
 from ..base import BaseModel, BaseNNModel
 from ..nn.functional.cuda import autocast
-from ..nn.modules.loss import BaseCriterion, MSE
+from ..nn.modules.loss import Criterion, MAE
 from ..utils.logging import logger
 
 try:
@@ -210,8 +210,8 @@ class BaseNNImputer(BaseNNModel):
         batch_size: int,
         epochs: int,
         patience: Optional[int] = None,
-        training_loss: Optional[BaseCriterion] = None,
-        validation_metric: Optional[BaseCriterion] = None,
+        training_loss: Optional[Criterion] = MAE(),
+        validation_metric: Optional[Criterion] = MAE(),
         num_workers: int = 0,
         device: Optional[Union[str, torch.device, list]] = None,
         enable_amp: bool = False,
@@ -233,13 +233,9 @@ class BaseNNImputer(BaseNNModel):
             verbose=verbose,
         )
 
-        # set default training loss function and validation metric function if not given
-        if training_loss is None:
-            self.training_loss = MSE()
-            self.training_loss_name = self.training_loss.__class__.__name__
-        if validation_metric is None:
-            self.validation_metric = MSE()
-            self.validation_metric_name = self.validation_metric.__class__.__name__
+        # fetch the names of training loss and validation metric
+        self.training_loss_name = self.training_loss.__class__.__name__
+        self.validation_metric_name = self.validation_metric.__class__.__name__
 
     @abstractmethod
     def _assemble_input_for_training(self, data: list) -> dict:

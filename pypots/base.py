@@ -14,7 +14,7 @@ from typing import Optional, Union, Iterable, Callable
 import torch
 from torch.utils.tensorboard import SummaryWriter
 
-from .nn.modules.loss import BaseCriterion
+from .nn.modules.loss import Criterion
 from .utils.file import create_dir_if_not_exist
 from .utils.logging import logger, logger_creator
 
@@ -79,6 +79,8 @@ class BaseModel(ABC):
         assert (
             model_saving_strategy in saving_strategies
         ), f"saving_strategy must be one of {saving_strategies}, but got f{model_saving_strategy}."
+        if saving_path is not None and saving_strategies is None:
+            logger.warning("‼️ saving_path is given, but model_saving_strategy is None. No model file will be saved.")
 
         self.device = None  # set up with _setup_device() below
         self.enable_amp = enable_amp
@@ -519,8 +521,8 @@ class BaseNNModel(BaseModel):
         batch_size: int,
         epochs: int,
         patience: Optional[int] = None,
-        training_loss: Optional[BaseCriterion] = None,
-        validation_metric: Optional[BaseCriterion] = None,
+        training_loss: Optional[Criterion] = None,
+        validation_metric: Optional[Criterion] = None,
         num_workers: int = 0,
         device: Optional[Union[str, torch.device, list]] = None,
         enable_amp: bool = False,

@@ -9,8 +9,8 @@ and takes over the forward progress of the algorithm.
 
 import torch.nn as nn
 
-from ...nn.functional import calc_mse
 from ...nn.modules.grud import BackboneGRUD
+from ...nn.modules.loss import Criterion, MAE
 
 
 class _GRUD(nn.Module):
@@ -19,11 +19,13 @@ class _GRUD(nn.Module):
         n_steps: int,
         n_features: int,
         rnn_hidden_size: int,
+        training_loss: Criterion = MAE(),
     ):
         super().__init__()
         self.n_steps = n_steps
         self.n_features = n_features
         self.rnn_hidden_size = rnn_hidden_size
+        self.training_loss = training_loss
 
         # create models
         self.backbone = BackboneGRUD(
@@ -40,9 +42,6 @@ class _GRUD(nn.Module):
         ----------
         inputs :
             The input data.
-
-        training :
-            Whether in training mode.
 
         Returns
         -------
@@ -67,6 +66,6 @@ class _GRUD(nn.Module):
 
         # if in training mode, return results with losses
         if self.training:
-            results["loss"] = calc_mse(reconstruction, X, missing_mask)
+            results["loss"] = self.training_loss(reconstruction, X, missing_mask)
 
         return results

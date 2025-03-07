@@ -16,7 +16,7 @@ from .core import _TimeMixer
 from .data import DatasetForTimeMixer
 from ..base import BaseNNForecaster
 from ...data.checking import key_in_data_set
-from ...nn.modules.loss import BaseCriterion
+from ...nn.modules.loss import Criterion, MSE
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
 
@@ -146,9 +146,9 @@ class TimeMixer(BaseNNForecaster):
         batch_size: int = 32,
         epochs: int = 100,
         patience: Optional[int] = None,
-        training_loss: Optional[BaseCriterion] = None,
-        validation_metric: Optional[BaseCriterion] = None,
-        optimizer: Optional[Optimizer] = Adam(),
+        training_loss: Criterion = MSE(),
+        validation_metric: Criterion = MSE(),
+        optimizer: Optimizer = Adam(),
         num_workers: int = 0,
         device: Optional[Union[str, torch.device, list]] = None,
         saving_path: Optional[str] = None,
@@ -203,6 +203,7 @@ class TimeMixer(BaseNNForecaster):
             self.downsampling_layers,
             self.downsampling_window,
             self.use_norm,
+            self.training_loss,
         )
         self._print_model_size()
         self._send_model_to_given_device()
