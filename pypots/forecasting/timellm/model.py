@@ -1,5 +1,5 @@
 """
-The implementation of TEFN for the partially-observed time-series forecasting task.
+The implementation of TimeLLM for the partially-observed time-series forecasting task.
 
 """
 
@@ -12,16 +12,16 @@ import numpy as np
 import torch
 from torch.utils.data import DataLoader
 
-from .core import _TEFN
-from .data import DatasetForTEFN
+from .core import _TimeLLM
+from .data import DatasetForTimeLLM
 from ..base import BaseNNForecaster
 from ...data.checking import key_in_data_set
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
 
 
-class TEFN(BaseNNForecaster):
-    """The PyTorch implementation of the TEFN forecasting model :cite:`zhan2024tefn`.
+class TimeLLM(BaseNNForecaster):
+    """The PyTorch implementation of the TimeLLM forecasting model :cite:`jin2024timellm`.
 
     Parameters
     ----------
@@ -37,11 +37,39 @@ class TEFN(BaseNNForecaster):
     n_pred_features :
         The number of features in the forecasting time series.
 
-    n_fod :
-        The number of FOD (frame of discernment) in the TEFN model.
+    term :
+        The forecasting term, which can be either 'long' or 'short'.
 
-    apply_nonstationary_norm :
-        Whether to apply the non-stationary normalization to the input data.
+    llm_model_type :
+        The type of the LLM model. It can be one of  ["LLaMA", "GPT2", "BERT"].
+
+    n_layers :
+        The number of layers in the TimeLLM model.
+
+    patch_len :
+        The length of the patch for the TimeLLM model.
+
+    stride :
+        The stride for the patching process in the TimeLLM model.
+
+    d_llm :
+        The dimension of the LLM model.
+        Given llm_model_type, it should be 4096 for LLaMA, 768 for GPT2 and BERT.
+
+    d_model :
+        The dimension of the model.
+
+    d_ffn :
+        The dimension of the feed-forward network.
+
+    n_heads :
+        The number of heads in each layer of TimeLLM.
+
+    dropout :
+        The dropout rate for the model.
+
+    domain_prompt_content :
+        The prompt content for the domain knowledge.
 
     batch_size :
         The batch size for training and evaluating the model.
@@ -100,8 +128,17 @@ class TEFN(BaseNNForecaster):
         n_features: int,
         n_pred_steps: int,
         n_pred_features: int,
-        n_fod: int = 2,
-        apply_nonstationary_norm: bool = False,
+        term: str,
+        llm_model_type: str,
+        n_layers: int,
+        patch_len: int,
+        stride: int,
+        d_llm: int,
+        d_model: int,
+        d_ffn: int,
+        n_heads: int,
+        dropout: float,
+        domain_prompt_content: str,
         batch_size: int = 32,
         epochs: int = 100,
         patience: Optional[int] = None,
@@ -122,6 +159,7 @@ class TEFN(BaseNNForecaster):
             val_metric_func=val_metric_func,
             num_workers=num_workers,
             device=device,
+            enable_amp=True,
             saving_path=saving_path,
             model_saving_strategy=model_saving_strategy,
             verbose=verbose,
@@ -131,17 +169,35 @@ class TEFN(BaseNNForecaster):
         self.n_features = n_features
         self.n_pred_steps = n_pred_steps
         self.n_pred_features = n_pred_features
-        self.n_fod = n_fod
-        self.apply_nonstationary_norm = apply_nonstationary_norm
+        self.term = term
+        self.n_layers = n_layers
+        self.n_heads = n_heads
+        self.d_model = d_model
+        self.d_ffn = d_ffn
+        self.d_llm = d_llm
+        self.patch_len = patch_len
+        self.stride = stride
+        self.llm_model_type = llm_model_type
+        self.dropout = dropout
+        self.domain_prompt_content = domain_prompt_content
 
         # set up the model
-        self.model = _TEFN(
+        self.model = _TimeLLM(
             self.n_steps,
             self.n_features,
             self.n_pred_steps,
             self.n_pred_features,
-            self.n_fod,
-            self.apply_nonstationary_norm,
+            self.term,
+            self.n_layers,
+            self.patch_len,
+            self.stride,
+            self.d_model,
+            self.d_ffn,
+            self.d_llm,
+            self.n_heads,
+            self.llm_model_type,
+            self.dropout,
+            self.domain_prompt_content,
         )
         self._print_model_size()
         self._send_model_to_given_device()
@@ -190,7 +246,7 @@ class TEFN(BaseNNForecaster):
         file_type: str = "hdf5",
     ) -> None:
         # Step 1: wrap the input data with classes Dataset and DataLoader
-        training_set = DatasetForTEFN(
+        training_set = DatasetForTimeLLM(
             train_set,
             file_type=file_type,
         )
@@ -204,7 +260,7 @@ class TEFN(BaseNNForecaster):
         if val_set is not None:
             if not key_in_data_set("X_pred", val_set):
                 raise ValueError("val_set must contain 'X_pred' for model validation.")
-            val_set = DatasetForTEFN(
+            val_set = DatasetForTimeLLM(
                 val_set,
                 file_type=file_type,
             )
@@ -254,7 +310,7 @@ class TEFN(BaseNNForecaster):
 
         # Step 1: wrap the input data with classes Dataset and DataLoader
         self.model.eval()  # set the model as eval status to freeze it.
-        test_set = DatasetForTEFN(
+        test_set = DatasetForTimeLLM(
             test_set,
             return_X_pred=False,
             file_type=file_type,
