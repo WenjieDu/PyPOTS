@@ -342,8 +342,8 @@ class BaseDataset(Dataset):
 
         if self.return_X_pred:
             X_pred = self.X_pred[idx]
-            pred_missing_mask = self.X_pred[idx]
-            sample.extend([X_pred, pred_missing_mask])
+            X_pred_missing_mask = self.X_pred_missing_mask[idx]
+            sample.extend([X_pred, X_pred_missing_mask])
 
         if self.return_y:
             sample.append(self.y[idx].to(torch.long))

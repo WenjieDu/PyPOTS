@@ -54,10 +54,10 @@ class _GPT4TS(nn.Module):
     def forward(self, inputs: dict) -> dict:
         X, missing_mask = inputs["X"], inputs["missing_mask"]
 
-        # TimesMixer processing
-        dec_out = self.backbone(X, mask=missing_mask)
+        # GPT4TS backbone processing
+        reconstruction = self.backbone(X, mask=missing_mask)
 
-        imputed_data = missing_mask * X + (1 - missing_mask) * dec_out
+        imputed_data = missing_mask * X + (1 - missing_mask) * reconstruction
         results = {
             "imputed_data": imputed_data,
         }
@@ -65,7 +65,7 @@ class _GPT4TS(nn.Module):
         # if in training mode, return results with losses
         if self.training:
             # `loss` is always the item for backward propagating to update the model
-            loss = calc_mse(dec_out, inputs["X_ori"], inputs["indicating_mask"])
+            loss = self.loss_func(reconstruction, inputs["X_ori"], inputs["indicating_mask"])
             results["loss"] = loss
 
         return results

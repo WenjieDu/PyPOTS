@@ -31,6 +31,10 @@ class BaseModel(ABC):
         model will be parallely trained on the multiple devices (so far only support parallel training on CUDA devices).
         Other devices like Google TPU and Apple Silicon accelerator MPS may be added in the future.
 
+    enable_amp :
+        Whether to enable automatic mixed precision (AMP), default as False.
+        If the implemented model is based on LLMs that need large-scale operation and AMP, please set it as True.
+
     saving_path :
         The path for automatically saving model checkpoints and tensorboard files (i.e. loss values recorded during
         training into a tensorboard file). Will not save if not given.
@@ -57,7 +61,7 @@ class BaseModel(ABC):
 
         It is designed as being set up while initializing the model because it's created to
         1). help visualize the model's training procedure (during training not after) and
-        2). assist users to tune the model's hype-parameters.
+        2). assist users to optimize the model's hype-parameters.
         If only setting it up after training with a function like setter(), it cannot achieve the 1st purpose.
 
     """
@@ -65,6 +69,7 @@ class BaseModel(ABC):
     def __init__(
         self,
         device: Optional[Union[str, torch.device, list]] = None,
+        enable_amp: bool = False,
         saving_path: str = None,
         model_saving_strategy: Optional[str] = "best",
         verbose: bool = True,
@@ -75,6 +80,7 @@ class BaseModel(ABC):
         ), f"saving_strategy must be one of {saving_strategies}, but got f{model_saving_strategy}."
 
         self.device = None  # set up with _setup_device() below
+        self.enable_amp = enable_amp
         self.saving_path = None  # set up with _setup_path() below
         self.model_saving_strategy = model_saving_strategy
         self.verbose = verbose
@@ -148,6 +154,17 @@ class BaseModel(ABC):
             assert (
                 torch.cuda.is_available() and torch.cuda.device_count() > 0
             ), "You are trying to use CUDA for model training, but CUDA is not available in your environment."
+
+        if os.getenv("ENABLE_AMP", False):
+            if not torch.cuda.is_available() or torch.cuda.device_count() == 0:
+                logger.warning(
+                    "‼️ You are trying to use AMP, but CUDA is not available in your environment. AMP will be disabled."
+                )
+            if not self.enable_amp:
+                logger.warning(
+                    f"‼️ You are trying to use AMP, but the model {self.__class__.__name__} "
+                    "does not support AMP operation. AMP will be disabled."
+                )
 
     def _setup_path(self, saving_path) -> None:
         MODEL_NO_NEED_TO_SAVE = [
@@ -454,6 +471,10 @@ class BaseNNModel(BaseModel):
         model will be parallely trained on the multiple devices (so far only support parallel training on CUDA devices).
         Other devices like Google TPU and Apple Silicon accelerator MPS may be added in the future.
 
+    enable_amp :
+        Whether to enable automatic mixed precision (AMP), default as False.
+        If the implemented model is based on LLMs that need large-scale operation and AMP, please set it as True.
+
     saving_path :
         The path for automatically saving model checkpoints and tensorboard files (i.e. loss values recorded during
         training into a tensorboard file). Will not save if not given.
@@ -501,12 +522,14 @@ class BaseNNModel(BaseModel):
         val_metric_func: Optional[dict] = None,
         num_workers: int = 0,
         device: Optional[Union[str, torch.device, list]] = None,
+        enable_amp: bool = False,
         saving_path: str = None,
         model_saving_strategy: Optional[str] = "best",
         verbose: bool = True,
     ):
         super().__init__(
             device,
+            enable_amp,
             saving_path,
             model_saving_strategy,
             verbose,

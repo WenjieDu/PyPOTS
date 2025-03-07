@@ -14,7 +14,8 @@ import torch
 from torch.utils.data import DataLoader
 
 from ..base import BaseModel, BaseNNModel
-from ..nn.functional import calc_mse
+from ..nn.functional import calc_mse, autocast
+from ..nn.modules.loss import MSE
 from ..utils.logging import logger
 
 try:
@@ -36,6 +37,10 @@ class BaseForecaster(BaseModel):
         model will be parallely trained on the multiple devices (so far only support parallel training on CUDA devices).
         Other devices like Google TPU and Apple Silicon accelerator MPS may be added in the future.
 
+    enable_amp :
+        Whether to enable automatic mixed precision (AMP), default as False.
+        If the implemented model is based on LLMs that need large-scale operation and AMP, please set it as True.
+
     saving_path :
         The path for automatically saving model checkpoints and tensorboard files (i.e. loss values recorded during
         training into a tensorboard file). Will not save if not given.
@@ -55,15 +60,17 @@ class BaseForecaster(BaseModel):
     def __init__(
         self,
         device: Optional[Union[str, torch.device, list]] = None,
+        enable_amp: bool = False,
         saving_path: str = None,
         model_saving_strategy: Optional[str] = "best",
         verbose: bool = True,
     ):
         super().__init__(
-            device,
-            saving_path,
-            model_saving_strategy,
-            verbose,
+            device=device,
+            enable_amp=enable_amp,
+            saving_path=saving_path,
+            model_saving_strategy=model_saving_strategy,
+            verbose=verbose,
         )
 
     @abstractmethod
@@ -169,6 +176,10 @@ class BaseNNForecaster(BaseNNModel):
         model will be parallely trained on the multiple devices (so far only support parallel training on CUDA devices).
         Other devices like Google TPU and Apple Silicon accelerator MPS may be added in the future.
 
+    enable_amp :
+        Whether to enable automatic mixed precision (AMP), default as False.
+        If the implemented model is based on LLMs that need large-scale operation and AMP, please set it as True.
+
     saving_path :
         The path for automatically saving model checkpoints and tensorboard files (i.e. loss values recorded during
         training into a tensorboard file). Will not save if not given.
@@ -204,6 +215,7 @@ class BaseNNForecaster(BaseNNModel):
         val_metric_func: Optional[dict] = None,
         num_workers: int = 0,
         device: Optional[Union[str, torch.device, list]] = None,
+        enable_amp: bool = False,
         saving_path: str = None,
         model_saving_strategy: Optional[str] = "best",
         verbose: bool = True,
@@ -216,10 +228,19 @@ class BaseNNForecaster(BaseNNModel):
             val_metric_func=val_metric_func,
             num_workers=num_workers,
             device=device,
+            enable_amp=enable_amp,
             saving_path=saving_path,
             model_saving_strategy=model_saving_strategy,
             verbose=verbose,
         )
+
+        # set default training loss function and validation metric function if not given
+        if train_loss_func is None:
+            self.train_loss_func = MSE()
+            self.train_loss_func_name = self.train_loss_func.__class__.__name__
+        if val_metric_func is None:
+            self.val_metric_func = MSE()
+            self.val_metric_func_name = self.val_metric_func.__class__.__name__
 
     @abstractmethod
     def _assemble_input_for_training(self, data: list) -> dict:
@@ -293,11 +314,19 @@ class BaseNNForecaster(BaseNNModel):
                 for idx, data in enumerate(training_loader):
                     training_step += 1
                     inputs = self._assemble_input_for_training(data)
-                    self.optimizer.zero_grad()
-                    results = self.model.forward(inputs)
-                    # use sum() before backward() in case of multi-gpu training
-                    results["loss"].sum().backward()
-                    self.optimizer.step()
+
+                    # model forward propagation processing
+                    if os.getenv("ENABLE_AMP", False) and self.enable_amp:
+                        with autocast():
+                            self.optimizer.zero_grad()
+                            results = self.model.forward(inputs)
+                            results["loss"].sum().backward()  # sum() before backward() in case of multi-gpu training
+                            self.optimizer.step()
+                    else:
+                        self.optimizer.zero_grad()
+                        results = self.model.forward(inputs)
+                        results["loss"].sum().backward()  # sum() before backward() in case of multi-gpu training
+                        self.optimizer.step()
                     epoch_train_loss_collector.append(results["loss"].sum().item())
 
                     # save training loss logs into the tensorboard file for every step if in need
@@ -313,12 +342,19 @@ class BaseNNForecaster(BaseNNModel):
                     with torch.no_grad():
                         for idx, data in enumerate(val_loader):
                             inputs = self._assemble_input_for_validating(data)
-                            results = self.model.forward(inputs)
+
+                            # model forward propagation processing
+                            if os.getenv("ENABLE_AMP", False) and self.enable_amp:
+                                with autocast():
+                                    results = self.model.forward(inputs)
+                            else:
+                                results = self.model.forward(inputs)
+
                             forecasting_mse = (
                                 calc_mse(
                                     results["forecasting_data"],
-                                    inputs["X_ori"],
-                                    inputs["indicating_mask"],
+                                    inputs["X_pred"],
+                                    inputs["X_pred_missing_mask"],
                                 )
                                 .sum()
                                 .detach()
@@ -364,7 +400,7 @@ class BaseNNForecaster(BaseNNModel):
                     saving_name=f"{self.__class__.__name__}_epoch{epoch}_loss{mean_loss:.4f}",
                 )
 
-                if os.getenv("enable_tuning", False):
+                if os.getenv("ENABLE_HPO", False):
                     nni.report_intermediate_result(mean_loss)
                     if epoch == self.epochs - 1 or self.patience == 0:
                         nni.report_final_result(self.best_loss)
