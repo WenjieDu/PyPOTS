@@ -100,7 +100,8 @@ currently supported. Stay tuned❗️).
 
 🌟 Since **v0.2**, all neural-network models in PyPOTS has got hyperparameter-optimization support.
 This functionality is implemented with the [Microsoft NNI](https://github.com/microsoft/nni) framework. You may want to
-refer to our time-series imputation survey and benchmark repo [Awesome_Imputation](https://github.com/WenjieDu/Awesome_Imputation)
+refer to our time-series imputation survey and benchmark
+repo [Awesome_Imputation](https://github.com/WenjieDu/Awesome_Imputation)
 to see how to config and tune the hyperparameters.
 
 🔥 Note that all models whose name with `🧑‍🔧` in the table (e.g. Transformer, iTransformer, Informer etc.) are not
@@ -170,8 +171,8 @@ The paper references and links are all listed at the bottom of this file.
 
 🙋 Differences between `LLM (Large Language Model)` and `TSFM (Time-Series Foundation Model)` in the above table:
 `LLM` refers to the models that are pre-trained on large-scale text data and can be fine-tuned for specific tasks.
-`TSFM` refers to the models that are pre-trained on large-scale time series data, inspired by recent achievements 
-of foundation models in CV and NLP. 
+`TSFM` refers to the models that are pre-trained on large-scale time series data, inspired by recent achievements
+of foundation models in CV and NLP.
 
 💯 Contribute your model right now to increase your research impact! PyPOTS downloads are increasing rapidly
 (**[600K+ in total and 1K+ daily on PyPI so far](https://www.pepy.tech/projects/pypots)**),
@@ -268,31 +269,30 @@ We present you a usage example of imputing missing values in time series with Py
 <summary><b>Click here to see an example applying SAITS on PhysioNet2012 for imputation:</b></summary>
 
 ``` python
-# Data preprocessing. Tedious, but PyPOTS can help.
 import numpy as np
 from sklearn.preprocessing import StandardScaler
-from pygrinder import mcar
-from pypots.data import load_specific_dataset
-data = load_specific_dataset('physionet_2012')  # PyPOTS will automatically download and extract it.
-X = data['X']
-num_samples = len(X['RecordID'].unique())
-X = X.drop(['RecordID', 'Time'], axis = 1)
-X = StandardScaler().fit_transform(X.to_numpy())
-X = X.reshape(num_samples, 48, -1)
-X_ori = X  # keep X_ori for validation
-X = mcar(X, 0.1)  # randomly hold out 10% observed values as ground truth
-dataset = {"X": X}  # X for model input
-print(X.shape)  # (11988, 48, 37), 11988 samples and each sample has 48 time steps, 37 features
+from pygrinder import mcar, calc_missing_rate
+from benchpots.datasets import preprocess_physionet2012
+data = preprocess_physionet2012(subset='set-a',rate=0.1) # Our ecosystem libs will automatically download and extract it
+train_X, val_X, test_X = data["train_X"], data["val_X"], data["test_X"]
+print(train_X.shape)  # (n_samples, n_steps, n_features)
+print(val_X.shape)  # samples (n_samples) in train set and val set are different, but they have the same sequence len (n_steps) and feature dim (n_features)
+print(f"We have {calc_missing_rate(train_X):.1%} values missing in train_X")  
+train_set = {"X": train_X}  # in training set, simply put the incomplete time series into it
+val_set = {
+    "X": val_X,
+    "X_ori": data["val_X_ori"],  # in validation set, we need ground truth for evaluation and picking the best model checkpoint
+}
+test_set = {"X": test_X}  # in test set, only give the testing incomplete time series for model to impute
+test_X_ori = data["test_X_ori"]  # test_X_ori bears ground truth for evaluation
+indicating_mask = np.isnan(test_X) ^ np.isnan(test_X_ori)  # mask indicates the values that are missing in X but not in X_ori, i.e. where the gt values are 
 
-# Model training. This is PyPOTS showtime.
-from pypots.imputation import SAITS
+from pypots.imputation import SAITS  # import the model you want to use
 from pypots.nn.functional import calc_mae
-saits = SAITS(n_steps=48, n_features=37, n_layers=2, d_model=256, n_heads=4, d_k=64, d_v=64, d_ffn=128, dropout=0.1, epochs=10)
-# Here I use the whole dataset as the training set because ground truth is not visible to the model, you can also split it into train/val/test sets
-saits.fit(dataset)  # train the model on the dataset
-imputation = saits.impute(dataset)  # impute the originally-missing values and artificially-missing values
-indicating_mask = np.isnan(X) ^ np.isnan(X_ori)  # indicating mask for imputation error calculation
-mae = calc_mae(imputation, np.nan_to_num(X_ori), indicating_mask)  # calculate mean absolute error on the ground truth (artificially-missing values)
+saits = SAITS(n_steps=train_X.shape[1], n_features=train_X.shape[2], n_layers=2, d_model=256, n_heads=4, d_k=64, d_v=64, d_ffn=128, dropout=0.1, epochs=5)
+saits.fit(train_set, val_set)  # train the model on the dataset
+imputation = saits.impute(test_set)  # impute the originally-missing values and artificially-missing values
+mae = calc_mae(imputation, np.nan_to_num(test_X_ori), indicating_mask)  # calculate mean absolute error on the ground truth (artificially-missing values)
 saits.save("save_it_here/saits_physionet2012.pypots")  # save the model for future use
 saits.load("save_it_here/saits_physionet2012.pypots")  # reload the serialized model file for following imputation or training
 ```
@@ -519,18 +519,18 @@ Time-Series.AI</a>
 [^41]: Xu, Z., Zeng, A., & Xu, Q. (2024).
 [FITS: Modeling Time Series with 10k parameters](https://openreview.net/forum?id=bWcnvZ3qMb).
 *ICLR 2024*.
-[^42]: Qian, L., Ibrahim, Z., Ellis, H. L., Zhang, A., Zhang, Y., Wang, T., & Dobson, R. (2023). 
+[^42]: Qian, L., Ibrahim, Z., Ellis, H. L., Zhang, A., Zhang, Y., Wang, T., & Dobson, R. (2023).
 [Knowledge Enhanced Conditional Imputation for Healthcare Time-series](https://arxiv.org/abs/2312.16713).
 *arXiv 2023*.
-[^43]: Lin, S., Lin, W., Wu, W., Zhao, F., Mo, R., & Zhang, H. (2023). 
+[^43]: Lin, S., Lin, W., Wu, W., Zhao, F., Mo, R., & Zhang, H. (2023).
 [SegRNN: Segment Recurrent Neural Network for Long-Term Time Series Forecasting](https://arxiv.org/abs/2308.11200).
 *arXiv 2023*.
-[^44]: Yu, H. F., Rao, N., & Dhillon, I. S. (2016). 
+[^44]: Yu, H. F., Rao, N., & Dhillon, I. S. (2016).
 [Temporal regularized matrix factorization for high-dimensional time series prediction](https://papers.nips.cc/paper_files/paper/2016/hash/85422afb467e9456013a2a51d4dff702-Abstract.html).
 *NeurIPS 2016*.
-[^45]: Jin, M., Wang, S., Ma, L., Chu, Z., Zhang, J. Y., Shi, X., ... & Wen, Q. (2024). 
+[^45]: Jin, M., Wang, S., Ma, L., Chu, Z., Zhang, J. Y., Shi, X., ... & Wen, Q. (2024).
 [Time-LLM: Time Series Forecasting by Reprogramming Large Language Models](https://openreview.net/forum?id=Unb5CVPtae).
 *ICLR 2024*.
-[^46]: Zhou, T., Niu, P., Sun, L., & Jin, R. (2023). 
+[^46]: Zhou, T., Niu, P., Sun, L., & Jin, R. (2023).
 [One Fits All: Power General Time Series Analysis by Pretrained LM](https://openreview.net/forum?id=gMS6FVZvmF).
 *NeurIPS 2023*.
