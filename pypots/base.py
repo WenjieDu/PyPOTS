@@ -371,7 +371,7 @@ class BaseModel(ABC):
         train_set :
             The dataset for model training, should be a dictionary including keys as 'X',
             or a path string locating a data file supported by PyPOTS (e.g. h5 file).
-            If it is a dict, X should be array-like of shape [n_samples, sequence length (n_steps), n_features],
+            If it is a dict, X should be array-like with shape [n_samples, n_steps, n_features],
             which is time-series data for training, can contain missing values, and y should be array-like of shape
             [n_samples], which is classification labels of X.
             If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
@@ -380,7 +380,7 @@ class BaseModel(ABC):
         val_set :
             The dataset for model validating, should be a dictionary including keys as 'X',
             or a path string locating a data file supported by PyPOTS (e.g. h5 file).
-            If it is a dict, X should be array-like of shape [n_samples, sequence length (n_steps), n_features],
+            If it is a dict, X should be array-like with shape [n_samples, n_steps, n_features],
             which is time-series data for validating, can contain missing values, and y should be array-like of shape
             [n_samples], which is classification labels of X.
             If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
@@ -405,7 +405,7 @@ class BaseModel(ABC):
         test_set :
             The dataset for model validating, should be a dictionary including keys as 'X',
             or a path string locating a data file supported by PyPOTS (e.g. h5 file).
-            If it is a dict, X should be array-like of shape [n_samples, sequence length (n_steps), n_features],
+            If it is a dict, X should be array-like with shape [n_samples, n_steps, n_features],
             which is time-series data for validating, can contain missing values, and y should be array-like of shape
             [n_samples], which is classification labels of X.
             If it is a path string, the path should point to a data file, e.g. a h5 file, which contains

@@ -396,18 +396,17 @@ class CSDI(BaseNNForecaster):
         file_type: str = "hdf5",
         n_sampling_times: int = 1,
     ) -> dict:
-        """
+        """Make predictions for the input data with the trained model.
 
         Parameters
         ----------
-        test_set : dict or str
-            The dataset for model validating, should be a dictionary including keys as 'X' and 'y',
-            or a path string locating a data file.
-            If it is a dict, X should be array-like of shape [n_samples, sequence length (n_steps), n_features],
-            which is time-series data for validating, can contain missing values, and y should be array-like of shape
-            [n_samples], which is classification labels of X.
+        test_set :
+            The test dataset for model to process, should be a dictionary including keys as 'X',
+            or a path string locating a data file supported by PyPOTS (e.g. h5 file).
+            If it is a dict, X should be array-like with shape [n_samples, n_steps, n_features],
+            which is the time-series data for processing.
             If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
-            key-value pairs like a dict, and it has to include keys as 'X' and 'y'.
+            key-value pairs like a dict, and it has to include 'X' key.
 
         file_type :
             The type of the given file if test_set is a path string.
@@ -460,23 +459,27 @@ class CSDI(BaseNNForecaster):
         self,
         test_set: Union[dict, str],
         file_type: str = "hdf5",
+        n_sampling_times: int = 1,
     ) -> np.ndarray:
         """Forecast the future of the input with the trained model.
 
         Parameters
         ----------
         test_set :
-            The data samples for testing, should be array-like of shape [n_samples, sequence length (n_steps),
-            n_features], or a path string locating a data file, e.g. h5 file.
+            The data samples for testing, should be array-like with shape [n_samples, n_steps, n_features], or a path
+            string locating a data file, e.g. h5 file.
 
         file_type :
             The type of the given file if X is a path string.
 
+        n_sampling_times:
+            The number of sampling times for the model to sample from the diffusion process.
+
         Returns
         -------
-        array-like, shape [n_samples, n_pred_steps, n_features],
+        array-like, shape [n_samples, n_sampling_times, n_pred_steps, n_features],
             Forecasting results.
         """
 
-        result_dict = self.predict(test_set, file_type=file_type)
+        result_dict = self.predict(test_set, file_type, n_sampling_times)
         return result_dict["forecasting"]
