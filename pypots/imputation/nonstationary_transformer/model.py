@@ -17,6 +17,7 @@ from .data import DatasetForNonstationaryTransformer
 from ..base import BaseNNImputer
 from ...data.checking import key_in_data_set
 from ...data.dataset import BaseDataset
+from ...nn.modules.loss import Criterion, MAE, MSE
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
 from ...utils.logging import logger
@@ -56,6 +57,9 @@ class NonstationaryTransformer(BaseNNImputer):
     dropout :
         The dropout rate for the model.
 
+    attn_dropout :
+        The dropout rate for the attention mechanism.
+
     ORT_weight :
         The weight for the ORT loss, the same as SAITS.
 
@@ -73,11 +77,11 @@ class NonstationaryTransformer(BaseNNImputer):
         stopped when the model does not perform better after that number of epochs.
         Leaving it default as None will disable the early-stopping.
 
-    train_loss_func:
+    training_loss:
         The customized loss function designed by users for training the model.
         If not given, will use the default loss as claimed in the original paper.
 
-    val_metric_func:
+    validation_metric:
         The customized metric function designed by users for validating the model.
         If not given, will use the default MSE metric.
 
@@ -124,14 +128,15 @@ class NonstationaryTransformer(BaseNNImputer):
         d_projector_hidden: list,
         n_projector_hidden_layers: int,
         dropout: float = 0,
+        attn_dropout: float = 0,
         ORT_weight: float = 1,
         MIT_weight: float = 1,
         batch_size: int = 32,
         epochs: int = 100,
         patience: Optional[int] = None,
-        train_loss_func: Optional[dict] = None,
-        val_metric_func: Optional[dict] = None,
-        optimizer: Optional[Optimizer] = Adam(),
+        training_loss: Criterion = MAE(),
+        validation_metric: Criterion = MSE(),
+        optimizer: Optimizer = Adam(),
         num_workers: int = 0,
         device: Optional[Union[str, torch.device, list]] = None,
         saving_path: str = None,
@@ -142,8 +147,8 @@ class NonstationaryTransformer(BaseNNImputer):
             batch_size=batch_size,
             epochs=epochs,
             patience=patience,
-            train_loss_func=train_loss_func,
-            val_metric_func=val_metric_func,
+            training_loss=training_loss,
+            validation_metric=validation_metric,
             num_workers=num_workers,
             device=device,
             saving_path=saving_path,
@@ -165,6 +170,7 @@ class NonstationaryTransformer(BaseNNImputer):
         self.d_projector_hidden = d_projector_hidden
         self.n_projector_hidden_layers = n_projector_hidden_layers
         self.dropout = dropout
+        self.attn_dropout = attn_dropout
         self.ORT_weight = ORT_weight
         self.MIT_weight = MIT_weight
 
@@ -179,8 +185,10 @@ class NonstationaryTransformer(BaseNNImputer):
             self.d_projector_hidden,
             self.n_projector_hidden_layers,
             self.dropout,
+            self.dropout,
             self.ORT_weight,
             self.MIT_weight,
+            self.training_loss,
         )
         self._send_model_to_given_device()
         self._print_model_size()

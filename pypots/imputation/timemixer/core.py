@@ -7,11 +7,11 @@
 
 import torch.nn as nn
 
-from ...nn.functional import calc_mse
 from ...nn.functional import (
     nonstationary_norm,
     nonstationary_denorm,
 )
+from ...nn.modules.loss import Criterion, MSE
 from ...nn.modules.timemixer import BackboneTimeMixer
 
 
@@ -31,10 +31,12 @@ class _TimeMixer(nn.Module):
         downsampling_layers: int,
         downsampling_window: int,
         apply_nonstationary_norm: bool = False,
+        training_loss: Criterion = MSE(),
     ):
         super().__init__()
 
         self.apply_nonstationary_norm = apply_nonstationary_norm
+        self.training_loss = training_loss
 
         self.model = BackboneTimeMixer(
             task_name="imputation",
@@ -78,7 +80,7 @@ class _TimeMixer(nn.Module):
         # if in training mode, return results with losses
         if self.training:
             # `loss` is always the item for backward propagating to update the model
-            loss = calc_mse(dec_out, inputs["X_ori"], inputs["indicating_mask"])
+            loss = self.training_loss(dec_out, inputs["X_ori"], inputs["indicating_mask"])
             results["loss"] = loss
 
         return results

@@ -17,6 +17,7 @@ from .data import DatasetForTransformer
 from ..base import BaseNNImputer
 from ...data.checking import key_in_data_set
 from ...data.dataset import BaseDataset
+from ...nn.modules.loss import Criterion, MAE, MSE
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
 from ...utils.logging import logger
@@ -82,11 +83,11 @@ class Transformer(BaseNNImputer):
         stopped when the model does not perform better after that number of epochs.
         Leaving it default as None will disable the early-stopping.
 
-    train_loss_func:
+    training_loss:
         The customized loss function designed by users for training the model.
         If not given, will use the default loss as claimed in the original paper.
 
-    val_metric_func:
+    validation_metric:
         The customized metric function designed by users for validating the model.
         If not given, will use the default MSE metric.
 
@@ -139,9 +140,9 @@ class Transformer(BaseNNImputer):
         batch_size: int = 32,
         epochs: int = 100,
         patience: Optional[int] = None,
-        train_loss_func: Optional[dict] = None,
-        val_metric_func: Optional[dict] = None,
-        optimizer: Optional[Optimizer] = Adam(),
+        training_loss: Criterion = MAE(),
+        validation_metric: Criterion = MSE(),
+        optimizer: Optimizer = Adam(),
         num_workers: int = 0,
         device: Optional[Union[str, torch.device, list]] = None,
         saving_path: str = None,
@@ -152,8 +153,8 @@ class Transformer(BaseNNImputer):
             batch_size=batch_size,
             epochs=epochs,
             patience=patience,
-            train_loss_func=train_loss_func,
-            val_metric_func=val_metric_func,
+            training_loss=training_loss,
+            validation_metric=validation_metric,
             num_workers=num_workers,
             device=device,
             saving_path=saving_path,
@@ -196,6 +197,7 @@ class Transformer(BaseNNImputer):
             self.attn_dropout,
             self.ORT_weight,
             self.MIT_weight,
+            self.training_loss,
         )
         self._send_model_to_given_device()
         self._print_model_size()

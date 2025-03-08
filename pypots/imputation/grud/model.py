@@ -16,6 +16,7 @@ from torch.utils.data import DataLoader
 from .core import _GRUD
 from .data import DatasetForGRUD
 from ..base import BaseNNImputer
+from ...nn.modules.loss import Criterion, MAE, MSE
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
 
@@ -44,6 +45,14 @@ class GRUD(BaseNNImputer):
         The patience for the early-stopping mechanism. Given a positive integer, the training process will be
         stopped when the model does not perform better after that number of epochs.
         Leaving it default as None will disable the early-stopping.
+
+    training_loss:
+        The customized loss function designed by users for training the model.
+        If not given, will use the default loss as claimed in the original paper.
+
+    validation_metric:
+        The customized metric function designed by users for validating the model.
+        If not given, will use the default MSE metric.
 
     optimizer :
         The optimizer for model training.
@@ -85,9 +94,9 @@ class GRUD(BaseNNImputer):
         batch_size: int = 32,
         epochs: int = 100,
         patience: Optional[int] = None,
-        train_loss_func: Optional[dict] = None,
-        val_metric_func: Optional[dict] = None,
-        optimizer: Optional[Optimizer] = Adam(),
+        training_loss: Criterion = MAE(),
+        validation_metric: Criterion = MSE(),
+        optimizer: Optimizer = Adam(),
         num_workers: int = 0,
         device: Optional[Union[str, torch.device, list]] = None,
         saving_path: Optional[str] = None,
@@ -98,8 +107,8 @@ class GRUD(BaseNNImputer):
             batch_size=batch_size,
             epochs=epochs,
             patience=patience,
-            train_loss_func=train_loss_func,
-            val_metric_func=val_metric_func,
+            training_loss=training_loss,
+            validation_metric=validation_metric,
             num_workers=num_workers,
             device=device,
             saving_path=saving_path,

@@ -144,7 +144,7 @@ class CSDI(BaseNNForecaster):
         batch_size: int = 32,
         epochs: int = 100,
         patience: Optional[int] = None,
-        optimizer: Optional[Optimizer] = Adam(),
+        optimizer: Optimizer = Adam(),
         num_workers: int = 0,
         device: Optional[Union[str, torch.device, list]] = None,
         saving_path: Optional[str] = None,
@@ -155,8 +155,8 @@ class CSDI(BaseNNForecaster):
             batch_size=batch_size,
             epochs=epochs,
             patience=patience,
-            train_loss_func=None,
-            val_metric_func=None,
+            training_loss=None,
+            validation_metric=None,
             num_workers=num_workers,
             device=device,
             saving_path=saving_path,
@@ -175,10 +175,10 @@ class CSDI(BaseNNForecaster):
         self.n_pred_features = n_pred_features
         self.target_strategy = target_strategy
         # CSDI has its own defined loss function and validation loss, so we set them as None here
-        self.train_loss_func = None
-        self.train_loss_func_name = "default"
-        self.val_metric_func = None
-        self.val_metric_func_name = "metric (default)"
+        self.training_loss = None
+        self.training_loss_name = "default"
+        self.validation_metric = None
+        self.validation_metric_name = "metric (default)"
 
         # set up the model
         self.model = _CSDI(
@@ -293,14 +293,12 @@ class CSDI(BaseNNForecaster):
 
                     logger.info(
                         f"Epoch {epoch:03d} - "
-                        f"training loss ({self.train_loss_func_name}): {mean_train_loss:.4f}, "
-                        f"validation {self.val_metric_func_name}: {mean_val_loss:.4f}"
+                        f"training loss ({self.training_loss_name}): {mean_train_loss:.4f}, "
+                        f"validation {self.validation_metric_name}: {mean_val_loss:.4f}"
                     )
                     mean_loss = mean_val_loss
                 else:
-                    logger.info(
-                        f"Epoch {epoch:03d} - training loss ({self.train_loss_func_name}): {mean_train_loss:.4f}"
-                    )
+                    logger.info(f"Epoch {epoch:03d} - training loss ({self.training_loss_name}): {mean_train_loss:.4f}")
                     mean_loss = mean_train_loss
 
                 if np.isnan(mean_loss):

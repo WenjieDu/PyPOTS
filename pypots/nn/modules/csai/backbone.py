@@ -11,7 +11,7 @@ import torch
 import torch.nn as nn
 
 from .layers import FeatureRegression, Decay, Decay_obs, PositionalEncoding, Conv1dWithInit, TorchTransformerEncoder
-from ....nn.functional import calc_mae
+from ..loss import Criterion, MAE
 
 
 class BackboneCSAI(nn.Module):
@@ -88,13 +88,22 @@ class BackboneCSAI(nn.Module):
 
     """
 
-    def __init__(self, n_steps, n_features, rnn_hidden_size, step_channels):
+    def __init__(
+        self,
+        n_steps,
+        n_features,
+        rnn_hidden_size,
+        step_channels,
+        training_loss: Criterion = MAE(),
+    ):
         super().__init__()
 
         self.n_steps = n_steps
         self.step_channels = step_channels
         self.input_size = n_features
         self.hidden_size = rnn_hidden_size
+        self.training_loss = training_loss
+
         self.temp_decay_h = Decay(input_size=self.input_size, output_size=self.hidden_size, diag=False)
         self.temp_decay_x = Decay(input_size=self.input_size, output_size=self.input_size, diag=True)
         self.hist = nn.Linear(self.hidden_size, self.input_size)
@@ -168,7 +177,7 @@ class BackboneCSAI(nn.Module):
             x_comb_t = beta * xu + (1 - beta) * x_h
 
             # x_loss += torch.sum(torch.abs(x_t - x_comb_t) * m_t) / (torch.sum(m_t) + 1e-5)
-            x_loss += calc_mae(x_comb_t, x_t, m_t)
+            x_loss += self.training_loss(x_comb_t, x_t, m_t)
 
             # Final Imputation Estimates
             x_imp[:, t, :] = (m_t * x_t) + ((1 - m_t) * x_comb_t)
@@ -185,11 +194,18 @@ class BackboneCSAI(nn.Module):
 
 
 class BackboneBCSAI(nn.Module):
-    def __init__(self, n_steps, n_features, rnn_hidden_size, step_channels):
+    def __init__(
+        self,
+        n_steps,
+        n_features,
+        rnn_hidden_size,
+        step_channels,
+        training_loss: Criterion = MAE(),
+    ):
         super().__init__()
 
-        self.model_f = BackboneCSAI(n_steps, n_features, rnn_hidden_size, step_channels)
-        self.model_b = BackboneCSAI(n_steps, n_features, rnn_hidden_size, step_channels)
+        self.model_f = BackboneCSAI(n_steps, n_features, rnn_hidden_size, step_channels, training_loss)
+        self.model_b = BackboneCSAI(n_steps, n_features, rnn_hidden_size, step_channels, training_loss)
 
     def forward(self, xdata):
 

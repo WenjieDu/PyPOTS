@@ -12,7 +12,7 @@ import torch.nn as nn
 
 from .layers import FeatureRegression
 from ..grud.layers import TemporalDecay
-from ....nn.functional import calc_mae
+from ..loss import Criterion, MAE
 
 
 class BackboneRITS(nn.Module):
@@ -66,11 +66,13 @@ class BackboneRITS(nn.Module):
         n_steps: int,
         n_features: int,
         rnn_hidden_size: int,
+        training_loss: Criterion = MAE(),
     ):
         super().__init__()
         self.n_steps = n_steps
         self.n_features = n_features
         self.rnn_hidden_size = rnn_hidden_size
+        self.training_loss = training_loss
 
         self.rnn_cell = nn.LSTMCell(self.n_features * 2, self.rnn_hidden_size)
         self.temp_decay_h = TemporalDecay(input_size=self.n_features, output_size=self.rnn_hidden_size, diag=False)
@@ -129,17 +131,17 @@ class BackboneRITS(nn.Module):
 
             hidden_states = hidden_states * gamma_h  # decay hidden states
             x_h = self.hist_reg(hidden_states)
-            reconstruction_loss += calc_mae(x_h, x, m)
+            reconstruction_loss += self.training_loss(x_h, x, m)
 
             x_c = m * x + (1 - m) * x_h
 
             z_h = self.feat_reg(x_c)
-            reconstruction_loss += calc_mae(z_h, x, m)
+            reconstruction_loss += self.training_loss(z_h, x, m)
 
             alpha = torch.sigmoid(self.combining_weight(torch.cat([gamma_x, m], dim=1)))
 
             c_h = alpha * z_h + (1 - alpha) * x_h
-            reconstruction_loss += calc_mae(c_h, x, m)
+            reconstruction_loss += self.training_loss(c_h, x, m)
 
             c_c = m * x + (1 - m) * c_h
             estimations.append(c_h.unsqueeze(dim=1))
@@ -184,6 +186,7 @@ class BackboneBRITS(nn.Module):
         n_steps: int,
         n_features: int,
         rnn_hidden_size: int,
+        training_loss: Criterion = MAE(),
     ):
         super().__init__()
         # data settings
@@ -192,8 +195,8 @@ class BackboneBRITS(nn.Module):
         # imputer settings
         self.rnn_hidden_size = rnn_hidden_size
         # create models
-        self.rits_f = BackboneRITS(n_steps, n_features, rnn_hidden_size)
-        self.rits_b = BackboneRITS(n_steps, n_features, rnn_hidden_size)
+        self.rits_f = BackboneRITS(n_steps, n_features, rnn_hidden_size, training_loss)
+        self.rits_b = BackboneRITS(n_steps, n_features, rnn_hidden_size, training_loss)
 
     @staticmethod
     def _get_consistency_loss(pred_f: torch.Tensor, pred_b: torch.Tensor) -> torch.Tensor:
