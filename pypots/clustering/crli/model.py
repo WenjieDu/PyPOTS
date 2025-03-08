@@ -368,27 +368,24 @@ class CRLI(BaseNNClusterer):
 
         Parameters
         ----------
-        test_set : dict or str
-            The dataset for model validating, should be a dictionary including keys as 'X',
+        test_set :
+            The test dataset for model to process, should be a dictionary including keys as 'X',
             or a path string locating a data file supported by PyPOTS (e.g. h5 file).
-            If it is a dict, X should be array-like of shape [n_samples, sequence length (n_steps), n_features],
-            which is time-series data for validating, can contain missing values, and y should be array-like of shape
-            [n_samples], which is classification labels of X.
+            If it is a dict, X should be array-like with shape [n_samples, n_steps, n_features],
+            which is the time-series data for processing.
             If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
-            key-value pairs like a dict, and it has to include keys as 'X' and 'y'.
+            key-value pairs like a dict, and it has to include 'X' key.
 
         file_type :
             The type of the given file if test_set is a path string.
 
         return_latent_vars : bool
-            Whether to return the latent variables in CRLI, e.g. latent representation from the fully connected network
-            in CRLI, etc.
+            Whether to return the latent variables in VaDER, e.g. mu and phi, etc.
 
         Returns
         -------
         file_type :
             The dictionary containing the clustering results and latent variables if necessary.
-
         """
         test_set = DatasetForCRLI(test_set, return_y=False, file_type=file_type)
         test_loader = DataLoader(
@@ -429,23 +426,5 @@ class CRLI(BaseNNClusterer):
         test_set: Union[dict, str],
         file_type: str = "hdf5",
     ) -> np.ndarray:
-        """Cluster the input with the trained model.
-
-        Parameters
-        ----------
-        test_set :
-            The data samples for testing, should be array-like of shape [n_samples, sequence length (n_steps),
-            n_features], or a path string locating a data file, e.g. h5 file.
-
-        file_type :
-            The type of the given file if X is a path string.
-
-        Returns
-        -------
-        array-like,
-            Clustering results.
-
-        """
-
         result_dict = self.predict(test_set, file_type=file_type)
         return result_dict["clustering"]

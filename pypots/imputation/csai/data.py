@@ -169,7 +169,7 @@ class DatasetForCSAI(BaseDataset):
     data :
         The dataset for model input, which can be either a dictionary or a path string to a data file.
         If it's a dictionary, `X` should be an array-like structure
-        with shape [n_samples, sequence length (n_steps), n_features], containing the time-series data,
+        with shape [n_samples, n_steps, n_features], containing the time-series data,
         and it can have missing values. Optionally, the dictionary can include `y`,
         an array-like structure with shape [n_samples], representing the labels of `X`.
         If `data` is a path string, it should point to a data file (e.g., h5 file) that contains key-value pairs like

@@ -45,29 +45,7 @@ class Median(BaseImputer):
         test_set: Union[dict, str],
         file_type: str = "hdf5",
     ) -> dict:
-        """Make predictions for the input data with the trained model.
 
-        Parameters
-        ----------
-        test_set : dict or str
-            The dataset for model validating, should be a dictionary including keys as 'X',
-            or a path string locating a data file supported by PyPOTS (e.g. h5 file).
-            If it is a dict, X should be array-like of shape [n_samples, sequence length (n_steps), n_features],
-            which is time-series data for validating, can contain missing values, and y should be array-like of shape
-            [n_samples], which is classification labels of X.
-            If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
-            key-value pairs like a dict, and it has to include keys as 'X' and 'y'.
-
-        file_type :
-            The type of the given file if test_set is a path string.
-
-        Returns
-        -------
-        result_dict: dict
-            Prediction results in a Python Dictionary for the given samples.
-            It should be a dictionary including keys as 'imputation', 'classification', 'clustering', and 'forecasting'.
-            For sure, only the keys that relevant tasks are supported by the model will be returned.
-        """
         if isinstance(test_set, str):
             with h5py.File(test_set, "r") as f:
                 X = f["X"][:]
@@ -109,22 +87,6 @@ class Median(BaseImputer):
         test_set: Union[dict, str],
         file_type: str = "hdf5",
     ) -> np.ndarray:
-        """Impute missing values in the given data with the trained model.
-
-        Parameters
-        ----------
-        test_set :
-            The data samples for testing, should be array-like of shape [n_samples, sequence length (n_steps),
-            n_features], or a path string locating a data file, e.g. h5 file.
-
-        file_type :
-            The type of the given file if X is a path string.
-
-        Returns
-        -------
-        array-like, shape [n_samples, sequence length (n_steps), n_features],
-            Imputed data.
-        """
 
         result_dict = self.predict(test_set, file_type=file_type)
         return result_dict["imputation"]

@@ -297,22 +297,5 @@ class Raindrop(BaseNNClassifier):
         test_set: Union[dict, str],
         file_type: str = "hdf5",
     ) -> np.ndarray:
-        """Classify the input data with the trained model.
-
-        Parameters
-        ----------
-        test_set :
-            The data samples for testing, should be array-like of shape [n_samples, sequence length (n_steps),
-            n_features], or a path string locating a data file, e.g. h5 file.
-
-        file_type :
-            The type of the given file if X is a path string.
-
-        Returns
-        -------
-        array-like, shape [n_samples],
-            Classification results of the given samples.
-        """
-
         result_dict = self.predict(test_set, file_type=file_type)
         return result_dict["classification"]

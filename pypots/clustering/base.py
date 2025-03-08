@@ -89,7 +89,7 @@ class BaseClusterer(BaseModel):
         train_set :
             The dataset for model training, should be a dictionary including the key 'X',
             or a path string locating a data file.
-            If it is a dict, X should be array-like of shape [n_samples, sequence length (n_steps), n_features],
+            If it is a dict, X should be array-like with shape [n_samples, n_steps, n_features],
             which is time-series data for training, can contain missing values.
             If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
             key-value pairs like a dict, and it has to include the key 'X'.
@@ -97,7 +97,7 @@ class BaseClusterer(BaseModel):
         val_set :
             The dataset for model validating, should be a dictionary including keys as 'X' and 'y',
             or a path string locating a data file.
-            If it is a dict, X should be array-like of shape [n_samples, sequence length (n_steps), n_features],
+            If it is a dict, X should be array-like with shape [n_samples, n_steps, n_features],
             which is time-series data for validating, can contain missing values, and y should be array-like of shape
             [n_samples], which is classification labels of X.
             If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
@@ -128,8 +128,8 @@ class BaseClusterer(BaseModel):
         Parameters
         ----------
         test_set :
-            The data samples for testing, should be array-like of shape [n_samples, sequence length (n_steps),
-            n_features], or a path string locating a data file, e.g. h5 file.
+            The data samples for testing, should be array-like with shape [n_samples, n_steps, n_features], or a path
+            string locating a data file, e.g. h5 file.
 
         file_type :
             The type of the given file if X is a path string.
@@ -441,7 +441,7 @@ class BaseNNClusterer(BaseNNModel):
         train_set :
             The dataset for model training, should be a dictionary including the key 'X',
             or a path string locating a data file.
-            If it is a dict, X should be array-like of shape [n_samples, sequence length (n_steps), n_features],
+            If it is a dict, X should be array-like with shape [n_samples, n_steps, n_features],
             which is time-series data for training, can contain missing values.
             If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
             key-value pairs like a dict, and it has to include the key 'X'.
@@ -449,7 +449,7 @@ class BaseNNClusterer(BaseNNModel):
         val_set :
             The dataset for model validating, should be a dictionary including keys as 'X' and 'y',
             or a path string locating a data file.
-            If it is a dict, X should be array-like of shape [n_samples, sequence length (n_steps), n_features],
+            If it is a dict, X should be array-like with shape [n_samples, n_steps, n_features],
             which is time-series data for validating, can contain missing values, and y should be array-like of shape
             [n_samples], which is classification labels of X.
             If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
@@ -472,14 +472,13 @@ class BaseNNClusterer(BaseNNModel):
 
         Parameters
         ----------
-        test_set : dict or str
-            The dataset for model validating, should be a dictionary including keys as 'X',
+        test_set :
+            The test dataset for model to process, should be a dictionary including keys as 'X',
             or a path string locating a data file supported by PyPOTS (e.g. h5 file).
-            If it is a dict, X should be array-like of shape [n_samples, sequence length (n_steps), n_features],
-            which is time-series data for validating, can contain missing values, and y should be array-like of shape
-            [n_samples], which is classification labels of X.
+            If it is a dict, X should be array-like with shape [n_samples, n_steps, n_features],
+            which is the time-series data for processing.
             If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
-            key-value pairs like a dict, and it has to include keys as 'X' and 'y'.
+            key-value pairs like a dict, and it has to include 'X' key.
 
         file_type :
             The type of the given file if test_set is a path string.
@@ -500,13 +499,11 @@ class BaseNNClusterer(BaseNNModel):
     ) -> np.ndarray:
         """Cluster the input with the trained model.
 
-
-
         Parameters
         ----------
         test_set :
-            The data samples for testing, should be array-like of shape [n_samples, sequence length (n_steps),
-            n_features], or a path string locating a data file, e.g. h5 file.
+            The data samples for testing, should be array-like with shape [n_samples, n_steps, n_features], or a path
+            string locating a data file, e.g. h5 file.
 
         file_type :
             The type of the given file if X is a path string.
