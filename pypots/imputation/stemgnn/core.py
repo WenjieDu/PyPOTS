@@ -8,8 +8,9 @@ and takes over the forward progress of the algorithm.
 
 import torch.nn as nn
 
-from ...nn.modules.stemgnn import BackboneStemGNN
+from ...nn.modules.loss import Criterion, MAE
 from ...nn.modules.saits import SaitsLoss, SaitsEmbedding
+from ...nn.modules.stemgnn import BackboneStemGNN
 
 
 class _StemGNN(nn.Module):
@@ -24,6 +25,7 @@ class _StemGNN(nn.Module):
         leaky_rate=0.2,
         ORT_weight: float = 1,
         MIT_weight: float = 1,
+        training_loss: Criterion = MAE(),
     ):
         super().__init__()
 
@@ -46,7 +48,7 @@ class _StemGNN(nn.Module):
 
         # for the imputation task, the output dim is the same as input dim
         self.output_projection = nn.Linear(d_model, n_features)
-        self.saits_loss_func = SaitsLoss(ORT_weight, MIT_weight)
+        self.saits_training_loss = SaitsLoss(ORT_weight, MIT_weight, training_loss)
 
     def forward(self, inputs: dict) -> dict:
         X, missing_mask = inputs["X"], inputs["missing_mask"]
@@ -71,7 +73,7 @@ class _StemGNN(nn.Module):
         # if in training mode, return results with losses
         if self.training:
             X_ori, indicating_mask = inputs["X_ori"], inputs["indicating_mask"]
-            loss, ORT_loss, MIT_loss = self.saits_loss_func(reconstruction, X_ori, missing_mask, indicating_mask)
+            loss, ORT_loss, MIT_loss = self.saits_training_loss(reconstruction, X_ori, missing_mask, indicating_mask)
             results["ORT_loss"] = ORT_loss
             results["MIT_loss"] = MIT_loss
             # `loss` is always the item for backward propagating to update the model

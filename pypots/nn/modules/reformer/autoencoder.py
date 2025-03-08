@@ -28,7 +28,7 @@ class ReformerEncoder(nn.Module):
 
         assert (
             n_steps % (bucket_size * 2) == 0
-        ), f"Sequence length ({n_steps}) needs to be divisible by target bucket size  x 2 - {bucket_size * 2}"
+        ), f"Sequence length ({n_steps}) needs to be divisible by target bucket size {bucket_size} x 2"
 
         self.enc_layer_stack = nn.ModuleList(
             [

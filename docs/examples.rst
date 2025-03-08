@@ -22,25 +22,33 @@ You can also find a simple and quick-start tutorial notebook on Google Colab
 
     import numpy as np
     from sklearn.preprocessing import StandardScaler
-    from pygrinder import mcar
-    from pypots.data import load_specific_dataset
-    from pypots.imputation import SAITS
-    from pypots.nn.functional import calc_mae
+    from pygrinder import mcar, calc_missing_rate
+    from benchpots.datasets import preprocess_physionet2012
 
-    # Data preprocessing. Tedious, but PyPOTS can help. 🤓
-    data = load_specific_dataset('physionet_2012')  # PyPOTS will automatically download and extract it.
-    X = data['train_X']
-    num_samples = len(X)
-    X = StandardScaler().fit_transform(X.reshape(-1, X.shape[-1])).reshape(X.shape)
-    X_ori = X  # keep X_ori for validation
-    X = mcar(X, 0.1)  # randomly hold out 10% observed values as ground truth
-    dataset = {"X": X}  # X for model input
-    print(X.shape)  # (7671, 48, 37), 7671 samples, 48 time steps, 37 features
+    # prepare the dataset
+    data = preprocess_physionet2012(subset='set-a',rate=0.1) # Our ecosystem libs will automatically download and extract it
+    train_X, val_X, test_X = data["train_X"], data["val_X"], data["test_X"]
+    print(train_X.shape)  # (n_samples, n_steps, n_features)
+    print(val_X.shape)  # samples (n_samples) in train set and val set are different, but they have the same sequence len (n_steps) and feature dim (n_features)
+    print(f"We have {calc_missing_rate(train_X):.1%} values missing in train_X")
+
+    # organize the dataset for PyPOTS model input
+    train_set = {"X": train_X}  # in training set, simply put the incomplete time series into it
+    val_set = {
+        "X": val_X,
+        "X_ori": data["val_X_ori"],  # in validation set, we need ground truth for evaluation and picking the best model checkpoint
+    }
+    test_set = {"X": test_X}  # in test set, only give the testing incomplete time series for model to impute
+
+    # the test set for final evaluation
+    test_X_ori = data["test_X_ori"]  # test_X_ori bears ground truth for evaluation
+    indicating_mask = np.isnan(test_X) ^ np.isnan(test_X_ori)  # mask indicates the values that are missing in X but not in X_ori, i.e. where the gt values are
 
     # initialize the model
+    _, n_steps, n_features = train_X.shape
     saits = SAITS(
-        n_steps=48,
-        n_features=37,
+        n_steps=n_steps,
+        n_features=n_features,
         n_layers=2,
         d_model=256,
         d_ffn=128,
@@ -53,13 +61,11 @@ You can also find a simple and quick-start tutorial notebook on Google Colab
         model_saving_strategy="best", # only save the model with the best validation performance
     )
 
-    # train the model. Here I consider the train dataset only, and evaluate on it, because ground truth is not visible to the model.
-    saits.fit(dataset)
+    # train the model. You can also omit the val_set if you don't need to validate the model during training
+    saits.fit(train_set, val_set)
     # impute the originally-missing values and artificially-missing values
-    imputation = saits.impute(dataset)
-    # calculate mean absolute error on the ground truth (artificially-missing values)
-    indicating_mask = np.isnan(X) ^ np.isnan(X_ori)  # indicating mask for imputation error calculation
-    mae = calc_mae(imputation, np.nan_to_num(X_ori), indicating_mask)  # calculate mean absolute error on the ground truth (artificially-missing values)
+    imputation = saits.impute(test_set)
+    mae = calc_mae(imputation, np.nan_to_num(test_X_ori), indicating_mask)  # calculate mean absolute error on the ground truth (artificially-missing values)
 
     # the best model has been already saved, but you can still manually save it with function save_model() as below
     saits.save(saving_path="examples/saits/manually_saved_saits_model")

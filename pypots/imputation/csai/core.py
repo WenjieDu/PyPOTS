@@ -6,7 +6,9 @@
 # License: BSD-3-Clause
 
 import torch.nn as nn
+
 from ...nn.modules.csai.backbone import BackboneBCSAI
+from ...nn.modules.loss import Criterion, MAE
 
 
 class _BCSAI(nn.Module):
@@ -71,6 +73,7 @@ class _BCSAI(nn.Module):
         step_channels,
         consistency_weight,
         imputation_weight,
+        training_loss: Criterion = MAE(),
     ):
         super().__init__()
         self.n_steps = n_steps
@@ -80,7 +83,13 @@ class _BCSAI(nn.Module):
         self.consistency_weight = consistency_weight
         self.imputation_weight = imputation_weight
 
-        self.model = BackboneBCSAI(n_steps, n_features, rnn_hidden_size, step_channels)
+        self.model = BackboneBCSAI(
+            n_steps,
+            n_features,
+            rnn_hidden_size,
+            step_channels,
+            training_loss,
+        )
 
     def forward(self, inputs: dict) -> dict:
         (

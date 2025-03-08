@@ -7,12 +7,10 @@ and takes over the forward progress of the algorithm.
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-from typing import Callable
-
 import torch.nn as nn
 
-from ...nn.functional import calc_mse
 from ...nn.modules.gpt4ts import BackboneGPT4TS
+from ...nn.modules.loss import Criterion, MAE
 
 
 class _GPT4TS(nn.Module):
@@ -28,12 +26,12 @@ class _GPT4TS(nn.Module):
         dropout: float,
         embed: str,
         freq: str,
-        loss_func: Callable = calc_mse,
+        training_loss: Criterion = MAE(),
     ):
         super().__init__()
         self.n_layers = n_layers
         self.n_steps = n_steps
-        self.loss_func = loss_func
+        self.training_loss = training_loss
 
         self.backbone = BackboneGPT4TS(
             "imputation",
@@ -65,7 +63,7 @@ class _GPT4TS(nn.Module):
         # if in training mode, return results with losses
         if self.training:
             # `loss` is always the item for backward propagating to update the model
-            loss = self.loss_func(reconstruction, inputs["X_ori"], inputs["indicating_mask"])
+            loss = self.training_loss(reconstruction, inputs["X_ori"], inputs["indicating_mask"])
             results["loss"] = loss
 
         return results

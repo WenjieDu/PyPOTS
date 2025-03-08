@@ -132,9 +132,7 @@ class GPVAE(BaseNNImputer):
         batch_size: int = 32,
         epochs: int = 100,
         patience: Optional[int] = None,
-        train_loss_func: Optional[dict] = None,
-        val_metric_func: Optional[dict] = None,
-        optimizer: Optional[Optimizer] = Adam(),
+        optimizer: Optimizer = Adam(),
         num_workers: int = 0,
         device: Optional[Union[str, torch.device, list]] = None,
         saving_path: str = None,
@@ -145,8 +143,8 @@ class GPVAE(BaseNNImputer):
             batch_size=batch_size,
             epochs=epochs,
             patience=patience,
-            train_loss_func=train_loss_func,
-            val_metric_func=val_metric_func,
+            training_loss=None,
+            validation_metric=None,
             num_workers=num_workers,
             device=device,
             saving_path=saving_path,
@@ -295,14 +293,12 @@ class GPVAE(BaseNNImputer):
 
                     logger.info(
                         f"Epoch {epoch:03d} - "
-                        f"training loss ({self.train_loss_func_name}): {mean_train_loss:.4f}, "
-                        f"validation {self.val_metric_func_name}: {mean_val_loss:.4f}"
+                        f"training loss ({self.training_loss_name}): {mean_train_loss:.4f}, "
+                        f"validation {self.validation_metric_name}: {mean_val_loss:.4f}"
                     )
                     mean_loss = mean_val_loss
                 else:
-                    logger.info(
-                        f"Epoch {epoch:03d} - training loss ({self.train_loss_func_name}): {mean_train_loss:.4f}"
-                    )
+                    logger.info(f"Epoch {epoch:03d} - training loss ({self.training_loss_name}): {mean_train_loss:.4f}")
                     mean_loss = mean_train_loss
 
                 if np.isnan(mean_loss):

@@ -7,8 +7,8 @@
 
 import torch.nn as nn
 
-from ...nn.functional import calc_mse
 from ...nn.functional import nonstationary_norm, nonstationary_denorm
+from ...nn.modules.loss import Criterion, MAE
 from ...nn.modules.saits import SaitsLoss, SaitsEmbedding
 from ...nn.modules.tefn import BackboneTEFN
 
@@ -22,6 +22,7 @@ class _TEFN(nn.Module):
         apply_nonstationary_norm: bool = False,
         ORT_weight: float = 1,
         MIT_weight: float = 1,
+        training_loss: Criterion = MAE(),
     ):
         super().__init__()
 
@@ -42,7 +43,7 @@ class _TEFN(nn.Module):
         )
 
         # apply SAITS loss function to Transformer on the imputation task
-        self.saits_loss_func = SaitsLoss(ORT_weight, MIT_weight)
+        self.saits_training_loss = SaitsLoss(ORT_weight, MIT_weight, training_loss)
 
     def forward(self, inputs: dict) -> dict:
         X, missing_mask = inputs["X"], inputs["missing_mask"]
@@ -73,7 +74,9 @@ class _TEFN(nn.Module):
         # if in training mode, return results with losses
         if self.training:
             # `loss` is always the item for backward propagating to update the model
-            loss = calc_mse(out, inputs["X_ori"], inputs["indicating_mask"])
+            loss, ORT_loss, MIT_loss = self.saits_training_loss(
+                out, inputs["X_ori"], missing_mask, inputs["indicating_mask"]
+            )
             results["loss"] = loss
 
         return results

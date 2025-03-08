@@ -14,6 +14,7 @@ from typing import Optional, Union, Iterable, Callable
 import torch
 from torch.utils.tensorboard import SummaryWriter
 
+from .nn.modules.loss import Criterion
 from .utils.file import create_dir_if_not_exist
 from .utils.logging import logger, logger_creator
 
@@ -78,6 +79,8 @@ class BaseModel(ABC):
         assert (
             model_saving_strategy in saving_strategies
         ), f"saving_strategy must be one of {saving_strategies}, but got f{model_saving_strategy}."
+        if saving_path is not None and saving_strategies is None:
+            logger.warning("‼️ saving_path is given, but model_saving_strategy is None. No model file will be saved.")
 
         self.device = None  # set up with _setup_device() below
         self.enable_amp = enable_amp
@@ -451,11 +454,11 @@ class BaseNNModel(BaseModel):
         stopped when the model does not perform better after that number of epochs.
         Leaving it default as None will disable the early-stopping.
 
-    train_loss_func:
+    training_loss:
         The customized loss function designed by users for training the model.
         If not given, will use the default loss as claimed in the original paper.
 
-    val_metric_func:
+    validation_metric:
         The customized metric function designed by users for validating the model.
         If not given, will use the default MSE metric.
 
@@ -518,8 +521,8 @@ class BaseNNModel(BaseModel):
         batch_size: int,
         epochs: int,
         patience: Optional[int] = None,
-        train_loss_func: Optional[dict] = None,
-        val_metric_func: Optional[dict] = None,
+        training_loss: Optional[Criterion] = None,
+        validation_metric: Optional[Criterion] = None,
         num_workers: int = 0,
         device: Optional[Union[str, torch.device, list]] = None,
         enable_amp: bool = False,
@@ -543,25 +546,25 @@ class BaseNNModel(BaseModel):
                 patience <= epochs
             ), f"patience must be smaller than epochs which is {epochs}, but got patience={patience}"
 
-        # check train_loss_func and val_metric_func
-        train_loss_func_name, val_metric_func_name = "default", "loss (default)"
-        if train_loss_func is not None:
-            train_loss_func_name = train_loss_func.__class__.__name__
-            assert isinstance(train_loss_func, Callable), "train_loss_func should be a callable instance"
-            logger.info(f"Using customized {train_loss_func_name} as the training loss function.")
-        if val_metric_func is not None:
-            val_metric_func_name = val_metric_func.__class__.__name__
-            assert isinstance(val_metric_func, Callable), "val_metric_func should be a callable instance"
-            logger.info(f"Using customized {val_metric_func_name} as the validation metric function.")
+        # check training_loss and validation_metric
+        training_loss_name, validation_metric_name = "default", "loss (default)"
+        if training_loss is not None:
+            training_loss_name = training_loss.__class__.__name__
+            assert isinstance(training_loss, Callable), "training_loss should be a callable instance"
+            logger.info(f"Using customized {training_loss_name} as the training loss function.")
+        if validation_metric is not None:
+            validation_metric_name = validation_metric.__class__.__name__
+            assert isinstance(validation_metric, Callable), "validation_metric should be a callable instance"
+            logger.info(f"Using customized {validation_metric_name} as the validation metric function.")
 
         # set up the hype-parameters
         self.batch_size = batch_size
         self.epochs = epochs
         self.patience = patience
-        self.train_loss_func = train_loss_func
-        self.train_loss_func_name = train_loss_func_name
-        self.val_metric_func = val_metric_func
-        self.val_metric_func_name = val_metric_func_name
+        self.training_loss = training_loss
+        self.training_loss_name = training_loss_name
+        self.validation_metric = validation_metric
+        self.validation_metric_name = validation_metric_name
         self.original_patience = patience
         self.num_workers = num_workers
 

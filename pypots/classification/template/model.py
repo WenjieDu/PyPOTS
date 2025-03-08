@@ -19,6 +19,8 @@ from .core import _YourNewModel
 #  You should make your model inherent BaseClassifier if it is not a NN.
 # from ..base import BaseClassifier
 from ..base import BaseNNClassifier
+from ...nn.modules.loss import Criterion, CrossEntropy
+from ...nn.modules.metric import PR_AUC
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
 
@@ -35,9 +37,9 @@ class YourNewModel(BaseNNClassifier):
         batch_size: int = 32,
         epochs: int = 100,
         patience: Optional[int] = None,
-        train_loss_func: Optional[dict] = None,
-        val_metric_func: Optional[dict] = None,
-        optimizer: Optional[Optimizer] = Adam(),
+        training_loss: Criterion = CrossEntropy(),
+        validation_metric: Criterion = PR_AUC(),
+        optimizer: Optimizer = Adam(),
         num_workers: int = 0,
         device: Optional[Union[str, torch.device, list]] = None,
         saving_path: Optional[str] = None,
@@ -49,8 +51,8 @@ class YourNewModel(BaseNNClassifier):
             batch_size=batch_size,
             epochs=epochs,
             patience=patience,
-            train_loss_func=train_loss_func,
-            val_metric_func=val_metric_func,
+            training_loss=training_loss,
+            validation_metric=validation_metric,
             num_workers=num_workers,
             device=device,
             saving_path=saving_path,

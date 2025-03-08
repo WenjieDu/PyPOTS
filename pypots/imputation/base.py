@@ -16,7 +16,7 @@ from torch.utils.data import DataLoader
 
 from ..base import BaseModel, BaseNNModel
 from ..nn.functional.cuda import autocast
-from ..nn.modules.loss import MSE
+from ..nn.modules.loss import Criterion, MAE
 from ..utils.logging import logger
 
 try:
@@ -157,11 +157,11 @@ class BaseNNImputer(BaseNNModel):
         stopped when the model does not perform better after that number of epochs.
         Leaving it default as None will disable the early-stopping.
 
-    train_loss_func:
+    training_loss:
         The customized loss function designed by users for training the model.
         If not given, will use the default loss as claimed in the original paper.
 
-    val_metric_func:
+    validation_metric:
         The customized metric function designed by users for validating the model.
         If not given, will use the default MSE metric.
 
@@ -210,8 +210,8 @@ class BaseNNImputer(BaseNNModel):
         batch_size: int,
         epochs: int,
         patience: Optional[int] = None,
-        train_loss_func: Optional[dict] = None,
-        val_metric_func: Optional[dict] = None,
+        training_loss: Optional[Criterion] = MAE(),
+        validation_metric: Optional[Criterion] = MAE(),
         num_workers: int = 0,
         device: Optional[Union[str, torch.device, list]] = None,
         enable_amp: bool = False,
@@ -223,8 +223,8 @@ class BaseNNImputer(BaseNNModel):
             batch_size=batch_size,
             epochs=epochs,
             patience=patience,
-            train_loss_func=train_loss_func,
-            val_metric_func=val_metric_func,
+            training_loss=training_loss,
+            validation_metric=validation_metric,
             num_workers=num_workers,
             device=device,
             enable_amp=enable_amp,
@@ -233,13 +233,9 @@ class BaseNNImputer(BaseNNModel):
             verbose=verbose,
         )
 
-        # set default training loss function and validation metric function if not given
-        if train_loss_func is None:
-            self.train_loss_func = MSE()
-            self.train_loss_func_name = self.train_loss_func.__class__.__name__
-        if val_metric_func is None:
-            self.val_metric_func = MSE()
-            self.val_metric_func_name = self.val_metric_func.__class__.__name__
+        # fetch the names of training loss and validation metric
+        self.training_loss_name = self.training_loss.__class__.__name__
+        self.validation_metric_name = self.validation_metric.__class__.__name__
 
     @abstractmethod
     def _assemble_input_for_training(self, data: list) -> dict:
@@ -351,7 +347,7 @@ class BaseNNImputer(BaseNNModel):
                             else:
                                 results = self.model.forward(inputs)
                             imputation_error = (
-                                self.val_metric_func(
+                                self.validation_metric(
                                     results["imputed_data"],
                                     inputs["X_ori"],
                                     inputs["indicating_mask"],
@@ -373,14 +369,12 @@ class BaseNNImputer(BaseNNModel):
 
                     logger.info(
                         f"Epoch {epoch:03d} - "
-                        f"training loss ({self.train_loss_func_name}): {mean_train_loss:.4f}, "
-                        f"validation {self.val_metric_func_name}: {mean_val_loss:.4f}"
+                        f"training loss ({self.training_loss_name}): {mean_train_loss:.4f}, "
+                        f"validation {self.validation_metric_name}: {mean_val_loss:.4f}"
                     )
                     mean_loss = mean_val_loss
                 else:
-                    logger.info(
-                        f"Epoch {epoch:03d} - training loss ({self.train_loss_func_name}): {mean_train_loss:.4f}"
-                    )
+                    logger.info(f"Epoch {epoch:03d} - training loss ({self.training_loss_name}): {mean_train_loss:.4f}")
                     mean_loss = mean_train_loss
 
                 if np.isnan(mean_loss):
