@@ -421,6 +421,15 @@ class VaDER(BaseNNClusterer):
         imputation_latent_collector = []
         clustering_results_collector = []
 
+        def func_to_apply(
+            mu_t_: np.ndarray,
+            mu_: np.ndarray,
+            stddev_: np.ndarray,
+            phi_: np.ndarray,
+        ) -> np.ndarray:
+            # the covariance matrix is diagonal, so we can just take the product
+            return np.log(1e-9 + phi_) + np.log(1e-9 + multivariate_normal.pdf(mu_t_, mean=mu_, cov=np.diag(stddev_)))
+
         for idx, data in enumerate(test_loader):
             inputs = self._assemble_input_for_testing(data)
             results = self.model.forward(inputs)
@@ -433,17 +442,6 @@ class VaDER(BaseNNClusterer):
             var_collector.append(var)
             phi = results["phi"].cpu().numpy()
             phi_collector.append(phi)
-
-            def func_to_apply(
-                mu_t_: np.ndarray,
-                mu_: np.ndarray,
-                stddev_: np.ndarray,
-                phi_: np.ndarray,
-            ) -> np.ndarray:
-                # the covariance matrix is diagonal, so we can just take the product
-                return np.log(1e-9 + phi_) + np.log(
-                    1e-9 + multivariate_normal.pdf(mu_t_, mean=mu_, cov=np.diag(stddev_))
-                )
 
             p = np.array([func_to_apply(mu_tilde, mu[i], var[i], phi[i]) for i in np.arange(mu.shape[0])])
             clustering_results = np.argmax(p, axis=0)
