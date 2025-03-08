@@ -304,18 +304,37 @@ class CSAI(BaseNNClassifier):
         # train the model
         self._train_model(train_loader, val_loader)
         self.model.load_state_dict(self.best_model_dict)
-        self.model.eval()
 
         self._auto_save_model_if_necessary(confirm_saving=self.model_saving_strategy == "best")
 
+    @torch.no_grad()
     def predict(
         self,
         test_set: Union[dict, str],
         file_type: str = "hdf5",
     ) -> dict:
+        """Make predictions for the input data with the trained model.
 
-        self.model.eval()
+        Parameters
+        ----------
+        test_set : dict or str
+            The dataset for model validating, should be a dictionary including keys as 'X',
+            or a path string locating a data file supported by PyPOTS (e.g. h5 file).
+            If it is a dict, X should be array-like of shape [n_samples, sequence length (n_steps), n_features],
+            which is time-series data for validating, can contain missing values, and y should be array-like of shape
+            [n_samples], which is classification labels of X.
+            If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
+            key-value pairs like a dict, and it has to include keys as 'X' and 'y'.
 
+        file_type :
+            The type of the given file if test_set is a path string.
+
+        Returns
+        -------
+        file_type :
+            The dictionary containing the clustering results and latent variables if necessary.
+
+        """
         if isinstance(test_set, str):
             logger.warning(
                 "CSAI does not support lazy loading because intervals need to be calculated ahead. "
@@ -338,12 +357,10 @@ class CSAI(BaseNNClassifier):
         )
 
         classification_results = []
-
-        with torch.no_grad():
-            for idx, data in enumerate(test_loader):
-                inputs = self._assemble_input_for_testing(data)
-                results = self.model.forward(inputs)
-                classification_results.append(results["classification_pred"])
+        for idx, data in enumerate(test_loader):
+            inputs = self._assemble_input_for_testing(data)
+            results = self.model.forward(inputs)
+            classification_results.append(results["classification_pred"])
 
         classification = torch.cat(classification_results).cpu().detach().numpy()
         result_dict = {
