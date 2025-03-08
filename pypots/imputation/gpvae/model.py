@@ -376,11 +376,11 @@ class GPVAE(BaseNNImputer):
         # Step 2: train the model and freeze it
         self._train_model(training_loader, val_loader)
         self.model.load_state_dict(self.best_model_dict)
-        self.model.eval()  # set the model as eval status to freeze it.
 
         # Step 3: save the model if necessary
         self._auto_save_model_if_necessary(confirm_saving=self.model_saving_strategy == "best")
 
+    @torch.no_grad()
     def predict(
         self,
         test_set: Union[dict, str],
@@ -415,7 +415,6 @@ class GPVAE(BaseNNImputer):
         """
         assert n_sampling_times > 0, "n_sampling_times should be greater than 0."
 
-        self.model.eval()  # set the model as eval status to freeze it.
         test_set = DatasetForGPVAE(test_set, return_X_ori=False, return_y=False, file_type=file_type)
         test_loader = DataLoader(
             test_set,
@@ -425,12 +424,11 @@ class GPVAE(BaseNNImputer):
         )
         imputation_collector = []
 
-        with torch.no_grad():
-            for idx, data in enumerate(test_loader):
-                inputs = self._assemble_input_for_testing(data)
-                results = self.model.forward(inputs, n_sampling_times=n_sampling_times)
-                imputed_data = results["imputed_data"]
-                imputation_collector.append(imputed_data)
+        for idx, data in enumerate(test_loader):
+            inputs = self._assemble_input_for_testing(data)
+            results = self.model.forward(inputs, n_sampling_times=n_sampling_times)
+            imputed_data = results["imputed_data"]
+            imputation_collector.append(imputed_data)
 
         imputation = torch.cat(imputation_collector).cpu().detach().numpy()
         result_dict = {
