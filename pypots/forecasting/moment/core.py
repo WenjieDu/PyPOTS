@@ -14,17 +14,6 @@ from ...nn.modules.loss import Criterion, MSE
 from ...nn.modules.moment import BackboneMOMENT, SUPPORTED_HUGGINGFACE_MODELS
 from ...nn.modules.saits import SaitsEmbedding
 
-TUNING_MODE = [
-    "linear-probing",
-    "end-to-end",
-    "zero-shot",
-]
-TRANSFORMER_TYPE = [
-    "encoder_only",
-    "decoder_only",
-    "encoder_decoder",
-]
-
 
 class _MOMENT(nn.Module):
     def __init__(
@@ -54,11 +43,6 @@ class _MOMENT(nn.Module):
         super().__init__()
 
         assert term in ["long", "short"], "forecasting term should be either 'long' or 'short'"
-        assert finetuning_mode in TUNING_MODE, f"finetuning_mode should be one of {TUNING_MODE}"
-        assert (
-            transformer_backbone in SUPPORTED_HUGGINGFACE_MODELS
-        ), f"transformer_type must be one of {TRANSFORMER_TYPE}"
-        assert transformer_type in TRANSFORMER_TYPE, f"transformer_type must be one of {TRANSFORMER_TYPE}"
 
         self.n_steps = n_steps
         self.n_pred_steps = n_pred_steps
