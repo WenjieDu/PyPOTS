@@ -7,7 +7,6 @@ and takes over the forward progress of the algorithm.
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-import torch
 import torch.nn as nn
 
 from ...nn.modules.loss import Criterion, MSE
@@ -70,15 +69,6 @@ class _TimeMixer(nn.Module):
         X = inputs["X"]
         # missing_mask = inputs["missing_mask"]
 
-        if self.training:
-            X_pred, X_pred_missing_mask = inputs["X_pred"], inputs["X_pred_missing_mask"]
-        else:
-            batch_size = X.shape[0]
-            X_pred, X_pred_missing_mask = (
-                torch.zeros(batch_size, self.n_pred_steps, self.n_pred_features),
-                torch.ones(batch_size, self.n_pred_steps, self.n_pred_features),
-            )
-
         # TimesMixer processing
         # WDU: missing_mask should not be passed into the model forward processing because the official implementation
         # does not accept POTS on the forecasting task. And if pass in, it will result in
@@ -97,6 +87,7 @@ class _TimeMixer(nn.Module):
 
         # if in training mode, return results with losses
         if self.training:
+            X_pred, X_pred_missing_mask = inputs["X_pred"], inputs["X_pred_missing_mask"]
             # `loss` is always the item for backward propagating to update the model
             results["loss"] = self.training_loss(X_pred, forecasting_result, X_pred_missing_mask)
 

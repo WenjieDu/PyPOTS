@@ -83,10 +83,13 @@ class BaseModel(ABC):
             logger.warning("‼️ saving_path is given, but model_saving_strategy is None. No model file will be saved.")
 
         self.device = None  # set up with _setup_device() below
-        self.enable_amp = enable_amp
         self.saving_path = None  # set up with _setup_path() below
         self.model_saving_strategy = model_saving_strategy
         self.verbose = verbose
+
+        # default as false, determine in _setup_device() with consideration on enable_amp and cuda availability
+        self.amp_enabled = False
+        self.enable_amp = enable_amp
 
         if not self.verbose:
             logger_creator.set_level("warning")
@@ -159,11 +162,15 @@ class BaseModel(ABC):
             ), "You are trying to use CUDA for model training, but CUDA is not available in your environment."
 
         if os.getenv("ENABLE_AMP", False):
-            if not torch.cuda.is_available() or torch.cuda.device_count() == 0:
-                logger.warning(
-                    "‼️ You are trying to use AMP, but CUDA is not available in your environment. AMP will be disabled."
-                )
-            if not self.enable_amp:
+            if self.enable_amp:
+                if not torch.cuda.is_available() or torch.cuda.device_count() == 0:
+                    logger.warning(
+                        "‼️ You are trying to use AMP, but CUDA is not available in your environment. "
+                        "AMP will be disabled."
+                    )
+                else:
+                    self.amp_enabled = True
+            else:
                 logger.warning(
                     f"‼️ You are trying to use AMP, but the model {self.__class__.__name__} "
                     "does not support AMP operation. AMP will be disabled."
