@@ -341,13 +341,7 @@ class BaseNNClusterer(BaseNNModel):
                     inputs = self._assemble_input_for_training(data)
 
                     # model forward propagation processing
-                    if os.getenv("ENABLE_AMP", False) and self.enable_amp:
-                        with autocast():
-                            self.optimizer.zero_grad()
-                            results = self.model.forward(inputs)
-                            results["loss"].sum().backward()  # sum() before backward() in case of multi-gpu training
-                            self.optimizer.step()
-                    else:
+                    with autocast(enabled=self.amp_enabled):
                         self.optimizer.zero_grad()
                         results = self.model.forward(inputs)
                         results["loss"].sum().backward()  # sum() before backward() in case of multi-gpu training
@@ -369,10 +363,7 @@ class BaseNNClusterer(BaseNNModel):
                             inputs = self._assemble_input_for_validating(data)
 
                             # model forward propagation processing
-                            if os.getenv("ENABLE_AMP", False) and self.enable_amp:
-                                with autocast():
-                                    results = self.model.forward(inputs)
-                            else:
+                            with autocast(enabled=self.amp_enabled):
                                 results = self.model.forward(inputs)
                             epoch_val_loss_collector.append(results["loss"].sum().item())
 
