@@ -42,12 +42,31 @@ SUPPORTED_HUGGINGFACE_MODELS = [
     "google/flan-t5-xxl",
 ]
 
+TUNING_MODE = [
+    "linear-probing",
+    "end-to-end",
+    "zero-shot",
+]
+
+TRANSFORMER_TYPE = [
+    "encoder_only",
+    "decoder_only",
+    "encoder_decoder",
+]
+
 
 class BackboneMOMENT(nn.Module):
     def __init__(self, configs: Union[Namespace, dict], **kwargs: dict):
         super().__init__()
         configs = self._update_inputs(configs, **kwargs)
         configs = self._validate_inputs(configs)
+
+        assert configs.finetuning_mode in TUNING_MODE, f"finetuning_mode should be one of {TUNING_MODE}"
+        assert (
+            configs.transformer_backbone in SUPPORTED_HUGGINGFACE_MODELS
+        ), f"transformer_type must be one of {SUPPORTED_HUGGINGFACE_MODELS}"
+        assert configs.transformer_type in TRANSFORMER_TYPE, f"transformer_type must be one of {TRANSFORMER_TYPE}"
+
         self.configs = configs
         self.task_name = configs.task_name
         self.seq_len = configs.seq_len
