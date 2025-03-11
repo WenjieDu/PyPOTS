@@ -6,7 +6,6 @@ The implementation of TimeLLM for the partially-observed time-series imputation 
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-import os
 from typing import Union, Optional
 
 import numpy as np
@@ -298,10 +297,7 @@ class TimeLLM(BaseNNImputer):
         # Step 2: process the data with the model
         for idx, data in enumerate(test_loader):
             inputs = self._assemble_input_for_testing(data)
-            if os.getenv("ENABLE_AMP", False) and self.enable_amp:
-                with autocast():
-                    results = self.model.forward(inputs)
-            else:
+            with autocast(enabled=self.amp_enabled):
                 results = self.model.forward(inputs)
             imputation_collector.append(results["imputed_data"])
 
