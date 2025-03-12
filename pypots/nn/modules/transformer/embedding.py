@@ -41,13 +41,21 @@ class PositionalEncoding(nn.Module):
         pe = pe.unsqueeze(0)
         self.register_buffer("pos_table", pe)
 
-    def forward(self, x: torch.Tensor, return_only_pos: bool = False) -> torch.Tensor:
+    def forward(
+        self,
+        x: torch.Tensor,
+        dim: int = 1,
+        return_only_pos: bool = False,
+    ) -> torch.Tensor:
         """Forward processing of the positional encoding module.
 
         Parameters
         ----------
         x:
             Input tensor.
+
+        dim:
+            The dimension to add the positional encoding.
 
         return_only_pos:
             Whether to return only the positional encoding.
@@ -61,7 +69,7 @@ class PositionalEncoding(nn.Module):
             x_with_pos:
                 Output tensor, the input tensor with the positional encoding added.
         """
-        pos_enc = self.pos_table[:, : x.size(1)].clone().detach()
+        pos_enc = self.pos_table[:, : x.size(dim)].clone().detach()
 
         if return_only_pos:
             return pos_enc
