@@ -85,9 +85,10 @@ class _Transformer(nn.Module):
             X_pred, X_pred_missing_mask = inputs["X_pred"], inputs["X_pred_missing_mask"]
         else:
             batch_size = X.shape[0]
+            device = X.device
             X_pred, X_pred_missing_mask = (
-                torch.zeros(batch_size, self.n_pred_steps, self.n_pred_features),
-                torch.ones(batch_size, self.n_pred_steps, self.n_pred_features),
+                torch.zeros(batch_size, self.n_pred_steps, self.n_pred_features, device=device),
+                torch.ones(batch_size, self.n_pred_steps, self.n_pred_features, device=device),
             )
 
         # apply the SAITS embedding strategy, concatenate X and missing mask for input
