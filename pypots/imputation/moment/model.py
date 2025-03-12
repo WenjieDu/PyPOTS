@@ -1,5 +1,5 @@
 """
-The implementation of TimeLLM for the partially-observed time-series forecasting task.
+The implementation of MOMENT for the partially-observed time-series imputation task.
 
 """
 
@@ -12,18 +12,18 @@ import numpy as np
 import torch
 from torch.utils.data import DataLoader
 
-from .core import _TimeLLM
-from .data import DatasetForTimeLLM
-from ..base import BaseNNForecaster
+from .core import _MOMENT
+from .data import DatasetForMOMENT
+from ..base import BaseNNImputer
 from ...data.checking import key_in_data_set
-from ...nn.functional.cuda import autocast
-from ...nn.modules.loss import Criterion, MSE
+from ...data.dataset import BaseDataset
+from ...nn.modules.loss import Criterion, MAE, MSE
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
 
 
-class TimeLLM(BaseNNForecaster):
-    """The PyTorch implementation of the TimeLLM forecasting model :cite:`jin2024timellm`.
+class MOMENT(BaseNNImputer):
+    """The PyTorch implementation of the MOMENT model :cite:`du2023MOMENT`.
 
     Parameters
     ----------
@@ -33,45 +33,44 @@ class TimeLLM(BaseNNForecaster):
     n_features :
         The number of features in the time-series data sample.
 
-    n_pred_steps :
-        The number of steps in the forecasting time series.
-
-    n_pred_features :
-        The number of features in the forecasting time series.
-
-    term :
-        The forecasting term, which can be either 'long' or 'short'.
-
-    llm_model_type :
-        The type of the LLM model. It can be one of  ["LLaMA", "GPT2", "BERT"].
-
     n_layers :
-        The number of layers in the TimeLLM model.
-
-    patch_len :
-        The length of the patch for the TimeLLM model.
-
-    stride :
-        The stride for the patching process in the TimeLLM model.
-
-    d_llm :
-        The dimension of the LLM model.
-        Given llm_model_type, it should be 4096 for LLaMA, 768 for GPT2 and BERT.
+        The number of layers in the 1st and 2nd DMSA blocks in the MOMENT model.
 
     d_model :
-        The dimension of the model.
-
-    d_ffn :
-        The dimension of the feed-forward network.
+        The dimension of the model's backbone.
+        It is the input dimension of the multi-head DMSA layers.
 
     n_heads :
-        The number of heads in each layer of TimeLLM.
+        The number of heads in the multi-head DMSA mechanism.
+        ``d_model`` must be divisible by ``n_heads``, and the result should be equal to ``d_k``.
+
+    d_k :
+        The dimension of the `keys` (K) and the `queries` (Q) in the DMSA mechanism.
+        ``d_k`` should be the result of ``d_model`` divided by ``n_heads``. Although ``d_k`` can be directly calculated
+        with given ``d_model`` and ``n_heads``, we want it be explicitly given together with ``d_v`` by users to ensure
+        users be aware of them and to avoid any potential mistakes.
+
+    d_v :
+        The dimension of the `values` (V) in the DMSA mechanism.
+
+    d_ffn :
+        The dimension of the layer in the Feed-Forward Networks (FFN).
 
     dropout :
-        The dropout rate for the model.
+        The dropout rate for all fully-connected layers in the model.
 
-    domain_prompt_content :
-        The prompt content for the domain knowledge.
+    attn_dropout :
+        The dropout rate for DMSA.
+
+    diagonal_attention_mask :
+        Whether to apply a diagonal attention mask to the self-attention mechanism.
+        If so, the attention layers will use DMSA. Otherwise, the attention layers will use the original.
+
+    ORT_weight :
+        The weight for the ORT loss.
+
+    MIT_weight :
+        The weight for the MIT loss.
 
     batch_size :
         The batch size for training and evaluating the model.
@@ -128,23 +127,25 @@ class TimeLLM(BaseNNForecaster):
         self,
         n_steps: int,
         n_features: int,
-        n_pred_steps: int,
-        n_pred_features: int,
-        term: str,
-        llm_model_type: str,
+        patch_size: int,
+        patch_stride: int,
         n_layers: int,
-        patch_len: int,
-        stride: int,
-        d_llm: int,
-        d_model: int,
         d_ffn: int,
-        n_heads: int,
         dropout: float,
-        domain_prompt_content: str,
+        d_model: int,
+        transformer_backbone: str,
+        transformer_type: str,
+        head_dropout: float,
+        finetuning_mode: str,
+        revin_affine: bool,
+        add_positional_embedding: bool,
+        value_embedding_bias: bool,
+        orth_gain: float,
+        mask_ratio: float,
         batch_size: int = 32,
         epochs: int = 100,
         patience: Optional[int] = None,
-        training_loss: Criterion = MSE(),
+        training_loss: Criterion = MAE(),
         validation_metric: Criterion = MSE(),
         optimizer: Optimizer = Adam(),
         num_workers: int = 0,
@@ -161,7 +162,6 @@ class TimeLLM(BaseNNForecaster):
             validation_metric=validation_metric,
             num_workers=num_workers,
             device=device,
-            enable_amp=True,
             saving_path=saving_path,
             model_saving_strategy=model_saving_strategy,
             verbose=verbose,
@@ -169,38 +169,42 @@ class TimeLLM(BaseNNForecaster):
 
         self.n_steps = n_steps
         self.n_features = n_features
-        self.n_pred_steps = n_pred_steps
-        self.n_pred_features = n_pred_features
-        self.term = term
+        # model hype-parameters
         self.n_layers = n_layers
-        self.n_heads = n_heads
+        self.patch_size = patch_size
+        self.patch_stride = patch_stride
         self.d_model = d_model
         self.d_ffn = d_ffn
-        self.d_llm = d_llm
-        self.patch_len = patch_len
-        self.stride = stride
-        self.llm_model_type = llm_model_type
         self.dropout = dropout
-        self.domain_prompt_content = domain_prompt_content
-
+        self.transformer_backbone = transformer_backbone
+        self.transformer_type = transformer_type
+        self.head_dropout = head_dropout
+        self.finetuning_mode = finetuning_mode
+        self.revin_affine = revin_affine
+        self.add_positional_embedding = add_positional_embedding
+        self.value_embedding_bias = value_embedding_bias
+        self.orth_gain = orth_gain
+        self.mask_ratio = mask_ratio
         # set up the model
-        self.model = _TimeLLM(
-            self.n_steps,
-            self.n_features,
-            self.n_pred_steps,
-            self.n_pred_features,
-            self.term,
-            self.n_layers,
-            self.patch_len,
-            self.stride,
-            self.d_model,
-            self.d_ffn,
-            self.d_llm,
-            self.n_heads,
-            self.llm_model_type,
-            self.dropout,
-            self.domain_prompt_content,
-            self.training_loss,
+        self.model = _MOMENT(
+            n_steps=self.n_steps,
+            n_features=self.n_features,
+            transformer_backbone=self.transformer_backbone,
+            transformer_type=self.transformer_type,
+            patch_size=self.patch_size,
+            patch_stride=self.patch_stride,
+            d_model=self.d_model,
+            d_ffn=self.d_ffn,
+            dropout=self.dropout,
+            head_dropout=self.head_dropout,
+            finetuning_mode=self.finetuning_mode,
+            revin_affine=self.revin_affine,
+            add_positional_embedding=self.add_positional_embedding,
+            value_embedding_bias=self.value_embedding_bias,
+            orth_gain=self.orth_gain,
+            mask_ratio=self.mask_ratio,
+            device=self.device,
+            training_loss=self.training_loss,
         )
         self._print_model_size()
         self._send_model_to_given_device()
@@ -214,27 +218,24 @@ class TimeLLM(BaseNNForecaster):
             indices,
             X,
             missing_mask,
-            X_pred,
-            X_pred_missing_mask,
+            X_ori,
+            indicating_mask,
         ) = self._send_data_to_given_device(data)
 
         inputs = {
             "X": X,
             "missing_mask": missing_mask,
-            "X_pred": X_pred,
-            "X_pred_missing_mask": X_pred_missing_mask,
+            "X_ori": X_ori,
+            "indicating_mask": indicating_mask,
         }
+
         return inputs
 
     def _assemble_input_for_validating(self, data: list) -> dict:
         return self._assemble_input_for_training(data)
 
     def _assemble_input_for_testing(self, data: list) -> dict:
-        (
-            indices,
-            X,
-            missing_mask,
-        ) = self._send_data_to_given_device(data)
+        indices, X, missing_mask = self._send_data_to_given_device(data)
 
         inputs = {
             "X": X,
@@ -249,10 +250,7 @@ class TimeLLM(BaseNNForecaster):
         file_type: str = "hdf5",
     ) -> None:
         # Step 1: wrap the input data with classes Dataset and DataLoader
-        training_set = DatasetForTimeLLM(
-            train_set,
-            file_type=file_type,
-        )
+        training_set = DatasetForMOMENT(train_set, return_X_ori=False, return_y=False, file_type=file_type)
         training_loader = DataLoader(
             training_set,
             batch_size=self.batch_size,
@@ -261,12 +259,9 @@ class TimeLLM(BaseNNForecaster):
         )
         val_loader = None
         if val_set is not None:
-            if not key_in_data_set("X_pred", val_set):
-                raise ValueError("val_set must contain 'X_pred' for model validation.")
-            val_set = DatasetForTimeLLM(
-                val_set,
-                file_type=file_type,
-            )
+            if not key_in_data_set("X_ori", val_set):
+                raise ValueError("val_set must contain 'X_ori' for model validation.")
+            val_set = DatasetForMOMENT(val_set, return_X_ori=True, return_y=False, file_type=file_type)
             val_loader = DataLoader(
                 val_set,
                 batch_size=self.batch_size,
@@ -288,39 +283,38 @@ class TimeLLM(BaseNNForecaster):
         file_type: str = "hdf5",
     ) -> dict:
         # Step 1: wrap the input data with classes Dataset and DataLoader
-        test_set = DatasetForTimeLLM(
+        test_set = BaseDataset(
             test_set,
+            return_X_ori=False,
             return_X_pred=False,
+            return_y=False,
             file_type=file_type,
         )
-
         test_loader = DataLoader(
             test_set,
             batch_size=self.batch_size,
             shuffle=False,
             num_workers=self.num_workers,
         )
-        forecasting_collector = []
+        imputation_collector = []
 
         # Step 2: process the data with the model
         for idx, data in enumerate(test_loader):
             inputs = self._assemble_input_for_testing(data)
-            with autocast(enabled=self.amp_enabled):
-                results = self.model(inputs)
-            forecasting_data = results["forecasting_data"]
-            forecasting_collector.append(forecasting_data)
+            results = self.model.forward(inputs)
+            imputation_collector.append(results["imputed_data"])
 
         # Step 3: output collection and return
-        forecasting_data = torch.cat(forecasting_collector).cpu().detach().numpy()
+        imputation = torch.cat(imputation_collector).cpu().detach().numpy()
         result_dict = {
-            "forecasting": forecasting_data,  # [bz, n_pred_steps, n_features]
+            "imputation": imputation,
         }
         return result_dict
 
-    def forecast(
+    def impute(
         self,
         test_set: Union[dict, str],
         file_type: str = "hdf5",
     ) -> np.ndarray:
         result_dict = self.predict(test_set, file_type=file_type)
-        return result_dict["forecasting"]
+        return result_dict["imputation"]
