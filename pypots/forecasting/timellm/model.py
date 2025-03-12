@@ -16,6 +16,7 @@ from .core import _TimeLLM
 from .data import DatasetForTimeLLM
 from ..base import BaseNNForecaster
 from ...data.checking import key_in_data_set
+from ...nn.functional.cuda import autocast
 from ...nn.modules.loss import Criterion, MSE
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
@@ -304,7 +305,8 @@ class TimeLLM(BaseNNForecaster):
         # Step 2: process the data with the model
         for idx, data in enumerate(test_loader):
             inputs = self._assemble_input_for_testing(data)
-            results = self.model(inputs)
+            with autocast(enabled=self.amp_enabled):
+                results = self.model(inputs)
             forecasting_data = results["forecasting_data"]
             forecasting_collector.append(forecasting_data)
 
