@@ -11,10 +11,10 @@ import numpy as np
 import pytest
 
 from pypots.imputation import SAITS
+from pypots.nn.functional import calc_mae
 from pypots.optim import Adam
 from pypots.utils.logging import logger
-from pypots.nn.functional import calc_mae
-from tests.global_test_config import DATA
+from tests.global_test_config import DATA, DEVICE
 from tests.optim.config import EPOCHS, TEST_SET, TRAIN_SET, VAL_SET
 
 
@@ -37,6 +37,7 @@ class TestAdam(unittest.TestCase):
         dropout=0.1,
         optimizer=adam,
         epochs=EPOCHS,
+        device=DEVICE,
     )
 
     @pytest.mark.xdist_group(name="optim-adam")

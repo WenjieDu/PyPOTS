@@ -11,6 +11,7 @@ import numpy as np
 import pytest
 
 from pypots.imputation import SAITS
+from pypots.nn.functional import calc_mae
 from pypots.optim import Adam, AdamW, Adadelta, Adagrad, RMSprop, SGD
 from pypots.optim.lr_scheduler import (
     LambdaLR,
@@ -22,8 +23,7 @@ from pypots.optim.lr_scheduler import (
     MultiplicativeLR,
 )
 from pypots.utils.logging import logger
-from pypots.nn.functional import calc_mae
-from tests.global_test_config import DATA
+from tests.global_test_config import DATA, DEVICE
 from tests.optim.config import EPOCHS, TEST_SET, TRAIN_SET, VAL_SET
 
 
@@ -68,6 +68,7 @@ class TestLRSchedulers(unittest.TestCase):
             dropout=0.1,
             optimizer=adam,
             epochs=EPOCHS,
+            device=DEVICE,
         )
         saits.fit(TRAIN_SET, VAL_SET)
         imputed_X = saits.impute(TEST_SET)
@@ -92,6 +93,7 @@ class TestLRSchedulers(unittest.TestCase):
             dropout=0.1,
             optimizer=adamw,
             epochs=EPOCHS,
+            device=DEVICE,
         )
         saits.fit(TRAIN_SET, VAL_SET)
         imputed_X = saits.impute(TEST_SET)
@@ -116,6 +118,7 @@ class TestLRSchedulers(unittest.TestCase):
             dropout=0.1,
             optimizer=adamw,
             epochs=EPOCHS,
+            device=DEVICE,
         )
         saits.fit(TRAIN_SET, VAL_SET)
         imputed_X = saits.impute(TEST_SET)
@@ -140,6 +143,7 @@ class TestLRSchedulers(unittest.TestCase):
             dropout=0.1,
             optimizer=adagrad,
             epochs=EPOCHS,
+            device=DEVICE,
         )
         saits.fit(TRAIN_SET, VAL_SET)
         imputed_X = saits.impute(TEST_SET)
@@ -165,6 +169,7 @@ class TestLRSchedulers(unittest.TestCase):
             dropout=0.1,
             optimizer=rmsprop,
             epochs=EPOCHS,
+            device=DEVICE,
         )
         saits.fit(TRAIN_SET, VAL_SET)
         imputed_X = saits.impute(TEST_SET)
@@ -189,6 +194,7 @@ class TestLRSchedulers(unittest.TestCase):
             dropout=0.1,
             optimizer=sgd,
             epochs=EPOCHS,
+            device=DEVICE,
         )
         saits.fit(TRAIN_SET, VAL_SET)
         imputed_X = saits.impute(TEST_SET)
@@ -213,6 +219,7 @@ class TestLRSchedulers(unittest.TestCase):
             dropout=0.1,
             optimizer=sgd,
             epochs=EPOCHS,
+            device=DEVICE,
         )
         saits.fit(TRAIN_SET, VAL_SET)
         imputed_X = saits.impute(TEST_SET)
