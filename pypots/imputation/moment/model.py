@@ -23,7 +23,7 @@ from ...optim.base import Optimizer
 
 
 class MOMENT(BaseNNImputer):
-    """The PyTorch implementation of the MOMENT model :cite:`du2023MOMENT`.
+    """The PyTorch implementation of the MOMENT model :cite:`goswami2024moment`.
 
     Parameters
     ----------
