@@ -532,7 +532,7 @@ class BackboneMOMENT(nn.Module):
         # x_enc = x_enc / scaler
 
         batch_size, n_channels, seq_len = x_enc.shape
-        frequency = kwargs["frequency"] if "frequency" in kwargs else None
+        # frequency = kwargs["frequency"] if "frequency" in kwargs else None
         # NOTE: Add series decomposition
 
         num_masked_patches = ceil(forecast_horizon / self.patch_len)
