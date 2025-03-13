@@ -70,16 +70,16 @@ class BackboneMOMENT(nn.Module):
         self.configs = configs
         self.task_name = configs.task_name
         self.seq_len = configs.seq_len
-        self.patch_len = configs.patch_len
+        self.patch_size = configs.patch_len
 
         # Normalization, patching and embedding
         self.normalizer = RevIN(num_features=1, affine=configs.getattr("revin_affine", False))
-        self.tokenizer = Patching(patch_len=configs.patch_len, stride=configs.patch_stride_len)
+        self.tokenizer = Patching(patch_size=configs.patch_len, patch_stride=configs.patch_stride_len)
         self.patch_embedding = PatchEmbedding(
             d_model=configs.d_model,
             seq_len=configs.seq_len,
-            patch_len=configs.patch_len,
-            stride=configs.patch_stride_len,
+            patch_size=configs.patch_len,
+            patch_stride=configs.patch_stride_len,
             dropout=configs.getattr("dropout", 0.1),
             add_positional_embedding=configs.getattr("add_positional_embedding", True),
             value_embedding_bias=configs.getattr("value_embedding_bias", False),
@@ -252,7 +252,7 @@ class BackboneMOMENT(nn.Module):
         x_enc = self.normalizer(x=x_enc, mask=input_mask, mode="norm")
         x_enc = torch.nan_to_num(x_enc, nan=0, posinf=0, neginf=0)
 
-        input_mask_patch_view = Masking.convert_seq_to_patch_view(input_mask, self.patch_len)
+        input_mask_patch_view = Masking.convert_seq_to_patch_view(input_mask, self.patch_size)
 
         x_enc = self.tokenizer(x=x_enc)
         enc_in = self.patch_embedding(x_enc, mask=input_mask)
@@ -260,7 +260,7 @@ class BackboneMOMENT(nn.Module):
         n_patches = enc_in.shape[2]
         enc_in = enc_in.reshape((batch_size * n_channels, n_patches, self.configs.d_model))
 
-        attention_mask = Masking.convert_seq_to_patch_view(input_mask, self.patch_len).repeat_interleave(
+        attention_mask = Masking.convert_seq_to_patch_view(input_mask, self.patch_size).repeat_interleave(
             n_channels, dim=0
         )
         outputs = self.encoder(inputs_embeds=enc_in, attention_mask=attention_mask)
@@ -321,7 +321,7 @@ class BackboneMOMENT(nn.Module):
         # [batch_size * n_channels x n_patches x d_model]
 
         # Encoder
-        attention_mask = Masking.convert_seq_to_patch_view(input_mask, self.patch_len).repeat_interleave(
+        attention_mask = Masking.convert_seq_to_patch_view(input_mask, self.patch_size).repeat_interleave(
             n_channels, dim=0
         )
         if self.configs.transformer_type == "encoder_decoder":
@@ -402,7 +402,7 @@ class BackboneMOMENT(nn.Module):
         # [batch_size * n_channels x n_patches x d_model]
 
         attention_mask = (
-            Masking.convert_seq_to_patch_view(input_mask, self.patch_len)
+            Masking.convert_seq_to_patch_view(input_mask, self.patch_size)
             .repeat_interleave(n_channels, dim=0)
             .to(x_enc.device)
         )
@@ -487,7 +487,7 @@ class BackboneMOMENT(nn.Module):
         enc_in = enc_in.reshape((batch_size * n_channels, n_patches, self.configs.d_model))
 
         # Encoder
-        attention_mask = Masking.convert_seq_to_patch_view(input_mask, self.patch_len).repeat_interleave(
+        attention_mask = Masking.convert_seq_to_patch_view(input_mask, self.patch_size).repeat_interleave(
             n_channels, dim=0
         )
         if self.configs.transformer_type == "encoder_decoder":
@@ -532,11 +532,11 @@ class BackboneMOMENT(nn.Module):
         # x_enc = x_enc / scaler
 
         batch_size, n_channels, seq_len = x_enc.shape
-        frequency = kwargs["frequency"] if "frequency" in kwargs else None
+        # frequency = kwargs["frequency"] if "frequency" in kwargs else None
         # NOTE: Add series decomposition
 
-        num_masked_patches = ceil(forecast_horizon / self.patch_len)
-        num_masked_timesteps = num_masked_patches * self.patch_len
+        num_masked_patches = ceil(forecast_horizon / self.patch_size)
+        num_masked_timesteps = num_masked_patches * self.patch_size
 
         # Normalization
         x_enc = self.normalizer(x=x_enc, mask=input_mask, mode="norm")
@@ -567,7 +567,7 @@ class BackboneMOMENT(nn.Module):
         # [batch_size * n_channels x n_patches x d_model]
 
         # Encoder
-        attention_mask = Masking.convert_seq_to_patch_view(input_mask, self.patch_len).repeat_interleave(
+        attention_mask = Masking.convert_seq_to_patch_view(input_mask, self.patch_size).repeat_interleave(
             n_channels, dim=0
         )
         outputs = self.encoder(inputs_embeds=enc_in, attention_mask=attention_mask)

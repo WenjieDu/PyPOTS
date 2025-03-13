@@ -15,20 +15,20 @@ class Masking:
     def __init__(
         self,
         mask_ratio: float = 0.3,
-        patch_len: int = 8,
+        patch_size: int = 8,
         stride: Optional[int] = None,
     ):
         """
         Indices with 0 mask are hidden, and with 1 are observed.
         """
         self.mask_ratio = mask_ratio
-        self.patch_len = patch_len
-        self.stride = patch_len if stride is None else stride
+        self.patch_size = patch_size
+        self.patch_stride = patch_size if stride is None else stride
 
     @staticmethod
     def convert_seq_to_patch_view(
         mask: torch.Tensor,
-        patch_len: int = 8,
+        patch_size: int = 8,
         stride: Optional[int] = None,
     ):
         """
@@ -37,15 +37,15 @@ class Masking:
         Output
             mask : torch.Tensor of shape [batch_size x n_patches]
         """
-        stride = patch_len if stride is None else stride
-        mask = mask.unfold(dimension=-1, size=patch_len, step=stride)
-        # mask : [batch_size x n_patches x patch_len]
-        return (mask.sum(dim=-1) == patch_len).long()
+        stride = patch_size if stride is None else stride
+        mask = mask.unfold(dimension=-1, size=patch_size, step=stride)
+        # mask : [batch_size x n_patches x patch_size]
+        return (mask.sum(dim=-1) == patch_size).long()
 
     @staticmethod
     def convert_patch_to_seq_view(
         mask: torch.Tensor,
-        patch_len: int = 8,
+        patch_size: int = 8,
     ):
         """
         Input:
@@ -53,7 +53,7 @@ class Masking:
         Output:
             mask : torch.Tensor of shape [batch_size x seq_len]
         """
-        return mask.repeat_interleave(patch_len, dim=-1)
+        return mask.repeat_interleave(patch_size, dim=-1)
 
     def generate_mask(
         self,
@@ -63,7 +63,7 @@ class Masking:
         """
         Input:
             x : torch.Tensor of shape
-            [batch_size x n_channels x n_patches x patch_len] or
+            [batch_size x n_channels x n_patches x patch_size] or
             [batch_size x n_channels x seq_len]
             input_mask: torch.Tensor of shape [batch_size x seq_len] or
             [batch_size x n_patches]
@@ -79,12 +79,12 @@ class Masking:
         """
         Input:
             x : torch.Tensor of shape
-            [batch_size x n_channels x n_patches x patch_len]
+            [batch_size x n_channels x n_patches x patch_size]
             input_mask: torch.Tensor of shape [batch_size x seq_len]
         Output:
             mask : torch.Tensor of shape [batch_size x n_patches]
         """
-        input_mask = self.convert_seq_to_patch_view(input_mask, self.patch_len, self.stride)
+        input_mask = self.convert_seq_to_patch_view(input_mask, self.patch_size, self.patch_stride)
         n_observed_patches = input_mask.sum(dim=-1, keepdim=True)  # batch_size x 1
 
         batch_size, _, n_patches, _ = x.shape
@@ -117,6 +117,6 @@ class Masking:
         Output:
             mask : torch.Tensor of shape [batch_size x seq_len]
         """
-        x = x.unfold(dimension=-1, size=self.patch_len, step=self.stride)
+        x = x.unfold(dimension=-1, size=self.patch_size, step=self.patch_stride)
         mask = self._mask_patch_view(x, input_mask=input_mask)
-        return self.convert_patch_to_seq_view(mask, self.patch_len).long()
+        return self.convert_patch_to_seq_view(mask, self.patch_size).long()

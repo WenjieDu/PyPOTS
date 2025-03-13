@@ -1,5 +1,5 @@
 """
-The package including the modules of TRMF.
+The package of the partially-observed time-series imputation model TRMF.
 
 Refer to the paper
 `Hsiang-Fu Yu, Nikhil Rao, and Inderjit S. Dhillon.
