@@ -46,7 +46,7 @@ Welcome to PyPOTS docs!
    :alt: Code Climate maintainability
    :target: https://codeclimate.com/github/WenjieDu/PyPOTS
 
-.. image:: https://img.shields.io/coverallsCoverage/github/WenjieDu/PyPOTS?branch=main&logo=coveralls&color=75C1C4&label=Coverage
+.. image:: https://img.shields.io/coverallsCoverage/github/WenjieDu/PyPOTS?branch=full_test&logo=coveralls&color=75C1C4&label=Coverage
    :alt: Coveralls coverage
    :target: https://coveralls.io/github/WenjieDu/PyPOTS
 
