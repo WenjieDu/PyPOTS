@@ -39,10 +39,10 @@ class PatchTST(BaseNNImputer):
     n_features :
         The number of features in the time-series data sample.
 
-    patch_len :
+    patch_size :
         The patch length for patch embedding.
 
-    stride :
+    patch_stride :
         The stride for patch embedding.
 
     n_layers :
@@ -130,8 +130,8 @@ class PatchTST(BaseNNImputer):
         self,
         n_steps: int,
         n_features: int,
-        patch_len: int,
-        stride: int,
+        patch_size: int,
+        patch_stride: int,
         n_layers: int,
         d_model: int,
         n_heads: int,
@@ -177,8 +177,8 @@ class PatchTST(BaseNNImputer):
         self.n_steps = n_steps
         self.n_features = n_features
         # model hype-parameters
-        self.patch_len = patch_len
-        self.stride = stride
+        self.patch_size = patch_size
+        self.patch_stride = patch_stride
         self.n_layers = n_layers
         self.n_heads = n_heads
         self.d_k = d_k
@@ -200,8 +200,8 @@ class PatchTST(BaseNNImputer):
             self.d_k,
             self.d_v,
             self.d_ffn,
-            self.patch_len,
-            self.stride,
+            self.patch_size,
+            self.patch_stride,
             self.dropout,
             self.attn_dropout,
             self.ORT_weight,

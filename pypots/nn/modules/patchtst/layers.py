@@ -15,19 +15,19 @@ class PatchEmbedding(nn.Module):
     def __init__(
         self,
         d_model,
-        patch_len,
-        stride,
+        patch_size,
+        patch_stride,
         padding,
         dropout,
         positional_embedding=True,
     ):
         super().__init__()
         # patching
-        self.patch_len = patch_len
-        self.stride = stride
+        self.patch_size = patch_size
+        self.patch_stride = patch_stride
         self.padding_patch_layer = nn.ReplicationPad1d((0, padding))
         # input projection, project the feature vectors into a vector space with d_model dimensions
-        self.value_embedding = nn.Linear(patch_len, d_model, bias=False)
+        self.value_embedding = nn.Linear(patch_size, d_model, bias=False)
         # positional embedding
         if positional_embedding:
             self.positional_embedding = PositionalEncoding(d_model)
@@ -39,7 +39,7 @@ class PatchEmbedding(nn.Module):
     def forward(self, x):
         # apply patching
         x = self.padding_patch_layer(x)
-        x = x.unfold(dimension=-1, size=self.patch_len, step=self.stride)
+        x = x.unfold(dimension=-1, size=self.patch_size, step=self.patch_stride)
         x = x.reshape(x.shape[0] * x.shape[1], x.shape[2], x.shape[3])
         # input encoding
         x = self.value_embedding(x)
