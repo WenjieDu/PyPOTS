@@ -1,5 +1,5 @@
 """
-The package including the modules of TimeMixer.
+The package of the partially-observed time-series imputation model TimeMixer.
 
 Refer to the paper
 `Shiyu Wang, Haixu Wu, Xiaoming Shi, Tengge Hu, Huakun Luo, Lintao Ma, James Y. Zhang, and Jun Zhou.
