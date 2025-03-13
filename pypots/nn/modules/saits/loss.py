@@ -6,11 +6,9 @@
 # License: BSD-3-Clause
 
 
-from typing import Callable
-
 import torch.nn as nn
 
-from ....nn.functional import calc_mae
+from ..loss import Criterion, MAE
 
 
 class SaitsLoss(nn.Module):
@@ -18,7 +16,7 @@ class SaitsLoss(nn.Module):
         self,
         ORT_weight,
         MIT_weight,
-        loss_calc_func: Callable = calc_mae,
+        loss_calc_func: Criterion = MAE(),
     ):
         super().__init__()
         self.ORT_weight = ORT_weight

@@ -125,8 +125,8 @@ class CRLI(BaseNNClusterer):
         batch_size: int = 32,
         epochs: int = 100,
         patience: Optional[int] = None,
-        G_optimizer: Optional[Optimizer] = Adam(),
-        D_optimizer: Optional[Optimizer] = Adam(),
+        G_optimizer: Optimizer = Adam(),
+        D_optimizer: Optimizer = Adam(),
         num_workers: int = 0,
         device: Optional[Union[str, torch.device, list]] = None,
         saving_path: Optional[str] = None,
@@ -138,8 +138,8 @@ class CRLI(BaseNNClusterer):
             batch_size=batch_size,
             epochs=epochs,
             patience=patience,
-            train_loss_func=None,
-            val_metric_func=None,
+            training_loss=None,
+            validation_metric=None,
             num_workers=num_workers,
             device=device,
             saving_path=saving_path,
@@ -353,11 +353,11 @@ class CRLI(BaseNNClusterer):
         # Step 2: train the model and freeze it
         self._train_model(training_loader, val_loader)
         self.model.load_state_dict(self.best_model_dict)
-        self.model.eval()  # set the model as eval status to freeze it.
 
         # Step 3: save the model if necessary
         self._auto_save_model_if_necessary(confirm_saving=self.model_saving_strategy == "best")
 
+    @torch.no_grad()
     def predict(
         self,
         test_set: Union[dict, str],
@@ -368,30 +368,25 @@ class CRLI(BaseNNClusterer):
 
         Parameters
         ----------
-        test_set : dict or str
-            The dataset for model validating, should be a dictionary including keys as 'X',
+        test_set :
+            The test dataset for model to process, should be a dictionary including keys as 'X',
             or a path string locating a data file supported by PyPOTS (e.g. h5 file).
-            If it is a dict, X should be array-like of shape [n_samples, sequence length (n_steps), n_features],
-            which is time-series data for validating, can contain missing values, and y should be array-like of shape
-            [n_samples], which is classification labels of X.
+            If it is a dict, X should be array-like with shape [n_samples, n_steps, n_features],
+            which is the time-series data for processing.
             If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
-            key-value pairs like a dict, and it has to include keys as 'X' and 'y'.
+            key-value pairs like a dict, and it has to include 'X' key.
 
         file_type :
             The type of the given file if test_set is a path string.
 
         return_latent_vars : bool
-            Whether to return the latent variables in CRLI, e.g. latent representation from the fully connected network
-            in CRLI, etc.
+            Whether to return the latent variables in VaDER, e.g. mu and phi, etc.
 
         Returns
         -------
         file_type :
             The dictionary containing the clustering results and latent variables if necessary.
-
         """
-
-        self.model.eval()  # set the model as eval status to freeze it.
         test_set = DatasetForCRLI(test_set, return_y=False, file_type=file_type)
         test_loader = DataLoader(
             test_set,
@@ -402,13 +397,12 @@ class CRLI(BaseNNClusterer):
         clustering_latent_collector = []
         imputation_collector = []
 
-        with torch.no_grad():
-            for idx, data in enumerate(test_loader):
-                inputs = self._assemble_input_for_testing(data)
-                inputs = self.model.forward(inputs)
-                clustering_latent_collector.append(inputs["fcn_latent"])
-                if return_latent_vars:
-                    imputation_collector.append(inputs["imputation_latent"])
+        for idx, data in enumerate(test_loader):
+            inputs = self._assemble_input_for_testing(data)
+            inputs = self.model.forward(inputs)
+            clustering_latent_collector.append(inputs["fcn_latent"])
+            if return_latent_vars:
+                imputation_collector.append(inputs["imputation_latent"])
 
         clustering_latent = torch.cat(clustering_latent_collector).cpu().detach().numpy()
         clustering = self.model.kmeans.fit_predict(clustering_latent)
@@ -432,23 +426,5 @@ class CRLI(BaseNNClusterer):
         test_set: Union[dict, str],
         file_type: str = "hdf5",
     ) -> np.ndarray:
-        """Cluster the input with the trained model.
-
-        Parameters
-        ----------
-        test_set :
-            The data samples for testing, should be array-like of shape [n_samples, sequence length (n_steps),
-            n_features], or a path string locating a data file, e.g. h5 file.
-
-        file_type :
-            The type of the given file if X is a path string.
-
-        Returns
-        -------
-        array-like,
-            Clustering results.
-
-        """
-
         result_dict = self.predict(test_set, file_type=file_type)
         return result_dict["clustering"]

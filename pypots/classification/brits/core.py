@@ -8,9 +8,9 @@ and takes over the forward progress of the algorithm.
 
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 
 from ...nn.modules.brits import BackboneBRITS
+from ...nn.modules.loss import Criterion, CrossEntropy
 
 
 class _BRITS(nn.Module):
@@ -22,6 +22,7 @@ class _BRITS(nn.Module):
         n_classes: int,
         classification_weight: float,
         reconstruction_weight: float,
+        training_loss: Criterion = CrossEntropy(),
     ):
         super().__init__()
         self.n_steps = n_steps
@@ -30,6 +31,7 @@ class _BRITS(nn.Module):
         self.n_classes = n_classes
         self.classification_weight = classification_weight
         self.reconstruction_weight = reconstruction_weight
+        self.training_loss = training_loss
 
         # create models
         self.model = BackboneBRITS(n_steps, n_features, rnn_hidden_size)
@@ -62,8 +64,8 @@ class _BRITS(nn.Module):
         if self.training:
             results["consistency_loss"] = consistency_loss
             results["reconstruction_loss"] = reconstruction_loss
-            f_classification_loss = F.nll_loss(torch.log(f_prediction), inputs["y"])
-            b_classification_loss = F.nll_loss(torch.log(b_prediction), inputs["y"])
+            f_classification_loss = self.training_loss(f_logits, inputs["y"])
+            b_classification_loss = self.training_loss(b_logits, inputs["y"])
             classification_loss = (f_classification_loss + b_classification_loss) / 2
             loss = (
                 consistency_loss

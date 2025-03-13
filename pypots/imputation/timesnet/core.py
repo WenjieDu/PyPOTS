@@ -8,7 +8,7 @@
 import torch.nn as nn
 
 from ...nn.functional import nonstationary_norm, nonstationary_denorm
-from ...nn.functional import calc_mse
+from ...nn.modules.loss import Criterion, MSE
 from ...nn.modules.timesnet import BackboneTimesNet
 from ...nn.modules.transformer.embedding import DataEmbedding
 
@@ -25,12 +25,14 @@ class _TimesNet(nn.Module):
         n_kernels,
         dropout,
         apply_nonstationary_norm,
+        training_loss: Criterion = MSE(),
     ):
         super().__init__()
 
         self.seq_len = n_steps
         self.n_layers = n_layers
         self.apply_nonstationary_norm = apply_nonstationary_norm
+        self.training_loss = training_loss
 
         self.enc_embedding = DataEmbedding(
             n_features,
@@ -78,7 +80,7 @@ class _TimesNet(nn.Module):
 
         if self.training:
             # `loss` is always the item for backward propagating to update the model
-            loss = calc_mse(dec_out, inputs["X_ori"], inputs["indicating_mask"])
+            loss = self.training_loss(dec_out, inputs["X_ori"], inputs["indicating_mask"])
             results["loss"] = loss
 
         return results

@@ -16,6 +16,7 @@ from .data import DatasetForCSAI
 from ..base import BaseNNImputer
 from ...data.checking import key_in_data_set
 from ...data.saving.h5 import load_dict_from_h5
+from ...nn.modules.loss import Criterion, MAE, MSE
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
 from ...utils.logging import logger
@@ -61,11 +62,11 @@ class CSAI(BaseNNImputer):
         stopped when the model does not perform better after that number of epochs.
         Leaving it default as None will disable the early-stopping.
 
-    train_loss_func :
+    training_loss :
         The customized loss function designed by users for training the model.
         If not given, will use the default loss as claimed in the original paper.
 
-    val_metric_func:
+    validation_metric:
         The customized metric function designed by users for validating the model.
         If not given, will use the default MSE metric.
 
@@ -123,21 +124,21 @@ class CSAI(BaseNNImputer):
         batch_size: int = 32,
         epochs: int = 100,
         patience: Optional[int] = None,
-        train_loss_func: Optional[dict] = None,
-        val_metric_func: Optional[dict] = None,
-        optimizer: Optional[Optimizer] = Adam(),
+        training_loss: Criterion = MAE(),
+        validation_metric: Criterion = MSE(),
+        optimizer: Optimizer = Adam(),
         num_workers: int = 0,
         device: Union[str, torch.device, list, None] = None,
         saving_path: str = None,
-        model_saving_strategy: Union[str, None] = "best",
+        model_saving_strategy: Optional[str] = "best",
         verbose: bool = True,
     ):
         super().__init__(
             batch_size=batch_size,
             epochs=epochs,
             patience=patience,
-            train_loss_func=train_loss_func,
-            val_metric_func=val_metric_func,
+            training_loss=training_loss,
+            validation_metric=validation_metric,
             num_workers=num_workers,
             device=device,
             saving_path=saving_path,
@@ -162,6 +163,7 @@ class CSAI(BaseNNImputer):
             self.step_channels,
             self.consistency_weight,
             self.imputation_weight,
+            self.training_loss,
         )
 
         self._send_model_to_given_device()
@@ -301,18 +303,16 @@ class CSAI(BaseNNImputer):
         # train the model
         self._train_model(training_loader, val_loader)
         self.model.load_state_dict(self.best_model_dict)
-        self.model.eval()  # set the model as eval status to freeze it.
 
         # Step 3: save the model if necessary
         self._auto_save_model_if_necessary(confirm_saving=self.model_saving_strategy == "best")
 
+    @torch.no_grad()
     def predict(
         self,
         test_set: Union[dict, str],
         file_type: str = "hdf5",
     ) -> dict:
-
-        self.model.eval()
 
         if isinstance(test_set, str):
             logger.warning(
@@ -363,22 +363,6 @@ class CSAI(BaseNNImputer):
         test_set: Union[dict, str],
         file_type: str = "hdf5",
     ) -> np.ndarray:
-        """Impute missing values in the given data with the trained model.
-
-        Parameters
-        ----------
-        test_set :
-            The data samples for testing, should be array-like of shape [n_samples, sequence length (n_steps),
-            n_features], or a path string locating a data file, e.g. h5 file.
-
-        file_type :
-            The type of the given file if X is a path string.
-
-        Returns
-        -------
-        array-like, shape [n_samples, sequence length (n_steps), n_features],
-            Imputed data.
-        """
 
         result_dict = self.predict(test_set, file_type=file_type)
         return result_dict["imputation"]

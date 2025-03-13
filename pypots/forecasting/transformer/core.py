@@ -10,7 +10,7 @@ and takes over the forward progress of the algorithm.
 import torch
 import torch.nn as nn
 
-from ...nn.functional.error import calc_mse
+from ...nn.modules.loss import Criterion, MSE
 from ...nn.modules.saits import SaitsEmbedding
 from ...nn.modules.transformer import TransformerEncoder, TransformerDecoder
 
@@ -31,6 +31,7 @@ class _Transformer(nn.Module):
         d_ffn: int,
         dropout: float,
         attn_dropout: float,
+        training_loss: Criterion = MSE(),
     ):
         super().__init__()
 
@@ -38,6 +39,7 @@ class _Transformer(nn.Module):
         self.n_features = n_features
         self.n_pred_steps = n_pred_steps
         self.n_pred_features = n_pred_features
+        self.training_loss = training_loss
 
         self.encoder_saits_embedding = SaitsEmbedding(
             n_features * 2,
@@ -83,9 +85,10 @@ class _Transformer(nn.Module):
             X_pred, X_pred_missing_mask = inputs["X_pred"], inputs["X_pred_missing_mask"]
         else:
             batch_size = X.shape[0]
+            device = X.device
             X_pred, X_pred_missing_mask = (
-                torch.zeros(batch_size, self.n_pred_steps, self.n_pred_features),
-                torch.ones(batch_size, self.n_pred_steps, self.n_pred_features),
+                torch.zeros(batch_size, self.n_pred_steps, self.n_pred_features, device=device),
+                torch.ones(batch_size, self.n_pred_steps, self.n_pred_features, device=device),
             )
 
         # apply the SAITS embedding strategy, concatenate X and missing mask for input
@@ -106,6 +109,6 @@ class _Transformer(nn.Module):
         # if in training mode, return results with losses
         if self.training:
             # `loss` is always the item for backward propagating to update the model
-            results["loss"] = calc_mse(X_pred, forecasting_result, X_pred_missing_mask)
+            results["loss"] = self.training_loss(X_pred, forecasting_result, X_pred_missing_mask)
 
         return results

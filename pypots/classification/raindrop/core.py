@@ -9,8 +9,8 @@ and takes over the forward progress of the algorithm.
 
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 
+from ...nn.modules.loss import Criterion, CrossEntropy
 from ...nn.modules.raindrop import BackboneRaindrop
 
 
@@ -29,12 +29,14 @@ class _Raindrop(nn.Module):
         aggregation="mean",
         sensor_wise_mask=False,
         static=False,
+        training_loss: Criterion = CrossEntropy(),
     ):
         super().__init__()
 
         d_pe = 16
         self.aggregation = aggregation
         self.sensor_wise_mask = sensor_wise_mask
+        self.training_loss = training_loss
 
         self.backbone = BackboneRaindrop(
             n_features,
@@ -107,7 +109,7 @@ class _Raindrop(nn.Module):
 
         # if in training mode, return results with losses
         if self.training:
-            classification_loss = F.nll_loss(torch.log(classification_pred), inputs["y"])
+            classification_loss = self.training_loss(logits, inputs["y"])
             results["loss"] = classification_loss
 
         return results

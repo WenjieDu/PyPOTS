@@ -35,7 +35,7 @@
         <img alt="Code Climate maintainability" src="https://img.shields.io/codeclimate/maintainability-percentage/WenjieDu/PyPOTS?color=3C7699&label=Maintainability&logo=codeclimate">
     </a>
     <a href="https://coveralls.io/github/WenjieDu/PyPOTS">
-        <img alt="Coveralls coverage" src="https://img.shields.io/coverallsCoverage/github/WenjieDu/PyPOTS?branch=main&logo=coveralls&color=75C1C4&label=Coverage">
+        <img alt="Coveralls coverage" src="https://img.shields.io/coverallsCoverage/github/WenjieDu/PyPOTS?branch=full_test&logo=coveralls&color=75C1C4&label=Coverage">
     </a>
     <a href="https://github.com/WenjieDu/PyPOTS/actions/workflows/testing_ci.yml">
         <img alt="GitHub Testing" src="https://img.shields.io/github/actions/workflow/status/wenjiedu/pypots/testing_ci.yml?logo=circleci&color=C8D8E1&label=CI">
@@ -106,6 +106,7 @@ PyPOTS当前支持多变量POTS数据的插补, 预测, 分类, 聚类以及异�
 |:--------------|:---------------------------------------------------------------------------------------------------------------------------------|:------:|:------:|:------:|:------:|:--------:|:---------------------------------------------------|
 | LLM&TSFM      | <a href="https://time-series.ai"><img src="https://time-series.ai/static/figs/robot.svg" width="26px"> Time-Series.AI</a>  [^36] |    ✅     |    ✅     |    ✅     |    ✅     |    ✅     | <a href="https://time-series.ai">Join waitlist</a> |
 | LLM           | Time-LLM🧑‍🔧[^45]                                                                                                               |    ✅     |    ✅     |          |          |          | `2024 - ICLR`                                      |
+| TSFM          | MOMENT[^47]                                                                                                                      |    ✅     |    ✅     |          |          |          | `2024 - ICML`                                      |
 | Neural Net    | TEFN🧑‍🔧[^39]                                                                                                                   |    ✅     |    ✅     |          |          |          | `2024 - arXiv`                                     |
 | Neural Net    | FITS🧑‍🔧[^41]                                                                                                                   |    ✅     |    ✅     |          |          |          | `2024 - ICLR`                                      |
 | Neural Net    | TimeMixer[^37]                                                                                                                   |    ✅     |    ✅     |          |          |          | `2024 - ICLR`                                      |
@@ -249,33 +250,32 @@ conda update  conda-forge::pypots  # 更新为最新版本
 <summary><b>点击此处查看 SAITS 模型应用于 PhysioNet2012 数据集插补任务的简单案例:</b></summary>
 
 ``` python
-# 数据预处理, 使用PyPOTS生态帮助完成繁琐的数据预处理
 import numpy as np
 from sklearn.preprocessing import StandardScaler
-from pygrinder import mcar
-from pypots.data import load_specific_dataset
-data = load_specific_dataset('physionet_2012')  # PyPOTS将自动下载并加载和处理数据
-X = data['X']
-num_samples = len(X['RecordID'].unique())
-X = X.drop(['RecordID', 'Time'], axis = 1)
-X = StandardScaler().fit_transform(X.to_numpy())
-X = X.reshape(num_samples, 48, -1)
-X_ori = X  # keep X_ori for validation
-X = mcar(X, 0.1)  # 随机掩盖观测值的10%, 作为基准数据
-dataset = {"X": X}  # X用于模型输入
-print(X.shape)  # X的形状为(11988, 48, 37), 即11988个样本, 每个样本有48个步长(time steps)和37个特征(features)
+from pygrinder import mcar, calc_missing_rate
+from benchpots.datasets import preprocess_physionet2012
+data = preprocess_physionet2012(subset='set-a', rate=0.1)  # 我们的工具库会自动下载并解压数据集
+train_X, val_X, test_X = data["train_X"], data["val_X"], data["test_X"]
+print(train_X.shape)  # (n_samples, n_steps, n_features)
+print(val_X.shape)  # 验证集的样本数与训练集不同（n_samples不同），但样本长度（n_steps）和特征维度（n_features）一致
+print(f"训练集 train_X 中缺失值的比例为 {calc_missing_rate(train_X):.1%}")
+train_set = {"X": train_X}  # 训练集只需包含不完整时间序列
+val_set = {
+    "X": val_X,
+    "X_ori": data["val_X_ori"],  # 验证集中我们需要真实值用于评估和选择模型
+}
+test_set = {"X": test_X}  # 测试集仅提供待填补的不完整时间序列
+test_X_ori = data["test_X_ori"]  # test_X_ori 包含用于最终评估的真实值
+indicating_mask = np.isnan(test_X) ^ np.isnan(test_X_ori)  # 生成指示掩码：标记出测试集中人为添加的缺失位置（X中存在缺失但X_ori中不缺失的位置）
 
-# 模型训练. PyPOTS的好戏上演了！
-from pypots.imputation import SAITS
+from pypots.imputation import SAITS  # 导入你想要使用的模型
 from pypots.nn.functional import calc_mae
-saits = SAITS(n_steps=48, n_features=37, n_layers=2, d_model=256, n_heads=4, d_k=64, d_v=64, d_ffn=128, dropout=0.1, epochs=10)
-# 因为基准数据对模型不可知, 将整个数据集作为训练集, 也可以把数据集分为训练/验证/测试集
-saits.fit(dataset)  # 基于数据集训练模型
-imputation = saits.impute(dataset)  # 插补数据集中原始缺失部分和我们上面人为遮蔽缺失的基准数据部分
-indicating_mask = np.isnan(X) ^ np.isnan(X_ori)  # 用于计算插补误差的掩码矩阵
-mae = calc_mae(imputation, np.nan_to_num(X_ori), indicating_mask)  # 计算人为遮掩部分数据的平均绝对误差MAE
-saits.save("save_it_here/saits_physionet2012.pypots")  # 保存模型
-saits.load("save_it_here/saits_physionet2012.pypots")  # 你随时可以重新加载保存的模型文件以进行后续的插补或训练
+saits = SAITS(n_steps=train_X.shape[1], n_features=train_X.shape[2], n_layers=2, d_model=256, n_heads=4, d_k=64, d_v=64, d_ffn=128, dropout=0.1, epochs=5)
+saits.fit(train_set, val_set)  # 在数据集上训练模型
+imputation = saits.impute(test_set)  # 对测试集中原始缺失和人为缺失的值进行填补
+mae = calc_mae(imputation, np.nan_to_num(test_X_ori), indicating_mask)  # 在人为添加的缺失位置上计算 MAE（对比填补结果与真实值）
+saits.save("save_it_here/saits_physionet2012.pypots")  # 保存模型供后续使用
+saits.load("save_it_here/saits_physionet2012.pypots")  # 重新加载模型用于后续填补或继续训练
 ```
 
 </details>
@@ -506,3 +506,6 @@ Time-Series.AI</a>
 [^46]: Zhou, T., Niu, P., Sun, L., & Jin, R. (2023). 
 [One Fits All: Power General Time Series Analysis by Pretrained LM](https://openreview.net/forum?id=gMS6FVZvmF).
 *NeurIPS 2023*.
+[^47]: Goswami, M., Szafer, K., Choudhry, A., Cai, Y., Li, S., & Dubrawski, A. (2024).
+[MOMENT: A Family of Open Time-series Foundation Models](https://proceedings.mlr.press/v235/goswami24a.html).
+*ICML 2024*.

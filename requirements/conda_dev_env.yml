@@ -16,6 +16,7 @@ dependencies:
     - pyg::pytorch-scatter
 
     # test
+    - conda-forge::coveralls
     - conda-forge::pytest-cov
     - conda-forge::pytest-xdist
 

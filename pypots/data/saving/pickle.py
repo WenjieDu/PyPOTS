@@ -7,6 +7,8 @@ Data saving utilities with pickle.
 
 import pickle
 
+import pandas as pd
+
 from ...utils.file import extract_parent_dir, create_dir_if_not_exist
 from ...utils.logging import logger
 
@@ -55,7 +57,10 @@ def pickle_load(path: str) -> object:
     """
     try:
         with open(path, "rb") as f:
-            data = pickle.load(f)
+            if pd.__version__ >= "2.0.0":
+                data = pd.read_pickle(f)
+            else:
+                data = pickle.load(f)
     except Exception as e:
         logger.error(f"❌ Loading data failed. Operation aborted. Investigate the error below:\n{e}")
         return None

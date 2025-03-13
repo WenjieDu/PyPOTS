@@ -14,6 +14,7 @@ from typing import Optional, Union, Iterable, Callable
 import torch
 from torch.utils.tensorboard import SummaryWriter
 
+from .nn.modules.loss import Criterion
 from .utils.file import create_dir_if_not_exist
 from .utils.logging import logger, logger_creator
 
@@ -78,12 +79,17 @@ class BaseModel(ABC):
         assert (
             model_saving_strategy in saving_strategies
         ), f"saving_strategy must be one of {saving_strategies}, but got f{model_saving_strategy}."
+        if saving_path is not None and saving_strategies is None:
+            logger.warning("‼️ saving_path is given, but model_saving_strategy is None. No model file will be saved.")
 
         self.device = None  # set up with _setup_device() below
-        self.enable_amp = enable_amp
         self.saving_path = None  # set up with _setup_path() below
         self.model_saving_strategy = model_saving_strategy
         self.verbose = verbose
+
+        # default as false, determine in _setup_device() with consideration on enable_amp and cuda availability
+        self.amp_enabled = False
+        self.enable_amp = enable_amp
 
         if not self.verbose:
             logger_creator.set_level("warning")
@@ -156,11 +162,15 @@ class BaseModel(ABC):
             ), "You are trying to use CUDA for model training, but CUDA is not available in your environment."
 
         if os.getenv("ENABLE_AMP", False):
-            if not torch.cuda.is_available() or torch.cuda.device_count() == 0:
-                logger.warning(
-                    "‼️ You are trying to use AMP, but CUDA is not available in your environment. AMP will be disabled."
-                )
-            if not self.enable_amp:
+            if self.enable_amp:
+                if not torch.cuda.is_available() or torch.cuda.device_count() == 0:
+                    logger.warning(
+                        "‼️ You are trying to use AMP, but CUDA is not available in your environment. "
+                        "AMP will be disabled."
+                    )
+                else:
+                    self.amp_enabled = True
+            else:
                 logger.warning(
                     f"‼️ You are trying to use AMP, but the model {self.__class__.__name__} "
                     "does not support AMP operation. AMP will be disabled."
@@ -352,6 +362,7 @@ class BaseModel(ABC):
                     self.model.module.load_state_dict(loaded_model.state_dict())
             else:
                 self.model = loaded_model.model
+            self.model.eval()  # set the model as eval status to freeze it.
         except Exception as e:
             raise e
         logger.info(f"Model loaded successfully from {path}")
@@ -370,7 +381,7 @@ class BaseModel(ABC):
         train_set :
             The dataset for model training, should be a dictionary including keys as 'X',
             or a path string locating a data file supported by PyPOTS (e.g. h5 file).
-            If it is a dict, X should be array-like of shape [n_samples, sequence length (n_steps), n_features],
+            If it is a dict, X should be array-like with shape [n_samples, n_steps, n_features],
             which is time-series data for training, can contain missing values, and y should be array-like of shape
             [n_samples], which is classification labels of X.
             If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
@@ -379,7 +390,7 @@ class BaseModel(ABC):
         val_set :
             The dataset for model validating, should be a dictionary including keys as 'X',
             or a path string locating a data file supported by PyPOTS (e.g. h5 file).
-            If it is a dict, X should be array-like of shape [n_samples, sequence length (n_steps), n_features],
+            If it is a dict, X should be array-like with shape [n_samples, n_steps, n_features],
             which is time-series data for validating, can contain missing values, and y should be array-like of shape
             [n_samples], which is classification labels of X.
             If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
@@ -404,7 +415,7 @@ class BaseModel(ABC):
         test_set :
             The dataset for model validating, should be a dictionary including keys as 'X',
             or a path string locating a data file supported by PyPOTS (e.g. h5 file).
-            If it is a dict, X should be array-like of shape [n_samples, sequence length (n_steps), n_features],
+            If it is a dict, X should be array-like with shape [n_samples, n_steps, n_features],
             which is time-series data for validating, can contain missing values, and y should be array-like of shape
             [n_samples], which is classification labels of X.
             If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
@@ -451,11 +462,11 @@ class BaseNNModel(BaseModel):
         stopped when the model does not perform better after that number of epochs.
         Leaving it default as None will disable the early-stopping.
 
-    train_loss_func:
+    training_loss:
         The customized loss function designed by users for training the model.
         If not given, will use the default loss as claimed in the original paper.
 
-    val_metric_func:
+    validation_metric:
         The customized metric function designed by users for validating the model.
         If not given, will use the default MSE metric.
 
@@ -518,8 +529,8 @@ class BaseNNModel(BaseModel):
         batch_size: int,
         epochs: int,
         patience: Optional[int] = None,
-        train_loss_func: Optional[dict] = None,
-        val_metric_func: Optional[dict] = None,
+        training_loss: Optional[Criterion] = None,
+        validation_metric: Optional[Criterion] = None,
         num_workers: int = 0,
         device: Optional[Union[str, torch.device, list]] = None,
         enable_amp: bool = False,
@@ -543,25 +554,25 @@ class BaseNNModel(BaseModel):
                 patience <= epochs
             ), f"patience must be smaller than epochs which is {epochs}, but got patience={patience}"
 
-        # check train_loss_func and val_metric_func
-        train_loss_func_name, val_metric_func_name = "default", "loss (default)"
-        if train_loss_func is not None:
-            train_loss_func_name = train_loss_func.__class__.__name__
-            assert isinstance(train_loss_func, Callable), "train_loss_func should be a callable instance"
-            logger.info(f"Using customized {train_loss_func_name} as the training loss function.")
-        if val_metric_func is not None:
-            val_metric_func_name = val_metric_func.__class__.__name__
-            assert isinstance(val_metric_func, Callable), "val_metric_func should be a callable instance"
-            logger.info(f"Using customized {val_metric_func_name} as the validation metric function.")
+        # check training_loss and validation_metric
+        training_loss_name, validation_metric_name = "default", "loss (default)"
+        if training_loss is not None:
+            training_loss_name = training_loss.__class__.__name__
+            assert isinstance(training_loss, Callable), "training_loss should be a callable instance"
+            logger.info(f"Using customized {training_loss_name} as the training loss function.")
+        if validation_metric is not None:
+            validation_metric_name = validation_metric.__class__.__name__
+            assert isinstance(validation_metric, Callable), "validation_metric should be a callable instance"
+            logger.info(f"Using customized {validation_metric_name} as the validation metric function.")
 
         # set up the hype-parameters
         self.batch_size = batch_size
         self.epochs = epochs
         self.patience = patience
-        self.train_loss_func = train_loss_func
-        self.train_loss_func_name = train_loss_func_name
-        self.val_metric_func = val_metric_func
-        self.val_metric_func_name = val_metric_func_name
+        self.training_loss = training_loss
+        self.training_loss_name = training_loss_name
+        self.validation_metric = validation_metric
+        self.validation_metric_name = validation_metric_name
         self.original_patience = patience
         self.num_workers = num_workers
 
@@ -590,6 +601,7 @@ class BaseNNModel(BaseModel):
         raise NotImplementedError
 
     @abstractmethod
+    @torch.no_grad()
     def predict(
         self,
         test_set: Union[dict, str],
