@@ -239,7 +239,10 @@ class Koopa(BaseNNImputer):
             )
 
         # WDU: init the mask spectrum for the Koopa model
-        self.model.backbone.init_mask_spectrum(training_loader)
+        if isinstance(self.device, list):
+            self.model.module.backbone.init_mask_spectrum(training_loader)
+        else:
+            self.model.backbone.init_mask_spectrum(training_loader)
 
         # Step 2: train the model and freeze it
         self._train_model(training_loader, val_loader)
