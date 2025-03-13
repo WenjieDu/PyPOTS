@@ -32,12 +32,54 @@ class MOMENT(BaseNNImputer):
 
     n_features :
         The number of features in the time-series data sample.
-
     patch_size :
-        The size of the patch for the patch-based self-attention mechanism.
+        The patch length for patch embedding.
 
     patch_stride :
-        The stride of the patch for the patch-based self-attention mechanism.
+        The stride for patch embedding.
+
+    transformer_backbone :
+        The backbone of the transformer model. It has to be one of ["t5-small","t5-base","t5-large","t5-3b","t5-11b",
+        "google/flan-t5-small","google/flan-t5-base","google/flan-t5-large","google/flan-t5-xl","google/flan-t5-xxl"].
+
+    transformer_type :
+        The type of the transformer model. It has to be one of ["encoder_only","decoder_only","encoder_decoder"].
+
+    n_layers :
+        The number of layers in the transformer backbone.
+
+    d_ffn :
+        The hidden size of the feed-forward network.
+
+    d_model :
+        The hidden size of the model backbone.
+
+    d_ffn :
+        The hidden size of the feed-forward network .
+
+    dropout :
+        The dropout rate for the model.
+
+    head_dropout :
+        The dropout rate for the head of the model.
+
+    finetuning_mode :
+        The fine-tuning mode for the model. It has to be one of ["linear-probing","end-to-end","zero-shot"].
+
+    revin_affine :
+        Whether to use affine transformation in the RevIn module.
+
+    add_positional_embedding :
+        Whether to add positional embedding in the model.
+
+    value_embedding_bias :
+        Whether to add bias in the value embedding.
+
+    orth_gain :
+        The gain for the orthogonal initialization.
+
+    mask_ratio :
+        The ratio of the mask for the model.
 
     batch_size :
         The batch size for training and evaluating the model.
@@ -96,19 +138,19 @@ class MOMENT(BaseNNImputer):
         n_features: int,
         patch_size: int,
         patch_stride: int,
-        n_layers: int,
-        d_ffn: int,
-        dropout: float,
-        d_model: int,
         transformer_backbone: str,
         transformer_type: str,
+        n_layers: int,
+        d_ffn: int,
+        d_model: int,
+        dropout: float,
         head_dropout: float,
         finetuning_mode: str,
         revin_affine: bool,
         add_positional_embedding: bool,
         value_embedding_bias: bool,
         orth_gain: float,
-        mask_ratio: float,
+        mask_ratio: float = 0.3,
         batch_size: int = 32,
         epochs: int = 100,
         patience: Optional[int] = None,

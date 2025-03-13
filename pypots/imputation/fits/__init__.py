@@ -1,5 +1,5 @@
 """
-The package including the modules of FITS.
+The package of the partially-observed time-series imputation model FITS.
 
 Refer to the paper
 `Zhijian Xu, Ailing Zeng, and Qiang Xu.
