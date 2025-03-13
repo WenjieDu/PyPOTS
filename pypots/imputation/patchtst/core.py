@@ -24,8 +24,8 @@ class _PatchTST(nn.Module):
         d_k: int,
         d_v: int,
         d_ffn: int,
-        patch_len: int,
-        stride: int,
+        patch_size: int,
+        patch_stride: int,
         dropout: float,
         attn_dropout: float,
         ORT_weight: float = 1,
@@ -34,11 +34,11 @@ class _PatchTST(nn.Module):
     ):
         super().__init__()
 
-        n_patches = int((n_steps - patch_len) / stride + 2)  # number of patches
-        padding = stride
+        n_patches = int((n_steps - patch_size) / patch_stride + 2)  # number of patches
+        padding = patch_stride
 
         self.saits_embedding = SaitsEmbedding(n_features * 2, d_model, with_pos=False)
-        self.patch_embedding = PatchEmbedding(d_model, patch_len, stride, padding, dropout)
+        self.patch_embedding = PatchEmbedding(d_model, patch_size, patch_stride, padding, dropout)
         self.encoder = PatchtstEncoder(
             n_layers,
             d_model,
