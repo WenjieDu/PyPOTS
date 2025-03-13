@@ -11,7 +11,7 @@ import torch
 import torch.nn as nn
 
 from ...nn.modules.loss import Criterion, MSE
-from ...nn.modules.moment import BackboneMOMENT, SUPPORTED_HUGGINGFACE_MODELS
+from ...nn.modules.moment import BackboneMOMENT
 from ...nn.modules.saits import SaitsEmbedding
 
 

@@ -23,7 +23,7 @@ from ...optim.base import Optimizer
 
 
 class MOMENT(BaseNNImputer):
-    """The PyTorch implementation of the MOMENT model :cite:`du2023MOMENT`.
+    """The PyTorch implementation of the MOMENT model :cite:`goswami2024moment`.
 
     Parameters
     ----------
@@ -32,45 +32,54 @@ class MOMENT(BaseNNImputer):
 
     n_features :
         The number of features in the time-series data sample.
+    patch_size :
+        The patch length for patch embedding.
+
+    patch_stride :
+        The stride for patch embedding.
+
+    transformer_backbone :
+        The backbone of the transformer model. It has to be one of ["t5-small","t5-base","t5-large","t5-3b","t5-11b",
+        "google/flan-t5-small","google/flan-t5-base","google/flan-t5-large","google/flan-t5-xl","google/flan-t5-xxl"].
+
+    transformer_type :
+        The type of the transformer model. It has to be one of ["encoder_only","decoder_only","encoder_decoder"].
 
     n_layers :
-        The number of layers in the 1st and 2nd DMSA blocks in the MOMENT model.
-
-    d_model :
-        The dimension of the model's backbone.
-        It is the input dimension of the multi-head DMSA layers.
-
-    n_heads :
-        The number of heads in the multi-head DMSA mechanism.
-        ``d_model`` must be divisible by ``n_heads``, and the result should be equal to ``d_k``.
-
-    d_k :
-        The dimension of the `keys` (K) and the `queries` (Q) in the DMSA mechanism.
-        ``d_k`` should be the result of ``d_model`` divided by ``n_heads``. Although ``d_k`` can be directly calculated
-        with given ``d_model`` and ``n_heads``, we want it be explicitly given together with ``d_v`` by users to ensure
-        users be aware of them and to avoid any potential mistakes.
-
-    d_v :
-        The dimension of the `values` (V) in the DMSA mechanism.
+        The number of layers in the transformer backbone.
 
     d_ffn :
-        The dimension of the layer in the Feed-Forward Networks (FFN).
+        The hidden size of the feed-forward network.
+
+    d_model :
+        The hidden size of the model backbone.
+
+    d_ffn :
+        The hidden size of the feed-forward network .
 
     dropout :
-        The dropout rate for all fully-connected layers in the model.
+        The dropout rate for the model.
 
-    attn_dropout :
-        The dropout rate for DMSA.
+    head_dropout :
+        The dropout rate for the head of the model.
 
-    diagonal_attention_mask :
-        Whether to apply a diagonal attention mask to the self-attention mechanism.
-        If so, the attention layers will use DMSA. Otherwise, the attention layers will use the original.
+    finetuning_mode :
+        The fine-tuning mode for the model. It has to be one of ["linear-probing","end-to-end","zero-shot"].
 
-    ORT_weight :
-        The weight for the ORT loss.
+    revin_affine :
+        Whether to use affine transformation in the RevIn module.
 
-    MIT_weight :
-        The weight for the MIT loss.
+    add_positional_embedding :
+        Whether to add positional embedding in the model.
+
+    value_embedding_bias :
+        Whether to add bias in the value embedding.
+
+    orth_gain :
+        The gain for the orthogonal initialization.
+
+    mask_ratio :
+        The ratio of the mask for the model.
 
     batch_size :
         The batch size for training and evaluating the model.
@@ -129,19 +138,19 @@ class MOMENT(BaseNNImputer):
         n_features: int,
         patch_size: int,
         patch_stride: int,
-        n_layers: int,
-        d_ffn: int,
-        dropout: float,
-        d_model: int,
         transformer_backbone: str,
         transformer_type: str,
+        n_layers: int,
+        d_ffn: int,
+        d_model: int,
+        dropout: float,
         head_dropout: float,
         finetuning_mode: str,
         revin_affine: bool,
         add_positional_embedding: bool,
         value_embedding_bias: bool,
         orth_gain: float,
-        mask_ratio: float,
+        mask_ratio: float = 0.3,
         batch_size: int = 32,
         epochs: int = 100,
         patience: Optional[int] = None,
