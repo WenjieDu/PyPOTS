@@ -210,7 +210,7 @@ class BaseModel(ABC):
         if isinstance(self.device, list):
             # parallely training on multiple devices
             self.model = torch.nn.DataParallel(self.model, device_ids=self.device)
-            self.model = self.model.cuda()
+            self.model = self.model.to(self.device[0])
             logger.info(f"Model has been allocated to the given multiple devices: {self.device}")
         else:
             self.model = self.model.to(self.device)
@@ -218,7 +218,7 @@ class BaseModel(ABC):
     def _send_data_to_given_device(self, data) -> Iterable:
         if isinstance(self.device, (torch.device, list)):  # single device or parallely training on multiple devices
             if isinstance(self.device, list):
-                data = map(lambda x: x.cuda(), data)
+                data = map(lambda x: x.to(self.device[0]), data)
             else:
                 data = map(lambda x: x.to(self.device), data)
 
