@@ -33,7 +33,7 @@ Required Dependencies
 * scikit-learn
 * transformers
 * torch >=1.10.0
-* tsdb >=0.7
+* tsdb >=0.7.1
 * pygrinder >=0.7
 * benchpots >=0.3.2
 * ai4ts

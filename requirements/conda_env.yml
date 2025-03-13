@@ -21,7 +21,7 @@ dependencies:
     - conda-forge::scikit-learn
     - conda-forge::transformers
     - conda-forge::pygrinder >=0.7
-    - conda-forge::tsdb >=0.7
+    - conda-forge::tsdb >=0.7.1
     - conda-forge::benchpots >=0.3.2
     - conda-forge::ai4ts
     - pytorch::pytorch >=1.10.0
