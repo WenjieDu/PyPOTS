@@ -23,7 +23,7 @@ from ...optim.base import Optimizer
 
 
 class MOMENT(BaseNNImputer):
-    """The PyTorch implementation of the MOMENT model :cite:`du2023MOMENT`.
+    """The PyTorch implementation of the MOMENT model :cite:`goswami2024moment`.
 
     Parameters
     ----------
@@ -33,44 +33,11 @@ class MOMENT(BaseNNImputer):
     n_features :
         The number of features in the time-series data sample.
 
-    n_layers :
-        The number of layers in the 1st and 2nd DMSA blocks in the MOMENT model.
+    patch_size :
+        The size of the patch for the patch-based self-attention mechanism.
 
-    d_model :
-        The dimension of the model's backbone.
-        It is the input dimension of the multi-head DMSA layers.
-
-    n_heads :
-        The number of heads in the multi-head DMSA mechanism.
-        ``d_model`` must be divisible by ``n_heads``, and the result should be equal to ``d_k``.
-
-    d_k :
-        The dimension of the `keys` (K) and the `queries` (Q) in the DMSA mechanism.
-        ``d_k`` should be the result of ``d_model`` divided by ``n_heads``. Although ``d_k`` can be directly calculated
-        with given ``d_model`` and ``n_heads``, we want it be explicitly given together with ``d_v`` by users to ensure
-        users be aware of them and to avoid any potential mistakes.
-
-    d_v :
-        The dimension of the `values` (V) in the DMSA mechanism.
-
-    d_ffn :
-        The dimension of the layer in the Feed-Forward Networks (FFN).
-
-    dropout :
-        The dropout rate for all fully-connected layers in the model.
-
-    attn_dropout :
-        The dropout rate for DMSA.
-
-    diagonal_attention_mask :
-        Whether to apply a diagonal attention mask to the self-attention mechanism.
-        If so, the attention layers will use DMSA. Otherwise, the attention layers will use the original.
-
-    ORT_weight :
-        The weight for the ORT loss.
-
-    MIT_weight :
-        The weight for the MIT loss.
+    patch_stride :
+        The stride of the patch for the patch-based self-attention mechanism.
 
     batch_size :
         The batch size for training and evaluating the model.

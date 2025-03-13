@@ -83,19 +83,19 @@ def nanstd(tensor, dim=None, keepdim=False):
 
 
 class Patching(nn.Module):
-    def __init__(self, patch_len: int, stride: int):
+    def __init__(self, patch_size: int, patch_stride: int):
         super().__init__()
-        self.patch_len = patch_len
-        self.stride = stride
-        if self.stride != self.patch_len:
+        self.patch_size = patch_size
+        self.patch_stride = patch_stride
+        if self.patch_stride != self.patch_size:
             warnings.warn(
                 "Stride and patch length are not equal. \
                           This may lead to unexpected behavior."
             )
 
     def forward(self, x):
-        x = x.unfold(dimension=-1, size=self.patch_len, step=self.stride)
-        # x : [batch_size x n_channels x num_patch x patch_len]
+        x = x.unfold(dimension=-1, size=self.patch_size, step=self.patch_stride)
+        # x : [batch_size x n_channels x num_patch x patch_size]
         return x
 
 
@@ -104,8 +104,8 @@ class PatchEmbedding(nn.Module):
         self,
         d_model: int = 768,
         seq_len: int = 512,
-        patch_len: int = 8,
-        stride: int = 8,
+        patch_size: int = 8,
+        patch_stride: int = 8,
         dropout: int = 0.1,
         add_positional_embedding: bool = False,
         value_embedding_bias: bool = False,
@@ -113,14 +113,14 @@ class PatchEmbedding(nn.Module):
     ):
         super().__init__()
         # Patching
-        self.patch_len = patch_len
+        self.patch_size = patch_size
         self.seq_len = seq_len
-        self.stride = stride
+        self.patch_stride = patch_stride
         self.d_model = d_model
         self.add_positional_embedding = add_positional_embedding
 
         # Backbone, Input encoding: projection of feature vectors onto a d-dim vector space
-        self.value_embedding = nn.Linear(patch_len, d_model, bias=value_embedding_bias)
+        self.value_embedding = nn.Linear(patch_size, d_model, bias=value_embedding_bias)
         self.mask_embedding = nn.Parameter(torch.zeros(d_model))
         # nn.init.trunc_normal_(self.mask_embedding, mean=0.0, std=.02)
 
@@ -140,13 +140,13 @@ class PatchEmbedding(nn.Module):
     def forward(self, x: torch.Tensor, mask: torch.Tensor = None) -> torch.Tensor:
         """
         Input:
-            x : [batch_size x n_channels x n_patches x patch_len]
+            x : [batch_size x n_channels x n_patches x patch_size]
             mask : [batch_size x seq_len]
         Output:
             x : [batch_size x n_channels x n_patches x d_model]
         """
 
-        mask = Masking.convert_seq_to_patch_view(mask, patch_len=self.patch_len).unsqueeze(-1)
+        mask = Masking.convert_seq_to_patch_view(mask, patch_size=self.patch_size).unsqueeze(-1)
         # mask : [batch_size x n_patches x 1]
         n_channels = x.shape[1]
         mask = mask.repeat_interleave(self.d_model, dim=-1).unsqueeze(1).repeat(1, n_channels, 1, 1)
@@ -164,13 +164,13 @@ class PretrainHead(nn.Module):
     def __init__(
         self,
         d_model: int = 768,
-        patch_len: int = 8,
+        patch_size: int = 8,
         head_dropout: float = 0.1,
         orth_gain: float = 1.41,
     ):
         super().__init__()
         self.dropout = nn.Dropout(head_dropout)
-        self.linear = nn.Linear(d_model, patch_len)
+        self.linear = nn.Linear(d_model, patch_size)
 
         if orth_gain is not None:
             torch.nn.init.orthogonal_(self.linear.weight, gain=orth_gain)
@@ -179,10 +179,10 @@ class PretrainHead(nn.Module):
     def forward(self, x):
         """
         x: [batch_size x n_channels x n_patches x d_model]
-        output: [batch_size x n_channels x seq_len], where seq_len = n_patches * patch_len
+        output: [batch_size x n_channels x seq_len], where seq_len = n_patches * patch_size
         """
         # x = x.transpose(2, 3)                 # [batch_size x n_channels x n_patches x d_model]
-        x = self.linear(self.dropout(x))  # [batch_size x n_channels x n_patches x patch_len]
+        x = self.linear(self.dropout(x))  # [batch_size x n_channels x n_patches x patch_size]
         x = x.flatten(start_dim=2, end_dim=3)  # [batch_size x n_patches x seq_len]
         return x
 
