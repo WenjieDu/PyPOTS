@@ -8,6 +8,7 @@ jupyterlab
 black
 flake8
 flake8-pyproject
+coveralls
 pytest-cov
 pytest-xdist
 furo
