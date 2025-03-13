@@ -155,9 +155,13 @@ class USGAN(BaseNNImputer):
 
         # set up the optimizer
         self.G_optimizer = G_optimizer
-        self.G_optimizer.init_optimizer(self.model.backbone.generator.parameters())
         self.D_optimizer = D_optimizer
-        self.D_optimizer.init_optimizer(self.model.backbone.discriminator.parameters())
+        if isinstance(self.device, list):
+            self.G_optimizer.init_optimizer(self.model.module.backbone.generator.parameters())
+            self.D_optimizer.init_optimizer(self.model.module.backbone.discriminator.parameters())
+        else:
+            self.G_optimizer.init_optimizer(self.model.backbone.generator.parameters())
+            self.D_optimizer.init_optimizer(self.model.backbone.discriminator.parameters())
 
     def _assemble_input_for_training(self, data: list) -> dict:
         # fetch data
@@ -246,16 +250,18 @@ class USGAN(BaseNNImputer):
                     if idx % self.G_steps == 0:
                         self.G_optimizer.zero_grad()
                         results = self.model.forward(inputs, training_object="generator")
-                        results["loss"].backward()  # generation loss
+                        loss = results["loss"].sum()
+                        loss.backward()  # generation loss
                         self.G_optimizer.step()
-                        step_train_loss_G_collector.append(results["loss"].item())
+                        step_train_loss_G_collector.append(loss.item())
 
                     if idx % self.D_steps == 0:
                         self.D_optimizer.zero_grad()
                         results = self.model.forward(inputs, training_object="discriminator")
-                        results["loss"].backward(retain_graph=True)  # discrimination loss
+                        loss = results["loss"].sum()
+                        loss.backward(retain_graph=True)  # discrimination loss
                         self.D_optimizer.step()
-                        step_train_loss_D_collector.append(results["loss"].item())
+                        step_train_loss_D_collector.append(loss.item())
 
                     mean_step_train_D_loss = np.mean(step_train_loss_D_collector)
                     mean_step_train_G_loss = np.mean(step_train_loss_G_collector)
