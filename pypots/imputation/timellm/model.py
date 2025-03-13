@@ -41,10 +41,10 @@ class TimeLLM(BaseNNImputer):
     n_layers :
         The number of layers in the TimeLLM model.
 
-    patch_len :
+    patch_size :
         The length of the patch for the TimeLLM model.
 
-    stride :
+    patch_stride :
         The stride for the patching process in the TimeLLM model.
 
     d_llm :
@@ -129,8 +129,8 @@ class TimeLLM(BaseNNImputer):
         n_features: int,
         n_layers: int,
         llm_model_type: str,
-        patch_len: int,
-        stride: int,
+        patch_size: int,
+        patch_stride: int,
         d_llm: int,
         d_model: int,
         d_ffn: int,
@@ -174,8 +174,8 @@ class TimeLLM(BaseNNImputer):
         self.d_model = d_model
         self.d_ffn = d_ffn
         self.d_llm = d_llm
-        self.patch_len = patch_len
-        self.stride = stride
+        self.patch_size = patch_size
+        self.patch_stride = patch_stride
         self.llm_model_type = llm_model_type
         self.dropout = dropout
         self.domain_prompt_content = domain_prompt_content
@@ -188,8 +188,8 @@ class TimeLLM(BaseNNImputer):
             self.n_steps,
             self.n_features,
             self.n_layers,
-            self.patch_len,
-            self.stride,
+            self.patch_size,
+            self.patch_stride,
             self.d_model,
             self.d_ffn,
             self.d_llm,

@@ -48,8 +48,8 @@ class BackboneTimeLLM(nn.Module):
         n_features,
         n_pred_steps,
         n_layers,
-        patch_len,
-        stride,
+        patch_size,
+        patch_stride,
         d_model,
         d_ffn,
         d_llm,
@@ -65,12 +65,12 @@ class BackboneTimeLLM(nn.Module):
         self.n_steps = n_steps
         self.d_ffn = d_ffn
         self.d_llm = d_llm
-        self.patch_len = patch_len
-        self.stride = stride
+        self.patch_size = patch_size
+        self.patch_stride = patch_stride
         self.task_name = task_name
         self.top_k = 5  # fixed value, the same as the official implementation
 
-        assert n_steps > patch_len, "The length of the time series must be greater than the patch length."
+        assert n_steps > patch_size, "The length of the time series must be greater than the patch length."
         assert llm_model_type in SUPPORTED_LLM, f"The LLM model type must be one of {SUPPORTED_LLM}."
         assert task_name in SUPPORTED_TASKS, f"The task name must be one of {SUPPORTED_TASKS}."
 
@@ -180,9 +180,9 @@ class BackboneTimeLLM(nn.Module):
 
         self.patch_embedding = PatchEmbedding(
             d_model,
-            patch_len,
-            stride,
-            stride,
+            patch_size,
+            patch_stride,
+            patch_stride,
             dropout,
             False,
         )
@@ -193,7 +193,7 @@ class BackboneTimeLLM(nn.Module):
         self.n_tokens = 1000
         self.mapping_layer = nn.Linear(self.vocab_size, self.n_tokens)
         self.reprogramming_layer = ReprogrammingLayer(d_model, n_heads, self.d_ffn, self.d_llm)
-        self.n_patches = int((n_steps - self.patch_len) / self.stride + 2)
+        self.n_patches = int((n_steps - self.patch_size) / self.patch_stride + 2)
         self.revin_layer = RevIN(n_features, affine=False)
 
         if self.task_name in ["long_term_forecast", "short_term_forecast", "imputation"]:
