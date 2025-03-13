@@ -7,12 +7,11 @@ and takes over the forward progress of the algorithm.
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-import torch
 import torch.nn as nn
 
 from ...nn.functional import nonstationary_norm, nonstationary_denorm
-from ...nn.functional.error import calc_mse
 from ...nn.modules.fits import BackboneFITS
+from ...nn.modules.loss import Criterion, MSE
 from ...nn.modules.saits import SaitsEmbedding
 
 
@@ -26,12 +25,14 @@ class _FITS(nn.Module):
         cut_freq: int,
         individual: bool,
         apply_nonstationary_norm: bool = False,
+        training_loss: Criterion = MSE(),
     ):
         super().__init__()
 
         self.n_pred_steps = n_pred_steps
         self.n_pred_features = n_pred_features
         self.apply_nonstationary_norm = apply_nonstationary_norm
+        self.training_loss = training_loss
 
         self.saits_embedding = SaitsEmbedding(
             n_features * 2,
@@ -51,15 +52,6 @@ class _FITS(nn.Module):
 
     def forward(self, inputs: dict) -> dict:
         X, missing_mask = inputs["X"], inputs["missing_mask"]
-
-        if self.training:
-            X_pred, X_pred_missing_mask = inputs["X_pred"], inputs["X_pred_missing_mask"]
-        else:
-            batch_size = X.shape[0]
-            X_pred, X_pred_missing_mask = (
-                torch.zeros(batch_size, self.n_pred_steps, self.n_pred_features),
-                torch.ones(batch_size, self.n_pred_steps, self.n_pred_features),
-            )
 
         if self.apply_nonstationary_norm:
             # Normalization from Non-stationary Transformer
@@ -89,7 +81,8 @@ class _FITS(nn.Module):
 
         # if in training mode, return results with losses
         if self.training:
+            X_pred, X_pred_missing_mask = inputs["X_pred"], inputs["X_pred_missing_mask"]
             # `loss` is always the item for backward propagating to update the model
-            results["loss"] = calc_mse(X_pred, forecasting_result, X_pred_missing_mask)
+            results["loss"] = self.training_loss(X_pred, forecasting_result, X_pred_missing_mask)
 
         return results

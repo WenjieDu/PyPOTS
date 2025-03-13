@@ -16,8 +16,8 @@ from torch.utils.data import DataLoader
 
 from ..base import BaseModel, BaseNNModel
 from ..nn.functional import autocast
-from ..nn.modules.loss import CrossEntropy
-from ..nn.modules.metric import Accuracy
+from ..nn.modules.loss import Criterion, CrossEntropy
+from ..nn.modules.metric import PR_AUC
 from ..utils.logging import logger
 
 try:
@@ -90,7 +90,7 @@ class BaseClassifier(BaseModel):
         train_set :
             The dataset for model training, should be a dictionary including keys as 'X' and 'y',
             or a path string locating a data file.
-            If it is a dict, X should be array-like of shape [n_samples, sequence length (n_steps), n_features],
+            If it is a dict, X should be array-like with shape [n_samples, n_steps, n_features],
             which is time-series data for training, can contain missing values, and y should be array-like of shape
             [n_samples], which is classification labels of X.
             If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
@@ -99,7 +99,7 @@ class BaseClassifier(BaseModel):
         val_set :
             The dataset for model validating, should be a dictionary including keys as 'X' and 'y',
             or a path string locating a data file.
-            If it is a dict, X should be array-like of shape [n_samples, sequence length (n_steps), n_features],
+            If it is a dict, X should be array-like with shape [n_samples, n_steps, n_features],
             which is time-series data for validating, can contain missing values, and y should be array-like of shape
             [n_samples], which is classification labels of X.
             If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
@@ -130,8 +130,8 @@ class BaseClassifier(BaseModel):
         Parameters
         ----------
         test_set :
-            The data samples for testing, should be array-like of shape [n_samples, sequence length (n_steps),
-            n_features], or a path string locating a data file, e.g. h5 file.
+            The data samples for testing, should be array-like with shape [n_samples, n_steps, n_features], or a path
+            string locating a data file, e.g. h5 file.
 
         file_type :
             The type of the given file if X is a path string.
@@ -164,11 +164,11 @@ class BaseNNClassifier(BaseNNModel):
         stopped when the model does not perform better after that number of epochs.
         Leaving it default as None will disable the early-stopping.
 
-    train_loss_func:
+    training_loss:
         The customized loss function designed by users for training the model.
         If not given, will use the default loss as claimed in the original paper.
 
-    val_metric_func:
+    validation_metric:
         The customized metric function designed by users for validating the model.
         If not given, will use the default loss from the original paper as the metric.
 
@@ -219,8 +219,8 @@ class BaseNNClassifier(BaseNNModel):
         batch_size: int,
         epochs: int,
         patience: Optional[int] = None,
-        train_loss_func: Optional[dict] = None,
-        val_metric_func: Optional[dict] = None,
+        training_loss: Optional[Criterion] = CrossEntropy(),
+        validation_metric: Optional[Criterion] = PR_AUC(),
         num_workers: int = 0,
         device: Optional[Union[str, torch.device, list]] = None,
         enable_amp: bool = False,
@@ -232,8 +232,8 @@ class BaseNNClassifier(BaseNNModel):
             batch_size=batch_size,
             epochs=epochs,
             patience=patience,
-            train_loss_func=train_loss_func,
-            val_metric_func=val_metric_func,
+            training_loss=training_loss,
+            validation_metric=validation_metric,
             num_workers=num_workers,
             device=device,
             enable_amp=enable_amp,
@@ -243,13 +243,9 @@ class BaseNNClassifier(BaseNNModel):
         )
         self.n_classes = n_classes
 
-        # set default training loss function and validation metric function if not given
-        if train_loss_func is None:
-            self.train_loss_func = CrossEntropy()
-            self.train_loss_func_name = self.train_loss_func.__class__.__name__
-        if val_metric_func is None:
-            self.val_metric_func = Accuracy()
-            self.val_metric_func_name = self.val_metric_func.__class__.__name__
+        # fetch the names of training loss and validation metric
+        self.training_loss_name = self.training_loss.__class__.__name__
+        self.validation_metric_name = self.validation_metric.__class__.__name__
 
     @abstractmethod
     def _assemble_input_for_training(self, data: list) -> dict:
@@ -326,13 +322,7 @@ class BaseNNClassifier(BaseNNModel):
                     inputs = self._assemble_input_for_training(data)
 
                     # model forward propagation processing
-                    if os.getenv("ENABLE_AMP", False) and self.enable_amp:
-                        with autocast():
-                            self.optimizer.zero_grad()
-                            results = self.model.forward(inputs)
-                            results["loss"].sum().backward()  # sum() before backward() in case of multi-gpu training
-                            self.optimizer.step()
-                    else:
+                    with autocast(enabled=self.amp_enabled):
                         self.optimizer.zero_grad()
                         results = self.model.forward(inputs)
                         results["loss"].sum().backward()  # sum() before backward() in case of multi-gpu training
@@ -355,39 +345,34 @@ class BaseNNClassifier(BaseNNModel):
                             inputs = self._assemble_input_for_validating(data)
 
                             # model forward propagation processing
-                            if os.getenv("ENABLE_AMP", False) and self.enable_amp:
-                                with autocast():
-                                    results = self.model.forward(inputs)
-                            else:
+                            with autocast(enabled=self.amp_enabled):
                                 results = self.model.forward(inputs)
 
                             epoch_val_pred_collector.append(results["classification_pred"])
                             epoch_val_label_collector.append(inputs["y"])
 
-                    epoch_val_pred_collector = torch.cat(epoch_val_pred_collector, dim=-1)
-                    epoch_val_label_collector = torch.cat(epoch_val_label_collector, dim=-1)
+                    epoch_val_pred_collector = torch.cat(epoch_val_pred_collector, dim=-1).cpu().numpy()
+                    epoch_val_label_collector = torch.cat(epoch_val_label_collector, dim=-1).cpu().numpy()
 
                     # TODO: refactor the following code to a function
                     epoch_val_pred_collector = np.argmax(epoch_val_pred_collector, axis=1)
-                    mean_val_loss = self.val_metric_func(epoch_val_pred_collector, epoch_val_label_collector.numpy())
+                    mean_val_loss = self.validation_metric(epoch_val_pred_collector, epoch_val_label_collector)
 
                     # save validation loss logs into the tensorboard file for every epoch if in need
                     if self.summary_writer is not None:
                         val_loss_dict = {
-                            self.val_metric_func_name: mean_val_loss,
+                            self.validation_metric_name: mean_val_loss,
                         }
                         self._save_log_into_tb_file(epoch, "validating", val_loss_dict)
 
                     logger.info(
                         f"Epoch {epoch:03d} - "
-                        f"training loss ({self.train_loss_func_name}): {mean_train_loss:.4f}, "
-                        f"validation {self.val_metric_func_name}: {mean_val_loss:.4f}"
+                        f"training loss ({self.training_loss_name}): {mean_train_loss:.4f}, "
+                        f"validation {self.validation_metric_name}: {mean_val_loss:.4f}"
                     )
                     mean_loss = mean_val_loss
                 else:
-                    logger.info(
-                        f"Epoch {epoch:03d} - training loss ({self.train_loss_func_name}): {mean_train_loss:.4f}"
-                    )
+                    logger.info(f"Epoch {epoch:03d} - training loss ({self.training_loss_name}): {mean_train_loss:.4f}")
                     mean_loss = mean_train_loss
 
                 if np.isnan(mean_loss):
@@ -450,7 +435,7 @@ class BaseNNClassifier(BaseNNModel):
         train_set :
             The dataset for model training, should be a dictionary including keys as 'X' and 'y',
             or a path string locating a data file.
-            If it is a dict, X should be array-like of shape [n_samples, sequence length (n_steps), n_features],
+            If it is a dict, X should be array-like with shape [n_samples, n_steps, n_features],
             which is time-series data for training, can contain missing values, and y should be array-like of shape
             [n_samples], which is classification labels of X.
             If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
@@ -459,7 +444,7 @@ class BaseNNClassifier(BaseNNModel):
         val_set :
             The dataset for model validating, should be a dictionary including keys as 'X' and 'y',
             or a path string locating a data file.
-            If it is a dict, X should be array-like of shape [n_samples, sequence length (n_steps), n_features],
+            If it is a dict, X should be array-like with shape [n_samples, n_steps, n_features],
             which is time-series data for validating, can contain missing values, and y should be array-like of shape
             [n_samples], which is classification labels of X.
             If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
@@ -472,11 +457,33 @@ class BaseNNClassifier(BaseNNModel):
         raise NotImplementedError
 
     @abstractmethod
+    @torch.no_grad()
     def predict(
         self,
         test_set: Union[dict, str],
         file_type: str = "hdf5",
     ) -> dict:
+        """Make predictions for the input data with the trained model.
+
+        Parameters
+        ----------
+        test_set :
+            The test dataset for model to process, should be a dictionary including keys as 'X',
+            or a path string locating a data file supported by PyPOTS (e.g. h5 file).
+            If it is a dict, X should be array-like with shape [n_samples, n_steps, n_features],
+            which is the time-series data for processing.
+            If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
+            key-value pairs like a dict, and it has to include 'X' key.
+
+        file_type :
+            The type of the given file if test_set is a path string.
+
+        Returns
+        -------
+        file_type :
+            The dictionary containing the clustering results and latent variables if necessary.
+
+        """
         raise NotImplementedError
 
     @abstractmethod
@@ -490,8 +497,8 @@ class BaseNNClassifier(BaseNNModel):
         Parameters
         ----------
         test_set :
-            The data samples for testing, should be array-like of shape [n_samples, sequence length (n_steps),
-            n_features], or a path string locating a data file, e.g. h5 file.
+            The data samples for testing, should be array-like with shape [n_samples, n_steps, n_features], or a path
+            string locating a data file, e.g. h5 file.
 
         file_type :
             The type of the given file if X is a path string.

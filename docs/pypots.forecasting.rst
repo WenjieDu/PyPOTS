@@ -28,6 +28,15 @@ pypots.forecasting.gpt4ts
    :show-inheritance:
    :inherited-members:
 
+pypots.forecasting.moment
+------------------------------
+
+.. automodule:: pypots.forecasting.moment
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+
 pypots.forecasting.tefn
 ------------------------------
 

@@ -159,37 +159,7 @@ class TRMF(BaseImputer):
         diagonal_attention_mask: bool = True,
         return_latent_vars: bool = False,
     ) -> dict:
-        """Make predictions for the input data with the trained model.
-
-        Parameters
-        ----------
-        test_set :
-            The dataset for model validating, should be a dictionary including keys as 'X',
-            or a path string locating a data file supported by PyPOTS (e.g. h5 file).
-            If it is a dict, X should be array-like of shape [n_samples, sequence length (n_steps), n_features],
-            which is time-series data for validating, can contain missing values, and y should be array-like of shape
-            [n_samples], which is classification labels of X.
-            If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
-            key-value pairs like a dict, and it has to include keys as 'X' and 'y'.
-
-        file_type :
-            The type of the given file if test_set is a path string.
-
-        diagonal_attention_mask :
-            Whether to apply a diagonal attention mask to the self-attention mechanism in the testing stage.
-
-        return_latent_vars :
-            Whether to return the latent variables in SAITS, e.g. attention weights of two DMSA blocks and
-            the weight matrix from the combination block, etc.
-
-        Returns
-        -------
-        file_type :
-            The dictionary containing the clustering results and latent variables if necessary.
-
-        """
         # Step 1: wrap the input data with classes Dataset and DataLoader
-        # self.model.eval()  # set the model as eval status to freeze it.
         test_set = BaseDataset(
             test_set,
             return_X_ori=False,
@@ -222,22 +192,5 @@ class TRMF(BaseImputer):
         test_set: Union[dict, str],
         file_type: str = "hdf5",
     ) -> np.ndarray:
-        """Impute missing values in the given data with the trained model.
-
-        Parameters
-        ----------
-        test_set :
-            The data samples for testing, should be array-like of shape [n_samples, sequence length (n_steps),
-            n_features], or a path string locating a data file, e.g. h5 file.
-
-        file_type :
-            The type of the given file if X is a path string.
-
-        Returns
-        -------
-        array-like, shape [n_samples, sequence length (n_steps), n_features],
-            Imputed data.
-        """
-
         result_dict = self.predict(test_set, file_type=file_type)
         return result_dict["imputation"]

@@ -136,7 +136,7 @@ class CSDI(BaseNNImputer):
         batch_size: int = 32,
         epochs: int = 100,
         patience: Optional[int] = None,
-        optimizer: Optional[Optimizer] = Adam(),
+        optimizer: Optimizer = Adam(),
         num_workers: int = 0,
         device: Optional[Union[str, torch.device, list]] = None,
         saving_path: Optional[str] = None,
@@ -147,8 +147,8 @@ class CSDI(BaseNNImputer):
             batch_size=batch_size,
             epochs=epochs,
             patience=patience,
-            train_loss_func=None,
-            val_metric_func=None,
+            training_loss=None,
+            validation_metric=None,
             num_workers=num_workers,
             device=device,
             saving_path=saving_path,
@@ -161,10 +161,10 @@ class CSDI(BaseNNImputer):
         self.target_strategy = target_strategy
 
         # CSDI has its own defined loss function and validation loss, so we set them as None here
-        self.train_loss_func = None
-        self.train_loss_func_name = "default"
-        self.val_metric_func = None
-        self.val_metric_func_name = "metric (default)"
+        self.training_loss = None
+        self.training_loss_name = "default"
+        self.validation_metric = None
+        self.validation_metric_name = "metric (default)"
 
         # set up the model
         self.model = _CSDI(
@@ -274,14 +274,12 @@ class CSDI(BaseNNImputer):
 
                     logger.info(
                         f"Epoch {epoch:03d} - "
-                        f"training loss ({self.train_loss_func_name}): {mean_train_loss:.4f}, "
-                        f"validation {self.val_metric_func_name}: {mean_val_loss:.4f}"
+                        f"training loss ({self.training_loss_name}): {mean_train_loss:.4f}, "
+                        f"validation {self.validation_metric_name}: {mean_val_loss:.4f}"
                     )
                     mean_loss = mean_val_loss
                 else:
-                    logger.info(
-                        f"Epoch {epoch:03d} - training loss ({self.train_loss_func_name}): {mean_train_loss:.4f}"
-                    )
+                    logger.info(f"Epoch {epoch:03d} - training loss ({self.training_loss_name}): {mean_train_loss:.4f}")
                     mean_loss = mean_train_loss
 
                 if np.isnan(mean_loss):
@@ -370,29 +368,28 @@ class CSDI(BaseNNImputer):
         # Step 2: train the model and freeze it
         self._train_model(training_loader, val_loader)
         self.model.load_state_dict(self.best_model_dict)
-        self.model.eval()  # set the model as eval status to freeze it.
 
         # Step 3: save the model if necessary
         self._auto_save_model_if_necessary(confirm_saving=self.model_saving_strategy == "best")
 
+    @torch.no_grad()
     def predict(
         self,
         test_set: Union[dict, str],
         file_type: str = "hdf5",
         n_sampling_times: int = 1,
     ) -> dict:
-        """
+        """Make predictions for the input data with the trained model.
 
         Parameters
         ----------
-        test_set : dict or str
-            The dataset for model validating, should be a dictionary including keys as 'X' and 'y',
-            or a path string locating a data file.
-            If it is a dict, X should be array-like of shape [n_samples, sequence length (n_steps), n_features],
-            which is time-series data for validating, can contain missing values, and y should be array-like of shape
-            [n_samples], which is classification labels of X.
+        test_set :
+            The test dataset for model to process, should be a dictionary including keys as 'X',
+            or a path string locating a data file supported by PyPOTS (e.g. h5 file).
+            If it is a dict, X should be array-like with shape [n_samples, n_steps, n_features],
+            which is the time-series data for processing.
             If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
-            key-value pairs like a dict, and it has to include keys as 'X' and 'y'.
+            key-value pairs like a dict, and it has to include 'X' key.
 
         file_type :
             The type of the given file if test_set is a path string.
@@ -410,7 +407,6 @@ class CSDI(BaseNNImputer):
         assert n_sampling_times > 0, "n_sampling_times should be greater than 0."
 
         # Step 1: wrap the input data with classes Dataset and DataLoader
-        self.model.eval()  # set the model as eval status to freeze it.
         test_set = TestDatasetForCSDI(test_set, return_X_ori=False, file_type=file_type)
         test_loader = DataLoader(
             test_set,
@@ -421,15 +417,14 @@ class CSDI(BaseNNImputer):
         imputation_collector = []
 
         # Step 2: process the data with the model
-        with torch.no_grad():
-            for idx, data in enumerate(test_loader):
-                inputs = self._assemble_input_for_testing(data)
-                results = self.model(
-                    inputs,
-                    n_sampling_times=n_sampling_times,
-                )
-                imputed_data = results["imputed_data"]
-                imputation_collector.append(imputed_data)
+        for idx, data in enumerate(test_loader):
+            inputs = self._assemble_input_for_testing(data)
+            results = self.model(
+                inputs,
+                n_sampling_times=n_sampling_times,
+            )
+            imputed_data = results["imputed_data"]
+            imputation_collector.append(imputed_data)
 
         # Step 3: output collection and return
         imputation = torch.cat(imputation_collector).cpu().detach().numpy()
@@ -442,23 +437,26 @@ class CSDI(BaseNNImputer):
         self,
         test_set: Union[dict, str],
         file_type: str = "hdf5",
+        n_sampling_times: int = 1,
     ) -> np.ndarray:
         """Impute missing values in the given data with the trained model.
 
         Parameters
         ----------
         test_set :
-            The data samples for testing, should be array-like of shape [n_samples, sequence length (n_steps),
-            n_features], or a path string locating a data file, e.g. h5 file.
+            The data samples for testing, should be array-like with shape [n_samples, n_steps, n_features], or a path
+            string locating a data file, e.g. h5 file.
 
         file_type :
             The type of the given file if X is a path string.
 
+        n_sampling_times :
+            The number of sampling times for the model to sample from the diffusion process.
+
         Returns
         -------
-        array-like, shape [n_samples, sequence length (n_steps), n_features],
+        array-like, with shape [n_samples, n_sampling_times, n_steps, n_features],
             Imputed data.
         """
-
-        result_dict = self.predict(test_set, file_type=file_type)
+        result_dict = self.predict(test_set, file_type, n_sampling_times)
         return result_dict["imputation"]

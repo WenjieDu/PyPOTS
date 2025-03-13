@@ -6,7 +6,6 @@ The implementation of TimeLLM for the partially-observed time-series imputation 
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-import os
 from typing import Union, Optional
 
 import numpy as np
@@ -19,6 +18,7 @@ from ..base import BaseNNImputer
 from ...data.checking import key_in_data_set
 from ...data.dataset import BaseDataset
 from ...nn.functional.cuda import autocast
+from ...nn.modules.loss import Criterion, MAE, MSE
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
 
@@ -41,10 +41,10 @@ class TimeLLM(BaseNNImputer):
     n_layers :
         The number of layers in the TimeLLM model.
 
-    patch_len :
+    patch_size :
         The length of the patch for the TimeLLM model.
 
-    stride :
+    patch_stride :
         The stride for the patching process in the TimeLLM model.
 
     d_llm :
@@ -82,6 +82,14 @@ class TimeLLM(BaseNNImputer):
         The patience for the early-stopping mechanism. Given a positive integer, the training process will be
         stopped when the model does not perform better after that number of epochs.
         Leaving it default as None will disable the early-stopping.
+
+    training_loss:
+        The customized loss function designed by users for training the model.
+        If not given, will use the default loss as claimed in the original paper.
+
+    validation_metric:
+        The customized metric function designed by users for validating the model.
+        If not given, will use the default MSE metric.
 
     optimizer :
         The optimizer for model training.
@@ -121,8 +129,8 @@ class TimeLLM(BaseNNImputer):
         n_features: int,
         n_layers: int,
         llm_model_type: str,
-        patch_len: int,
-        stride: int,
+        patch_size: int,
+        patch_stride: int,
         d_llm: int,
         d_model: int,
         d_ffn: int,
@@ -134,9 +142,9 @@ class TimeLLM(BaseNNImputer):
         batch_size: int = 32,
         epochs: int = 100,
         patience: Optional[int] = None,
-        train_loss_func: Optional[dict] = None,
-        val_metric_func: Optional[dict] = None,
-        optimizer: Optional[Optimizer] = Adam(),
+        training_loss: Criterion = MAE(),
+        validation_metric: Criterion = MSE(),
+        optimizer: Optimizer = Adam(),
         num_workers: int = 0,
         device: Optional[Union[str, torch.device, list]] = None,
         saving_path: Optional[str] = None,
@@ -147,8 +155,8 @@ class TimeLLM(BaseNNImputer):
             batch_size=batch_size,
             epochs=epochs,
             patience=patience,
-            train_loss_func=train_loss_func,
-            val_metric_func=val_metric_func,
+            training_loss=training_loss,
+            validation_metric=validation_metric,
             num_workers=num_workers,
             device=device,
             enable_amp=True,
@@ -166,8 +174,8 @@ class TimeLLM(BaseNNImputer):
         self.d_model = d_model
         self.d_ffn = d_ffn
         self.d_llm = d_llm
-        self.patch_len = patch_len
-        self.stride = stride
+        self.patch_size = patch_size
+        self.patch_stride = patch_stride
         self.llm_model_type = llm_model_type
         self.dropout = dropout
         self.domain_prompt_content = domain_prompt_content
@@ -180,8 +188,8 @@ class TimeLLM(BaseNNImputer):
             self.n_steps,
             self.n_features,
             self.n_layers,
-            self.patch_len,
-            self.stride,
+            self.patch_size,
+            self.patch_stride,
             self.d_model,
             self.d_ffn,
             self.d_llm,
@@ -191,6 +199,7 @@ class TimeLLM(BaseNNImputer):
             self.domain_prompt_content,
             self.ORT_weight,
             self.MIT_weight,
+            self.training_loss,
         )
         self._send_model_to_given_device()
         self._print_model_size()
@@ -259,40 +268,17 @@ class TimeLLM(BaseNNImputer):
         # Step 2: train the model and freeze it
         self._train_model(training_loader, val_loader)
         self.model.load_state_dict(self.best_model_dict)
-        self.model.eval()  # set the model as eval status to freeze it.
 
         # Step 3: save the model if necessary
         self._auto_save_model_if_necessary(confirm_saving=True)
 
+    @torch.no_grad()
     def predict(
         self,
         test_set: Union[dict, str],
         file_type: str = "hdf5",
     ) -> dict:
-        """Make predictions for the input data with the trained model.
-
-        Parameters
-        ----------
-        test_set : dict or str
-            The dataset for model validating, should be a dictionary including keys as 'X',
-            or a path string locating a data file supported by PyPOTS (e.g. h5 file).
-            If it is a dict, X should be array-like of shape [n_samples, sequence length (n_steps), n_features],
-            which is time-series data for validating, can contain missing values, and y should be array-like of shape
-            [n_samples], which is classification labels of X.
-            If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
-            key-value pairs like a dict, and it has to include keys as 'X' and 'y'.
-
-        file_type :
-            The type of the given file if test_set is a path string.
-
-        Returns
-        -------
-        file_type :
-            The dictionary containing the clustering results and latent variables if necessary.
-
-        """
         # Step 1: wrap the input data with classes Dataset and DataLoader
-        self.model.eval()  # set the model as eval status to freeze it.
         test_set = BaseDataset(
             test_set,
             return_X_ori=False,
@@ -309,15 +295,11 @@ class TimeLLM(BaseNNImputer):
         imputation_collector = []
 
         # Step 2: process the data with the model
-        with torch.no_grad():
-            for idx, data in enumerate(test_loader):
-                inputs = self._assemble_input_for_testing(data)
-                if os.getenv("ENABLE_AMP", False) and self.enable_amp:
-                    with autocast():
-                        results = self.model.forward(inputs)
-                else:
-                    results = self.model.forward(inputs)
-                imputation_collector.append(results["imputed_data"])
+        for idx, data in enumerate(test_loader):
+            inputs = self._assemble_input_for_testing(data)
+            with autocast(enabled=self.amp_enabled):
+                results = self.model.forward(inputs)
+            imputation_collector.append(results["imputed_data"])
 
         # Step 3: output collection and return
         imputation = torch.cat(imputation_collector).cpu().detach().numpy()
@@ -331,22 +313,5 @@ class TimeLLM(BaseNNImputer):
         test_set: Union[dict, str],
         file_type: str = "hdf5",
     ) -> np.ndarray:
-        """Impute missing values in the given data with the trained model.
-
-        Parameters
-        ----------
-        test_set :
-            The data samples for testing, should be array-like of shape [n_samples, sequence length (n_steps),
-            n_features], or a path string locating a data file, e.g. h5 file.
-
-        file_type :
-            The type of the given file if X is a path string.
-
-        Returns
-        -------
-        array-like, shape [n_samples, sequence length (n_steps), n_features],
-            Imputed data.
-        """
-
         result_dict = self.predict(test_set, file_type=file_type)
         return result_dict["imputation"]

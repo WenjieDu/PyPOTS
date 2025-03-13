@@ -1,5 +1,5 @@
 """
-The package including the modules of CSAI.
+The package of the partially-observed time-series imputation model CSAI.
 
 Refer to the paper
 `Linglong Qian, Zina Ibrahim, Hugh Logan Ellis, Ao Zhang, Yuezhou Zhang, Tao Wang, Richard Dobson.

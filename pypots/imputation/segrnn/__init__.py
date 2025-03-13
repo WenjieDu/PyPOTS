@@ -1,5 +1,5 @@
 """
-The package including the modules of SegRNN.
+The package of the partially-observed time-series imputation model SegRNN.
 
 Refer to the paper
 `Lin, Shengsheng and Lin, Weiwei and Wu, Wentai and Zhao, Feiyu and Mo, Ruichao and Zhang, Haotong.

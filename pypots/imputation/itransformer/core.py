@@ -9,6 +9,7 @@ and takes over the forward progress of the algorithm.
 import torch
 import torch.nn as nn
 
+from ...nn.modules.loss import Criterion, MAE
 from ...nn.modules.saits import SaitsLoss, SaitsEmbedding
 from ...nn.modules.transformer import TransformerEncoder
 
@@ -28,6 +29,7 @@ class _iTransformer(nn.Module):
         attn_dropout: float,
         ORT_weight: float = 1,
         MIT_weight: float = 1,
+        training_loss: Criterion = MAE(),
     ):
         super().__init__()
         self.n_layers = n_layers
@@ -49,7 +51,7 @@ class _iTransformer(nn.Module):
         self.output_projection = nn.Linear(d_model, n_steps)
 
         # apply SAITS loss function to Transformer on the imputation task
-        self.saits_loss_func = SaitsLoss(ORT_weight, MIT_weight)
+        self.saits_training_loss = SaitsLoss(ORT_weight, MIT_weight, training_loss)
 
     def forward(self, inputs: dict) -> dict:
         X, missing_mask = inputs["X"], inputs["missing_mask"]
@@ -79,7 +81,7 @@ class _iTransformer(nn.Module):
         # if in training mode, return results with losses
         if self.training:
             X_ori, indicating_mask = inputs["X_ori"], inputs["indicating_mask"]
-            loss, ORT_loss, MIT_loss = self.saits_loss_func(reconstruction, X_ori, missing_mask, indicating_mask)
+            loss, ORT_loss, MIT_loss = self.saits_training_loss(reconstruction, X_ori, missing_mask, indicating_mask)
             results["ORT_loss"] = ORT_loss
             results["MIT_loss"] = MIT_loss
             # `loss` is always the item for backward propagating to update the model

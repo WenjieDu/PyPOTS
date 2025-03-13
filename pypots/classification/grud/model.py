@@ -16,6 +16,8 @@ from torch.utils.data import DataLoader
 from .core import _GRUD
 from .data import DatasetForGRUD
 from ..base import BaseNNClassifier
+from ...nn.modules.loss import Criterion, CrossEntropy
+from ...nn.modules.metric import PR_AUC
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
 
@@ -48,11 +50,11 @@ class GRUD(BaseNNClassifier):
         stopped when the model does not perform better after that number of epochs.
         Leaving it default as None will disable the early-stopping.
 
-    train_loss_func:
+    training_loss:
         The customized loss function designed by users for training the model.
         If not given, will use the default loss as claimed in the original paper.
 
-    val_metric_func:
+    validation_metric:
         The customized metric function designed by users for validating the model.
         If not given, will use the default loss from the original paper as the metric.
 
@@ -97,9 +99,9 @@ class GRUD(BaseNNClassifier):
         batch_size: int = 32,
         epochs: int = 100,
         patience: Optional[int] = None,
-        train_loss_func: Optional[dict] = None,
-        val_metric_func: Optional[dict] = None,
-        optimizer: Optional[Optimizer] = Adam(),
+        training_loss: Criterion = CrossEntropy(),
+        validation_metric: Criterion = PR_AUC(),
+        optimizer: Optimizer = Adam(),
         num_workers: int = 0,
         device: Optional[Union[str, torch.device, list]] = None,
         saving_path: str = None,
@@ -111,8 +113,8 @@ class GRUD(BaseNNClassifier):
             batch_size=batch_size,
             epochs=epochs,
             patience=patience,
-            train_loss_func=train_loss_func,
-            val_metric_func=val_metric_func,
+            training_loss=training_loss,
+            validation_metric=validation_metric,
             num_workers=num_workers,
             device=device,
             saving_path=saving_path,
@@ -130,6 +132,7 @@ class GRUD(BaseNNClassifier):
             self.n_features,
             self.rnn_hidden_size,
             self.n_classes,
+            self.training_loss,
         )
         self._send_model_to_given_device()
         self._print_model_size()
@@ -213,17 +216,16 @@ class GRUD(BaseNNClassifier):
         # Step 2: train the model and freeze it
         self._train_model(training_loader, val_loader)
         self.model.load_state_dict(self.best_model_dict)
-        self.model.eval()  # set the model as eval status to freeze it.
 
         # Step 3: save the model if necessary
         self._auto_save_model_if_necessary(confirm_saving=self.model_saving_strategy == "best")
 
+    @torch.no_grad()
     def predict(
         self,
         test_set: Union[dict, str],
         file_type: str = "hdf5",
     ) -> dict:
-        self.model.eval()  # set the model as eval status to freeze it.
         test_set = DatasetForGRUD(test_set, return_y=False, file_type=file_type)
         test_loader = DataLoader(
             test_set,
@@ -233,12 +235,11 @@ class GRUD(BaseNNClassifier):
         )
         classification_collector = []
 
-        with torch.no_grad():
-            for idx, data in enumerate(test_loader):
-                inputs = self._assemble_input_for_testing(data)
-                results = self.model.forward(inputs)
-                prediction = results["classification_pred"]
-                classification_collector.append(prediction)
+        for idx, data in enumerate(test_loader):
+            inputs = self._assemble_input_for_testing(data)
+            results = self.model.forward(inputs)
+            prediction = results["classification_pred"]
+            classification_collector.append(prediction)
 
         classification = torch.cat(classification_collector).cpu().detach().numpy()
         result_dict = {
@@ -251,22 +252,5 @@ class GRUD(BaseNNClassifier):
         test_set: Union[dict, str],
         file_type: str = "hdf5",
     ) -> np.ndarray:
-        """Classify the input data with the trained model.
-
-        Parameters
-        ----------
-        test_set :
-            The data samples for testing, should be array-like of shape [n_samples, sequence length (n_steps),
-            n_features], or a path string locating a data file, e.g. h5 file.
-
-        file_type :
-            The type of the given file if X is a path string.
-
-        Returns
-        -------
-        array-like, shape [n_samples],
-            Classification results of the given samples.
-        """
-
         result_dict = self.predict(test_set, file_type=file_type)
         return result_dict["classification"]

@@ -17,6 +17,7 @@ from .data import DatasetForTEFN
 from ..base import BaseNNImputer
 from ...data.checking import key_in_data_set
 from ...data.dataset import BaseDataset
+from ...nn.modules.loss import Criterion, MAE, MSE
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
 
@@ -40,6 +41,12 @@ class TEFN(BaseNNImputer):
         Whether to apply non-stationary normalization to the input data for TimesNet.
         Please refer to :cite:`liu2022nonstationary` for details about non-stationary normalization.
 
+    ORT_weight :
+        The weight for the ORT loss, the same as SAITS.
+
+    MIT_weight :
+        The weight for the MIT loss, the same as SAITS.
+
     batch_size :
         The batch size for training and evaluating the model.
 
@@ -51,11 +58,11 @@ class TEFN(BaseNNImputer):
         stopped when the model does not perform better after that number of epochs.
         Leaving it default as None will disable the early-stopping.
 
-    train_loss_func:
+    training_loss:
         The customized loss function designed by users for training the model.
         If not given, will use the default loss as claimed in the original paper.
 
-    val_metric_func:
+    validation_metric:
         The customized metric function designed by users for validating the model.
         If not given, will use the default MSE metric.
 
@@ -97,12 +104,14 @@ class TEFN(BaseNNImputer):
         n_features: int,
         n_fod: int = 2,
         apply_nonstationary_norm: bool = True,
+        ORT_weight: float = 1,
+        MIT_weight: float = 1,
         batch_size: int = 32,
         epochs: int = 100,
         patience: Optional[int] = None,
-        train_loss_func: Optional[dict] = None,
-        val_metric_func: Optional[dict] = None,
-        optimizer: Optional[Optimizer] = Adam(),
+        training_loss: Criterion = MAE(),
+        validation_metric: Criterion = MSE(),
+        optimizer: Optimizer = Adam(),
         num_workers: int = 0,
         device: Optional[Union[str, torch.device, list]] = None,
         saving_path: Optional[str] = None,
@@ -113,8 +122,8 @@ class TEFN(BaseNNImputer):
             batch_size=batch_size,
             epochs=epochs,
             patience=patience,
-            train_loss_func=train_loss_func,
-            val_metric_func=val_metric_func,
+            training_loss=training_loss,
+            validation_metric=validation_metric,
             num_workers=num_workers,
             device=device,
             saving_path=saving_path,
@@ -125,11 +134,21 @@ class TEFN(BaseNNImputer):
         self.n_steps = n_steps
         self.n_features = n_features
         # model hype-parameters
-        self.apply_nonstationary_norm = apply_nonstationary_norm
         self.n_fod = n_fod
+        self.ORT_weight = ORT_weight
+        self.MIT_weight = MIT_weight
+        self.apply_nonstationary_norm = apply_nonstationary_norm
 
         # set up the model
-        self.model = _TEFN(n_steps, n_features, n_fod, self.apply_nonstationary_norm)
+        self.model = _TEFN(
+            self.n_steps,
+            self.n_features,
+            self.n_fod,
+            self.apply_nonstationary_norm,
+            self.ORT_weight,
+            self.MIT_weight,
+            self.training_loss,
+        )
         self._send_model_to_given_device()
         self._print_model_size()
 
@@ -197,40 +216,17 @@ class TEFN(BaseNNImputer):
         # Step 2: train the model and freeze it
         self._train_model(training_loader, val_loader)
         self.model.load_state_dict(self.best_model_dict)
-        self.model.eval()  # set the model as eval status to freeze it.
 
         # Step 3: save the model if necessary
         self._auto_save_model_if_necessary(confirm_saving=self.model_saving_strategy == "best")
 
+    @torch.no_grad()
     def predict(
         self,
         test_set: Union[dict, str],
         file_type: str = "hdf5",
     ) -> dict:
-        """Make predictions for the input data with the trained model.
-
-        Parameters
-        ----------
-        test_set : dict or str
-            The dataset for model validating, should be a dictionary including keys as 'X',
-            or a path string locating a data file supported by PyPOTS (e.g. h5 file).
-            If it is a dict, X should be array-like of shape [n_samples, sequence length (n_steps), n_features],
-            which is time-series data for validating, can contain missing values, and y should be array-like of shape
-            [n_samples], which is classification labels of X.
-            If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
-            key-value pairs like a dict, and it has to include keys as 'X' and 'y'.
-
-        file_type :
-            The type of the given file if test_set is a path string.
-
-        Returns
-        -------
-        file_type :
-            The dictionary containing the clustering results and latent variables if necessary.
-
-        """
         # Step 1: wrap the input data with classes Dataset and DataLoader
-        self.model.eval()  # set the model as eval status to freeze it.
         test_set = BaseDataset(
             test_set,
             return_X_ori=False,
@@ -247,11 +243,10 @@ class TEFN(BaseNNImputer):
         imputation_collector = []
 
         # Step 2: process the data with the model
-        with torch.no_grad():
-            for idx, data in enumerate(test_loader):
-                inputs = self._assemble_input_for_testing(data)
-                results = self.model.forward(inputs)
-                imputation_collector.append(results["imputed_data"])
+        for idx, data in enumerate(test_loader):
+            inputs = self._assemble_input_for_testing(data)
+            results = self.model.forward(inputs)
+            imputation_collector.append(results["imputed_data"])
 
         # Step 3: output collection and return
         imputation = torch.cat(imputation_collector).cpu().detach().numpy()
@@ -265,22 +260,5 @@ class TEFN(BaseNNImputer):
         test_set: Union[dict, str],
         file_type: str = "hdf5",
     ) -> np.ndarray:
-        """Impute missing values in the given data with the trained model.
-
-        Parameters
-        ----------
-        test_set :
-            The data samples for testing, should be array-like of shape [n_samples, sequence length (n_steps),
-            n_features], or a path string locating a data file, e.g. h5 file.
-
-        file_type :
-            The type of the given file if X is a path string.
-
-        Returns
-        -------
-        array-like, shape [n_samples, sequence length (n_steps), n_features],
-            Imputed data.
-        """
-
         result_dict = self.predict(test_set, file_type=file_type)
         return result_dict["imputation"]
