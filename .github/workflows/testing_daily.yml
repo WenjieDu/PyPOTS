@@ -27,7 +27,7 @@ jobs:
 
 
             - name: Set up Conda
-              uses: conda-incubator/setup-miniconda@v2
+              uses: conda-incubator/setup-miniconda@v3
               with:
                   miniconda-version: "latest"
                   activate-environment: pypots
