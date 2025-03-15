@@ -208,6 +208,21 @@ class TimeLLM(BaseNNImputer):
         self.optimizer = optimizer
         self.optimizer.init_optimizer(self.model.parameters())
 
+    def _organize_content_to_save(self):
+        from ...version import __version__ as pypots_version
+
+        if isinstance(self.device, list):
+            # to save a DataParallel model generically, save the model.module.state_dict()
+            model_state_dict = self.model.module.state_dict()
+        else:
+            model_state_dict = self.model.state_dict()
+        model_state_dict = {k: v for k, v in model_state_dict.items() if "llm_model" not in k}
+
+        all_attrs = dict({})
+        all_attrs["model_state_dict"] = model_state_dict
+        all_attrs["pypots_version"] = pypots_version
+        return all_attrs
+
     def _assemble_input_for_training(self, data: list) -> dict:
         (
             indices,

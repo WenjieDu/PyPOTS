@@ -283,6 +283,24 @@ class BaseModel(ABC):
             else:
                 pass
 
+    def _organize_content_to_save(self):
+        from .version import __version__ as pypots_version
+
+        # all_attrs = self.__dict__
+        # del all_attrs["model"]
+
+        if isinstance(self.device, list):
+            # to save a DataParallel model generically, save the model.module.state_dict()
+            model_state_dict = self.model.module.state_dict()
+        else:
+            model_state_dict = self.model.state_dict()
+
+        all_attrs = dict({})
+        all_attrs["model_state_dict"] = model_state_dict
+        all_attrs["pypots_version"] = pypots_version
+
+        return all_attrs
+
     def save(
         self,
         saving_path: str,
@@ -319,18 +337,16 @@ class BaseModel(ABC):
             else:
                 logger.error(
                     f"❌ File {saving_path} exists. Saving operation aborted. "
-                    f"Use the arg `overwrite=True` to force overwrite."
+                    "Use the arg `overwrite=True` to force overwrite."
                 )
                 return
 
         try:
             create_dir_if_not_exist(saving_dir)
-            if isinstance(self.device, list):
-                # to save a DataParallel model generically, save the model.module.state_dict()
-                torch.save(self.model.module, saving_path)
-            else:
-                torch.save(self.model, saving_path)
+            content_to_save = self._organize_content_to_save()
+            torch.save(content_to_save, saving_path)
             logger.info(f"Saved the model to {saving_path}")
+
         except Exception as e:
             raise RuntimeError(f'Failed to save the model to "{saving_path}" because of the below error! \n{e}')
 
@@ -351,18 +367,33 @@ class BaseModel(ABC):
         assert os.path.exists(path), f"Model file {path} does not exist."
 
         try:
-            if isinstance(self.device, torch.device):
-                loaded_model = torch.load(path, map_location=self.device)
-            else:
-                loaded_model = torch.load(path)
-            if isinstance(loaded_model, torch.nn.Module):
+            loaded_file = torch.load(path, map_location=self.device)
+
+            if isinstance(loaded_file, torch.nn.Module):  # compatible model for pypots <0.13
                 if isinstance(self.device, torch.device):
-                    self.model.load_state_dict(loaded_model.state_dict())
+                    self.model.load_state_dict(loaded_file.state_dict())
                 else:
-                    self.model.module.load_state_dict(loaded_model.state_dict())
-            else:
-                self.model = loaded_model.model
+                    self.model.module.load_state_dict(loaded_file.state_dict())
+                logger.warning(
+                    "‼️ This model file is saved with pypots <0.13 and "
+                    "has been loaded with the compatible mode which will be deprecated in the future. "
+                    "Please save the model again with the later versions (>=0.13) of PyPOTS and "
+                    "delete the old model file."
+                )
+            else:  # loading strategy for pypots >=0.13
+                loaded_model_dict = loaded_file["model_state_dict"]
+
+                if isinstance(self.device, torch.device):
+                    current_model_dict = self.model.state_dict()
+                    current_model_dict.update(loaded_model_dict)
+                    self.model.load_state_dict(current_model_dict)
+                else:
+                    current_model_dict = self.model.module.state_dict()
+                    current_model_dict.update(loaded_model_dict)
+                    self.model.module.load_state_dict(current_model_dict)
+
             self.model.eval()  # set the model as eval status to freeze it.
+
         except Exception as e:
             raise e
         logger.info(f"Model loaded successfully from {path}")
