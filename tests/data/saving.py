@@ -34,8 +34,8 @@ class TestDataSavingAndLoading(unittest.TestCase):
         },
     }
 
-    h5_saving_path = "tests/data/saving_with_h5.h5"
-    pickle_saving_path = "tests/data/saving_with_pickle.pkl"
+    h5_saving_path = "testing_results/test_data_saving/saving_with_h5.h5"
+    pickle_saving_path = "testing_results/test_data_saving/saving_with_pickle.pkl"
 
     @pytest.mark.xdist_group(name="data-saving-h5")
     def test_0_save_dict_into_h5(self):
