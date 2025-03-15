@@ -169,14 +169,23 @@ class CRLI(BaseNNClusterer):
 
         # set up the optimizer
         self.G_optimizer = G_optimizer
-        self.G_optimizer.init_optimizer(
-            [
-                {"params": self.model.backbone.generator.parameters()},
-                {"params": self.model.backbone.decoder.parameters()},
-            ]
-        )
         self.D_optimizer = D_optimizer
-        self.D_optimizer.init_optimizer(self.model.backbone.discriminator.parameters())
+        if isinstance(self.device, list):
+            self.G_optimizer.init_optimizer(
+                [
+                    {"params": self.model.module.backbone.generator.parameters()},
+                    {"params": self.model.module.backbone.decoder.parameters()},
+                ]
+            )
+            self.D_optimizer.init_optimizer(self.model.module.backbone.discriminator.parameters())
+        else:
+            self.G_optimizer.init_optimizer(
+                [
+                    {"params": self.model.backbone.generator.parameters()},
+                    {"params": self.model.backbone.decoder.parameters()},
+                ]
+            )
+            self.D_optimizer.init_optimizer(self.model.backbone.discriminator.parameters())
 
     def _assemble_input_for_training(self, data: list) -> dict:
         # fetch data
@@ -219,14 +228,14 @@ class CRLI(BaseNNClusterer):
                     for _ in range(self.D_steps):
                         self.D_optimizer.zero_grad()
                         results = self.model.forward(inputs, training_object="discriminator")
-                        results["discrimination_loss"].backward(retain_graph=True)
+                        results["discrimination_loss"].sum().backward(retain_graph=True)
                         self.D_optimizer.step()
                         step_train_loss_D_collector.append(results["discrimination_loss"].sum().item())
 
                     for _ in range(self.G_steps):
                         self.G_optimizer.zero_grad()
                         results = self.model.forward(inputs, training_object="generator")
-                        results["generation_loss"].backward()
+                        results["generation_loss"].sum().backward()
                         self.G_optimizer.step()
                         step_train_loss_G_collector.append(results["generation_loss"].sum().item())
 
@@ -405,7 +414,10 @@ class CRLI(BaseNNClusterer):
                 imputation_collector.append(inputs["imputation_latent"])
 
         clustering_latent = torch.cat(clustering_latent_collector).cpu().detach().numpy()
-        clustering = self.model.kmeans.fit_predict(clustering_latent)
+        if isinstance(self.device, list):
+            clustering = self.model.module.kmeans.fit_predict(clustering_latent)
+        else:
+            clustering = self.model.kmeans.fit_predict(clustering_latent)
 
         result_dict = {
             "clustering": clustering,
