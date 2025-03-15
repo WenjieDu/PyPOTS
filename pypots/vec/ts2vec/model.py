@@ -18,11 +18,6 @@ from ..base import BaseNNVectorizer
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
 
-try:
-    import nni
-except ImportError:
-    pass
-
 
 class TS2Vec(BaseNNVectorizer):
     """The PyTorch implementation of the TS2Vec model :cite:`yue2022ts2vec`.

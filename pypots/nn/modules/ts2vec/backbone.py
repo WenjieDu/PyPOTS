@@ -160,12 +160,12 @@ class TS2VecEncoder(nn.Module):
         if sliding_length is not None:
             reprs = []
             for i in range(0, n_steps, sliding_length):
-                l = i - sliding_padding
-                r = i + sliding_length + (sliding_padding if not causal else 0)
+                left = i - sliding_padding
+                right = i + sliding_length + (sliding_padding if not causal else 0)
                 x_sliding = torch_pad_nan(
-                    x[:, max(l, 0) : min(r, n_steps)],
-                    left=-l if l < 0 else 0,
-                    right=r - n_steps if r > n_steps else 0,
+                    x[:, max(left, 0) : min(right, n_steps)],
+                    left=-left if left < 0 else 0,
+                    right=right - n_steps if right > n_steps else 0,
                     dim=1,
                 )
                 out = self._eval_with_pooling(
