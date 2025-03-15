@@ -9,20 +9,20 @@ import numpy as np
 import torch
 
 
-def generate_continuous_mask(B, T, n=5, l=0.1):
+def generate_continuous_mask(B, T, n=5, length=0.1):
     res = torch.full((B, T), True, dtype=torch.bool)
     if isinstance(n, float):
         n = int(n * T)
     n = max(min(n, T // 2), 1)
 
-    if isinstance(l, float):
-        l = int(l * T)
-    l = max(l, 1)
+    if isinstance(length, float):
+        length = int(length * T)
+    length = max(length, 1)
 
     for i in range(B):
         for _ in range(n):
-            t = np.random.randint(T - l + 1)
-            res[i, t : t + l] = False
+            t = np.random.randint(T - length + 1)
+            res[i, t : t + length] = False
     return res
 
 
