@@ -367,24 +367,30 @@ class BaseModel(ABC):
         assert os.path.exists(path), f"Model file {path} does not exist."
 
         try:
-            loaded_file = torch.load(path)
-            if isinstance(loaded_file, torch.nn.Module):
-                logger.error(
-                    "❌ This model file is saved with pypots<=0.12 and not compatible with current version. "
-                    "Please install pypots v0.12 and load the model again."
+            loaded_file = torch.load(path, map_location=self.device)
+
+            if isinstance(loaded_file, torch.nn.Module):  # compatible model for pypots <0.13
+                if isinstance(self.device, torch.device):
+                    self.model.load_state_dict(loaded_file.state_dict())
+                else:
+                    self.model.module.load_state_dict(loaded_file.state_dict())
+                logger.warning(
+                    "‼️ This model file is saved with pypots <0.13 and "
+                    "has been loaded with the compatible mode which will be deprecated in the future. "
+                    "Please save the model again with the later versions (>=0.13) of PyPOTS and "
+                    "delete the old model file."
                 )
-                return
+            else:  # loading strategy for pypots >=0.13
+                loaded_model_dict = loaded_file["model_state_dict"]
 
-            loaded_model_dict = loaded_file["model_state_dict"]
-
-            if isinstance(self.device, torch.device):
-                current_model_dict = self.model.state_dict()
-                current_model_dict.update(loaded_model_dict)
-                self.model.load_state_dict(current_model_dict)
-            else:
-                current_model_dict = self.model.module.state_dict()
-                current_model_dict.update(loaded_model_dict)
-                self.model.module.load_state_dict(current_model_dict)
+                if isinstance(self.device, torch.device):
+                    current_model_dict = self.model.state_dict()
+                    current_model_dict.update(loaded_model_dict)
+                    self.model.load_state_dict(current_model_dict)
+                else:
+                    current_model_dict = self.model.module.state_dict()
+                    current_model_dict.update(loaded_model_dict)
+                    self.model.module.load_state_dict(current_model_dict)
 
             self.model.eval()  # set the model as eval status to freeze it.
 
