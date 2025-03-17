@@ -221,7 +221,12 @@ class GRUD(BaseNNImputer):
         test_set: Union[dict, str],
         file_type: str = "hdf5",
     ) -> dict:
-        test_set = DatasetForGRUD(test_set, return_X_ori=False, file_type=file_type)
+        self.model.eval()  # set the model to evaluation mode
+        test_set = DatasetForGRUD(
+            test_set,
+            return_X_ori=False,
+            file_type=file_type,
+        )
         test_loader = DataLoader(
             test_set,
             batch_size=self.batch_size,

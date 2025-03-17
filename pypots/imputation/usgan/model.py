@@ -404,6 +404,7 @@ class USGAN(BaseNNImputer):
         test_set: Union[dict, str],
         file_type: str = "hdf5",
     ) -> dict:
+        self.model.eval()  # set the model to evaluation mode
         test_set = DatasetForUSGAN(test_set, return_X_ori=False, return_y=False, file_type=file_type)
         test_loader = DataLoader(
             test_set,

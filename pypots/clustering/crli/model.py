@@ -396,7 +396,12 @@ class CRLI(BaseNNClusterer):
         file_type :
             The dictionary containing the clustering results and latent variables if necessary.
         """
-        test_set = DatasetForCRLI(test_set, return_y=False, file_type=file_type)
+        self.model.eval()  # set the model to evaluation mode
+        test_set = DatasetForCRLI(
+            test_set,
+            return_y=False,
+            file_type=file_type,
+        )
         test_loader = DataLoader(
             test_set,
             batch_size=self.batch_size,

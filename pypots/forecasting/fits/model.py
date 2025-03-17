@@ -236,6 +236,7 @@ class FITS(BaseNNForecaster):
         test_set: Union[dict, str],
         file_type: str = "hdf5",
     ) -> dict:
+        self.model.eval()  # set the model to evaluation mode
         # Step 1: wrap the input data with classes Dataset and DataLoader
         test_set = DatasetForFITS(
             test_set,

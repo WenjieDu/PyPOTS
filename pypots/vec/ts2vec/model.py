@@ -198,6 +198,7 @@ class TS2Vec(BaseNNVectorizer):
         sliding_length=None,
         sliding_padding=0,
     ) -> dict:
+        self.model.eval()  # set the model to evaluation mode
         test_set = DatasetForTS2Vec(test_set, file_type=file_type)
         test_loader = DataLoader(
             test_set,

@@ -414,7 +414,14 @@ class GPVAE(BaseNNImputer):
         """
         assert n_sampling_times > 0, "n_sampling_times should be greater than 0."
 
-        test_set = DatasetForGPVAE(test_set, return_X_ori=False, return_y=False, file_type=file_type)
+        self.model.eval()  # set the model to evaluation mode
+
+        test_set = DatasetForGPVAE(
+            test_set,
+            return_X_ori=False,
+            return_y=False,
+            file_type=file_type,
+        )
         test_loader = DataLoader(
             test_set,
             batch_size=self.batch_size,
