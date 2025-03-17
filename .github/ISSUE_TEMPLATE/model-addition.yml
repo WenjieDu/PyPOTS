@@ -30,3 +30,13 @@ body:
         Give any and all information you think is helpful to the implementation.
         If there is open-source implementation, please provide information regarding it and the authors.
         Please mention the authors by @github-username in case you're aware of their usernames.
+
+  - type: textarea
+    id: contribution
+    validations:
+      required: true
+    attributes:
+      label: 4. Your contribution
+      description: |
+        Is there any way that you could help, for example, by submitting a PR? 
+        Star🌟 this repository is the easiest way to help us.

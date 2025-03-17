@@ -52,3 +52,13 @@ body:
       description: | 
         A clear and concise description of what error you would expect to happen.
         Please provide the whole "Traceback" of the error message printed in the console.
+
+  - type: textarea
+    id: contribution
+    validations:
+      required: true
+    attributes:
+      label: 5. Your contribution
+      description: |
+        Is there any way that you could help, for example, by submitting a PR? 
+        Star🌟 this repository is the easiest way to help us.
