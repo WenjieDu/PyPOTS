@@ -116,6 +116,7 @@ The task types are abbreviated as follows:
 **`CLAS`**: Classification;
 **`CLUS`**: Clustering;
 **`ANOD`**: Anomaly Detection.
+In addition to the 5 tasks, PyPOTS also provides TS2Vec[^48] for time series representation learning and vectorization.
 The paper references and links are all listed at the bottom of this file.
 
 | **Type**      | **Algo**                                                                                                                         | **IMPU** | **FORE** | **CLAS** | **CLUS** | **ANOD** | **Year - Venue**                                   |
@@ -538,3 +539,6 @@ Time-Series.AI</a>
 [^47]: Goswami, M., Szafer, K., Choudhry, A., Cai, Y., Li, S., & Dubrawski, A. (2024).
 [MOMENT: A Family of Open Time-series Foundation Models](https://proceedings.mlr.press/v235/goswami24a.html).
 *ICML 2024*.
+[^48]: Yue, Z., Wang, Y., Duan, J., Yang, T., Huang, C., Tong, Y., & Xu, B. (2022).
+[TS2Vec: Towards Universal Representation of Time Series](https://ojs.aaai.org/index.php/AAAI/article/view/20881).
+*AAAI 2022*.

@@ -126,6 +126,7 @@ the same as we did in `the SAITS paper <https://arxiv.org/pdf/2202.08516)>`_ :ci
 
 The task types are abbreviated as follows: **IMPU**: Imputation; **FORE**: Forecasting;
 **CLAS**: Classification; **CLUS**: Clustering; **ANOD**: Anomaly Detection.
+In addition to the 5 tasks, PyPOTS also provides TS2Vec :cite:`yue2022ts2vec` for time series representation learning and vectorization.
 The paper references are all listed at the bottom of this readme file.
 
 +----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
