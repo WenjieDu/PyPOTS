@@ -421,6 +421,8 @@ class CSDI(BaseNNForecaster):
         """
         assert n_sampling_times > 0, "n_sampling_times should be greater than 0."
 
+        self.model.eval()  # set the model to evaluation mode
+
         # Step 1: wrap the input data with classes Dataset and DataLoader
         test_set = TestDatasetForCSDI(
             test_set,
