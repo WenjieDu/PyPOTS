@@ -14,7 +14,6 @@ import numpy as np
 import torch
 from torch.utils.data import DataLoader
 
-from .core import _TS2Vec
 from .data import DatasetForTS2Vec
 from ..base import BaseNNClassifier
 from ...nn.functional.cuda import autocast
@@ -23,6 +22,7 @@ from ...nn.modules.metric import PR_AUC
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
 from ...utils.logging import logger
+from ...vec.ts2vec.core import _TS2Vec
 
 try:
     import nni
