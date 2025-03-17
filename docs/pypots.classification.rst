@@ -19,6 +19,15 @@ pypots.classification.csai
    :show-inheritance:
    :inherited-members:
 
+pypots.classification.ts2vec
+----------------------------------
+
+.. automodule:: pypots.classification.ts2vec
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+
 pypots.classification.grud
 ---------------------------------
 
