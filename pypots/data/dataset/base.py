@@ -432,7 +432,7 @@ class BaseDataset(Dataset):
 
         # if the dataset has labels and is for training, then fetch it from the file
         if self.return_y:
-            sample.append(self.file_handle["y"][idx].to(torch.long))
+            sample.append(torch.tensor(self.file_handle["y"][idx], dtype=torch.long))
 
         return sample
 
