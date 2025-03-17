@@ -311,6 +311,7 @@ class SAITS(BaseNNImputer):
             The dictionary containing the clustering results and latent variables if necessary.
 
         """
+        self.model.eval()  # set the model to evaluation mode
         # Step 1: wrap the input data with classes Dataset and DataLoader
         test_set = BaseDataset(
             test_set,
