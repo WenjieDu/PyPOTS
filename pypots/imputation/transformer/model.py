@@ -276,6 +276,7 @@ class Transformer(BaseNNImputer):
         test_set: Union[dict, str],
         file_type: str = "hdf5",
     ) -> dict:
+        self.model.eval()  # set the model to evaluation mode
         test_set = BaseDataset(
             test_set,
             return_X_ori=False,
