@@ -351,8 +351,8 @@ class BaseNNClassifier(BaseNNModel):
                             epoch_val_pred_collector.append(results["classification_pred"])
                             epoch_val_label_collector.append(inputs["y"])
 
-                    epoch_val_pred_collector = torch.cat(epoch_val_pred_collector, dim=-1).cpu().numpy()
-                    epoch_val_label_collector = torch.cat(epoch_val_label_collector, dim=-1).cpu().numpy()
+                    epoch_val_pred_collector = torch.cat(epoch_val_pred_collector).cpu().numpy()
+                    epoch_val_label_collector = torch.cat(epoch_val_label_collector).cpu().numpy()
 
                     # TODO: refactor the following code to a function
                     epoch_val_pred_collector = np.argmax(epoch_val_pred_collector, axis=1)
