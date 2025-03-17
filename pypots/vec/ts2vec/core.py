@@ -34,7 +34,7 @@ class _TS2Vec(nn.Module):
         self.mask_mode = mask_mode
         self.temporal_unit = temporal_unit
 
-        self.model = TS2VecEncoder(
+        self.encoder = TS2VecEncoder(
             n_features,
             n_pred_features,
             d_hidden,
@@ -62,9 +62,9 @@ class _TS2Vec(nn.Module):
         crop_eright = np.random.randint(low=crop_right, high=n_steps + 1)
         crop_offset = np.random.randint(low=-crop_eleft, high=n_steps - crop_eright + 1, size=X.size(0))
 
-        out1 = self.model(take_per_row(X, crop_offset + crop_eleft, crop_right - crop_eleft))
+        out1 = self.encoder(take_per_row(X, crop_offset + crop_eleft, crop_right - crop_eleft))
         out1 = out1[:, -crop_l:]
-        out2 = self.model(take_per_row(X, crop_offset + crop_left, crop_eright - crop_left))
+        out2 = self.encoder(take_per_row(X, crop_offset + crop_left, crop_eright - crop_left))
         out2 = out2[:, :crop_l]
 
         loss = hierarchical_contrastive_loss(out1, out2, temporal_unit=self.temporal_unit)
@@ -73,7 +73,7 @@ class _TS2Vec(nn.Module):
         results = {"loss": loss}
 
         if not self.training:
-            reprs = self.model.encode(
+            reprs = self.encoder.encode(
                 X,
                 mask,
                 encoding_window,
