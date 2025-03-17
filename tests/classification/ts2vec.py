@@ -49,7 +49,6 @@ class TestTS2Vec(unittest.TestCase):
         n_output_dims=d_vectorization,
         d_hidden=64,
         n_layers=2,
-        classifier_type="svm",
         epochs=EPOCHS,
         saving_path=saving_path,
         optimizer=optimizer,
@@ -62,15 +61,36 @@ class TestTS2Vec(unittest.TestCase):
 
     @pytest.mark.xdist_group(name="classification-ts2vec")
     def test_1_classify(self):
-        results = self.ts2vec.predict(TEST_SET)
+        results = self.ts2vec.predict(TEST_SET, classifier_type="svm")
         metrics = calc_binary_classification_metrics(results["classification"], DATA["test_y"])
         logger.info(
-            f'TS2Vec ROC_AUC: {metrics["roc_auc"]}, '
+            f'TS2Vec+svm ROC_AUC: {metrics["roc_auc"]}, '
             f'PR_AUC: {metrics["pr_auc"]}, '
             f'F1: {metrics["f1"]}, '
             f'Precision: {metrics["precision"]}, '
             f'Recall: {metrics["recall"]}'
         )
+
+        results = self.ts2vec.predict(TEST_SET, classifier_type="knn")
+        metrics = calc_binary_classification_metrics(results["classification"], DATA["test_y"])
+        logger.info(
+            f'TS2Vec+knn ROC_AUC: {metrics["roc_auc"]}, '
+            f'PR_AUC: {metrics["pr_auc"]}, '
+            f'F1: {metrics["f1"]}, '
+            f'Precision: {metrics["precision"]}, '
+            f'Recall: {metrics["recall"]}'
+        )
+
+        results = self.ts2vec.predict(TEST_SET, classifier_type="linear_regression")
+        metrics = calc_binary_classification_metrics(results["classification"], DATA["test_y"])
+        logger.info(
+            f'TS2Vec+linear_regression ROC_AUC: {metrics["roc_auc"]}, '
+            f'PR_AUC: {metrics["pr_auc"]}, '
+            f'F1: {metrics["f1"]}, '
+            f'Precision: {metrics["precision"]}, '
+            f'Recall: {metrics["recall"]}'
+        )
+
         assert metrics["roc_auc"] >= 0.5, "ROC-AUC < 0.5"
 
     @pytest.mark.xdist_group(name="classification-ts2vec")
