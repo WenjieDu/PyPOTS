@@ -17,8 +17,6 @@ from torch.utils.data import DataLoader
 from .data import DatasetForTS2Vec
 from ..base import BaseNNClassifier
 from ...nn.functional.cuda import autocast
-from ...nn.modules.loss import Criterion, CrossEntropy
-from ...nn.modules.metric import PR_AUC
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
 from ...utils.logging import logger
@@ -28,6 +26,8 @@ try:
     import nni
 except ImportError:
     pass
+
+SUPPORTED_CLASSIFIERS = ["linear_regression", "svm", "knn"]
 
 
 class TS2Vec(BaseNNClassifier):
@@ -44,6 +44,18 @@ class TS2Vec(BaseNNClassifier):
     n_classes :
         The number of classes in the classification task.
 
+    n_output_dims :
+        The number of output dimensions for the vectorization of the time-series data sample.
+
+    d_hidden :
+        The number of hidden dimensions for the TS2VEC encoder.
+
+    n_layers :
+        The number of layers for the TS2VEC encoder.
+
+    mask_mode :
+        The mode for generating the mask for the TS2VEC encoder.
+        It has to be one of ['binomial', 'continuous', 'all_true', 'all_false', 'mask_last'].
 
     batch_size :
         The batch size for training and evaluating the model.
@@ -97,12 +109,9 @@ class TS2Vec(BaseNNClassifier):
         d_hidden: int,
         n_layers: int,
         mask_mode: str = "binomial",
-        classifier_type: str = "svm",
         batch_size: int = 32,
         epochs: int = 100,
         patience: Optional[int] = None,
-        training_loss: Criterion = CrossEntropy(),
-        validation_metric: Criterion = PR_AUC(),
         optimizer: Optimizer = Adam(),
         num_workers: int = 0,
         device: Optional[Union[str, torch.device, list]] = None,
@@ -115,8 +124,6 @@ class TS2Vec(BaseNNClassifier):
             batch_size=batch_size,
             epochs=epochs,
             patience=patience,
-            training_loss=training_loss,
-            validation_metric=validation_metric,
             num_workers=num_workers,
             device=device,
             saving_path=saving_path,
@@ -130,7 +137,6 @@ class TS2Vec(BaseNNClassifier):
         self.d_hidden = d_hidden
         self.n_layers = n_layers
         self.mask_mode = mask_mode
-        self.classifier_type = classifier_type
         self.training_set_loader = None
 
         # set up the model
@@ -148,6 +154,9 @@ class TS2Vec(BaseNNClassifier):
         # set up the optimizer
         self.optimizer = optimizer
         self.optimizer.init_optimizer(self.model.parameters())
+
+        self.training_loss_name = "default"
+        self.validation_metric_name = "default loss"
 
     def _assemble_input_for_training(self, data: list) -> dict:
         # fetch data
@@ -333,7 +342,37 @@ class TS2Vec(BaseNNClassifier):
         self,
         test_set: Union[dict, str],
         file_type: str = "hdf5",
+        classifier_type: str = "svm",
     ) -> dict:
+        """Make predictions for the input data with the trained model.
+
+        Parameters
+        ----------
+        test_set :
+            The test dataset for model to process, should be a dictionary including keys as 'X',
+            or a path string locating a data file supported by PyPOTS (e.g. h5 file).
+            If it is a dict, X should be array-like with shape [n_samples, n_steps, n_features],
+            which is the time-series data for processing.
+            If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
+            key-value pairs like a dict, and it has to include 'X' key.
+
+        file_type :
+            The type of the given file if test_set is a path string.
+
+        classifier_type :
+            The type of classifier to use for the classification task.
+            It has to be one of ['linear_regression', 'svm', 'knn'].
+
+        Returns
+        -------
+        file_type :
+            The dictionary containing the clustering results and latent variables if necessary.
+
+        """
+        assert (
+            classifier_type in SUPPORTED_CLASSIFIERS
+        ), f"classifier_type should be one of {SUPPORTED_CLASSIFIERS}, but got {classifier_type}"
+
         self.model.eval()  # set the model to evaluation mode
 
         train_repr_collector = []
@@ -367,11 +406,11 @@ class TS2Vec(BaseNNClassifier):
 
         test_repr_collector = torch.cat(test_repr_collector, dim=0).cpu().numpy()
 
-        if self.classifier_type == "linea_regression":
+        if classifier_type == "linear_regression":
             fit_clf = self.model.encoder.fit_lr
-        elif self.classifier_type == "svm":
+        elif classifier_type == "svm":
             fit_clf = self.model.encoder.fit_svm
-        elif self.classifier_type == "knn":
+        elif classifier_type == "knn":
             fit_clf = self.model.encoder.fit_knn
         else:
             raise ValueError()
@@ -380,10 +419,10 @@ class TS2Vec(BaseNNClassifier):
             warnings.filterwarnings("ignore")  # just ignore warnings, most of them from sklearn
 
             clf = fit_clf(train_repr_collector, train_label_collector)
-            if self.classifier_type == "linear":
-                y_score = clf.predict_proba(test_repr_collector)
-            else:
+            if classifier_type == "svm":
                 y_score = clf.decision_function(test_repr_collector)
+            else:
+                y_score = clf.predict_proba(test_repr_collector)
             y_pred = clf.predict(test_repr_collector)
 
         result_dict = {
@@ -396,6 +435,32 @@ class TS2Vec(BaseNNClassifier):
         self,
         test_set: Union[dict, str],
         file_type: str = "hdf5",
+        classifier_type: str = "svm",
     ) -> np.ndarray:
+        """Classify the input data with the trained model.
+
+        Parameters
+        ----------
+        test_set :
+            The test dataset for model to process, should be a dictionary including keys as 'X',
+            or a path string locating a data file supported by PyPOTS (e.g. h5 file).
+            If it is a dict, X should be array-like with shape [n_samples, n_steps, n_features],
+            which is the time-series data for processing.
+            If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
+            key-value pairs like a dict, and it has to include 'X' key.
+
+        file_type :
+            The type of the given file if test_set is a path string.
+
+        classifier_type :
+            The type of classifier to use for the classification task.
+            It has to be one of ['linear_regression', 'svm', 'knn'].
+
+        Returns
+        -------
+        file_type :
+            The dictionary containing the clustering results and latent variables if necessary.
+
+        """
         result_dict = self.predict(test_set, file_type=file_type)
         return result_dict["classification"]
