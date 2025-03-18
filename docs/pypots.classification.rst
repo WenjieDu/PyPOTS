@@ -28,6 +28,15 @@ pypots.classification.csai
    :show-inheritance:
    :inherited-members:
 
+pypots.classification.timesnet
+----------------------------------
+
+.. automodule:: pypots.classification.timesnet
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+
 pypots.classification.ts2vec
 ----------------------------------
 
