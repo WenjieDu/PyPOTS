@@ -56,7 +56,7 @@ class _TimesNet(nn.Module):
         self.projection = nn.Linear(d_model * n_steps, n_classes)
 
     def forward(self, inputs: dict) -> dict:
-        X, missing_mask = inputs["X"], inputs["missing_mask"]
+        X = inputs["X"]
 
         # embedding
         input_X = self.enc_embedding(X)  # [B,T,C]
