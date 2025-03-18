@@ -1,6 +1,15 @@
 pypots.classification package
 =============================
 
+pypots.classification.saits
+----------------------------------
+
+.. automodule:: pypots.classification.saits
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+
 pypots.classification.brits
 ----------------------------------
 
