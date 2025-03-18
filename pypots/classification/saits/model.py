@@ -20,13 +20,6 @@ from ...nn.modules.metric import PR_AUC
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
 
-try:
-    import nni
-except ImportError:
-    pass
-
-SUPPORTED_CLASSIFIERS = ["linear_regression", "svm", "knn"]
-
 
 class SAITS(BaseNNClassifier):
     """The PyTorch implementation of the SAITS classification model :cite:`du2023SAITS`.
