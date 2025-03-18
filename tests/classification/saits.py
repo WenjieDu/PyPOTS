@@ -9,7 +9,7 @@ import os
 import unittest
 
 import pytest
-import pypots
+
 from pypots.classification import SAITS
 from pypots.nn.functional import calc_binary_classification_metrics
 from pypots.optim import Adam
@@ -51,8 +51,7 @@ class TestSAITS(unittest.TestCase):
         d_v=16,
         d_ffn=32,
         dropout=0.1,
-        epochs=100,
-        patience=10,
+        epochs=EPOCHS,
         saving_path=saving_path,
         optimizer=optimizer,
         device=DEVICE,
