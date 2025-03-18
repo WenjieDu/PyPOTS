@@ -55,7 +55,8 @@ DATA = preprocess_random_walk(
     n_samples_each_class=100,
     missing_rate=0.1,
 )
-# DATA = gene_physionet2012()
+# from benchpots.datasets import preprocess_physionet2012
+# DATA = preprocess_physionet2012(subset="set-a", rate=0.1)
 
 DATA["test_X_indicating_mask"] = np.isnan(DATA["test_X"]) ^ np.isnan(DATA["test_X_ori"])
 DATA["test_X_ori"] = np.nan_to_num(DATA["test_X_ori"])
@@ -78,7 +79,7 @@ TEST_SET = {
 # for forecasting task, we feed only N_STEPS data into the model and let it predict the following N_PRED_STEPS
 FORECASTING_TRAIN_SET = {
     "X": DATA["train_X"][:, :-N_PRED_STEPS],
-    "X_pred": DATA["train_X_ori"][:, -N_PRED_STEPS:],
+    "X_pred": DATA["train_X"][:, -N_PRED_STEPS:],
 }
 FORECASTING_VAL_SET = {
     "X": DATA["val_X"][:, :-N_PRED_STEPS],
@@ -98,6 +99,10 @@ if n_cuda_devices > 1:
 else:
     # if having no multiple cuda devices, leave it as None to use the default device
     DEVICE = None
+
+# DEVICE = ["cuda:1", "cuda:2"]
+# DEVICE = "cpu"
+# DEVICE = "mps"
 
 
 def check_tb_and_model_checkpoints_existence(model):
