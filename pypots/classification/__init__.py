@@ -9,6 +9,7 @@ from .brits import BRITS
 from .csai import CSAI
 from .grud import GRUD
 from .raindrop import Raindrop
+from .saits import SAITS
 from .ts2vec import TS2Vec
 
 __all__ = [
@@ -17,4 +18,5 @@ __all__ = [
     "GRUD",
     "Raindrop",
     "TS2Vec",
+    "SAITS",
 ]
