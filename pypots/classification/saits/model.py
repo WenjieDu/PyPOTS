@@ -29,7 +29,7 @@ SUPPORTED_CLASSIFIERS = ["linear_regression", "svm", "knn"]
 
 
 class SAITS(BaseNNClassifier):
-    """The PyTorch implementation of the SAITS classification model :cite:`du2023saits`.
+    """The PyTorch implementation of the SAITS classification model :cite:`du2023SAITS`.
 
     Parameters
     ----------
