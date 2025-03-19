@@ -10,6 +10,7 @@ from .csai import CSAI
 from .grud import GRUD
 from .raindrop import Raindrop
 from .saits import SAITS
+from .timesnet import TimesNet
 from .ts2vec import TS2Vec
 
 __all__ = [
@@ -19,4 +20,5 @@ __all__ = [
     "Raindrop",
     "TS2Vec",
     "SAITS",
+    "TimesNet",
 ]
