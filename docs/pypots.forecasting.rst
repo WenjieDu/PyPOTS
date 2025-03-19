@@ -55,6 +55,15 @@ pypots.forecasting.fits
    :show-inheritance:
    :inherited-members:
 
+pypots.forecasting.timesnet
+------------------------------
+
+.. automodule:: pypots.forecasting.timesnet
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+
 pypots.forecasting.timemixer
 ------------------------------
 
