@@ -148,11 +148,11 @@ class TimeMixer(BaseNNImputer):
         verbose: bool = True,
     ):
         super().__init__(
+            training_loss=training_loss,
+            validation_metric=validation_metric,
             batch_size=batch_size,
             epochs=epochs,
             patience=patience,
-            training_loss=training_loss,
-            validation_metric=validation_metric,
             num_workers=num_workers,
             device=device,
             saving_path=saving_path,
@@ -182,19 +182,21 @@ class TimeMixer(BaseNNImputer):
 
         # set up the model
         self.model = _TimeMixer(
-            self.n_steps,
-            self.n_features,
-            self.n_layers,
-            self.d_model,
-            self.d_ffn,
-            self.dropout,
-            self.top_k,
-            self.channel_independence,
-            self.decomp_method,
-            self.moving_avg,
-            self.downsampling_layers,
-            self.downsampling_window,
-            self.apply_nonstationary_norm,
+            n_steps=self.n_steps,
+            n_features=self.n_features,
+            n_layers=self.n_layers,
+            d_model=self.d_model,
+            d_ffn=self.d_ffn,
+            dropout=self.dropout,
+            top_k=self.top_k,
+            channel_independence=self.channel_independence,
+            decomp_method=self.decomp_method,
+            moving_avg=self.moving_avg,
+            downsampling_layers=self.downsampling_layers,
+            downsampling_window=self.downsampling_window,
+            apply_nonstationary_norm=self.apply_nonstationary_norm,
+            training_loss=self.training_loss,
+            validation_metric=self.validation_metric,
         )
         self._send_model_to_given_device()
         self._print_model_size()

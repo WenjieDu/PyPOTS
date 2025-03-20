@@ -5,12 +5,10 @@
 # Created by Tianxiang Zhan <zhantianxianguestc@hotmail.com>
 # License: BSD-3-Clause
 
-from typing import Union
-
 import torch.nn as nn
 
 from ...nn.functional import nonstationary_norm, nonstationary_denorm
-from ...nn.modules.loss import Criterion, MAE
+from ...nn.modules.loss import Criterion
 from ...nn.modules.saits import SaitsLoss, SaitsEmbedding
 from ...nn.modules.tefn import BackboneTEFN
 
@@ -21,10 +19,11 @@ class _TEFN(nn.Module):
         n_steps: int,
         n_features: int,
         n_fod: int,
-        apply_nonstationary_norm: bool = False,
-        ORT_weight: float = 1,
-        MIT_weight: float = 1,
-        training_loss: Union[Criterion, type] = MAE,
+        apply_nonstationary_norm,
+        ORT_weight: float,
+        MIT_weight: float,
+        training_loss: Criterion,
+        validation_metric: Criterion,
     ):
         super().__init__()
 
@@ -44,8 +43,14 @@ class _TEFN(nn.Module):
             n_fod,
         )
 
-        # apply SAITS loss function to Transformer on the imputation task
-        self.saits_training_loss = SaitsLoss(ORT_weight, MIT_weight, training_loss)
+        # apply SAITS loss function to TEFN on the imputation task
+        self.training_loss = SaitsLoss(ORT_weight, MIT_weight, training_loss)
+        if validation_metric.__class__.__name__ == "Criterion":
+            # in this case, we need validation_metric.lower_better in _train_model() so only pass Criterion()
+            # we use training_loss as validation_metric for concrete calculation process
+            self.validation_metric = self.training_loss
+        else:
+            self.validation_metric = validation_metric
 
     def forward(self, inputs: dict) -> dict:
         X, missing_mask = inputs["X"], inputs["missing_mask"]
@@ -54,7 +59,7 @@ class _TEFN(nn.Module):
             # Normalization from Non-stationary Transformer
             X, means, stdev = nonstationary_norm(X, missing_mask)
 
-        # WDU: the original FITS paper isn't proposed for imputation task. Hence the model doesn't take
+        # WDU: the original TEFN paper isn't proposed for imputation task. Hence the model doesn't take
         # the missing mask into account, which means, in the process, the model doesn't know which part of
         # the input data is missing, and this may hurt the model's imputation performance. Therefore, I apply the
         # SAITS embedding method to project the concatenation of features and masks into a hidden space, as well as
@@ -62,23 +67,34 @@ class _TEFN(nn.Module):
         enc_out = self.saits_embedding(X, missing_mask)
 
         # TEFN processing
-        out = self.model(enc_out)
+        reconstruction = self.model(enc_out)
 
         if self.apply_nonstationary_norm:
             # De-Normalization from Non-stationary Transformer
-            out = nonstationary_denorm(out, means, stdev)
+            reconstruction = nonstationary_denorm(reconstruction, means, stdev)
 
-        imputed_data = missing_mask * X + (1 - missing_mask) * out
+        imputed_data = missing_mask * X + (1 - missing_mask) * reconstruction
         results = {
             "imputed_data": imputed_data,
+            "reconstruction": reconstruction,
         }
 
-        # if in training mode, return results with losses
-        if self.training:
+        return results
+
+    def calc_criterion(self, inputs: dict) -> dict:
+        results = self.forward(inputs)
+
+        X_ori, indicating_mask, missing_mask = inputs["X_ori"], inputs["indicating_mask"], inputs["missing_mask"]
+        reconstruction = results["reconstruction"]
+
+        if self.training:  # if in the training mode (the training stage), return loss result from training_loss
             # `loss` is always the item for backward propagating to update the model
-            loss, ORT_loss, MIT_loss = self.saits_training_loss(
-                out, inputs["X_ori"], missing_mask, inputs["indicating_mask"]
-            )
+            loss, ORT_loss, MIT_loss = self.training_loss(reconstruction, X_ori, missing_mask, indicating_mask)
+            results["ORT_loss"] = ORT_loss
+            results["MIT_loss"] = MIT_loss
+            # `loss` is always the item for backward propagating to update the model
             results["loss"] = loss
+        else:  # if in the eval mode (the validation stage), return metric result from validation_metric
+            results["metric"] = self.validation_metric(reconstruction, X_ori, indicating_mask)
 
         return results

@@ -8,12 +8,10 @@ and takes over the forward progress of the algorithm.
 # License: BSD-3-Clause
 
 
-from typing import Union
-
 import torch
 import torch.nn as nn
 
-from ...nn.modules.loss import Criterion, CrossEntropy
+from ...nn.modules.loss import Criterion
 from ...nn.modules.saits import BackboneSAITS
 
 
@@ -31,8 +29,9 @@ class _SAITS(nn.Module):
         d_ffn: int,
         dropout: float,
         attn_dropout: float,
-        diagonal_attention_mask: bool = True,
-        training_loss: Union[Criterion, type] = CrossEntropy(),
+        diagonal_attention_mask: bool,
+        training_loss: Criterion,
+        validation_metric: Criterion,
     ):
         super().__init__()
         self.n_layers = n_layers
@@ -40,7 +39,12 @@ class _SAITS(nn.Module):
         self.n_features = n_features
         self.diagonal_attention_mask = diagonal_attention_mask
         self.training_loss = training_loss
-        # self.imputation_loss = MAE()
+        if validation_metric.__class__.__name__ == "Criterion":
+            # in this case, we need validation_metric.lower_better in _train_model() so only pass Criterion()
+            # we use training_loss as validation_metric for concrete calculation process
+            self.validation_metric = self.training_loss
+        else:
+            self.validation_metric = validation_metric
 
         self.encoder = BackboneSAITS(
             n_steps,
@@ -98,29 +102,19 @@ class _SAITS(nn.Module):
             "logits": logits,
         }
 
-        # if in training mode, return results with losses
-        if self.training:
-            # X_ori, indicating_mask = inputs["X_ori"], inputs["indicating_mask"]
+        return results
 
-            # # calculate loss for the observed reconstruction task (ORT)
-            # # this calculation is more complicated that pypots.nn.modules.saits.SaitsLoss because
-            # # SAITS model structure has three parts of representation
-            # ORT_loss = 0
-            # ORT_loss += self.imputation_loss(X_tilde_1, X, missing_mask)
-            # ORT_loss += self.imputation_loss(X_tilde_2, X, missing_mask)
-            # ORT_loss += self.imputation_loss(X_tilde_3, X, missing_mask)
-            # ORT_loss /= 3
-            # ORT_loss = self.ORT_weight * ORT_loss
-            #
-            # # calculate loss for the masked imputation task (MIT)
-            # MIT_loss = self.MIT_weight * self.imputation_loss(X_tilde_3, X_ori, indicating_mask)
-            # # `loss` is always the item for backward propagating to update the model
-            #
-            # results["ORT_loss"] = ORT_loss
-            # results["MIT_loss"] = MIT_loss
+    def calc_criterion(self, inputs: dict) -> dict:
+        results = self.forward(inputs)
 
-            classification_loss = self.training_loss(logits, inputs["y"])
-            loss = classification_loss
+        logits = results["logits"]
+
+        if self.training:  # if in the training mode (the training stage), return loss result from training_loss
+            loss = self.training_loss(logits, inputs["y"])
+            # `loss` is always the item for backward propagating to update the model
             results["loss"] = loss
+        else:  # if in the eval mode (the validation stage), return metric result from validation_metric
+            metric = self.validation_metric(logits, inputs["y"])
+            results["metric"] = metric
 
         return results

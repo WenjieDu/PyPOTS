@@ -17,7 +17,6 @@ from .core import _Raindrop
 from .data import DatasetForRaindrop
 from ...classification.base import BaseNNClassifier
 from ...nn.modules.loss import Criterion, CrossEntropy
-from ...nn.modules.metric import PR_AUC
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
 
@@ -132,8 +131,8 @@ class Raindrop(BaseNNClassifier):
         batch_size=32,
         epochs=100,
         patience: Optional[int] = None,
-        training_loss: Union[Criterion, type] = CrossEntropy(),
-        validation_metric: Union[Criterion, type] = PR_AUC(),
+        training_loss: Union[Criterion, type] = CrossEntropy,
+        validation_metric: Union[Criterion, type] = CrossEntropy,
         optimizer: Union[Optimizer, type] = Adam,
         num_workers: int = 0,
         device: Optional[Union[str, torch.device, list]] = None,
@@ -143,11 +142,11 @@ class Raindrop(BaseNNClassifier):
     ):
         super().__init__(
             n_classes=n_classes,
+            training_loss=training_loss,
+            validation_metric=validation_metric,
             batch_size=batch_size,
             epochs=epochs,
             patience=patience,
-            training_loss=training_loss,
-            validation_metric=validation_metric,
             num_workers=num_workers,
             device=device,
             saving_path=saving_path,
@@ -160,19 +159,20 @@ class Raindrop(BaseNNClassifier):
 
         # set up the model
         self.model = _Raindrop(
-            n_features,
-            n_layers,
-            d_model,
-            n_heads,
-            d_ffn,
-            n_classes,
-            dropout,
-            n_steps,
-            d_static,
-            aggregation,
-            sensor_wise_mask,
-            static,
-            self.training_loss,
+            n_features=n_features,
+            n_layers=n_layers,
+            d_model=d_model,
+            n_heads=n_heads,
+            d_ffn=d_ffn,
+            n_classes=n_classes,
+            dropout=dropout,
+            max_len=n_steps,
+            d_static=d_static,
+            aggregation=aggregation,
+            sensor_wise_mask=sensor_wise_mask,
+            static=static,
+            training_loss=self.training_loss,
+            validation_metric=self.validation_metric,
         )
         self._send_model_to_given_device()
         self._print_model_size()

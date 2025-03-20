@@ -122,11 +122,11 @@ class FITS(BaseNNImputer):
         verbose: bool = True,
     ):
         super().__init__(
+            training_loss=training_loss,
+            validation_metric=validation_metric,
             batch_size=batch_size,
             epochs=epochs,
             patience=patience,
-            training_loss=training_loss,
-            validation_metric=validation_metric,
             num_workers=num_workers,
             device=device,
             saving_path=saving_path,
@@ -145,14 +145,15 @@ class FITS(BaseNNImputer):
 
         # set up the model
         self.model = _FITS(
-            self.n_steps,
-            self.n_features,
-            self.cut_freq,
-            self.individual,
-            self.ORT_weight,
-            self.MIT_weight,
-            self.apply_nonstationary_norm,
-            self.training_loss,
+            n_steps=self.n_steps,
+            n_features=self.n_features,
+            cut_freq=self.cut_freq,
+            individual=self.individual,
+            ORT_weight=self.ORT_weight,
+            MIT_weight=self.MIT_weight,
+            apply_nonstationary_norm=self.apply_nonstationary_norm,
+            training_loss=self.training_loss,
+            validation_metric=self.validation_metric,
         )
         self._send_model_to_given_device()
         self._print_model_size()

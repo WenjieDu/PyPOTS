@@ -152,11 +152,11 @@ class SAITS(BaseNNImputer):
         verbose: bool = True,
     ):
         super().__init__(
+            training_loss=training_loss,
+            validation_metric=validation_metric,
             batch_size=batch_size,
             epochs=epochs,
             patience=patience,
-            training_loss=training_loss,
-            validation_metric=validation_metric,
             num_workers=num_workers,
             device=device,
             saving_path=saving_path,
@@ -189,20 +189,21 @@ class SAITS(BaseNNImputer):
 
         # set up the model
         self.model = _SAITS(
-            self.n_layers,
-            self.n_steps,
-            self.n_features,
-            self.d_model,
-            self.n_heads,
-            self.d_k,
-            self.d_v,
-            self.d_ffn,
-            self.dropout,
-            self.attn_dropout,
-            self.diagonal_attention_mask,
-            self.ORT_weight,
-            self.MIT_weight,
-            self.training_loss,
+            n_layers=self.n_layers,
+            n_steps=self.n_steps,
+            n_features=self.n_features,
+            d_model=self.d_model,
+            n_heads=self.n_heads,
+            d_k=self.d_k,
+            d_v=self.d_v,
+            d_ffn=self.d_ffn,
+            dropout=self.dropout,
+            attn_dropout=self.attn_dropout,
+            diagonal_attention_mask=self.diagonal_attention_mask,
+            ORT_weight=self.ORT_weight,
+            MIT_weight=self.MIT_weight,
+            training_loss=self.training_loss,
+            validation_metric=self.validation_metric,
         )
         self._print_model_size()
         self._send_model_to_given_device()

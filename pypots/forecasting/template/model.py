@@ -19,7 +19,7 @@ from .core import _YourNewModel
 #  You should make your model inherent BaseForecaster if it is not a NN.
 # from ..base import BaseForecaster
 from ..base import BaseNNForecaster
-from ...nn.modules.loss import Criterion
+from ...nn.modules.loss import Criterion, MSE
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
 
@@ -45,11 +45,11 @@ class YourNewModel(BaseNNForecaster):
         verbose: bool = True,
     ):
         super().__init__(
+            training_loss=training_loss,
+            validation_metric=validation_metric,
             batch_size=batch_size,
             epochs=epochs,
             patience=patience,
-            training_loss=training_loss,
-            validation_metric=validation_metric,
             num_workers=num_workers,
             device=device,
             saving_path=saving_path,
@@ -62,6 +62,8 @@ class YourNewModel(BaseNNForecaster):
         # set up the model
         self.model = _YourNewModel(
             # pass the arguments to your model
+            training_loss=self.training_loss,
+            validation_metric=self.validation_metric,
         )
         self._print_model_size()
         self._send_model_to_given_device()

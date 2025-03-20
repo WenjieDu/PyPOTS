@@ -93,11 +93,21 @@ class _GPVAE(nn.Module):
         X, missing_mask = inputs["X"], inputs["missing_mask"]
         results = {}
 
-        if self.training:
-            elbo_loss = self.backbone(X, missing_mask)
+        imputed_data = self.backbone.impute(X, missing_mask, n_sampling_times)
+        results["imputed_data"] = imputed_data
+
+        return results
+
+    def calc_criterion(self, inputs: dict) -> dict:
+        X, missing_mask = inputs["X"], inputs["missing_mask"]
+
+        results = {}
+        elbo_loss = self.backbone(X, missing_mask)
+
+        if self.training:  # if in the training mode (the training stage), return loss result from training_loss
+            # `loss` is always the item for backward propagating to update the model
             results["loss"] = elbo_loss
-        else:
-            imputed_data = self.backbone.impute(X, missing_mask, n_sampling_times)
-            results["imputed_data"] = imputed_data
+        else:  # if in the eval mode (the validation stage), return metric result from validation_metric
+            results["metric"] = elbo_loss
 
         return results

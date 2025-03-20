@@ -6,12 +6,10 @@ and takes over the forward progress of the algorithm.
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-from typing import Union
-
 import torch.nn as nn
 
 from ...nn.modules.brits import BackboneBRITS
-from ...nn.modules.loss import Criterion, MAE
+from ...nn.modules.loss import Criterion
 
 
 class _BRITS(nn.Module):
@@ -36,12 +34,20 @@ class _BRITS(nn.Module):
         n_steps: int,
         n_features: int,
         rnn_hidden_size: int,
-        training_loss: Union[Criterion, type] = MAE,
+        training_loss: Criterion,
+        validation_metric: Criterion,
     ):
         super().__init__()
         self.n_steps = n_steps
         self.n_features = n_features
         self.rnn_hidden_size = rnn_hidden_size
+        self.training_loss = training_loss
+        if validation_metric.__class__.__name__ == "Criterion":
+            # in this case, we need validation_metric.lower_better in _train_model() so only pass Criterion()
+            # we use training_loss as validation_metric for concrete calculation process
+            self.validation_metric = self.training_loss
+        else:
+            self.validation_metric = validation_metric
 
         self.model = BackboneBRITS(
             n_steps,
@@ -63,18 +69,26 @@ class _BRITS(nn.Module):
 
         results = {
             "imputed_data": imputed_data,
+            "consistency_loss": consistency_loss,
+            "reconstruction_loss": reconstruction_loss,
+            "f_reconstruction": f_reconstruction,
+            "b_reconstruction": b_reconstruction,
         }
 
-        # if in training mode, return results with losses
-        if self.training:
-            results["consistency_loss"] = consistency_loss
-            results["reconstruction_loss"] = reconstruction_loss
-            loss = consistency_loss + reconstruction_loss
+        return results
 
+    def calc_criterion(self, inputs: dict) -> dict:
+        results = self.forward(inputs)
+
+        if self.training:  # if in the training mode (the training stage), return loss result from training_loss
             # `loss` is always the item for backward propagating to update the model
+            consistency_loss = results["consistency_loss"]
+            reconstruction_loss = results["reconstruction_loss"]
+            loss = consistency_loss + reconstruction_loss
             results["loss"] = loss
-            results["reconstruction"] = (f_reconstruction + b_reconstruction) / 2
-            results["f_reconstruction"] = f_reconstruction
-            results["b_reconstruction"] = b_reconstruction
+        else:  # if in the eval mode (the validation stage), return metric result from validation_metric
+            X_ori, indicating_mask = inputs["X_ori"], inputs["indicating_mask"]
+            reconstruction = (results["f_reconstruction"] + results["b_reconstruction"]) / 2
+            results["metric"] = self.validation_metric(reconstruction, X_ori, indicating_mask)
 
         return results

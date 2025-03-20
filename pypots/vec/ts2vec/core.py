@@ -53,6 +53,22 @@ class _TS2Vec(nn.Module):
     ) -> dict:
         X = inputs["X"]
 
+        results = {}
+        reprs = self.encoder.encode(
+            X,
+            mask,
+            encoding_window,
+            causal,
+            sliding_length,
+            sliding_padding,
+        )
+        results["representation"] = reprs
+
+        return results
+
+    def calc_criterion(self, inputs: dict) -> dict:
+        X = inputs["X"]
+
         # if in training mode, return results with losses
         n_steps = X.size(1)
         crop_l = np.random.randint(low=2 ** (self.temporal_unit + 1), high=n_steps + 1)
@@ -69,18 +85,12 @@ class _TS2Vec(nn.Module):
 
         loss = hierarchical_contrastive_loss(out1, out2, temporal_unit=self.temporal_unit)
 
-        # `loss` is always the item for backward propagating to update the model
-        results = {"loss": loss}
+        results = {}
 
-        if not self.training:
-            reprs = self.encoder.encode(
-                X,
-                mask,
-                encoding_window,
-                causal,
-                sliding_length,
-                sliding_padding,
-            )
-            results["representation"] = reprs
+        if self.training:  # if in the training mode (the training stage), return loss result from training_loss
+            # `loss` is always the item for backward propagating to update the model
+            results["loss"] = loss
+        else:  # if in the eval mode (the validation stage), return metric result from validation_metric
+            results["metric"] = loss
 
         return results

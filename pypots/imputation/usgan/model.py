@@ -18,6 +18,7 @@ from .data import DatasetForUSGAN
 from ..base import BaseNNImputer
 from ...data.checking import key_in_data_set
 from ...nn.functional import calc_mse
+from ...nn.modules.loss import Criterion
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
 from ...utils.logging import logger
@@ -123,11 +124,11 @@ class USGAN(BaseNNImputer):
         verbose: bool = True,
     ):
         super().__init__(
+            training_loss=Criterion,
+            validation_metric=Criterion,
             batch_size=batch_size,
             epochs=epochs,
             patience=patience,
-            training_loss=None,
-            validation_metric=None,
             num_workers=num_workers,
             device=device,
             saving_path=saving_path,

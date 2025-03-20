@@ -16,7 +16,6 @@ from .core import _BRITS
 from .data import DatasetForBRITS
 from ..base import BaseNNClassifier
 from ...nn.modules.loss import Criterion, CrossEntropy
-from ...nn.modules.metric import PR_AUC
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
 
@@ -106,8 +105,8 @@ class BRITS(BaseNNClassifier):
         batch_size: int = 32,
         epochs: int = 100,
         patience: Optional[int] = None,
-        training_loss: Union[Criterion, type] = CrossEntropy(),
-        validation_metric: Union[Criterion, type] = PR_AUC(),
+        training_loss: Union[Criterion, type] = CrossEntropy,
+        validation_metric: Union[Criterion, type] = CrossEntropy,
         optimizer: Union[Optimizer, type] = Adam,
         num_workers: int = 0,
         device: Optional[Union[str, torch.device, list]] = None,
@@ -117,11 +116,11 @@ class BRITS(BaseNNClassifier):
     ):
         super().__init__(
             n_classes=n_classes,
+            training_loss=training_loss,
+            validation_metric=validation_metric,
             batch_size=batch_size,
             epochs=epochs,
             patience=patience,
-            training_loss=training_loss,
-            validation_metric=validation_metric,
             num_workers=num_workers,
             device=device,
             saving_path=saving_path,
@@ -137,12 +136,14 @@ class BRITS(BaseNNClassifier):
 
         # set up the model
         self.model = _BRITS(
-            self.n_steps,
-            self.n_features,
-            self.rnn_hidden_size,
-            self.n_classes,
-            self.classification_weight,
-            self.reconstruction_weight,
+            n_steps=self.n_steps,
+            n_features=self.n_features,
+            rnn_hidden_size=self.rnn_hidden_size,
+            n_classes=self.n_classes,
+            classification_weight=self.classification_weight,
+            reconstruction_weight=self.reconstruction_weight,
+            training_loss=self.training_loss,
+            validation_metric=self.validation_metric,
         )
         self._send_model_to_given_device()
         self._print_model_size()
