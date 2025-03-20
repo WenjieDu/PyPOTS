@@ -10,6 +10,15 @@ pypots.classification.saits
    :show-inheritance:
    :inherited-members:
 
+pypots.classification.tefn
+----------------------------------
+
+.. automodule:: pypots.classification.tefn
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+
 pypots.classification.brits
 ----------------------------------
 
