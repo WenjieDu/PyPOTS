@@ -11,6 +11,7 @@ from .grud import GRUD
 from .itransformer import iTransformer
 from .raindrop import Raindrop
 from .saits import SAITS
+from .tefn import TEFN
 from .timesnet import TimesNet
 from .ts2vec import TS2Vec
 
@@ -23,4 +24,5 @@ __all__ = [
     "SAITS",
     "TimesNet",
     "iTransformer",
+    "TEFN",
 ]
