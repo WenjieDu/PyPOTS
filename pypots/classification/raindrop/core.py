@@ -6,6 +6,7 @@ and takes over the forward progress of the algorithm.
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
+from typing import Union
 
 import torch
 import torch.nn as nn
@@ -29,7 +30,7 @@ class _Raindrop(nn.Module):
         aggregation="mean",
         sensor_wise_mask=False,
         static=False,
-        training_loss: Criterion = CrossEntropy(),
+        training_loss: Union[Criterion, type] = CrossEntropy(),
     ):
         super().__init__()
 

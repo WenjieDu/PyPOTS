@@ -7,6 +7,8 @@ and takes over the forward progress of the algorithm.
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
+from typing import Union
+
 import torch.nn as nn
 
 from ...nn.functional import nonstationary_norm, nonstationary_denorm
@@ -25,7 +27,7 @@ class _FITS(nn.Module):
         cut_freq: int,
         individual: bool,
         apply_nonstationary_norm: bool = False,
-        training_loss: Criterion = MSE(),
+        training_loss: Union[Criterion, type] = MSE,
     ):
         super().__init__()
 

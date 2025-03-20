@@ -114,8 +114,8 @@ class USGAN(BaseNNImputer):
         batch_size: int = 32,
         epochs: int = 100,
         patience: Optional[int] = None,
-        G_optimizer: Optimizer = Adam(),
-        D_optimizer: Optimizer = Adam(),
+        G_optimizer: Union[Optimizer, type] = Adam,
+        D_optimizer: Union[Optimizer, type] = Adam,
         num_workers: int = 0,
         device: Optional[Union[str, torch.device, list]] = None,
         saving_path: Optional[str] = None,
@@ -154,8 +154,17 @@ class USGAN(BaseNNImputer):
         self._print_model_size()
 
         # set up the optimizer
-        self.G_optimizer = G_optimizer
-        self.D_optimizer = D_optimizer
+        if isinstance(G_optimizer, Optimizer):
+            self.G_optimizer = G_optimizer
+        else:
+            self.G_optimizer = G_optimizer()  # instantiate the optimizer if it is a class
+            assert isinstance(self.G_optimizer, Optimizer)
+        if isinstance(D_optimizer, Optimizer):
+            self.D_optimizer = D_optimizer
+        else:
+            self.D_optimizer = D_optimizer()  # instantiate the optimizer if it is a class
+            assert isinstance(self.D_optimizer, Optimizer)
+
         if isinstance(self.device, list):
             self.G_optimizer.init_optimizer(self.model.module.backbone.generator.parameters())
             self.D_optimizer.init_optimizer(self.model.module.backbone.discriminator.parameters())

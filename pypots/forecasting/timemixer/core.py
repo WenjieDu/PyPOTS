@@ -7,6 +7,8 @@ and takes over the forward progress of the algorithm.
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
+from typing import Union
+
 import torch.nn as nn
 
 from ...nn.modules.loss import Criterion, MSE
@@ -32,7 +34,7 @@ class _TimeMixer(nn.Module):
         downsampling_layers: int,
         downsampling_window: int,
         use_norm: bool = False,
-        training_loss: Criterion = MSE(),
+        training_loss: Union[Criterion, type] = MSE,
     ):
         super().__init__()
 

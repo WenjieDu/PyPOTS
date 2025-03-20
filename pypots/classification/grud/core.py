@@ -7,6 +7,8 @@ and takes over the forward progress of the algorithm.
 # License: BSD-3-Clause
 
 
+from typing import Union
+
 import torch
 import torch.nn as nn
 
@@ -21,7 +23,7 @@ class _GRUD(nn.Module):
         n_features: int,
         rnn_hidden_size: int,
         n_classes: int,
-        training_loss: Criterion = CrossEntropy(),
+        training_loss: Union[Criterion, type] = CrossEntropy(),
     ):
         super().__init__()
         self.n_steps = n_steps

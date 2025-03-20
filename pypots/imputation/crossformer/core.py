@@ -7,6 +7,7 @@ and takes over the forward progress of the algorithm.
 # License: BSD-3-Clause
 
 from math import ceil
+from typing import Union
 
 import torch
 import torch.nn as nn
@@ -33,7 +34,7 @@ class _Crossformer(nn.Module):
         dropout,
         ORT_weight: float = 1,
         MIT_weight: float = 1,
-        training_loss: Criterion = MAE(),
+        training_loss: Union[Criterion, type] = MAE,
     ):
         super().__init__()
 

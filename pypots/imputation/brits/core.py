@@ -6,6 +6,8 @@ and takes over the forward progress of the algorithm.
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
+from typing import Union
+
 import torch.nn as nn
 
 from ...nn.modules.brits import BackboneBRITS
@@ -34,7 +36,7 @@ class _BRITS(nn.Module):
         n_steps: int,
         n_features: int,
         rnn_hidden_size: int,
-        training_loss: Criterion = MAE(),
+        training_loss: Union[Criterion, type] = MAE,
     ):
         super().__init__()
         self.n_steps = n_steps
