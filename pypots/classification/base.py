@@ -16,8 +16,7 @@ from torch.utils.data import DataLoader
 
 from ..base import BaseModel, BaseNNModel
 from ..nn.functional import autocast
-from ..nn.modules.loss import Criterion, CrossEntropy
-from ..nn.modules.metric import PR_AUC
+from ..nn.modules.loss import Criterion
 from ..utils.logging import logger
 
 try:
@@ -219,8 +218,8 @@ class BaseNNClassifier(BaseNNModel):
         batch_size: int,
         epochs: int,
         patience: Optional[int] = None,
-        training_loss: Optional[Criterion] = CrossEntropy(),
-        validation_metric: Optional[Criterion] = PR_AUC(),
+        training_loss: Optional[Union[Criterion, type]] = None,
+        validation_metric: Optional[Union[Criterion, type]] = None,
         num_workers: int = 0,
         device: Optional[Union[str, torch.device, list]] = None,
         enable_amp: bool = False,
@@ -242,10 +241,6 @@ class BaseNNClassifier(BaseNNModel):
             verbose=verbose,
         )
         self.n_classes = n_classes
-
-        # fetch the names of training loss and validation metric
-        self.training_loss_name = self.training_loss.__class__.__name__
-        self.validation_metric_name = self.validation_metric.__class__.__name__
 
     @abstractmethod
     def _assemble_input_for_training(self, data: list) -> dict:
