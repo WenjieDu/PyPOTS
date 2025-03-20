@@ -37,7 +37,7 @@ class Criterion(_Loss):
         super().__init__()
         self.lower_better = lower_better
 
-    def forward(self, prediction, target):
+    def forward(self, predictions, targets):
         raise NotImplementedError
 
 
@@ -45,8 +45,8 @@ class MSE(Criterion):
     def __init__(self):
         super().__init__()
 
-    def forward(self, prediction, target, mask=None):
-        value = calc_mse(prediction, target, mask)
+    def forward(self, predictions, targets, masks=None):
+        value = calc_mse(predictions, targets, masks)
         return value
 
 
@@ -54,8 +54,8 @@ class MAE(Criterion):
     def __init__(self):
         super().__init__()
 
-    def forward(self, prediction, target, mask=None):
-        value = calc_mae(prediction, target, mask)
+    def forward(self, predictions, targets, masks=None):
+        value = calc_mae(predictions, targets, masks)
         return value
 
 
@@ -63,8 +63,8 @@ class RMSE(Criterion):
     def __init__(self):
         super().__init__()
 
-    def forward(self, prediction, target, mask=None):
-        value = calc_rmse(prediction, target, mask)
+    def forward(self, predictions, targets, masks=None):
+        value = calc_rmse(predictions, targets, masks)
         return value
 
 
@@ -72,8 +72,8 @@ class MRE(Criterion):
     def __init__(self):
         super().__init__()
 
-    def forward(self, prediction, target, mask=None):
-        value = calc_mre(prediction, target, mask)
+    def forward(self, predictions, targets, masks=None):
+        value = calc_mre(predictions, targets, masks)
         return value
 
 
@@ -81,8 +81,8 @@ class QuantileCRPS(Criterion):
     def __init__(self):
         super().__init__()
 
-    def forward(self, prediction, target, mask=None):
-        value = calc_quantile_crps(prediction, target, mask)
+    def forward(self, predictions, targets, masks=None):
+        value = calc_quantile_crps(predictions, targets, masks)
         return value
 
 
@@ -90,8 +90,8 @@ class QuantileCRPS_Sum(Criterion):
     def __init__(self):
         super().__init__()
 
-    def forward(self, prediction, target, mask=None):
-        value = calc_quantile_crps_sum(prediction, target, mask)
+    def forward(self, predictions, targets, masks=None):
+        value = calc_quantile_crps_sum(predictions, targets, masks)
         return value
 
 
@@ -99,8 +99,8 @@ class CrossEntropy(Criterion):
     def __init__(self):
         super().__init__()
 
-    def forward(self, prediction, target):
-        value = torch.nn.functional.cross_entropy(prediction, target)
+    def forward(self, predictions, targets):
+        value = torch.nn.functional.cross_entropy(predictions, targets)
         return value
 
 
@@ -108,6 +108,6 @@ class NLL(Criterion):
     def __init__(self):
         super().__init__()
 
-    def forward(self, prediction, target):
-        value = torch.nn.functional.nll_loss(prediction, target)
+    def forward(self, predictions, targets):
+        value = torch.nn.functional.nll_loss(predictions, targets)
         return value
