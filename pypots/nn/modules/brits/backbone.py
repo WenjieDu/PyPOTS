@@ -5,7 +5,7 @@
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-from typing import Tuple, Union
+from typing import Tuple
 
 import torch
 import torch.nn as nn
@@ -66,7 +66,7 @@ class BackboneRITS(nn.Module):
         n_steps: int,
         n_features: int,
         rnn_hidden_size: int,
-        training_loss: Union[Criterion, type] = MAE,
+        training_loss: Criterion = MAE(),
     ):
         super().__init__()
         self.n_steps = n_steps
@@ -186,7 +186,7 @@ class BackboneBRITS(nn.Module):
         n_steps: int,
         n_features: int,
         rnn_hidden_size: int,
-        training_loss: Union[Criterion, type] = MAE,
+        training_loss: Criterion = MAE(),
     ):
         super().__init__()
         # data settings

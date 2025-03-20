@@ -6,7 +6,6 @@
 # License: BSD-3-Clause
 
 import math
-from typing import Union
 
 import torch
 import torch.nn as nn
@@ -95,7 +94,7 @@ class BackboneCSAI(nn.Module):
         n_features,
         rnn_hidden_size,
         step_channels,
-        training_loss: Union[Criterion, type] = MAE,
+        training_loss: Criterion = MAE(),
     ):
         super().__init__()
 
@@ -189,7 +188,8 @@ class BackboneCSAI(nn.Module):
             h = self.gru(input_t, h)
             Hiddens.append(h.unsqueeze(dim=1))
             reconstruction.append(x_comb_t.unsqueeze(dim=1))
-        Hiddens = torch.cat(Hiddens, dim=1)
+
+        reconstruction = torch.cat(reconstruction, dim=1)
 
         return x_imp, reconstruction, h, x_loss
 
@@ -201,7 +201,7 @@ class BackboneBCSAI(nn.Module):
         n_features,
         rnn_hidden_size,
         step_channels,
-        training_loss: Union[Criterion, type] = MAE,
+        training_loss: Criterion = MAE(),
     ):
         super().__init__()
 

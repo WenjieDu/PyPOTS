@@ -152,11 +152,11 @@ class TimeLLM(BaseNNImputer):
         verbose: bool = True,
     ):
         super().__init__(
+            training_loss=training_loss,
+            validation_metric=validation_metric,
             batch_size=batch_size,
             epochs=epochs,
             patience=patience,
-            training_loss=training_loss,
-            validation_metric=validation_metric,
             num_workers=num_workers,
             device=device,
             enable_amp=True,
@@ -185,21 +185,22 @@ class TimeLLM(BaseNNImputer):
 
         # set up the model
         self.model = _TimeLLM(
-            self.n_steps,
-            self.n_features,
-            self.n_layers,
-            self.patch_size,
-            self.patch_stride,
-            self.d_model,
-            self.d_ffn,
-            self.d_llm,
-            self.n_heads,
-            self.llm_model_type,
-            self.dropout,
-            self.domain_prompt_content,
-            self.ORT_weight,
-            self.MIT_weight,
-            self.training_loss,
+            n_steps=self.n_steps,
+            n_features=self.n_features,
+            n_layers=self.n_layers,
+            patch_size=self.patch_size,
+            patch_stride=self.patch_stride,
+            d_model=self.d_model,
+            d_ffn=self.d_ffn,
+            d_llm=self.d_llm,
+            n_heads=self.n_heads,
+            llm_model_type=self.llm_model_type,
+            dropout=self.dropout,
+            domain_prompt_content=self.domain_prompt_content,
+            ORT_weight=self.ORT_weight,
+            MIT_weight=self.MIT_weight,
+            training_loss=self.training_loss,
+            validation_metric=self.validation_metric,
         )
         self._send_model_to_given_device()
         self._print_model_size()

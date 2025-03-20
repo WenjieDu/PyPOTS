@@ -5,13 +5,11 @@
 # Created by Linglong Qian, Joseph Arul Raj <linglong.qian@kcl.ac.uk, joseph_arul_raj@kcl.ac.uk>
 # License: BSD-3-Clause
 
-from typing import Union
-
 import torch
 import torch.nn as nn
 
 from ...nn.modules.csai import BackboneBCSAI
-from ...nn.modules.loss import Criterion, CrossEntropy
+from ...nn.modules.loss import Criterion
 
 
 class _BCSAI(nn.Module):
@@ -25,8 +23,9 @@ class _BCSAI(nn.Module):
         classification_weight: float,
         n_classes: int,
         step_channels: int,
-        dropout: float = 0.5,
-        training_loss: Union[Criterion, type] = CrossEntropy(),
+        dropout: float,
+        training_loss: Criterion,
+        validation_metric: Criterion,
     ):
         super().__init__()
         self.n_steps = n_steps
@@ -38,9 +37,20 @@ class _BCSAI(nn.Module):
         self.n_classes = n_classes
         self.step_channels = step_channels
         self.training_loss = training_loss
+        if validation_metric.__class__.__name__ == "Criterion":
+            # in this case, we need validation_metric.lower_better in _train_model() so only pass Criterion()
+            # we use training_loss as validation_metric for concrete calculation process
+            self.validation_metric = self.training_loss
+        else:
+            self.validation_metric = validation_metric
 
         # create models
-        self.model = BackboneBCSAI(n_steps, n_features, rnn_hidden_size, step_channels)
+        self.model = BackboneBCSAI(
+            n_steps,
+            n_features,
+            rnn_hidden_size,
+            step_channels,
+        )
         self.f_classifier = nn.Linear(self.rnn_hidden_size, n_classes)
         self.b_classifier = nn.Linear(self.rnn_hidden_size, n_classes)
         self.dropout = nn.Dropout(dropout)
@@ -66,26 +76,36 @@ class _BCSAI(nn.Module):
         results = {
             "imputed_data": imputed_data,
             "classification_pred": classification_pred,
+            "f_logits": f_logits,
+            "b_logits": b_logits,
+            "consistency_loss": consistency_loss,
+            "reconstruction_loss": reconstruction_loss,
         }
 
-        # if in training mode, return results with losses
-        if self.training:
-            # criterion = DiceBCELoss().to(imputed_data.device)
-            results["consistency_loss"] = consistency_loss
-            results["reconstruction_loss"] = reconstruction_loss
+        return results
+
+    def calc_criterion(self, inputs: dict) -> dict:
+        results = self.forward(inputs)
+        f_logits = results["f_logits"]
+        b_logits = results["b_logits"]
+        consistency_loss = results["consistency_loss"]
+        reconstruction_loss = results["reconstruction_loss"]
+
+        if self.training:  # if in the training mode (the training stage), return loss result from training_loss
             f_classification_loss = self.training_loss(f_logits, inputs["y"])
             b_classification_loss = self.training_loss(b_logits, inputs["y"])
             classification_loss = f_classification_loss + b_classification_loss
-
             loss = (
                 self.consistency_weight * consistency_loss
                 + self.imputation_weight * reconstruction_loss
                 + self.classification_weight * classification_loss
             )
-
+            # `loss` is always the item for backward propagating to update the model
             results["loss"] = loss
-            results["classification_loss"] = classification_loss
-            results["f_reconstruction"] = f_reconstruction
-            results["b_reconstruction"] = b_reconstruction
+        else:  # if in the eval mode (the validation stage), return metric result from validation_metric
+            f_validation_metric = self.validation_metric(f_logits, inputs["y"])
+            b_validation_metric = self.validation_metric(b_logits, inputs["y"])
+            validation_metric = (f_validation_metric + b_validation_metric) / 2
+            results["metric"] = validation_metric
 
         return results

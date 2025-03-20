@@ -130,11 +130,11 @@ class StemGNN(BaseNNImputer):
         verbose: bool = True,
     ):
         super().__init__(
+            training_loss=training_loss,
+            validation_metric=validation_metric,
             batch_size=batch_size,
             epochs=epochs,
             patience=patience,
-            training_loss=training_loss,
-            validation_metric=validation_metric,
             num_workers=num_workers,
             device=device,
             saving_path=saving_path,
@@ -155,16 +155,17 @@ class StemGNN(BaseNNImputer):
 
         # set up the model
         self.model = _StemGNN(
-            self.n_steps,
-            self.n_features,
-            self.n_layers,
-            self.n_stacks,
-            self.d_model,
-            self.dropout,
-            self.leaky_rate,
-            self.ORT_weight,
-            self.MIT_weight,
-            self.training_loss,
+            n_steps=self.n_steps,
+            n_features=self.n_features,
+            n_layers=self.n_layers,
+            n_stacks=self.n_stacks,
+            d_model=self.d_model,
+            dropout_rate=self.dropout,
+            leaky_rate=self.leaky_rate,
+            ORT_weight=self.ORT_weight,
+            MIT_weight=self.MIT_weight,
+            training_loss=self.training_loss,
+            validation_metric=self.validation_metric,
         )
         self._send_model_to_given_device()
         self._print_model_size()

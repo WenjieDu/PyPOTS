@@ -138,11 +138,11 @@ class ETSformer(BaseNNImputer):
         verbose: bool = True,
     ):
         super().__init__(
+            training_loss=training_loss,
+            validation_metric=validation_metric,
             batch_size=batch_size,
             epochs=epochs,
             patience=patience,
-            training_loss=training_loss,
-            validation_metric=validation_metric,
             num_workers=num_workers,
             device=device,
             saving_path=saving_path,
@@ -164,18 +164,19 @@ class ETSformer(BaseNNImputer):
 
         # set up the model
         self.model = _ETSformer(
-            self.n_steps,
-            self.n_features,
-            self.n_encoder_layers,
-            self.n_decoder_layers,
-            self.d_model,
-            self.n_heads,
-            self.d_ffn,
-            self.dropout,
-            self.top_k,
-            self.ORT_weight,
-            self.MIT_weight,
-            self.training_loss,
+            n_steps=self.n_steps,
+            n_features=self.n_features,
+            n_encoder_layers=self.n_encoder_layers,
+            n_decoder_layers=self.n_decoder_layers,
+            d_model=self.d_model,
+            n_heads=self.n_heads,
+            d_ffn=self.d_ffn,
+            dropout=self.dropout,
+            top_k=self.top_k,
+            ORT_weight=self.ORT_weight,
+            MIT_weight=self.MIT_weight,
+            training_loss=self.training_loss,
+            validation_metric=self.validation_metric,
         )
         self._send_model_to_given_device()
         self._print_model_size()

@@ -6,7 +6,6 @@ The implementation of TS2Vec for the partially-observed time-series classificati
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-import os
 import warnings
 from typing import Optional, Union
 
@@ -16,16 +15,10 @@ from torch.utils.data import DataLoader
 
 from .data import DatasetForTS2Vec
 from ..base import BaseNNClassifier
-from ...nn.functional.cuda import autocast
+from ...nn.modules.loss import Criterion
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
-from ...utils.logging import logger
 from ...vec.ts2vec.core import _TS2Vec
-
-try:
-    import nni
-except ImportError:
-    pass
 
 SUPPORTED_CLASSIFIERS = ["linear_regression", "svm", "knn"]
 
@@ -121,6 +114,8 @@ class TS2Vec(BaseNNClassifier):
     ):
         super().__init__(
             n_classes=n_classes,
+            training_loss=Criterion,
+            validation_metric=Criterion,
             batch_size=batch_size,
             epochs=epochs,
             patience=patience,
@@ -141,12 +136,12 @@ class TS2Vec(BaseNNClassifier):
 
         # set up the model
         self.model = _TS2Vec(
-            self.n_steps,
-            self.n_features,
-            self.n_output_dims,
-            self.d_hidden,
-            self.n_layers,
-            self.mask_mode,
+            n_steps=self.n_steps,
+            n_features=self.n_features,
+            n_pred_features=self.n_output_dims,
+            d_hidden=self.d_hidden,
+            n_layers=self.n_layers,
+            mask_mode=self.mask_mode,
         )
         self._send_model_to_given_device()
         self._print_model_size()
@@ -198,118 +193,6 @@ class TS2Vec(BaseNNClassifier):
             "X": torch.masked_fill(X, ~missing_mask, torch.nan),
         }
         return inputs
-
-    def _train_model(
-        self,
-        training_loader: DataLoader,
-        val_loader: DataLoader = None,
-    ) -> None:
-        """
-
-        Parameters
-        ----------
-        training_loader
-        val_loader
-
-        Notes
-        -----
-        The training procedures of NN clustering models are very different from each other. For example, VaDER needs
-        pretraining while CRLI doesn't, VaDER only needs one optimizer while CRLI needs two for its generator and
-        discriminator separately. So far, I'd suggest to implement function _train_model() for each model individually.
-
-        """
-        # each training starts from the very beginning, so reset the loss and model dict here
-        self.best_loss = float("inf")
-        self.best_model_dict = None
-
-        try:
-            training_step = 0
-            for epoch in range(1, self.epochs + 1):
-                self.model.train()
-                epoch_train_loss_collector = []
-                for idx, data in enumerate(training_loader):
-                    training_step += 1
-                    inputs = self._assemble_input_for_training(data)
-
-                    # model forward propagation processing
-                    with autocast(enabled=self.amp_enabled):
-                        self.optimizer.zero_grad()
-                        results = self.model.forward(inputs)
-                        results["loss"].sum().backward()  # sum() before backward() in case of multi-gpu training
-                        self.optimizer.step()
-                    epoch_train_loss_collector.append(results["loss"].sum().item())
-
-                    # save training loss logs into the tensorboard file for every step if in need
-                    if self.summary_writer is not None:
-                        self._save_log_into_tb_file(training_step, "training", results)
-
-                # mean training loss of the current epoch
-                mean_train_loss = np.mean(epoch_train_loss_collector)
-
-                if val_loader is not None:
-                    self.model.eval()
-                    epoch_val_loss_collector = []
-                    with torch.no_grad():
-                        for idx, data in enumerate(val_loader):
-                            inputs = self._assemble_input_for_validating(data)
-
-                            # model forward propagation processing
-                            with autocast(enabled=self.amp_enabled):
-                                results = self.model.forward(inputs)
-                            epoch_val_loss_collector.append(results["loss"].sum().item())
-
-                    mean_val_loss = np.mean(epoch_val_loss_collector)
-                    logger.info(
-                        f"Epoch {epoch:03d} - "
-                        f"training loss ({self.training_loss_name}): {mean_train_loss:.4f}, "
-                        f"validation {self.validation_metric_name}: {mean_val_loss:.4f}"
-                    )
-                    mean_loss = mean_val_loss
-                else:
-                    logger.info(f"Epoch {epoch:03d} - training loss ({self.training_loss_name}): {mean_train_loss:.4f}")
-                    mean_loss = mean_train_loss
-
-                if np.isnan(mean_loss):
-                    logger.warning(f"‼️ Attention: got NaN loss in Epoch {epoch}. This may lead to unexpected errors.")
-
-                if (self.validation_metric.lower_better and mean_loss < self.best_loss) or (
-                    not self.validation_metric.lower_better and mean_loss > self.best_loss
-                ):
-                    self.best_epoch = epoch
-                    self.best_loss = mean_loss
-                    self.best_model_dict = self.model.state_dict()
-                    self.patience = self.original_patience
-                else:
-                    self.patience -= 1
-
-                if os.getenv("ENABLE_HPO", False):
-                    nni.report_intermediate_result(mean_loss)
-                    if epoch == self.epochs - 1 or self.patience == 0:
-                        nni.report_final_result(self.best_loss)
-
-                if self.patience == 0:
-                    logger.info("Exceeded the training patience. Terminating the training procedure...")
-                    break
-
-        except KeyboardInterrupt:  # if keyboard interrupt, only warning
-            logger.warning("‼️ Training got interrupted by the user. Exist now ...")
-        except Exception as e:  # other kind of exception follows below processing
-            logger.error(f"❌ Exception: {e}")
-            if self.best_model_dict is None:  # if no best model, raise error
-                raise RuntimeError(
-                    "Training got interrupted. Model was not trained. Please investigate the error printed above."
-                )
-            else:
-                RuntimeWarning(
-                    "Training got interrupted. Please investigate the error printed above.\n"
-                    "Model got trained and will load the best checkpoint so far for testing.\n"
-                    "If you don't want it, please try fit() again."
-                )
-
-        if np.isnan(self.best_loss) or self.best_loss.__eq__(float("inf")):
-            raise ValueError("Something is wrong. best_loss is Nan/Inf after training.")
-
-        logger.info(f"Finished training. The best model is from epoch#{self.best_epoch}.")
 
     def fit(
         self,

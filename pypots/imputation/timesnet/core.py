@@ -5,12 +5,10 @@
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-from typing import Union
-
 import torch.nn as nn
 
 from ...nn.functional import nonstationary_norm, nonstationary_denorm
-from ...nn.modules.loss import Criterion, MSE
+from ...nn.modules.loss import Criterion
 from ...nn.modules.timesnet import BackboneTimesNet
 from ...nn.modules.transformer.embedding import DataEmbedding
 
@@ -27,7 +25,8 @@ class _TimesNet(nn.Module):
         n_kernels,
         dropout,
         apply_nonstationary_norm,
-        training_loss: Union[Criterion, type] = MSE,
+        training_loss: Criterion,
+        validation_metric: Criterion,
     ):
         super().__init__()
 
@@ -35,6 +34,12 @@ class _TimesNet(nn.Module):
         self.n_layers = n_layers
         self.apply_nonstationary_norm = apply_nonstationary_norm
         self.training_loss = training_loss
+        if validation_metric.__class__.__name__ == "Criterion":
+            # in this case, we need validation_metric.lower_better in _train_model() so only pass Criterion()
+            # we use training_loss as validation_metric for concrete calculation process
+            self.validation_metric = self.training_loss
+        else:
+            self.validation_metric = validation_metric
 
         self.enc_embedding = DataEmbedding(
             n_features,
@@ -69,20 +74,31 @@ class _TimesNet(nn.Module):
         enc_out = self.model(input_X)
 
         # project back the original data space
-        dec_out = self.projection(enc_out)
+        reconstruction = self.projection(enc_out)
 
         if self.apply_nonstationary_norm:
             # De-Normalization from Non-stationary Transformer
-            dec_out = nonstationary_denorm(dec_out, means, stdev)
+            reconstruction = nonstationary_denorm(reconstruction, means, stdev)
 
-        imputed_data = missing_mask * X + (1 - missing_mask) * dec_out
+        imputed_data = missing_mask * X + (1 - missing_mask) * reconstruction
         results = {
             "imputed_data": imputed_data,
+            "reconstruction": reconstruction,
         }
 
-        if self.training:
+        return results
+
+    def calc_criterion(self, inputs: dict) -> dict:
+        results = self.forward(inputs)
+        X, missing_mask = inputs["X"], inputs["missing_mask"]
+        reconstruction = results["reconstruction"]
+
+        if self.training:  # if in the training mode (the training stage), return loss result from training_loss
             # `loss` is always the item for backward propagating to update the model
-            loss = self.training_loss(dec_out, inputs["X_ori"], inputs["indicating_mask"])
+            loss = self.training_loss(reconstruction, X, missing_mask)
             results["loss"] = loss
+        else:  # if in the eval mode (the validation stage), return metric result from validation_metric
+            X_ori, indicating_mask = inputs["X_ori"], inputs["indicating_mask"]
+            results["metric"] = self.validation_metric(reconstruction, X_ori, indicating_mask)
 
         return results

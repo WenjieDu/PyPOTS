@@ -86,8 +86,30 @@ class _CSDI(nn.Module):
 
         return side_info
 
-    def forward(self, inputs, n_sampling_times=1):
+    def forward(self, inputs, n_sampling_times=1) -> dict:
         results = {}
+        observed_data, cond_mask, observed_tp, feature_id = (
+            inputs["X"],
+            inputs["cond_mask"],
+            inputs["observed_tp"],
+            inputs["feature_id"],
+        )
+        side_info = self.get_side_info(observed_tp, cond_mask, feature_id)
+        samples = self.backbone(
+            observed_data, cond_mask, side_info, n_sampling_times
+        )  # (n_samples, n_sampling_times, n_features, n_steps)
+        repeated_obs = observed_data.unsqueeze(1).repeat(1, n_sampling_times, 1, 1)
+        repeated_mask = cond_mask.unsqueeze(1).repeat(1, n_sampling_times, 1, 1)
+        forecasting = repeated_obs + samples * (1 - repeated_mask)
+
+        results["forecasting_data"] = forecasting.permute(
+            0, 1, 3, 2
+        )  # (n_samples, n_sampling_times, n_steps, n_features)
+        return results
+
+    def calc_criterion(self, inputs: dict) -> dict:
+        results = {}
+
         if self.training:  # for training
             (observed_data, indicating_mask, cond_mask, observed_tp, feature_id) = (
                 inputs["X_ori"],
@@ -99,7 +121,7 @@ class _CSDI(nn.Module):
             side_info = self.get_side_info(observed_tp, cond_mask, feature_id)
             training_loss = self.backbone.calc_loss(observed_data, cond_mask, indicating_mask, side_info)
             results["loss"] = training_loss
-        elif not self.training and n_sampling_times == 0:  # for validating
+        else:  # for validating
             (observed_data, indicating_mask, cond_mask, observed_tp, feature_id) = (
                 inputs["X_ori"],
                 inputs["indicating_mask"],
@@ -109,24 +131,6 @@ class _CSDI(nn.Module):
             )
             side_info = self.get_side_info(observed_tp, cond_mask, feature_id)
             validating_loss = self.backbone.calc_loss_valid(observed_data, cond_mask, indicating_mask, side_info)
-            results["loss"] = validating_loss
-        elif not self.training and n_sampling_times > 0:  # for testing
-            observed_data, cond_mask, observed_tp, feature_id = (
-                inputs["X"],
-                inputs["cond_mask"],
-                inputs["observed_tp"],
-                inputs["feature_id"],
-            )
-            side_info = self.get_side_info(observed_tp, cond_mask, feature_id)
-            samples = self.backbone(
-                observed_data, cond_mask, side_info, n_sampling_times
-            )  # (n_samples, n_sampling_times, n_features, n_steps)
-            repeated_obs = observed_data.unsqueeze(1).repeat(1, n_sampling_times, 1, 1)
-            repeated_mask = cond_mask.unsqueeze(1).repeat(1, n_sampling_times, 1, 1)
-            forecasting = repeated_obs + samples * (1 - repeated_mask)
-
-            results["forecasting_data"] = forecasting.permute(
-                0, 1, 3, 2
-            )  # (n_samples, n_sampling_times, n_steps, n_features)
+            results["metric"] = validating_loss
 
         return results
