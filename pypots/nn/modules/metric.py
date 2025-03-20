@@ -13,7 +13,7 @@ from ..functional import calc_pr_auc, calc_acc, calc_roc_auc
 
 class PR_AUC(Criterion):
     def __init__(self, pos_label: int = 1):
-        super().__init__()
+        super().__init__(lower_better=False)
         self.pos_label = pos_label
 
     def forward(self, prediction, target):
@@ -23,7 +23,7 @@ class PR_AUC(Criterion):
 
 class ROC_AUC(Criterion):
     def __init__(self, pos_label: int = 1):
-        super().__init__()
+        super().__init__(lower_better=False)
         self.pos_label = pos_label
 
     def forward(self, prediction, target):
@@ -33,7 +33,7 @@ class ROC_AUC(Criterion):
 
 class Accuracy(Criterion):
     def __init__(self):
-        super().__init__()
+        super().__init__(lower_better=False)
 
     def forward(self, prediction, target):
         acc_score = calc_acc(prediction, target)
