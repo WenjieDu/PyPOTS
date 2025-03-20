@@ -8,6 +8,7 @@ Expose all time-series classification models.
 from .brits import BRITS
 from .csai import CSAI
 from .grud import GRUD
+from .itransformer import iTransformer
 from .raindrop import Raindrop
 from .saits import SAITS
 from .timesnet import TimesNet
@@ -21,4 +22,5 @@ __all__ = [
     "TS2Vec",
     "SAITS",
     "TimesNet",
+    "iTransformer",
 ]
