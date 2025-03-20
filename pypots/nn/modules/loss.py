@@ -20,8 +20,22 @@ from ..functional import (
 
 
 class Criterion(_Loss):
-    def __init__(self, size_average=None, reduce=None, reduction: str = "mean"):
-        super().__init__(size_average, reduce, reduction)
+    def __init__(
+        self,
+        lower_better: bool = True,
+    ):
+        """The base class for all class implementation loss functions and metrics in PyPOTS.
+
+        Parameters
+        ----------
+        lower_better :
+            Whether the lower value of the criterion directs to a better model performance.
+            Default as True which is the case for most loss functions (e.g. MSE, Cross Entropy).
+            If False, it makes that the higher value leads to a better model performance (e.g. Accuracy).
+
+        """
+        super().__init__()
+        self.lower_better = lower_better
 
     def forward(self, prediction, target):
         raise NotImplementedError
