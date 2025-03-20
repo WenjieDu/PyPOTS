@@ -19,6 +19,15 @@ pypots.classification.brits
    :show-inheritance:
    :inherited-members:
 
+pypots.classification.itransformer
+----------------------------------
+
+.. automodule:: pypots.classification.itransformer
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+
 pypots.classification.csai
 ----------------------------------
 
