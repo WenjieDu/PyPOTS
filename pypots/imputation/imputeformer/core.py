@@ -6,6 +6,8 @@ and takes over the forward progress of the algorithm.
 # Created by Tong Nie <nietong@tongji.edu.cn> and Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
+from typing import Union
+
 import torch
 import torch.nn as nn
 
@@ -41,7 +43,7 @@ class _ImputeFormer(nn.Module):
         output_dim: int = 1,
         ORT_weight: float = 1,
         MIT_weight: float = 1,
-        training_loss: Criterion = MAE(),
+        training_loss: Union[Criterion, type] = MAE,
     ):
         super().__init__()
 

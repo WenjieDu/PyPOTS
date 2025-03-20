@@ -5,6 +5,8 @@
 # Created by Linglong Qian, Joseph Arul Raj <linglong.qian@kcl.ac.uk, joseph_arul_raj@kcl.ac.uk>
 # License: BSD-3-Clause
 
+from typing import Union
+
 import torch
 import torch.nn as nn
 
@@ -24,7 +26,7 @@ class _BCSAI(nn.Module):
         n_classes: int,
         step_channels: int,
         dropout: float = 0.5,
-        training_loss: Criterion = CrossEntropy(),
+        training_loss: Union[Criterion, type] = CrossEntropy(),
     ):
         super().__init__()
         self.n_steps = n_steps

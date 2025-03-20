@@ -5,6 +5,8 @@
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
+from typing import Union
+
 import torch.nn as nn
 
 from ...nn.functional import nonstationary_norm, nonstationary_denorm
@@ -25,7 +27,7 @@ class _TimesNet(nn.Module):
         n_kernels,
         dropout,
         apply_nonstationary_norm,
-        training_loss: Criterion = MSE(),
+        training_loss: Union[Criterion, type] = MSE,
     ):
         super().__init__()
 

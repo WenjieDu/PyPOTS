@@ -7,6 +7,8 @@ and takes over the forward progress of the algorithm.
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
+from typing import Union
+
 import torch
 import torch.nn as nn
 
@@ -31,7 +33,7 @@ class _Transformer(nn.Module):
         d_ffn: int,
         dropout: float,
         attn_dropout: float,
-        training_loss: Criterion = MSE(),
+        training_loss: Union[Criterion, type] = MSE,
     ):
         super().__init__()
 

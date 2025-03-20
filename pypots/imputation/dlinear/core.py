@@ -7,6 +7,7 @@ and takes over the forward progress of the algorithm.
 # License: BSD-3-Clause
 
 from typing import Optional
+from typing import Union
 
 import torch.nn as nn
 
@@ -26,7 +27,7 @@ class _DLinear(nn.Module):
         d_model: Optional[int] = None,
         ORT_weight: float = 1,
         MIT_weight: float = 1,
-        training_loss: Criterion = MAE(),
+        training_loss: Union[Criterion, type] = MAE,
     ):
         super().__init__()
 

@@ -8,6 +8,8 @@ and takes over the forward progress of the algorithm.
 # License: BSD-3-Clause
 
 
+from typing import Union
+
 import torch
 import torch.nn as nn
 
@@ -30,7 +32,7 @@ class _SAITS(nn.Module):
         dropout: float,
         attn_dropout: float,
         diagonal_attention_mask: bool = True,
-        training_loss: Criterion = CrossEntropy(),
+        training_loss: Union[Criterion, type] = CrossEntropy(),
     ):
         super().__init__()
         self.n_layers = n_layers
