@@ -48,7 +48,7 @@ Welcome to PyPOTS docs!
 
 .. image:: https://img.shields.io/coverallsCoverage/github/WenjieDu/PyPOTS?branch=full_test&logo=coveralls&color=75C1C4&label=Coverage
    :alt: Coveralls coverage
-   :target: https://coveralls.io/github/WenjieDu/PyPOTS
+   :target: https://coveralls.io/github/WenjieDu/PyPOTS?branch=full_test
 
 .. image:: https://img.shields.io/github/actions/workflow/status/wenjiedu/pypots/testing_ci.yml?logo=circleci&color=C8D8E1&label=CI
    :alt: GitHub Testing
