@@ -381,7 +381,9 @@ class BaseNNClusterer(BaseNNModel):
                 if np.isnan(mean_loss):
                     logger.warning(f"‼️ Attention: got NaN loss in Epoch {epoch}. This may lead to unexpected errors.")
 
-                if mean_loss < self.best_loss:
+                if (self.validation_metric.lower_better and mean_loss < self.best_loss) or (
+                    not self.validation_metric.lower_better and mean_loss > self.best_loss
+                ):
                     self.best_epoch = epoch
                     self.best_loss = mean_loss
                     self.best_model_dict = self.model.state_dict()
@@ -413,8 +415,8 @@ class BaseNNClusterer(BaseNNModel):
                     "If you don't want it, please try fit() again."
                 )
 
-        if np.isnan(self.best_loss):
-            raise ValueError("Something is wrong. best_loss is Nan after training.")
+        if np.isnan(self.best_loss) or self.best_loss.__eq__(float("inf")):
+            raise ValueError("Something is wrong. best_loss is Nan/Inf after training.")
 
         logger.info(f"Finished training. The best model is from epoch#{self.best_epoch}.")
 
