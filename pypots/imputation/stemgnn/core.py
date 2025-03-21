@@ -8,12 +8,13 @@ and takes over the forward progress of the algorithm.
 
 import torch.nn as nn
 
+from ...nn.modules import ModelCore
 from ...nn.modules.loss import Criterion
 from ...nn.modules.saits import SaitsLoss, SaitsEmbedding
 from ...nn.modules.stemgnn import BackboneStemGNN
 
 
-class _StemGNN(nn.Module):
+class _StemGNN(ModelCore):
     def __init__(
         self,
         n_steps,

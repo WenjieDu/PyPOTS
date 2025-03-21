@@ -10,12 +10,13 @@ and takes over the forward progress of the algorithm.
 import torch
 import torch.nn as nn
 
+from ...nn.modules import ModelCore
 from ...nn.modules.loss import Criterion
 from ...nn.modules.moment import BackboneMOMENT
 from ...nn.modules.saits import SaitsEmbedding
 
 
-class _MOMENT(nn.Module):
+class _MOMENT(ModelCore):
     def __init__(
         self,
         n_steps: int,

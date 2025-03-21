@@ -8,6 +8,7 @@ and takes over the forward progress of the algorithm.
 
 import torch.nn as nn
 
+from ...nn.modules import ModelCore
 from ...nn.modules.informer import (
     ProbAttention,
     ConvLayer,
@@ -19,7 +20,7 @@ from ...nn.modules.saits import SaitsLoss, SaitsEmbedding
 from ...nn.modules.transformer import MultiHeadAttention
 
 
-class _Informer(nn.Module):
+class _Informer(ModelCore):
     def __init__(
         self,
         n_steps,

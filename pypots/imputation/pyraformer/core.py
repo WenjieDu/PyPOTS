@@ -8,12 +8,13 @@ and takes over the forward progress of the algorithm.
 
 import torch.nn as nn
 
+from ...nn.modules import ModelCore
 from ...nn.modules.loss import Criterion
 from ...nn.modules.pyraformer import PyraformerEncoder
 from ...nn.modules.saits import SaitsLoss, SaitsEmbedding
 
 
-class _Pyraformer(nn.Module):
+class _Pyraformer(ModelCore):
     def __init__(
         self,
         n_steps: int,

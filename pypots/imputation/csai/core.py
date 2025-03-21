@@ -5,13 +5,12 @@
 # Created by Linglong Qian, Joseph Arul Raj <linglong.qian@kcl.ac.uk, joseph_arul_raj@kcl.ac.uk>
 # License: BSD-3-Clause
 
-import torch.nn as nn
-
+from ...nn.modules import ModelCore
 from ...nn.modules.csai.backbone import BackboneBCSAI
 from ...nn.modules.loss import Criterion
 
 
-class _BCSAI(nn.Module):
+class _BCSAI(ModelCore):
     """
     Attributes
     ----------

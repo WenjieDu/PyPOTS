@@ -12,13 +12,14 @@ import torch
 import torch.nn as nn
 from einops import rearrange
 
+from ...nn.modules import ModelCore
 from ...nn.modules.crossformer import CrossformerEncoder, ScaleBlock
 from ...nn.modules.loss import Criterion
 from ...nn.modules.patchtst import PredictionHead, PatchEmbedding
 from ...nn.modules.saits import SaitsLoss, SaitsEmbedding
 
 
-class _Crossformer(nn.Module):
+class _Crossformer(ModelCore):
     def __init__(
         self,
         n_steps,

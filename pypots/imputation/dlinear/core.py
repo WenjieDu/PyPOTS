@@ -10,13 +10,14 @@ from typing import Optional
 
 import torch.nn as nn
 
+from ...nn.modules import ModelCore
 from ...nn.modules.autoformer import SeriesDecompositionBlock
 from ...nn.modules.dlinear import BackboneDLinear
 from ...nn.modules.loss import Criterion
 from ...nn.modules.saits import SaitsLoss, SaitsEmbedding
 
 
-class _DLinear(nn.Module):
+class _DLinear(ModelCore):
     def __init__(
         self,
         n_steps: int,

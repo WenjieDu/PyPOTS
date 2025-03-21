@@ -5,17 +5,16 @@
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-import torch.nn as nn
-
 from ...nn.functional import (
     nonstationary_norm,
     nonstationary_denorm,
 )
+from ...nn.modules import ModelCore
 from ...nn.modules.loss import Criterion
 from ...nn.modules.timemixer import BackboneTimeMixer
 
 
-class _TimeMixer(nn.Module):
+class _TimeMixer(ModelCore):
     def __init__(
         self,
         n_steps: int,

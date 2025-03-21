@@ -7,14 +7,14 @@ and takes over the forward progress of the algorithm.
 # License: BSD-3-Clause
 
 import numpy as np
-from torch import nn
 
+from ...nn.modules import ModelCore
 from ...nn.modules.ts2vec import TS2VecEncoder
 from ...nn.modules.ts2vec.losses import hierarchical_contrastive_loss
 from ...nn.modules.ts2vec.utils import take_per_row
 
 
-class _TS2Vec(nn.Module):
+class _TS2Vec(ModelCore):
     def __init__(
         self,
         n_steps: int,

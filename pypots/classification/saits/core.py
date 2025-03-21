@@ -11,11 +11,12 @@ and takes over the forward progress of the algorithm.
 import torch
 import torch.nn as nn
 
+from ...nn.modules import ModelCore
 from ...nn.modules.loss import Criterion
 from ...nn.modules.saits import BackboneSAITS
 
 
-class _SAITS(nn.Module):
+class _SAITS(ModelCore):
     def __init__(
         self,
         n_classes: int,
@@ -90,7 +91,7 @@ class _SAITS(nn.Module):
         imputed_data = missing_mask * X + (1 - missing_mask) * X_tilde_3
 
         logits = self.classifier(X_tilde_3.reshape(-1, self.n_steps * self.n_features))
-        classification_pred = torch.softmax(logits, dim=1)
+        classification_proba = torch.softmax(logits, dim=1)
 
         # ensemble the results as a dictionary for return
         results = {
@@ -98,7 +99,7 @@ class _SAITS(nn.Module):
             "second_DMSA_attn_weights": second_DMSA_attn_weights,
             "combining_weights": combining_weights,
             "imputed_data": imputed_data,
-            "classification_pred": classification_pred,
+            "classification_proba": classification_proba,
             "logits": logits,
         }
 

@@ -6,14 +6,13 @@ and takes over the forward progress of the algorithm.
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-import torch.nn as nn
-
+from ...nn.modules import ModelCore
 from ...nn.modules.loss import Criterion
 from ...nn.modules.saits import SaitsLoss, SaitsEmbedding
 from ...nn.modules.scinet import BackboneSCINet
 
 
-class _SCINet(nn.Module):
+class _SCINet(ModelCore):
     def __init__(
         self,
         n_steps,

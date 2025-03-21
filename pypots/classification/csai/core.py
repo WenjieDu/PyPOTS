@@ -8,11 +8,12 @@
 import torch
 import torch.nn as nn
 
+from ...nn.modules import ModelCore
 from ...nn.modules.csai import BackboneBCSAI
 from ...nn.modules.loss import Criterion
 
 
-class _BCSAI(nn.Module):
+class _BCSAI(ModelCore):
     def __init__(
         self,
         n_steps: int,
@@ -71,11 +72,11 @@ class _BCSAI(nn.Module):
         b_logits = self.b_classifier(self.dropout(b_hidden_states))
         f_prediction = torch.softmax(f_logits, dim=1)
         b_prediction = torch.softmax(b_logits, dim=1)
-        classification_pred = (f_prediction + b_prediction) / 2
+        classification_proba = (f_prediction + b_prediction) / 2
 
         results = {
             "imputed_data": imputed_data,
-            "classification_pred": classification_pred,
+            "classification_proba": classification_proba,
             "f_logits": f_logits,
             "b_logits": b_logits,
             "consistency_loss": consistency_loss,

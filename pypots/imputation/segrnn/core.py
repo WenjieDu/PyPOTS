@@ -5,14 +5,13 @@ and takes over the forward progress of the algorithm.
 
 # Created by Shengsheng Lin
 
-import torch.nn as nn
-
+from ...nn.modules import ModelCore
 from ...nn.modules.loss import Criterion
 from ...nn.modules.saits import SaitsLoss
 from ...nn.modules.segrnn import BackboneSegRNN
 
 
-class _SegRNN(nn.Module):
+class _SegRNN(ModelCore):
     def __init__(
         self,
         n_steps: int,

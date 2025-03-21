@@ -9,6 +9,7 @@ and takes over the forward progress of the algorithm.
 import torch
 import torch.nn as nn
 
+from ...nn.modules import ModelCore
 from ...nn.modules.imputeformer import (
     EmbeddedAttentionLayer,
     ProjectedAttentionLayer,
@@ -18,7 +19,7 @@ from ...nn.modules.loss import Criterion
 from ...nn.modules.saits import SaitsLoss
 
 
-class _ImputeFormer(nn.Module):
+class _ImputeFormer(ModelCore):
     """
     Spatiotemporal Imputation Transformer induced by low-rank factorization, KDD'24.
     Note:

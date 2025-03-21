@@ -293,8 +293,8 @@ class SAITS(BaseNNClassifier):
         for idx, data in enumerate(test_loader):
             inputs = self._assemble_input_for_testing(data)
             results = self.model.forward(inputs)
-            classification_pred = results["classification_pred"]
-            classification_collector.append(classification_pred)
+            classification_proba = results["classification_proba"]
+            classification_collector.append(classification_proba)
 
         classification = torch.cat(classification_collector).cpu().detach().numpy()
         result_dict = {

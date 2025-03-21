@@ -8,12 +8,13 @@ and takes over the forward progress of the algorithm.
 
 import torch.nn as nn
 
+from ...nn.modules import ModelCore
 from ...nn.modules.loss import Criterion
 from ...nn.modules.saits import SaitsLoss, SaitsEmbedding
 from ...nn.modules.tcn import BackboneTCN
 
 
-class _TCN(nn.Module):
+class _TCN(ModelCore):
     def __init__(
         self,
         n_steps: int,

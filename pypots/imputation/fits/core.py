@@ -9,12 +9,13 @@ and takes over the forward progress of the algorithm.
 import torch.nn as nn
 
 from ...nn.functional import nonstationary_norm, nonstationary_denorm
+from ...nn.modules import ModelCore
 from ...nn.modules.fits import BackboneFITS
 from ...nn.modules.loss import Criterion
 from ...nn.modules.saits import SaitsLoss, SaitsEmbedding
 
 
-class _FITS(nn.Module):
+class _FITS(ModelCore):
     def __init__(
         self,
         n_steps: int,

@@ -8,12 +8,13 @@
 import torch.nn as nn
 
 from ...nn.functional import nonstationary_norm, nonstationary_denorm
+from ...nn.modules import ModelCore
 from ...nn.modules.loss import Criterion
 from ...nn.modules.timesnet import BackboneTimesNet
 from ...nn.modules.transformer.embedding import DataEmbedding
 
 
-class _TimesNet(nn.Module):
+class _TimesNet(ModelCore):
     def __init__(
         self,
         n_layers,
