@@ -32,6 +32,7 @@ RESULT_SAVING_DIR_FOR_ANOMALY_DETECTION = os.path.join(MODEL_SAVING_DIR, "anomal
 RESULT_SAVING_DIR_FOR_CLASSIFICATION = os.path.join(MODEL_SAVING_DIR, "classification")
 RESULT_SAVING_DIR_FOR_CLUSTERING = os.path.join(MODEL_SAVING_DIR, "clustering")
 RESULT_SAVING_DIR_FOR_FORECASTING = os.path.join(MODEL_SAVING_DIR, "forecasting")
+RESULT_SAVING_DIR_FOR_VECTORIZATION = os.path.join(MODEL_SAVING_DIR, "vectorization")
 # paths to save the generated dataset into files for testing the lazy-loading strategy
 GENERAL_DATA_SAVING_DIR = f"{DATA_SAVING_DIR}/general_h5dataset"
 GENERAL_H5_TRAIN_SET_PATH = os.path.abspath(f"{GENERAL_DATA_SAVING_DIR}/train_set.h5")
