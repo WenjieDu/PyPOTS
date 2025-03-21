@@ -11,9 +11,9 @@ import unittest
 import pytest
 
 from pypots.classification import GRUD
+from pypots.nn.functional import calc_binary_classification_metrics
 from pypots.optim import Adam
 from pypots.utils.logging import logger
-from pypots.nn.functional import calc_binary_classification_metrics
 from tests.global_test_config import (
     DATA,
     EPOCHS,
@@ -57,8 +57,8 @@ class TestGRUD(unittest.TestCase):
 
     @pytest.mark.xdist_group(name="classification-grud")
     def test_1_classify(self):
-        predictions = self.grud.classify(TEST_SET)
-        metrics = calc_binary_classification_metrics(predictions, DATA["test_y"])
+        results = self.grud.predict(TEST_SET)
+        metrics = calc_binary_classification_metrics(results["classification_proba"], DATA["test_y"])
         logger.info(
             f'GRU-D ROC_AUC: {metrics["roc_auc"]}, '
             f'PR_AUC: {metrics["pr_auc"]}, '
@@ -97,8 +97,10 @@ class TestGRUD(unittest.TestCase):
     @pytest.mark.xdist_group(name="classification-grud")
     def test_4_lazy_loading(self):
         self.grud.fit(GENERAL_H5_TRAIN_SET_PATH, GENERAL_H5_VAL_SET_PATH)
-        results = self.grud.predict(GENERAL_H5_TEST_SET_PATH)
-        metrics = calc_binary_classification_metrics(results["classification"], DATA["test_y"])
+        classification_proba = self.grud.predict_proba(GENERAL_H5_TEST_SET_PATH)
+        classification = self.grud.classify(GENERAL_H5_TEST_SET_PATH)
+        assert len(classification) == len(classification_proba)
+        metrics = calc_binary_classification_metrics(classification_proba, DATA["test_y"])
         logger.info(
             f'GRU-D ROC_AUC: {metrics["roc_auc"]}, '
             f'PR_AUC: {metrics["pr_auc"]}, '

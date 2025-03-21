@@ -59,7 +59,7 @@ class TestTEFN(unittest.TestCase):
     @pytest.mark.xdist_group(name="classification-tefn")
     def test_1_classify(self):
         results = self.tefn.predict(TEST_SET)
-        metrics = calc_binary_classification_metrics(results["classification"], DATA["test_y"])
+        metrics = calc_binary_classification_metrics(results["classification_proba"], DATA["test_y"])
         logger.info(
             f'TEFN ROC_AUC: {metrics["roc_auc"]}, '
             f'PR_AUC: {metrics["pr_auc"]}, '
@@ -98,8 +98,10 @@ class TestTEFN(unittest.TestCase):
     @pytest.mark.xdist_group(name="classification-tefn")
     def test_4_lazy_loading(self):
         self.tefn.fit(GENERAL_H5_TRAIN_SET_PATH, GENERAL_H5_VAL_SET_PATH)
-        results = self.tefn.predict(GENERAL_H5_TEST_SET_PATH)
-        metrics = calc_binary_classification_metrics(results["classification"], DATA["test_y"])
+        classification_proba = self.tefn.predict_proba(GENERAL_H5_TEST_SET_PATH)
+        classification = self.tefn.classify(GENERAL_H5_TEST_SET_PATH)
+        assert len(classification) == len(classification_proba)
+        metrics = calc_binary_classification_metrics(classification_proba, DATA["test_y"])
         logger.info(
             f'Lazy-loading TEFN ROC_AUC: {metrics["roc_auc"]}, '
             f'PR_AUC: {metrics["pr_auc"]}, '
