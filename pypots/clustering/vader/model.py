@@ -19,6 +19,7 @@ from torch.utils.data import DataLoader
 from .core import inverse_softplus, _VaDER
 from .data import DatasetForVaDER
 from ..base import BaseNNClusterer
+from ...nn.modules.loss import Criterion
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
 from ...utils.logging import logger
@@ -113,11 +114,11 @@ class VaDER(BaseNNClusterer):
     ):
         super().__init__(
             n_clusters=n_clusters,
+            training_loss=Criterion,
+            validation_metric=Criterion,
             batch_size=batch_size,
             epochs=epochs,
             patience=patience,
-            training_loss=None,
-            validation_metric=None,
             num_workers=num_workers,
             device=device,
             saving_path=saving_path,
@@ -167,8 +168,12 @@ class VaDER(BaseNNClusterer):
         val_loader: DataLoader = None,
     ) -> None:
         # each training starts from the very beginning, so reset the loss and model dict here
-        self.best_loss = float("inf")
         self.best_model_dict = None
+
+        if self.validation_metric.lower_better:
+            self.best_loss = float("inf")
+        else:
+            self.best_loss = float("-inf")
 
         # pretrain to initialize parameters of GMM layer
         pretraining_step = 0

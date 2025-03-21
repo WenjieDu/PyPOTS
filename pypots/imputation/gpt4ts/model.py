@@ -134,11 +134,11 @@ class GPT4TS(BaseNNImputer):
         verbose: bool = True,
     ):
         super().__init__(
+            training_loss=training_loss,
+            validation_metric=validation_metric,
             batch_size=batch_size,
             epochs=epochs,
             patience=patience,
-            training_loss=training_loss,
-            validation_metric=validation_metric,
             num_workers=num_workers,
             device=device,
             enable_amp=True,
@@ -160,17 +160,18 @@ class GPT4TS(BaseNNImputer):
 
         # set up the model
         self.model = _GPT4TS(
-            self.n_steps,
-            self.n_features,
-            self.n_layers,
-            self.patch_size,
-            self.patch_stride,
-            self.train_gpt_mlp,
-            self.d_ffn,
-            self.dropout,
-            self.embed,
-            self.freq,
-            self.training_loss,
+            n_steps=self.n_steps,
+            n_features=self.n_features,
+            n_layers=self.n_layers,
+            patch_size=self.patch_size,
+            patch_stride=self.patch_stride,
+            train_gpt_mlp=self.train_gpt_mlp,
+            d_ffn=self.d_ffn,
+            dropout=self.dropout,
+            embed=self.embed,
+            freq=self.freq,
+            training_loss=self.training_loss,
+            validation_metric=self.validation_metric,
         )
         self._send_model_to_given_device()
         self._print_model_size()

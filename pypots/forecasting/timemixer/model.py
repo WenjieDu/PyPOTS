@@ -156,11 +156,11 @@ class TimeMixer(BaseNNForecaster):
         verbose: bool = True,
     ):
         super().__init__(
+            training_loss=training_loss,
+            validation_metric=validation_metric,
             batch_size=batch_size,
             epochs=epochs,
             patience=patience,
-            training_loss=training_loss,
-            validation_metric=validation_metric,
             num_workers=num_workers,
             device=device,
             saving_path=saving_path,
@@ -187,23 +187,24 @@ class TimeMixer(BaseNNForecaster):
 
         # set up the model
         self.model = _TimeMixer(
-            self.n_steps,
-            self.n_features,
-            self.n_pred_steps,
-            self.n_pred_features,
-            self.term,
-            self.n_layers,
-            self.d_model,
-            self.d_ffn,
-            self.dropout,
-            self.top_k,
-            self.channel_independence,
-            self.decomp_method,
-            self.moving_avg,
-            self.downsampling_layers,
-            self.downsampling_window,
-            self.use_norm,
-            self.training_loss,
+            n_steps=self.n_steps,
+            n_features=self.n_features,
+            n_pred_steps=self.n_pred_steps,
+            n_pred_features=self.n_pred_features,
+            term=self.term,
+            n_layers=self.n_layers,
+            d_model=self.d_model,
+            d_ffn=self.d_ffn,
+            dropout=self.dropout,
+            top_k=self.top_k,
+            channel_independence=self.channel_independence,
+            decomp_method=self.decomp_method,
+            moving_avg=self.moving_avg,
+            downsampling_layers=self.downsampling_layers,
+            downsampling_window=self.downsampling_window,
+            use_norm=self.use_norm,
+            training_loss=self.training_loss,
+            validation_metric=self.validation_metric,
         )
         self._print_model_size()
         self._send_model_to_given_device()
@@ -314,8 +315,8 @@ class TimeMixer(BaseNNForecaster):
         for idx, data in enumerate(test_loader):
             inputs = self._assemble_input_for_testing(data)
             results = self.model(inputs)
-            forecasting_data = results["forecasting_data"]
-            forecasting_collector.append(forecasting_data)
+            forecasting_result = results["forecasting_result"]
+            forecasting_collector.append(forecasting_result)
 
         # Step 3: output collection and return
         forecasting_data = torch.cat(forecasting_collector).cpu().detach().numpy()

@@ -146,11 +146,11 @@ class RevIN_SCINet(BaseNNImputer):
         verbose: bool = True,
     ):
         super().__init__(
+            training_loss=training_loss,
+            validation_metric=validation_metric,
             batch_size=batch_size,
             epochs=epochs,
             patience=patience,
-            training_loss=training_loss,
-            validation_metric=validation_metric,
             num_workers=num_workers,
             device=device,
             saving_path=saving_path,
@@ -175,20 +175,21 @@ class RevIN_SCINet(BaseNNImputer):
 
         # set up the model
         self.model = _RevIN_SCINet(
-            self.n_steps,
-            self.n_features,
-            self.n_stacks,
-            self.n_levels,
-            self.n_groups,
-            self.n_decoder_layers,
-            self.d_hidden,
-            self.kernel_size,
-            self.dropout,
-            self.concat_len,
-            self.pos_enc,
-            self.ORT_weight,
-            self.MIT_weight,
-            self.training_loss,
+            n_steps=self.n_steps,
+            n_features=self.n_features,
+            n_stacks=self.n_stacks,
+            n_levels=self.n_levels,
+            n_groups=self.n_groups,
+            n_decoder_layers=self.n_decoder_layers,
+            d_hidden=self.d_hidden,
+            kernel_size=self.kernel_size,
+            dropout=self.dropout,
+            concat_len=self.concat_len,
+            pos_enc=self.pos_enc,
+            ORT_weight=self.ORT_weight,
+            MIT_weight=self.MIT_weight,
+            training_loss=self.training_loss,
+            validation_metric=self.validation_metric,
         )
         self._send_model_to_given_device()
         self._print_model_size()

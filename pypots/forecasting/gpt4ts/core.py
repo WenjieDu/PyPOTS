@@ -7,15 +7,12 @@ and takes over the forward progress of the algorithm.
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-from typing import Union
-
-import torch.nn as nn
-
+from ...nn.modules import ModelCore
 from ...nn.modules.gpt4ts import BackboneGPT4TS
-from ...nn.modules.loss import Criterion, MSE
+from ...nn.modules.loss import Criterion
 
 
-class _GPT4TS(nn.Module):
+class _GPT4TS(ModelCore):
     def __init__(
         self,
         n_steps: int,
@@ -31,7 +28,8 @@ class _GPT4TS(nn.Module):
         dropout: float,
         embed: str,
         freq: str,
-        training_loss: Union[Criterion, type] = MSE,
+        training_loss: Criterion,
+        validation_metric: Criterion,
     ):
         super().__init__()
 
@@ -39,6 +37,12 @@ class _GPT4TS(nn.Module):
         self.n_pred_steps = n_pred_steps
         self.n_pred_features = n_pred_features
         self.training_loss = training_loss
+        if validation_metric.__class__.__name__ == "Criterion":
+            # in this case, we need validation_metric.lower_better in _train_model() so only pass Criterion()
+            # we use training_loss as validation_metric for concrete calculation process
+            self.validation_metric = self.training_loss
+        else:
+            self.validation_metric = validation_metric
 
         self.backbone = BackboneGPT4TS(
             term + "_term_forecast",
@@ -65,13 +69,21 @@ class _GPT4TS(nn.Module):
         forecasting_result = forecasting_result[:, -self.n_pred_steps :]
 
         results = {
-            "forecasting_data": forecasting_result,
+            "forecasting_result": forecasting_result,
         }
 
-        # if in training mode, return results with losses
-        if self.training:
-            X_pred, X_pred_missing_mask = inputs["X_pred"], inputs["X_pred_missing_mask"]
+        return results
+
+    def calc_criterion(self, inputs: dict) -> dict:
+        results = self.forward(inputs)
+
+        X_pred, X_pred_missing_mask = inputs["X_pred"], inputs["X_pred_missing_mask"]
+        forecasting_result = results["forecasting_result"]
+
+        if self.training:  # if in the training mode (the training stage), return loss result from training_loss
             # `loss` is always the item for backward propagating to update the model
             results["loss"] = self.training_loss(X_pred, forecasting_result, X_pred_missing_mask)
+        else:  # if in the eval mode (the validation stage), return metric result from validation_metric
+            results["metric"] = self.validation_metric(X_pred, forecasting_result, X_pred_missing_mask)
 
         return results

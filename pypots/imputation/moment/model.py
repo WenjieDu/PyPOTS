@@ -164,13 +164,14 @@ class MOMENT(BaseNNImputer):
         verbose: bool = True,
     ):
         super().__init__(
+            training_loss=training_loss,
+            validation_metric=validation_metric,
             batch_size=batch_size,
             epochs=epochs,
             patience=patience,
-            training_loss=training_loss,
-            validation_metric=validation_metric,
             num_workers=num_workers,
             device=device,
+            enable_amp=True,
             saving_path=saving_path,
             model_saving_strategy=model_saving_strategy,
             verbose=verbose,
@@ -214,6 +215,7 @@ class MOMENT(BaseNNImputer):
             mask_ratio=self.mask_ratio,
             device=self.device,
             training_loss=self.training_loss,
+            validation_metric=self.validation_metric,
         )
         self._print_model_size()
         self._send_model_to_given_device()

@@ -16,7 +16,6 @@ from .core import _SAITS
 from .data import DatasetForSAITS
 from ..base import BaseNNClassifier
 from ...nn.modules.loss import Criterion, CrossEntropy
-from ...nn.modules.metric import PR_AUC
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
 
@@ -136,8 +135,8 @@ class SAITS(BaseNNClassifier):
         batch_size: int = 32,
         epochs: int = 100,
         patience: Optional[int] = None,
-        training_loss: Union[Criterion, type] = CrossEntropy(),
-        validation_metric: Union[Criterion, type] = PR_AUC(),
+        training_loss: Union[Criterion, type] = CrossEntropy,
+        validation_metric: Union[Criterion, type] = CrossEntropy,
         optimizer: Union[Optimizer, type] = Adam,
         num_workers: int = 0,
         device: Optional[Union[str, torch.device, list]] = None,
@@ -147,11 +146,11 @@ class SAITS(BaseNNClassifier):
     ):
         super().__init__(
             n_classes=n_classes,
+            training_loss=training_loss,
+            validation_metric=validation_metric,
             batch_size=batch_size,
             epochs=epochs,
             patience=patience,
-            training_loss=training_loss,
-            validation_metric=validation_metric,
             num_workers=num_workers,
             device=device,
             saving_path=saving_path,
@@ -186,6 +185,7 @@ class SAITS(BaseNNClassifier):
             attn_dropout=self.attn_dropout,
             diagonal_attention_mask=self.diagonal_attention_mask,
             training_loss=self.training_loss,
+            validation_metric=self.validation_metric,
         )
         self._send_model_to_given_device()
         self._print_model_size()
@@ -288,15 +288,14 @@ class SAITS(BaseNNClassifier):
             shuffle=False,
             num_workers=self.num_workers,
         )
-        classification_collector = []
 
+        classification_results = []
         for idx, data in enumerate(test_loader):
             inputs = self._assemble_input_for_testing(data)
-            results = self.model.forward(inputs)
-            classification_pred = results["classification_pred"]
-            classification_collector.append(classification_pred)
+            results = self.model(inputs)
+            classification_results.append(results["classification_proba"])
 
-        classification = torch.cat(classification_collector).cpu().detach().numpy()
+        classification = torch.cat(classification_results).cpu().detach().numpy()
         result_dict = {
             "classification": classification,
         }
