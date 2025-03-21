@@ -25,11 +25,15 @@ class PR_AUC(Criterion):
         self,
         logits: torch.Tensor,
         targets: torch.Tensor,
-    ) -> float:
+    ) -> torch.Tensor:
+        assert len(logits.shape) == 2 and logits.shape[1] > 1
         probabilities = torch.softmax(logits, dim=1).cpu().numpy()
         targets = targets.cpu().numpy()
-        pr_auc, _, _, _ = calc_pr_auc(probabilities, targets, self.pos_label)
-        return pr_auc
+
+        binary_prediction_proba = probabilities[:, self.pos_label]
+
+        pr_auc, _, _, _ = calc_pr_auc(binary_prediction_proba, targets, self.pos_label)
+        return torch.FloatTensor([pr_auc])
 
 
 class ROC_AUC(Criterion):
@@ -41,11 +45,11 @@ class ROC_AUC(Criterion):
         self,
         logits: torch.Tensor,
         targets: torch.Tensor,
-    ) -> float:
+    ) -> torch.Tensor:
         probabilities = torch.softmax(logits, dim=1).cpu().numpy()
         targets = targets.cpu().numpy()
         roc_auc, _, _, _ = calc_roc_auc(probabilities, targets, self.pos_label)
-        return roc_auc
+        return torch.FloatTensor([roc_auc])
 
 
 class Accuracy(Criterion):
@@ -56,9 +60,9 @@ class Accuracy(Criterion):
         self,
         logits: torch.Tensor,
         targets: torch.Tensor,
-    ) -> float:
+    ) -> torch.Tensor:
         probabilities = torch.softmax(logits, dim=1).cpu().numpy()
         class_predictions = np.argmax(probabilities, axis=1)
         targets = targets.cpu().numpy()
         acc_score = calc_acc(class_predictions, targets)
-        return acc_score
+        return torch.FloatTensor([acc_score])
