@@ -8,17 +8,15 @@ and takes over the forward progress of the algorithm.
 # License: BSD-3-Clause
 
 
-from typing import Union
-
 import torch
-import torch.nn as nn
 
-from ...nn.modules.loss import Criterion, MAE
+from ...nn.modules import ModelCore
+from ...nn.modules.loss import Criterion
 from ...nn.modules.moment import BackboneMOMENT
 from ...nn.modules.saits import SaitsEmbedding
 
 
-class _MOMENT(nn.Module):
+class _MOMENT(ModelCore):
     def __init__(
         self,
         n_steps: int,
@@ -32,18 +30,25 @@ class _MOMENT(nn.Module):
         dropout: float,
         head_dropout: float,
         finetuning_mode: str,
-        revin_affine: bool = False,
-        add_positional_embedding: bool = False,
-        value_embedding_bias: bool = False,
-        orth_gain: float = 1.41,
-        mask_ratio: float = 0,
-        device: str = "cpu",
-        training_loss: Union[Criterion, type] = MAE,
+        revin_affine: bool,
+        add_positional_embedding: bool,
+        value_embedding_bias: bool,
+        orth_gain: float,
+        mask_ratio: float,
+        device: str,
+        training_loss: Criterion,
+        validation_metric: Criterion,
     ):
         super().__init__()
         self.n_steps = n_steps
         self.n_features = n_features
         self.training_loss = training_loss
+        if validation_metric.__class__.__name__ == "Criterion":
+            # in this case, we need validation_metric.lower_better in _train_model() so only pass Criterion()
+            # we use training_loss as validation_metric for concrete calculation process
+            self.validation_metric = self.training_loss
+        else:
+            self.validation_metric = validation_metric
 
         configs = {
             "task_name": "pre-training",
@@ -103,13 +108,22 @@ class _MOMENT(nn.Module):
         # ensemble the results as a dictionary for return
         results = {
             "imputed_data": imputed_data,
+            "reconstruction": reconstruction,
         }
 
-        # if in training mode, return results with losses
-        if self.training:
-            X_ori, indicating_mask = inputs["X_ori"], inputs["indicating_mask"]
+        return results
+
+    def calc_criterion(self, inputs: dict) -> dict:
+        results = self.forward(inputs)
+        X, missing_mask = inputs["X"], inputs["missing_mask"]
+        reconstruction = results["reconstruction"]
+
+        if self.training:  # if in the training mode (the training stage), return loss result from training_loss
             # `loss` is always the item for backward propagating to update the model
-            loss = self.training_loss(reconstruction, X_ori, indicating_mask)
+            loss = self.training_loss(reconstruction, X, missing_mask)
             results["loss"] = loss
+        else:  # if in the eval mode (the validation stage), return metric result from validation_metric
+            X_ori, indicating_mask = inputs["X_ori"], inputs["indicating_mask"]
+            results["metric"] = self.validation_metric(reconstruction, X_ori, indicating_mask)
 
         return results

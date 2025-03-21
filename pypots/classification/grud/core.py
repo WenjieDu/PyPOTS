@@ -7,23 +7,23 @@ and takes over the forward progress of the algorithm.
 # License: BSD-3-Clause
 
 
-from typing import Union
-
 import torch
 import torch.nn as nn
 
+from ...nn.modules import ModelCore
 from ...nn.modules.grud import BackboneGRUD
-from ...nn.modules.loss import Criterion, CrossEntropy
+from ...nn.modules.loss import Criterion
 
 
-class _GRUD(nn.Module):
+class _GRUD(ModelCore):
     def __init__(
         self,
         n_steps: int,
         n_features: int,
         rnn_hidden_size: int,
         n_classes: int,
-        training_loss: Union[Criterion, type] = CrossEntropy(),
+        training_loss: Criterion,
+        validation_metric: Criterion,
     ):
         super().__init__()
         self.n_steps = n_steps
@@ -31,6 +31,12 @@ class _GRUD(nn.Module):
         self.rnn_hidden_size = rnn_hidden_size
         self.n_classes = n_classes
         self.training_loss = training_loss
+        if validation_metric.__class__.__name__ == "Criterion":
+            # in this case, we need validation_metric.lower_better in _train_model() so only pass Criterion()
+            # we use training_loss as validation_metric for concrete calculation process
+            self.validation_metric = self.training_loss
+        else:
+            self.validation_metric = validation_metric
 
         # create models
         self.model = BackboneGRUD(
@@ -62,12 +68,26 @@ class _GRUD(nn.Module):
         _, hidden_state = self.model(X, missing_mask, deltas, empirical_mean, X_filledLOCF)
 
         logits = self.classifier(hidden_state)
-        classification_pred = torch.softmax(logits, dim=1)
-        results = {"classification_pred": classification_pred}
+        classification_proba = torch.softmax(logits, dim=1)
 
-        # if in training mode, return results with losses
-        if self.training:
-            classification_loss = self.training_loss(logits, inputs["y"])
-            results["loss"] = classification_loss
+        results = {
+            "logits": logits,
+            "classification_proba": classification_proba,
+        }
+
+        return results
+
+    def calc_criterion(self, inputs: dict) -> dict:
+        results = self.forward(inputs)
+
+        logits = results["logits"]
+
+        if self.training:  # if in the training mode (the training stage), return loss result from training_loss
+            loss = self.training_loss(logits, inputs["y"])
+            # `loss` is always the item for backward propagating to update the model
+            results["loss"] = loss
+        else:  # if in the eval mode (the validation stage), return metric result from validation_metric
+            metric = self.validation_metric(logits, inputs["y"])
+            results["metric"] = metric
 
         return results

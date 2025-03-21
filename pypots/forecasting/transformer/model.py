@@ -149,11 +149,11 @@ class Transformer(BaseNNForecaster):
         verbose: bool = True,
     ):
         super().__init__(
+            training_loss=training_loss,
+            validation_metric=validation_metric,
             batch_size=batch_size,
             epochs=epochs,
             patience=patience,
-            training_loss=training_loss,
-            validation_metric=validation_metric,
             num_workers=num_workers,
             device=device,
             saving_path=saving_path,
@@ -177,20 +177,21 @@ class Transformer(BaseNNForecaster):
 
         # set up the model
         self.model = _Transformer(
-            self.n_steps,
-            self.n_features,
-            self.n_pred_steps,
-            self.n_pred_features,
-            self.n_encoder_layers,
-            self.n_decoder_layers,
-            self.d_model,
-            self.n_heads,
-            self.d_k,
-            self.d_v,
-            self.d_ffn,
-            self.dropout,
-            self.attn_dropout,
-            self.training_loss,
+            n_steps=self.n_steps,
+            n_features=self.n_features,
+            n_pred_steps=self.n_pred_steps,
+            n_pred_features=self.n_pred_features,
+            n_encoder_layers=self.n_encoder_layers,
+            n_decoder_layers=self.n_decoder_layers,
+            d_model=self.d_model,
+            n_heads=self.n_heads,
+            d_k=self.d_k,
+            d_v=self.d_v,
+            d_ffn=self.d_ffn,
+            dropout=self.dropout,
+            attn_dropout=self.attn_dropout,
+            training_loss=self.training_loss,
+            validation_metric=self.validation_metric,
         )
         self._print_model_size()
         self._send_model_to_given_device()
@@ -301,8 +302,8 @@ class Transformer(BaseNNForecaster):
         for idx, data in enumerate(test_loader):
             inputs = self._assemble_input_for_testing(data)
             results = self.model(inputs)
-            forecasting_data = results["forecasting_data"]
-            forecasting_collector.append(forecasting_data)
+            forecasting_result = results["forecasting_result"]
+            forecasting_collector.append(forecasting_result)
 
         # Step 3: output collection and return
         forecasting_data = torch.cat(forecasting_collector).cpu().detach().numpy()

@@ -15,6 +15,7 @@ from torch.utils.data import DataLoader
 from .core import _TS2Vec
 from .data import DatasetForTS2Vec
 from ..base import BaseNNVectorizer
+from ...nn.modules.loss import Criterion
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
 
@@ -105,6 +106,8 @@ class TS2Vec(BaseNNVectorizer):
         verbose: bool = True,
     ):
         super().__init__(
+            training_loss=Criterion,
+            validation_metric=Criterion,
             batch_size=batch_size,
             epochs=epochs,
             patience=patience,

@@ -17,7 +17,6 @@ from .core import _GRUD
 from .data import DatasetForGRUD
 from ..base import BaseNNClassifier
 from ...nn.modules.loss import Criterion, CrossEntropy
-from ...nn.modules.metric import PR_AUC
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
 
@@ -99,8 +98,8 @@ class GRUD(BaseNNClassifier):
         batch_size: int = 32,
         epochs: int = 100,
         patience: Optional[int] = None,
-        training_loss: Union[Criterion, type] = CrossEntropy(),
-        validation_metric: Union[Criterion, type] = PR_AUC(),
+        training_loss: Union[Criterion, type] = CrossEntropy,
+        validation_metric: Union[Criterion, type] = CrossEntropy,
         optimizer: Union[Optimizer, type] = Adam,
         num_workers: int = 0,
         device: Optional[Union[str, torch.device, list]] = None,
@@ -110,11 +109,11 @@ class GRUD(BaseNNClassifier):
     ):
         super().__init__(
             n_classes=n_classes,
+            training_loss=training_loss,
+            validation_metric=validation_metric,
             batch_size=batch_size,
             epochs=epochs,
             patience=patience,
-            training_loss=training_loss,
-            validation_metric=validation_metric,
             num_workers=num_workers,
             device=device,
             saving_path=saving_path,
@@ -128,11 +127,12 @@ class GRUD(BaseNNClassifier):
 
         # set up the model
         self.model = _GRUD(
-            self.n_steps,
-            self.n_features,
-            self.rnn_hidden_size,
-            self.n_classes,
-            self.training_loss,
+            n_steps=self.n_steps,
+            n_features=self.n_features,
+            rnn_hidden_size=self.rnn_hidden_size,
+            n_classes=self.n_classes,
+            training_loss=self.training_loss,
+            validation_metric=self.validation_metric,
         )
         self._send_model_to_given_device()
         self._print_model_size()
@@ -242,15 +242,14 @@ class GRUD(BaseNNClassifier):
             shuffle=False,
             num_workers=self.num_workers,
         )
-        classification_collector = []
 
+        classification_results = []
         for idx, data in enumerate(test_loader):
             inputs = self._assemble_input_for_testing(data)
-            results = self.model.forward(inputs)
-            prediction = results["classification_pred"]
-            classification_collector.append(prediction)
+            results = self.model(inputs)
+            classification_results.append(results["classification_proba"])
 
-        classification = torch.cat(classification_collector).cpu().detach().numpy()
+        classification = torch.cat(classification_results).cpu().detach().numpy()
         result_dict = {
             "classification": classification,
         }

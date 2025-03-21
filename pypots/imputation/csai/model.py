@@ -134,11 +134,11 @@ class CSAI(BaseNNImputer):
         verbose: bool = True,
     ):
         super().__init__(
+            training_loss=training_loss,
+            validation_metric=validation_metric,
             batch_size=batch_size,
             epochs=epochs,
             patience=patience,
-            training_loss=training_loss,
-            validation_metric=validation_metric,
             num_workers=num_workers,
             device=device,
             saving_path=saving_path,
@@ -157,13 +157,14 @@ class CSAI(BaseNNImputer):
 
         # Initialise model
         self.model = _BCSAI(
-            self.n_steps,
-            self.n_features,
-            self.rnn_hidden_size,
-            self.step_channels,
-            self.consistency_weight,
-            self.imputation_weight,
-            self.training_loss,
+            n_steps=self.n_steps,
+            n_features=self.n_features,
+            rnn_hidden_size=self.rnn_hidden_size,
+            step_channels=self.step_channels,
+            consistency_weight=self.consistency_weight,
+            imputation_weight=self.imputation_weight,
+            training_loss=self.training_loss,
+            validation_metric=self.validation_metric,
         )
 
         self._send_model_to_given_device()

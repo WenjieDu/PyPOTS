@@ -131,11 +131,11 @@ class Koopa(BaseNNImputer):
         verbose: bool = True,
     ):
         super().__init__(
+            training_loss=training_loss,
+            validation_metric=validation_metric,
             batch_size=batch_size,
             epochs=epochs,
             patience=patience,
-            training_loss=training_loss,
-            validation_metric=validation_metric,
             num_workers=num_workers,
             device=device,
             saving_path=saving_path,
@@ -161,18 +161,19 @@ class Koopa(BaseNNImputer):
 
         # set up the model
         self.model = _Koopa(
-            self.n_steps,
-            self.n_features,
-            self.n_seg_steps,
-            self.d_dynamic,
-            self.d_hidden,
-            self.n_hidden_layers,
-            self.n_blocks,
-            self.multistep,
-            self.alpha,
-            self.ORT_weight,
-            self.MIT_weight,
-            self.training_loss,
+            n_steps=self.n_steps,
+            n_features=self.n_features,
+            n_seg_steps=self.n_seg_steps,
+            d_dynamic=self.d_dynamic,
+            d_hidden=self.d_hidden,
+            n_hidden_layers=self.n_hidden_layers,
+            n_blocks=self.n_blocks,
+            multistep=self.multistep,
+            alpha=self.alpha,
+            ORT_weight=self.ORT_weight,
+            MIT_weight=self.MIT_weight,
+            training_loss=self.training_loss,
+            validation_metric=self.validation_metric,
         )
         self._send_model_to_given_device()
         self._print_model_size()

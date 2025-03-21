@@ -16,7 +16,6 @@ from .core import _iTransformer
 from .data import DatasetForiTransformer
 from ..base import BaseNNClassifier
 from ...nn.modules.loss import Criterion, CrossEntropy
-from ...nn.modules.metric import PR_AUC
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
 from ...utils.logging import logger
@@ -132,8 +131,8 @@ class iTransformer(BaseNNClassifier):
         batch_size: int = 32,
         epochs: int = 100,
         patience: Optional[int] = None,
-        training_loss: Criterion = CrossEntropy(),
-        validation_metric: Criterion = PR_AUC(),
+        training_loss: Union[Criterion, type] = CrossEntropy,
+        validation_metric: Union[Criterion, type] = CrossEntropy,
         optimizer: Optimizer = Adam(),
         num_workers: int = 0,
         device: Optional[Union[str, torch.device, list]] = None,
@@ -175,18 +174,19 @@ class iTransformer(BaseNNClassifier):
 
         # set up the model
         self.model = _iTransformer(
-            self.n_classes,
-            self.n_steps,
-            self.n_features,
-            self.n_layers,
-            self.d_model,
-            self.n_heads,
-            self.d_k,
-            self.d_v,
-            self.d_ffn,
-            self.dropout,
-            self.attn_dropout,
-            self.training_loss,
+            n_classes=self.n_classes,
+            n_steps=self.n_steps,
+            n_features=self.n_features,
+            n_layers=self.n_layers,
+            d_model=self.d_model,
+            n_heads=self.n_heads,
+            d_k=self.d_k,
+            d_v=self.d_v,
+            d_ffn=self.d_ffn,
+            dropout=self.dropout,
+            attn_dropout=self.attn_dropout,
+            training_loss=self.training_loss,
+            validation_metric=self.validation_metric,
         )
         self._send_model_to_given_device()
         self._print_model_size()
@@ -281,15 +281,14 @@ class iTransformer(BaseNNClassifier):
             shuffle=False,
             num_workers=self.num_workers,
         )
-        classification_collector = []
 
+        classification_results = []
         for idx, data in enumerate(test_loader):
             inputs = self._assemble_input_for_testing(data)
-            results = self.model.forward(inputs)
-            classification_pred = results["classification_pred"]
-            classification_collector.append(classification_pred)
+            results = self.model(inputs)
+            classification_results.append(results["classification_proba"])
 
-        classification = torch.cat(classification_collector).cpu().detach().numpy()
+        classification = torch.cat(classification_results).cpu().detach().numpy()
         result_dict = {
             "classification": classification,
         }

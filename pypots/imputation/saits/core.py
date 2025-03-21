@@ -8,16 +8,14 @@ and takes over the forward progress of the algorithm.
 # License: BSD-3-Clause
 
 
-from typing import Union
-
 import torch
-import torch.nn as nn
 
-from ...nn.modules.loss import Criterion, MAE
+from ...nn.modules import ModelCore
+from ...nn.modules.loss import Criterion
 from ...nn.modules.saits import BackboneSAITS
 
 
-class _SAITS(nn.Module):
+class _SAITS(ModelCore):
     def __init__(
         self,
         n_layers: int,
@@ -30,10 +28,11 @@ class _SAITS(nn.Module):
         d_ffn: int,
         dropout: float,
         attn_dropout: float,
-        diagonal_attention_mask: bool = True,
-        ORT_weight: float = 1,
-        MIT_weight: float = 1,
-        training_loss: Union[Criterion, type] = MAE,
+        diagonal_attention_mask: bool,
+        ORT_weight: float,
+        MIT_weight: float,
+        training_loss: Criterion,
+        validation_metric: Criterion,
     ):
         super().__init__()
         self.n_layers = n_layers
@@ -42,6 +41,12 @@ class _SAITS(nn.Module):
         self.ORT_weight = ORT_weight
         self.MIT_weight = MIT_weight
         self.training_loss = training_loss
+        if validation_metric.__class__.__name__ == "Criterion":
+            # in this case, we need validation_metric.lower_better in _train_model() so only pass Criterion()
+            # we use training_loss as validation_metric for concrete calculation process
+            self.validation_metric = self.training_loss
+        else:
+            self.validation_metric = validation_metric
 
         self.encoder = BackboneSAITS(
             n_steps,
@@ -90,10 +95,20 @@ class _SAITS(nn.Module):
             "second_DMSA_attn_weights": second_DMSA_attn_weights,
             "combining_weights": combining_weights,
             "imputed_data": imputed_data,
+            "X_tilde_1": X_tilde_1,
+            "X_tilde_2": X_tilde_2,
+            "X_tilde_3": X_tilde_3,
         }
 
-        # if in training mode, return results with losses
-        if self.training:
+        return results
+
+    def calc_criterion(self, inputs: dict) -> dict:
+        results = self.forward(inputs)
+        X_tilde_1, X_tilde_2, X_tilde_3 = results["X_tilde_1"], results["X_tilde_2"], results["X_tilde_3"]
+        X, missing_mask = inputs["X"], inputs["missing_mask"]
+
+        if self.training:  # if in the training mode (the training stage), return loss result from training_loss
+            # `loss` is always the item for backward propagating to update the model
             X_ori, indicating_mask = inputs["X_ori"], inputs["indicating_mask"]
 
             # calculate loss for the observed reconstruction task (ORT)
@@ -114,5 +129,8 @@ class _SAITS(nn.Module):
             results["ORT_loss"] = ORT_loss
             results["MIT_loss"] = MIT_loss
             results["loss"] = loss
+        else:  # if in the eval mode (the validation stage), return metric result from validation_metric
+            X_ori, indicating_mask = inputs["X_ori"], inputs["indicating_mask"]
+            results["metric"] = self.validation_metric(X_tilde_3, X_ori, indicating_mask)
 
         return results
