@@ -32,6 +32,7 @@ RESULT_SAVING_DIR_FOR_ANOMALY_DETECTION = os.path.join(MODEL_SAVING_DIR, "anomal
 RESULT_SAVING_DIR_FOR_CLASSIFICATION = os.path.join(MODEL_SAVING_DIR, "classification")
 RESULT_SAVING_DIR_FOR_CLUSTERING = os.path.join(MODEL_SAVING_DIR, "clustering")
 RESULT_SAVING_DIR_FOR_FORECASTING = os.path.join(MODEL_SAVING_DIR, "forecasting")
+RESULT_SAVING_DIR_FOR_VECTORIZATION = os.path.join(MODEL_SAVING_DIR, "vectorization")
 # paths to save the generated dataset into files for testing the lazy-loading strategy
 GENERAL_DATA_SAVING_DIR = f"{DATA_SAVING_DIR}/general_h5dataset"
 GENERAL_H5_TRAIN_SET_PATH = os.path.abspath(f"{GENERAL_DATA_SAVING_DIR}/train_set.h5")
@@ -55,7 +56,8 @@ DATA = preprocess_random_walk(
     n_samples_each_class=100,
     missing_rate=0.1,
 )
-# DATA = gene_physionet2012()
+# from benchpots.datasets import preprocess_physionet2012
+# DATA = preprocess_physionet2012(subset="set-a", rate=0.1)
 
 DATA["test_X_indicating_mask"] = np.isnan(DATA["test_X"]) ^ np.isnan(DATA["test_X_ori"])
 DATA["test_X_ori"] = np.nan_to_num(DATA["test_X_ori"])
@@ -78,7 +80,7 @@ TEST_SET = {
 # for forecasting task, we feed only N_STEPS data into the model and let it predict the following N_PRED_STEPS
 FORECASTING_TRAIN_SET = {
     "X": DATA["train_X"][:, :-N_PRED_STEPS],
-    "X_pred": DATA["train_X_ori"][:, -N_PRED_STEPS:],
+    "X_pred": DATA["train_X"][:, -N_PRED_STEPS:],
 }
 FORECASTING_VAL_SET = {
     "X": DATA["val_X"][:, :-N_PRED_STEPS],
@@ -98,6 +100,10 @@ if n_cuda_devices > 1:
 else:
     # if having no multiple cuda devices, leave it as None to use the default device
     DEVICE = None
+
+# DEVICE = ["cuda:1", "cuda:2"]
+# DEVICE = "cpu"
+# DEVICE = "mps"
 
 
 def check_tb_and_model_checkpoints_existence(model):

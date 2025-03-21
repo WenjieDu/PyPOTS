@@ -154,9 +154,9 @@ class MOMENT(BaseNNImputer):
         batch_size: int = 32,
         epochs: int = 100,
         patience: Optional[int] = None,
-        training_loss: Criterion = MAE(),
-        validation_metric: Criterion = MSE(),
-        optimizer: Optimizer = Adam(),
+        training_loss: Union[Criterion, type] = MAE,
+        validation_metric: Union[Criterion, type] = MSE,
+        optimizer: Union[Optimizer, type] = Adam,
         num_workers: int = 0,
         device: Optional[Union[str, torch.device, list]] = None,
         saving_path: Optional[str] = None,
@@ -164,13 +164,14 @@ class MOMENT(BaseNNImputer):
         verbose: bool = True,
     ):
         super().__init__(
+            training_loss=training_loss,
+            validation_metric=validation_metric,
             batch_size=batch_size,
             epochs=epochs,
             patience=patience,
-            training_loss=training_loss,
-            validation_metric=validation_metric,
             num_workers=num_workers,
             device=device,
+            enable_amp=True,
             saving_path=saving_path,
             model_saving_strategy=model_saving_strategy,
             verbose=verbose,
@@ -214,12 +215,17 @@ class MOMENT(BaseNNImputer):
             mask_ratio=self.mask_ratio,
             device=self.device,
             training_loss=self.training_loss,
+            validation_metric=self.validation_metric,
         )
         self._print_model_size()
         self._send_model_to_given_device()
 
         # set up the optimizer
-        self.optimizer = optimizer
+        if isinstance(optimizer, Optimizer):
+            self.optimizer = optimizer
+        else:
+            self.optimizer = optimizer()  # instantiate the optimizer if it is a class
+            assert isinstance(self.optimizer, Optimizer)
         self.optimizer.init_optimizer(self.model.parameters())
 
     def _assemble_input_for_training(self, data: list) -> dict:
@@ -291,6 +297,7 @@ class MOMENT(BaseNNImputer):
         test_set: Union[dict, str],
         file_type: str = "hdf5",
     ) -> dict:
+        self.model.eval()  # set the model to evaluation mode
         # Step 1: wrap the input data with classes Dataset and DataLoader
         test_set = BaseDataset(
             test_set,

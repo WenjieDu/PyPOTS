@@ -9,14 +9,22 @@ import os
 from abc import ABC
 from abc import abstractmethod
 from datetime import datetime
-from typing import Optional, Union, Iterable, Callable
+from typing import Optional, Union, Iterable
 
+import numpy as np
 import torch
+from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
 
+from .nn.functional import autocast
 from .nn.modules.loss import Criterion
 from .utils.file import create_dir_if_not_exist
 from .utils.logging import logger, logger_creator
+
+try:
+    import nni
+except ImportError:
+    pass
 
 
 class BaseModel(ABC):
@@ -210,7 +218,7 @@ class BaseModel(ABC):
         if isinstance(self.device, list):
             # parallely training on multiple devices
             self.model = torch.nn.DataParallel(self.model, device_ids=self.device)
-            self.model = self.model.cuda()
+            self.model = self.model.to(self.device[0])
             logger.info(f"Model has been allocated to the given multiple devices: {self.device}")
         else:
             self.model = self.model.to(self.device)
@@ -218,7 +226,7 @@ class BaseModel(ABC):
     def _send_data_to_given_device(self, data) -> Iterable:
         if isinstance(self.device, (torch.device, list)):  # single device or parallely training on multiple devices
             if isinstance(self.device, list):
-                data = map(lambda x: x.cuda(), data)
+                data = map(lambda x: x.to(self.device[0]), data)
             else:
                 data = map(lambda x: x.to(self.device), data)
 
@@ -283,6 +291,24 @@ class BaseModel(ABC):
             else:
                 pass
 
+    def _organize_content_to_save(self):
+        from .version import __version__ as pypots_version
+
+        # all_attrs = self.__dict__
+        # del all_attrs["model"]
+
+        if isinstance(self.device, list):
+            # to save a DataParallel model generically, save the model.module.state_dict()
+            model_state_dict = self.model.module.state_dict()
+        else:
+            model_state_dict = self.model.state_dict()
+
+        all_attrs = dict({})
+        all_attrs["model_state_dict"] = model_state_dict
+        all_attrs["pypots_version"] = pypots_version
+
+        return all_attrs
+
     def save(
         self,
         saving_path: str,
@@ -319,18 +345,16 @@ class BaseModel(ABC):
             else:
                 logger.error(
                     f"❌ File {saving_path} exists. Saving operation aborted. "
-                    f"Use the arg `overwrite=True` to force overwrite."
+                    "Use the arg `overwrite=True` to force overwrite."
                 )
                 return
 
         try:
             create_dir_if_not_exist(saving_dir)
-            if isinstance(self.device, list):
-                # to save a DataParallel model generically, save the model.module.state_dict()
-                torch.save(self.model.module, saving_path)
-            else:
-                torch.save(self.model, saving_path)
+            content_to_save = self._organize_content_to_save()
+            torch.save(content_to_save, saving_path)
             logger.info(f"Saved the model to {saving_path}")
+
         except Exception as e:
             raise RuntimeError(f'Failed to save the model to "{saving_path}" because of the below error! \n{e}')
 
@@ -351,18 +375,34 @@ class BaseModel(ABC):
         assert os.path.exists(path), f"Model file {path} does not exist."
 
         try:
-            if isinstance(self.device, torch.device):
-                loaded_model = torch.load(path, map_location=self.device)
-            else:
-                loaded_model = torch.load(path)
-            if isinstance(loaded_model, torch.nn.Module):
+            map_location = self.device[0] if isinstance(self.device, list) else self.device
+            loaded_file = torch.load(path, map_location=map_location)
+
+            if isinstance(loaded_file, torch.nn.Module):  # compatible model for pypots <0.13
                 if isinstance(self.device, torch.device):
-                    self.model.load_state_dict(loaded_model.state_dict())
+                    self.model.load_state_dict(loaded_file.state_dict())
                 else:
-                    self.model.module.load_state_dict(loaded_model.state_dict())
-            else:
-                self.model = loaded_model.model
+                    self.model.module.load_state_dict(loaded_file.state_dict())
+                logger.warning(
+                    "‼️ This model file is saved with pypots <0.13 and "
+                    "has been loaded with the compatible mode which will be deprecated in the future. "
+                    "Please save the model again with the later versions (>=0.13) of PyPOTS and "
+                    "delete the old model file."
+                )
+            else:  # loading strategy for pypots >=0.13
+                loaded_model_dict = loaded_file["model_state_dict"]
+
+                if isinstance(self.device, torch.device):
+                    current_model_dict = self.model.state_dict()
+                    current_model_dict.update(loaded_model_dict)
+                    self.model.load_state_dict(current_model_dict)
+                else:
+                    current_model_dict = self.model.module.state_dict()
+                    current_model_dict.update(loaded_model_dict)
+                    self.model.module.load_state_dict(current_model_dict)
+
             self.model.eval()  # set the model as eval status to freeze it.
+
         except Exception as e:
             raise e
         logger.info(f"Model loaded successfully from {path}")
@@ -464,11 +504,11 @@ class BaseNNModel(BaseModel):
 
     training_loss:
         The customized loss function designed by users for training the model.
-        If not given, will use the default loss as claimed in the original paper.
+        If not given, the model will be trained with its own loss defined in its paper and fixed in the implementation.
 
     validation_metric:
         The customized metric function designed by users for validating the model.
-        If not given, will use the default MSE metric.
+        If not given, the model's training loss will be used as the validation metric to select the best model.
 
     num_workers :
         The number of subprocesses to use for data loading.
@@ -526,11 +566,11 @@ class BaseNNModel(BaseModel):
 
     def __init__(
         self,
+        training_loss: Union[Criterion, type],
+        validation_metric: Union[Criterion, type],
         batch_size: int,
         epochs: int,
         patience: Optional[int] = None,
-        training_loss: Optional[Criterion] = None,
-        validation_metric: Optional[Criterion] = None,
         num_workers: int = 0,
         device: Optional[Union[str, torch.device, list]] = None,
         enable_amp: bool = False,
@@ -539,11 +579,11 @@ class BaseNNModel(BaseModel):
         verbose: bool = True,
     ):
         super().__init__(
-            device,
-            enable_amp,
-            saving_path,
-            model_saving_strategy,
-            verbose,
+            device=device,
+            enable_amp=enable_amp,
+            saving_path=saving_path,
+            model_saving_strategy=model_saving_strategy,
+            verbose=verbose,
         )
 
         # check patience
@@ -555,14 +595,30 @@ class BaseNNModel(BaseModel):
             ), f"patience must be smaller than epochs which is {epochs}, but got patience={patience}"
 
         # check training_loss and validation_metric
-        training_loss_name, validation_metric_name = "default", "loss (default)"
-        if training_loss is not None:
+        training_loss_name, validation_metric_name = "default", "loss"  # default names for loss and metric
+        # determine the training_loss and training_loss_name
+        if not isinstance(training_loss, Criterion):  # if training_loss is a class, instantiate it
+            training_loss = training_loss()
+            assert isinstance(training_loss, Criterion)
+        if training_loss.__class__.__name__ == "Criterion":
+            # in this case, we may need self.training_loss.lower_better.
+            # In addition, training_loss won't be invoked and the model will be trained with its own loss
+            # defined in its paper and fixed in the implementation
+            pass
+        else:
             training_loss_name = training_loss.__class__.__name__
-            assert isinstance(training_loss, Callable), "training_loss should be a callable instance"
             logger.info(f"Using customized {training_loss_name} as the training loss function.")
-        if validation_metric is not None:
+        # determine the validation_metric and validation_metric_name
+        if not isinstance(validation_metric, Criterion):  # if validation_metric is a class, instantiate it
+            validation_metric = validation_metric()
+            assert isinstance(validation_metric, Criterion)
+        if validation_metric.__class__.__name__ == "Criterion":
+            # in this case, we need self.validation_metric.lower_better in _train_model()
+            # In addition, validation_metric won't be invoked and the model's training loss will be used as
+            # the validation metric to select the best model
+            pass
+        else:
             validation_metric_name = validation_metric.__class__.__name__
-            assert isinstance(validation_metric, Callable), "validation_metric should be a callable instance"
             logger.info(f"Using customized {validation_metric_name} as the validation metric function.")
 
         # set up the hype-parameters
@@ -590,6 +646,178 @@ class BaseNNModel(BaseModel):
             f"{self.__class__.__name__} initialized with the given hyperparameters, "
             f"the number of trainable parameters: {self.num_params:,}"
         )
+
+    @abstractmethod
+    def _assemble_input_for_training(self, data: list) -> dict:
+        """Assemble the given data into a dictionary for training input.
+
+        Parameters
+        ----------
+        data :
+            Input data from dataloader, should be list.
+
+        Returns
+        -------
+        dict,
+            A python dictionary contains the input data for model training.
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    def _assemble_input_for_validating(self, data: list) -> dict:
+        """Assemble the given data into a dictionary for validating input.
+
+        Parameters
+        ----------
+        data :
+            Data output from dataloader, should be list.
+
+        Returns
+        -------
+        dict,
+            A python dictionary contains the input data for model validating.
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    def _assemble_input_for_testing(self, data: list) -> dict:
+        """Assemble the given data into a dictionary for testing input.
+
+        Notes
+        -----
+        The processing functions of train/val/test stages are separated for the situation that the input of
+        the three stages are different, and this situation usually happens when the Dataset/Dataloader classes
+        used in the train/val/test stages are not the same, e.g. the training data and validating data in a
+        classification task contains labels, but the testing data (from the production environment) generally
+        doesn't have labels.
+
+        Parameters
+        ----------
+        data :
+            Data output from dataloader, should be list.
+
+        Returns
+        -------
+        dict,
+            A python dictionary contains the input data for model testing.
+        """
+        raise NotImplementedError
+
+    def _train_model(
+        self,
+        training_loader: DataLoader,
+        val_loader: Optional[DataLoader] = None,
+    ) -> None:
+        # each training starts from the very beginning, so reset the loss and model dict here
+        self.best_model_dict = None
+
+        if self.validation_metric.lower_better:
+            self.best_loss = float("inf")
+        else:
+            self.best_loss = float("-inf")
+
+        try:
+            training_step = 0
+            for epoch in range(1, self.epochs + 1):
+                self.model.train()
+                epoch_train_loss_collector = []
+                for idx, data in enumerate(training_loader):
+                    training_step += 1
+                    inputs = self._assemble_input_for_training(data)
+
+                    with autocast(enabled=self.amp_enabled):
+                        self.optimizer.zero_grad()
+                        results = self.model.calc_criterion(inputs)
+                        loss = results["loss"].sum()
+                        loss.backward()
+                        self.optimizer.step()
+                    epoch_train_loss_collector.append(loss.item())
+
+                    # save training loss logs into the tensorboard file for every step if in need
+                    if self.summary_writer is not None:
+                        self._save_log_into_tb_file(training_step, "training", results)
+                # mean training loss of the current epoch
+                mean_train_loss = np.mean(epoch_train_loss_collector)
+
+                if val_loader is not None:
+                    self.model.eval()
+                    val_metric_collector = []
+                    with torch.no_grad():
+                        for idx, data in enumerate(val_loader):
+                            inputs = self._assemble_input_for_validating(data)
+
+                            with autocast(enabled=self.amp_enabled):
+                                results = self.model.calc_criterion(inputs)
+
+                            val_metric = results["metric"].sum()
+                            val_metric_collector.append(val_metric.detach().item())
+
+                    mean_val_metric = np.mean(val_metric_collector)
+
+                    # save validation loss logs into the tensorboard file for every epoch if in need
+                    if self.summary_writer is not None:
+                        val_metric_dict = {
+                            self.validation_metric_name: mean_val_metric,
+                        }
+                        self._save_log_into_tb_file(epoch, "validating", val_metric_dict)
+
+                    logger.info(
+                        f"Epoch {epoch:03d} - "
+                        f"training loss ({self.training_loss_name}): {mean_train_loss:.4f}, "
+                        f"validation {self.validation_metric_name}: {mean_val_metric:.4f}"
+                    )
+                    mean_loss = mean_val_metric
+                else:
+                    logger.info(f"Epoch {epoch:03d} - training loss ({self.training_loss_name}): {mean_train_loss:.4f}")
+                    mean_loss = mean_train_loss
+
+                if np.isnan(mean_loss):
+                    logger.warning(f"‼️ Got NaN loss in epoch#{epoch}. This may lead to unexpected errors.")
+
+                if (self.validation_metric.lower_better and mean_loss < self.best_loss) or (
+                    not self.validation_metric.lower_better and mean_loss > self.best_loss
+                ):
+                    self.best_epoch = epoch
+                    self.best_loss = mean_loss
+                    self.best_model_dict = self.model.state_dict()
+                    self.patience = self.original_patience
+                else:
+                    self.patience -= 1
+
+                # save the model if necessary
+                self._auto_save_model_if_necessary(
+                    confirm_saving=self.best_epoch == epoch and self.model_saving_strategy == "better",
+                    saving_name=f"{self.__class__.__name__}_epoch{epoch}_{self.validation_metric_name}{mean_loss:.4f}",
+                )
+
+                if os.getenv("ENABLE_HPO", False):
+                    nni.report_intermediate_result(mean_loss)
+                    if epoch == self.epochs - 1 or self.patience == 0:
+                        nni.report_final_result(self.best_loss)
+
+                if self.patience == 0:
+                    logger.info("Exceeded the training patience. Terminating the training procedure...")
+                    break
+
+        except KeyboardInterrupt:  # if keyboard interrupt, only warning
+            logger.warning("‼️ Training got interrupted by the user. Exist now ...")
+        except Exception as e:  # other kind of exception follows below processing
+            logger.error(f"❌ Exception: {e}")
+            if self.best_model_dict is None:  # if no best model, raise error
+                raise RuntimeError(
+                    "Training got interrupted. Model was not trained. Please investigate the error printed above."
+                )
+            else:
+                RuntimeWarning(
+                    "Training got interrupted. Please investigate the error printed above.\n"
+                    "Model got trained and will load the best checkpoint so far for testing.\n"
+                    "If you don't want it, please try fit() again."
+                )
+
+        if np.isnan(self.best_loss) or self.best_loss.__eq__(float("inf")):
+            raise ValueError("Something is wrong. best_loss is NaN/Inf after training.")
+
+        logger.info(f"Finished training. The best model is from epoch#{self.best_epoch}.")
 
     @abstractmethod
     def fit(

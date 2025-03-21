@@ -9,6 +9,7 @@ and takes over the forward progress of the algorithm.
 import torch.nn as nn
 
 # from ...nn.modules import some_modules
+from ...nn.modules.loss import Criterion
 
 
 # TODO: define your new model here.
@@ -16,8 +17,20 @@ import torch.nn as nn
 #  Your model should be implemented with PyTorch and subclass torch.nn.Module if it is a neural network.
 #  Note that your main algorithm is defined in this class, and this class usually won't be exposed to users.
 class _YourNewModel(nn.Module):
-    def __init__(self):
+    def __init__(
+        self,
+        training_loss: Criterion,
+        validation_metric: Criterion,
+    ):
         super().__init__()
+
+        self.training_loss = training_loss
+        if validation_metric.__class__.__name__ == "Criterion":
+            # in this case, we need validation_metric.lower_better in _train_model() so only pass Criterion()
+            # we use training_loss as validation_metric for concrete calculation process
+            self.validation_metric = self.training_loss
+        else:
+            self.validation_metric = validation_metric
 
         # TODO: define your model's components here. If modules in pypots.nn.modules can be reused in your model,
         #  you can import them and use them here. AND if you think the modules you implemented can be reused by

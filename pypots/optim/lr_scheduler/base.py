@@ -50,7 +50,11 @@ class LRScheduler(ABC):
         # Attach optimizer
         if not isinstance(optimizer, Optimizer):
             raise TypeError("{} is not an Optimizer".format(type(optimizer).__name__))
-        self.optimizer = optimizer
+        if isinstance(optimizer, Optimizer):
+            self.optimizer = optimizer
+        else:
+            self.optimizer = optimizer()  # instantiate the optimizer if it is a class
+            assert isinstance(self.optimizer, Optimizer)
 
         # Initialize epoch and base learning rates
         if self.last_epoch == -1:

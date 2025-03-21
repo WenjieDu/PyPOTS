@@ -60,8 +60,8 @@ class TestRaindrop(unittest.TestCase):
 
     @pytest.mark.xdist_group(name="classification-raindrop")
     def test_1_classify(self):
-        predictions = self.raindrop.classify(TEST_SET)
-        metrics = calc_binary_classification_metrics(predictions, DATA["test_y"])
+        results = self.raindrop.predict(TEST_SET)
+        metrics = calc_binary_classification_metrics(results["classification_proba"], DATA["test_y"])
         logger.info(
             f'Lazy-loading Raindrop ROC_AUC: {metrics["roc_auc"]}, '
             f'PR_AUC: {metrics["pr_auc"]}, '
@@ -100,8 +100,10 @@ class TestRaindrop(unittest.TestCase):
     @pytest.mark.xdist_group(name="classification-raindrop")
     def test_4_lazy_loading(self):
         self.raindrop.fit(GENERAL_H5_TRAIN_SET_PATH, GENERAL_H5_VAL_SET_PATH)
-        results = self.raindrop.predict(GENERAL_H5_TEST_SET_PATH)
-        metrics = calc_binary_classification_metrics(results["classification"], DATA["test_y"])
+        classification_proba = self.raindrop.predict_proba(GENERAL_H5_TEST_SET_PATH)
+        classification = self.raindrop.classify(GENERAL_H5_TEST_SET_PATH)
+        assert len(classification) == len(classification_proba)
+        metrics = calc_binary_classification_metrics(classification_proba, DATA["test_y"])
         logger.info(
             f'Lazy-loading Raindrop ROC_AUC: {metrics["roc_auc"]}, '
             f'PR_AUC: {metrics["pr_auc"]}, '

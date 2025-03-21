@@ -120,9 +120,9 @@ class StemGNN(BaseNNImputer):
         batch_size: int = 32,
         epochs: int = 100,
         patience: Optional[int] = None,
-        training_loss: Criterion = MAE(),
-        validation_metric: Criterion = MSE(),
-        optimizer: Optimizer = Adam(),
+        training_loss: Union[Criterion, type] = MAE,
+        validation_metric: Union[Criterion, type] = MSE,
+        optimizer: Union[Optimizer, type] = Adam,
         num_workers: int = 0,
         device: Optional[Union[str, torch.device, list]] = None,
         saving_path: Optional[str] = None,
@@ -130,11 +130,11 @@ class StemGNN(BaseNNImputer):
         verbose: bool = True,
     ):
         super().__init__(
+            training_loss=training_loss,
+            validation_metric=validation_metric,
             batch_size=batch_size,
             epochs=epochs,
             patience=patience,
-            training_loss=training_loss,
-            validation_metric=validation_metric,
             num_workers=num_workers,
             device=device,
             saving_path=saving_path,
@@ -155,22 +155,27 @@ class StemGNN(BaseNNImputer):
 
         # set up the model
         self.model = _StemGNN(
-            self.n_steps,
-            self.n_features,
-            self.n_layers,
-            self.n_stacks,
-            self.d_model,
-            self.dropout,
-            self.leaky_rate,
-            self.ORT_weight,
-            self.MIT_weight,
-            self.training_loss,
+            n_steps=self.n_steps,
+            n_features=self.n_features,
+            n_layers=self.n_layers,
+            n_stacks=self.n_stacks,
+            d_model=self.d_model,
+            dropout_rate=self.dropout,
+            leaky_rate=self.leaky_rate,
+            ORT_weight=self.ORT_weight,
+            MIT_weight=self.MIT_weight,
+            training_loss=self.training_loss,
+            validation_metric=self.validation_metric,
         )
         self._send_model_to_given_device()
         self._print_model_size()
 
         # set up the optimizer
-        self.optimizer = optimizer
+        if isinstance(optimizer, Optimizer):
+            self.optimizer = optimizer
+        else:
+            self.optimizer = optimizer()  # instantiate the optimizer if it is a class
+            assert isinstance(self.optimizer, Optimizer)
         self.optimizer.init_optimizer(self.model.parameters())
 
     def _assemble_input_for_training(self, data: list) -> dict:
@@ -243,6 +248,7 @@ class StemGNN(BaseNNImputer):
         test_set: Union[dict, str],
         file_type: str = "hdf5",
     ) -> dict:
+        self.model.eval()  # set the model to evaluation mode
         # Step 1: wrap the input data with classes Dataset and DataLoader
         test_set = BaseDataset(
             test_set,

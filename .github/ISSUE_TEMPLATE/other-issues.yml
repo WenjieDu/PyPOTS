@@ -12,3 +12,13 @@ body:
       description: |
         A clear and concise description of the issue. Please provide a link to related information and code if they exist.
         Besides, please add according labels to the issue on the right side of the page.
+
+  - type: textarea
+    id: contribution
+    validations:
+      required: true
+    attributes:
+      label: Your contribution
+      description: |
+        Is there any way that you could help, for example, by submitting a PR? 
+        Star🌟 this repository is the easiest way to help us.

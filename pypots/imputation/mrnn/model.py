@@ -95,9 +95,9 @@ class MRNN(BaseNNImputer):
         batch_size: int = 32,
         epochs: int = 100,
         patience: Optional[int] = None,
-        training_loss: Criterion = RMSE(),
-        validation_metric: Criterion = MSE(),
-        optimizer: Optimizer = Adam(),
+        training_loss: Union[Criterion, type] = RMSE,
+        validation_metric: Union[Criterion, type] = MSE,
+        optimizer: Union[Optimizer, type] = Adam,
         num_workers: int = 0,
         device: Optional[Union[str, torch.device, list]] = None,
         saving_path: str = None,
@@ -105,11 +105,11 @@ class MRNN(BaseNNImputer):
         verbose: bool = True,
     ):
         super().__init__(
+            training_loss=training_loss,
+            validation_metric=validation_metric,
             batch_size=batch_size,
             epochs=epochs,
             patience=patience,
-            training_loss=training_loss,
-            validation_metric=validation_metric,
             num_workers=num_workers,
             device=device,
             saving_path=saving_path,
@@ -122,16 +122,21 @@ class MRNN(BaseNNImputer):
 
         # set up the model
         self.model = _MRNN(
-            self.n_steps,
-            self.n_features,
-            self.rnn_hidden_size,
-            self.training_loss,
+            n_steps=self.n_steps,
+            n_features=self.n_features,
+            rnn_hidden_size=self.rnn_hidden_size,
+            training_loss=self.training_loss,
+            validation_metric=self.validation_metric,
         )
         self._send_model_to_given_device()
         self._print_model_size()
 
         # set up the optimizer
-        self.optimizer = optimizer
+        if isinstance(optimizer, Optimizer):
+            self.optimizer = optimizer
+        else:
+            self.optimizer = optimizer()  # instantiate the optimizer if it is a class
+            assert isinstance(self.optimizer, Optimizer)
         self.optimizer.init_optimizer(self.model.parameters())
 
     def _assemble_input_for_training(self, data: list) -> dict:
@@ -238,7 +243,13 @@ class MRNN(BaseNNImputer):
         test_set: Union[dict, str],
         file_type: str = "hdf5",
     ) -> dict:
-        test_set = DatasetForMRNN(test_set, return_X_ori=False, return_y=False, file_type=file_type)
+        self.model.eval()  # set the model to evaluation mode
+        test_set = DatasetForMRNN(
+            test_set,
+            return_X_ori=False,
+            return_y=False,
+            file_type=file_type,
+        )
         test_loader = DataLoader(
             test_set,
             batch_size=self.batch_size,

@@ -16,7 +16,6 @@ from .core import _BRITS
 from .data import DatasetForBRITS
 from ..base import BaseNNClassifier
 from ...nn.modules.loss import Criterion, CrossEntropy
-from ...nn.modules.metric import PR_AUC
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
 
@@ -106,9 +105,9 @@ class BRITS(BaseNNClassifier):
         batch_size: int = 32,
         epochs: int = 100,
         patience: Optional[int] = None,
-        training_loss: Criterion = CrossEntropy(),
-        validation_metric: Criterion = PR_AUC(),
-        optimizer: Optimizer = Adam(),
+        training_loss: Union[Criterion, type] = CrossEntropy,
+        validation_metric: Union[Criterion, type] = CrossEntropy,
+        optimizer: Union[Optimizer, type] = Adam,
         num_workers: int = 0,
         device: Optional[Union[str, torch.device, list]] = None,
         saving_path: str = None,
@@ -117,11 +116,11 @@ class BRITS(BaseNNClassifier):
     ):
         super().__init__(
             n_classes=n_classes,
+            training_loss=training_loss,
+            validation_metric=validation_metric,
             batch_size=batch_size,
             epochs=epochs,
             patience=patience,
-            training_loss=training_loss,
-            validation_metric=validation_metric,
             num_workers=num_workers,
             device=device,
             saving_path=saving_path,
@@ -137,18 +136,24 @@ class BRITS(BaseNNClassifier):
 
         # set up the model
         self.model = _BRITS(
-            self.n_steps,
-            self.n_features,
-            self.rnn_hidden_size,
-            self.n_classes,
-            self.classification_weight,
-            self.reconstruction_weight,
+            n_steps=self.n_steps,
+            n_features=self.n_features,
+            rnn_hidden_size=self.rnn_hidden_size,
+            n_classes=self.n_classes,
+            classification_weight=self.classification_weight,
+            reconstruction_weight=self.reconstruction_weight,
+            training_loss=self.training_loss,
+            validation_metric=self.validation_metric,
         )
         self._send_model_to_given_device()
         self._print_model_size()
 
         # set up the optimizer
-        self.optimizer = optimizer
+        if isinstance(optimizer, Optimizer):
+            self.optimizer = optimizer
+        else:
+            self.optimizer = optimizer()  # instantiate the optimizer if it is a class
+            assert isinstance(self.optimizer, Optimizer)
         self.optimizer.init_optimizer(self.model.parameters())
 
     def _assemble_input_for_training(self, data: list) -> dict:
@@ -249,26 +254,40 @@ class BRITS(BaseNNClassifier):
         test_set: Union[dict, str],
         file_type: str = "hdf5",
     ) -> dict:
-        test_set = DatasetForBRITS(test_set, return_y=False, file_type=file_type)
+        self.model.eval()  # set the model to evaluation mode
+        test_set = DatasetForBRITS(
+            test_set,
+            return_y=False,
+            file_type=file_type,
+        )
         test_loader = DataLoader(
             test_set,
             batch_size=self.batch_size,
             shuffle=False,
             num_workers=self.num_workers,
         )
-        classification_collector = []
 
+        classification_results = []
         for idx, data in enumerate(test_loader):
             inputs = self._assemble_input_for_testing(data)
-            results = self.model.forward(inputs)
-            classification_pred = results["classification_pred"]
-            classification_collector.append(classification_pred)
+            results = self.model(inputs)
+            classification_results.append(results["classification_proba"])
 
-        classification = torch.cat(classification_collector).cpu().detach().numpy()
+        classification_proba = torch.cat(classification_results).cpu().detach().numpy()
+        classification = np.argmax(classification_proba, axis=1)
         result_dict = {
             "classification": classification,
+            "classification_proba": classification_proba,
         }
         return result_dict
+
+    def predict_proba(
+        self,
+        test_set: Union[dict, str],
+        file_type: str = "hdf5",
+    ) -> np.ndarray:
+        result_dict = self.predict(test_set, file_type=file_type)
+        return result_dict["classification_proba"]
 
     def classify(
         self,

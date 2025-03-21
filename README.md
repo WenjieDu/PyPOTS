@@ -34,7 +34,7 @@
     <a href="https://codeclimate.com/github/WenjieDu/PyPOTS">
         <img alt="Code Climate maintainability" src="https://img.shields.io/codeclimate/maintainability-percentage/WenjieDu/PyPOTS?color=3C7699&label=Maintainability&logo=codeclimate">
     </a>
-    <a href="https://coveralls.io/github/WenjieDu/PyPOTS">
+    <a href="https://coveralls.io/github/WenjieDu/PyPOTS?branch=full_test">
         <img alt="Coveralls coverage" src="https://img.shields.io/coverallsCoverage/github/WenjieDu/PyPOTS?branch=full_test&logo=coveralls&color=75C1C4&label=Coverage">
     </a>
     <a href="https://github.com/WenjieDu/PyPOTS/actions/workflows/testing_ci.yml">
@@ -116,6 +116,7 @@ The task types are abbreviated as follows:
 **`CLAS`**: Classification;
 **`CLUS`**: Clustering;
 **`ANOD`**: Anomaly Detection.
+In addition to the 5 tasks, PyPOTS also provides TS2Vec[^48] for time series representation learning and vectorization.
 The paper references and links are all listed at the bottom of this file.
 
 | **Type**      | **Algo**                                                                                                                         | **IMPU** | **FORE** | **CLAS** | **CLUS** | **ANOD** | **Year - Venue**                                   |
@@ -123,18 +124,18 @@ The paper references and links are all listed at the bottom of this file.
 | LLM&TSFM      | <a href="https://time-series.ai"><img src="https://time-series.ai/static/figs/robot.svg" width="26px"> Time-Series.AI</a>  [^36] |    ✅     |    ✅     |    ✅     |    ✅     |    ✅     | <a href="https://time-series.ai">Join waitlist</a> |
 | LLM           | Time-LLM🧑‍🔧[^45]                                                                                                               |    ✅     |    ✅     |          |          |          | `2024 - ICLR`                                      |
 | TSFM          | MOMENT[^47]                                                                                                                      |    ✅     |    ✅     |          |          |          | `2024 - ICML`                                      |
-| Neural Net    | TEFN🧑‍🔧[^39]                                                                                                                   |    ✅     |    ✅     |          |          |          | `2024 - arXiv`                                     |
+| Neural Net    | TEFN🧑‍🔧[^39]                                                                                                                   |    ✅     |    ✅     |    ✅     |          |          | `2024 - arXiv`                                     |
 | Neural Net    | FITS🧑‍🔧[^41]                                                                                                                   |    ✅     |    ✅     |          |          |          | `2024 - ICLR`                                      |
 | Neural Net    | TimeMixer[^37]                                                                                                                   |    ✅     |    ✅     |          |          |          | `2024 - ICLR`                                      |
-| Neural Net    | iTransformer🧑‍🔧[^24]                                                                                                           |    ✅     |          |          |          |          | `2024 - ICLR`                                      |
+| Neural Net    | iTransformer🧑‍🔧[^24]                                                                                                           |    ✅     |          |    ✅     |          |          | `2024 - ICLR`                                      |
 | Neural Net    | ModernTCN[^38]                                                                                                                   |    ✅     |          |          |          |          | `2024 - ICLR`                                      |
 | Neural Net    | ImputeFormer🧑‍🔧[^34]                                                                                                           |    ✅     |          |          |          |          | `2024 - KDD`                                       |
-| Neural Net    | SAITS[^1]                                                                                                                        |    ✅     |          |          |          |          | `2023 - ESWA`                                      |
+| Neural Net    | SAITS[^1]                                                                                                                        |    ✅     |          |    ✅     |          |          | `2023 - ESWA`                                      |
 | LLM           | GPT4TS[^46]                                                                                                                      |    ✅     |    ✅     |          |          |          | `2023 - NeurIPS`                                   |
 | Neural Net    | FreTS🧑‍🔧[^23]                                                                                                                  |    ✅     |          |          |          |          | `2023 - NeurIPS`                                   |
 | Neural Net    | Koopa🧑‍🔧[^29]                                                                                                                  |    ✅     |          |          |          |          | `2023 - NeurIPS`                                   |
 | Neural Net    | Crossformer🧑‍🔧[^16]                                                                                                            |    ✅     |          |          |          |          | `2023 - ICLR`                                      |
-| Neural Net    | TimesNet[^14]                                                                                                                    |    ✅     |          |          |          |          | `2023 - ICLR`                                      |
+| Neural Net    | TimesNet[^14]                                                                                                                    |    ✅     |          |    ✅     |          |          | `2023 - ICLR`                                      |
 | Neural Net    | PatchTST🧑‍🔧[^18]                                                                                                               |    ✅     |          |          |          |          | `2023 - ICLR`                                      |
 | Neural Net    | ETSformer🧑‍🔧[^19]                                                                                                              |    ✅     |          |          |          |          | `2023 - ICLR`                                      |
 | Neural Net    | MICN🧑‍🔧[^27]                                                                                                                   |    ✅     |          |          |          |          | `2023 - ICLR`                                      |
@@ -142,6 +143,7 @@ The paper references and links are all listed at the bottom of this file.
 | Neural Net    | TiDE🧑‍🔧[^28]                                                                                                                   |    ✅     |          |          |          |          | `2023 - TMLR`                                      |
 | Neural Net    | CSAI[^42]                                                                                                                        |    ✅     |          |    ✅     |          |          | `2023 - arXiv`                                     |
 | Neural Net    | SegRNN🧑‍🔧[^43]                                                                                                                 |    ✅     |          |          |          |          | `2023 - arXiv`                                     |
+| Neural Net    | TS2Vec[^48]                                                                                                                      |          |          |    ✅     |          |          | `2022 - AAAI`                                      |
 | Neural Net    | SCINet🧑‍🔧[^30]                                                                                                                 |    ✅     |          |          |          |          | `2022 - NeurIPS`                                   |
 | Neural Net    | Nonstationary Tr.🧑‍🔧[^25]                                                                                                      |    ✅     |          |          |          |          | `2022 - NeurIPS`                                   |
 | Neural Net    | FiLM🧑‍🔧[^22]                                                                                                                   |    ✅     |          |          |          |          | `2022 - NeurIPS`                                   |
@@ -538,3 +540,6 @@ Time-Series.AI</a>
 [^47]: Goswami, M., Szafer, K., Choudhry, A., Cai, Y., Li, S., & Dubrawski, A. (2024).
 [MOMENT: A Family of Open Time-series Foundation Models](https://proceedings.mlr.press/v235/goswami24a.html).
 *ICML 2024*.
+[^48]: Yue, Z., Wang, Y., Duan, J., Yang, T., Huang, C., Tong, Y., & Xu, B. (2022).
+[TS2Vec: Towards Universal Representation of Time Series](https://ojs.aaai.org/index.php/AAAI/article/view/20881).
+*AAAI 2022*.

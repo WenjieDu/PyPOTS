@@ -8,12 +8,13 @@ and takes over the forward progress of the algorithm.
 
 import torch.nn as nn
 
-from ...nn.modules.loss import Criterion, MAE
+from ...nn.modules import ModelCore
+from ...nn.modules.loss import Criterion
 from ...nn.modules.patchtst import PatchEmbedding, PatchtstEncoder, PredictionHead
 from ...nn.modules.saits import SaitsLoss, SaitsEmbedding
 
 
-class _PatchTST(nn.Module):
+class _PatchTST(ModelCore):
     def __init__(
         self,
         n_steps: int,
@@ -28,9 +29,10 @@ class _PatchTST(nn.Module):
         patch_stride: int,
         dropout: float,
         attn_dropout: float,
-        ORT_weight: float = 1,
-        MIT_weight: float = 1,
-        training_loss: Criterion = MAE(),
+        ORT_weight: float,
+        MIT_weight: float,
+        training_loss: Criterion,
+        validation_metric: Criterion,
     ):
         super().__init__()
 
@@ -51,7 +53,14 @@ class _PatchTST(nn.Module):
         )
         self.head = PredictionHead(d_model, n_patches, n_steps, dropout)
         self.output_projection = nn.Linear(d_model, n_features)
-        self.saits_training_loss = SaitsLoss(ORT_weight, MIT_weight, training_loss)
+        # apply SAITS loss function to PatchTST on the imputation task
+        self.training_loss = SaitsLoss(ORT_weight, MIT_weight, training_loss)
+        if validation_metric.__class__.__name__ == "Criterion":
+            # in this case, we need validation_metric.lower_better in _train_model() so only pass Criterion()
+            # we use training_loss as validation_metric for concrete calculation process
+            self.validation_metric = self.training_loss
+        else:
+            self.validation_metric = validation_metric
 
     def forward(self, inputs: dict) -> dict:
         X, missing_mask = inputs["X"], inputs["missing_mask"]
@@ -76,14 +85,25 @@ class _PatchTST(nn.Module):
         imputed_data = missing_mask * X + (1 - missing_mask) * reconstruction
         results = {
             "imputed_data": imputed_data,
+            "reconstruction": reconstruction,
         }
 
-        if self.training:
-            X_ori, indicating_mask = inputs["X_ori"], inputs["indicating_mask"]
-            loss, ORT_loss, MIT_loss = self.saits_training_loss(reconstruction, X_ori, missing_mask, indicating_mask)
+        return results
+
+    def calc_criterion(self, inputs: dict) -> dict:
+        results = self.forward(inputs)
+
+        X_ori, indicating_mask, missing_mask = inputs["X_ori"], inputs["indicating_mask"], inputs["missing_mask"]
+        reconstruction = results["reconstruction"]
+
+        if self.training:  # if in the training mode (the training stage), return loss result from training_loss
+            # `loss` is always the item for backward propagating to update the model
+            loss, ORT_loss, MIT_loss = self.training_loss(reconstruction, X_ori, missing_mask, indicating_mask)
             results["ORT_loss"] = ORT_loss
             results["MIT_loss"] = MIT_loss
             # `loss` is always the item for backward propagating to update the model
             results["loss"] = loss
+        else:  # if in the eval mode (the validation stage), return metric result from validation_metric
+            results["metric"] = self.validation_metric(reconstruction, X_ori, indicating_mask)
 
         return results

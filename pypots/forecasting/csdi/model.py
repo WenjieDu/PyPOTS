@@ -6,25 +6,19 @@ The implementation of CSDI for the partially-observed time-series forecasting ta
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-import os
 from typing import Union, Optional
 
 import numpy as np
 import torch
 from torch.utils.data import DataLoader
 
-try:
-    import nni
-except ImportError:
-    pass
-
+from pypots.nn.modules.loss import Criterion
 from .core import _CSDI
 from .data import DatasetForCSDI, TestDatasetForCSDI
 from ..base import BaseNNForecaster
 from ...data.checking import key_in_data_set
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
-from ...utils.logging import logger
 
 
 class CSDI(BaseNNForecaster):
@@ -144,7 +138,7 @@ class CSDI(BaseNNForecaster):
         batch_size: int = 32,
         epochs: int = 100,
         patience: Optional[int] = None,
-        optimizer: Optimizer = Adam(),
+        optimizer: Union[Optimizer, type] = Adam,
         num_workers: int = 0,
         device: Optional[Union[str, torch.device, list]] = None,
         saving_path: Optional[str] = None,
@@ -152,11 +146,11 @@ class CSDI(BaseNNForecaster):
         verbose: bool = True,
     ):
         super().__init__(
+            training_loss=Criterion,
+            validation_metric=Criterion,
             batch_size=batch_size,
             epochs=epochs,
             patience=patience,
-            training_loss=None,
-            validation_metric=None,
             num_workers=num_workers,
             device=device,
             saving_path=saving_path,
@@ -174,33 +168,32 @@ class CSDI(BaseNNForecaster):
         self.n_pred_steps = n_pred_steps
         self.n_pred_features = n_pred_features
         self.target_strategy = target_strategy
-        # CSDI has its own defined loss function and validation loss, so we set them as None here
-        self.training_loss = None
-        self.training_loss_name = "default"
-        self.validation_metric = None
-        self.validation_metric_name = "metric (default)"
 
         # set up the model
         self.model = _CSDI(
-            n_features,
-            n_pred_features,
-            n_layers,
-            n_heads,
-            n_channels,
-            d_time_embedding,
-            d_feature_embedding,
-            d_diffusion_embedding,
-            is_unconditional,
-            n_diffusion_steps,
-            schedule,
-            beta_start,
-            beta_end,
+            n_features=n_features,
+            n_pred_features=n_features,
+            n_layers=n_layers,
+            n_heads=n_heads,
+            n_channels=n_channels,
+            d_time_embedding=d_time_embedding,
+            d_feature_embedding=d_feature_embedding,
+            d_diffusion_embedding=d_diffusion_embedding,
+            is_unconditional=is_unconditional,
+            n_diffusion_steps=n_diffusion_steps,
+            schedule=schedule,
+            beta_start=beta_start,
+            beta_end=beta_end,
         )
         self._print_model_size()
         self._send_model_to_given_device()
 
         # set up the optimizer
-        self.optimizer = optimizer
+        if isinstance(optimizer, Optimizer):
+            self.optimizer = optimizer
+        else:
+            self.optimizer = optimizer()  # instantiate the optimizer if it is a class
+            assert isinstance(self.optimizer, Optimizer)
         self.optimizer.init_optimizer(self.model.parameters())
 
     def _assemble_input_for_training(self, data: list) -> dict:
@@ -241,111 +234,6 @@ class CSDI(BaseNNForecaster):
             "feature_id": feature_id,
         }
         return inputs
-
-    def _train_model(
-        self,
-        training_loader: DataLoader,
-        val_loader: DataLoader = None,
-    ) -> None:
-        # each training starts from the very beginning, so reset the loss and model dict here
-        self.best_loss = float("inf")
-        self.best_model_dict = None
-
-        try:
-            training_step = 0
-            for epoch in range(1, self.epochs + 1):
-                self.model.train()
-                epoch_train_loss_collector = []
-                for idx, data in enumerate(training_loader):
-                    training_step += 1
-                    inputs = self._assemble_input_for_training(data)
-                    self.optimizer.zero_grad()
-                    results = self.model.forward(inputs)
-                    # use sum() before backward() in case of multi-gpu training
-                    results["loss"].sum().backward()
-                    self.optimizer.step()
-                    epoch_train_loss_collector.append(results["loss"].sum().item())
-
-                    # save training loss logs into the tensorboard file for every step if in need
-                    if self.summary_writer is not None:
-                        self._save_log_into_tb_file(training_step, "training", results)
-
-                # mean training loss of the current epoch
-                mean_train_loss = np.mean(epoch_train_loss_collector)
-
-                if val_loader is not None:
-                    self.model.eval()
-                    val_loss_collector = []
-                    with torch.no_grad():
-                        for idx, data in enumerate(val_loader):
-                            inputs = self._assemble_input_for_validating(data)
-                            results = self.model.forward(inputs, n_sampling_times=0)
-                            val_loss_collector.append(results["loss"].sum().item())
-
-                    mean_val_loss = np.asarray(val_loss_collector).mean()
-
-                    # save validation loss logs into the tensorboard file for every epoch if in need
-                    if self.summary_writer is not None:
-                        val_loss_dict = {
-                            "validating_loss": mean_val_loss,
-                        }
-                        self._save_log_into_tb_file(epoch, "validating", val_loss_dict)
-
-                    logger.info(
-                        f"Epoch {epoch:03d} - "
-                        f"training loss ({self.training_loss_name}): {mean_train_loss:.4f}, "
-                        f"validation {self.validation_metric_name}: {mean_val_loss:.4f}"
-                    )
-                    mean_loss = mean_val_loss
-                else:
-                    logger.info(f"Epoch {epoch:03d} - training loss ({self.training_loss_name}): {mean_train_loss:.4f}")
-                    mean_loss = mean_train_loss
-
-                if np.isnan(mean_loss):
-                    logger.warning(f"‼️ Attention: got NaN loss in Epoch {epoch}. This may lead to unexpected errors.")
-
-                if mean_loss < self.best_loss:
-                    self.best_epoch = epoch
-                    self.best_loss = mean_loss
-                    self.best_model_dict = self.model.state_dict()
-                    self.patience = self.original_patience
-                else:
-                    self.patience -= 1
-
-                # save the model if necessary
-                self._auto_save_model_if_necessary(
-                    confirm_saving=self.best_epoch == epoch and self.model_saving_strategy == "better",
-                    saving_name=f"{self.__class__.__name__}_epoch{epoch}_loss{mean_loss:.4f}",
-                )
-
-                if os.getenv("ENABLE_HPO", False):
-                    nni.report_intermediate_result(mean_loss)
-                    if epoch == self.epochs - 1 or self.patience == 0:
-                        nni.report_final_result(self.best_loss)
-
-                if self.patience == 0:
-                    logger.info("Exceeded the training patience. Terminating the training procedure...")
-                    break
-
-        except KeyboardInterrupt:  # if keyboard interrupt, only warning
-            logger.warning("‼️ Training got interrupted by the user. Exist now ...")
-        except Exception as e:  # other kind of exception follows below processing
-            logger.error(f"❌ Exception: {e}")
-            if self.best_model_dict is None:  # if no best model, raise error
-                raise RuntimeError(
-                    "Training got interrupted. Model was not trained. Please investigate the error printed above."
-                )
-            else:
-                RuntimeWarning(
-                    "Training got interrupted. Please investigate the error printed above.\n"
-                    "Model got trained and will load the best checkpoint so far for testing.\n"
-                    "If you don't want it, please try fit() again."
-                )
-
-        if np.isnan(self.best_loss):
-            raise ValueError("Something is wrong. best_loss is Nan after training.")
-
-        logger.info(f"Finished training. The best model is from epoch#{self.best_epoch}.")
 
     def fit(
         self,
@@ -420,6 +308,8 @@ class CSDI(BaseNNForecaster):
 
         """
         assert n_sampling_times > 0, "n_sampling_times should be greater than 0."
+
+        self.model.eval()  # set the model to evaluation mode
 
         # Step 1: wrap the input data with classes Dataset and DataLoader
         test_set = TestDatasetForCSDI(

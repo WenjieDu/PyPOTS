@@ -6,23 +6,14 @@ The base class for PyPOTS imputation models.
 # License: BSD-3-Clause
 
 
-import os
 from abc import abstractmethod
 from typing import Union, Optional
 
 import numpy as np
 import torch
-from torch.utils.data import DataLoader
 
 from ..base import BaseModel, BaseNNModel
-from ..nn.functional.cuda import autocast
-from ..nn.modules.loss import Criterion, MAE
-from ..utils.logging import logger
-
-try:
-    import nni
-except ImportError:
-    pass
+from ..nn.modules.loss import Criterion
 
 
 class BaseImputer(BaseModel):
@@ -228,11 +219,11 @@ class BaseNNImputer(BaseNNModel):
 
     def __init__(
         self,
+        training_loss: Union[Criterion, type],
+        validation_metric: Union[Criterion, type],
         batch_size: int,
         epochs: int,
         patience: Optional[int] = None,
-        training_loss: Optional[Criterion] = MAE(),
-        validation_metric: Optional[Criterion] = MAE(),
         num_workers: int = 0,
         device: Optional[Union[str, torch.device, list]] = None,
         enable_amp: bool = False,
@@ -241,11 +232,11 @@ class BaseNNImputer(BaseNNModel):
         verbose: bool = True,
     ):
         super().__init__(
+            training_loss=training_loss,
+            validation_metric=validation_metric,
             batch_size=batch_size,
             epochs=epochs,
             patience=patience,
-            training_loss=training_loss,
-            validation_metric=validation_metric,
             num_workers=num_workers,
             device=device,
             enable_amp=enable_amp,
@@ -253,187 +244,6 @@ class BaseNNImputer(BaseNNModel):
             model_saving_strategy=model_saving_strategy,
             verbose=verbose,
         )
-
-        # fetch the names of training loss and validation metric
-        self.training_loss_name = self.training_loss.__class__.__name__
-        self.validation_metric_name = self.validation_metric.__class__.__name__
-
-    @abstractmethod
-    def _assemble_input_for_training(self, data: list) -> dict:
-        """Assemble the given data into a dictionary for training input.
-
-        Parameters
-        ----------
-        data :
-            Input data from dataloader, should be list.
-
-        Returns
-        -------
-        dict,
-            A python dictionary contains the input data for model training.
-        """
-        raise NotImplementedError
-
-    @abstractmethod
-    def _assemble_input_for_validating(self, data: list) -> dict:
-        """Assemble the given data into a dictionary for validating input.
-
-        Parameters
-        ----------
-        data :
-            Data output from dataloader, should be list.
-
-        Returns
-        -------
-        dict,
-            A python dictionary contains the input data for model validating.
-        """
-        raise NotImplementedError
-
-    @abstractmethod
-    def _assemble_input_for_testing(self, data: list) -> dict:
-        """Assemble the given data into a dictionary for testing input.
-
-        Notes
-        -----
-        The processing functions of train/val/test stages are separated for the situation that the input of
-        the three stages are different, and this situation usually happens when the Dataset/Dataloader classes
-        used in the train/val/test stages are not the same, e.g. the training data and validating data in a
-        classification task contains labels, but the testing data (from the production environment) generally
-        doesn't have labels.
-
-        Parameters
-        ----------
-        data :
-            Data output from dataloader, should be list.
-
-        Returns
-        -------
-        dict,
-            A python dictionary contains the input data for model testing.
-        """
-        raise NotImplementedError
-
-    def _train_model(
-        self,
-        training_loader: DataLoader,
-        val_loader: DataLoader = None,
-    ) -> None:
-        # each training starts from the very beginning, so reset the loss and model dict here
-        self.best_loss = float("inf")
-        self.best_model_dict = None
-
-        try:
-            training_step = 0
-            for epoch in range(1, self.epochs + 1):
-                self.model.train()
-
-                epoch_train_loss_collector = []
-                for idx, data in enumerate(training_loader):
-                    training_step += 1
-                    inputs = self._assemble_input_for_training(data)
-
-                    # model forward propagation processing
-                    with autocast(enabled=self.amp_enabled):
-                        self.optimizer.zero_grad()
-                        results = self.model.forward(inputs)
-                        results["loss"].sum().backward()  # sum() before backward() in case of multi-gpu training
-                        self.optimizer.step()
-                    epoch_train_loss_collector.append(results["loss"].sum().item())
-
-                    # save training loss logs into the tensorboard file for every step if in need
-                    if self.summary_writer is not None:
-                        self._save_log_into_tb_file(training_step, "training", results)
-
-                # mean training loss of the current epoch
-                mean_train_loss = np.mean(epoch_train_loss_collector)
-
-                if val_loader is not None:
-                    self.model.eval()
-                    imputation_loss_collector = []
-                    with torch.no_grad():
-                        for idx, data in enumerate(val_loader):
-                            inputs = self._assemble_input_for_validating(data)
-
-                            # model forward propagation processing
-                            with autocast(enabled=self.amp_enabled):
-                                results = self.model.forward(inputs)
-                            imputation_error = (
-                                self.validation_metric(
-                                    results["imputed_data"],
-                                    inputs["X_ori"],
-                                    inputs["indicating_mask"],
-                                )
-                                .sum()
-                                .detach()
-                                .item()
-                            )
-                            imputation_loss_collector.append(imputation_error)
-
-                    mean_val_loss = np.mean(imputation_loss_collector)
-
-                    # save validation loss logs into the tensorboard file for every epoch if in need
-                    if self.summary_writer is not None:
-                        val_loss_dict = {
-                            "imputation_loss": mean_val_loss,
-                        }
-                        self._save_log_into_tb_file(epoch, "validating", val_loss_dict)
-
-                    logger.info(
-                        f"Epoch {epoch:03d} - "
-                        f"training loss ({self.training_loss_name}): {mean_train_loss:.4f}, "
-                        f"validation {self.validation_metric_name}: {mean_val_loss:.4f}"
-                    )
-                    mean_loss = mean_val_loss
-                else:
-                    logger.info(f"Epoch {epoch:03d} - training loss ({self.training_loss_name}): {mean_train_loss:.4f}")
-                    mean_loss = mean_train_loss
-
-                if np.isnan(mean_loss):
-                    logger.warning(f"‼️ Attention: got NaN loss in Epoch {epoch}. This may lead to unexpected errors.")
-
-                if mean_loss < self.best_loss:
-                    self.best_epoch = epoch
-                    self.best_loss = mean_loss
-                    self.best_model_dict = self.model.state_dict()
-                    self.patience = self.original_patience
-                else:
-                    self.patience -= 1
-
-                # save the model if necessary
-                self._auto_save_model_if_necessary(
-                    confirm_saving=self.best_epoch == epoch and self.model_saving_strategy == "better",
-                    saving_name=f"{self.__class__.__name__}_epoch{epoch}_loss{mean_loss:.4f}",
-                )
-
-                if os.getenv("ENABLE_HPO", False):
-                    nni.report_intermediate_result(mean_loss)
-                    if epoch == self.epochs - 1 or self.patience == 0:
-                        nni.report_final_result(self.best_loss)
-
-                if self.patience == 0:
-                    logger.info("Exceeded the training patience. Terminating the training procedure...")
-                    break
-
-        except KeyboardInterrupt:  # if keyboard interrupt, only warning
-            logger.warning("‼️ Training got interrupted by the user. Exist now ...")
-        except Exception as e:  # other kind of exception follows below processing
-            logger.error(f"❌ Exception: {e}")
-            if self.best_model_dict is None:  # if no best model, raise error
-                raise RuntimeError(
-                    "Training got interrupted. Model was not trained. Please investigate the error printed above."
-                )
-            else:
-                RuntimeWarning(
-                    "Training got interrupted. Please investigate the error printed above.\n"
-                    "Model got trained and will load the best checkpoint so far for testing.\n"
-                    "If you don't want it, please try fit() again."
-                )
-
-        if np.isnan(self.best_loss):
-            raise ValueError("Something is wrong. best_loss is Nan after training.")
-
-        logger.info(f"Finished training. The best model is from epoch#{self.best_epoch}.")
 
     @abstractmethod
     def fit(

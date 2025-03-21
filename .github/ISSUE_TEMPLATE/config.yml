@@ -1,4 +1,4 @@
-blank_issues_enabled: true
+blank_issues_enabled: false
 version: 2.1
 contact_links:
   - name: 🤗 PyPOTS Community on Slack
