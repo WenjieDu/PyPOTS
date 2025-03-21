@@ -14,8 +14,6 @@ from ..functional import (
     calc_mse,
     calc_rmse,
     calc_mre,
-    calc_quantile_crps,
-    calc_quantile_crps_sum,
 )
 
 
@@ -37,7 +35,22 @@ class Criterion(_Loss):
         super().__init__()
         self.lower_better = lower_better
 
-    def forward(self, predictions, targets):
+    def forward(
+        self,
+        logits: torch.Tensor,
+        targets: torch.Tensor,
+    ) -> torch.Tensor:
+        """The criterion calculation process.
+
+        Parameters
+        ----------
+        logits:
+            The model outputs, predicted unnormalized logits.
+
+        targets:
+            The ground truth values.
+
+        """
         raise NotImplementedError
 
 
@@ -45,8 +58,13 @@ class MSE(Criterion):
     def __init__(self):
         super().__init__()
 
-    def forward(self, predictions, targets, masks=None):
-        value = calc_mse(predictions, targets, masks)
+    def forward(
+        self,
+        logits: torch.Tensor,
+        targets: torch.Tensor,
+        masks: torch.Tensor = None,
+    ) -> torch.Tensor:
+        value = calc_mse(logits, targets, masks)
         return value
 
 
@@ -54,8 +72,13 @@ class MAE(Criterion):
     def __init__(self):
         super().__init__()
 
-    def forward(self, predictions, targets, masks=None):
-        value = calc_mae(predictions, targets, masks)
+    def forward(
+        self,
+        logits: torch.Tensor,
+        targets: torch.Tensor,
+        masks: torch.Tensor = None,
+    ) -> torch.Tensor:
+        value = calc_mae(logits, targets, masks)
         return value
 
 
@@ -63,8 +86,13 @@ class RMSE(Criterion):
     def __init__(self):
         super().__init__()
 
-    def forward(self, predictions, targets, masks=None):
-        value = calc_rmse(predictions, targets, masks)
+    def forward(
+        self,
+        logits: torch.Tensor,
+        targets: torch.Tensor,
+        masks: torch.Tensor = None,
+    ) -> torch.Tensor:
+        value = calc_rmse(logits, targets, masks)
         return value
 
 
@@ -72,26 +100,13 @@ class MRE(Criterion):
     def __init__(self):
         super().__init__()
 
-    def forward(self, predictions, targets, masks=None):
-        value = calc_mre(predictions, targets, masks)
-        return value
-
-
-class QuantileCRPS(Criterion):
-    def __init__(self):
-        super().__init__()
-
-    def forward(self, predictions, targets, masks=None):
-        value = calc_quantile_crps(predictions, targets, masks)
-        return value
-
-
-class QuantileCRPS_Sum(Criterion):
-    def __init__(self):
-        super().__init__()
-
-    def forward(self, predictions, targets, masks=None):
-        value = calc_quantile_crps_sum(predictions, targets, masks)
+    def forward(
+        self,
+        logits: torch.Tensor,
+        targets: torch.Tensor,
+        masks: torch.Tensor = None,
+    ) -> torch.Tensor:
+        value = calc_mre(logits, targets, masks)
         return value
 
 
@@ -99,8 +114,12 @@ class CrossEntropy(Criterion):
     def __init__(self):
         super().__init__()
 
-    def forward(self, predictions, targets):
-        value = torch.nn.functional.cross_entropy(predictions, targets)
+    def forward(
+        self,
+        logits: torch.Tensor,
+        targets: torch.Tensor,
+    ) -> torch.Tensor:
+        value = torch.nn.functional.cross_entropy(logits, targets)
         return value
 
 
@@ -108,6 +127,10 @@ class NLL(Criterion):
     def __init__(self):
         super().__init__()
 
-    def forward(self, predictions, targets):
-        value = torch.nn.functional.nll_loss(predictions, targets)
+    def forward(
+        self,
+        log_probs: torch.Tensor,
+        targets: torch.Tensor,
+    ) -> torch.Tensor:
+        value = torch.nn.functional.nll_loss(log_probs, targets)
         return value
