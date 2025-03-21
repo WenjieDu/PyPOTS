@@ -6,8 +6,8 @@ The base (abstract) classes for models in PyPOTS.
 # License: BSD-3-Clause
 
 import os
-from abc import ABC
-from abc import abstractmethod
+from abc import ABC, abstractmethod
+from copy import deepcopy
 from datetime import datetime
 from typing import Optional, Union, Iterable
 
@@ -299,9 +299,9 @@ class BaseModel(ABC):
 
         if isinstance(self.device, list):
             # to save a DataParallel model generically, save the model.module.state_dict()
-            model_state_dict = self.model.module.state_dict()
+            model_state_dict = deepcopy(self.model.module.state_dict())
         else:
-            model_state_dict = self.model.state_dict()
+            model_state_dict = deepcopy(self.model.state_dict())
 
         all_attrs = dict({})
         all_attrs["model_state_dict"] = model_state_dict
@@ -779,7 +779,7 @@ class BaseNNModel(BaseModel):
                 ):
                     self.best_epoch = epoch
                     self.best_loss = mean_loss
-                    self.best_model_dict = self.model.state_dict()
+                    self.best_model_dict = deepcopy(self.model.state_dict())
                     self.patience = self.original_patience
                 else:
                     self.patience -= 1
