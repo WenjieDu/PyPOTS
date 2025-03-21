@@ -144,7 +144,7 @@ class CSDI(BaseNNForecaster):
         batch_size: int = 32,
         epochs: int = 100,
         patience: Optional[int] = None,
-        optimizer: Optimizer = Adam(),
+        optimizer: Union[Optimizer, type] = Adam,
         num_workers: int = 0,
         device: Optional[Union[str, torch.device, list]] = None,
         saving_path: Optional[str] = None,
@@ -200,7 +200,11 @@ class CSDI(BaseNNForecaster):
         self._send_model_to_given_device()
 
         # set up the optimizer
-        self.optimizer = optimizer
+        if isinstance(optimizer, Optimizer):
+            self.optimizer = optimizer
+        else:
+            self.optimizer = optimizer()  # instantiate the optimizer if it is a class
+            assert isinstance(self.optimizer, Optimizer)
         self.optimizer.init_optimizer(self.model.parameters())
 
     def _assemble_input_for_training(self, data: list) -> dict:
@@ -304,7 +308,9 @@ class CSDI(BaseNNForecaster):
                 if np.isnan(mean_loss):
                     logger.warning(f"‼️ Attention: got NaN loss in Epoch {epoch}. This may lead to unexpected errors.")
 
-                if mean_loss < self.best_loss:
+                if (self.validation_metric.lower_better and mean_loss < self.best_loss) or (
+                    not self.validation_metric.lower_better and mean_loss > self.best_loss
+                ):
                     self.best_epoch = epoch
                     self.best_loss = mean_loss
                     self.best_model_dict = self.model.state_dict()
@@ -315,7 +321,7 @@ class CSDI(BaseNNForecaster):
                 # save the model if necessary
                 self._auto_save_model_if_necessary(
                     confirm_saving=self.best_epoch == epoch and self.model_saving_strategy == "better",
-                    saving_name=f"{self.__class__.__name__}_epoch{epoch}_loss{mean_loss:.4f}",
+                    saving_name=f"{self.__class__.__name__}_epoch{epoch}_{self.validation_metric_name}{mean_loss:.4f}",
                 )
 
                 if os.getenv("ENABLE_HPO", False):
@@ -342,8 +348,8 @@ class CSDI(BaseNNForecaster):
                     "If you don't want it, please try fit() again."
                 )
 
-        if np.isnan(self.best_loss):
-            raise ValueError("Something is wrong. best_loss is Nan after training.")
+        if np.isnan(self.best_loss) or self.best_loss.__eq__(float("inf")):
+            raise ValueError("Something is wrong. best_loss is Nan/Inf after training.")
 
         logger.info(f"Finished training. The best model is from epoch#{self.best_epoch}.")
 

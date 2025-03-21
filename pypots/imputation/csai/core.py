@@ -5,6 +5,8 @@
 # Created by Linglong Qian, Joseph Arul Raj <linglong.qian@kcl.ac.uk, joseph_arul_raj@kcl.ac.uk>
 # License: BSD-3-Clause
 
+from typing import Union
+
 import torch.nn as nn
 
 from ...nn.modules.csai.backbone import BackboneBCSAI
@@ -73,7 +75,7 @@ class _BCSAI(nn.Module):
         step_channels,
         consistency_weight,
         imputation_weight,
-        training_loss: Criterion = MAE(),
+        training_loss: Union[Criterion, type] = MAE,
     ):
         super().__init__()
         self.n_steps = n_steps

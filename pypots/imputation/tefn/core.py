@@ -5,6 +5,8 @@
 # Created by Tianxiang Zhan <zhantianxianguestc@hotmail.com>
 # License: BSD-3-Clause
 
+from typing import Union
+
 import torch.nn as nn
 
 from ...nn.functional import nonstationary_norm, nonstationary_denorm
@@ -22,7 +24,7 @@ class _TEFN(nn.Module):
         apply_nonstationary_norm: bool = False,
         ORT_weight: float = 1,
         MIT_weight: float = 1,
-        training_loss: Criterion = MAE(),
+        training_loss: Union[Criterion, type] = MAE,
     ):
         super().__init__()
 

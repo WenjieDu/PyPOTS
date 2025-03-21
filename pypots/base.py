@@ -9,7 +9,7 @@ import os
 from abc import ABC
 from abc import abstractmethod
 from datetime import datetime
-from typing import Optional, Union, Iterable, Callable
+from typing import Optional, Union, Iterable
 
 import torch
 from torch.utils.tensorboard import SummaryWriter
@@ -495,11 +495,11 @@ class BaseNNModel(BaseModel):
 
     training_loss:
         The customized loss function designed by users for training the model.
-        If not given, will use the default loss as claimed in the original paper.
+        If not given, the model will be trained with its own loss defined in its paper and fixed in the implementation.
 
     validation_metric:
         The customized metric function designed by users for validating the model.
-        If not given, will use the default MSE metric.
+        If not given, the model's training loss will be used as the validation metric to select the best model.
 
     num_workers :
         The number of subprocesses to use for data loading.
@@ -560,8 +560,8 @@ class BaseNNModel(BaseModel):
         batch_size: int,
         epochs: int,
         patience: Optional[int] = None,
-        training_loss: Optional[Criterion] = None,
-        validation_metric: Optional[Criterion] = None,
+        training_loss: Optional[Union[Criterion, type]] = None,
+        validation_metric: Optional[Union[Criterion, type]] = None,
         num_workers: int = 0,
         device: Optional[Union[str, torch.device, list]] = None,
         enable_amp: bool = False,
@@ -586,15 +586,31 @@ class BaseNNModel(BaseModel):
             ), f"patience must be smaller than epochs which is {epochs}, but got patience={patience}"
 
         # check training_loss and validation_metric
-        training_loss_name, validation_metric_name = "default", "loss (default)"
+        training_loss_name, validation_metric_name = "default", "loss"  # default names for loss and metric
         if training_loss is not None:
+            # if training_loss is a class, instantiate it
+            if not isinstance(training_loss, Criterion):
+                training_loss = training_loss()
+                assert isinstance(training_loss, Criterion)
+
             training_loss_name = training_loss.__class__.__name__
-            assert isinstance(training_loss, Callable), "training_loss should be a callable instance"
             logger.info(f"Using customized {training_loss_name} as the training loss function.")
+        else:
+            # if training_loss is None, it won't be invoked and
+            # the model will be trained with its own loss defined in its paper and fixed in the implementation
+            pass
         if validation_metric is not None:
+            # if validation_metric is a class, instantiate it
+            if not isinstance(validation_metric, Criterion):
+                validation_metric = validation_metric()
+                assert isinstance(validation_metric, Criterion)
+
             validation_metric_name = validation_metric.__class__.__name__
-            assert isinstance(validation_metric, Callable), "validation_metric should be a callable instance"
             logger.info(f"Using customized {validation_metric_name} as the validation metric function.")
+        else:
+            # if validation_metric is None, it won't be invoked and
+            # the model's training loss will be used as the validation metric to select the best model
+            pass
 
         # set up the hype-parameters
         self.batch_size = batch_size

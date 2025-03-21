@@ -15,7 +15,7 @@ from torch.utils.data import DataLoader
 
 from ..base import BaseModel, BaseNNModel
 from ..nn.functional import autocast
-from ..nn.modules.loss import Criterion, MSE
+from ..nn.modules.loss import Criterion
 from ..utils.logging import logger
 
 try:
@@ -211,8 +211,8 @@ class BaseNNForecaster(BaseNNModel):
         batch_size: int,
         epochs: int,
         patience: Optional[int] = None,
-        training_loss: Optional[Criterion] = MSE(),
-        validation_metric: Optional[Criterion] = MSE(),
+        training_loss: Optional[Union[Criterion, type]] = None,
+        validation_metric: Optional[Union[Criterion, type]] = None,
         num_workers: int = 0,
         device: Optional[Union[str, torch.device, list]] = None,
         enable_amp: bool = False,
@@ -233,10 +233,6 @@ class BaseNNForecaster(BaseNNModel):
             model_saving_strategy=model_saving_strategy,
             verbose=verbose,
         )
-
-        # fetch the names of training loss and validation metric
-        self.training_loss_name = self.training_loss.__class__.__name__
-        self.validation_metric_name = self.validation_metric.__class__.__name__
 
     @abstractmethod
     def _assemble_input_for_training(self, data: list) -> dict:
@@ -371,7 +367,9 @@ class BaseNNForecaster(BaseNNModel):
                 if np.isnan(mean_loss):
                     logger.warning(f"‼️ Attention: got NaN loss in Epoch {epoch}. This may lead to unexpected errors.")
 
-                if mean_loss < self.best_loss:
+                if (self.validation_metric.lower_better and mean_loss < self.best_loss) or (
+                    not self.validation_metric.lower_better and mean_loss > self.best_loss
+                ):
                     self.best_epoch = epoch
                     self.best_loss = mean_loss
                     self.best_model_dict = self.model.state_dict()
@@ -382,7 +380,7 @@ class BaseNNForecaster(BaseNNModel):
                 # save the model if necessary
                 self._auto_save_model_if_necessary(
                     confirm_saving=self.best_epoch == epoch and self.model_saving_strategy == "better",
-                    saving_name=f"{self.__class__.__name__}_epoch{epoch}_loss{mean_loss:.4f}",
+                    saving_name=f"{self.__class__.__name__}_epoch{epoch}_{self.validation_metric_name}{mean_loss:.4f}",
                 )
 
                 if os.getenv("ENABLE_HPO", False):
@@ -409,8 +407,8 @@ class BaseNNForecaster(BaseNNModel):
                     "If you don't want it, please try fit() again."
                 )
 
-        if np.isnan(self.best_loss):
-            raise ValueError("Something is wrong. best_loss is Nan after training.")
+        if np.isnan(self.best_loss) or self.best_loss.__eq__(float("inf")):
+            raise ValueError("Something is wrong. best_loss is Nan/Inf after training.")
 
         logger.info(f"Finished training. The best model is from epoch#{self.best_epoch}.")
 
