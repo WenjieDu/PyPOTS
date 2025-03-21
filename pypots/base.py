@@ -367,7 +367,8 @@ class BaseModel(ABC):
         assert os.path.exists(path), f"Model file {path} does not exist."
 
         try:
-            loaded_file = torch.load(path, map_location=self.device)
+            map_location = self.device[0] if isinstance(self.device, list) else self.device
+            loaded_file = torch.load(path, map_location=map_location)
 
             if isinstance(loaded_file, torch.nn.Module):  # compatible model for pypots <0.13
                 if isinstance(self.device, torch.device):
