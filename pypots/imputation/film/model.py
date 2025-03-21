@@ -123,9 +123,9 @@ class FiLM(BaseNNImputer):
         batch_size: int = 32,
         epochs: int = 100,
         patience: Optional[int] = None,
-        training_loss: Criterion = MAE(),
-        validation_metric: Criterion = MSE(),
-        optimizer: Optimizer = Adam(),
+        training_loss: Union[Criterion, type] = MAE,
+        validation_metric: Union[Criterion, type] = MSE,
+        optimizer: Union[Optimizer, type] = Adam,
         num_workers: int = 0,
         device: Optional[Union[str, torch.device, list]] = None,
         saving_path: str = None,
@@ -133,11 +133,11 @@ class FiLM(BaseNNImputer):
         verbose: bool = True,
     ):
         super().__init__(
+            training_loss=training_loss,
+            validation_metric=validation_metric,
             batch_size=batch_size,
             epochs=epochs,
             patience=patience,
-            training_loss=training_loss,
-            validation_metric=validation_metric,
             num_workers=num_workers,
             device=device,
             saving_path=saving_path,
@@ -160,23 +160,28 @@ class FiLM(BaseNNImputer):
 
         # set up the model
         self.model = _FiLM(
-            self.n_steps,
-            self.n_features,
-            self.window_size,
-            self.multiscale,
-            self.modes1,
-            self.dropout,
-            self.mode_type,
-            self.d_model,
-            self.ORT_weight,
-            self.MIT_weight,
-            self.training_loss,
+            n_steps=self.n_steps,
+            n_features=self.n_features,
+            window_size=self.window_size,
+            multiscale=self.multiscale,
+            modes1=self.modes1,
+            ratio=self.dropout,
+            mode_type=self.mode_type,
+            d_model=self.d_model,
+            ORT_weight=self.ORT_weight,
+            MIT_weight=self.MIT_weight,
+            training_loss=self.training_loss,
+            validation_metric=self.validation_metric,
         )
         self._send_model_to_given_device()
         self._print_model_size()
 
         # set up the optimizer
-        self.optimizer = optimizer
+        if isinstance(optimizer, Optimizer):
+            self.optimizer = optimizer
+        else:
+            self.optimizer = optimizer()  # instantiate the optimizer if it is a class
+            assert isinstance(self.optimizer, Optimizer)
         self.optimizer.init_optimizer(self.model.parameters())
 
     def _assemble_input_for_training(self, data: list) -> dict:
@@ -250,6 +255,7 @@ class FiLM(BaseNNImputer):
         file_type: str = "hdf5",
     ) -> dict:
 
+        self.model.eval()  # set the model to evaluation mode
         # Step 1: wrap the input data with classes Dataset and DataLoader
         test_set = BaseDataset(
             test_set,

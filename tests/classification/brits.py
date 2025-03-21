@@ -11,9 +11,9 @@ import unittest
 import pytest
 
 from pypots.classification import BRITS
+from pypots.nn.functional import calc_binary_classification_metrics
 from pypots.optim import Adam
 from pypots.utils.logging import logger
-from pypots.nn.functional import calc_binary_classification_metrics
 from tests.global_test_config import (
     DATA,
     EPOCHS,
@@ -59,7 +59,7 @@ class TestBRITS(unittest.TestCase):
     @pytest.mark.xdist_group(name="classification-brits")
     def test_1_classify(self):
         results = self.brits.predict(TEST_SET)
-        metrics = calc_binary_classification_metrics(results["classification"], DATA["test_y"])
+        metrics = calc_binary_classification_metrics(results["classification_proba"], DATA["test_y"])
         logger.info(
             f'BRITS ROC_AUC: {metrics["roc_auc"]}, '
             f'PR_AUC: {metrics["pr_auc"]}, '
@@ -98,8 +98,10 @@ class TestBRITS(unittest.TestCase):
     @pytest.mark.xdist_group(name="classification-brits")
     def test_4_lazy_loading(self):
         self.brits.fit(GENERAL_H5_TRAIN_SET_PATH, GENERAL_H5_VAL_SET_PATH)
-        results = self.brits.predict(GENERAL_H5_TEST_SET_PATH)
-        metrics = calc_binary_classification_metrics(results["classification"], DATA["test_y"])
+        classification_proba = self.brits.predict_proba(GENERAL_H5_TEST_SET_PATH)
+        classification = self.brits.classify(GENERAL_H5_TEST_SET_PATH)
+        assert len(classification) == len(classification_proba)
+        metrics = calc_binary_classification_metrics(classification_proba, DATA["test_y"])
         logger.info(
             f'Lazy-loading BRITS ROC_AUC: {metrics["roc_auc"]}, '
             f'PR_AUC: {metrics["pr_auc"]}, '

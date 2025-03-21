@@ -17,6 +17,7 @@ from torch.utils.data import DataLoader
 from .core import _CRLI
 from .data import DatasetForCRLI
 from ..base import BaseNNClusterer
+from ...nn.modules.loss import Criterion
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
 from ...utils.logging import logger
@@ -125,8 +126,8 @@ class CRLI(BaseNNClusterer):
         batch_size: int = 32,
         epochs: int = 100,
         patience: Optional[int] = None,
-        G_optimizer: Optimizer = Adam(),
-        D_optimizer: Optimizer = Adam(),
+        G_optimizer: Union[Optimizer, type] = Adam,
+        D_optimizer: Union[Optimizer, type] = Adam,
         num_workers: int = 0,
         device: Optional[Union[str, torch.device, list]] = None,
         saving_path: Optional[str] = None,
@@ -135,11 +136,11 @@ class CRLI(BaseNNClusterer):
     ):
         super().__init__(
             n_clusters=n_clusters,
+            training_loss=Criterion,
+            validation_metric=Criterion,
             batch_size=batch_size,
             epochs=epochs,
             patience=patience,
-            training_loss=None,
-            validation_metric=None,
             num_workers=num_workers,
             device=device,
             saving_path=saving_path,
@@ -168,15 +169,33 @@ class CRLI(BaseNNClusterer):
         self._print_model_size()
 
         # set up the optimizer
-        self.G_optimizer = G_optimizer
-        self.G_optimizer.init_optimizer(
-            [
-                {"params": self.model.backbone.generator.parameters()},
-                {"params": self.model.backbone.decoder.parameters()},
-            ]
-        )
-        self.D_optimizer = D_optimizer
-        self.D_optimizer.init_optimizer(self.model.backbone.discriminator.parameters())
+        if isinstance(G_optimizer, Optimizer):
+            self.G_optimizer = G_optimizer
+        else:
+            self.G_optimizer = G_optimizer()  # instantiate the optimizer if it is a class
+            assert isinstance(self.G_optimizer, Optimizer)
+        if isinstance(D_optimizer, Optimizer):
+            self.D_optimizer = D_optimizer
+        else:
+            self.D_optimizer = D_optimizer()  # instantiate the optimizer if it is a class
+            assert isinstance(self.D_optimizer, Optimizer)
+
+        if isinstance(self.device, list):
+            self.G_optimizer.init_optimizer(
+                [
+                    {"params": self.model.module.backbone.generator.parameters()},
+                    {"params": self.model.module.backbone.decoder.parameters()},
+                ]
+            )
+            self.D_optimizer.init_optimizer(self.model.module.backbone.discriminator.parameters())
+        else:
+            self.G_optimizer.init_optimizer(
+                [
+                    {"params": self.model.backbone.generator.parameters()},
+                    {"params": self.model.backbone.decoder.parameters()},
+                ]
+            )
+            self.D_optimizer.init_optimizer(self.model.backbone.discriminator.parameters())
 
     def _assemble_input_for_training(self, data: list) -> dict:
         # fetch data
@@ -201,8 +220,12 @@ class CRLI(BaseNNClusterer):
         val_loader: DataLoader = None,
     ) -> None:
         # each training starts from the very beginning, so reset the loss and model dict here
-        self.best_loss = float("inf")
         self.best_model_dict = None
+
+        if self.validation_metric.lower_better:
+            self.best_loss = float("inf")
+        else:
+            self.best_loss = float("-inf")
 
         try:
             training_step = 0
@@ -219,14 +242,14 @@ class CRLI(BaseNNClusterer):
                     for _ in range(self.D_steps):
                         self.D_optimizer.zero_grad()
                         results = self.model.forward(inputs, training_object="discriminator")
-                        results["discrimination_loss"].backward(retain_graph=True)
+                        results["discrimination_loss"].sum().backward(retain_graph=True)
                         self.D_optimizer.step()
                         step_train_loss_D_collector.append(results["discrimination_loss"].sum().item())
 
                     for _ in range(self.G_steps):
                         self.G_optimizer.zero_grad()
                         results = self.model.forward(inputs, training_object="generator")
-                        results["generation_loss"].backward()
+                        results["generation_loss"].sum().backward()
                         self.G_optimizer.step()
                         step_train_loss_G_collector.append(results["generation_loss"].sum().item())
 
@@ -282,7 +305,9 @@ class CRLI(BaseNNClusterer):
                 if np.isnan(mean_loss):
                     logger.warning(f"‼️ Attention: got NaN loss in Epoch {epoch}. This may lead to unexpected errors.")
 
-                if mean_loss < self.best_loss:
+                if (self.validation_metric.lower_better and mean_loss < self.best_loss) or (
+                    not self.validation_metric.lower_better and mean_loss > self.best_loss
+                ):
                     self.best_epoch = epoch
                     self.best_loss = mean_loss
                     self.best_model_dict = self.model.state_dict()
@@ -298,7 +323,7 @@ class CRLI(BaseNNClusterer):
                 # save the model if necessary
                 self._auto_save_model_if_necessary(
                     confirm_saving=self.best_epoch == epoch and self.model_saving_strategy == "better",
-                    saving_name=f"{self.__class__.__name__}_epoch{epoch}_loss{mean_loss:.4f}",
+                    saving_name=f"{self.__class__.__name__}_epoch{epoch}_{self.validation_metric_name}{mean_loss:.4f}",
                 )
 
                 if self.patience == 0:
@@ -320,8 +345,8 @@ class CRLI(BaseNNClusterer):
                     "If you don't want it, please try fit() again."
                 )
 
-        if np.isnan(self.best_loss):
-            raise ValueError("Something is wrong. best_loss is Nan after training.")
+        if np.isnan(self.best_loss) or self.best_loss.__eq__(float("inf")):
+            raise ValueError("Something is wrong. best_loss is Nan/Inf after training.")
 
         logger.info(f"Finished training. The best model is from epoch#{self.best_epoch}.")
 
@@ -387,7 +412,12 @@ class CRLI(BaseNNClusterer):
         file_type :
             The dictionary containing the clustering results and latent variables if necessary.
         """
-        test_set = DatasetForCRLI(test_set, return_y=False, file_type=file_type)
+        self.model.eval()  # set the model to evaluation mode
+        test_set = DatasetForCRLI(
+            test_set,
+            return_y=False,
+            file_type=file_type,
+        )
         test_loader = DataLoader(
             test_set,
             batch_size=self.batch_size,
@@ -405,7 +435,10 @@ class CRLI(BaseNNClusterer):
                 imputation_collector.append(inputs["imputation_latent"])
 
         clustering_latent = torch.cat(clustering_latent_collector).cpu().detach().numpy()
-        clustering = self.model.kmeans.fit_predict(clustering_latent)
+        if isinstance(self.device, list):
+            clustering = self.model.module.kmeans.fit_predict(clustering_latent)
+        else:
+            clustering = self.model.kmeans.fit_predict(clustering_latent)
 
         result_dict = {
             "clustering": clustering,

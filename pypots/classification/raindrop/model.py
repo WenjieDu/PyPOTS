@@ -17,7 +17,6 @@ from .core import _Raindrop
 from .data import DatasetForRaindrop
 from ...classification.base import BaseNNClassifier
 from ...nn.modules.loss import Criterion, CrossEntropy
-from ...nn.modules.metric import PR_AUC
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
 
@@ -132,9 +131,9 @@ class Raindrop(BaseNNClassifier):
         batch_size=32,
         epochs=100,
         patience: Optional[int] = None,
-        training_loss: Criterion = CrossEntropy(),
-        validation_metric: Criterion = PR_AUC(),
-        optimizer: Optimizer = Adam(),
+        training_loss: Union[Criterion, type] = CrossEntropy,
+        validation_metric: Union[Criterion, type] = CrossEntropy,
+        optimizer: Union[Optimizer, type] = Adam,
         num_workers: int = 0,
         device: Optional[Union[str, torch.device, list]] = None,
         saving_path: str = None,
@@ -143,11 +142,11 @@ class Raindrop(BaseNNClassifier):
     ):
         super().__init__(
             n_classes=n_classes,
+            training_loss=training_loss,
+            validation_metric=validation_metric,
             batch_size=batch_size,
             epochs=epochs,
             patience=patience,
-            training_loss=training_loss,
-            validation_metric=validation_metric,
             num_workers=num_workers,
             device=device,
             saving_path=saving_path,
@@ -160,25 +159,30 @@ class Raindrop(BaseNNClassifier):
 
         # set up the model
         self.model = _Raindrop(
-            n_features,
-            n_layers,
-            d_model,
-            n_heads,
-            d_ffn,
-            n_classes,
-            dropout,
-            n_steps,
-            d_static,
-            aggregation,
-            sensor_wise_mask,
-            static,
-            self.training_loss,
+            n_features=n_features,
+            n_layers=n_layers,
+            d_model=d_model,
+            n_heads=n_heads,
+            d_ffn=d_ffn,
+            n_classes=n_classes,
+            dropout=dropout,
+            max_len=n_steps,
+            d_static=d_static,
+            aggregation=aggregation,
+            sensor_wise_mask=sensor_wise_mask,
+            static=static,
+            training_loss=self.training_loss,
+            validation_metric=self.validation_metric,
         )
         self._send_model_to_given_device()
         self._print_model_size()
 
         # set up the optimizer
-        self.optimizer = optimizer
+        if isinstance(optimizer, Optimizer):
+            self.optimizer = optimizer
+        else:
+            self.optimizer = optimizer()  # instantiate the optimizer if it is a class
+            assert isinstance(self.optimizer, Optimizer)
         self.optimizer.init_optimizer(self.model.parameters())
 
     def _assemble_input_for_training(self, data: list) -> dict:
@@ -270,7 +274,12 @@ class Raindrop(BaseNNClassifier):
         test_set: Union[dict, str],
         file_type: str = "hdf5",
     ) -> dict:
-        test_set = DatasetForRaindrop(test_set, return_y=False, file_type=file_type)
+        self.model.eval()  # set the model to evaluation mode
+        test_set = DatasetForRaindrop(
+            test_set,
+            return_y=False,
+            file_type=file_type,
+        )
         test_loader = DataLoader(
             test_set,
             batch_size=self.batch_size,
@@ -278,19 +287,27 @@ class Raindrop(BaseNNClassifier):
             num_workers=self.num_workers,
         )
 
-        classification_collector = []
+        classification_results = []
         for idx, data in enumerate(test_loader):
             inputs = self._assemble_input_for_testing(data)
-            results = self.model.forward(inputs)
-            prediction = results["classification_pred"]
-            classification_collector.append(prediction)
+            results = self.model(inputs)
+            classification_results.append(results["classification_proba"])
 
-        classification = torch.cat(classification_collector).cpu().detach().numpy()
-
+        classification_proba = torch.cat(classification_results).cpu().detach().numpy()
+        classification = np.argmax(classification_proba, axis=1)
         result_dict = {
             "classification": classification,
+            "classification_proba": classification_proba,
         }
         return result_dict
+
+    def predict_proba(
+        self,
+        test_set: Union[dict, str],
+        file_type: str = "hdf5",
+    ) -> np.ndarray:
+        result_dict = self.predict(test_set, file_type=file_type)
+        return result_dict["classification_proba"]
 
     def classify(
         self,
