@@ -10,6 +10,15 @@ pypots.classification.saits
    :show-inheritance:
    :inherited-members:
 
+pypots.classification.tefn
+----------------------------------
+
+.. automodule:: pypots.classification.tefn
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+
 pypots.classification.brits
 ----------------------------------
 
@@ -19,10 +28,28 @@ pypots.classification.brits
    :show-inheritance:
    :inherited-members:
 
+pypots.classification.itransformer
+----------------------------------
+
+.. automodule:: pypots.classification.itransformer
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+
 pypots.classification.csai
 ----------------------------------
 
 .. automodule:: pypots.classification.csai
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+
+pypots.classification.timesnet
+----------------------------------
+
+.. automodule:: pypots.classification.timesnet
    :members:
    :undoc-members:
    :show-inheritance:
