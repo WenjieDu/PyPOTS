@@ -5,10 +5,15 @@
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
+import numpy as np
+import torch
 
 from .loss import Criterion
-
-from ..functional import calc_pr_auc, calc_acc, calc_roc_auc
+from ..functional import (
+    calc_acc,
+    calc_pr_auc,
+    calc_roc_auc,
+)
 
 
 class PR_AUC(Criterion):
@@ -16,8 +21,14 @@ class PR_AUC(Criterion):
         super().__init__(lower_better=False)
         self.pos_label = pos_label
 
-    def forward(self, predictions, targets):
-        pr_auc, _, _, _ = calc_pr_auc(predictions, targets, self.pos_label)
+    def forward(
+        self,
+        logits: torch.Tensor,
+        targets: torch.Tensor,
+    ) -> float:
+        probabilities = torch.softmax(logits, dim=1).cpu().numpy()
+        targets = targets.cpu().numpy()
+        pr_auc, _, _, _ = calc_pr_auc(probabilities, targets, self.pos_label)
         return pr_auc
 
 
@@ -26,8 +37,14 @@ class ROC_AUC(Criterion):
         super().__init__(lower_better=False)
         self.pos_label = pos_label
 
-    def forward(self, predictions, targets):
-        roc_auc, _, _, _ = calc_roc_auc(predictions, targets, self.pos_label)
+    def forward(
+        self,
+        logits: torch.Tensor,
+        targets: torch.Tensor,
+    ) -> float:
+        probabilities = torch.softmax(logits, dim=1).cpu().numpy()
+        targets = targets.cpu().numpy()
+        roc_auc, _, _, _ = calc_roc_auc(probabilities, targets, self.pos_label)
         return roc_auc
 
 
@@ -35,6 +52,13 @@ class Accuracy(Criterion):
     def __init__(self):
         super().__init__(lower_better=False)
 
-    def forward(self, predictions, targets):
-        acc_score = calc_acc(predictions, targets)
+    def forward(
+        self,
+        logits: torch.Tensor,
+        targets: torch.Tensor,
+    ) -> float:
+        probabilities = torch.softmax(logits, dim=1).cpu().numpy()
+        class_predictions = np.argmax(probabilities, axis=1)
+        targets = targets.cpu().numpy()
+        acc_score = calc_acc(class_predictions, targets)
         return acc_score
