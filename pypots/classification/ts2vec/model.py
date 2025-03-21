@@ -316,9 +316,18 @@ class TS2Vec(BaseNNClassifier):
 
         result_dict = {
             "classification": y_pred,
-            "score": y_score,
+            "classification_proba": y_score,
         }
         return result_dict
+
+    def predict_proba(
+        self,
+        test_set: Union[dict, str],
+        file_type: str = "hdf5",
+        classifier_type: str = "svm",
+    ) -> np.ndarray:
+        result_dict = self.predict(test_set, file_type=file_type, classifier_type=classifier_type)
+        return result_dict["classification_proba"]
 
     def classify(
         self,
@@ -351,5 +360,5 @@ class TS2Vec(BaseNNClassifier):
             The dictionary containing the clustering results and latent variables if necessary.
 
         """
-        result_dict = self.predict(test_set, file_type=file_type)
+        result_dict = self.predict(test_set, file_type=file_type, classifier_type=classifier_type)
         return result_dict["classification"]

@@ -62,7 +62,7 @@ class TestTS2Vec(unittest.TestCase):
     @pytest.mark.xdist_group(name="classification-ts2vec")
     def test_1_classify(self):
         results = self.ts2vec.predict(TEST_SET, classifier_type="svm")
-        metrics = calc_binary_classification_metrics(results["classification"], DATA["test_y"])
+        metrics = calc_binary_classification_metrics(results["classification_proba"], DATA["test_y"])
         logger.info(
             f'TS2Vec+svm ROC_AUC: {metrics["roc_auc"]}, '
             f'PR_AUC: {metrics["pr_auc"]}, '
@@ -72,7 +72,7 @@ class TestTS2Vec(unittest.TestCase):
         )
 
         results = self.ts2vec.predict(TEST_SET, classifier_type="knn")
-        metrics = calc_binary_classification_metrics(results["classification"], DATA["test_y"])
+        metrics = calc_binary_classification_metrics(results["classification_proba"], DATA["test_y"])
         logger.info(
             f'TS2Vec+knn ROC_AUC: {metrics["roc_auc"]}, '
             f'PR_AUC: {metrics["pr_auc"]}, '
@@ -82,7 +82,7 @@ class TestTS2Vec(unittest.TestCase):
         )
 
         results = self.ts2vec.predict(TEST_SET, classifier_type="linear_regression")
-        metrics = calc_binary_classification_metrics(results["classification"], DATA["test_y"])
+        metrics = calc_binary_classification_metrics(results["classification_proba"], DATA["test_y"])
         logger.info(
             f'TS2Vec+linear_regression ROC_AUC: {metrics["roc_auc"]}, '
             f'PR_AUC: {metrics["pr_auc"]}, '
@@ -122,8 +122,10 @@ class TestTS2Vec(unittest.TestCase):
     @pytest.mark.xdist_group(name="classification-ts2vec")
     def test_4_lazy_loading(self):
         self.ts2vec.fit(GENERAL_H5_TRAIN_SET_PATH, GENERAL_H5_VAL_SET_PATH)
-        results = self.ts2vec.predict(GENERAL_H5_TEST_SET_PATH)
-        metrics = calc_binary_classification_metrics(results["classification"], DATA["test_y"])
+        classification_proba = self.ts2vec.predict_proba(GENERAL_H5_TEST_SET_PATH)
+        classification = self.ts2vec.classify(GENERAL_H5_TEST_SET_PATH)
+        assert len(classification) == len(classification_proba)
+        metrics = calc_binary_classification_metrics(classification_proba, DATA["test_y"])
         logger.info(
             f'Lazy-loading TS2Vec ROC_AUC: {metrics["roc_auc"]}, '
             f'PR_AUC: {metrics["pr_auc"]}, '
