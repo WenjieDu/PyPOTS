@@ -709,8 +709,12 @@ class BaseNNModel(BaseModel):
         val_loader: Optional[DataLoader] = None,
     ) -> None:
         # each training starts from the very beginning, so reset the loss and model dict here
-        self.best_loss = float("inf")
         self.best_model_dict = None
+
+        if self.validation_metric.lower_better:
+            self.best_loss = float("inf")
+        else:
+            self.best_loss = float("-inf")
 
         try:
             training_step = 0
