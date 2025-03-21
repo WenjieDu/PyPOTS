@@ -1,5 +1,5 @@
 """
-The package including the modules of TS2Vec.
+The package of the partially-observed time-series representation learning and vectorizing model TS2Vec.
 
 Refer to the paper
 `Zhihan Yue, Yujing Wang, Juanyong Duan, Tianmeng Yang, Congrui Huang, Yunhai Tong, Bixiong Xu.
