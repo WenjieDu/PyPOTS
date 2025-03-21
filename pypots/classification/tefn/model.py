@@ -239,11 +239,21 @@ class TEFN(BaseNNClassifier):
             results = self.model(inputs)
             classification_results.append(results["classification_proba"])
 
-        classification = torch.cat(classification_results).cpu().detach().numpy()
+        classification_proba = torch.cat(classification_results).cpu().detach().numpy()
+        classification = np.argmax(classification_proba, axis=1)
         result_dict = {
             "classification": classification,
+            "classification_proba": classification_proba,
         }
         return result_dict
+
+    def predict_proba(
+        self,
+        test_set: Union[dict, str],
+        file_type: str = "hdf5",
+    ) -> np.ndarray:
+        result_dict = self.predict(test_set, file_type=file_type)
+        return result_dict["classification_proba"]
 
     def classify(
         self,
