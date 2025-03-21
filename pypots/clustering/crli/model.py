@@ -8,6 +8,7 @@ the partially-observed time-series clustering task.
 # License: BSD-3-Clause
 
 import os
+from copy import deepcopy
 from typing import Union, Optional
 
 import numpy as np
@@ -310,7 +311,7 @@ class CRLI(BaseNNClusterer):
                 ):
                     self.best_epoch = epoch
                     self.best_loss = mean_loss
-                    self.best_model_dict = self.model.state_dict()
+                    self.best_model_dict = deepcopy(self.model.state_dict())
                     self.patience = self.original_patience
                 else:
                     self.patience -= 1

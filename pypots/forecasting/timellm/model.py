@@ -6,6 +6,7 @@ The implementation of TimeLLM for the partially-observed time-series forecasting
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
+from copy import deepcopy
 from typing import Union, Optional
 
 import numpy as np
@@ -219,9 +220,9 @@ class TimeLLM(BaseNNForecaster):
 
         if isinstance(self.device, list):
             # to save a DataParallel model generically, save the model.module.state_dict()
-            model_state_dict = self.model.module.state_dict()
+            model_state_dict = deepcopy(self.model.module.state_dict())
         else:
-            model_state_dict = self.model.state_dict()
+            model_state_dict = deepcopy(self.model.state_dict())
         model_state_dict = {k: v for k, v in model_state_dict.items() if "llm" not in k}
 
         all_attrs = dict({})
