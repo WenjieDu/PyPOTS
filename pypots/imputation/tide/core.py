@@ -6,6 +6,8 @@ and takes over the forward progress of the algorithm.
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
+from typing import Union
+
 import torch.nn as nn
 
 from ...nn.modules.loss import Criterion, MAE
@@ -26,7 +28,7 @@ class _TiDE(nn.Module):
         dropout,
         ORT_weight: float = 1,
         MIT_weight: float = 1,
-        training_loss: Criterion = MAE(),
+        training_loss: Union[Criterion, type] = MAE,
     ):
         super().__init__()
 

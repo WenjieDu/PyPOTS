@@ -7,6 +7,8 @@ and takes over the forward progress of the algorithm.
 # License: BSD-3-Clause
 
 
+from typing import Union
+
 import torch.nn as nn
 
 from ...nn.modules.loss import Criterion, RMSE
@@ -19,7 +21,7 @@ class _MRNN(nn.Module):
         n_steps,
         n_features,
         rnn_hidden_size,
-        training_loss: Criterion = RMSE(),
+        training_loss: Union[Criterion, type] = RMSE(),
     ):
         super().__init__()
         self.backbone = BackboneMRNN(n_steps, n_features, rnn_hidden_size)

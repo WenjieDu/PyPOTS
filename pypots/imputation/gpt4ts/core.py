@@ -7,6 +7,8 @@ and takes over the forward progress of the algorithm.
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
+from typing import Union
+
 import torch.nn as nn
 
 from ...nn.modules.gpt4ts import BackboneGPT4TS
@@ -26,7 +28,7 @@ class _GPT4TS(nn.Module):
         dropout: float,
         embed: str,
         freq: str,
-        training_loss: Criterion = MAE(),
+        training_loss: Union[Criterion, type] = MAE,
     ):
         super().__init__()
         self.n_layers = n_layers

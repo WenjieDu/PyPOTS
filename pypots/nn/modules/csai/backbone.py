@@ -6,6 +6,7 @@
 # License: BSD-3-Clause
 
 import math
+from typing import Union
 
 import torch
 import torch.nn as nn
@@ -94,7 +95,7 @@ class BackboneCSAI(nn.Module):
         n_features,
         rnn_hidden_size,
         step_channels,
-        training_loss: Criterion = MAE(),
+        training_loss: Union[Criterion, type] = MAE,
     ):
         super().__init__()
 
@@ -200,7 +201,7 @@ class BackboneBCSAI(nn.Module):
         n_features,
         rnn_hidden_size,
         step_channels,
-        training_loss: Criterion = MAE(),
+        training_loss: Union[Criterion, type] = MAE,
     ):
         super().__init__()
 

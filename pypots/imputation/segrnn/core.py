@@ -5,6 +5,8 @@ and takes over the forward progress of the algorithm.
 
 # Created by Shengsheng Lin
 
+from typing import Union
+
 import torch.nn as nn
 
 from ...nn.modules.loss import Criterion, MAE
@@ -22,7 +24,7 @@ class _SegRNN(nn.Module):
         dropout: float = 0.5,
         ORT_weight: float = 1,
         MIT_weight: float = 1,
-        training_loss: Criterion = MAE(),
+        training_loss: Union[Criterion, type] = MAE,
     ):
         super().__init__()
 

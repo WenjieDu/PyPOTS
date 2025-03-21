@@ -114,8 +114,8 @@ class USGAN(BaseNNImputer):
         batch_size: int = 32,
         epochs: int = 100,
         patience: Optional[int] = None,
-        G_optimizer: Optimizer = Adam(),
-        D_optimizer: Optimizer = Adam(),
+        G_optimizer: Union[Optimizer, type] = Adam,
+        D_optimizer: Union[Optimizer, type] = Adam,
         num_workers: int = 0,
         device: Optional[Union[str, torch.device, list]] = None,
         saving_path: Optional[str] = None,
@@ -154,8 +154,17 @@ class USGAN(BaseNNImputer):
         self._print_model_size()
 
         # set up the optimizer
-        self.G_optimizer = G_optimizer
-        self.D_optimizer = D_optimizer
+        if isinstance(G_optimizer, Optimizer):
+            self.G_optimizer = G_optimizer
+        else:
+            self.G_optimizer = G_optimizer()  # instantiate the optimizer if it is a class
+            assert isinstance(self.G_optimizer, Optimizer)
+        if isinstance(D_optimizer, Optimizer):
+            self.D_optimizer = D_optimizer
+        else:
+            self.D_optimizer = D_optimizer()  # instantiate the optimizer if it is a class
+            assert isinstance(self.D_optimizer, Optimizer)
+
         if isinstance(self.device, list):
             self.G_optimizer.init_optimizer(self.model.module.backbone.generator.parameters())
             self.D_optimizer.init_optimizer(self.model.module.backbone.discriminator.parameters())
@@ -322,7 +331,9 @@ class USGAN(BaseNNImputer):
                 if np.isnan(mean_loss):
                     logger.warning(f"‼️ Attention: got NaN loss in Epoch {epoch}. This may lead to unexpected errors.")
 
-                if mean_loss < self.best_loss:
+                if (self.validation_metric.lower_better and mean_loss < self.best_loss) or (
+                    not self.validation_metric.lower_better and mean_loss > self.best_loss
+                ):
                     self.best_epoch = epoch
                     self.best_loss = mean_loss
                     self.best_model_dict = self.model.state_dict()
@@ -333,7 +344,7 @@ class USGAN(BaseNNImputer):
                 # save the model if necessary
                 self._auto_save_model_if_necessary(
                     confirm_saving=self.best_epoch == epoch and self.model_saving_strategy == "better",
-                    saving_name=f"{self.__class__.__name__}_epoch{epoch}_loss{mean_loss:.4f}",
+                    saving_name=f"{self.__class__.__name__}_epoch{epoch}_{self.validation_metric_name}{mean_loss:.4f}",
                 )
 
                 if os.getenv("ENABLE_HPO", False):
@@ -360,8 +371,8 @@ class USGAN(BaseNNImputer):
                     "If you don't want it, please try fit() again."
                 )
 
-        if np.isnan(self.best_loss):
-            raise ValueError("Something is wrong. best_loss is Nan after training.")
+        if np.isnan(self.best_loss) or self.best_loss.__eq__(float("inf")):
+            raise ValueError("Something is wrong. best_loss is Nan/Inf after training.")
 
         logger.info(f"Finished training. The best model is from epoch#{self.best_epoch}.")
 

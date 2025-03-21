@@ -7,6 +7,8 @@ and takes over the forward progress of the algorithm.
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
+from typing import Union
+
 import torch.nn as nn
 
 from ...nn.modules.loss import Criterion, MSE
@@ -31,7 +33,7 @@ class _TimeLLM(nn.Module):
         llm_model_type: str,
         dropout: float,
         domain_prompt_content: str,
-        training_loss: Criterion = MSE(),
+        training_loss: Union[Criterion, type] = MSE,
     ):
         super().__init__()
 
