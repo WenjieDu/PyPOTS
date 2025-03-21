@@ -19,6 +19,7 @@ from torch.utils.data import DataLoader
 from .core import inverse_softplus, _VaDER
 from .data import DatasetForVaDER
 from ..base import BaseNNClusterer
+from ...nn.modules.loss import Criterion
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
 from ...utils.logging import logger
@@ -104,7 +105,7 @@ class VaDER(BaseNNClusterer):
         epochs: int = 100,
         pretrain_epochs: int = 10,
         patience: Optional[int] = None,
-        optimizer: Optimizer = Adam(),
+        optimizer: Union[Optimizer, type] = Adam,
         num_workers: int = 0,
         device: Optional[Union[str, torch.device, list]] = None,
         saving_path: str = None,
@@ -113,11 +114,11 @@ class VaDER(BaseNNClusterer):
     ):
         super().__init__(
             n_clusters=n_clusters,
+            training_loss=Criterion,
+            validation_metric=Criterion,
             batch_size=batch_size,
             epochs=epochs,
             patience=patience,
-            training_loss=None,
-            validation_metric=None,
             num_workers=num_workers,
             device=device,
             saving_path=saving_path,
@@ -137,7 +138,11 @@ class VaDER(BaseNNClusterer):
         self._print_model_size()
 
         # set up the optimizer
-        self.optimizer = optimizer
+        if isinstance(optimizer, Optimizer):
+            self.optimizer = optimizer
+        else:
+            self.optimizer = optimizer()  # instantiate the optimizer if it is a class
+            assert isinstance(self.optimizer, Optimizer)
         self.optimizer.init_optimizer(self.model.parameters())
 
     def _assemble_input_for_training(self, data: list) -> dict:
@@ -163,8 +168,12 @@ class VaDER(BaseNNClusterer):
         val_loader: DataLoader = None,
     ) -> None:
         # each training starts from the very beginning, so reset the loss and model dict here
-        self.best_loss = float("inf")
         self.best_model_dict = None
+
+        if self.validation_metric.lower_better:
+            self.best_loss = float("inf")
+        else:
+            self.best_loss = float("-inf")
 
         # pretrain to initialize parameters of GMM layer
         pretraining_step = 0
@@ -296,7 +305,9 @@ class VaDER(BaseNNClusterer):
                 if np.isnan(mean_loss):
                     logger.warning(f"‼️ Attention: got NaN loss in Epoch {epoch}. This may lead to unexpected errors.")
 
-                if mean_loss < self.best_loss:
+                if (self.validation_metric.lower_better and mean_loss < self.best_loss) or (
+                    not self.validation_metric.lower_better and mean_loss > self.best_loss
+                ):
                     self.best_epoch = epoch
                     self.best_loss = mean_loss
                     self.best_model_dict = self.model.state_dict()
@@ -307,7 +318,7 @@ class VaDER(BaseNNClusterer):
                 # save the model if necessary
                 self._auto_save_model_if_necessary(
                     confirm_saving=self.best_epoch == epoch and self.model_saving_strategy == "better",
-                    saving_name=f"{self.__class__.__name__}_epoch{epoch}_loss{mean_loss:.4f}",
+                    saving_name=f"{self.__class__.__name__}_epoch{epoch}_{self.validation_metric_name}{mean_loss:.4f}",
                 )
 
                 if os.getenv("ENABLE_HPO", False):
@@ -334,8 +345,8 @@ class VaDER(BaseNNClusterer):
                     "If you don't want it, please try fit() again."
                 )
 
-        if np.isnan(self.best_loss):
-            raise ValueError("Something is wrong. best_loss is Nan after training.")
+        if np.isnan(self.best_loss) or self.best_loss.__eq__(float("inf")):
+            raise ValueError("Something is wrong. best_loss is Nan/Inf after training.")
 
         logger.info(f"Finished training. The best model is from epoch#{self.best_epoch}.")
 

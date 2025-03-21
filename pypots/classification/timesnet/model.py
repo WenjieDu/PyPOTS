@@ -16,7 +16,6 @@ from .core import _TimesNet
 from .data import DatasetForTimesNet
 from ..base import BaseNNClassifier
 from ...nn.modules.loss import Criterion, CrossEntropy
-from ...nn.modules.metric import PR_AUC
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
 
@@ -118,8 +117,8 @@ class TimesNet(BaseNNClassifier):
         batch_size: int = 32,
         epochs: int = 100,
         patience: Optional[int] = None,
-        training_loss: Criterion = CrossEntropy(),
-        validation_metric: Criterion = PR_AUC(),
+        training_loss: Union[Criterion, type] = CrossEntropy,
+        validation_metric: Union[Criterion, type] = CrossEntropy,
         optimizer: Optimizer = Adam(),
         num_workers: int = 0,
         device: Optional[Union[str, torch.device, list]] = None,
@@ -152,16 +151,17 @@ class TimesNet(BaseNNClassifier):
 
         # set up the model
         self.model = _TimesNet(
-            self.n_classes,
-            self.n_layers,
-            self.n_steps,
-            self.n_features,
-            self.top_k,
-            self.d_model,
-            self.d_ffn,
-            self.n_kernels,
-            self.dropout,
-            self.training_loss,
+            n_classes=self.n_classes,
+            n_layers=self.n_layers,
+            n_steps=self.n_steps,
+            n_features=self.n_features,
+            top_k=self.top_k,
+            d_model=self.d_model,
+            d_ffn=self.d_ffn,
+            n_kernels=self.n_kernels,
+            dropout=self.dropout,
+            training_loss=self.training_loss,
+            validation_metric=self.validation_metric,
         )
         self._send_model_to_given_device()
         self._print_model_size()
@@ -256,15 +256,14 @@ class TimesNet(BaseNNClassifier):
             shuffle=False,
             num_workers=self.num_workers,
         )
-        classification_collector = []
 
+        classification_results = []
         for idx, data in enumerate(test_loader):
             inputs = self._assemble_input_for_testing(data)
-            results = self.model.forward(inputs)
-            classification_pred = results["classification_pred"]
-            classification_collector.append(classification_pred)
+            results = self.model(inputs)
+            classification_results.append(results["classification_proba"])
 
-        classification = torch.cat(classification_collector).cpu().detach().numpy()
+        classification = torch.cat(classification_results).cpu().detach().numpy()
         result_dict = {
             "classification": classification,
         }
