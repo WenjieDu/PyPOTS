@@ -288,15 +288,14 @@ class SAITS(BaseNNClassifier):
             shuffle=False,
             num_workers=self.num_workers,
         )
-        classification_collector = []
 
+        classification_results = []
         for idx, data in enumerate(test_loader):
             inputs = self._assemble_input_for_testing(data)
-            results = self.model.forward(inputs)
-            classification_proba = results["classification_proba"]
-            classification_collector.append(classification_proba)
+            results = self.model(inputs)
+            classification_results.append(results["classification_proba"])
 
-        classification = torch.cat(classification_collector).cpu().detach().numpy()
+        classification = torch.cat(classification_results).cpu().detach().numpy()
         result_dict = {
             "classification": classification,
         }
