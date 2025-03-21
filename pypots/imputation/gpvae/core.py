@@ -8,12 +8,11 @@ and takes over the forward progress of the algorithm.
 # License: BSD-3-Clause
 
 
-import torch.nn as nn
-
+from ...nn.modules import ModelCore
 from ...nn.modules.gpvae import BackboneGPVAE
 
 
-class _GPVAE(nn.Module):
+class _GPVAE(ModelCore):
     """model GPVAE with Gaussian Process prior
 
     Parameters

@@ -9,6 +9,8 @@ and takes over the forward progress of the algorithm.
 
 import torch.nn as nn
 
+from ...nn.modules import ModelCore
+
 # from ...nn.modules import some_modules
 from ...nn.modules.loss import Criterion
 
@@ -17,7 +19,7 @@ from ...nn.modules.loss import Criterion
 #  It could be a neural network model or a non-neural network algorithm (e.g. written in numpy).
 #  Your model should be implemented with PyTorch and subclass torch.nn.Module if it is a neural network.
 #  Note that your main algorithm is defined in this class, and this class usually won't be exposed to users.
-class _YourNewModel(nn.Module):
+class _YourNewModel(ModelCore):
     def __init__(
         self,
         training_loss: Criterion,

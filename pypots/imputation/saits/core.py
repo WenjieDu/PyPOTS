@@ -9,13 +9,13 @@ and takes over the forward progress of the algorithm.
 
 
 import torch
-import torch.nn as nn
 
+from ...nn.modules import ModelCore
 from ...nn.modules.loss import Criterion
 from ...nn.modules.saits import BackboneSAITS
 
 
-class _SAITS(nn.Module):
+class _SAITS(ModelCore):
     def __init__(
         self,
         n_layers: int,

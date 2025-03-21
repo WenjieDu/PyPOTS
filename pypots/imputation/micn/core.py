@@ -6,15 +6,14 @@ and takes over the forward progress of the algorithm.
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-import torch.nn as nn
-
+from ...nn.modules import ModelCore
 from ...nn.modules.fedformer.layers import SeriesDecompositionMultiBlock
 from ...nn.modules.loss import Criterion
 from ...nn.modules.micn import BackboneMICN
 from ...nn.modules.saits import SaitsLoss, SaitsEmbedding
 
 
-class _MICN(nn.Module):
+class _MICN(ModelCore):
     def __init__(
         self,
         n_steps: int,

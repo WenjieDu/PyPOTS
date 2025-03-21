@@ -10,11 +10,12 @@ and takes over the forward progress of the algorithm.
 import torch
 import torch.nn as nn
 
+from ...nn.modules import ModelCore
 from ...nn.modules.grud import BackboneGRUD
 from ...nn.modules.loss import Criterion
 
 
-class _GRUD(nn.Module):
+class _GRUD(ModelCore):
     def __init__(
         self,
         n_steps: int,
@@ -67,11 +68,11 @@ class _GRUD(nn.Module):
         _, hidden_state = self.model(X, missing_mask, deltas, empirical_mean, X_filledLOCF)
 
         logits = self.classifier(hidden_state)
-        classification_pred = torch.softmax(logits, dim=1)
+        classification_proba = torch.softmax(logits, dim=1)
 
         results = {
             "logits": logits,
-            "classification_pred": classification_pred,
+            "classification_proba": classification_proba,
         }
 
         return results

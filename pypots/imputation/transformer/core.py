@@ -9,12 +9,13 @@ and takes over the forward progress of the algorithm.
 
 import torch.nn as nn
 
+from ...nn.modules import ModelCore
 from ...nn.modules.loss import Criterion
 from ...nn.modules.saits import SaitsLoss, SaitsEmbedding
 from ...nn.modules.transformer import TransformerEncoder
 
 
-class _Transformer(nn.Module):
+class _Transformer(ModelCore):
     def __init__(
         self,
         n_steps: int,

@@ -7,13 +7,12 @@ and takes over the forward progress of the algorithm.
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-import torch.nn as nn
-
+from ...nn.modules import ModelCore
 from ...nn.modules.gpt4ts import BackboneGPT4TS
 from ...nn.modules.loss import Criterion
 
 
-class _GPT4TS(nn.Module):
+class _GPT4TS(ModelCore):
     def __init__(
         self,
         n_steps: int,

@@ -16,7 +16,6 @@ from .core import _TEFN
 from .data import DatasetForTEFN
 from ..base import BaseNNClassifier
 from ...nn.modules.loss import Criterion, CrossEntropy
-from ...nn.modules.metric import PR_AUC
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
 
@@ -102,8 +101,8 @@ class TEFN(BaseNNClassifier):
         batch_size: int = 32,
         epochs: int = 100,
         patience: Optional[int] = None,
-        training_loss: Criterion = CrossEntropy(),
-        validation_metric: Criterion = PR_AUC(),
+        training_loss: Union[Criterion, type] = CrossEntropy,
+        validation_metric: Union[Criterion, type] = CrossEntropy,
         optimizer: Optimizer = Adam(),
         num_workers: int = 0,
         device: Optional[Union[str, torch.device, list]] = None,
@@ -132,12 +131,13 @@ class TEFN(BaseNNClassifier):
 
         # set up the model
         self.model = _TEFN(
-            self.n_classes,
-            self.n_steps,
-            self.n_features,
-            self.n_fod,
-            self.dropout,
-            self.training_loss,
+            n_classes=self.n_classes,
+            n_steps=self.n_steps,
+            n_features=self.n_features,
+            n_fod=self.n_fod,
+            dropout=self.dropout,
+            training_loss=self.training_loss,
+            validation_metric=self.validation_metric,
         )
         self._send_model_to_given_device()
         self._print_model_size()
@@ -237,8 +237,8 @@ class TEFN(BaseNNClassifier):
         for idx, data in enumerate(test_loader):
             inputs = self._assemble_input_for_testing(data)
             results = self.model.forward(inputs)
-            classification_pred = results["classification_pred"]
-            classification_collector.append(classification_pred)
+            classification_proba = results["classification_proba"]
+            classification_collector.append(classification_proba)
 
         classification = torch.cat(classification_collector).cpu().detach().numpy()
         result_dict = {

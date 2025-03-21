@@ -6,13 +6,12 @@ and takes over the forward progress of the algorithm.
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-import torch.nn as nn
-
+from ...nn.modules import ModelCore
 from ...nn.modules.brits import BackboneBRITS
 from ...nn.modules.loss import Criterion
 
 
-class _BRITS(nn.Module):
+class _BRITS(ModelCore):
     """model BRITS: Bidirectional RITS
     BRITS consists of two RITS, which take time-series data from two directions (forward/backward) respectively.
 

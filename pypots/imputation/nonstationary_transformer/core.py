@@ -9,6 +9,7 @@ and takes over the forward progress of the algorithm.
 import torch.nn as nn
 
 from ...nn.functional.normalization import nonstationary_norm, nonstationary_denorm
+from ...nn.modules import ModelCore
 from ...nn.modules.loss import Criterion
 from ...nn.modules.nonstationary_transformer import (
     NonstationaryTransformerEncoder,
@@ -17,7 +18,7 @@ from ...nn.modules.nonstationary_transformer import (
 from ...nn.modules.saits import SaitsLoss, SaitsEmbedding
 
 
-class _NonstationaryTransformer(nn.Module):
+class _NonstationaryTransformer(ModelCore):
     def __init__(
         self,
         n_steps: int,

@@ -9,11 +9,12 @@ and takes over the forward progress of the algorithm.
 import torch
 import torch.nn as nn
 
+from ...nn.modules import ModelCore
 from ...nn.modules.loss import Criterion
 from ...nn.modules.raindrop import BackboneRaindrop
 
 
-class _Raindrop(nn.Module):
+class _Raindrop(ModelCore):
     def __init__(
         self,
         n_features,
@@ -110,10 +111,10 @@ class _Raindrop(nn.Module):
             output = torch.cat([output, emb], dim=1)
 
         logits = self.mlp_static(output)
-        classification_pred = torch.softmax(logits, dim=1)
+        classification_proba = torch.softmax(logits, dim=1)
         results = {
             "logits": logits,
-            "classification_pred": classification_pred,
+            "classification_proba": classification_proba,
         }
 
         return results

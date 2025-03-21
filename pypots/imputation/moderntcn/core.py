@@ -6,15 +6,14 @@ and takes over the forward progress of the algorithm.
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-import torch.nn as nn
-
 from ...nn.functional import nonstationary_norm, nonstationary_denorm
+from ...nn.modules import ModelCore
 from ...nn.modules.loss import Criterion
 from ...nn.modules.moderntcn import BackboneModernTCN
 from ...nn.modules.patchtst.layers import FlattenHead
 
 
-class _ModernTCN(nn.Module):
+class _ModernTCN(ModelCore):
     def __init__(
         self,
         n_steps,
