@@ -111,7 +111,7 @@ class _BCSAI(ModelCore):
         ) = self.model(inputs)
 
         results = {
-            "imputed_data": imputed_data,
+            "imputation": imputed_data,
             "consistency_loss": consistency_loss,
             "reconstruction_loss": reconstruction_loss,
             "reconstruction": (f_reconstruction + b_reconstruction) / 2,

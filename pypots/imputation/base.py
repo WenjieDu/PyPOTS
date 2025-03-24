@@ -11,8 +11,11 @@ from typing import Union, Optional
 
 import numpy as np
 import torch
+from torch.utils.data import DataLoader
 
 from ..base import BaseModel, BaseNNModel
+from ..data.dataset import BaseDataset
+from ..nn.functional import gather_listed_dicts
 from ..nn.modules.loss import Criterion
 
 
@@ -103,6 +106,7 @@ class BaseImputer(BaseModel):
         self,
         test_set: Union[dict, str],
         file_type: str = "hdf5",
+        **kwargs,
     ) -> dict:
         """Make predictions for the input data with the trained model.
 
@@ -121,17 +125,17 @@ class BaseImputer(BaseModel):
 
         Returns
         -------
-        file_type :
-            The dictionary containing the clustering results and latent variables if necessary.
+        result_dict :
+            The dictionary containing the imputation results as key 'imputation' and latent variables if necessary.
 
         """
         raise NotImplementedError
 
-    @abstractmethod
     def impute(
         self,
         test_set: Union[dict, str],
         file_type: str = "hdf5",
+        **kwargs,
     ) -> np.ndarray:
         """Impute missing values in the given data with the trained model.
 
@@ -146,11 +150,17 @@ class BaseImputer(BaseModel):
 
         Returns
         -------
-        array-like, with shape [n_samples, n_steps, n_features],
-            Imputed data.
+        results :
+            Imputation results of the given data samples.
         """
 
-        raise NotImplementedError
+        result_dict = self.predict(
+            test_set,
+            file_type,
+            **kwargs,
+        )
+        results = result_dict["imputation"]
+        return results
 
 
 class BaseNNImputer(BaseNNModel):
@@ -278,12 +288,12 @@ class BaseNNImputer(BaseNNModel):
         """
         raise NotImplementedError
 
-    @abstractmethod
     @torch.no_grad()
     def predict(
         self,
         test_set: Union[dict, str],
         file_type: str = "hdf5",
+        **kwargs,
     ) -> dict:
         """Make predictions for the input data with the trained model.
 
@@ -302,17 +312,43 @@ class BaseNNImputer(BaseNNModel):
 
         Returns
         -------
-        file_type :
-            The dictionary containing the clustering results and latent variables if necessary.
+        result_dict :
+            The dictionary containing the imputation results as key 'imputation' and latent variables if necessary.
 
         """
-        raise NotImplementedError
+        self.model.eval()  # set the model to evaluation mode
+        # Step 1: wrap the input data with classes Dataset and DataLoader
+        test_set = BaseDataset(
+            test_set,
+            return_X_ori=False,
+            return_X_pred=False,
+            return_y=False,
+            file_type=file_type,
+        )
+        test_loader = DataLoader(
+            test_set,
+            batch_size=self.batch_size,
+            shuffle=False,
+            num_workers=self.num_workers,
+        )
 
-    @abstractmethod
+        # Step 2: process the data with the model
+        dict_result_collector = []
+        for idx, data in enumerate(test_loader):
+            inputs = self._assemble_input_for_testing(data)
+            results = self.model(inputs, **kwargs)
+            dict_result_collector.append(results)
+
+        # Step 3: output collection and return
+        result_dict = gather_listed_dicts(dict_result_collector)
+
+        return result_dict
+
     def impute(
         self,
         test_set: Union[dict, str],
         file_type: str = "hdf5",
+        **kwargs,
     ) -> np.ndarray:
         """Impute missing values in the given data with the trained model.
 
@@ -327,8 +363,14 @@ class BaseNNImputer(BaseNNModel):
 
         Returns
         -------
-        array-like, with shape [n_samples, n_steps, n_features],
-            Imputed data.
+        results :
+            Imputation results of the given data samples.
         """
 
-        raise NotImplementedError
+        result_dict = self.predict(
+            test_set,
+            file_type,
+            **kwargs,
+        )
+        results = result_dict["imputation"]
+        return results
