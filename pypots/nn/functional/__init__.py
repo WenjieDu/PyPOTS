@@ -32,11 +32,14 @@ from .error import (
     calc_quantile_crps,
     calc_quantile_crps_sum,
 )
+from .gathering import gather_listed_dicts
 from .normalization import nonstationary_norm, nonstationary_denorm
 
 __all__ = [
     # cuda functions
     "autocast",
+    # gathering functions
+    "gather_listed_dicts",
     # normalization functions
     "nonstationary_norm",
     "nonstationary_denorm",
