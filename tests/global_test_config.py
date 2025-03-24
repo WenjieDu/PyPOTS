@@ -23,6 +23,7 @@ EPOCHS = 2
 N_STEPS = 14
 N_PRED_STEPS = 2
 N_FEATURES = 5
+ANOMALY_RATE = 0.01
 # tensorboard and model files saving directory
 RESULT_SAVING_DIR = "testing_results"
 MODEL_SAVING_DIR = f"{RESULT_SAVING_DIR}/models"
@@ -54,11 +55,13 @@ DATA = preprocess_random_walk(
     n_features=N_FEATURES,
     n_classes=2,
     n_samples_each_class=100,
+    anomaly_rate=ANOMALY_RATE,
     missing_rate=0.1,
 )
 # from benchpots.datasets import preprocess_physionet2012
 # DATA = preprocess_physionet2012(subset="set-a", rate=0.1)
 
+DATA["anomaly_rate"] = ANOMALY_RATE
 DATA["test_X_indicating_mask"] = np.isnan(DATA["test_X"]) ^ np.isnan(DATA["test_X_ori"])
 DATA["test_X_ori"] = np.nan_to_num(DATA["test_X_ori"])
 
@@ -66,16 +69,19 @@ DATA["test_X_ori"] = np.nan_to_num(DATA["test_X_ori"])
 TRAIN_SET = {
     "X": DATA["train_X"],
     "y": DATA["train_y"].astype(float),
+    "anomaly_y": DATA["train_anomaly_y"].astype(float),
 }
 VAL_SET = {
     "X": DATA["val_X"],
     "X_ori": DATA["val_X_ori"],
     "y": DATA["val_y"].astype(float),
+    "anomaly_y": DATA["val_anomaly_y"].astype(float),
 }
 TEST_SET = {
     "X": DATA["test_X"],
     "X_ori": DATA["test_X_ori"],
     "y": DATA["test_y"].astype(float),
+    "anomaly_y": DATA["test_anomaly_y"].astype(float),
 }
 # for forecasting task, we feed only N_STEPS data into the model and let it predict the following N_PRED_STEPS
 FORECASTING_TRAIN_SET = {
