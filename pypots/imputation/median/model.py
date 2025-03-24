@@ -81,12 +81,3 @@ class Median(BaseImputer):
             "imputation": imputed_data,
         }
         return result_dict
-
-    def impute(
-        self,
-        test_set: Union[dict, str],
-        file_type: str = "hdf5",
-    ) -> np.ndarray:
-
-        result_dict = self.predict(test_set, file_type=file_type)
-        return result_dict["imputation"]

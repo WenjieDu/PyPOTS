@@ -19,6 +19,7 @@ from .data import DatasetForUSGAN
 from ..base import BaseNNImputer
 from ...data.checking import key_in_data_set
 from ...nn.functional import calc_mse
+from ...nn.functional import gather_listed_dicts
 from ...nn.modules.loss import Criterion
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
@@ -299,10 +300,10 @@ class USGAN(BaseNNImputer):
                     with torch.no_grad():
                         for idx, data in enumerate(val_loader):
                             inputs = self._assemble_input_for_validating(data)
-                            results = self.model.forward(inputs)
+                            results = self.model(inputs)
                             imputation_mse = (
                                 calc_mse(
-                                    results["imputed_data"],
+                                    results["imputation"],
                                     inputs["X_ori"],
                                     inputs["indicating_mask"],
                                 )
@@ -429,24 +430,15 @@ class USGAN(BaseNNImputer):
             shuffle=False,
             num_workers=self.num_workers,
         )
-        imputation_collector = []
 
+        # Step 2: process the data with the model
+        dict_result_collector = []
         for idx, data in enumerate(test_loader):
             inputs = self._assemble_input_for_testing(data)
-            results = self.model.forward(inputs)
-            imputed_data = results["imputed_data"]
-            imputation_collector.append(imputed_data)
+            results = self.model(inputs)
+            dict_result_collector.append(results)
 
-        imputation = torch.cat(imputation_collector).cpu().detach().numpy()
-        result_dict = {
-            "imputation": imputation,
-        }
+        # Step 3: output collection and return
+        result_dict = gather_listed_dicts(dict_result_collector)
+
         return result_dict
-
-    def impute(
-        self,
-        test_set: Union[dict, str],
-        file_type: str = "hdf5",
-    ) -> np.ndarray:
-        result_dict = self.predict(test_set, file_type=file_type)
-        return result_dict["imputation"]

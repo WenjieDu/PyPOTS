@@ -8,7 +8,6 @@ The implementation of MOMENT for the partially-observed time-series imputation t
 
 from typing import Union, Optional
 
-import numpy as np
 import torch
 from torch.utils.data import DataLoader
 
@@ -16,7 +15,6 @@ from .core import _MOMENT
 from .data import DatasetForMOMENT
 from ..base import BaseNNImputer
 from ...data.checking import key_in_data_set
-from ...data.dataset import BaseDataset
 from ...nn.modules.loss import Criterion, MAE, MSE
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
@@ -290,47 +288,3 @@ class MOMENT(BaseNNImputer):
 
         # Step 3: save the model if necessary
         self._auto_save_model_if_necessary(confirm_saving=self.model_saving_strategy == "best")
-
-    @torch.no_grad()
-    def predict(
-        self,
-        test_set: Union[dict, str],
-        file_type: str = "hdf5",
-    ) -> dict:
-        self.model.eval()  # set the model to evaluation mode
-        # Step 1: wrap the input data with classes Dataset and DataLoader
-        test_set = BaseDataset(
-            test_set,
-            return_X_ori=False,
-            return_X_pred=False,
-            return_y=False,
-            file_type=file_type,
-        )
-        test_loader = DataLoader(
-            test_set,
-            batch_size=self.batch_size,
-            shuffle=False,
-            num_workers=self.num_workers,
-        )
-        imputation_collector = []
-
-        # Step 2: process the data with the model
-        for idx, data in enumerate(test_loader):
-            inputs = self._assemble_input_for_testing(data)
-            results = self.model.forward(inputs)
-            imputation_collector.append(results["imputed_data"])
-
-        # Step 3: output collection and return
-        imputation = torch.cat(imputation_collector).cpu().detach().numpy()
-        result_dict = {
-            "imputation": imputation,
-        }
-        return result_dict
-
-    def impute(
-        self,
-        test_set: Union[dict, str],
-        file_type: str = "hdf5",
-    ) -> np.ndarray:
-        result_dict = self.predict(test_set, file_type=file_type)
-        return result_dict["imputation"]

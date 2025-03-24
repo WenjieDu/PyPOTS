@@ -14,9 +14,10 @@ import torch
 from torch.utils.data import DataLoader
 
 from .core import _GPVAE
-from .data import DatasetForGPVAE
 from ..base import BaseNNImputer
 from ...data.checking import key_in_data_set
+from ...data.dataset import BaseDataset
+from ...nn.functional import gather_listed_dicts
 from ...nn.modules.loss import Criterion
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
@@ -234,7 +235,13 @@ class GPVAE(BaseNNImputer):
         file_type: str = "hdf5",
     ) -> None:
         # Step 1: wrap the input data with classes Dataset and DataLoader
-        training_set = DatasetForGPVAE(train_set, return_X_ori=False, return_y=False, file_type=file_type)
+        training_set = BaseDataset(
+            train_set,
+            return_X_ori=False,
+            return_X_pred=False,
+            return_y=False,
+            file_type=file_type,
+        )
         training_loader = DataLoader(
             training_set,
             batch_size=self.batch_size,
@@ -245,7 +252,13 @@ class GPVAE(BaseNNImputer):
         if val_set is not None:
             if not key_in_data_set("X_ori", val_set):
                 raise ValueError("val_set must contain 'X_ori' for model validation.")
-            val_set = DatasetForGPVAE(val_set, return_X_ori=True, return_y=False, file_type=file_type)
+            val_set = BaseDataset(
+                val_set,
+                return_X_ori=True,
+                return_X_pred=False,
+                return_y=False,
+                file_type=file_type,
+            )
             val_loader = DataLoader(
                 val_set,
                 batch_size=self.batch_size,
@@ -259,6 +272,39 @@ class GPVAE(BaseNNImputer):
 
         # Step 3: save the model if necessary
         self._auto_save_model_if_necessary(confirm_saving=self.model_saving_strategy == "best")
+
+    @torch.no_grad()
+    def predict(
+        self,
+    ) -> dict:
+
+        self.model.eval()  # set the model to evaluation mode
+
+        test_set = BaseDataset(
+            test_set,
+            return_X_ori=False,
+            return_X_pred=False,
+            return_y=False,
+            file_type=file_type,
+        )
+        test_loader = DataLoader(
+            test_set,
+            batch_size=self.batch_size,
+            shuffle=False,
+            num_workers=self.num_workers,
+        )
+
+        # Step 2: process the data with the model
+        dict_result_collector = []
+        for idx, data in enumerate(test_loader):
+            inputs = self._assemble_input_for_testing(data)
+            results = self.model(inputs, n_sampling_times)
+            dict_result_collector.append(results)
+
+        # Step 3: output collection and return
+        result_dict = gather_listed_dicts(dict_result_collector)
+
+        return result_dict
 
     @torch.no_grad()
     def predict(
@@ -287,39 +333,13 @@ class GPVAE(BaseNNImputer):
 
         Returns
         -------
-        result_dict: dict
-            Prediction results in a Python Dictionary for the given samples.
-            It should be a dictionary including a key named 'imputation'.
+        result_dict :
+            The dictionary containing the imputation results as key 'imputation' and latent variables if necessary.
 
         """
+
         assert n_sampling_times > 0, "n_sampling_times should be greater than 0."
-
-        self.model.eval()  # set the model to evaluation mode
-
-        test_set = DatasetForGPVAE(
-            test_set,
-            return_X_ori=False,
-            return_y=False,
-            file_type=file_type,
-        )
-        test_loader = DataLoader(
-            test_set,
-            batch_size=self.batch_size,
-            shuffle=False,
-            num_workers=self.num_workers,
-        )
-        imputation_collector = []
-
-        for idx, data in enumerate(test_loader):
-            inputs = self._assemble_input_for_testing(data)
-            results = self.model.forward(inputs, n_sampling_times=n_sampling_times)
-            imputed_data = results["imputed_data"]
-            imputation_collector.append(imputed_data)
-
-        imputation = torch.cat(imputation_collector).cpu().detach().numpy()
-        result_dict = {
-            "imputation": imputation,
-        }
+        result_dict = super().predict(test_set, file_type, n_sampling_times=n_sampling_times)
         return result_dict
 
     def impute(
@@ -333,19 +353,26 @@ class GPVAE(BaseNNImputer):
         Parameters
         ----------
         test_set :
-            The data samples for testing, should be array-like with shape [n_samples, n_steps, n_features], or a path
-            string locating a data file, e.g. h5 file.
+            The test dataset for model to process, should be a dictionary including keys as 'X',
+            or a path string locating a data file supported by PyPOTS (e.g. h5 file).
+            If it is a dict, X should be array-like with shape [n_samples, n_steps, n_features],
+            which is the time-series data for processing.
+            If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
+            key-value pairs like a dict, and it has to include 'X' key.
 
         file_type :
-            The type of the given file if X is a path string.
+            The type of the given file if test_set is a path string.
 
-        n_sampling_times :
-            The number of sampling times for the model to sample from the diffusion process.
+        n_sampling_times:
+            The number of sampling times for the model to produce predictions.
 
         Returns
         -------
-        array-like, with shape [n_samples, n_sampling_times, n_steps, n_features],
-            Imputed data.
+        results:
+            The imputed data samples.
+
         """
-        result_dict = self.predict(test_set, file_type, n_sampling_times)
-        return result_dict["imputation"]
+
+        assert n_sampling_times > 0, "n_sampling_times should be greater than 0."
+        results = super().impute(test_set, file_type, n_sampling_times=n_sampling_times)
+        return results

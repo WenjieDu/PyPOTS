@@ -55,6 +55,6 @@ class _USGAN(nn.Module):
         else:
             imputed_data, reconstruction = self.backbone(inputs, training_object)
 
-        results["imputed_data"] = imputed_data
+        results["imputation"] = imputed_data
         results["reconstruction"] = reconstruction
         return results

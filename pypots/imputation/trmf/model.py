@@ -180,7 +180,7 @@ class TRMF(BaseImputer):
         }
 
         # Step 3: output collection and return
-        results = self.model.forward(inputs)
+        results = self.model(inputs)
         imputation = sliding_window(results["imputed_data"], test_set.n_steps)
         result_dict = {
             "imputation": imputation,
