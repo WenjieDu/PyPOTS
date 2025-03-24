@@ -43,6 +43,7 @@ class _MRNN(ModelCore):
             "RNN_estimation": RNN_estimation,
             "RNN_imputed_data": RNN_imputed_data,
             "FCN_estimation": FCN_estimation,
+            "reconstruction": FCN_estimation,
         }
 
         return results

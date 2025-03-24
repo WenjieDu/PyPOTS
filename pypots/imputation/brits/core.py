@@ -70,6 +70,7 @@ class _BRITS(ModelCore):
             "imputed_data": imputed_data,
             "consistency_loss": consistency_loss,
             "reconstruction_loss": reconstruction_loss,
+            "reconstruction": (f_reconstruction + b_reconstruction) / 2,
             "f_reconstruction": f_reconstruction,
             "b_reconstruction": b_reconstruction,
         }
