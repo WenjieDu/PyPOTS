@@ -7,7 +7,6 @@
 
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 
 from ...nn.modules import ModelCore
 from ...nn.modules.loss import Criterion
@@ -48,7 +47,7 @@ class _TEFN(ModelCore):
             0,
             n_fod,
         )
-        self.activation_func = F.gelu
+        self.activation_func = nn.Sigmoid()
         self.dropout = nn.Dropout(dropout)
         self.output_projection = nn.Linear(n_features * n_steps, n_classes)
 
