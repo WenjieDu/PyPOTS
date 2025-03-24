@@ -1,4 +1,4 @@
-pypots.classification package
+pypots.classification
 =============================
 
 pypots.classification.saits

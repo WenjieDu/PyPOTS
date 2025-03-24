@@ -313,7 +313,7 @@ class SAITS(BaseNNImputer):
         Returns
         -------
         file_type :
-            The dictionary containing the clustering results and latent variables if necessary.
+            The dictionary containing the imputation results and latent variables if necessary.
 
         """
         self.model.eval()  # set the model to evaluation mode

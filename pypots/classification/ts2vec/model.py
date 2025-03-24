@@ -255,7 +255,7 @@ class TS2Vec(BaseNNClassifier):
         Returns
         -------
         file_type :
-            The dictionary containing the clustering results and latent variables if necessary.
+            The dictionary containing the representation results and latent variables if necessary.
 
         """
         assert (
@@ -357,7 +357,7 @@ class TS2Vec(BaseNNClassifier):
         Returns
         -------
         file_type :
-            The dictionary containing the clustering results and latent variables if necessary.
+            The dictionary containing the representation results and latent variables if necessary.
 
         """
         result_dict = self.predict(test_set, file_type=file_type, classifier_type=classifier_type)

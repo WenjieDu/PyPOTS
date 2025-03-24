@@ -1,4 +1,4 @@
-pypots.vec package
+pypots.vec
 ==========================
 
 pypots.vec.ts2vec

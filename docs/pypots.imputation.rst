@@ -1,4 +1,4 @@
-pypots.imputation package
+pypots.imputation
 =========================
 
 pypots.imputation.saits

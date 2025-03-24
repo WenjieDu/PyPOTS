@@ -102,6 +102,27 @@ class BaseVectorizer(BaseModel):
         test_set: Union[dict, str],
         file_type: str = "hdf5",
     ) -> dict:
+        """Make predictions for the input data with the trained model.
+
+        Parameters
+        ----------
+        test_set :
+            The test dataset for model to process, should be a dictionary including keys as 'X',
+            or a path string locating a data file supported by PyPOTS (e.g. h5 file).
+            If it is a dict, X should be array-like with shape [n_samples, n_steps, n_features],
+            which is the time-series data for processing.
+            If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
+            key-value pairs like a dict, and it has to include 'X' key.
+
+        file_type :
+            The type of the given file if test_set is a path string.
+
+        Returns
+        -------
+        file_type :
+            The dictionary containing the vectorization results and latent variables if necessary.
+
+        """
         raise NotImplementedError
 
     @abstractmethod
@@ -283,7 +304,7 @@ class BaseNNVectorizer(BaseNNModel):
         Returns
         -------
         file_type :
-            The dictionary containing the clustering results and latent variables if necessary.
+            The dictionary containing the vectorization results and latent variables if necessary.
 
         """
         raise NotImplementedError

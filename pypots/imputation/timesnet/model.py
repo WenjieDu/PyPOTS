@@ -23,8 +23,7 @@ from ...optim.base import Optimizer
 
 
 class TimesNet(BaseNNImputer):
-    """The PyTorch implementation of the TimesNet model.
-    TimesNet is originally proposed by Wu et al. in :cite:`wu2023timesnet`.
+    """The PyTorch implementation of the TimesNet model :cite:`wu2023timesnet`.
 
     Parameters
     ----------
