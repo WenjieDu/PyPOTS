@@ -23,8 +23,7 @@ from ...optim.base import Optimizer
 
 
 class Informer(BaseNNImputer):
-    """The PyTorch implementation of the Informer model.
-    Informer is originally proposed by Wu et al. in :cite:`zhou2021informer`.
+    """The PyTorch implementation of the Informer model :cite:`zhou2021informer`.
 
     Parameters
     ----------
