@@ -28,6 +28,24 @@ pypots.classification.base
    :show-inheritance:
    :inherited-members:
 
+pypots.forecasting.base
+------------------------------
+
+.. automodule:: pypots.forecasting.base
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+
+pypots.anomaly_detection.base
+------------------------------
+
+.. automodule:: pypots.anomaly_detection.base
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+
 pypots.clustering.base
 -----------------------------
 
@@ -37,10 +55,10 @@ pypots.clustering.base
    :show-inheritance:
    :inherited-members:
 
-pypots.forecasting.base
+pypots.vec.base
 ------------------------------
 
-.. automodule:: pypots.forecasting.base
+.. automodule:: pypots.vec.base
    :members:
    :undoc-members:
    :show-inheritance:
