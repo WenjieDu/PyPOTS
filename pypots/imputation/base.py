@@ -122,7 +122,7 @@ class BaseImputer(BaseModel):
         Returns
         -------
         file_type :
-            The dictionary containing the clustering results and latent variables if necessary.
+            The dictionary containing the imputation results and latent variables if necessary.
 
         """
         raise NotImplementedError
@@ -303,7 +303,7 @@ class BaseNNImputer(BaseNNModel):
         Returns
         -------
         file_type :
-            The dictionary containing the clustering results and latent variables if necessary.
+            The dictionary containing the imputation results and latent variables if necessary.
 
         """
         raise NotImplementedError
