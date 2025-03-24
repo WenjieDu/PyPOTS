@@ -95,6 +95,7 @@ class _SAITS(ModelCore):
             "second_DMSA_attn_weights": second_DMSA_attn_weights,
             "combining_weights": combining_weights,
             "imputed_data": imputed_data,
+            "reconstruction": X_tilde_3,
             "X_tilde_1": X_tilde_1,
             "X_tilde_2": X_tilde_2,
             "X_tilde_3": X_tilde_3,
