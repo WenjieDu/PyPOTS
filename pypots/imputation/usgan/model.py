@@ -242,8 +242,8 @@ class USGAN(BaseNNImputer):
 
     def _train_model(
         self,
-        training_loader: DataLoader,
-        val_loader: DataLoader = None,
+        train_set_loader: DataLoader,
+        val_set_loader: DataLoader = None,
     ) -> None:
         # each training starts from the very beginning, so reset the loss and model dict here
         self.best_model_dict = None
@@ -259,7 +259,7 @@ class USGAN(BaseNNImputer):
                 self.model.train()
                 step_train_loss_G_collector = []
                 step_train_loss_D_collector = []
-                for idx, data in enumerate(training_loader):
+                for idx, data in enumerate(train_set_loader):
                     training_step += 1
                     inputs = self._assemble_input_for_training(data)
 
@@ -294,11 +294,11 @@ class USGAN(BaseNNImputer):
                 mean_epoch_train_D_loss = np.mean(step_train_loss_D_collector)
                 mean_epoch_train_G_loss = np.mean(step_train_loss_G_collector)
 
-                if val_loader is not None:
+                if val_set_loader is not None:
                     self.model.eval()
                     imputation_loss_collector = []
                     with torch.no_grad():
-                        for idx, data in enumerate(val_loader):
+                        for idx, data in enumerate(val_set_loader):
                             inputs = self._assemble_input_for_validating(data)
                             results = self.model(inputs)
                             imputation_mse = (

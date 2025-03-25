@@ -165,8 +165,8 @@ class VaDER(BaseNNClusterer):
 
     def _train_model(
         self,
-        training_loader: DataLoader,
-        val_loader: DataLoader = None,
+        train_set_loader: DataLoader,
+        val_set_loader: DataLoader = None,
     ) -> None:
         # each training starts from the very beginning, so reset the loss and model dict here
         self.best_model_dict = None
@@ -180,7 +180,7 @@ class VaDER(BaseNNClusterer):
         pretraining_step = 0
         for epoch in range(self.pretrain_epochs):
             self.model.train()
-            for idx, data in enumerate(training_loader):
+            for idx, data in enumerate(train_set_loader):
                 pretraining_step += 1
                 inputs = self._assemble_input_for_training(data)
                 self.optimizer.zero_grad()
@@ -196,7 +196,7 @@ class VaDER(BaseNNClusterer):
         with torch.no_grad():
             sample_collector = []
             for _ in range(10):  # sampling 10 times
-                for idx, data in enumerate(training_loader):
+                for idx, data in enumerate(train_set_loader):
                     inputs = self._assemble_input_for_validating(data)
                     results = self.model(inputs, pretrain=True)
                     sample_collector.append(results["z"])
@@ -260,7 +260,7 @@ class VaDER(BaseNNClusterer):
             for epoch in range(1, self.epochs + 1):
                 self.model.train()
                 epoch_train_loss_collector = []
-                for idx, data in enumerate(training_loader):
+                for idx, data in enumerate(train_set_loader):
                     training_step += 1
                     inputs = self._assemble_input_for_training(data)
                     self.optimizer.zero_grad()
@@ -277,11 +277,11 @@ class VaDER(BaseNNClusterer):
                 # mean training loss of the current epoch
                 mean_train_loss = np.mean(epoch_train_loss_collector)
 
-                if val_loader is not None:
+                if val_set_loader is not None:
                     self.model.eval()
                     epoch_val_loss_collector = []
                     with torch.no_grad():
-                        for idx, data in enumerate(val_loader):
+                        for idx, data in enumerate(val_set_loader):
                             inputs = self._assemble_input_for_validating(data)
                             results = self.model(inputs)
                             loss = results["loss"]

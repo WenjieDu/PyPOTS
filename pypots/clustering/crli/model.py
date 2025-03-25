@@ -217,8 +217,8 @@ class CRLI(BaseNNClusterer):
 
     def _train_model(
         self,
-        training_loader: DataLoader,
-        val_loader: DataLoader = None,
+        train_set_loader: DataLoader,
+        val_set_loader: DataLoader = None,
     ) -> None:
         # each training starts from the very beginning, so reset the loss and model dict here
         self.best_model_dict = None
@@ -234,7 +234,7 @@ class CRLI(BaseNNClusterer):
             epoch_train_loss_D_collector = []
             for epoch in range(1, self.epochs + 1):
                 self.model.train()
-                for idx, data in enumerate(training_loader):
+                for idx, data in enumerate(train_set_loader):
                     training_step += 1
                     inputs = self._assemble_input_for_training(data)
 
@@ -275,11 +275,11 @@ class CRLI(BaseNNClusterer):
                 mean_epoch_train_D_loss = np.mean(epoch_train_loss_D_collector)
                 mean_epoch_train_G_loss = np.mean(epoch_train_loss_G_collector)
 
-                if val_loader is not None:
+                if val_set_loader is not None:
                     self.model.eval()
                     epoch_val_loss_G_collector = []
                     with torch.no_grad():
-                        for idx, data in enumerate(val_loader):
+                        for idx, data in enumerate(val_set_loader):
                             inputs = self._assemble_input_for_validating(data)
                             results = self.model(inputs)
                             generation_loss = results["generation_loss"]
