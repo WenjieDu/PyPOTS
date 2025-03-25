@@ -13,12 +13,12 @@ import numpy as np
 import torch
 from torch.utils.data import DataLoader
 
-from .data import DatasetForTS2Vec
 from ..base import BaseNNClassifier
+from ...data.dataset.base import BaseDataset
 from ...nn.modules.loss import Criterion
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
-from ...vec.ts2vec.core import _TS2Vec
+from ...representation.ts2vec.core import _TS2Vec
 
 SUPPORTED_CLASSIFIERS = ["linear_regression", "svm", "knn"]
 
@@ -132,7 +132,6 @@ class TS2Vec(BaseNNClassifier):
         self.d_hidden = d_hidden
         self.n_layers = n_layers
         self.mask_mode = mask_mode
-        self.training_set_loader = None
 
         # set up the model
         self.model = _TS2Vec(
@@ -194,38 +193,6 @@ class TS2Vec(BaseNNClassifier):
         }
         return inputs
 
-    def fit(
-        self,
-        train_set: Union[dict, str],
-        val_set: Optional[Union[dict, str]] = None,
-        file_type: str = "hdf5",
-    ) -> None:
-        # Step 1: wrap the input data with classes Dataset and DataLoader
-        training_set = DatasetForTS2Vec(train_set, file_type=file_type)
-        training_loader = DataLoader(
-            training_set,
-            batch_size=self.batch_size,
-            shuffle=True,
-            num_workers=self.num_workers,
-        )
-        self.training_set_loader = training_loader
-        val_loader = None
-        if val_set is not None:
-            val_set = DatasetForTS2Vec(val_set, file_type=file_type)
-            val_loader = DataLoader(
-                val_set,
-                batch_size=self.batch_size,
-                shuffle=False,
-                num_workers=self.num_workers,
-            )
-
-        # Step 2: train the model and freeze it
-        self._train_model(training_loader, val_loader)
-        self.model.load_state_dict(self.best_model_dict)
-
-        # Step 3: save the model if necessary
-        self._auto_save_model_if_necessary(confirm_saving=self.model_saving_strategy == "best")
-
     @torch.no_grad()
     def predict(
         self,
@@ -254,8 +221,9 @@ class TS2Vec(BaseNNClassifier):
 
         Returns
         -------
-        file_type :
-            The dictionary containing the representation results and latent variables if necessary.
+        result_dict :
+            The dictionary containing the classification results as key 'classification' and
+            latent variables if necessary.
 
         """
         assert (
@@ -266,7 +234,7 @@ class TS2Vec(BaseNNClassifier):
 
         train_repr_collector = []
         train_label_collector = []
-        for idx, data in enumerate(self.training_set_loader):
+        for idx, data in enumerate(self.train_set_loader):
             inputs = self._assemble_input_for_training(data)
             train_repr = self.model(inputs, encoding_window="full_series")["representation"]
             train_repr_collector.append(train_repr)
@@ -275,8 +243,10 @@ class TS2Vec(BaseNNClassifier):
         train_repr_collector = torch.cat(train_repr_collector, dim=0).cpu().numpy()
         train_label_collector = torch.cat(train_label_collector, dim=0).cpu().numpy()
 
-        test_set = DatasetForTS2Vec(
+        test_set = BaseDataset(
             test_set,
+            return_X_ori=False,
+            return_X_pred=False,
             return_y=False,
             file_type=file_type,
         )
@@ -326,6 +296,27 @@ class TS2Vec(BaseNNClassifier):
         file_type: str = "hdf5",
         classifier_type: str = "svm",
     ) -> np.ndarray:
+        """Predict the classification probabilities of the input data with the trained model.
+
+        Parameters
+        ----------
+        test_set :
+            The data samples for testing, should be array-like with shape [n_samples, n_steps, n_features], or a path
+            string locating a data file, e.g. h5 file.
+
+        file_type :
+            The type of the given file if X is a path string.
+
+        classifier_type :
+            The type of classifier to use for the classification task.
+            It has to be one of ['linear_regression', 'svm', 'knn'].
+
+        Returns
+        -------
+        results :
+            Classification probabilities of the given samples.
+        """
+
         result_dict = self.predict(test_set, file_type=file_type, classifier_type=classifier_type)
         return result_dict["classification_proba"]
 
@@ -356,9 +347,9 @@ class TS2Vec(BaseNNClassifier):
 
         Returns
         -------
-        file_type :
-            The dictionary containing the representation results and latent variables if necessary.
+        results :
+            Classification results of the given samples.
 
         """
-        result_dict = self.predict(test_set, file_type=file_type, classifier_type=classifier_type)
-        return result_dict["classification"]
+        results = super().classify(test_set, file_type, classifier_type=classifier_type)
+        return results

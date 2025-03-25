@@ -104,6 +104,7 @@ class BTTF(BaseForecaster):
         self,
         test_set: Union[dict, str],
         file_type: str = "hdf5",
+        **kwargs,
     ) -> dict:
         assert not isinstance(
             test_set, str
@@ -127,11 +128,3 @@ class BTTF(BaseForecaster):
             "forecasting": forecasting,
         }
         return result_dict
-
-    def forecast(
-        self,
-        test_set: Union[dict, str],
-        file_type: str = "hdf5",
-    ) -> np.ndarray:
-        result_dict = self.predict(test_set, file_type=file_type)
-        return result_dict["forecasting"]

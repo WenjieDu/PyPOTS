@@ -7,7 +7,7 @@ Dataset class for the imputation model TRMF.
 
 from typing import Union
 
-from ...data.dataset import BaseDataset
+from ...data.dataset.base import BaseDataset
 
 
 class DatasetForTRMF(BaseDataset):

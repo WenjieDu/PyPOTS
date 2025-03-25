@@ -92,8 +92,12 @@ class _GPVAE(ModelCore):
         X, missing_mask = inputs["X"], inputs["missing_mask"]
         results = {}
 
-        imputed_data = self.backbone.impute(X, missing_mask, n_sampling_times)
-        results["imputed_data"] = imputed_data
+        imputed_data, imputation_latent = self.backbone.impute(X, missing_mask, n_sampling_times)
+        results["imputation"] = imputed_data
+
+        # `imputation_latent` is not "reconstruction" seriously speaking,
+        # we just take it to get align with other models' output
+        results["reconstruction"] = imputation_latent
 
         return results
 

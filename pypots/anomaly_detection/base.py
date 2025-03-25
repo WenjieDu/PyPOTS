@@ -11,9 +11,12 @@ from typing import Union, Optional
 
 import numpy as np
 import torch
+from torch.utils.data import DataLoader
 
 from ..base import BaseModel, BaseNNModel
+from ..data.dataset.base import BaseDataset
 from ..nn.modules.loss import Criterion
+from ..utils.logging import logger
 
 
 class BaseDetector(BaseModel):
@@ -110,6 +113,7 @@ class BaseDetector(BaseModel):
         self,
         test_set: Union[dict, str],
         file_type: str = "hdf5",
+        **kwargs,
     ) -> dict:
         """Make predictions for the input data with the trained model.
 
@@ -128,17 +132,18 @@ class BaseDetector(BaseModel):
 
         Returns
         -------
-        file_type :
-            The dictionary containing the anomaly detection results and latent variables if necessary.
+        result_dict :
+            The dictionary containing the anomaly detection results as key 'anomaly_detection'
+            and latent variables if necessary.
 
         """
         raise NotImplementedError
 
-    @abstractmethod
     def detect(
         self,
         test_set: Union[dict, str],
         file_type: str = "hdf5",
+        **kwargs,
     ) -> np.ndarray:
         """Detect anomalies in the given data with the trained model.
 
@@ -156,8 +161,13 @@ class BaseDetector(BaseModel):
         array-like, with shape [n_samples, n_steps, n_features],
             Anomaly detection results in the input data.
         """
-
-        raise NotImplementedError
+        result_dict = self.predict(
+            test_set,
+            file_type,
+            **kwargs,
+        )
+        results = result_dict["anomaly_detection"]
+        return results
 
 
 class BaseNNDetector(BaseNNModel):
@@ -292,12 +302,12 @@ class BaseNNDetector(BaseNNModel):
         """
         raise NotImplementedError
 
-    @abstractmethod
     @torch.no_grad()
     def predict(
         self,
         test_set: Union[dict, str],
         file_type: str = "hdf5",
+        **kwargs,
     ) -> dict:
         """Make predictions for the input data with the trained model.
 
@@ -316,17 +326,85 @@ class BaseNNDetector(BaseNNModel):
 
         Returns
         -------
-        file_type :
-            The dictionary containing the anomaly detection results and latent variables if necessary.
+        result_dict :
+            The dictionary containing the anomaly detection results as key 'anomaly_detection'
+            and latent variables if necessary.
 
         """
-        raise NotImplementedError
+        self.model.eval()  # set the model to evaluation mode
 
-    @abstractmethod
+        # Step 1: wrap the input data with classes Dataset and DataLoader
+        train_set = BaseDataset(
+            self.train_set,
+            return_X_ori=False,
+            return_X_pred=False,
+            return_y=False,
+            file_type=file_type,
+        )
+        train_loader = DataLoader(
+            train_set,
+            batch_size=self.batch_size,
+            shuffle=False,
+            num_workers=self.num_workers,
+        )
+
+        test_set = BaseDataset(
+            test_set,
+            return_X_ori=False,
+            return_X_pred=False,
+            return_y=False,
+            file_type=file_type,
+        )
+        test_loader = DataLoader(
+            test_set,
+            batch_size=self.batch_size,
+            shuffle=False,
+            num_workers=self.num_workers,
+        )
+
+        # Step 2: process the data with the model
+        score_collector = []
+        anomaly_criterion = torch.nn.MSELoss(reduce=False)
+        for idx, data in enumerate(train_loader):
+            inputs = self._assemble_input_for_testing(data)
+            results = self.model(inputs, **kwargs)
+            outputs = results["reconstruction"]
+            score = torch.mean(anomaly_criterion(inputs["X"], outputs), dim=-1)
+            score = score.detach().cpu().numpy()
+            score_collector.append(score)
+
+        attens_energy = np.concatenate(score_collector, axis=0).reshape(-1)
+        train_energy = np.array(attens_energy)
+
+        # find the threshold
+        score_collector = []
+        for idx, data in enumerate(test_loader):
+            inputs = self._assemble_input_for_testing(data)
+            results = self.model(inputs, **kwargs)
+            outputs = results["reconstruction"]
+            # criterion
+            score = torch.mean(anomaly_criterion(inputs["X"], outputs), dim=-1)
+            score = score.detach().cpu().numpy()
+            score_collector.append(score)
+
+        attens_energy = np.concatenate(score_collector, axis=0).reshape(-1)
+        test_energy = np.array(attens_energy)
+        combined_energy = np.concatenate([train_energy, test_energy], axis=0)
+        threshold = np.percentile(combined_energy, 100 - self.anomaly_rate * 100)
+        logger.info(f"Threshold {threshold}")
+
+        anomaly_pred = (test_energy > threshold).astype(int)
+
+        result_dict = {
+            "anomaly_detection": anomaly_pred,
+        }
+        return result_dict
+
     def detect(
         self,
         test_set: Union[dict, str],
         file_type: str = "hdf5",
+        **kwargs,
     ) -> np.ndarray:
         """Detect anomalies in the given data with the trained model.
 
@@ -341,8 +419,13 @@ class BaseNNDetector(BaseNNModel):
 
         Returns
         -------
-        array-like, with shape [n_samples, n_steps, n_features],
-            Anomaly detection results in the input data.
+        results :
+            Anomaly detection results of the given samples.
         """
-
-        raise NotImplementedError
+        result_dict = self.predict(
+            test_set,
+            file_type,
+            **kwargs,
+        )
+        results = result_dict["anomaly_detection"]
+        return results

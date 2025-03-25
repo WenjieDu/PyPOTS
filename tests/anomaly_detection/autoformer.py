@@ -65,12 +65,10 @@ class TestAutoformer(unittest.TestCase):
     @pytest.mark.xdist_group(name="anomaly-detection-autoformer")
     def test_1_detect(self):
         anomaly_detection_results = self.autoformer.predict(TEST_SET)
-        logger.warning(f"anomaly_detection_results.shape: {anomaly_detection_results['anomaly_prediction'].shape}")
         anomaly_labels = TEST_SET["anomaly_y"].flatten()
-        logger.warning(f"anomaly_label.shape: {anomaly_labels.shape}")
 
         test_accuracy = calc_acc(
-            anomaly_detection_results["anomaly_prediction"],
+            anomaly_detection_results["anomaly_detection"],
             anomaly_labels,
         )
         logger.info(f"Autoformer test_accuracy: {test_accuracy}")
@@ -107,7 +105,7 @@ class TestAutoformer(unittest.TestCase):
         anomaly_detection_results = self.autoformer.predict(GENERAL_H5_TEST_SET_PATH)
 
         test_accuracy = calc_acc(
-            anomaly_detection_results["anomaly_prediction"],
+            anomaly_detection_results["anomaly_detection"],
             TEST_SET["anomaly_y"].flatten(),
         )
         logger.info(f"Lazy-loading Autoformer test_accuracy: {test_accuracy}")

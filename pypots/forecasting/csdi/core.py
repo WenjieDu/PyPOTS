@@ -103,9 +103,7 @@ class _CSDI(ModelCore):
         repeated_mask = cond_mask.unsqueeze(1).repeat(1, n_sampling_times, 1, 1)
         forecasting = repeated_obs + samples * (1 - repeated_mask)
 
-        results["forecasting_data"] = forecasting.permute(
-            0, 1, 3, 2
-        )  # (n_samples, n_sampling_times, n_steps, n_features)
+        results["forecasting"] = forecasting.permute(0, 1, 3, 2)  # (n_samples, n_sampling_times, n_steps, n_features)
         return results
 
     def calc_criterion(self, inputs: dict) -> dict:

@@ -8,15 +8,13 @@ The package of the partially-observed time-series imputation model ImputeFormer.
 
 from typing import Union, Optional
 
-import numpy as np
 import torch
 from torch.utils.data import DataLoader
 
 from .core import _ImputeFormer
-from .data import DatasetForImputeFormer
 from ..base import BaseNNImputer
+from ..saits.data import DatasetForSAITS
 from ...data.checking import key_in_data_set
-from ...data.dataset import BaseDataset
 from ...nn.modules.loss import Criterion, MAE, MSE
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
@@ -246,7 +244,7 @@ class ImputeFormer(BaseNNImputer):
         file_type: str = "hdf5",
     ) -> None:
         # Step 1: wrap the input data with classes Dataset and DataLoader
-        training_set = DatasetForImputeFormer(train_set, return_X_ori=False, return_y=False, file_type=file_type)
+        training_set = DatasetForSAITS(train_set, return_X_ori=False, return_y=False, file_type=file_type)
         training_loader = DataLoader(
             training_set,
             batch_size=self.batch_size,
@@ -257,7 +255,7 @@ class ImputeFormer(BaseNNImputer):
         if val_set is not None:
             if not key_in_data_set("X_ori", val_set):
                 raise ValueError("val_set must contain 'X_ori' for model validation.")
-            val_set = DatasetForImputeFormer(val_set, return_X_ori=True, return_y=False, file_type=file_type)
+            val_set = DatasetForSAITS(val_set, return_X_ori=True, return_y=False, file_type=file_type)
             val_loader = DataLoader(
                 val_set,
                 batch_size=self.batch_size,
@@ -271,46 +269,3 @@ class ImputeFormer(BaseNNImputer):
 
         # Step 3: save the model if necessary
         self._auto_save_model_if_necessary(confirm_saving=self.model_saving_strategy == "best")
-
-    @torch.no_grad()
-    def predict(
-        self,
-        test_set: Union[dict, str],
-        file_type: str = "hdf5",
-    ) -> dict:
-        self.model.eval()  # set the model to evaluation mode
-        # Step 1: wrap the input data with classes Dataset and DataLoader
-        test_set = BaseDataset(
-            test_set,
-            return_X_ori=False,
-            return_X_pred=False,
-            return_y=False,
-            file_type=file_type,
-        )
-        test_loader = DataLoader(
-            test_set,
-            batch_size=self.batch_size,
-            shuffle=False,
-            num_workers=self.num_workers,
-        )
-        imputation_collector = []
-
-        for idx, data in enumerate(test_loader):
-            inputs = self._assemble_input_for_testing(data)
-            results = self.model.forward(inputs)
-            imputed_data = results["imputed_data"]
-            imputation_collector.append(imputed_data)
-
-        imputation = torch.cat(imputation_collector).cpu().detach().numpy()
-        result_dict = {
-            "imputation": imputation,
-        }
-        return result_dict
-
-    def impute(
-        self,
-        X: Union[dict, str],
-        file_type: str = "hdf5",
-    ) -> np.ndarray:
-        results_dict = self.predict(X, file_type=file_type)
-        return results_dict["imputation"]

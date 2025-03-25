@@ -165,8 +165,8 @@ class VaDER(BaseNNClusterer):
 
     def _train_model(
         self,
-        training_loader: DataLoader,
-        val_loader: DataLoader = None,
+        train_set_loader: DataLoader,
+        val_set_loader: DataLoader = None,
     ) -> None:
         # each training starts from the very beginning, so reset the loss and model dict here
         self.best_model_dict = None
@@ -180,12 +180,13 @@ class VaDER(BaseNNClusterer):
         pretraining_step = 0
         for epoch in range(self.pretrain_epochs):
             self.model.train()
-            for idx, data in enumerate(training_loader):
+            for idx, data in enumerate(train_set_loader):
                 pretraining_step += 1
                 inputs = self._assemble_input_for_training(data)
                 self.optimizer.zero_grad()
-                results = self.model.forward(inputs, pretrain=True)
-                results["loss"].sum().backward()
+                results = self.model(inputs, pretrain=True)
+                loss = results["loss"].sum()
+                loss.backward()
                 self.optimizer.step()
 
                 # save pre-training loss logs into the tensorboard file for every step if in need
@@ -195,9 +196,9 @@ class VaDER(BaseNNClusterer):
         with torch.no_grad():
             sample_collector = []
             for _ in range(10):  # sampling 10 times
-                for idx, data in enumerate(training_loader):
+                for idx, data in enumerate(train_set_loader):
                     inputs = self._assemble_input_for_validating(data)
-                    results = self.model.forward(inputs, pretrain=True)
+                    results = self.model(inputs, pretrain=True)
                     sample_collector.append(results["z"])
             samples = torch.cat(sample_collector).cpu().detach().numpy()
 
@@ -259,14 +260,15 @@ class VaDER(BaseNNClusterer):
             for epoch in range(1, self.epochs + 1):
                 self.model.train()
                 epoch_train_loss_collector = []
-                for idx, data in enumerate(training_loader):
+                for idx, data in enumerate(train_set_loader):
                     training_step += 1
                     inputs = self._assemble_input_for_training(data)
                     self.optimizer.zero_grad()
-                    results = self.model.forward(inputs)
-                    results["loss"].sum().backward()
+                    results = self.model(inputs)
+                    loss = results["loss"].sum()
+                    loss.backward()
                     self.optimizer.step()
-                    epoch_train_loss_collector.append(results["loss"].sum().item())
+                    epoch_train_loss_collector.append(loss.item())
 
                     # save training loss logs into the tensorboard file for every step if in need
                     if self.summary_writer is not None:
@@ -275,14 +277,15 @@ class VaDER(BaseNNClusterer):
                 # mean training loss of the current epoch
                 mean_train_loss = np.mean(epoch_train_loss_collector)
 
-                if val_loader is not None:
+                if val_set_loader is not None:
                     self.model.eval()
                     epoch_val_loss_collector = []
                     with torch.no_grad():
-                        for idx, data in enumerate(val_loader):
+                        for idx, data in enumerate(val_set_loader):
                             inputs = self._assemble_input_for_validating(data)
-                            results = self.model.forward(inputs)
-                            epoch_val_loss_collector.append(results["loss"].sum().item())
+                            results = self.model(inputs)
+                            loss = results["loss"]
+                            epoch_val_loss_collector.append(loss.sum().item())
 
                     mean_val_loss = np.mean(epoch_val_loss_collector)
 
@@ -410,8 +413,8 @@ class VaDER(BaseNNClusterer):
 
         Returns
         -------
-        file_type :
-            The dictionary containing the clustering results and latent variables if necessary.
+        result_dict :
+            The dictionary containing the clustering results as key 'clustering' and latent variables if necessary.
         """
         self.model.eval()  # set the model to evaluation mode
         test_set = DatasetForVaDER(
@@ -445,7 +448,7 @@ class VaDER(BaseNNClusterer):
 
         for idx, data in enumerate(test_loader):
             inputs = self._assemble_input_for_testing(data)
-            results = self.model.forward(inputs)
+            results = self.model(inputs)
 
             mu_tilde = results["mu_tilde"].cpu().numpy()
             mu_tilde_collector.append(mu_tilde)
@@ -486,11 +489,3 @@ class VaDER(BaseNNClusterer):
             result_dict["latent_vars"] = latent_var_collector
 
         return result_dict
-
-    def cluster(
-        self,
-        test_set: Union[dict, str],
-        file_type: str = "hdf5",
-    ) -> Union[np.ndarray]:
-        result_dict = self.predict(test_set, file_type=file_type)
-        return result_dict["clustering"]

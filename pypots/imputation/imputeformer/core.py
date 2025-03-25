@@ -138,7 +138,7 @@ class _ImputeFormer(ModelCore):
 
         # ensemble the results as a dictionary for return
         results = {
-            "imputed_data": imputed_data,
+            "imputation": imputed_data,
             "reconstruction": reconstruction,
         }
 

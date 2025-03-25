@@ -12,10 +12,11 @@ import torch
 from torch.utils.data import DataLoader
 
 from .core import _BCSAI
-from .data import DatasetForCSAI
 from ..base import BaseNNClassifier
 from ...data.checking import key_in_data_set
 from ...data.saving.h5 import load_dict_from_h5
+from ...imputation.csai.data import DatasetForCSAI
+from ...nn.functional import gather_listed_dicts
 from ...nn.modules.loss import Criterion, CrossEntropy
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
@@ -266,6 +267,7 @@ class CSAI(BaseNNClassifier):
         training_set = DatasetForCSAI(
             data=train_set,
             file_type=file_type,
+            return_X_ori=False,
             return_y=True,
             removal_percent=self.removal_percent,
             increase_factor=self.increase_factor,
@@ -294,6 +296,7 @@ class CSAI(BaseNNClassifier):
             val_set = DatasetForCSAI(
                 data=val_set,
                 file_type=file_type,
+                return_X_ori=False,
                 return_y=True,
                 removal_percent=self.removal_percent,
                 increase_factor=self.increase_factor,
@@ -326,9 +329,12 @@ class CSAI(BaseNNClassifier):
                 "Hence the whole test set will be loaded into memory."
             )
             test_set = load_dict_from_h5(test_set)
+
+        # Step 1: wrap the input data with classes Dataset and DataLoader
         test_set = DatasetForCSAI(
             data=test_set,
             file_type=file_type,
+            return_X_ori=False,
             return_y=False,
             removal_percent=self.removal_percent,
             increase_factor=self.increase_factor,
@@ -341,33 +347,16 @@ class CSAI(BaseNNClassifier):
             num_workers=self.num_workers,
         )
 
-        classification_results = []
+        # Step 2: process the data with the model
+        dict_result_collector = []
         for idx, data in enumerate(test_loader):
             inputs = self._assemble_input_for_testing(data)
             results = self.model(inputs)
-            classification_results.append(results["classification_proba"])
+            dict_result_collector.append(results)
 
-        classification_proba = torch.cat(classification_results).cpu().detach().numpy()
-        classification = np.argmax(classification_proba, axis=1)
-        result_dict = {
-            "classification": classification,
-            "classification_proba": classification_proba,
-        }
+        # Step 3: output collection and return
+        result_dict = gather_listed_dicts(dict_result_collector)
+        classification = np.argmax(result_dict["classification_proba"], axis=1)
+        result_dict["classification"] = classification
+
         return result_dict
-
-    def predict_proba(
-        self,
-        test_set: Union[dict, str],
-        file_type: str = "hdf5",
-    ) -> np.ndarray:
-        result_dict = self.predict(test_set, file_type=file_type)
-        return result_dict["classification_proba"]
-
-    def classify(
-        self,
-        test_set,
-        file_type: str = "hdf5",
-    ):
-
-        result_dict = self.predict(test_set, file_type)
-        return result_dict["classification"]
