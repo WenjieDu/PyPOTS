@@ -22,28 +22,31 @@ class BTTF(BaseForecaster):
 
     Parameters
     ----------
-    n_steps : int,
+    n_steps :
         The number of time steps in the time-series data sample.
 
-    n_features : int,
+    n_features :
         The number of features in the time-series data sample.
 
-    pred_step : int,
+    pred_step :
         The number of time steps to forecast.
 
-    rank : int,
+    rank :
         The rank of the low-rank tensor.
 
-    time_lags : list,
+    time_lags :
         The time lags.
 
-    burn_iter : int,
+    burn_iter :
         The number of burn-in iterations.
 
-    gibbs_iter : int,
+    gibbs_iter :
         The number of Gibbs iterations.
 
-    multi_step : int, default = 1,
+    gamma :
+        The parameter for the prior distribution in the paper.
+
+    multi_step :
         The number of time steps to forecast at each iteration.
 
     device :
@@ -71,6 +74,7 @@ class BTTF(BaseForecaster):
         time_lags: list,
         burn_iter: int,
         gibbs_iter: int,
+        gamma: int = 10,
         multi_step: int = 1,
         device: Optional[Union[str, torch.device, list]] = None,
     ):
@@ -83,6 +87,7 @@ class BTTF(BaseForecaster):
         self.time_lags = np.asarray(time_lags)
         self.burn_iter = burn_iter
         self.gibbs_iter = gibbs_iter
+        self.gamma = gamma
 
     def fit(
         self,
@@ -122,6 +127,7 @@ class BTTF(BaseForecaster):
             self.time_lags,
             self.burn_iter,
             self.gibbs_iter,
+            self.gamma,
         )
         forecasting = pred.transpose((0, 2, 1))
         result_dict = {
