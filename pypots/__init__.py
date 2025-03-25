@@ -11,6 +11,8 @@ from . import (
     classification,
     clustering,
     forecasting,
+    anomaly_detection,
+    representation,
     optim,
     data,
     utils,

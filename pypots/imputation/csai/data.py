@@ -12,7 +12,7 @@ import numpy as np
 import torch
 from pygrinder import mnar_nonuniform
 
-from ...data.dataset import BaseDataset
+from ...data.dataset.base import BaseDataset
 from ...data.utils import parse_delta
 
 

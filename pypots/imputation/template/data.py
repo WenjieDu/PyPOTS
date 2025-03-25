@@ -10,7 +10,7 @@ TODO: modify the above description for your model's dataset class.
 
 from typing import Union, Iterable
 
-from ...data.dataset import BaseDataset
+from ...data.dataset.base import BaseDataset
 
 
 # TODO: define your new dataset class here. Remove or add arguments as needed.

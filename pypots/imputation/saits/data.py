@@ -10,7 +10,7 @@ from typing import Union, Iterable
 import torch
 from pygrinder import mcar, fill_and_get_mask_torch
 
-from ...data.dataset import BaseDataset
+from ...data.dataset.base import BaseDataset
 
 
 class DatasetForSAITS(BaseDataset):

@@ -98,7 +98,7 @@ class _SAITS(ModelCore):
             "first_DMSA_attn_weights": first_DMSA_attn_weights,
             "second_DMSA_attn_weights": second_DMSA_attn_weights,
             "combining_weights": combining_weights,
-            "imputed_data": imputed_data,
+            "imputation": imputed_data,
             "classification_proba": classification_proba,
             "logits": logits,
         }

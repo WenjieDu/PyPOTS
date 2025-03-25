@@ -16,8 +16,7 @@ from torch.utils.data import DataLoader
 from .core import _GPVAE
 from ..base import BaseNNImputer
 from ...data.checking import key_in_data_set
-from ...data.dataset import BaseDataset
-from ...nn.functional import gather_listed_dicts
+from ...data.dataset.base import BaseDataset
 from ...nn.modules.loss import Criterion
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
@@ -272,39 +271,6 @@ class GPVAE(BaseNNImputer):
 
         # Step 3: save the model if necessary
         self._auto_save_model_if_necessary(confirm_saving=self.model_saving_strategy == "best")
-
-    @torch.no_grad()
-    def predict(
-        self,
-    ) -> dict:
-
-        self.model.eval()  # set the model to evaluation mode
-
-        test_set = BaseDataset(
-            test_set,
-            return_X_ori=False,
-            return_X_pred=False,
-            return_y=False,
-            file_type=file_type,
-        )
-        test_loader = DataLoader(
-            test_set,
-            batch_size=self.batch_size,
-            shuffle=False,
-            num_workers=self.num_workers,
-        )
-
-        # Step 2: process the data with the model
-        dict_result_collector = []
-        for idx, data in enumerate(test_loader):
-            inputs = self._assemble_input_for_testing(data)
-            results = self.model(inputs, n_sampling_times)
-            dict_result_collector.append(results)
-
-        # Step 3: output collection and return
-        result_dict = gather_listed_dicts(dict_result_collector)
-
-        return result_dict
 
     @torch.no_grad()
     def predict(

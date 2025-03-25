@@ -15,8 +15,8 @@ import torch
 from torch.utils.data import DataLoader
 
 from .core import _USGAN
-from .data import DatasetForUSGAN
 from ..base import BaseNNImputer
+from ..brits.data import DatasetForBRITS
 from ...data.checking import key_in_data_set
 from ...nn.functional import calc_mse
 from ...nn.functional import gather_listed_dicts
@@ -265,7 +265,7 @@ class USGAN(BaseNNImputer):
 
                     if idx % self.G_steps == 0:
                         self.G_optimizer.zero_grad()
-                        results = self.model.forward(inputs, training_object="generator")
+                        results = self.model(inputs, training_object="generator")
                         loss = results["loss"].sum()
                         loss.backward()  # generation loss
                         self.G_optimizer.step()
@@ -273,7 +273,7 @@ class USGAN(BaseNNImputer):
 
                     if idx % self.D_steps == 0:
                         self.D_optimizer.zero_grad()
-                        results = self.model.forward(inputs, training_object="discriminator")
+                        results = self.model(inputs, training_object="discriminator")
                         loss = results["loss"].sum()
                         loss.backward(retain_graph=True)  # discrimination loss
                         self.D_optimizer.step()
@@ -390,7 +390,7 @@ class USGAN(BaseNNImputer):
         file_type: str = "hdf5",
     ) -> None:
         # Step 1: wrap the input data with classes Dataset and DataLoader
-        training_set = DatasetForUSGAN(train_set, return_X_ori=False, return_y=False, file_type=file_type)
+        training_set = DatasetForBRITS(train_set, return_X_ori=False, return_y=False, file_type=file_type)
         training_loader = DataLoader(
             training_set,
             batch_size=self.batch_size,
@@ -401,7 +401,7 @@ class USGAN(BaseNNImputer):
         if val_set is not None:
             if not key_in_data_set("X_ori", val_set):
                 raise ValueError("val_set must contain 'X_ori' for model validation.")
-            val_set = DatasetForUSGAN(val_set, return_X_ori=True, return_y=False, file_type=file_type)
+            val_set = DatasetForBRITS(val_set, return_X_ori=True, return_y=False, file_type=file_type)
             val_loader = DataLoader(
                 val_set,
                 batch_size=self.batch_size,
@@ -423,7 +423,7 @@ class USGAN(BaseNNImputer):
         file_type: str = "hdf5",
     ) -> dict:
         self.model.eval()  # set the model to evaluation mode
-        test_set = DatasetForUSGAN(test_set, return_X_ori=False, return_y=False, file_type=file_type)
+        test_set = DatasetForBRITS(test_set, return_X_ori=False, return_y=False, file_type=file_type)
         test_loader = DataLoader(
             test_set,
             batch_size=self.batch_size,

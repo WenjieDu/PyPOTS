@@ -242,17 +242,19 @@ class CRLI(BaseNNClusterer):
                     step_train_loss_D_collector = []
                     for _ in range(self.D_steps):
                         self.D_optimizer.zero_grad()
-                        results = self.model.forward(inputs, training_object="discriminator")
-                        results["discrimination_loss"].sum().backward(retain_graph=True)
+                        results = self.model(inputs, training_object="discriminator")
+                        discrimination_loss = results["discrimination_loss"].sum()
+                        discrimination_loss.backward(retain_graph=True)
                         self.D_optimizer.step()
-                        step_train_loss_D_collector.append(results["discrimination_loss"].sum().item())
+                        step_train_loss_D_collector.append(discrimination_loss.sum().item())
 
                     for _ in range(self.G_steps):
                         self.G_optimizer.zero_grad()
-                        results = self.model.forward(inputs, training_object="generator")
-                        results["generation_loss"].sum().backward()
+                        results = self.model(inputs, training_object="generator")
+                        generation_loss = results["generation_loss"].sum()
+                        generation_loss.backward()
                         self.G_optimizer.step()
-                        step_train_loss_G_collector.append(results["generation_loss"].sum().item())
+                        step_train_loss_G_collector.append(generation_loss.sum().item())
 
                     mean_step_train_D_loss = np.mean(step_train_loss_D_collector)
                     mean_step_train_G_loss = np.mean(step_train_loss_G_collector)
@@ -279,8 +281,9 @@ class CRLI(BaseNNClusterer):
                     with torch.no_grad():
                         for idx, data in enumerate(val_loader):
                             inputs = self._assemble_input_for_validating(data)
-                            results = self.model.forward(inputs)
-                            epoch_val_loss_G_collector.append(results["generation_loss"].sum().item())
+                            results = self.model(inputs)
+                            generation_loss = results["generation_loss"]
+                            epoch_val_loss_G_collector.append(generation_loss.sum().item())
                     mean_val_G_loss = np.mean(epoch_val_loss_G_collector)
                     # save validation loss logs into the tensorboard file for every epoch if in need
                     if self.summary_writer is not None:
@@ -410,8 +413,8 @@ class CRLI(BaseNNClusterer):
 
         Returns
         -------
-        file_type :
-            The dictionary containing the clustering results and latent variables if necessary.
+        result_dict :
+            The dictionary containing the clustering results as key 'clustering' and latent variables if necessary.
         """
         self.model.eval()  # set the model to evaluation mode
         test_set = DatasetForCRLI(
@@ -430,7 +433,7 @@ class CRLI(BaseNNClusterer):
 
         for idx, data in enumerate(test_loader):
             inputs = self._assemble_input_for_testing(data)
-            inputs = self.model.forward(inputs)
+            inputs = self.model(inputs)
             clustering_latent_collector.append(inputs["fcn_latent"])
             if return_latent_vars:
                 imputation_collector.append(inputs["imputation_latent"])
@@ -454,11 +457,3 @@ class CRLI(BaseNNClusterer):
             result_dict["latent_vars"] = latent_var_collector
 
         return result_dict
-
-    def cluster(
-        self,
-        test_set: Union[dict, str],
-        file_type: str = "hdf5",
-    ) -> np.ndarray:
-        result_dict = self.predict(test_set, file_type=file_type)
-        return result_dict["clustering"]
