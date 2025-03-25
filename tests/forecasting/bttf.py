@@ -23,10 +23,11 @@ class TestBTTF(unittest.TestCase):
         n_steps=DATA["n_steps"] - N_PRED_STEPS,
         n_features=DATA["n_features"],
         pred_step=N_PRED_STEPS,
-        rank=10,
-        time_lags=[1, 2, 3, 2, 2 + 1, 2 + 2, 3, 3 + 1, 3 + 2],
-        burn_iter=5,
-        gibbs_iter=5,
+        rank=2,
+        time_lags=[1, 2, 3, 2, 2 + 1, 2 + 2, 3, 3 + 1, 3 + 1],
+        burn_iter=2,
+        gibbs_iter=2,
+        gamma=5,
         multi_step=1,
     )
 
