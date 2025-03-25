@@ -94,7 +94,6 @@ class _Informer(ModelCore):
 
         # project back the original data space
         reconstruction = self.output_projection(enc_out)
-        print(f"reconstruction.shape {reconstruction.shape}")
 
         imputed_data = missing_mask * X + (1 - missing_mask) * reconstruction
         results = {

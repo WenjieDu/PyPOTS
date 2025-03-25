@@ -1,4 +1,4 @@
-pypots.optim package
+pypots.optim
 ====================
 
 pypots.optim.adam

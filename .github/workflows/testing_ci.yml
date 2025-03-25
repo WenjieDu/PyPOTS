@@ -20,7 +20,7 @@ jobs:
             fail-fast: false
             matrix:
                 os: [ubuntu-latest, windows-latest, macOS-latest]
-                python-version: ["3.8", "3.11"]
+                python-version: ["3.8", "3.11"] # torch-geometric dependencies config below not compatible with 3.12
                 pytorch-version: ["2.3.0"]
 
         steps:
@@ -76,7 +76,7 @@ jobs:
               run: |
                   rm -rf testing_results && rm -rf tests/__pycache__ && rm -rf tests/*/__pycache__
                   python tests/global_test_config.py
-                  python -m pytest -rA tests/*/* --ignore tests/*/llms -s -n auto --cov=pypots --dist=loadgroup --cov-config=.coveragerc
+                  pytest -rA -s tests/*/* -n auto --cov=pypots --dist=loadgroup --cov-config=.coveragerc
 
             - name: Generate the LCOV report
               run: |
