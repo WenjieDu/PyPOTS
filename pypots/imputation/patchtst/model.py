@@ -26,8 +26,7 @@ from ...utils.logging import logger
 
 
 class PatchTST(BaseNNImputer):
-    """The PyTorch implementation of the PatchTST model.
-    TimesNet is originally proposed by Wu et al. in :cite:`nie2023patchtst`.
+    """The PyTorch implementation of the PatchTST model :cite:`nie2023patchtst`.
 
     Parameters
     ----------
