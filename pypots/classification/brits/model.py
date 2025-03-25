@@ -271,7 +271,7 @@ class BRITS(BaseNNClassifier):
         test_set = DatasetForBRITS(
             test_set,
             return_X_ori=False,
-            return_y=True,
+            return_y=False,
             file_type=file_type,
         )
         test_loader = DataLoader(

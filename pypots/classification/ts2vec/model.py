@@ -132,7 +132,6 @@ class TS2Vec(BaseNNClassifier):
         self.d_hidden = d_hidden
         self.n_layers = n_layers
         self.mask_mode = mask_mode
-        self.training_set_loader = None
 
         # set up the model
         self.model = _TS2Vec(
@@ -235,7 +234,7 @@ class TS2Vec(BaseNNClassifier):
 
         train_repr_collector = []
         train_label_collector = []
-        for idx, data in enumerate(self.training_set_loader):
+        for idx, data in enumerate(self.train_set_loader):
             inputs = self._assemble_input_for_training(data)
             train_repr = self.model(inputs, encoding_window="full_series")["representation"]
             train_repr_collector.append(train_repr)
@@ -248,7 +247,7 @@ class TS2Vec(BaseNNClassifier):
             test_set,
             return_X_ori=False,
             return_X_pred=False,
-            return_y=True,
+            return_y=False,
             file_type=file_type,
         )
         test_loader = DataLoader(
