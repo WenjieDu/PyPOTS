@@ -45,6 +45,7 @@ class _TS2Vec(ModelCore):
     def forward(
         self,
         inputs: dict,
+        calc_criterion: bool = False,
         mask: str = None,
         encoding_window=None,
         causal=False,
@@ -64,33 +65,27 @@ class _TS2Vec(ModelCore):
         )
         results["representation"] = reprs
 
-        return results
+        if calc_criterion:
+            # if in training mode, return results with losses
+            n_steps = X.size(1)
+            crop_l = np.random.randint(low=2 ** (self.temporal_unit + 1), high=n_steps + 1)
+            crop_left = np.random.randint(n_steps - crop_l + 1)
+            crop_right = crop_left + crop_l
+            crop_eleft = np.random.randint(crop_left + 1)
+            crop_eright = np.random.randint(low=crop_right, high=n_steps + 1)
+            crop_offset = np.random.randint(low=-crop_eleft, high=n_steps - crop_eright + 1, size=X.size(0))
 
-    def calc_criterion(self, inputs: dict) -> dict:
-        X = inputs["X"]
+            out1 = self.encoder(take_per_row(X, crop_offset + crop_eleft, crop_right - crop_eleft))
+            out1 = out1[:, -crop_l:]
+            out2 = self.encoder(take_per_row(X, crop_offset + crop_left, crop_eright - crop_left))
+            out2 = out2[:, :crop_l]
 
-        # if in training mode, return results with losses
-        n_steps = X.size(1)
-        crop_l = np.random.randint(low=2 ** (self.temporal_unit + 1), high=n_steps + 1)
-        crop_left = np.random.randint(n_steps - crop_l + 1)
-        crop_right = crop_left + crop_l
-        crop_eleft = np.random.randint(crop_left + 1)
-        crop_eright = np.random.randint(low=crop_right, high=n_steps + 1)
-        crop_offset = np.random.randint(low=-crop_eleft, high=n_steps - crop_eright + 1, size=X.size(0))
+            loss = hierarchical_contrastive_loss(out1, out2, temporal_unit=self.temporal_unit)
 
-        out1 = self.encoder(take_per_row(X, crop_offset + crop_eleft, crop_right - crop_eleft))
-        out1 = out1[:, -crop_l:]
-        out2 = self.encoder(take_per_row(X, crop_offset + crop_left, crop_eright - crop_left))
-        out2 = out2[:, :crop_l]
-
-        loss = hierarchical_contrastive_loss(out1, out2, temporal_unit=self.temporal_unit)
-
-        results = {}
-
-        if self.training:  # if in the training mode (the training stage), return loss result from training_loss
-            # `loss` is always the item for backward propagating to update the model
-            results["loss"] = loss
-        else:  # if in the eval mode (the validation stage), return metric result from validation_metric
-            results["metric"] = loss
+            if self.training:  # if in the training mode (the training stage), return loss result from training_loss
+                # `loss` is always the item for backward propagating to update the model
+                results["loss"] = loss
+            else:  # if in the eval mode (the validation stage), return metric result from validation_metric
+                results["metric"] = loss
 
         return results

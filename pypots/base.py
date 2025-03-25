@@ -215,6 +215,11 @@ class BaseModel(ABC):
             logger.warning("‼️ saving_path not given. Model files and tensorboard file will not be saved.")
 
     def _send_model_to_given_device(self) -> None:
+        if isinstance(self.model, torch.nn.DataParallel):
+            # in this case, the model has been sent to multi-gpu previously,
+            # and we have to turn the model from nn.DataParallel to nn.Module first
+            self.model = self.model.module
+
         if isinstance(self.device, list):
             # parallely training on multiple devices
             self.model = torch.nn.DataParallel(self.model, device_ids=self.device)
@@ -482,8 +487,10 @@ class BaseModel(ABC):
             The device to move the model to. It can be a string or a :class:`torch.device` object.
 
         """
-        self.device = device
+        self._setup_device(device)
         self._send_model_to_given_device()
+        # TODO: have to move the optimizer to the given device as well
+        #  but we may have multi optimizers for a model, e.g. GANs, https://github.com/WenjieDu/PyPOTS/issues/599
 
 
 class BaseNNModel(BaseModel):
@@ -727,7 +734,7 @@ class BaseNNModel(BaseModel):
 
                     with autocast(enabled=self.amp_enabled):
                         self.optimizer.zero_grad()
-                        results = self.model.calc_criterion(inputs)
+                        results = self.model(inputs, calc_criterion=True)
                         loss = results["loss"].sum()
                         loss.backward()
                         self.optimizer.step()
@@ -747,7 +754,7 @@ class BaseNNModel(BaseModel):
                             inputs = self._assemble_input_for_validating(data)
 
                             with autocast(enabled=self.amp_enabled):
-                                results = self.model.calc_criterion(inputs)
+                                results = self.model(inputs, calc_criterion=True)
 
                             val_metric = results["metric"].sum()
                             val_metric_collector.append(val_metric.detach().item())

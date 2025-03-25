@@ -51,7 +51,11 @@ class _TEFN(ModelCore):
         self.dropout = nn.Dropout(dropout)
         self.output_projection = nn.Linear(n_features * n_steps, n_classes)
 
-    def forward(self, inputs: dict) -> dict:
+    def forward(
+        self,
+        inputs: dict,
+        calc_criterion: bool = False,
+    ) -> dict:
         X, missing_mask = inputs["X"], inputs["missing_mask"]
         bz = X.shape[0]
 
@@ -76,17 +80,11 @@ class _TEFN(ModelCore):
             "logits": logits,
         }
 
-        return results
-
-    def calc_criterion(self, inputs: dict) -> dict:
-        results = self.forward(inputs)
-
-        logits = results["logits"]
-
-        if self.training:  # if in the training mode (the training stage), return loss result from training_loss
-            # `loss` is always the item for backward propagating to update the model
-            results["loss"] = self.training_loss(logits, inputs["y"])
-        else:  # if in the eval mode (the validation stage), return metric result from validation_metric
-            results["metric"] = self.validation_metric(logits, inputs["y"])
+        if calc_criterion:
+            if self.training:  # if in the training mode (the training stage), return loss result from training_loss
+                # `loss` is always the item for backward propagating to update the model
+                results["loss"] = self.training_loss(logits, inputs["y"])
+            else:  # if in the eval mode (the validation stage), return metric result from validation_metric
+                results["metric"] = self.validation_metric(logits, inputs["y"])
 
         return results
