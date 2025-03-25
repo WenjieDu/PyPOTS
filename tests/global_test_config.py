@@ -20,7 +20,7 @@ RANDOM_SEED = 2023
 # set the number of epochs for all model training
 EPOCHS = 2
 # set the number of prediction steps for forecasting models
-N_STEPS = 14
+N_STEPS = 6
 N_PRED_STEPS = 2
 N_FEATURES = 5
 ANOMALY_RATE = 0.01
