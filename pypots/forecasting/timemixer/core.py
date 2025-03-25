@@ -73,7 +73,11 @@ class _TimeMixer(ModelCore):
         # for the imputation task, the output dim is the same as input dim
         self.output_projection = nn.Linear(n_features, n_pred_features)
 
-    def forward(self, inputs: dict) -> dict:
+    def forward(
+        self,
+        inputs: dict,
+        calc_criterion: bool = False,
+    ) -> dict:
         X = inputs["X"]
         # missing_mask = inputs["missing_mask"]
 
@@ -93,18 +97,12 @@ class _TimeMixer(ModelCore):
             "forecasting": forecasting_result,
         }
 
-        return results
-
-    def calc_criterion(self, inputs: dict) -> dict:
-        results = self.forward(inputs)
-
-        X_pred, X_pred_missing_mask = inputs["X_pred"], inputs["X_pred_missing_mask"]
-        forecasting_result = results["forecasting"]
-
-        if self.training:  # if in the training mode (the training stage), return loss result from training_loss
-            # `loss` is always the item for backward propagating to update the model
-            results["loss"] = self.training_loss(X_pred, forecasting_result, X_pred_missing_mask)
-        else:  # if in the eval mode (the validation stage), return metric result from validation_metric
-            results["metric"] = self.validation_metric(X_pred, forecasting_result, X_pred_missing_mask)
+        if calc_criterion:
+            X_pred, X_pred_missing_mask = inputs["X_pred"], inputs["X_pred_missing_mask"]
+            if self.training:  # if in the training mode (the training stage), return loss result from training_loss
+                # `loss` is always the item for backward propagating to update the model
+                results["loss"] = self.training_loss(X_pred, forecasting_result, X_pred_missing_mask)
+            else:  # if in the eval mode (the validation stage), return metric result from validation_metric
+                results["metric"] = self.validation_metric(X_pred, forecasting_result, X_pred_missing_mask)
 
         return results
