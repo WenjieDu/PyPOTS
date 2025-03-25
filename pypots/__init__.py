@@ -26,6 +26,8 @@ __all__ = [
     "classification",
     "clustering",
     "forecasting",
+    "anomaly_detection",
+    "representation",
     "optim",
     "data",
     "utils",
