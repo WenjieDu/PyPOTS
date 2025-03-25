@@ -15,7 +15,7 @@ from torch.utils.data import DataLoader
 from ..base import BaseModel, BaseNNModel
 from ..data.checking import key_in_data_set
 from ..data.dataset.base import BaseDataset
-from ..nn.functional import gather_listed_dicts
+from ..nn.functional import autocast, gather_listed_dicts
 from ..nn.modules.loss import Criterion
 
 
@@ -452,7 +452,8 @@ class BaseNNForecaster(BaseNNModel):
         dict_result_collector = []
         for idx, data in enumerate(test_loader):
             inputs = self._assemble_input_for_testing(data)
-            results = self.model(inputs, **kwargs)
+            with autocast(enabled=self.amp_enabled):
+                results = self.model(inputs, **kwargs)
             dict_result_collector.append(results)
 
         # Step 3: output collection and return
