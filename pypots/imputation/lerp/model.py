@@ -48,6 +48,7 @@ class Lerp(BaseImputer):
         self,
         test_set: Union[dict, str],
         file_type: str = "hdf5",
+        **kwargs,
     ) -> dict:
 
         if isinstance(test_set, str):

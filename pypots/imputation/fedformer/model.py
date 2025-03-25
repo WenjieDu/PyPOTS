@@ -12,8 +12,8 @@ import torch
 from torch.utils.data import DataLoader
 
 from .core import _FEDformer
-from .data import DatasetForFEDformer
 from ..base import BaseNNImputer
+from ..saits.data import DatasetForSAITS
 from ...data.checking import key_in_data_set
 from ...nn.modules.loss import Criterion, MAE, MSE
 from ...optim.adam import Adam
@@ -239,7 +239,7 @@ class FEDformer(BaseNNImputer):
         file_type: str = "hdf5",
     ) -> None:
         # Step 1: wrap the input data with classes Dataset and DataLoader
-        training_set = DatasetForFEDformer(train_set, return_X_ori=False, return_y=False, file_type=file_type)
+        training_set = DatasetForSAITS(train_set, return_X_ori=False, return_y=False, file_type=file_type)
         training_loader = DataLoader(
             training_set,
             batch_size=self.batch_size,
@@ -250,7 +250,7 @@ class FEDformer(BaseNNImputer):
         if val_set is not None:
             if not key_in_data_set("X_ori", val_set):
                 raise ValueError("val_set must contain 'X_ori' for model validation.")
-            val_set = DatasetForFEDformer(val_set, return_X_ori=True, return_y=False, file_type=file_type)
+            val_set = DatasetForSAITS(val_set, return_X_ori=True, return_y=False, file_type=file_type)
             val_loader = DataLoader(
                 val_set,
                 batch_size=self.batch_size,

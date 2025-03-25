@@ -18,7 +18,7 @@ from .core import _TRMF
 from .data import DatasetForTRMF
 from ..base import BaseImputer
 from ...data import inverse_sliding_window, sliding_window
-from ...data.dataset import BaseDataset
+from ...data.dataset.base import BaseDataset
 from ...utils.logging import logger
 
 
@@ -147,7 +147,7 @@ class TRMF(BaseImputer):
             "missing_mask": missing_mask,
         }
 
-        self.model.forward(inputs)
+        self.model(inputs)
 
         # Step 3: save the model if necessary
         self._auto_save_model_if_necessary(confirm_saving=self.model_saving_strategy == "best")
@@ -156,8 +156,7 @@ class TRMF(BaseImputer):
         self,
         test_set: Union[dict, str],
         file_type: str = "hdf5",
-        diagonal_attention_mask: bool = True,
-        return_latent_vars: bool = False,
+        **kwargs,
     ) -> dict:
         self.model.eval()  # set the model to evaluation mode
         # Step 1: wrap the input data with classes Dataset and DataLoader
@@ -192,6 +191,7 @@ class TRMF(BaseImputer):
         self,
         test_set: Union[dict, str],
         file_type: str = "hdf5",
+        **kwargs,
     ) -> np.ndarray:
         result_dict = self.predict(test_set, file_type=file_type)
         return result_dict["imputation"]

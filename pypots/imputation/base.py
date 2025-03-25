@@ -14,7 +14,7 @@ import torch
 from torch.utils.data import DataLoader
 
 from ..base import BaseModel, BaseNNModel
-from ..data.dataset import BaseDataset
+from ..data.dataset.base import BaseDataset
 from ..nn.functional import gather_listed_dicts
 from ..nn.modules.loss import Criterion
 
@@ -317,6 +317,7 @@ class BaseNNImputer(BaseNNModel):
 
         """
         self.model.eval()  # set the model to evaluation mode
+
         # Step 1: wrap the input data with classes Dataset and DataLoader
         test_set = BaseDataset(
             test_set,

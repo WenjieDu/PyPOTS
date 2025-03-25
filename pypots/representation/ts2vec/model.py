@@ -1,5 +1,5 @@
 """
-The implementation of TS2Vec for the partially-observed time-series vectorization task.
+The implementation of TS2Vec for the partially-observed time-series representation task.
 
 """
 
@@ -13,14 +13,14 @@ import torch
 from torch.utils.data import DataLoader
 
 from .core import _TS2Vec
-from .data import DatasetForTS2Vec
-from ..base import BaseNNVectorizer
+from ..base import BaseNNRepresentor
+from ...data.dataset.base import BaseDataset
 from ...nn.modules.loss import Criterion
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
 
 
-class TS2Vec(BaseNNVectorizer):
+class TS2Vec(BaseNNRepresentor):
     """The PyTorch implementation of the TS2Vec model :cite:`yue2022ts2vec`.
 
     Parameters
@@ -32,7 +32,7 @@ class TS2Vec(BaseNNVectorizer):
         The number of features in the time-series data sample.
 
     n_output_dims :
-        The number of output dimensions for the vectorization of the time-series data sample.
+        The number of output dimensions for the representation of the time-series data sample.
 
     d_hidden :
         The number of hidden dimensions for the TS2VEC encoder.
@@ -170,7 +170,13 @@ class TS2Vec(BaseNNVectorizer):
         file_type: str = "hdf5",
     ) -> None:
         # Step 1: wrap the input data with classes Dataset and DataLoader
-        training_set = DatasetForTS2Vec(train_set, file_type=file_type)
+        training_set = BaseDataset(
+            train_set,
+            return_X_ori=False,
+            return_X_pred=False,
+            return_y=False,
+            file_type=file_type,
+        )
         training_loader = DataLoader(
             training_set,
             batch_size=self.batch_size,
@@ -179,7 +185,13 @@ class TS2Vec(BaseNNVectorizer):
         )
         val_loader = None
         if val_set is not None:
-            val_set = DatasetForTS2Vec(val_set, file_type=file_type)
+            val_set = BaseDataset(
+                val_set,
+                return_X_ori=False,
+                return_X_pred=False,
+                return_y=False,
+                file_type=file_type,
+            )
             val_loader = DataLoader(
                 val_set,
                 batch_size=self.batch_size,
@@ -205,36 +217,18 @@ class TS2Vec(BaseNNVectorizer):
         sliding_length=None,
         sliding_padding=0,
     ) -> dict:
-        self.model.eval()  # set the model to evaluation mode
-        test_set = DatasetForTS2Vec(test_set, file_type=file_type)
-        test_loader = DataLoader(
+        result_dict = super().predict(
             test_set,
-            batch_size=self.batch_size,
-            shuffle=False,
-            num_workers=self.num_workers,
+            file_type=file_type,
+            mask=mask,
+            encoding_window=encoding_window,
+            causal=causal,
+            sliding_length=sliding_length,
+            sliding_padding=sliding_padding,
         )
-        vectorization_collector = []
-
-        for idx, data in enumerate(test_loader):
-            inputs = self._assemble_input_for_testing(data)
-            results = self.model(
-                inputs,
-                mask=mask,
-                encoding_window=encoding_window,
-                causal=causal,
-                sliding_length=sliding_length,
-                sliding_padding=sliding_padding,
-            )
-            vectorization_pred = results["representation"]
-            vectorization_collector.append(vectorization_pred)
-
-        vectorization = torch.cat(vectorization_collector).cpu().detach().numpy()
-        result_dict = {
-            "vectorization": vectorization,
-        }
         return result_dict
 
-    def vectorize(
+    def represent(
         self,
         test_set: Union[dict, str],
         file_type: str = "hdf5",
@@ -244,7 +238,7 @@ class TS2Vec(BaseNNVectorizer):
         sliding_length=None,
         sliding_padding=0,
     ) -> np.ndarray:
-        result_dict = self.predict(
+        results = super().represent(
             test_set,
             file_type=file_type,
             mask=mask,
@@ -253,4 +247,4 @@ class TS2Vec(BaseNNVectorizer):
             sliding_length=sliding_length,
             sliding_padding=sliding_padding,
         )
-        return result_dict["vectorization"]
+        return results
