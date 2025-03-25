@@ -170,37 +170,37 @@ class TS2Vec(BaseNNRepresentor):
         file_type: str = "hdf5",
     ) -> None:
         # Step 1: wrap the input data with classes Dataset and DataLoader
-        training_set = BaseDataset(
+        train_dataset = BaseDataset(
             train_set,
             return_X_ori=False,
             return_X_pred=False,
             return_y=False,
             file_type=file_type,
         )
-        training_loader = DataLoader(
-            training_set,
+        train_dataloader = DataLoader(
+            train_dataset,
             batch_size=self.batch_size,
             shuffle=True,
             num_workers=self.num_workers,
         )
-        val_loader = None
+        val_dataloader = None
         if val_set is not None:
-            val_set = BaseDataset(
+            val_dataset = BaseDataset(
                 val_set,
                 return_X_ori=False,
                 return_X_pred=False,
                 return_y=False,
                 file_type=file_type,
             )
-            val_loader = DataLoader(
-                val_set,
+            val_dataloader = DataLoader(
+                val_dataset,
                 batch_size=self.batch_size,
                 shuffle=False,
                 num_workers=self.num_workers,
             )
 
         # Step 2: train the model and freeze it
-        self._train_model(training_loader, val_loader)
+        self._train_model(train_dataloader, val_dataloader)
         self.model.load_state_dict(self.best_model_dict)
 
         # Step 3: save the model if necessary

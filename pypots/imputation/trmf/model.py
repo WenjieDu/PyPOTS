@@ -131,13 +131,13 @@ class TRMF(BaseImputer):
         file_type: str = "hdf5",
     ) -> None:
         # Step 1: wrap the input data with classes Dataset and DataLoader
-        training_set = DatasetForTRMF(train_set)
+        train_dataset = DatasetForTRMF(train_set)
         if val_set is not None:
             raise RuntimeError("TRMF does not support validation set.")
 
         # Step 2: train the model and freeze it
-        X = training_set.fetch_entire_dataset()["X"]
-        X = inverse_sliding_window(X, training_set.n_steps)
+        X = train_dataset.fetch_entire_dataset()["X"]
+        X = inverse_sliding_window(X, train_dataset.n_steps)
         if isinstance(X, torch.Tensor):
             X = X.numpy()
         X, missing_mask = fill_and_get_mask_numpy(X)
@@ -160,7 +160,7 @@ class TRMF(BaseImputer):
     ) -> dict:
         self.model.eval()  # set the model to evaluation mode
         # Step 1: wrap the input data with classes Dataset and DataLoader
-        test_set = BaseDataset(
+        test_dataset = BaseDataset(
             test_set,
             return_X_ori=False,
             return_X_pred=False,
@@ -168,8 +168,8 @@ class TRMF(BaseImputer):
             file_type=file_type,
         )
 
-        X = test_set.fetch_entire_dataset()["X"]
-        X = inverse_sliding_window(X, test_set.n_steps)
+        X = test_dataset.fetch_entire_dataset()["X"]
+        X = inverse_sliding_window(X, test_dataset.n_steps)
         if isinstance(X, torch.Tensor):
             X = X.numpy()
         X, missing_mask = fill_and_get_mask_numpy(X)
@@ -180,7 +180,7 @@ class TRMF(BaseImputer):
 
         # Step 3: output collection and return
         results = self.model(inputs)
-        imputation = sliding_window(results["imputed_data"], test_set.n_steps)
+        imputation = sliding_window(results["imputed_data"], test_dataset.n_steps)
         result_dict = {
             "imputation": imputation,
         }
