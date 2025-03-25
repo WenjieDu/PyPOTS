@@ -217,8 +217,8 @@ class CRLI(BaseNNClusterer):
 
     def _train_model(
         self,
-        train_set_loader: DataLoader,
-        val_set_loader: DataLoader = None,
+        train_dataloader: DataLoader,
+        val_dataloader: DataLoader = None,
     ) -> None:
         # each training starts from the very beginning, so reset the loss and model dict here
         self.best_model_dict = None
@@ -234,7 +234,7 @@ class CRLI(BaseNNClusterer):
             epoch_train_loss_D_collector = []
             for epoch in range(1, self.epochs + 1):
                 self.model.train()
-                for idx, data in enumerate(train_set_loader):
+                for idx, data in enumerate(train_dataloader):
                     training_step += 1
                     inputs = self._assemble_input_for_training(data)
 
@@ -275,11 +275,11 @@ class CRLI(BaseNNClusterer):
                 mean_epoch_train_D_loss = np.mean(epoch_train_loss_D_collector)
                 mean_epoch_train_G_loss = np.mean(epoch_train_loss_G_collector)
 
-                if val_set_loader is not None:
+                if val_dataloader is not None:
                     self.model.eval()
                     epoch_val_loss_G_collector = []
                     with torch.no_grad():
-                        for idx, data in enumerate(val_set_loader):
+                        for idx, data in enumerate(val_dataloader):
                             inputs = self._assemble_input_for_validating(data)
                             results = self.model(inputs)
                             generation_loss = results["generation_loss"]
@@ -361,26 +361,26 @@ class CRLI(BaseNNClusterer):
         file_type: str = "hdf5",
     ) -> None:
         # Step 1: wrap the input data with classes Dataset and DataLoader
-        training_set = DatasetForCRLI(train_set, return_y=False, file_type=file_type)
-        training_loader = DataLoader(
-            training_set,
+        train_dataset = DatasetForCRLI(train_set, return_y=False, file_type=file_type)
+        train_dataloader = DataLoader(
+            train_dataset,
             batch_size=self.batch_size,
             shuffle=True,
             num_workers=self.num_workers,
         )
-        val_loader = None
+        val_dataloader = None
 
         if val_set is not None:
-            val_set = DatasetForCRLI(val_set, return_y=False, file_type=file_type)
-            val_loader = DataLoader(
-                val_set,
+            val_dataset = DatasetForCRLI(val_set, return_y=False, file_type=file_type)
+            val_dataloader = DataLoader(
+                val_dataset,
                 batch_size=self.batch_size,
                 shuffle=False,
                 num_workers=self.num_workers,
             )
 
         # Step 2: train the model and freeze it
-        self._train_model(training_loader, val_loader)
+        self._train_model(train_dataloader, val_dataloader)
         self.model.load_state_dict(self.best_model_dict)
 
         # Step 3: save the model if necessary
@@ -417,13 +417,13 @@ class CRLI(BaseNNClusterer):
             The dictionary containing the clustering results as key 'clustering' and latent variables if necessary.
         """
         self.model.eval()  # set the model to evaluation mode
-        test_set = DatasetForCRLI(
+        test_dataset = DatasetForCRLI(
             test_set,
             return_y=False,
             file_type=file_type,
         )
-        test_loader = DataLoader(
-            test_set,
+        test_dataloader = DataLoader(
+            test_dataset,
             batch_size=self.batch_size,
             shuffle=False,
             num_workers=self.num_workers,
@@ -431,7 +431,7 @@ class CRLI(BaseNNClusterer):
         clustering_latent_collector = []
         imputation_collector = []
 
-        for idx, data in enumerate(test_loader):
+        for idx, data in enumerate(test_dataloader):
             inputs = self._assemble_input_for_testing(data)
             inputs = self.model(inputs)
             clustering_latent_collector.append(inputs["fcn_latent"])

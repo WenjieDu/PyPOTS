@@ -364,39 +364,39 @@ class BaseNNForecaster(BaseNNModel):
 
         """
         # Step 1: wrap the input data with classes Dataset and DataLoader
-        training_set = BaseDataset(
+        train_dataset = BaseDataset(
             train_set,
             return_X_ori=False,
             return_X_pred=True,
             return_y=False,
             file_type=file_type,
         )
-        training_loader = DataLoader(
-            training_set,
+        train_dataloader = DataLoader(
+            train_dataset,
             batch_size=self.batch_size,
             shuffle=True,
             num_workers=self.num_workers,
         )
-        val_loader = None
+        val_dataloader = None
         if val_set is not None:
             if not key_in_data_set("X_pred", val_set):
                 raise ValueError("val_set must contain 'X_pred' for model validation.")
-            val_set = BaseDataset(
+            val_dataset = BaseDataset(
                 val_set,
                 return_X_ori=False,
                 return_X_pred=True,
                 return_y=False,
                 file_type=file_type,
             )
-            val_loader = DataLoader(
-                val_set,
+            val_dataloader = DataLoader(
+                val_dataset,
                 batch_size=self.batch_size,
                 shuffle=False,
                 num_workers=self.num_workers,
             )
 
         # Step 2: train the model and freeze it
-        self._train_model(training_loader, val_loader)
+        self._train_model(train_dataloader, val_dataloader)
         self.model.load_state_dict(self.best_model_dict)
 
         # Step 3: save the model if necessary
@@ -433,7 +433,7 @@ class BaseNNForecaster(BaseNNModel):
         self.model.eval()  # set the model to evaluation mode
 
         # Step 1: wrap the input data with classes Dataset and DataLoader
-        test_set = BaseDataset(
+        test_dataset = BaseDataset(
             test_set,
             return_X_ori=False,
             return_X_pred=False,
@@ -441,8 +441,8 @@ class BaseNNForecaster(BaseNNModel):
             file_type=file_type,
         )
 
-        test_loader = DataLoader(
-            test_set,
+        test_dataloader = DataLoader(
+            test_dataset,
             batch_size=self.batch_size,
             shuffle=False,
             num_workers=self.num_workers,
@@ -450,7 +450,7 @@ class BaseNNForecaster(BaseNNModel):
 
         # Step 2: process the data with the model
         dict_result_collector = []
-        for idx, data in enumerate(test_loader):
+        for idx, data in enumerate(test_dataloader):
             inputs = self._assemble_input_for_testing(data)
             with autocast(enabled=self.amp_enabled):
                 results = self.model(inputs, **kwargs)

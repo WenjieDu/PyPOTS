@@ -209,27 +209,27 @@ class BRITS(BaseNNImputer):
         file_type: str = "hdf5",
     ) -> None:
         # Step 1: wrap the input data with classes Dataset and DataLoader
-        training_set = DatasetForBRITS(train_set, return_X_ori=False, return_y=False, file_type=file_type)
-        training_loader = DataLoader(
-            training_set,
+        train_dataset = DatasetForBRITS(train_set, return_X_ori=False, return_y=False, file_type=file_type)
+        train_dataloader = DataLoader(
+            train_dataset,
             batch_size=self.batch_size,
             shuffle=True,
             num_workers=self.num_workers,
         )
-        val_loader = None
+        val_dataloader = None
         if val_set is not None:
             if not key_in_data_set("X_ori", val_set):
                 raise ValueError("val_set must contain 'X_ori' for model validation.")
-            val_set = DatasetForBRITS(val_set, return_X_ori=True, return_y=False, file_type=file_type)
-            val_loader = DataLoader(
-                val_set,
+            val_dataset = DatasetForBRITS(val_set, return_X_ori=True, return_y=False, file_type=file_type)
+            val_dataloader = DataLoader(
+                val_dataset,
                 batch_size=self.batch_size,
                 shuffle=False,
                 num_workers=self.num_workers,
             )
 
         # Step 2: train the model and freeze it
-        self._train_model(training_loader, val_loader)
+        self._train_model(train_dataloader, val_dataloader)
         self.model.load_state_dict(self.best_model_dict)
 
         # Step 3: save the model if necessary
@@ -242,14 +242,14 @@ class BRITS(BaseNNImputer):
         file_type: str = "hdf5",
     ) -> dict:
         self.model.eval()  # set the model to evaluation mode
-        test_set = DatasetForBRITS(
+        test_dataset = DatasetForBRITS(
             test_set,
             return_X_ori=False,
             return_y=False,
             file_type=file_type,
         )
-        test_loader = DataLoader(
-            test_set,
+        test_dataloader = DataLoader(
+            test_dataset,
             batch_size=self.batch_size,
             shuffle=False,
             num_workers=self.num_workers,
@@ -257,7 +257,7 @@ class BRITS(BaseNNImputer):
 
         # Step 2: process the data with the model
         dict_result_collector = []
-        for idx, data in enumerate(test_loader):
+        for idx, data in enumerate(test_dataloader):
             inputs = self._assemble_input_for_testing(data)
             results = self.model(inputs)
             dict_result_collector.append(results)

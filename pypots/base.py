@@ -104,7 +104,6 @@ class BaseModel(ABC):
 
         self.model = None
         self.summary_writer = None
-        self.train_set_loader = None
 
         # set up the device for model running below
         self._setup_device(device)
@@ -706,12 +705,9 @@ class BaseNNModel(BaseModel):
 
     def _train_model(
         self,
-        train_set_loader: DataLoader,
-        val_set_loader: Optional[DataLoader] = None,
+        train_dataloader: DataLoader,
+        val_dataloader: Optional[DataLoader] = None,
     ) -> None:
-        # store train_set_loader, useful to ANOD testing and judge whether a model is fitted
-        self.train_set_loader = train_set_loader
-
         # each training starts from the very beginning, so reset the loss and model dict here
         self.best_model_dict = None
 
@@ -725,7 +721,7 @@ class BaseNNModel(BaseModel):
             for epoch in range(1, self.epochs + 1):
                 self.model.train()
                 epoch_train_loss_collector = []
-                for idx, data in enumerate(train_set_loader):
+                for idx, data in enumerate(train_dataloader):
                     training_step += 1
                     inputs = self._assemble_input_for_training(data)
 
@@ -743,11 +739,11 @@ class BaseNNModel(BaseModel):
                 # mean training loss of the current epoch
                 mean_train_loss = np.mean(epoch_train_loss_collector)
 
-                if val_set_loader is not None:
+                if val_dataloader is not None:
                     self.model.eval()
                     val_metric_collector = []
                     with torch.no_grad():
-                        for idx, data in enumerate(val_set_loader):
+                        for idx, data in enumerate(val_dataloader):
                             inputs = self._assemble_input_for_validating(data)
 
                             with autocast(enabled=self.amp_enabled):

@@ -15,6 +15,7 @@ from torch.utils.data import DataLoader
 
 from ..base import BaseModel, BaseNNModel
 from ..data.dataset.base import BaseDataset
+from ..nn.functional import autocast
 from ..nn.modules.loss import Criterion
 from ..utils.logging import logger
 
@@ -269,6 +270,9 @@ class BaseNNDetector(BaseNNModel):
         assert 0 < anomaly_rate < 1, f"anomaly_rate should be in (0, 1), but got {anomaly_rate}"
         self.anomaly_rate = anomaly_rate
 
+        # we need train_set in predict(), hence init here and set at the beginning of fit()
+        self.train_set = None
+
     @abstractmethod
     def fit(
         self,
@@ -334,29 +338,28 @@ class BaseNNDetector(BaseNNModel):
         self.model.eval()  # set the model to evaluation mode
 
         # Step 1: wrap the input data with classes Dataset and DataLoader
-        train_set = BaseDataset(
+        train_dataset = BaseDataset(
             self.train_set,
             return_X_ori=False,
             return_X_pred=False,
             return_y=False,
             file_type=file_type,
         )
-        train_loader = DataLoader(
-            train_set,
+        train_dataloader = DataLoader(
+            train_dataset,
             batch_size=self.batch_size,
             shuffle=False,
             num_workers=self.num_workers,
         )
-
-        test_set = BaseDataset(
+        test_dataset = BaseDataset(
             test_set,
             return_X_ori=False,
             return_X_pred=False,
             return_y=False,
             file_type=file_type,
         )
-        test_loader = DataLoader(
-            test_set,
+        test_dataloader = DataLoader(
+            test_dataset,
             batch_size=self.batch_size,
             shuffle=False,
             num_workers=self.num_workers,
@@ -365,9 +368,10 @@ class BaseNNDetector(BaseNNModel):
         # Step 2: process the data with the model
         score_collector = []
         anomaly_criterion = torch.nn.MSELoss(reduce=False)
-        for idx, data in enumerate(train_loader):
+        for idx, data in enumerate(train_dataloader):
             inputs = self._assemble_input_for_testing(data)
-            results = self.model(inputs, **kwargs)
+            with autocast(enabled=self.amp_enabled):
+                results = self.model(inputs, **kwargs)
             outputs = results["reconstruction"]
             score = torch.mean(anomaly_criterion(inputs["X"], outputs), dim=-1)
             score = score.detach().cpu().numpy()
@@ -378,9 +382,10 @@ class BaseNNDetector(BaseNNModel):
 
         # find the threshold
         score_collector = []
-        for idx, data in enumerate(test_loader):
+        for idx, data in enumerate(test_dataloader):
             inputs = self._assemble_input_for_testing(data)
-            results = self.model(inputs, **kwargs)
+            with autocast(enabled=self.amp_enabled):
+                results = self.model(inputs, **kwargs)
             outputs = results["reconstruction"]
             # criterion
             score = torch.mean(anomaly_criterion(inputs["X"], outputs), dim=-1)
