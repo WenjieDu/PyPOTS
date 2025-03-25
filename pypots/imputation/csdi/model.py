@@ -224,37 +224,37 @@ class CSDI(BaseNNImputer):
         n_sampling_times: int = 1,
     ) -> None:
         # Step 1: wrap the input data with classes Dataset and DataLoader
-        training_set = DatasetForCSDI(
+        train_dataset = DatasetForCSDI(
             train_set,
             self.target_strategy,
             return_X_ori=False,
             file_type=file_type,
         )
-        training_loader = DataLoader(
-            training_set,
+        train_dataloader = DataLoader(
+            train_dataset,
             batch_size=self.batch_size,
             shuffle=True,
             num_workers=self.num_workers,
         )
-        val_loader = None
+        val_dataloader = None
         if val_set is not None:
             if not key_in_data_set("X_ori", val_set):
                 raise ValueError("val_set must contain 'X_ori' for model validation.")
-            val_set = DatasetForCSDI(
+            val_dataset = DatasetForCSDI(
                 val_set,
                 self.target_strategy,
                 return_X_ori=True,
                 file_type=file_type,
             )
-            val_loader = DataLoader(
-                val_set,
+            val_dataloader = DataLoader(
+                val_dataset,
                 batch_size=self.batch_size,
                 shuffle=False,
                 num_workers=self.num_workers,
             )
 
         # Step 2: train the model and freeze it
-        self._train_model(training_loader, val_loader)
+        self._train_model(train_dataloader, val_dataloader)
         self.model.load_state_dict(self.best_model_dict)
 
         # Step 3: save the model if necessary
@@ -296,9 +296,9 @@ class CSDI(BaseNNImputer):
         self.model.eval()  # set the model to evaluation mode
 
         # Step 1: wrap the input data with classes Dataset and DataLoader
-        test_set = TestDatasetForCSDI(test_set, return_X_ori=False, file_type=file_type)
-        test_loader = DataLoader(
-            test_set,
+        test_dataset = TestDatasetForCSDI(test_set, return_X_ori=False, file_type=file_type)
+        test_dataloader = DataLoader(
+            test_dataset,
             batch_size=self.batch_size,
             shuffle=False,
             num_workers=self.num_workers,
@@ -306,7 +306,7 @@ class CSDI(BaseNNImputer):
 
         # Step 2: process the data with the model
         dict_result_collector = []
-        for idx, data in enumerate(test_loader):
+        for idx, data in enumerate(test_dataloader):
             inputs = self._assemble_input_for_testing(data)
             results = self.model(inputs)
             dict_result_collector.append(results)

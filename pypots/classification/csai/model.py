@@ -264,7 +264,7 @@ class CSAI(BaseNNClassifier):
                 "Hence the whole train set will be loaded into memory."
             )
             train_set = load_dict_from_h5(train_set)
-        training_set = DatasetForCSAI(
+        train_dataset = DatasetForCSAI(
             data=train_set,
             file_type=file_type,
             return_X_ori=False,
@@ -273,16 +273,16 @@ class CSAI(BaseNNClassifier):
             increase_factor=self.increase_factor,
         )
 
-        self.intervals = training_set.intervals
-        self.replacement_probabilities = training_set.replacement_probabilities
+        self.intervals = train_dataset.intervals
+        self.replacement_probabilities = train_dataset.replacement_probabilities
 
         train_loader = DataLoader(
-            training_set,
+            train_dataset,
             batch_size=self.batch_size,
             shuffle=True,
             num_workers=self.num_workers,
         )
-        val_loader = None
+        val_dataloader = None
         if val_set is not None:
             if isinstance(val_set, str):
                 logger.warning(
@@ -293,7 +293,7 @@ class CSAI(BaseNNClassifier):
 
             if not key_in_data_set("X_ori", val_set):
                 raise ValueError("val_set must contain 'X_ori' for model validation.")
-            val_set = DatasetForCSAI(
+            val_dataset = DatasetForCSAI(
                 data=val_set,
                 file_type=file_type,
                 return_X_ori=False,
@@ -302,15 +302,15 @@ class CSAI(BaseNNClassifier):
                 increase_factor=self.increase_factor,
                 replacement_probabilities=self.replacement_probabilities,
             )
-            val_loader = DataLoader(
-                val_set,
+            val_dataloader = DataLoader(
+                val_dataset,
                 batch_size=self.batch_size,
                 shuffle=False,
                 num_workers=self.num_workers,
             )
 
         # train the model
-        self._train_model(train_loader, val_loader)
+        self._train_model(train_loader, val_dataloader)
         self.model.load_state_dict(self.best_model_dict)
 
         self._auto_save_model_if_necessary(confirm_saving=self.model_saving_strategy == "best")
@@ -331,7 +331,7 @@ class CSAI(BaseNNClassifier):
             test_set = load_dict_from_h5(test_set)
 
         # Step 1: wrap the input data with classes Dataset and DataLoader
-        test_set = DatasetForCSAI(
+        test_dataset = DatasetForCSAI(
             data=test_set,
             file_type=file_type,
             return_X_ori=False,
@@ -340,8 +340,8 @@ class CSAI(BaseNNClassifier):
             increase_factor=self.increase_factor,
             replacement_probabilities=self.replacement_probabilities,
         )
-        test_loader = DataLoader(
-            test_set,
+        test_dataloader = DataLoader(
+            test_dataset,
             batch_size=self.batch_size,
             shuffle=False,
             num_workers=self.num_workers,
@@ -349,7 +349,7 @@ class CSAI(BaseNNClassifier):
 
         # Step 2: process the data with the model
         dict_result_collector = []
-        for idx, data in enumerate(test_loader):
+        for idx, data in enumerate(test_dataloader):
             inputs = self._assemble_input_for_testing(data)
             results = self.model(inputs)
             dict_result_collector.append(results)
