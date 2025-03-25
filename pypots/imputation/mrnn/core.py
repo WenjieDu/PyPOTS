@@ -39,10 +39,11 @@ class _MRNN(ModelCore):
 
         imputed_data = M * X + (1 - M) * FCN_estimation
         results = {
-            "imputed_data": imputed_data,
+            "imputation": imputed_data,
             "RNN_estimation": RNN_estimation,
             "RNN_imputed_data": RNN_imputed_data,
             "FCN_estimation": FCN_estimation,
+            "reconstruction": FCN_estimation,
         }
 
         return results

@@ -54,6 +54,8 @@ class BackboneUSGAN(nn.Module):
             _,
         ) = self.generator(inputs)
 
+        reconstruction = (f_reconstruction + b_reconstruction) / 2
+
         # if in training mode, return results with losses
         if self.training:
             forward_X = inputs["forward"]["X"]
@@ -63,7 +65,7 @@ class BackboneUSGAN(nn.Module):
                 discrimination = self.discriminator(imputed_data.detach(), forward_missing_mask)
                 l_D = F.binary_cross_entropy_with_logits(discrimination, forward_missing_mask)
                 discrimination_loss = l_D
-                return imputed_data, discrimination_loss
+                return imputed_data, reconstruction, discrimination_loss
             else:
                 discrimination = self.discriminator(imputed_data, forward_missing_mask)
                 l_G = -F.binary_cross_entropy_with_logits(
@@ -77,6 +79,6 @@ class BackboneUSGAN(nn.Module):
                 )
                 loss_gene = l_G + self.lambda_mse * reconstruction_loss
                 generation_loss = loss_gene
-                return imputed_data, generation_loss
+                return imputed_data, reconstruction, generation_loss
         else:
-            return imputed_data
+            return imputed_data, reconstruction

@@ -1,5 +1,5 @@
 """
-The base classes for PyPOTS vectorizer models.
+The base classes for PyPOTS representor models.
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
@@ -11,13 +11,16 @@ from typing import Optional, Union
 
 import numpy as np
 import torch
+from torch.utils.data import DataLoader
 
 from ..base import BaseModel, BaseNNModel
+from ..data.dataset.base import BaseDataset
+from ..nn.functional import autocast, gather_listed_dicts
 from ..nn.modules.loss import Criterion
 
 
-class BaseVectorizer(BaseModel):
-    """The abstract class for all PyPOTS vectorizer models.
+class BaseRepresentor(BaseModel):
+    """The abstract class for all PyPOTS representor models.
 
     Parameters
     ----------
@@ -68,7 +71,7 @@ class BaseVectorizer(BaseModel):
         val_set: Optional[Union[dict, str]] = None,
         file_type: str = "hdf5",
     ) -> None:
-        """Train the vectorizer on the given data.
+        """Train the representor on the given data.
 
         Parameters
         ----------
@@ -77,7 +80,7 @@ class BaseVectorizer(BaseModel):
             or a path string locating a data file.
             If it is a dict, X should be array-like with shape [n_samples, n_steps, n_features],
             which is time-series data for training, can contain missing values, and y should be array-like of shape
-            [n_samples], which is vectorization labels of X.
+            [n_samples], which is representation labels of X.
             If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
             key-value pairs like a dict, and it has to include keys as 'X' and 'y'.
 
@@ -86,7 +89,7 @@ class BaseVectorizer(BaseModel):
             or a path string locating a data file.
             If it is a dict, X should be array-like with shape [n_samples, n_steps, n_features],
             which is time-series data for validating, can contain missing values, and y should be array-like of shape
-            [n_samples], which is vectorization labels of X.
+            [n_samples], which is representation labels of X.
             If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
             key-value pairs like a dict, and it has to include keys as 'X' and 'y'.
 
@@ -101,6 +104,7 @@ class BaseVectorizer(BaseModel):
         self,
         test_set: Union[dict, str],
         file_type: str = "hdf5",
+        **kwargs,
     ) -> dict:
         """Make predictions for the input data with the trained model.
 
@@ -119,17 +123,19 @@ class BaseVectorizer(BaseModel):
 
         Returns
         -------
-        file_type :
-            The dictionary containing the vectorization results and latent variables if necessary.
+        result_dict :
+            The dictionary containing the representation results as key 'representation' and
+            latent variables if necessary.
 
         """
         raise NotImplementedError
 
     @abstractmethod
-    def vectorize(
+    def represent(
         self,
         test_set: Union[dict, str],
         file_type: str = "hdf5",
+        **kwargs,
     ) -> np.ndarray:
         """Vectorize the input data with the trained model.
 
@@ -151,8 +157,8 @@ class BaseVectorizer(BaseModel):
         raise NotImplementedError
 
 
-class BaseNNVectorizer(BaseNNModel):
-    """The abstract class for all neural-network vectorizer models in PyPOTS.
+class BaseNNRepresentor(BaseNNModel):
+    """The abstract class for all neural-network representor models in PyPOTS.
 
     Parameters
     ----------
@@ -244,14 +250,13 @@ class BaseNNVectorizer(BaseNNModel):
             verbose=verbose,
         )
 
-    @abstractmethod
     def fit(
         self,
         train_set: Union[dict, str],
         val_set: Optional[Union[dict, str]] = None,
         file_type: str = "hdf5",
     ) -> None:
-        """Train the vectorizer on the given data.
+        """Train the representor on the given data.
 
         Parameters
         ----------
@@ -260,7 +265,7 @@ class BaseNNVectorizer(BaseNNModel):
             or a path string locating a data file.
             If it is a dict, X should be array-like with shape [n_samples, n_steps, n_features],
             which is time-series data for training, can contain missing values, and y should be array-like of shape
-            [n_samples], which is vectorization labels of X.
+            [n_samples], which is representation labels of X.
             If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
             key-value pairs like a dict, and it has to include keys as 'X' and 'y'.
 
@@ -269,7 +274,7 @@ class BaseNNVectorizer(BaseNNModel):
             or a path string locating a data file.
             If it is a dict, X should be array-like with shape [n_samples, n_steps, n_features],
             which is time-series data for validating, can contain missing values, and y should be array-like of shape
-            [n_samples], which is vectorization labels of X.
+            [n_samples], which is representation labels of X.
             If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
             key-value pairs like a dict, and it has to include keys as 'X' and 'y'.
 
@@ -277,14 +282,49 @@ class BaseNNVectorizer(BaseNNModel):
             The type of the given file if train_set and val_set are path strings.
 
         """
-        raise NotImplementedError
+        # Step 1: wrap the input data with classes Dataset and DataLoader
+        training_set = BaseDataset(
+            train_set,
+            return_X_ori=False,
+            return_X_pred=False,
+            return_y=False,
+            file_type=file_type,
+        )
+        training_loader = DataLoader(
+            training_set,
+            batch_size=self.batch_size,
+            shuffle=True,
+            num_workers=self.num_workers,
+        )
+        val_loader = None
+        if val_set is not None:
+            val_set = BaseDataset(
+                val_set,
+                return_X_ori=False,
+                return_X_pred=False,
+                return_y=False,
+                file_type=file_type,
+            )
+            val_loader = DataLoader(
+                val_set,
+                batch_size=self.batch_size,
+                shuffle=False,
+                num_workers=self.num_workers,
+            )
 
-    @abstractmethod
+        # Step 2: train the model and freeze it
+        self._train_model(training_loader, val_loader)
+        self.model.load_state_dict(self.best_model_dict)
+
+        # Step 3: save the model if necessary
+        self._auto_save_model_if_necessary(confirm_saving=self.model_saving_strategy == "best")
+
     @torch.no_grad()
     def predict(
         self,
         test_set: Union[dict, str],
         file_type: str = "hdf5",
+        **kwargs,
     ) -> dict:
         """Make predictions for the input data with the trained model.
 
@@ -303,17 +343,46 @@ class BaseNNVectorizer(BaseNNModel):
 
         Returns
         -------
-        file_type :
-            The dictionary containing the vectorization results and latent variables if necessary.
+        result_dict :
+            The dictionary containing the representation results as key 'representation' and
+            latent variables if necessary.
 
         """
-        raise NotImplementedError
+        self.model.eval()  # set the model to evaluation mode
 
-    @abstractmethod
-    def vectorize(
+        # Step 1: wrap the input data with classes Dataset and DataLoader
+        test_set = BaseDataset(
+            test_set,
+            return_X_ori=False,
+            return_X_pred=False,
+            return_y=False,
+            file_type=file_type,
+        )
+        test_loader = DataLoader(
+            test_set,
+            batch_size=self.batch_size,
+            shuffle=False,
+            num_workers=self.num_workers,
+        )
+
+        # Step 2: process the data with the model
+        dict_result_collector = []
+        for idx, data in enumerate(test_loader):
+            inputs = self._assemble_input_for_testing(data)
+            with autocast(enabled=self.amp_enabled):
+                results = self.model(inputs, **kwargs)
+            dict_result_collector.append(results)
+
+        # Step 3: output collection and return
+        result_dict = gather_listed_dicts(dict_result_collector)
+
+        return result_dict
+
+    def represent(
         self,
         test_set: Union[dict, str],
         file_type: str = "hdf5",
+        **kwargs,
     ) -> np.ndarray:
         """Vectorize the input data with the trained model.
 
@@ -331,5 +400,9 @@ class BaseNNVectorizer(BaseNNModel):
         array-like, shape [n_samples],
             Classification results of the given samples.
         """
-
-        raise NotImplementedError
+        result_dict = self.predict(
+            test_set,
+            file_type,
+            **kwargs,
+        )
+        return result_dict["representation"]

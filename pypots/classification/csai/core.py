@@ -75,7 +75,7 @@ class _BCSAI(ModelCore):
         classification_proba = (f_prediction + b_prediction) / 2
 
         results = {
-            "imputed_data": imputed_data,
+            "imputation": imputed_data,
             "classification_proba": classification_proba,
             "f_logits": f_logits,
             "b_logits": b_logits,

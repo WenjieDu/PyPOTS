@@ -65,7 +65,7 @@ class _BRITS(ModelCore):
         classification_proba = (f_prediction + b_prediction) / 2
 
         results = {
-            "imputed_data": imputed_data,
+            "imputation": imputed_data,
             "classification_proba": classification_proba,
             "consistency_loss": consistency_loss,
             "reconstruction_loss": reconstruction_loss,

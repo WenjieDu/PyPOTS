@@ -7,18 +7,15 @@ The implementation of Autoformer for the partially-observed time-series imputati
 # License: BSD-3-Clause
 
 
-import logging
 from typing import Union, Optional
 
-import numpy as np
 import torch
 from torch.utils.data import DataLoader
 
 from ..base import BaseNNDetector
 from ...data.checking import key_in_data_set
-from ...data.dataset import BaseDataset
 from ...imputation.autoformer.core import _Autoformer
-from ...imputation.autoformer.data import DatasetForAutoformer
+from ...imputation.saits.data import DatasetForSAITS
 from ...nn.modules.loss import Criterion, MAE, MSE
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
@@ -237,7 +234,7 @@ class Autoformer(BaseNNDetector):
     ) -> None:
         # Step 1: wrap the input data with classes Dataset and DataLoader
         self.train_set = train_set
-        training_set = DatasetForAutoformer(train_set, return_X_ori=False, return_y=False, file_type=file_type)
+        training_set = DatasetForSAITS(train_set, return_X_ori=False, return_y=False, file_type=file_type)
         training_loader = DataLoader(
             training_set,
             batch_size=self.batch_size,
@@ -248,7 +245,7 @@ class Autoformer(BaseNNDetector):
         if val_set is not None:
             if not key_in_data_set("X_ori", val_set):
                 raise ValueError("val_set must contain 'X_ori' for model validation.")
-            val_set = DatasetForAutoformer(val_set, return_X_ori=True, return_y=False, file_type=file_type)
+            val_set = DatasetForSAITS(val_set, return_X_ori=True, return_y=False, file_type=file_type)
             val_loader = DataLoader(
                 val_set,
                 batch_size=self.batch_size,
@@ -262,88 +259,3 @@ class Autoformer(BaseNNDetector):
 
         # Step 3: save the model if necessary
         self._auto_save_model_if_necessary(confirm_saving=self.model_saving_strategy == "best")
-
-    @torch.no_grad()
-    def predict(
-        self,
-        test_set: Union[dict, str],
-        file_type: str = "hdf5",
-    ) -> dict:
-
-        self.model.eval()  # set the model to evaluation mode
-
-        # Step 1: wrap the input data with classes Dataset and DataLoader
-        train_set = BaseDataset(
-            self.train_set,
-            return_X_ori=False,
-            return_X_pred=False,
-            return_y=False,
-            file_type=file_type,
-        )
-        train_loader = DataLoader(
-            train_set,
-            batch_size=self.batch_size,
-            shuffle=False,
-            num_workers=self.num_workers,
-        )
-
-        test_set = BaseDataset(
-            test_set,
-            return_X_ori=False,
-            return_X_pred=False,
-            return_y=False,
-            file_type=file_type,
-        )
-        test_loader = DataLoader(
-            test_set,
-            batch_size=self.batch_size,
-            shuffle=False,
-            num_workers=self.num_workers,
-        )
-
-        # Step 2: process the data with the model
-        score_collector = []
-        anomaly_criterion = torch.nn.MSELoss(reduce=False)
-        for idx, data in enumerate(train_loader):
-            inputs = self._assemble_input_for_testing(data)
-            results = self.model(inputs)
-            outputs = results["reconstruction"]
-            score = torch.mean(anomaly_criterion(inputs["X"], outputs), dim=-1)
-            score = score.detach().cpu().numpy()
-            score_collector.append(score)
-
-        attens_energy = np.concatenate(score_collector, axis=0).reshape(-1)
-        train_energy = np.array(attens_energy)
-
-        # find the threshold
-        score_collector = []
-        for idx, data in enumerate(test_loader):
-            inputs = self._assemble_input_for_testing(data)
-            results = self.model(inputs)
-            outputs = results["reconstruction"]
-            # criterion
-            score = torch.mean(anomaly_criterion(inputs["X"], outputs), dim=-1)
-            score = score.detach().cpu().numpy()
-            score_collector.append(score)
-
-        attens_energy = np.concatenate(score_collector, axis=0).reshape(-1)
-        test_energy = np.array(attens_energy)
-        combined_energy = np.concatenate([train_energy, test_energy], axis=0)
-        threshold = np.percentile(combined_energy, 100 - self.anomaly_rate * 100)
-        logging.info(f"Threshold {threshold}")
-
-        anomaly_pred = (test_energy > threshold).astype(int)
-
-        result_dict = {
-            "anomaly_prediction": anomaly_pred,
-        }
-        return result_dict
-
-    def detect(
-        self,
-        test_set: Union[dict, str],
-        file_type: str = "hdf5",
-    ) -> np.ndarray:
-
-        result_dict = self.predict(test_set, file_type=file_type)
-        return result_dict["anomaly_prediction"]

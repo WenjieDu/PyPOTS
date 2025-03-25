@@ -92,7 +92,7 @@ class _ModernTCN(ModelCore):
 
         imputed_data = missing_mask * X + (1 - missing_mask) * reconstruction
         results = {
-            "imputed_data": imputed_data,
+            "imputation": imputed_data,
             "reconstruction": reconstruction,
         }
 

@@ -82,7 +82,7 @@ class _TEFN(ModelCore):
         forecasting_result = forecasting_result[:, -self.n_pred_steps :]
 
         results = {
-            "forecasting_result": forecasting_result,
+            "forecasting": forecasting_result,
         }
 
         return results
@@ -91,7 +91,7 @@ class _TEFN(ModelCore):
         results = self.forward(inputs)
 
         X_pred, X_pred_missing_mask = inputs["X_pred"], inputs["X_pred_missing_mask"]
-        forecasting_result = results["forecasting_result"]
+        forecasting_result = results["forecasting"]
 
         if self.training:  # if in the training mode (the training stage), return loss result from training_loss
             # `loss` is always the item for backward propagating to update the model

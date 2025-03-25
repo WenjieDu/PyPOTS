@@ -8,7 +8,7 @@ Dataset class for the clustering model CRLI.
 
 from typing import Union, Iterable
 
-from ...data.dataset import BaseDataset
+from ...data.dataset.base import BaseDataset
 
 
 class DatasetForCRLI(BaseDataset):
