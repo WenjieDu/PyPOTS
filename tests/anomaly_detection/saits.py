@@ -1,5 +1,5 @@
 """
-Test cases for SAITS imputation model.
+Test cases for SAITS anomaly detection model.
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>

@@ -1,5 +1,5 @@
 """
-Test cases for TS2Vec representor model.
+Test cases for TS2Vec representation model.
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>

@@ -10,6 +10,15 @@ pypots.anomaly_detection.saits
    :show-inheritance:
    :inherited-members:
 
+pypots.anomaly_detection.tefn
+-----------------------------------------------
+
+.. automodule:: pypots.anomaly_detection.tefn
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+
 pypots.anomaly_detection.autoformer
 -----------------------------------------------
 
