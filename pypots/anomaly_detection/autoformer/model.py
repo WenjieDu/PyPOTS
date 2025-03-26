@@ -1,5 +1,5 @@
 """
-The implementation of Autoformer for the partially-observed time-series imputation task.
+The implementation of Autoformer for the partially-observed time-series anomaly detection task.
 
 """
 
@@ -22,8 +22,7 @@ from ...optim.base import Optimizer
 
 
 class Autoformer(BaseNNDetector):
-    """The PyTorch implementation of the Autoformer model.
-    Autoformer is originally proposed by Wu et al. in :cite:`wu2021autoformer`.
+    """The PyTorch implementation of the Autoformer model :cite:`wu2021autoformer` on the anomaly detection task.
 
     Parameters
     ----------
@@ -192,8 +191,6 @@ class Autoformer(BaseNNDetector):
             self.optimizer = optimizer()  # instantiate the optimizer if it is a class
             assert isinstance(self.optimizer, Optimizer)
         self.optimizer.init_optimizer(self.model.parameters())
-
-        self.train_set = None
 
     def _assemble_input_for_training(self, data: list) -> dict:
         (
