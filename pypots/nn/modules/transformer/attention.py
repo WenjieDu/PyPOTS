@@ -54,8 +54,8 @@ class ScaledDotProductAttention(AttentionOperator):
 
     def __init__(self, temperature: float, attn_dropout: float = 0.1):
         super().__init__()
-        assert temperature > 0, "temperature should be positive"
-        assert attn_dropout >= 0, "dropout rate should be non-negative"
+        assert temperature > 0, f"temperature should be positive but got {temperature}"
+        assert attn_dropout >= 0, f"dropout rate should be non-negative but got {attn_dropout}"
         self.temperature = temperature
         self.dropout = nn.Dropout(attn_dropout) if attn_dropout > 0 else None
 

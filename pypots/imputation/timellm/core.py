@@ -62,7 +62,11 @@ class _TimeLLM(ModelCore):
         else:
             self.validation_metric = validation_metric
 
-    def forward(self, inputs: dict) -> dict:
+    def forward(
+        self,
+        inputs: dict,
+        calc_criterion: bool = False,
+    ) -> dict:
         X, missing_mask = inputs["X"], inputs["missing_mask"]
 
         # TimeLLM processing
@@ -70,26 +74,20 @@ class _TimeLLM(ModelCore):
 
         imputed_data = missing_mask * X + (1 - missing_mask) * reconstruction
         results = {
-            "imputed_data": imputed_data,
+            "imputation": imputed_data,
             "reconstruction": reconstruction,
         }
 
-        return results
-
-    def calc_criterion(self, inputs: dict) -> dict:
-        results = self.forward(inputs)
-
-        X_ori, indicating_mask, missing_mask = inputs["X_ori"], inputs["indicating_mask"], inputs["missing_mask"]
-        reconstruction = results["reconstruction"]
-
-        if self.training:  # if in the training mode (the training stage), return loss result from training_loss
-            # `loss` is always the item for backward propagating to update the model
-            loss, ORT_loss, MIT_loss = self.training_loss(reconstruction, X_ori, missing_mask, indicating_mask)
-            results["ORT_loss"] = ORT_loss
-            results["MIT_loss"] = MIT_loss
-            # `loss` is always the item for backward propagating to update the model
-            results["loss"] = loss
-        else:  # if in the eval mode (the validation stage), return metric result from validation_metric
-            results["metric"] = self.validation_metric(reconstruction, X_ori, indicating_mask)
+        if calc_criterion:
+            X_ori, indicating_mask = inputs["X_ori"], inputs["indicating_mask"]
+            if self.training:  # if in the training mode (the training stage), return loss result from training_loss
+                # `loss` is always the item for backward propagating to update the model
+                loss, ORT_loss, MIT_loss = self.training_loss(reconstruction, X_ori, missing_mask, indicating_mask)
+                results["ORT_loss"] = ORT_loss
+                results["MIT_loss"] = MIT_loss
+                # `loss` is always the item for backward propagating to update the model
+                results["loss"] = loss
+            else:  # if in the eval mode (the validation stage), return metric result from validation_metric
+                results["metric"] = self.validation_metric(reconstruction, X_ori, indicating_mask)
 
         return results

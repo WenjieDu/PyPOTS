@@ -1,4 +1,4 @@
-pypots.clustering package
+pypots.clustering
 =========================
 
 pypots.clustering.crli

@@ -16,6 +16,7 @@ from .core import _CSDI
 from .data import DatasetForCSDI, TestDatasetForCSDI
 from ..base import BaseNNImputer
 from ...data.checking import key_in_data_set
+from ...nn.functional import gather_listed_dicts
 from ...nn.modules.loss import Criterion
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
@@ -223,37 +224,37 @@ class CSDI(BaseNNImputer):
         n_sampling_times: int = 1,
     ) -> None:
         # Step 1: wrap the input data with classes Dataset and DataLoader
-        training_set = DatasetForCSDI(
+        train_dataset = DatasetForCSDI(
             train_set,
             self.target_strategy,
             return_X_ori=False,
             file_type=file_type,
         )
-        training_loader = DataLoader(
-            training_set,
+        train_dataloader = DataLoader(
+            train_dataset,
             batch_size=self.batch_size,
             shuffle=True,
             num_workers=self.num_workers,
         )
-        val_loader = None
+        val_dataloader = None
         if val_set is not None:
             if not key_in_data_set("X_ori", val_set):
                 raise ValueError("val_set must contain 'X_ori' for model validation.")
-            val_set = DatasetForCSDI(
+            val_dataset = DatasetForCSDI(
                 val_set,
                 self.target_strategy,
                 return_X_ori=True,
                 file_type=file_type,
             )
-            val_loader = DataLoader(
-                val_set,
+            val_dataloader = DataLoader(
+                val_dataset,
                 batch_size=self.batch_size,
                 shuffle=False,
                 num_workers=self.num_workers,
             )
 
         # Step 2: train the model and freeze it
-        self._train_model(training_loader, val_loader)
+        self._train_model(train_dataloader, val_dataloader)
         self.model.load_state_dict(self.best_model_dict)
 
         # Step 3: save the model if necessary
@@ -286,9 +287,8 @@ class CSDI(BaseNNImputer):
 
         Returns
         -------
-        result_dict: dict
-            Prediction results in a Python Dictionary for the given samples.
-            It should be a dictionary including a key named 'imputation'.
+        result_dict :
+            The dictionary containing the imputation results as key 'imputation' and latent variables if necessary.
 
         """
         assert n_sampling_times > 0, "n_sampling_times should be greater than 0."
@@ -296,30 +296,24 @@ class CSDI(BaseNNImputer):
         self.model.eval()  # set the model to evaluation mode
 
         # Step 1: wrap the input data with classes Dataset and DataLoader
-        test_set = TestDatasetForCSDI(test_set, return_X_ori=False, file_type=file_type)
-        test_loader = DataLoader(
-            test_set,
+        test_dataset = TestDatasetForCSDI(test_set, return_X_ori=False, file_type=file_type)
+        test_dataloader = DataLoader(
+            test_dataset,
             batch_size=self.batch_size,
             shuffle=False,
             num_workers=self.num_workers,
         )
-        imputation_collector = []
 
         # Step 2: process the data with the model
-        for idx, data in enumerate(test_loader):
+        dict_result_collector = []
+        for idx, data in enumerate(test_dataloader):
             inputs = self._assemble_input_for_testing(data)
-            results = self.model(
-                inputs,
-                n_sampling_times=n_sampling_times,
-            )
-            imputed_data = results["imputed_data"]
-            imputation_collector.append(imputed_data)
+            results = self.model(inputs)
+            dict_result_collector.append(results)
 
         # Step 3: output collection and return
-        imputation = torch.cat(imputation_collector).cpu().detach().numpy()
-        result_dict = {
-            "imputation": imputation,
-        }
+        result_dict = gather_listed_dicts(dict_result_collector)
+
         return result_dict
 
     def impute(
@@ -328,24 +322,31 @@ class CSDI(BaseNNImputer):
         file_type: str = "hdf5",
         n_sampling_times: int = 1,
     ) -> np.ndarray:
-        """Impute missing values in the given data with the trained model.
+        """Make predictions for the input data with the trained model.
 
         Parameters
         ----------
         test_set :
-            The data samples for testing, should be array-like with shape [n_samples, n_steps, n_features], or a path
-            string locating a data file, e.g. h5 file.
+            The test dataset for model to process, should be a dictionary including keys as 'X',
+            or a path string locating a data file supported by PyPOTS (e.g. h5 file).
+            If it is a dict, X should be array-like with shape [n_samples, n_steps, n_features],
+            which is the time-series data for processing.
+            If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
+            key-value pairs like a dict, and it has to include 'X' key.
 
         file_type :
-            The type of the given file if X is a path string.
+            The type of the given file if test_set is a path string.
 
-        n_sampling_times :
-            The number of sampling times for the model to sample from the diffusion process.
+        n_sampling_times:
+            The number of sampling times for the model to produce predictions.
 
         Returns
         -------
-        array-like, with shape [n_samples, n_sampling_times, n_steps, n_features],
-            Imputed data.
+        result_dict :
+            The dictionary containing the imputation results as key 'imputation' and latent variables if necessary.
+
         """
-        result_dict = self.predict(test_set, file_type, n_sampling_times)
-        return result_dict["imputation"]
+
+        assert n_sampling_times > 0, "n_sampling_times should be greater than 0."
+        results = super().impute(test_set, file_type, n_sampling_times=n_sampling_times)
+        return results

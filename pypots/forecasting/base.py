@@ -10,8 +10,12 @@ from typing import Optional, Union
 
 import numpy as np
 import torch
+from torch.utils.data import DataLoader
 
 from ..base import BaseModel, BaseNNModel
+from ..data.checking import key_in_data_set
+from ..data.dataset.base import BaseDataset
+from ..nn.functional import autocast, gather_listed_dicts
 from ..nn.modules.loss import Criterion
 
 
@@ -102,14 +106,36 @@ class BaseForecaster(BaseModel):
         self,
         test_set: Union[dict, str],
         file_type: str = "hdf5",
+        **kwargs,
     ) -> dict:
+        """Make predictions for the input data with the trained model.
+
+        Parameters
+        ----------
+        test_set :
+            The test dataset for model to process, should be a dictionary including keys as 'X',
+            or a path string locating a data file supported by PyPOTS (e.g. h5 file).
+            If it is a dict, X should be array-like with shape [n_samples, n_steps, n_features],
+            which is the time-series data for processing.
+            If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
+            key-value pairs like a dict, and it has to include 'X' key.
+
+        file_type :
+            The type of the given file if test_set is a path string.
+
+        Returns
+        -------
+        result_dict :
+            The dictionary containing the forecasting results as key 'forecasting' and latent variables if necessary.
+
+        """
         raise NotImplementedError
 
-    @abstractmethod
     def forecast(
         self,
         test_set: Union[dict, str],
         file_type: str = "hdf5",
+        **kwargs,
     ) -> np.ndarray:
         """Forecast the future the input with the trained model.
 
@@ -127,8 +153,13 @@ class BaseForecaster(BaseModel):
         array-like, shape [n_samples, n_pred_steps, n_features],
             Forecasting results.
         """
-
-        raise NotImplementedError
+        result_dict = self.predict(
+            test_set,
+            file_type,
+            **kwargs,
+        )
+        results = result_dict["forecasting"]
+        return results
 
 
 class BaseNNForecaster(BaseNNModel):
@@ -225,7 +256,83 @@ class BaseNNForecaster(BaseNNModel):
             verbose=verbose,
         )
 
-    @abstractmethod
+    def _assemble_input_for_training(self, data: list) -> dict:
+        """Assemble the given data into a dictionary for training input.
+
+        Parameters
+        ----------
+        data :
+            Input data from dataloader, should be list.
+
+        Returns
+        -------
+        dict,
+            A python dictionary contains the input data for model training.
+        """
+        (
+            indices,
+            X,
+            missing_mask,
+            X_pred,
+            X_pred_missing_mask,
+        ) = self._send_data_to_given_device(data)
+
+        inputs = {
+            "X": X,
+            "missing_mask": missing_mask,
+            "X_pred": X_pred,
+            "X_pred_missing_mask": X_pred_missing_mask,
+        }
+        return inputs
+
+    def _assemble_input_for_validating(self, data: list) -> dict:
+        """Assemble the given data into a dictionary for validating input.
+
+        Parameters
+        ----------
+        data :
+            Data output from dataloader, should be list.
+
+        Returns
+        -------
+        dict,
+            A python dictionary contains the input data for model validating.
+        """
+        return self._assemble_input_for_training(data)
+
+    def _assemble_input_for_testing(self, data: list) -> dict:
+        """Assemble the given data into a dictionary for testing input.
+
+        Notes
+        -----
+        The processing functions of train/val/test stages are separated for the situation that the input of
+        the three stages are different, and this situation usually happens when the Dataset/Dataloader classes
+        used in the train/val/test stages are not the same, e.g. the training data and validating data in a
+        classification task contains labels, but the testing data (from the production environment) generally
+        doesn't have labels.
+
+        Parameters
+        ----------
+        data :
+            Data output from dataloader, should be list.
+
+        Returns
+        -------
+        dict,
+            A python dictionary contains the input data for model testing.
+        """
+        (
+            indices,
+            X,
+            missing_mask,
+        ) = self._send_data_to_given_device(data)
+
+        inputs = {
+            "X": X,
+            "missing_mask": missing_mask,
+        }
+        return inputs
+
     def fit(
         self,
         train_set: Union[dict, str],
@@ -256,14 +363,51 @@ class BaseNNForecaster(BaseNNModel):
             The type of the given file if train_set and val_set are path strings.
 
         """
-        raise NotImplementedError
+        # Step 1: wrap the input data with classes Dataset and DataLoader
+        train_dataset = BaseDataset(
+            train_set,
+            return_X_ori=False,
+            return_X_pred=True,
+            return_y=False,
+            file_type=file_type,
+        )
+        train_dataloader = DataLoader(
+            train_dataset,
+            batch_size=self.batch_size,
+            shuffle=True,
+            num_workers=self.num_workers,
+        )
+        val_dataloader = None
+        if val_set is not None:
+            if not key_in_data_set("X_pred", val_set):
+                raise ValueError("val_set must contain 'X_pred' for model validation.")
+            val_dataset = BaseDataset(
+                val_set,
+                return_X_ori=False,
+                return_X_pred=True,
+                return_y=False,
+                file_type=file_type,
+            )
+            val_dataloader = DataLoader(
+                val_dataset,
+                batch_size=self.batch_size,
+                shuffle=False,
+                num_workers=self.num_workers,
+            )
 
-    @abstractmethod
+        # Step 2: train the model and freeze it
+        self._train_model(train_dataloader, val_dataloader)
+        self.model.load_state_dict(self.best_model_dict)
+
+        # Step 3: save the model if necessary
+        self._auto_save_model_if_necessary(confirm_saving=self.model_saving_strategy == "best")
+
     @torch.no_grad()
     def predict(
         self,
         test_set: Union[dict, str],
         file_type: str = "hdf5",
+        **kwargs,
     ) -> dict:
         """Make predictions for the input data with the trained model.
 
@@ -282,17 +426,46 @@ class BaseNNForecaster(BaseNNModel):
 
         Returns
         -------
-        file_type :
-            The dictionary containing the clustering results and latent variables if necessary.
+        result_dict :
+            The dictionary containing the forecasting results as key 'forecasting' and latent variables if necessary.
 
         """
-        raise NotImplementedError
+        self.model.eval()  # set the model to evaluation mode
 
-    @abstractmethod
+        # Step 1: wrap the input data with classes Dataset and DataLoader
+        test_dataset = BaseDataset(
+            test_set,
+            return_X_ori=False,
+            return_X_pred=False,
+            return_y=False,
+            file_type=file_type,
+        )
+
+        test_dataloader = DataLoader(
+            test_dataset,
+            batch_size=self.batch_size,
+            shuffle=False,
+            num_workers=self.num_workers,
+        )
+
+        # Step 2: process the data with the model
+        dict_result_collector = []
+        for idx, data in enumerate(test_dataloader):
+            inputs = self._assemble_input_for_testing(data)
+            with autocast(enabled=self.amp_enabled):
+                results = self.model(inputs, **kwargs)
+            dict_result_collector.append(results)
+
+        # Step 3: output collection and return
+        result_dict = gather_listed_dicts(dict_result_collector)
+
+        return result_dict
+
     def forecast(
         self,
         test_set: Union[dict, str],
         file_type: str = "hdf5",
+        **kwargs,
     ) -> np.ndarray:
         """Forecast the future the input with the trained model.
 
@@ -310,4 +483,10 @@ class BaseNNForecaster(BaseNNModel):
         array-like, shape [n_samples, n_pred_steps, n_features],
             Forecasting results.
         """
-        raise NotImplementedError
+        result_dict = self.predict(
+            test_set,
+            file_type,
+            **kwargs,
+        )
+        results = result_dict["forecasting"]
+        return results

@@ -1,4 +1,4 @@
-pypots.utils package
+pypots.utils
 ====================
 
 pypots.utils.file

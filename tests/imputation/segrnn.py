@@ -45,7 +45,7 @@ class TestSegRNN(unittest.TestCase):
     segrnn = SegRNN(
         DATA["n_steps"],
         DATA["n_features"],
-        seg_len=4,
+        seg_len=2,
         dropout=0,
         epochs=EPOCHS,
         saving_path=saving_path,

@@ -43,19 +43,11 @@ class _GRUD(ModelCore):
         )
         self.output_projection = nn.Linear(rnn_hidden_size, n_features)
 
-    def forward(self, inputs: dict) -> dict:
-        """Forward processing of GRU-D.
-
-        Parameters
-        ----------
-        inputs :
-            The input data.
-
-        Returns
-        -------
-        dict,
-            A dictionary includes all results.
-        """
+    def forward(
+        self,
+        inputs: dict,
+        calc_criterion: bool = False,
+    ) -> dict:
         X = inputs["X"]
         missing_mask = inputs["missing_mask"]
         deltas = inputs["deltas"]
@@ -69,23 +61,17 @@ class _GRUD(ModelCore):
 
         imputed_data = missing_mask * X + (1 - missing_mask) * reconstruction
         results = {
-            "imputed_data": imputed_data,
+            "imputation": imputed_data,
             "reconstruction": reconstruction,
         }
 
-        return results
-
-    def calc_criterion(self, inputs: dict) -> dict:
-        results = self.forward(inputs)
-        X, missing_mask = inputs["X"], inputs["missing_mask"]
-        reconstruction = results["reconstruction"]
-
-        if self.training:  # if in the training mode (the training stage), return loss result from training_loss
-            # `loss` is always the item for backward propagating to update the model
-            loss = self.training_loss(reconstruction, X, missing_mask)
-            results["loss"] = loss
-        else:  # if in the eval mode (the validation stage), return metric result from validation_metric
-            X_ori, indicating_mask = inputs["X_ori"], inputs["indicating_mask"]
-            results["metric"] = self.validation_metric(reconstruction, X_ori, indicating_mask)
+        if calc_criterion:
+            if self.training:  # if in the training mode (the training stage), return loss result from training_loss
+                # `loss` is always the item for backward propagating to update the model
+                loss = self.training_loss(reconstruction, X, missing_mask)
+                results["loss"] = loss
+            else:  # if in the eval mode (the validation stage), return metric result from validation_metric
+                X_ori, indicating_mask = inputs["X_ori"], inputs["indicating_mask"]
+                results["metric"] = self.validation_metric(reconstruction, X_ori, indicating_mask)
 
         return results

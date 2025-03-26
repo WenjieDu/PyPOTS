@@ -8,12 +8,9 @@ The implementation of TEFN for the partially-observed time-series classification
 
 from typing import Optional, Union
 
-import numpy as np
 import torch
-from torch.utils.data import DataLoader
 
 from .core import _TEFN
-from .data import DatasetForTEFN
 from ..base import BaseNNClassifier
 from ...nn.modules.loss import Criterion, CrossEntropy
 from ...optim.adam import Adam
@@ -145,120 +142,3 @@ class TEFN(BaseNNClassifier):
         # set up the optimizer
         self.optimizer = optimizer
         self.optimizer.init_optimizer(self.model.parameters())
-
-    def _assemble_input_for_training(self, data: list) -> dict:
-        # fetch data
-        (
-            indices,
-            X,
-            missing_mask,
-            y,
-        ) = self._send_data_to_given_device(data)
-
-        # assemble input data
-        inputs = {
-            "indices": indices,
-            "X": X,
-            "missing_mask": missing_mask,
-            "y": y,
-        }
-        return inputs
-
-    def _assemble_input_for_validating(self, data: list) -> dict:
-        return self._assemble_input_for_training(data)
-
-    def _assemble_input_for_testing(self, data: list) -> dict:
-        # fetch data
-        (
-            indices,
-            X,
-            missing_mask,
-        ) = self._send_data_to_given_device(data)
-
-        # assemble input data
-        inputs = {
-            "indices": indices,
-            "X": X,
-            "missing_mask": missing_mask,
-        }
-        return inputs
-
-    def fit(
-        self,
-        train_set: Union[dict, str],
-        val_set: Optional[Union[dict, str]] = None,
-        file_type: str = "hdf5",
-    ) -> None:
-        # Step 1: wrap the input data with classes Dataset and DataLoader
-        training_set = DatasetForTEFN(train_set, file_type=file_type)
-        training_loader = DataLoader(
-            training_set,
-            batch_size=self.batch_size,
-            shuffle=True,
-            num_workers=self.num_workers,
-        )
-        val_loader = None
-        if val_set is not None:
-            val_set = DatasetForTEFN(val_set, file_type=file_type)
-            val_loader = DataLoader(
-                val_set,
-                batch_size=self.batch_size,
-                shuffle=False,
-                num_workers=self.num_workers,
-            )
-
-        # Step 2: train the model and freeze it
-        self._train_model(training_loader, val_loader)
-        self.model.load_state_dict(self.best_model_dict)
-
-        # Step 3: save the model if necessary
-        self._auto_save_model_if_necessary(confirm_saving=self.model_saving_strategy == "best")
-
-    @torch.no_grad()
-    def predict(
-        self,
-        test_set: Union[dict, str],
-        file_type: str = "hdf5",
-    ) -> dict:
-        self.model.eval()  # set the model to evaluation mode
-        test_set = DatasetForTEFN(
-            test_set,
-            return_y=False,
-            file_type=file_type,
-        )
-        test_loader = DataLoader(
-            test_set,
-            batch_size=self.batch_size,
-            shuffle=False,
-            num_workers=self.num_workers,
-        )
-
-        classification_results = []
-        for idx, data in enumerate(test_loader):
-            inputs = self._assemble_input_for_testing(data)
-            results = self.model(inputs)
-            classification_results.append(results["classification_proba"])
-
-        classification_proba = torch.cat(classification_results).cpu().detach().numpy()
-        classification = np.argmax(classification_proba, axis=1)
-        result_dict = {
-            "classification": classification,
-            "classification_proba": classification_proba,
-        }
-        return result_dict
-
-    def predict_proba(
-        self,
-        test_set: Union[dict, str],
-        file_type: str = "hdf5",
-    ) -> np.ndarray:
-        result_dict = self.predict(test_set, file_type=file_type)
-        return result_dict["classification_proba"]
-
-    def classify(
-        self,
-        test_set: Union[dict, str],
-        file_type: str = "hdf5",
-    ) -> np.ndarray:
-        result_dict = self.predict(test_set, file_type=file_type)
-        return result_dict["classification"]

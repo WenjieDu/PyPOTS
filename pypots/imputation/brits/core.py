@@ -55,7 +55,11 @@ class _BRITS(ModelCore):
             training_loss,
         )
 
-    def forward(self, inputs: dict) -> dict:
+    def forward(
+        self,
+        inputs: dict,
+        calc_criterion: bool = False,
+    ) -> dict:
         (
             imputed_data,
             f_reconstruction,
@@ -67,27 +71,22 @@ class _BRITS(ModelCore):
         ) = self.model(inputs)
 
         results = {
-            "imputed_data": imputed_data,
+            "imputation": imputed_data,
             "consistency_loss": consistency_loss,
             "reconstruction_loss": reconstruction_loss,
+            "reconstruction": (f_reconstruction + b_reconstruction) / 2,
             "f_reconstruction": f_reconstruction,
             "b_reconstruction": b_reconstruction,
         }
 
-        return results
-
-    def calc_criterion(self, inputs: dict) -> dict:
-        results = self.forward(inputs)
-
-        if self.training:  # if in the training mode (the training stage), return loss result from training_loss
-            # `loss` is always the item for backward propagating to update the model
-            consistency_loss = results["consistency_loss"]
-            reconstruction_loss = results["reconstruction_loss"]
-            loss = consistency_loss + reconstruction_loss
-            results["loss"] = loss
-        else:  # if in the eval mode (the validation stage), return metric result from validation_metric
-            X_ori, indicating_mask = inputs["X_ori"], inputs["indicating_mask"]
-            reconstruction = (results["f_reconstruction"] + results["b_reconstruction"]) / 2
-            results["metric"] = self.validation_metric(reconstruction, X_ori, indicating_mask)
+        if calc_criterion:
+            if self.training:  # if in the training mode (the training stage), return loss result from training_loss
+                # `loss` is always the item for backward propagating to update the model
+                loss = consistency_loss + reconstruction_loss
+                results["loss"] = loss
+            else:  # if in the eval mode (the validation stage), return metric result from validation_metric
+                X_ori, indicating_mask = inputs["X_ori"], inputs["indicating_mask"]
+                reconstruction = (results["f_reconstruction"] + results["b_reconstruction"]) / 2
+                results["metric"] = self.validation_metric(reconstruction, X_ori, indicating_mask)
 
         return results

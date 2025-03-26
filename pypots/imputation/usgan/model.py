@@ -7,6 +7,7 @@ The implementation of USGAN for the partially-observed time-series imputation ta
 # License: BSD-3-Clause
 
 import os
+from copy import deepcopy
 from typing import Union, Optional
 
 import numpy as np
@@ -14,10 +15,11 @@ import torch
 from torch.utils.data import DataLoader
 
 from .core import _USGAN
-from .data import DatasetForUSGAN
 from ..base import BaseNNImputer
+from ..brits.data import DatasetForBRITS
 from ...data.checking import key_in_data_set
 from ...nn.functional import calc_mse
+from ...nn.functional import gather_listed_dicts
 from ...nn.modules.loss import Criterion
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
@@ -240,8 +242,8 @@ class USGAN(BaseNNImputer):
 
     def _train_model(
         self,
-        training_loader: DataLoader,
-        val_loader: DataLoader = None,
+        train_dataloader: DataLoader,
+        val_dataloader: DataLoader = None,
     ) -> None:
         # each training starts from the very beginning, so reset the loss and model dict here
         self.best_model_dict = None
@@ -257,13 +259,13 @@ class USGAN(BaseNNImputer):
                 self.model.train()
                 step_train_loss_G_collector = []
                 step_train_loss_D_collector = []
-                for idx, data in enumerate(training_loader):
+                for idx, data in enumerate(train_dataloader):
                     training_step += 1
                     inputs = self._assemble_input_for_training(data)
 
                     if idx % self.G_steps == 0:
                         self.G_optimizer.zero_grad()
-                        results = self.model.forward(inputs, training_object="generator")
+                        results = self.model(inputs, training_object="generator")
                         loss = results["loss"].sum()
                         loss.backward()  # generation loss
                         self.G_optimizer.step()
@@ -271,7 +273,7 @@ class USGAN(BaseNNImputer):
 
                     if idx % self.D_steps == 0:
                         self.D_optimizer.zero_grad()
-                        results = self.model.forward(inputs, training_object="discriminator")
+                        results = self.model(inputs, training_object="discriminator")
                         loss = results["loss"].sum()
                         loss.backward(retain_graph=True)  # discrimination loss
                         self.D_optimizer.step()
@@ -292,16 +294,16 @@ class USGAN(BaseNNImputer):
                 mean_epoch_train_D_loss = np.mean(step_train_loss_D_collector)
                 mean_epoch_train_G_loss = np.mean(step_train_loss_G_collector)
 
-                if val_loader is not None:
+                if val_dataloader is not None:
                     self.model.eval()
                     imputation_loss_collector = []
                     with torch.no_grad():
-                        for idx, data in enumerate(val_loader):
+                        for idx, data in enumerate(val_dataloader):
                             inputs = self._assemble_input_for_validating(data)
-                            results = self.model.forward(inputs)
+                            results = self.model(inputs)
                             imputation_mse = (
                                 calc_mse(
-                                    results["imputed_data"],
+                                    results["imputation"],
                                     inputs["X_ori"],
                                     inputs["indicating_mask"],
                                 )
@@ -341,7 +343,7 @@ class USGAN(BaseNNImputer):
                 ):
                     self.best_epoch = epoch
                     self.best_loss = mean_loss
-                    self.best_model_dict = self.model.state_dict()
+                    self.best_model_dict = deepcopy(self.model.state_dict())
                     self.patience = self.original_patience
                 else:
                     self.patience -= 1
@@ -388,27 +390,27 @@ class USGAN(BaseNNImputer):
         file_type: str = "hdf5",
     ) -> None:
         # Step 1: wrap the input data with classes Dataset and DataLoader
-        training_set = DatasetForUSGAN(train_set, return_X_ori=False, return_y=False, file_type=file_type)
-        training_loader = DataLoader(
-            training_set,
+        train_dataset = DatasetForBRITS(train_set, return_X_ori=False, return_y=False, file_type=file_type)
+        train_dataloader = DataLoader(
+            train_dataset,
             batch_size=self.batch_size,
             shuffle=True,
             num_workers=self.num_workers,
         )
-        val_loader = None
+        val_dataloader = None
         if val_set is not None:
             if not key_in_data_set("X_ori", val_set):
                 raise ValueError("val_set must contain 'X_ori' for model validation.")
-            val_set = DatasetForUSGAN(val_set, return_X_ori=True, return_y=False, file_type=file_type)
-            val_loader = DataLoader(
-                val_set,
+            val_dataset = DatasetForBRITS(val_set, return_X_ori=True, return_y=False, file_type=file_type)
+            val_dataloader = DataLoader(
+                val_dataset,
                 batch_size=self.batch_size,
                 shuffle=False,
                 num_workers=self.num_workers,
             )
 
         # Step 2: train the model and freeze it
-        self._train_model(training_loader, val_loader)
+        self._train_model(train_dataloader, val_dataloader)
         self.model.load_state_dict(self.best_model_dict)
 
         # Step 3: save the model if necessary
@@ -421,31 +423,22 @@ class USGAN(BaseNNImputer):
         file_type: str = "hdf5",
     ) -> dict:
         self.model.eval()  # set the model to evaluation mode
-        test_set = DatasetForUSGAN(test_set, return_X_ori=False, return_y=False, file_type=file_type)
-        test_loader = DataLoader(
-            test_set,
+        test_dataset = DatasetForBRITS(test_set, return_X_ori=False, return_y=False, file_type=file_type)
+        test_dataloader = DataLoader(
+            test_dataset,
             batch_size=self.batch_size,
             shuffle=False,
             num_workers=self.num_workers,
         )
-        imputation_collector = []
 
-        for idx, data in enumerate(test_loader):
+        # Step 2: process the data with the model
+        dict_result_collector = []
+        for idx, data in enumerate(test_dataloader):
             inputs = self._assemble_input_for_testing(data)
-            results = self.model.forward(inputs)
-            imputed_data = results["imputed_data"]
-            imputation_collector.append(imputed_data)
+            results = self.model(inputs)
+            dict_result_collector.append(results)
 
-        imputation = torch.cat(imputation_collector).cpu().detach().numpy()
-        result_dict = {
-            "imputation": imputation,
-        }
+        # Step 3: output collection and return
+        result_dict = gather_listed_dicts(dict_result_collector)
+
         return result_dict
-
-    def impute(
-        self,
-        test_set: Union[dict, str],
-        file_type: str = "hdf5",
-    ) -> np.ndarray:
-        result_dict = self.predict(test_set, file_type=file_type)
-        return result_dict["imputation"]

@@ -44,7 +44,7 @@ class TestTEFN(unittest.TestCase):
         DATA["n_steps"],
         DATA["n_features"],
         n_classes=DATA["n_classes"],
-        n_fod=2,
+        n_fod=8,
         dropout=0.1,
         epochs=EPOCHS,
         saving_path=saving_path,

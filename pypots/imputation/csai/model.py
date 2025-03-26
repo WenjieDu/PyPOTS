@@ -7,7 +7,6 @@ The implementation of CSAI
 
 from typing import Union, Optional
 
-import numpy as np
 import torch
 from torch.utils.data import DataLoader
 
@@ -16,6 +15,7 @@ from .data import DatasetForCSAI
 from ..base import BaseNNImputer
 from ...data.checking import key_in_data_set
 from ...data.saving.h5 import load_dict_from_h5
+from ...nn.functional import gather_listed_dicts
 from ...nn.modules.loss import Criterion, MAE, MSE
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
@@ -261,7 +261,7 @@ class CSAI(BaseNNImputer):
             )
             train_set = load_dict_from_h5(train_set)
 
-        training_set = DatasetForCSAI(
+        train_dataset = DatasetForCSAI(
             train_set,
             False,
             False,
@@ -269,16 +269,16 @@ class CSAI(BaseNNImputer):
             self.removal_percent,
             self.increase_factor,
         )
-        self.intervals = training_set.intervals
-        self.replacement_probabilities = training_set.replacement_probabilities
+        self.intervals = train_dataset.intervals
+        self.replacement_probabilities = train_dataset.replacement_probabilities
 
-        training_loader = DataLoader(
-            training_set,
+        train_dataloader = DataLoader(
+            train_dataset,
             batch_size=self.batch_size,
             shuffle=True,
             num_workers=self.num_workers,
         )
-        val_loader = None
+        val_dataloader = None
         if val_set is not None:
             if isinstance(val_set, str):
                 logger.warning(
@@ -289,7 +289,7 @@ class CSAI(BaseNNImputer):
 
             if not key_in_data_set("X_ori", val_set):
                 raise ValueError("val_set must contain 'X_ori' for model validation.")
-            validating_set = DatasetForCSAI(
+            val_dataset = DatasetForCSAI(
                 val_set,
                 True,
                 False,
@@ -298,15 +298,15 @@ class CSAI(BaseNNImputer):
                 self.increase_factor,
                 self.replacement_probabilities,
             )
-            val_loader = DataLoader(
-                validating_set,
+            val_dataloader = DataLoader(
+                val_dataset,
                 batch_size=self.batch_size,
                 shuffle=False,
                 num_workers=self.num_workers,
             )
 
         # train the model
-        self._train_model(training_loader, val_loader)
+        self._train_model(train_dataloader, val_dataloader)
         self.model.load_state_dict(self.best_model_dict)
 
         # Step 3: save the model if necessary
@@ -326,7 +326,7 @@ class CSAI(BaseNNImputer):
                 "Hence the whole test set will be loaded into memory."
             )
             test_set = load_dict_from_h5(test_set)
-        testing_set = DatasetForCSAI(
+        test_dataset = DatasetForCSAI(
             test_set,
             True,
             False,
@@ -336,39 +336,22 @@ class CSAI(BaseNNImputer):
             self.replacement_probabilities,
         )
 
-        test_loader = DataLoader(
-            testing_set,
+        test_dataloader = DataLoader(
+            test_dataset,
             batch_size=self.batch_size,
             shuffle=False,
             num_workers=self.num_workers,
         )
 
-        imputation_collector = []
-        x_ori_collector = []
-        indicating_mask_collector = []
+        dict_result_collector = []
 
-        with torch.no_grad():
-            for _, data in enumerate(test_loader):
-                inputs = self._assemble_input_for_testing(data)
-                results = self.model.forward(inputs)
-                imputed_data = results["imputed_data"]
-                imputation_collector.append(imputed_data)
-                x_ori_collector.append(inputs["X_ori"])
-                indicating_mask_collector.append(inputs["indicating_mask"])
+        # Step 2: process the data with the model
+        for idx, data in enumerate(test_dataloader):
+            inputs = self._assemble_input_for_testing(data)
+            results = self.model(inputs)
+            dict_result_collector.append(results)
 
-        imputation = torch.cat(imputation_collector).cpu().detach().numpy()
-        result_dict = {
-            "imputation": imputation,
-            "X_ori": torch.cat(x_ori_collector).cpu().detach().numpy(),
-            "indicating_mask": torch.cat(indicating_mask_collector).cpu().detach().numpy(),
-        }
+        # Step 3: output collection and return
+        result_dict = gather_listed_dicts(dict_result_collector)
+
         return result_dict
-
-    def impute(
-        self,
-        test_set: Union[dict, str],
-        file_type: str = "hdf5",
-    ) -> np.ndarray:
-
-        result_dict = self.predict(test_set, file_type=file_type)
-        return result_dict["imputation"]

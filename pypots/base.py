@@ -6,8 +6,8 @@ The base (abstract) classes for models in PyPOTS.
 # License: BSD-3-Clause
 
 import os
-from abc import ABC
-from abc import abstractmethod
+from abc import ABC, abstractmethod
+from copy import deepcopy
 from datetime import datetime
 from typing import Optional, Union, Iterable
 
@@ -70,7 +70,7 @@ class BaseModel(ABC):
 
         It is designed as being set up while initializing the model because it's created to
         1). help visualize the model's training procedure (during training not after) and
-        2). assist users to optimize the model's hype-parameters.
+        2). assist users to optimize the model's hyperparameters.
         If only setting it up after training with a function like setter(), it cannot achieve the 1st purpose.
 
     """
@@ -215,6 +215,11 @@ class BaseModel(ABC):
             logger.warning("‼️ saving_path not given. Model files and tensorboard file will not be saved.")
 
     def _send_model_to_given_device(self) -> None:
+        if isinstance(self.model, torch.nn.DataParallel):
+            # in this case, the model has been sent to multi-gpu previously,
+            # and we have to turn the model from nn.DataParallel to nn.Module first
+            self.model = self.model.module
+
         if isinstance(self.device, list):
             # parallely training on multiple devices
             self.model = torch.nn.DataParallel(self.model, device_ids=self.device)
@@ -299,9 +304,9 @@ class BaseModel(ABC):
 
         if isinstance(self.device, list):
             # to save a DataParallel model generically, save the model.module.state_dict()
-            model_state_dict = self.model.module.state_dict()
+            model_state_dict = deepcopy(self.model.module.state_dict())
         else:
-            model_state_dict = self.model.state_dict()
+            model_state_dict = deepcopy(self.model.state_dict())
 
         all_attrs = dict({})
         all_attrs["model_state_dict"] = model_state_dict
@@ -482,8 +487,10 @@ class BaseModel(ABC):
             The device to move the model to. It can be a string or a :class:`torch.device` object.
 
         """
-        self.device = device
+        self._setup_device(device)
         self._send_model_to_given_device()
+        # TODO: have to move the optimizer to the given device as well
+        #  but we may have multi optimizers for a model, e.g. GANs, https://github.com/WenjieDu/PyPOTS/issues/599
 
 
 class BaseNNModel(BaseModel):
@@ -621,7 +628,7 @@ class BaseNNModel(BaseModel):
             validation_metric_name = validation_metric.__class__.__name__
             logger.info(f"Using customized {validation_metric_name} as the validation metric function.")
 
-        # set up the hype-parameters
+        # set up the hyperparameters
         self.batch_size = batch_size
         self.epochs = epochs
         self.patience = patience
@@ -705,8 +712,8 @@ class BaseNNModel(BaseModel):
 
     def _train_model(
         self,
-        training_loader: DataLoader,
-        val_loader: Optional[DataLoader] = None,
+        train_dataloader: DataLoader,
+        val_dataloader: Optional[DataLoader] = None,
     ) -> None:
         # each training starts from the very beginning, so reset the loss and model dict here
         self.best_model_dict = None
@@ -721,13 +728,13 @@ class BaseNNModel(BaseModel):
             for epoch in range(1, self.epochs + 1):
                 self.model.train()
                 epoch_train_loss_collector = []
-                for idx, data in enumerate(training_loader):
+                for idx, data in enumerate(train_dataloader):
                     training_step += 1
                     inputs = self._assemble_input_for_training(data)
 
                     with autocast(enabled=self.amp_enabled):
                         self.optimizer.zero_grad()
-                        results = self.model.calc_criterion(inputs)
+                        results = self.model(inputs, calc_criterion=True)
                         loss = results["loss"].sum()
                         loss.backward()
                         self.optimizer.step()
@@ -739,15 +746,15 @@ class BaseNNModel(BaseModel):
                 # mean training loss of the current epoch
                 mean_train_loss = np.mean(epoch_train_loss_collector)
 
-                if val_loader is not None:
+                if val_dataloader is not None:
                     self.model.eval()
                     val_metric_collector = []
                     with torch.no_grad():
-                        for idx, data in enumerate(val_loader):
+                        for idx, data in enumerate(val_dataloader):
                             inputs = self._assemble_input_for_validating(data)
 
                             with autocast(enabled=self.amp_enabled):
-                                results = self.model.calc_criterion(inputs)
+                                results = self.model(inputs, calc_criterion=True)
 
                             val_metric = results["metric"].sum()
                             val_metric_collector.append(val_metric.detach().item())
@@ -779,7 +786,7 @@ class BaseNNModel(BaseModel):
                 ):
                     self.best_epoch = epoch
                     self.best_loss = mean_loss
-                    self.best_model_dict = self.model.state_dict()
+                    self.best_model_dict = deepcopy(self.model.state_dict())
                     self.patience = self.original_patience
                 else:
                     self.patience -= 1

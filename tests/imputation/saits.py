@@ -13,9 +13,9 @@ import numpy as np
 import pytest
 
 from pypots.imputation import SAITS
+from pypots.nn.functional import calc_mse
 from pypots.optim import Adam
 from pypots.utils.logging import logger
-from pypots.nn.functional import calc_mse
 from pypots.utils.visual.data import plot_data, plot_missingness
 from tests.global_test_config import (
     DATA,
@@ -65,13 +65,10 @@ class TestSAITS(unittest.TestCase):
 
     @pytest.mark.xdist_group(name="imputation-saits")
     def test_1_impute(self):
-        imputation_results = self.saits.predict(TEST_SET, return_latent_vars=True)
+        imputation_results = self.saits.predict(TEST_SET)
         assert not np.isnan(
             imputation_results["imputation"]
         ).any(), "Output still has missing values after running impute()."
-        assert (
-            "latent_vars" in imputation_results.keys()
-        ), "Latent variables are not returned thought `return_latent_vars` is set as True."
 
         test_MSE = calc_mse(
             imputation_results["imputation"],

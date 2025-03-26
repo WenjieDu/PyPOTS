@@ -13,12 +13,12 @@ import numpy as np
 import torch
 from torch.utils.data import DataLoader
 
-from .data import DatasetForTS2Vec
 from ..base import BaseNNClassifier
+from ...data.dataset.base import BaseDataset
 from ...nn.modules.loss import Criterion
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
-from ...vec.ts2vec.core import _TS2Vec
+from ...representation.ts2vec.core import _TS2Vec
 
 SUPPORTED_CLASSIFIERS = ["linear_regression", "svm", "knn"]
 
@@ -132,7 +132,6 @@ class TS2Vec(BaseNNClassifier):
         self.d_hidden = d_hidden
         self.n_layers = n_layers
         self.mask_mode = mask_mode
-        self.training_set_loader = None
 
         # set up the model
         self.model = _TS2Vec(
@@ -156,6 +155,9 @@ class TS2Vec(BaseNNClassifier):
 
         self.training_loss_name = "default"
         self.validation_metric_name = "default loss"
+
+        self.train_reprs = None
+        self.train_labels = None
 
     def _assemble_input_for_training(self, data: list) -> dict:
         # fetch data
@@ -200,31 +202,80 @@ class TS2Vec(BaseNNClassifier):
         val_set: Optional[Union[dict, str]] = None,
         file_type: str = "hdf5",
     ) -> None:
+        """Train the classifier on the given data.
+
+        Parameters
+        ----------
+        train_set :
+            The dataset for model training, should be a dictionary including keys as 'X' and 'y',
+            or a path string locating a data file.
+            If it is a dict, X should be array-like with shape [n_samples, n_steps, n_features],
+            which is time-series data for training, can contain missing values, and y should be array-like of shape
+            [n_samples], which is classification labels of X.
+            If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
+            key-value pairs like a dict, and it has to include keys as 'X' and 'y'.
+
+        val_set :
+            The dataset for model validating, should be a dictionary including keys as 'X' and 'y',
+            or a path string locating a data file.
+            If it is a dict, X should be array-like with shape [n_samples, n_steps, n_features],
+            which is time-series data for validating, can contain missing values, and y should be array-like of shape
+            [n_samples], which is classification labels of X.
+            If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
+            key-value pairs like a dict, and it has to include keys as 'X' and 'y'.
+
+        file_type :
+            The type of the given file if train_set and val_set are path strings.
+
+        """
         # Step 1: wrap the input data with classes Dataset and DataLoader
-        training_set = DatasetForTS2Vec(train_set, file_type=file_type)
-        training_loader = DataLoader(
-            training_set,
+        train_dataset = BaseDataset(
+            train_set,
+            return_X_ori=False,
+            return_X_pred=False,
+            return_y=True,
+            file_type=file_type,
+        )
+        train_dataloader = DataLoader(
+            train_dataset,
             batch_size=self.batch_size,
             shuffle=True,
             num_workers=self.num_workers,
         )
-        self.training_set_loader = training_loader
-        val_loader = None
+        val_dataloader = None
         if val_set is not None:
-            val_set = DatasetForTS2Vec(val_set, file_type=file_type)
-            val_loader = DataLoader(
+            val_dataset = BaseDataset(
                 val_set,
+                return_X_ori=False,
+                return_X_pred=False,
+                return_y=True,
+                file_type=file_type,
+            )
+            val_dataloader = DataLoader(
+                val_dataset,
                 batch_size=self.batch_size,
                 shuffle=False,
                 num_workers=self.num_workers,
             )
 
         # Step 2: train the model and freeze it
-        self._train_model(training_loader, val_loader)
+        self._train_model(train_dataloader, val_dataloader)
         self.model.load_state_dict(self.best_model_dict)
 
         # Step 3: save the model if necessary
         self._auto_save_model_if_necessary(confirm_saving=self.model_saving_strategy == "best")
+
+        train_repr_collector = []
+        train_label_collector = []
+
+        for idx, data in enumerate(train_dataloader):
+            inputs = self._assemble_input_for_training(data)
+            train_repr = self.model(inputs, encoding_window="full_series")["representation"]
+            train_repr_collector.append(train_repr)
+            train_label_collector.append(inputs["y"])
+
+        self.train_reprs = torch.cat(train_repr_collector, dim=0).cpu().numpy()
+        self.train_labels = torch.cat(train_label_collector, dim=0).cpu().numpy()
 
     @torch.no_grad()
     def predict(
@@ -254,8 +305,9 @@ class TS2Vec(BaseNNClassifier):
 
         Returns
         -------
-        file_type :
-            The dictionary containing the clustering results and latent variables if necessary.
+        result_dict :
+            The dictionary containing the classification results as key 'classification' and
+            latent variables if necessary.
 
         """
         assert (
@@ -264,31 +316,22 @@ class TS2Vec(BaseNNClassifier):
 
         self.model.eval()  # set the model to evaluation mode
 
-        train_repr_collector = []
-        train_label_collector = []
-        for idx, data in enumerate(self.training_set_loader):
-            inputs = self._assemble_input_for_training(data)
-            train_repr = self.model(inputs, encoding_window="full_series")["representation"]
-            train_repr_collector.append(train_repr)
-            train_label_collector.append(inputs["y"])
-
-        train_repr_collector = torch.cat(train_repr_collector, dim=0).cpu().numpy()
-        train_label_collector = torch.cat(train_label_collector, dim=0).cpu().numpy()
-
-        test_set = DatasetForTS2Vec(
+        test_dataset = BaseDataset(
             test_set,
+            return_X_ori=False,
+            return_X_pred=False,
             return_y=False,
             file_type=file_type,
         )
-        test_loader = DataLoader(
-            test_set,
+        test_dataloader = DataLoader(
+            test_dataset,
             batch_size=self.batch_size,
             shuffle=False,
             num_workers=self.num_workers,
         )
 
         test_repr_collector = []
-        for idx, data in enumerate(test_loader):
+        for idx, data in enumerate(test_dataloader):
             inputs = self._assemble_input_for_testing(data)
             test_repr = self.model(inputs, encoding_window="full_series")["representation"]
             test_repr_collector.append(test_repr)
@@ -307,7 +350,7 @@ class TS2Vec(BaseNNClassifier):
         with warnings.catch_warnings():
             warnings.filterwarnings("ignore")  # just ignore warnings, most of them from sklearn
 
-            clf = fit_clf(train_repr_collector, train_label_collector)
+            clf = fit_clf(self.train_reprs, self.train_labels)
             if classifier_type == "svm":
                 y_score = clf.decision_function(test_repr_collector)
             else:
@@ -326,6 +369,27 @@ class TS2Vec(BaseNNClassifier):
         file_type: str = "hdf5",
         classifier_type: str = "svm",
     ) -> np.ndarray:
+        """Predict the classification probabilities of the input data with the trained model.
+
+        Parameters
+        ----------
+        test_set :
+            The data samples for testing, should be array-like with shape [n_samples, n_steps, n_features], or a path
+            string locating a data file, e.g. h5 file.
+
+        file_type :
+            The type of the given file if X is a path string.
+
+        classifier_type :
+            The type of classifier to use for the classification task.
+            It has to be one of ['linear_regression', 'svm', 'knn'].
+
+        Returns
+        -------
+        results :
+            Classification probabilities of the given samples.
+        """
+
         result_dict = self.predict(test_set, file_type=file_type, classifier_type=classifier_type)
         return result_dict["classification_proba"]
 
@@ -356,9 +420,9 @@ class TS2Vec(BaseNNClassifier):
 
         Returns
         -------
-        file_type :
-            The dictionary containing the clustering results and latent variables if necessary.
+        results :
+            Classification results of the given samples.
 
         """
-        result_dict = self.predict(test_set, file_type=file_type, classifier_type=classifier_type)
-        return result_dict["classification"]
+        results = super().classify(test_set, file_type, classifier_type=classifier_type)
+        return results
