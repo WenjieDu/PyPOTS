@@ -7,8 +7,10 @@ Expose all usable time-series anomaly detection models.
 
 from .autoformer import Autoformer
 from .saits import SAITS
+from .tefn import TEFN
 
 __all__ = [
     "Autoformer",
     "SAITS",
+    "TEFN",
 ]
