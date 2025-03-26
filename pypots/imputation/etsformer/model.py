@@ -149,7 +149,7 @@ class ETSformer(BaseNNImputer):
         )
         self.n_steps = n_steps
         self.n_features = n_features
-        # model hype-parameters
+        # model hyperparameters
         self.n_heads = n_heads
         self.n_encoder_layers = n_encoder_layers
         self.n_decoder_layers = n_decoder_layers

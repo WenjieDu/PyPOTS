@@ -134,7 +134,7 @@ class SegRNN(BaseNNImputer):
 
         self.n_steps = n_steps
         self.n_features = n_features
-        # model hype-parameters
+        # model hyperparameters
         self.seg_len = seg_len
         self.d_model = d_model
         self.dropout = dropout

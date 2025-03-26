@@ -134,7 +134,7 @@ class FITS(BaseNNImputer):
 
         self.n_steps = n_steps
         self.n_features = n_features
-        # model hype-parameters
+        # model hyperparameters
         self.individual = individual
         self.cut_freq = cut_freq
         self.ORT_weight = ORT_weight

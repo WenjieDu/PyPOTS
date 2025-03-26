@@ -135,7 +135,7 @@ class FreTS(BaseNNImputer):
         )
         self.n_steps = n_steps
         self.n_features = n_features
-        # model hype-parameters
+        # model hyperparameters
         self.embed_size = embed_size
         self.hidden_size = hidden_size
         self.channel_independence = channel_independence

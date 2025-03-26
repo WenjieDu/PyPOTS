@@ -173,7 +173,7 @@ class PatchTST(BaseNNImputer):
 
         self.n_steps = n_steps
         self.n_features = n_features
-        # model hype-parameters
+        # model hyperparameters
         self.patch_size = patch_size
         self.patch_stride = patch_stride
         self.n_layers = n_layers

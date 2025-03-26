@@ -159,7 +159,7 @@ class NonstationaryTransformer(BaseNNImputer):
 
         self.n_steps = n_steps
         self.n_features = n_features
-        # model hype-parameters
+        # model hyperparameters
         self.n_heads = n_heads
         self.n_layers = n_layers
         self.d_model = d_model

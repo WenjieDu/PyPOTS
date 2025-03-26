@@ -146,7 +146,7 @@ class TiDE(BaseNNImputer):
 
         self.n_steps = n_steps
         self.n_features = n_features
-        # model hype-parameters
+        # model hyperparameters
         self.n_layers = n_layers
         self.d_model = d_model
         self.d_hidden = d_hidden

@@ -164,7 +164,7 @@ class ImputeFormer(BaseNNImputer):
 
         self.n_steps = n_steps
         self.n_features = n_features
-        # model hype-parameters
+        # model hyperparameters
         self.n_layers = n_layers
         self.d_input_embed = d_input_embed
         self.d_learnable_embed = d_learnable_embed
