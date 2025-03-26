@@ -47,7 +47,11 @@ class _BRITS(ModelCore):
         self.f_classifier = nn.Linear(self.rnn_hidden_size, n_classes)
         self.b_classifier = nn.Linear(self.rnn_hidden_size, n_classes)
 
-    def forward(self, inputs: dict) -> dict:
+    def forward(
+        self,
+        inputs: dict,
+        calc_criterion: bool = False,
+    ) -> dict:
         (
             imputed_data,
             f_reconstruction,
@@ -74,32 +78,24 @@ class _BRITS(ModelCore):
             "f_reconstruction": f_reconstruction,
             "b_reconstruction": b_reconstruction,
         }
-        return results
 
-    def calc_criterion(self, inputs: dict) -> dict:
-        results = self.forward(inputs)
+        if calc_criterion:
+            f_classification_loss = self.training_loss(f_logits, inputs["y"])
+            b_classification_loss = self.training_loss(b_logits, inputs["y"])
+            classification_loss = (f_classification_loss + b_classification_loss) / 2
+            loss = (
+                consistency_loss
+                + reconstruction_loss * self.reconstruction_weight
+                + classification_loss * self.classification_weight
+            )
 
-        consistency_loss = results["consistency_loss"]
-        reconstruction_loss = results["reconstruction_loss"]
-        f_logits = results["f_logits"]
-        b_logits = results["b_logits"]
-
-        f_classification_loss = self.training_loss(f_logits, inputs["y"])
-        b_classification_loss = self.training_loss(b_logits, inputs["y"])
-        classification_loss = (f_classification_loss + b_classification_loss) / 2
-        loss = (
-            consistency_loss
-            + reconstruction_loss * self.reconstruction_weight
-            + classification_loss * self.classification_weight
-        )
-
-        if self.training:  # if in the training mode (the training stage), return loss result from training_loss
-            # `loss` is always the item for backward propagating to update the model
-            results["loss"] = loss
-        else:  # if in the eval mode (the validation stage), return metric result from validation_metric
-            f_validation_metric = self.validation_metric(f_logits, inputs["y"])
-            b_validation_metric = self.validation_metric(b_logits, inputs["y"])
-            validation_metric = (f_validation_metric + b_validation_metric) / 2
-            results["metric"] = validation_metric
+            if self.training:  # if in the training mode (the training stage), return loss result from training_loss
+                # `loss` is always the item for backward propagating to update the model
+                results["loss"] = loss
+            else:  # if in the eval mode (the validation stage), return metric result from validation_metric
+                f_validation_metric = self.validation_metric(f_logits, inputs["y"])
+                b_validation_metric = self.validation_metric(b_logits, inputs["y"])
+                validation_metric = (f_validation_metric + b_validation_metric) / 2
+                results["metric"] = validation_metric
 
         return results

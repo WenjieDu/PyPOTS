@@ -72,7 +72,11 @@ class _Raindrop(ModelCore):
             nn.Linear(d_final, n_classes),
         )
 
-    def forward(self, inputs):
+    def forward(
+        self,
+        inputs,
+        calc_criterion: bool = False,
+    ) -> dict:
         X, missing_mask, static, timestamps, lengths = (
             inputs["X"],
             inputs["missing_mask"],
@@ -117,19 +121,13 @@ class _Raindrop(ModelCore):
             "classification_proba": classification_proba,
         }
 
-        return results
-
-    def calc_criterion(self, inputs: dict) -> dict:
-        results = self.forward(inputs)
-
-        logits = results["logits"]
-
-        if self.training:  # if in the training mode (the training stage), return loss result from training_loss
-            loss = self.training_loss(logits, inputs["y"])
-            # `loss` is always the item for backward propagating to update the model
-            results["loss"] = loss
-        else:  # if in the eval mode (the validation stage), return metric result from validation_metric
-            metric = self.validation_metric(logits, inputs["y"])
-            results["metric"] = metric
+        if calc_criterion:
+            if self.training:  # if in the training mode (the training stage), return loss result from training_loss
+                loss = self.training_loss(logits, inputs["y"])
+                # `loss` is always the item for backward propagating to update the model
+                results["loss"] = loss
+            else:  # if in the eval mode (the validation stage), return metric result from validation_metric
+                metric = self.validation_metric(logits, inputs["y"])
+                results["metric"] = metric
 
         return results

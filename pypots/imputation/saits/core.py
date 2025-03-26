@@ -64,6 +64,7 @@ class _SAITS(ModelCore):
     def forward(
         self,
         inputs: dict,
+        calc_criterion: bool = False,
         diagonal_attention_mask: bool = True,
     ) -> dict:
         X, missing_mask = inputs["X"], inputs["missing_mask"]
@@ -101,37 +102,30 @@ class _SAITS(ModelCore):
             "X_tilde_3": X_tilde_3,
         }
 
-        return results
-
-    def calc_criterion(self, inputs: dict) -> dict:
-        results = self.forward(inputs)
-        X_tilde_1, X_tilde_2, X_tilde_3 = results["X_tilde_1"], results["X_tilde_2"], results["X_tilde_3"]
-        X, missing_mask = inputs["X"], inputs["missing_mask"]
-
-        if self.training:  # if in the training mode (the training stage), return loss result from training_loss
-            # `loss` is always the item for backward propagating to update the model
+        if calc_criterion:
             X_ori, indicating_mask = inputs["X_ori"], inputs["indicating_mask"]
+            if self.training:  # if in the training mode (the training stage), return loss result from training_loss
+                # `loss` is always the item for backward propagating to update the model
 
-            # calculate loss for the observed reconstruction task (ORT)
-            # this calculation is more complicated that pypots.nn.modules.saits.SaitsLoss because
-            # SAITS model structure has three parts of representation
-            ORT_loss = 0
-            ORT_loss += self.training_loss(X_tilde_1, X, missing_mask)
-            ORT_loss += self.training_loss(X_tilde_2, X, missing_mask)
-            ORT_loss += self.training_loss(X_tilde_3, X, missing_mask)
-            ORT_loss /= 3
-            ORT_loss = self.ORT_weight * ORT_loss
+                # calculate loss for the observed reconstruction task (ORT)
+                # this calculation is more complicated that pypots.nn.modules.saits.SaitsLoss because
+                # SAITS model structure has three parts of representation
+                ORT_loss = 0
+                ORT_loss += self.training_loss(X_tilde_1, X, missing_mask)
+                ORT_loss += self.training_loss(X_tilde_2, X, missing_mask)
+                ORT_loss += self.training_loss(X_tilde_3, X, missing_mask)
+                ORT_loss /= 3
+                ORT_loss = self.ORT_weight * ORT_loss
 
-            # calculate loss for the masked imputation task (MIT)
-            MIT_loss = self.MIT_weight * self.training_loss(X_tilde_3, X_ori, indicating_mask)
-            # `loss` is always the item for backward propagating to update the model
-            loss = ORT_loss + MIT_loss
+                # calculate loss for the masked imputation task (MIT)
+                MIT_loss = self.MIT_weight * self.training_loss(X_tilde_3, X_ori, indicating_mask)
+                # `loss` is always the item for backward propagating to update the model
+                loss = ORT_loss + MIT_loss
 
-            results["ORT_loss"] = ORT_loss
-            results["MIT_loss"] = MIT_loss
-            results["loss"] = loss
-        else:  # if in the eval mode (the validation stage), return metric result from validation_metric
-            X_ori, indicating_mask = inputs["X_ori"], inputs["indicating_mask"]
-            results["metric"] = self.validation_metric(X_tilde_3, X_ori, indicating_mask)
+                results["ORT_loss"] = ORT_loss
+                results["MIT_loss"] = MIT_loss
+                results["loss"] = loss
+            else:  # if in the eval mode (the validation stage), return metric result from validation_metric
+                results["metric"] = self.validation_metric(X_tilde_3, X_ori, indicating_mask)
 
         return results
