@@ -37,6 +37,15 @@ pypots.anomaly_detection.patchtst
    :show-inheritance:
    :inherited-members:
 
+pypots.anomaly_detection.segrnn
+-----------------------------------------------
+
+.. automodule:: pypots.anomaly_detection.segrnn
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+
 pypots.anomaly_detection.autoformer
 -----------------------------------------------
 
