@@ -28,6 +28,15 @@ pypots.anomaly_detection.imputeformer
    :show-inheritance:
    :inherited-members:
 
+pypots.anomaly_detection.patchtst
+-----------------------------------------------
+
+.. automodule:: pypots.anomaly_detection.patchtst
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+
 pypots.anomaly_detection.autoformer
 -----------------------------------------------
 
