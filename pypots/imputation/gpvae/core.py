@@ -88,29 +88,28 @@ class _GPVAE(ModelCore):
             window_size,
         )
 
-    def forward(self, inputs, n_sampling_times=1):
+    def forward(
+        self,
+        inputs: dict,
+        calc_criterion: bool = False,
+        n_sampling_times=1,
+    ):
         X, missing_mask = inputs["X"], inputs["missing_mask"]
         results = {}
 
-        imputed_data, imputation_latent = self.backbone.impute(X, missing_mask, n_sampling_times)
-        results["imputation"] = imputed_data
+        if calc_criterion:
+            elbo_loss = self.backbone(X, missing_mask)
+            if self.training:  # if in the training mode (the training stage), return loss result from training_loss
+                # `loss` is always the item for backward propagating to update the model
+                results["loss"] = elbo_loss
+            else:  # if in the eval mode (the validation stage), return metric result from validation_metric
+                results["metric"] = elbo_loss
+        else:
+            imputed_data, imputation_latent = self.backbone.impute(X, missing_mask, n_sampling_times)
+            results["imputation"] = imputed_data
 
-        # `imputation_latent` is not "reconstruction" seriously speaking,
-        # we just take it to get align with other models' output
-        results["reconstruction"] = imputation_latent
-
-        return results
-
-    def calc_criterion(self, inputs: dict) -> dict:
-        X, missing_mask = inputs["X"], inputs["missing_mask"]
-
-        results = {}
-        elbo_loss = self.backbone(X, missing_mask)
-
-        if self.training:  # if in the training mode (the training stage), return loss result from training_loss
-            # `loss` is always the item for backward propagating to update the model
-            results["loss"] = elbo_loss
-        else:  # if in the eval mode (the validation stage), return metric result from validation_metric
-            results["metric"] = elbo_loss
+            # `imputation_latent` is not "reconstruction" seriously speaking,
+            # we just take it to get align with other models' output
+            results["reconstruction"] = imputation_latent
 
         return results

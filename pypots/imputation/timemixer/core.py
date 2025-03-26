@@ -64,7 +64,11 @@ class _TimeMixer(ModelCore):
             use_future_temporal_feature=False,
         )
 
-    def forward(self, inputs: dict) -> dict:
+    def forward(
+        self,
+        inputs: dict,
+        calc_criterion: bool = False,
+    ) -> dict:
         X, missing_mask = inputs["X"], inputs["missing_mask"]
 
         if self.apply_nonstationary_norm:
@@ -84,19 +88,13 @@ class _TimeMixer(ModelCore):
             "reconstruction": reconstruction,
         }
 
-        return results
-
-    def calc_criterion(self, inputs: dict) -> dict:
-        results = self.forward(inputs)
-        X, missing_mask = inputs["X"], inputs["missing_mask"]
-        reconstruction = results["reconstruction"]
-
-        if self.training:  # if in the training mode (the training stage), return loss result from training_loss
-            # `loss` is always the item for backward propagating to update the model
-            loss = self.training_loss(reconstruction, X, missing_mask)
-            results["loss"] = loss
-        else:  # if in the eval mode (the validation stage), return metric result from validation_metric
-            X_ori, indicating_mask = inputs["X_ori"], inputs["indicating_mask"]
-            results["metric"] = self.validation_metric(reconstruction, X_ori, indicating_mask)
+        if calc_criterion:
+            if self.training:  # if in the training mode (the training stage), return loss result from training_loss
+                # `loss` is always the item for backward propagating to update the model
+                loss = self.training_loss(reconstruction, X, missing_mask)
+                results["loss"] = loss
+            else:  # if in the eval mode (the validation stage), return metric result from validation_metric
+                X_ori, indicating_mask = inputs["X_ori"], inputs["indicating_mask"]
+                results["metric"] = self.validation_metric(reconstruction, X_ori, indicating_mask)
 
         return results
