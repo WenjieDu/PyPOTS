@@ -1,10 +1,10 @@
-pypots.vec
+pypots.representation
 ==========================
 
-pypots.vec.ts2vec
+pypots.representation.ts2vec
 ------------------------------
 
-.. automodule:: pypots.vec.ts2vec
+.. automodule:: pypots.representation.ts2vec
    :members:
    :undoc-members:
    :show-inheritance:
