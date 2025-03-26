@@ -127,7 +127,7 @@ class _CSDI(ModelCore):
                 0, 1, 3, 2
             )  # (n_samples, n_sampling_times, n_steps, n_features)
 
-            # `samples` is not "reconstruction" seriously speaking, we just take it to get align with other models' output
+            # `samples` is not "reconstruction" seriously, we just take it to get align with other models' output
             results["reconstruction"] = samples.permute(0, 1, 3, 2)
 
         return results
