@@ -1,5 +1,5 @@
 """
-Test cases for Autoformer imputation model.
+Test cases for Autoformer anomaly detection model.
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>

@@ -1,5 +1,5 @@
 """
-Test cases for TEFN imputation model.
+Test cases for TEFN anomaly detection model.
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
