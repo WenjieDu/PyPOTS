@@ -9,10 +9,11 @@ and takes over the forward progress of the algorithm.
 import torch
 import torch.nn as nn
 
+from ...nn.modules import ModelCore
 from ...nn.modules.csdi import BackboneCSDI
 
 
-class _CSDI(nn.Module):
+class _CSDI(ModelCore):
     def __init__(
         self,
         n_features,
@@ -80,29 +81,35 @@ class _CSDI(nn.Module):
 
         return side_info
 
-    def forward(self, inputs, n_sampling_times=1):
+    def forward(
+        self,
+        inputs: dict,
+        calc_criterion: bool = False,
+        n_sampling_times=1,
+    ) -> dict:
         results = {}
-        if self.training:  # for training
-            (observed_data, indicating_mask, cond_mask, observed_tp) = (
-                inputs["X_ori"],
-                inputs["indicating_mask"],
-                inputs["cond_mask"],
-                inputs["observed_tp"],
-            )
-            side_info = self.get_side_info(observed_tp, cond_mask)
-            training_loss = self.backbone.calc_loss(observed_data, cond_mask, indicating_mask, side_info)
-            results["loss"] = training_loss
-        elif not self.training and n_sampling_times == 0:  # for validating
-            (observed_data, indicating_mask, cond_mask, observed_tp) = (
-                inputs["X_ori"],
-                inputs["indicating_mask"],
-                inputs["cond_mask"],
-                inputs["observed_tp"],
-            )
-            side_info = self.get_side_info(observed_tp, cond_mask)
-            validating_loss = self.backbone.calc_loss_valid(observed_data, cond_mask, indicating_mask, side_info)
-            results["loss"] = validating_loss
-        elif not self.training and n_sampling_times > 0:  # for testing
+        if calc_criterion:
+            if self.training:  # for training
+                (observed_data, indicating_mask, cond_mask, observed_tp) = (
+                    inputs["X_ori"],
+                    inputs["indicating_mask"],
+                    inputs["cond_mask"],
+                    inputs["observed_tp"],
+                )
+                side_info = self.get_side_info(observed_tp, cond_mask)
+                training_loss = self.backbone.calc_loss(observed_data, cond_mask, indicating_mask, side_info)
+                results["loss"] = training_loss
+            else:  # for validating
+                (observed_data, indicating_mask, cond_mask, observed_tp) = (
+                    inputs["X_ori"],
+                    inputs["indicating_mask"],
+                    inputs["cond_mask"],
+                    inputs["observed_tp"],
+                )
+                side_info = self.get_side_info(observed_tp, cond_mask)
+                validating_loss = self.backbone.calc_loss_valid(observed_data, cond_mask, indicating_mask, side_info)
+                results["metric"] = validating_loss
+        else:
             observed_data, cond_mask, observed_tp = (
                 inputs["X"],
                 inputs["cond_mask"],
@@ -116,8 +123,11 @@ class _CSDI(nn.Module):
             repeated_mask = cond_mask.unsqueeze(1).repeat(1, n_sampling_times, 1, 1)
             imputed_data = repeated_obs + samples * (1 - repeated_mask)
 
-            results["imputed_data"] = imputed_data.permute(
+            results["imputation"] = imputed_data.permute(
                 0, 1, 3, 2
             )  # (n_samples, n_sampling_times, n_steps, n_features)
+
+            # `samples` is not "reconstruction" seriously, we just take it to get align with other models' output
+            results["reconstruction"] = samples.permute(0, 1, 3, 2)
 
         return results

@@ -23,11 +23,11 @@ jobs:
 
         steps:
             - name: Check out the repo code
-              uses: actions/checkout@v3
+              uses: actions/checkout@v4
 
 
             - name: Set up Conda
-              uses: conda-incubator/setup-miniconda@v2
+              uses: conda-incubator/setup-miniconda@v3
               with:
                   miniconda-version: "latest"
                   activate-environment: pypots

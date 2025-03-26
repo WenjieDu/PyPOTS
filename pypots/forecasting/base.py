@@ -5,7 +5,6 @@ The base classes for PyPOTS forecasting models.
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-import os
 from abc import abstractmethod
 from typing import Optional, Union
 
@@ -14,14 +13,10 @@ import torch
 from torch.utils.data import DataLoader
 
 from ..base import BaseModel, BaseNNModel
-from ..nn.functional import autocast
-from ..nn.modules.loss import Criterion, MSE
-from ..utils.logging import logger
-
-try:
-    import nni
-except ImportError:
-    pass
+from ..data.checking import key_in_data_set
+from ..data.dataset.base import BaseDataset
+from ..nn.functional import autocast, gather_listed_dicts
+from ..nn.modules.loss import Criterion
 
 
 class BaseForecaster(BaseModel):
@@ -111,14 +106,36 @@ class BaseForecaster(BaseModel):
         self,
         test_set: Union[dict, str],
         file_type: str = "hdf5",
+        **kwargs,
     ) -> dict:
+        """Make predictions for the input data with the trained model.
+
+        Parameters
+        ----------
+        test_set :
+            The test dataset for model to process, should be a dictionary including keys as 'X',
+            or a path string locating a data file supported by PyPOTS (e.g. h5 file).
+            If it is a dict, X should be array-like with shape [n_samples, n_steps, n_features],
+            which is the time-series data for processing.
+            If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
+            key-value pairs like a dict, and it has to include 'X' key.
+
+        file_type :
+            The type of the given file if test_set is a path string.
+
+        Returns
+        -------
+        result_dict :
+            The dictionary containing the forecasting results as key 'forecasting' and latent variables if necessary.
+
+        """
         raise NotImplementedError
 
-    @abstractmethod
     def forecast(
         self,
         test_set: Union[dict, str],
         file_type: str = "hdf5",
+        **kwargs,
     ) -> np.ndarray:
         """Forecast the future the input with the trained model.
 
@@ -136,8 +153,13 @@ class BaseForecaster(BaseModel):
         array-like, shape [n_samples, n_pred_steps, n_features],
             Forecasting results.
         """
-
-        raise NotImplementedError
+        result_dict = self.predict(
+            test_set,
+            file_type,
+            **kwargs,
+        )
+        results = result_dict["forecasting"]
+        return results
 
 
 class BaseNNForecaster(BaseNNModel):
@@ -208,11 +230,11 @@ class BaseNNForecaster(BaseNNModel):
     def __init__(
         self,
         # n_forecasting_steps: int,
+        training_loss: Union[Criterion, type],
+        validation_metric: Union[Criterion, type],
         batch_size: int,
         epochs: int,
         patience: Optional[int] = None,
-        training_loss: Optional[Criterion] = MSE(),
-        validation_metric: Optional[Criterion] = MSE(),
         num_workers: int = 0,
         device: Optional[Union[str, torch.device, list]] = None,
         enable_amp: bool = False,
@@ -221,11 +243,11 @@ class BaseNNForecaster(BaseNNModel):
         verbose: bool = True,
     ):
         super().__init__(
+            training_loss=training_loss,
+            validation_metric=validation_metric,
             batch_size=batch_size,
             epochs=epochs,
             patience=patience,
-            training_loss=training_loss,
-            validation_metric=validation_metric,
             num_workers=num_workers,
             device=device,
             enable_amp=enable_amp,
@@ -234,11 +256,6 @@ class BaseNNForecaster(BaseNNModel):
             verbose=verbose,
         )
 
-        # fetch the names of training loss and validation metric
-        self.training_loss_name = self.training_loss.__class__.__name__
-        self.validation_metric_name = self.validation_metric.__class__.__name__
-
-    @abstractmethod
     def _assemble_input_for_training(self, data: list) -> dict:
         """Assemble the given data into a dictionary for training input.
 
@@ -252,9 +269,22 @@ class BaseNNForecaster(BaseNNModel):
         dict,
             A python dictionary contains the input data for model training.
         """
-        raise NotImplementedError
+        (
+            indices,
+            X,
+            missing_mask,
+            X_pred,
+            X_pred_missing_mask,
+        ) = self._send_data_to_given_device(data)
 
-    @abstractmethod
+        inputs = {
+            "X": X,
+            "missing_mask": missing_mask,
+            "X_pred": X_pred,
+            "X_pred_missing_mask": X_pred_missing_mask,
+        }
+        return inputs
+
     def _assemble_input_for_validating(self, data: list) -> dict:
         """Assemble the given data into a dictionary for validating input.
 
@@ -268,9 +298,8 @@ class BaseNNForecaster(BaseNNModel):
         dict,
             A python dictionary contains the input data for model validating.
         """
-        raise NotImplementedError
+        return self._assemble_input_for_training(data)
 
-    @abstractmethod
     def _assemble_input_for_testing(self, data: list) -> dict:
         """Assemble the given data into a dictionary for testing input.
 
@@ -292,129 +321,18 @@ class BaseNNForecaster(BaseNNModel):
         dict,
             A python dictionary contains the input data for model testing.
         """
-        raise NotImplementedError
+        (
+            indices,
+            X,
+            missing_mask,
+        ) = self._send_data_to_given_device(data)
 
-    def _train_model(
-        self,
-        training_loader: DataLoader,
-        val_loader: DataLoader = None,
-    ) -> None:
-        # each training starts from the very beginning, so reset the loss and model dict here
-        self.best_loss = float("inf")
-        self.best_model_dict = None
-        try:
-            training_step = 0
-            for epoch in range(1, self.epochs + 1):
-                self.model.train()
-                epoch_train_loss_collector = []
-                for idx, data in enumerate(training_loader):
-                    training_step += 1
-                    inputs = self._assemble_input_for_training(data)
+        inputs = {
+            "X": X,
+            "missing_mask": missing_mask,
+        }
+        return inputs
 
-                    # model forward propagation processing
-                    with autocast(enabled=self.amp_enabled):
-                        self.optimizer.zero_grad()
-                        results = self.model.forward(inputs)
-                        results["loss"].sum().backward()  # sum() before backward() in case of multi-gpu training
-                        self.optimizer.step()
-                    epoch_train_loss_collector.append(results["loss"].sum().item())
-
-                    # save training loss logs into the tensorboard file for every step if in need
-                    if self.summary_writer is not None:
-                        self._save_log_into_tb_file(training_step, "training", results)
-
-                # mean training loss of the current epoch
-                mean_train_loss = np.mean(epoch_train_loss_collector)
-
-                if val_loader is not None:
-                    self.model.eval()
-                    val_loss_collector = []
-                    with torch.no_grad():
-                        for idx, data in enumerate(val_loader):
-                            inputs = self._assemble_input_for_validating(data)
-
-                            # model forward propagation processing
-                            with autocast(enabled=self.amp_enabled):
-                                results = self.model.forward(inputs)
-
-                            val_loss = (
-                                self.validation_metric(
-                                    results["forecasting_data"],
-                                    inputs["X_pred"],
-                                    inputs["X_pred_missing_mask"],
-                                )
-                                .sum()
-                                .detach()
-                                .item()
-                            )
-                            val_loss_collector.append(val_loss)
-
-                    mean_val_loss = np.mean(val_loss_collector)
-
-                    # save validation loss logs into the tensorboard file for every epoch if in need
-                    if self.summary_writer is not None:
-                        val_loss_dict = {
-                            "forecasting_loss": mean_val_loss,
-                        }
-                        self._save_log_into_tb_file(epoch, "validating", val_loss_dict)
-
-                    logger.info(
-                        f"Epoch {epoch:03d} - "
-                        f"training loss ({self.training_loss_name}): {mean_train_loss:.4f}, "
-                        f"validation {self.validation_metric_name}: {mean_val_loss:.4f}"
-                    )
-                    mean_loss = mean_val_loss
-                else:
-                    logger.info(f"Epoch {epoch:03d} - training loss ({self.training_loss_name}): {mean_train_loss:.4f}")
-                    mean_loss = mean_train_loss
-
-                if np.isnan(mean_loss):
-                    logger.warning(f"‼️ Attention: got NaN loss in Epoch {epoch}. This may lead to unexpected errors.")
-
-                if mean_loss < self.best_loss:
-                    self.best_epoch = epoch
-                    self.best_loss = mean_loss
-                    self.best_model_dict = self.model.state_dict()
-                    self.patience = self.original_patience
-                else:
-                    self.patience -= 1
-
-                # save the model if necessary
-                self._auto_save_model_if_necessary(
-                    confirm_saving=self.best_epoch == epoch and self.model_saving_strategy == "better",
-                    saving_name=f"{self.__class__.__name__}_epoch{epoch}_loss{mean_loss:.4f}",
-                )
-
-                if os.getenv("ENABLE_HPO", False):
-                    nni.report_intermediate_result(mean_loss)
-                    if epoch == self.epochs - 1 or self.patience == 0:
-                        nni.report_final_result(self.best_loss)
-
-                if self.patience == 0:
-                    logger.info("Exceeded the training patience. Terminating the training procedure...")
-                    break
-
-        except KeyboardInterrupt:  # if keyboard interrupt, only warning
-            logger.warning("‼️ Training got interrupted by the user. Exist now ...")
-        except Exception as e:  # other kind of exception follows below processing
-            logger.error(f"❌ Exception: {e}")
-            if self.best_model_dict is None:  # if no best model, raise error
-                raise RuntimeError(
-                    "Training got interrupted. Model was not trained. Please investigate the error printed above."
-                )
-            else:
-                RuntimeWarning(
-                    "Training got interrupted. Please investigate the error printed above.\n"
-                    "Model got trained and will load the best checkpoint so far for testing.\n"
-                    "If you don't want it, please try fit() again."
-                )
-
-        if np.isnan(self.best_loss):
-            raise ValueError("Something is wrong. best_loss is Nan after training.")
-
-        logger.info(f"Finished training. The best model is from epoch#{self.best_epoch}.")
-
-    @abstractmethod
     def fit(
         self,
         train_set: Union[dict, str],
@@ -445,14 +363,51 @@ class BaseNNForecaster(BaseNNModel):
             The type of the given file if train_set and val_set are path strings.
 
         """
-        raise NotImplementedError
+        # Step 1: wrap the input data with classes Dataset and DataLoader
+        train_dataset = BaseDataset(
+            train_set,
+            return_X_ori=False,
+            return_X_pred=True,
+            return_y=False,
+            file_type=file_type,
+        )
+        train_dataloader = DataLoader(
+            train_dataset,
+            batch_size=self.batch_size,
+            shuffle=True,
+            num_workers=self.num_workers,
+        )
+        val_dataloader = None
+        if val_set is not None:
+            if not key_in_data_set("X_pred", val_set):
+                raise ValueError("val_set must contain 'X_pred' for model validation.")
+            val_dataset = BaseDataset(
+                val_set,
+                return_X_ori=False,
+                return_X_pred=True,
+                return_y=False,
+                file_type=file_type,
+            )
+            val_dataloader = DataLoader(
+                val_dataset,
+                batch_size=self.batch_size,
+                shuffle=False,
+                num_workers=self.num_workers,
+            )
 
-    @abstractmethod
+        # Step 2: train the model and freeze it
+        self._train_model(train_dataloader, val_dataloader)
+        self.model.load_state_dict(self.best_model_dict)
+
+        # Step 3: save the model if necessary
+        self._auto_save_model_if_necessary(confirm_saving=self.model_saving_strategy == "best")
+
     @torch.no_grad()
     def predict(
         self,
         test_set: Union[dict, str],
         file_type: str = "hdf5",
+        **kwargs,
     ) -> dict:
         """Make predictions for the input data with the trained model.
 
@@ -471,17 +426,46 @@ class BaseNNForecaster(BaseNNModel):
 
         Returns
         -------
-        file_type :
-            The dictionary containing the clustering results and latent variables if necessary.
+        result_dict :
+            The dictionary containing the forecasting results as key 'forecasting' and latent variables if necessary.
 
         """
-        raise NotImplementedError
+        self.model.eval()  # set the model to evaluation mode
 
-    @abstractmethod
+        # Step 1: wrap the input data with classes Dataset and DataLoader
+        test_dataset = BaseDataset(
+            test_set,
+            return_X_ori=False,
+            return_X_pred=False,
+            return_y=False,
+            file_type=file_type,
+        )
+
+        test_dataloader = DataLoader(
+            test_dataset,
+            batch_size=self.batch_size,
+            shuffle=False,
+            num_workers=self.num_workers,
+        )
+
+        # Step 2: process the data with the model
+        dict_result_collector = []
+        for idx, data in enumerate(test_dataloader):
+            inputs = self._assemble_input_for_testing(data)
+            with autocast(enabled=self.amp_enabled):
+                results = self.model(inputs, **kwargs)
+            dict_result_collector.append(results)
+
+        # Step 3: output collection and return
+        result_dict = gather_listed_dicts(dict_result_collector)
+
+        return result_dict
+
     def forecast(
         self,
         test_set: Union[dict, str],
         file_type: str = "hdf5",
+        **kwargs,
     ) -> np.ndarray:
         """Forecast the future the input with the trained model.
 
@@ -499,4 +483,10 @@ class BaseNNForecaster(BaseNNModel):
         array-like, shape [n_samples, n_pred_steps, n_features],
             Forecasting results.
         """
-        raise NotImplementedError
+        result_dict = self.predict(
+            test_set,
+            file_type,
+            **kwargs,
+        )
+        results = result_dict["forecasting"]
+        return results

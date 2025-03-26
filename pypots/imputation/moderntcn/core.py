@@ -6,15 +6,14 @@ and takes over the forward progress of the algorithm.
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-import torch.nn as nn
-
 from ...nn.functional import nonstationary_norm, nonstationary_denorm
-from ...nn.modules.loss import Criterion, MAE
+from ...nn.modules import ModelCore
+from ...nn.modules.loss import Criterion
 from ...nn.modules.moderntcn import BackboneModernTCN
 from ...nn.modules.patchtst.layers import FlattenHead
 
 
-class _ModernTCN(nn.Module):
+class _ModernTCN(ModelCore):
     def __init__(
         self,
         n_steps,
@@ -27,18 +26,25 @@ class _ModernTCN(nn.Module):
         large_size: list,
         small_size: list,
         dims: list,
-        small_kernel_merged: bool = False,
-        backbone_dropout: float = 0.1,
-        head_dropout: float = 0.1,
-        use_multi_scale: bool = True,
-        individual: bool = False,
-        apply_nonstationary_norm: bool = False,
-        training_loss: Criterion = MAE(),
+        small_kernel_merged: bool,
+        backbone_dropout: float,
+        head_dropout: float,
+        use_multi_scale: bool,
+        individual: bool,
+        apply_nonstationary_norm: bool,
+        training_loss: Criterion,
+        validation_metric: Criterion,
     ):
         super().__init__()
 
         self.apply_nonstationary_norm = apply_nonstationary_norm
         self.training_loss = training_loss
+        if validation_metric.__class__.__name__ == "Criterion":
+            # in this case, we need validation_metric.lower_better in _train_model() so only pass Criterion()
+            # we use training_loss as validation_metric for concrete calculation process
+            self.validation_metric = self.training_loss
+        else:
+            self.validation_metric = validation_metric
 
         self.backbone = BackboneModernTCN(
             n_steps,
@@ -68,7 +74,11 @@ class _ModernTCN(nn.Module):
             individual,
         )
 
-    def forward(self, inputs: dict) -> dict:
+    def forward(
+        self,
+        inputs: dict,
+        calc_criterion: bool = False,
+    ) -> dict:
         X, missing_mask = inputs["X"], inputs["missing_mask"]
 
         if self.apply_nonstationary_norm:
@@ -86,12 +96,17 @@ class _ModernTCN(nn.Module):
 
         imputed_data = missing_mask * X + (1 - missing_mask) * reconstruction
         results = {
-            "imputed_data": imputed_data,
+            "imputation": imputed_data,
+            "reconstruction": reconstruction,
         }
 
-        # if in training mode, return results with losses
-        if self.training:
-            loss = self.training_loss(reconstruction, inputs["X_ori"], inputs["indicating_mask"])
-            results["loss"] = loss
+        if calc_criterion:
+            if self.training:  # if in the training mode (the training stage), return loss result from training_loss
+                # `loss` is always the item for backward propagating to update the model
+                loss = self.training_loss(reconstruction, X, missing_mask)
+                results["loss"] = loss
+            else:  # if in the eval mode (the validation stage), return metric result from validation_metric
+                X_ori, indicating_mask = inputs["X_ori"], inputs["indicating_mask"]
+                results["metric"] = self.validation_metric(reconstruction, X_ori, indicating_mask)
 
         return results

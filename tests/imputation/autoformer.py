@@ -41,7 +41,7 @@ class TestAutoformer(unittest.TestCase):
     # initialize an Adam optimizer
     optimizer = Adam(lr=0.001, weight_decay=1e-5)
 
-    # initialize a Autoformer model
+    # initialize an Autoformer model
     autoformer = Autoformer(
         DATA["n_steps"],
         DATA["n_features"],

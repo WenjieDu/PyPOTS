@@ -1,4 +1,4 @@
-pypots.nn package
+pypots.nn
 ======================
 
 pypots.nn.functional

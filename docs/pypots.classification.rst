@@ -1,4 +1,4 @@
-pypots.classification package
+pypots.classification
 =============================
 
 pypots.classification.saits
@@ -10,10 +10,28 @@ pypots.classification.saits
    :show-inheritance:
    :inherited-members:
 
+pypots.classification.tefn
+----------------------------------
+
+.. automodule:: pypots.classification.tefn
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+
 pypots.classification.brits
 ----------------------------------
 
 .. automodule:: pypots.classification.brits
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+
+pypots.classification.itransformer
+----------------------------------
+
+.. automodule:: pypots.classification.itransformer
    :members:
    :undoc-members:
    :show-inheritance:

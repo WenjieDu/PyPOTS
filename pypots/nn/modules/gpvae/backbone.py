@@ -146,8 +146,11 @@ class BackboneGPVAE(nn.Module):
         missing_mask = missing_mask.repeat(n_sampling_times, 1, 1).type(torch.bool)
         decode_x_mean = self.decode(self.encode(X).mean).mean
         imputed_data = decode_x_mean * ~missing_mask + X * missing_mask
+
         imputed_data = imputed_data.reshape(n_sampling_times, n_samples, n_steps, n_features).permute(1, 0, 2, 3)
-        return imputed_data
+        decode_x_mean = decode_x_mean.reshape(n_sampling_times, n_samples, n_steps, n_features).permute(1, 0, 2, 3)
+
+        return imputed_data, decode_x_mean
 
     def forward(self, X, missing_mask):
         X = X.repeat(self.K * self.M, 1, 1)

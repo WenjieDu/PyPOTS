@@ -7,6 +7,7 @@ The implementation of USGAN for the partially-observed time-series imputation ta
 # License: BSD-3-Clause
 
 import os
+from copy import deepcopy
 from typing import Union, Optional
 
 import numpy as np
@@ -14,10 +15,12 @@ import torch
 from torch.utils.data import DataLoader
 
 from .core import _USGAN
-from .data import DatasetForUSGAN
 from ..base import BaseNNImputer
+from ..brits.data import DatasetForBRITS
 from ...data.checking import key_in_data_set
 from ...nn.functional import calc_mse
+from ...nn.functional import gather_listed_dicts
+from ...nn.modules.loss import Criterion
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
 from ...utils.logging import logger
@@ -114,8 +117,8 @@ class USGAN(BaseNNImputer):
         batch_size: int = 32,
         epochs: int = 100,
         patience: Optional[int] = None,
-        G_optimizer: Optimizer = Adam(),
-        D_optimizer: Optimizer = Adam(),
+        G_optimizer: Union[Optimizer, type] = Adam,
+        D_optimizer: Union[Optimizer, type] = Adam,
         num_workers: int = 0,
         device: Optional[Union[str, torch.device, list]] = None,
         saving_path: Optional[str] = None,
@@ -123,11 +126,11 @@ class USGAN(BaseNNImputer):
         verbose: bool = True,
     ):
         super().__init__(
+            training_loss=Criterion,
+            validation_metric=Criterion,
             batch_size=batch_size,
             epochs=epochs,
             patience=patience,
-            training_loss=None,
-            validation_metric=None,
             num_workers=num_workers,
             device=device,
             saving_path=saving_path,
@@ -154,8 +157,17 @@ class USGAN(BaseNNImputer):
         self._print_model_size()
 
         # set up the optimizer
-        self.G_optimizer = G_optimizer
-        self.D_optimizer = D_optimizer
+        if isinstance(G_optimizer, Optimizer):
+            self.G_optimizer = G_optimizer
+        else:
+            self.G_optimizer = G_optimizer()  # instantiate the optimizer if it is a class
+            assert isinstance(self.G_optimizer, Optimizer)
+        if isinstance(D_optimizer, Optimizer):
+            self.D_optimizer = D_optimizer
+        else:
+            self.D_optimizer = D_optimizer()  # instantiate the optimizer if it is a class
+            assert isinstance(self.D_optimizer, Optimizer)
+
         if isinstance(self.device, list):
             self.G_optimizer.init_optimizer(self.model.module.backbone.generator.parameters())
             self.D_optimizer.init_optimizer(self.model.module.backbone.discriminator.parameters())
@@ -230,12 +242,16 @@ class USGAN(BaseNNImputer):
 
     def _train_model(
         self,
-        training_loader: DataLoader,
-        val_loader: DataLoader = None,
+        train_dataloader: DataLoader,
+        val_dataloader: DataLoader = None,
     ) -> None:
         # each training starts from the very beginning, so reset the loss and model dict here
-        self.best_loss = float("inf")
         self.best_model_dict = None
+
+        if self.validation_metric.lower_better:
+            self.best_loss = float("inf")
+        else:
+            self.best_loss = float("-inf")
 
         try:
             training_step = 0
@@ -243,13 +259,13 @@ class USGAN(BaseNNImputer):
                 self.model.train()
                 step_train_loss_G_collector = []
                 step_train_loss_D_collector = []
-                for idx, data in enumerate(training_loader):
+                for idx, data in enumerate(train_dataloader):
                     training_step += 1
                     inputs = self._assemble_input_for_training(data)
 
                     if idx % self.G_steps == 0:
                         self.G_optimizer.zero_grad()
-                        results = self.model.forward(inputs, training_object="generator")
+                        results = self.model(inputs, training_object="generator")
                         loss = results["loss"].sum()
                         loss.backward()  # generation loss
                         self.G_optimizer.step()
@@ -257,7 +273,7 @@ class USGAN(BaseNNImputer):
 
                     if idx % self.D_steps == 0:
                         self.D_optimizer.zero_grad()
-                        results = self.model.forward(inputs, training_object="discriminator")
+                        results = self.model(inputs, training_object="discriminator")
                         loss = results["loss"].sum()
                         loss.backward(retain_graph=True)  # discrimination loss
                         self.D_optimizer.step()
@@ -278,16 +294,16 @@ class USGAN(BaseNNImputer):
                 mean_epoch_train_D_loss = np.mean(step_train_loss_D_collector)
                 mean_epoch_train_G_loss = np.mean(step_train_loss_G_collector)
 
-                if val_loader is not None:
+                if val_dataloader is not None:
                     self.model.eval()
                     imputation_loss_collector = []
                     with torch.no_grad():
-                        for idx, data in enumerate(val_loader):
+                        for idx, data in enumerate(val_dataloader):
                             inputs = self._assemble_input_for_validating(data)
-                            results = self.model.forward(inputs)
+                            results = self.model(inputs)
                             imputation_mse = (
                                 calc_mse(
-                                    results["imputed_data"],
+                                    results["imputation"],
                                     inputs["X_ori"],
                                     inputs["indicating_mask"],
                                 )
@@ -322,10 +338,12 @@ class USGAN(BaseNNImputer):
                 if np.isnan(mean_loss):
                     logger.warning(f"‼️ Attention: got NaN loss in Epoch {epoch}. This may lead to unexpected errors.")
 
-                if mean_loss < self.best_loss:
+                if (self.validation_metric.lower_better and mean_loss < self.best_loss) or (
+                    not self.validation_metric.lower_better and mean_loss > self.best_loss
+                ):
                     self.best_epoch = epoch
                     self.best_loss = mean_loss
-                    self.best_model_dict = self.model.state_dict()
+                    self.best_model_dict = deepcopy(self.model.state_dict())
                     self.patience = self.original_patience
                 else:
                     self.patience -= 1
@@ -333,7 +351,7 @@ class USGAN(BaseNNImputer):
                 # save the model if necessary
                 self._auto_save_model_if_necessary(
                     confirm_saving=self.best_epoch == epoch and self.model_saving_strategy == "better",
-                    saving_name=f"{self.__class__.__name__}_epoch{epoch}_loss{mean_loss:.4f}",
+                    saving_name=f"{self.__class__.__name__}_epoch{epoch}_{self.validation_metric_name}{mean_loss:.4f}",
                 )
 
                 if os.getenv("ENABLE_HPO", False):
@@ -360,8 +378,8 @@ class USGAN(BaseNNImputer):
                     "If you don't want it, please try fit() again."
                 )
 
-        if np.isnan(self.best_loss):
-            raise ValueError("Something is wrong. best_loss is Nan after training.")
+        if np.isnan(self.best_loss) or self.best_loss.__eq__(float("inf")):
+            raise ValueError("Something is wrong. best_loss is Nan/Inf after training.")
 
         logger.info(f"Finished training. The best model is from epoch#{self.best_epoch}.")
 
@@ -372,27 +390,27 @@ class USGAN(BaseNNImputer):
         file_type: str = "hdf5",
     ) -> None:
         # Step 1: wrap the input data with classes Dataset and DataLoader
-        training_set = DatasetForUSGAN(train_set, return_X_ori=False, return_y=False, file_type=file_type)
-        training_loader = DataLoader(
-            training_set,
+        train_dataset = DatasetForBRITS(train_set, return_X_ori=False, return_y=False, file_type=file_type)
+        train_dataloader = DataLoader(
+            train_dataset,
             batch_size=self.batch_size,
             shuffle=True,
             num_workers=self.num_workers,
         )
-        val_loader = None
+        val_dataloader = None
         if val_set is not None:
             if not key_in_data_set("X_ori", val_set):
                 raise ValueError("val_set must contain 'X_ori' for model validation.")
-            val_set = DatasetForUSGAN(val_set, return_X_ori=True, return_y=False, file_type=file_type)
-            val_loader = DataLoader(
-                val_set,
+            val_dataset = DatasetForBRITS(val_set, return_X_ori=True, return_y=False, file_type=file_type)
+            val_dataloader = DataLoader(
+                val_dataset,
                 batch_size=self.batch_size,
                 shuffle=False,
                 num_workers=self.num_workers,
             )
 
         # Step 2: train the model and freeze it
-        self._train_model(training_loader, val_loader)
+        self._train_model(train_dataloader, val_dataloader)
         self.model.load_state_dict(self.best_model_dict)
 
         # Step 3: save the model if necessary
@@ -405,31 +423,22 @@ class USGAN(BaseNNImputer):
         file_type: str = "hdf5",
     ) -> dict:
         self.model.eval()  # set the model to evaluation mode
-        test_set = DatasetForUSGAN(test_set, return_X_ori=False, return_y=False, file_type=file_type)
-        test_loader = DataLoader(
-            test_set,
+        test_dataset = DatasetForBRITS(test_set, return_X_ori=False, return_y=False, file_type=file_type)
+        test_dataloader = DataLoader(
+            test_dataset,
             batch_size=self.batch_size,
             shuffle=False,
             num_workers=self.num_workers,
         )
-        imputation_collector = []
 
-        for idx, data in enumerate(test_loader):
+        # Step 2: process the data with the model
+        dict_result_collector = []
+        for idx, data in enumerate(test_dataloader):
             inputs = self._assemble_input_for_testing(data)
-            results = self.model.forward(inputs)
-            imputed_data = results["imputed_data"]
-            imputation_collector.append(imputed_data)
+            results = self.model(inputs)
+            dict_result_collector.append(results)
 
-        imputation = torch.cat(imputation_collector).cpu().detach().numpy()
-        result_dict = {
-            "imputation": imputation,
-        }
+        # Step 3: output collection and return
+        result_dict = gather_listed_dicts(dict_result_collector)
+
         return result_dict
-
-    def impute(
-        self,
-        test_set: Union[dict, str],
-        file_type: str = "hdf5",
-    ) -> np.ndarray:
-        result_dict = self.predict(test_set, file_type=file_type)
-        return result_dict["imputation"]

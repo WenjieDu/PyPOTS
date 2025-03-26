@@ -7,6 +7,10 @@ Refer to the papers
 KDD 2024.
 <https://doi.org/10.48550/arXiv.2312.01728>`_
 
+Notes
+-----
+This implementation is inspired by the official one https://github.com/tongnie/ImputeFormer
+
 """
 
 # Created by Tong Nie <nietong@tongji.edu.cn> and Wenjie Du <wenjay.du@gmail.com>

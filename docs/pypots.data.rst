@@ -1,4 +1,4 @@
-pypots.data package
+pypots.data
 ===================
 
 pypots.data.dataset

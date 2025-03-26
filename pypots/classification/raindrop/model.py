@@ -14,10 +14,10 @@ import torch
 from torch.utils.data import DataLoader
 
 from .core import _Raindrop
-from .data import DatasetForRaindrop
+from ..grud.data import DatasetForGRUD
 from ...classification.base import BaseNNClassifier
+from ...nn.functional import gather_listed_dicts
 from ...nn.modules.loss import Criterion, CrossEntropy
-from ...nn.modules.metric import PR_AUC
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
 
@@ -132,9 +132,9 @@ class Raindrop(BaseNNClassifier):
         batch_size=32,
         epochs=100,
         patience: Optional[int] = None,
-        training_loss: Criterion = CrossEntropy(),
-        validation_metric: Criterion = PR_AUC(),
-        optimizer: Optimizer = Adam(),
+        training_loss: Union[Criterion, type] = CrossEntropy,
+        validation_metric: Union[Criterion, type] = CrossEntropy,
+        optimizer: Union[Optimizer, type] = Adam,
         num_workers: int = 0,
         device: Optional[Union[str, torch.device, list]] = None,
         saving_path: str = None,
@@ -143,11 +143,11 @@ class Raindrop(BaseNNClassifier):
     ):
         super().__init__(
             n_classes=n_classes,
+            training_loss=training_loss,
+            validation_metric=validation_metric,
             batch_size=batch_size,
             epochs=epochs,
             patience=patience,
-            training_loss=training_loss,
-            validation_metric=validation_metric,
             num_workers=num_workers,
             device=device,
             saving_path=saving_path,
@@ -160,25 +160,30 @@ class Raindrop(BaseNNClassifier):
 
         # set up the model
         self.model = _Raindrop(
-            n_features,
-            n_layers,
-            d_model,
-            n_heads,
-            d_ffn,
-            n_classes,
-            dropout,
-            n_steps,
-            d_static,
-            aggregation,
-            sensor_wise_mask,
-            static,
-            self.training_loss,
+            n_features=n_features,
+            n_layers=n_layers,
+            d_model=d_model,
+            n_heads=n_heads,
+            d_ffn=d_ffn,
+            n_classes=n_classes,
+            dropout=dropout,
+            max_len=n_steps,
+            d_static=d_static,
+            aggregation=aggregation,
+            sensor_wise_mask=sensor_wise_mask,
+            static=static,
+            training_loss=self.training_loss,
+            validation_metric=self.validation_metric,
         )
         self._send_model_to_given_device()
         self._print_model_size()
 
         # set up the optimizer
-        self.optimizer = optimizer
+        if isinstance(optimizer, Optimizer):
+            self.optimizer = optimizer
+        else:
+            self.optimizer = optimizer()  # instantiate the optimizer if it is a class
+            assert isinstance(self.optimizer, Optimizer)
         self.optimizer.init_optimizer(self.model.parameters())
 
     def _assemble_input_for_training(self, data: list) -> dict:
@@ -240,25 +245,25 @@ class Raindrop(BaseNNClassifier):
         file_type: str = "hdf5",
     ) -> None:
         # Step 1: wrap the input data with classes Dataset and DataLoader
-        training_set = DatasetForRaindrop(train_set, file_type=file_type)
-        training_loader = DataLoader(
-            training_set,
+        train_dataset = DatasetForGRUD(train_set, file_type=file_type)
+        train_dataloader = DataLoader(
+            train_dataset,
             batch_size=self.batch_size,
             shuffle=True,
             num_workers=self.num_workers,
         )
-        val_loader = None
+        val_dataloader = None
         if val_set is not None:
-            val_set = DatasetForRaindrop(val_set, file_type=file_type)
-            val_loader = DataLoader(
-                val_set,
+            val_dataset = DatasetForGRUD(val_set, file_type=file_type)
+            val_dataloader = DataLoader(
+                val_dataset,
                 batch_size=self.batch_size,
                 shuffle=False,
                 num_workers=self.num_workers,
             )
 
         # Step 2: train the model and freeze it
-        self._train_model(training_loader, val_loader)
+        self._train_model(train_dataloader, val_dataloader)
         self.model.load_state_dict(self.best_model_dict)
 
         # Step 3: save the model if necessary
@@ -271,36 +276,30 @@ class Raindrop(BaseNNClassifier):
         file_type: str = "hdf5",
     ) -> dict:
         self.model.eval()  # set the model to evaluation mode
-        test_set = DatasetForRaindrop(
+
+        # Step 1: wrap the input data with classes Dataset and DataLoader
+        test_dataset = DatasetForGRUD(
             test_set,
             return_y=False,
             file_type=file_type,
         )
-        test_loader = DataLoader(
-            test_set,
+        test_dataloader = DataLoader(
+            test_dataset,
             batch_size=self.batch_size,
             shuffle=False,
             num_workers=self.num_workers,
         )
 
-        classification_collector = []
-        for idx, data in enumerate(test_loader):
+        # Step 2: process the data with the model
+        dict_result_collector = []
+        for idx, data in enumerate(test_dataloader):
             inputs = self._assemble_input_for_testing(data)
-            results = self.model.forward(inputs)
-            prediction = results["classification_pred"]
-            classification_collector.append(prediction)
+            results = self.model(inputs)
+            dict_result_collector.append(results)
 
-        classification = torch.cat(classification_collector).cpu().detach().numpy()
+        # Step 3: output collection and return
+        result_dict = gather_listed_dicts(dict_result_collector)
+        classification = np.argmax(result_dict["classification_proba"], axis=1)
+        result_dict["classification"] = classification
 
-        result_dict = {
-            "classification": classification,
-        }
         return result_dict
-
-    def classify(
-        self,
-        test_set: Union[dict, str],
-        file_type: str = "hdf5",
-    ) -> np.ndarray:
-        result_dict = self.predict(test_set, file_type=file_type)
-        return result_dict["classification"]

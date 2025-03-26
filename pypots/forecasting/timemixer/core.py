@@ -9,11 +9,12 @@ and takes over the forward progress of the algorithm.
 
 import torch.nn as nn
 
-from ...nn.modules.loss import Criterion, MSE
+from ...nn.modules import ModelCore
+from ...nn.modules.loss import Criterion
 from ...nn.modules.timemixer import BackboneTimeMixer
 
 
-class _TimeMixer(nn.Module):
+class _TimeMixer(ModelCore):
     def __init__(
         self,
         n_steps: int,
@@ -31,14 +32,21 @@ class _TimeMixer(nn.Module):
         moving_avg: int,
         downsampling_layers: int,
         downsampling_window: int,
-        use_norm: bool = False,
-        training_loss: Criterion = MSE(),
+        use_norm: bool,
+        training_loss: Criterion,
+        validation_metric: Criterion,
     ):
         super().__init__()
 
         self.n_pred_steps = n_pred_steps
         self.n_pred_features = n_pred_features
         self.training_loss = training_loss
+        if validation_metric.__class__.__name__ == "Criterion":
+            # in this case, we need validation_metric.lower_better in _train_model() so only pass Criterion()
+            # we use training_loss as validation_metric for concrete calculation process
+            self.validation_metric = self.training_loss
+        else:
+            self.validation_metric = validation_metric
 
         assert term in ["long", "short"], "forecasting term should be either 'long' or 'short'"
         self.model = BackboneTimeMixer(
@@ -65,7 +73,11 @@ class _TimeMixer(nn.Module):
         # for the imputation task, the output dim is the same as input dim
         self.output_projection = nn.Linear(n_features, n_pred_features)
 
-    def forward(self, inputs: dict) -> dict:
+    def forward(
+        self,
+        inputs: dict,
+        calc_criterion: bool = False,
+    ) -> dict:
         X = inputs["X"]
         # missing_mask = inputs["missing_mask"]
 
@@ -82,13 +94,15 @@ class _TimeMixer(nn.Module):
         forecasting_result = forecasting_result[:, -self.n_pred_steps :]
 
         results = {
-            "forecasting_data": forecasting_result,
+            "forecasting": forecasting_result,
         }
 
-        # if in training mode, return results with losses
-        if self.training:
+        if calc_criterion:
             X_pred, X_pred_missing_mask = inputs["X_pred"], inputs["X_pred_missing_mask"]
-            # `loss` is always the item for backward propagating to update the model
-            results["loss"] = self.training_loss(X_pred, forecasting_result, X_pred_missing_mask)
+            if self.training:  # if in the training mode (the training stage), return loss result from training_loss
+                # `loss` is always the item for backward propagating to update the model
+                results["loss"] = self.training_loss(X_pred, forecasting_result, X_pred_missing_mask)
+            else:  # if in the eval mode (the validation stage), return metric result from validation_metric
+                results["metric"] = self.validation_metric(X_pred, forecasting_result, X_pred_missing_mask)
 
         return results

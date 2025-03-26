@@ -5,13 +5,12 @@
 # Created by Linglong Qian, Joseph Arul Raj <linglong.qian@kcl.ac.uk, joseph_arul_raj@kcl.ac.uk>
 # License: BSD-3-Clause
 
-import torch.nn as nn
-
+from ...nn.modules import ModelCore
 from ...nn.modules.csai.backbone import BackboneBCSAI
-from ...nn.modules.loss import Criterion, MAE
+from ...nn.modules.loss import Criterion
 
 
-class _BCSAI(nn.Module):
+class _BCSAI(ModelCore):
     """
     Attributes
     ----------
@@ -73,7 +72,8 @@ class _BCSAI(nn.Module):
         step_channels,
         consistency_weight,
         imputation_weight,
-        training_loss: Criterion = MAE(),
+        training_loss: Criterion,
+        validation_metric: Criterion,
     ):
         super().__init__()
         self.n_steps = n_steps
@@ -83,6 +83,14 @@ class _BCSAI(nn.Module):
         self.consistency_weight = consistency_weight
         self.imputation_weight = imputation_weight
 
+        self.training_loss = training_loss
+        if validation_metric.__class__.__name__ == "Criterion":
+            # in this case, we need validation_metric.lower_better in _train_model() so only pass Criterion()
+            # we use training_loss as validation_metric for concrete calculation process
+            self.validation_metric = self.training_loss
+        else:
+            self.validation_metric = validation_metric
+
         self.model = BackboneBCSAI(
             n_steps,
             n_features,
@@ -91,7 +99,11 @@ class _BCSAI(nn.Module):
             training_loss,
         )
 
-    def forward(self, inputs: dict) -> dict:
+    def forward(
+        self,
+        inputs: dict,
+        calc_criterion: bool = False,
+    ) -> dict:
         (
             imputed_data,
             f_reconstruction,
@@ -103,22 +115,22 @@ class _BCSAI(nn.Module):
         ) = self.model(inputs)
 
         results = {
-            "imputed_data": imputed_data,
+            "imputation": imputed_data,
+            "consistency_loss": consistency_loss,
+            "reconstruction_loss": reconstruction_loss,
+            "reconstruction": (f_reconstruction + b_reconstruction) / 2,
+            "f_reconstruction": f_reconstruction,
+            "b_reconstruction": b_reconstruction,
         }
 
-        # if in training mode, return results with losses
-        if self.training:
-            results["consistency_loss"] = consistency_loss
-            results["reconstruction_loss"] = reconstruction_loss
-            loss = self.consistency_weight * consistency_loss + self.imputation_weight * reconstruction_loss
-
-            # `loss` is always the item for backward propagating to update the model
-            results["loss"] = loss
-            # results["reconstruction"] = (f_reconstruction + b_reconstruction) / 2
-            results["f_reconstruction"] = f_reconstruction
-            results["b_reconstruction"] = b_reconstruction
-        else:
-            results["X_ori"] = inputs["X_ori"]
-            results["indicating_mask"] = inputs["indicating_mask"]
+        if calc_criterion:
+            if self.training:  # if in the training mode (the training stage), return loss result from training_loss
+                # `loss` is always the item for backward propagating to update the model
+                loss = consistency_loss + reconstruction_loss
+                results["loss"] = loss
+            else:  # if in the eval mode (the validation stage), return metric result from validation_metric
+                X_ori, indicating_mask = inputs["X_ori"], inputs["indicating_mask"]
+                reconstruction = (results["f_reconstruction"] + results["b_reconstruction"]) / 2
+                results["metric"] = self.validation_metric(reconstruction, X_ori, indicating_mask)
 
         return results

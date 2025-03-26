@@ -7,16 +7,17 @@
 
 from typing import Optional, Union
 
+import numpy as np
 import torch
 from torch.utils.data import DataLoader
 
 from .core import _BCSAI
-from .data import DatasetForCSAI
 from ..base import BaseNNClassifier
 from ...data.checking import key_in_data_set
 from ...data.saving.h5 import load_dict_from_h5
+from ...imputation.csai.data import DatasetForCSAI
+from ...nn.functional import gather_listed_dicts
 from ...nn.modules.loss import Criterion, CrossEntropy
-from ...nn.modules.metric import PR_AUC
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
 from ...utils.logging import logger
@@ -126,9 +127,9 @@ class CSAI(BaseNNClassifier):
         batch_size: int = 32,
         epochs: int = 100,
         patience: Optional[int] = None,
-        training_loss: Criterion = CrossEntropy(),
-        validation_metric: Criterion = PR_AUC(),
-        optimizer: Optimizer = Adam(),
+        training_loss: Union[Criterion, type] = CrossEntropy,
+        validation_metric: Union[Criterion, type] = CrossEntropy,
+        optimizer: Union[Optimizer, type] = Adam,
         num_workers: int = 0,
         device: Optional[Union[str, torch.device, list]] = None,
         saving_path: str = None,
@@ -137,11 +138,11 @@ class CSAI(BaseNNClassifier):
     ):
         super().__init__(
             n_classes=n_classes,
+            training_loss=training_loss,
+            validation_metric=validation_metric,
             batch_size=batch_size,
             epochs=epochs,
             patience=patience,
-            training_loss=training_loss,
-            validation_metric=validation_metric,
             num_workers=num_workers,
             device=device,
             saving_path=saving_path,
@@ -172,13 +173,18 @@ class CSAI(BaseNNClassifier):
             step_channels=self.step_channels,
             dropout=self.dropout,
             training_loss=self.training_loss,
+            validation_metric=self.validation_metric,
         )
 
         self._send_model_to_given_device()
         self._print_model_size()
 
         # set up the optimizer
-        self.optimizer = optimizer
+        if isinstance(optimizer, Optimizer):
+            self.optimizer = optimizer
+        else:
+            self.optimizer = optimizer()  # instantiate the optimizer if it is a class
+            assert isinstance(self.optimizer, Optimizer)
         self.optimizer.init_optimizer(self.model.parameters())
 
     def _assemble_input_for_training(self, data: list) -> dict:
@@ -258,24 +264,25 @@ class CSAI(BaseNNClassifier):
                 "Hence the whole train set will be loaded into memory."
             )
             train_set = load_dict_from_h5(train_set)
-        training_set = DatasetForCSAI(
+        train_dataset = DatasetForCSAI(
             data=train_set,
             file_type=file_type,
+            return_X_ori=False,
             return_y=True,
             removal_percent=self.removal_percent,
             increase_factor=self.increase_factor,
         )
 
-        self.intervals = training_set.intervals
-        self.replacement_probabilities = training_set.replacement_probabilities
+        self.intervals = train_dataset.intervals
+        self.replacement_probabilities = train_dataset.replacement_probabilities
 
         train_loader = DataLoader(
-            training_set,
+            train_dataset,
             batch_size=self.batch_size,
             shuffle=True,
             num_workers=self.num_workers,
         )
-        val_loader = None
+        val_dataloader = None
         if val_set is not None:
             if isinstance(val_set, str):
                 logger.warning(
@@ -286,23 +293,24 @@ class CSAI(BaseNNClassifier):
 
             if not key_in_data_set("X_ori", val_set):
                 raise ValueError("val_set must contain 'X_ori' for model validation.")
-            val_set = DatasetForCSAI(
+            val_dataset = DatasetForCSAI(
                 data=val_set,
                 file_type=file_type,
+                return_X_ori=False,
                 return_y=True,
                 removal_percent=self.removal_percent,
                 increase_factor=self.increase_factor,
                 replacement_probabilities=self.replacement_probabilities,
             )
-            val_loader = DataLoader(
-                val_set,
+            val_dataloader = DataLoader(
+                val_dataset,
                 batch_size=self.batch_size,
                 shuffle=False,
                 num_workers=self.num_workers,
             )
 
         # train the model
-        self._train_model(train_loader, val_loader)
+        self._train_model(train_loader, val_dataloader)
         self.model.load_state_dict(self.best_model_dict)
 
         self._auto_save_model_if_necessary(confirm_saving=self.model_saving_strategy == "best")
@@ -321,38 +329,34 @@ class CSAI(BaseNNClassifier):
                 "Hence the whole test set will be loaded into memory."
             )
             test_set = load_dict_from_h5(test_set)
-        test_set = DatasetForCSAI(
+
+        # Step 1: wrap the input data with classes Dataset and DataLoader
+        test_dataset = DatasetForCSAI(
             data=test_set,
             file_type=file_type,
+            return_X_ori=False,
             return_y=False,
             removal_percent=self.removal_percent,
             increase_factor=self.increase_factor,
             replacement_probabilities=self.replacement_probabilities,
         )
-        test_loader = DataLoader(
-            test_set,
+        test_dataloader = DataLoader(
+            test_dataset,
             batch_size=self.batch_size,
             shuffle=False,
             num_workers=self.num_workers,
         )
 
-        classification_results = []
-        for idx, data in enumerate(test_loader):
+        # Step 2: process the data with the model
+        dict_result_collector = []
+        for idx, data in enumerate(test_dataloader):
             inputs = self._assemble_input_for_testing(data)
-            results = self.model.forward(inputs)
-            classification_results.append(results["classification_pred"])
+            results = self.model(inputs)
+            dict_result_collector.append(results)
 
-        classification = torch.cat(classification_results).cpu().detach().numpy()
-        result_dict = {
-            "classification": classification,
-        }
+        # Step 3: output collection and return
+        result_dict = gather_listed_dicts(dict_result_collector)
+        classification = np.argmax(result_dict["classification_proba"], axis=1)
+        result_dict["classification"] = classification
+
         return result_dict
-
-    def classify(
-        self,
-        test_set,
-        file_type: str = "hdf5",
-    ):
-
-        result_dict = self.predict(test_set, file_type)
-        return result_dict["classification"]

@@ -6,7 +6,6 @@ The implementation of TS2Vec for the partially-observed time-series classificati
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-import os
 import warnings
 from typing import Optional, Union
 
@@ -14,18 +13,12 @@ import numpy as np
 import torch
 from torch.utils.data import DataLoader
 
-from .data import DatasetForTS2Vec
 from ..base import BaseNNClassifier
-from ...nn.functional.cuda import autocast
+from ...data.dataset.base import BaseDataset
+from ...nn.modules.loss import Criterion
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
-from ...utils.logging import logger
-from ...vec.ts2vec.core import _TS2Vec
-
-try:
-    import nni
-except ImportError:
-    pass
+from ...representation.ts2vec.core import _TS2Vec
 
 SUPPORTED_CLASSIFIERS = ["linear_regression", "svm", "knn"]
 
@@ -112,7 +105,7 @@ class TS2Vec(BaseNNClassifier):
         batch_size: int = 32,
         epochs: int = 100,
         patience: Optional[int] = None,
-        optimizer: Optimizer = Adam(),
+        optimizer: Union[Optimizer, type] = Adam,
         num_workers: int = 0,
         device: Optional[Union[str, torch.device, list]] = None,
         saving_path: str = None,
@@ -121,6 +114,8 @@ class TS2Vec(BaseNNClassifier):
     ):
         super().__init__(
             n_classes=n_classes,
+            training_loss=Criterion,
+            validation_metric=Criterion,
             batch_size=batch_size,
             epochs=epochs,
             patience=patience,
@@ -137,26 +132,32 @@ class TS2Vec(BaseNNClassifier):
         self.d_hidden = d_hidden
         self.n_layers = n_layers
         self.mask_mode = mask_mode
-        self.training_set_loader = None
 
         # set up the model
         self.model = _TS2Vec(
-            self.n_steps,
-            self.n_features,
-            self.n_output_dims,
-            self.d_hidden,
-            self.n_layers,
-            self.mask_mode,
+            n_steps=self.n_steps,
+            n_features=self.n_features,
+            n_pred_features=self.n_output_dims,
+            d_hidden=self.d_hidden,
+            n_layers=self.n_layers,
+            mask_mode=self.mask_mode,
         )
         self._send_model_to_given_device()
         self._print_model_size()
 
         # set up the optimizer
-        self.optimizer = optimizer
+        if isinstance(optimizer, Optimizer):
+            self.optimizer = optimizer
+        else:
+            self.optimizer = optimizer()  # instantiate the optimizer if it is a class
+            assert isinstance(self.optimizer, Optimizer)
         self.optimizer.init_optimizer(self.model.parameters())
 
         self.training_loss_name = "default"
         self.validation_metric_name = "default loss"
+
+        self.train_reprs = None
+        self.train_labels = None
 
     def _assemble_input_for_training(self, data: list) -> dict:
         # fetch data
@@ -195,147 +196,86 @@ class TS2Vec(BaseNNClassifier):
         }
         return inputs
 
-    def _train_model(
-        self,
-        training_loader: DataLoader,
-        val_loader: DataLoader = None,
-    ) -> None:
-        """
-
-        Parameters
-        ----------
-        training_loader
-        val_loader
-
-        Notes
-        -----
-        The training procedures of NN clustering models are very different from each other. For example, VaDER needs
-        pretraining while CRLI doesn't, VaDER only needs one optimizer while CRLI needs two for its generator and
-        discriminator separately. So far, I'd suggest to implement function _train_model() for each model individually.
-
-        """
-        # each training starts from the very beginning, so reset the loss and model dict here
-        self.best_loss = float("inf")
-        self.best_model_dict = None
-
-        try:
-            training_step = 0
-            for epoch in range(1, self.epochs + 1):
-                self.model.train()
-                epoch_train_loss_collector = []
-                for idx, data in enumerate(training_loader):
-                    training_step += 1
-                    inputs = self._assemble_input_for_training(data)
-
-                    # model forward propagation processing
-                    with autocast(enabled=self.amp_enabled):
-                        self.optimizer.zero_grad()
-                        results = self.model.forward(inputs)
-                        results["loss"].sum().backward()  # sum() before backward() in case of multi-gpu training
-                        self.optimizer.step()
-                    epoch_train_loss_collector.append(results["loss"].sum().item())
-
-                    # save training loss logs into the tensorboard file for every step if in need
-                    if self.summary_writer is not None:
-                        self._save_log_into_tb_file(training_step, "training", results)
-
-                # mean training loss of the current epoch
-                mean_train_loss = np.mean(epoch_train_loss_collector)
-
-                if val_loader is not None:
-                    self.model.eval()
-                    epoch_val_loss_collector = []
-                    with torch.no_grad():
-                        for idx, data in enumerate(val_loader):
-                            inputs = self._assemble_input_for_validating(data)
-
-                            # model forward propagation processing
-                            with autocast(enabled=self.amp_enabled):
-                                results = self.model.forward(inputs)
-                            epoch_val_loss_collector.append(results["loss"].sum().item())
-
-                    mean_val_loss = np.mean(epoch_val_loss_collector)
-                    logger.info(
-                        f"Epoch {epoch:03d} - "
-                        f"training loss ({self.training_loss_name}): {mean_train_loss:.4f}, "
-                        f"validation {self.validation_metric_name}: {mean_val_loss:.4f}"
-                    )
-                    mean_loss = mean_val_loss
-                else:
-                    logger.info(f"Epoch {epoch:03d} - training loss ({self.training_loss_name}): {mean_train_loss:.4f}")
-                    mean_loss = mean_train_loss
-
-                if np.isnan(mean_loss):
-                    logger.warning(f"‼️ Attention: got NaN loss in Epoch {epoch}. This may lead to unexpected errors.")
-
-                if mean_loss < self.best_loss:
-                    self.best_epoch = epoch
-                    self.best_loss = mean_loss
-                    self.best_model_dict = self.model.state_dict()
-                    self.patience = self.original_patience
-                else:
-                    self.patience -= 1
-
-                if os.getenv("ENABLE_HPO", False):
-                    nni.report_intermediate_result(mean_loss)
-                    if epoch == self.epochs - 1 or self.patience == 0:
-                        nni.report_final_result(self.best_loss)
-
-                if self.patience == 0:
-                    logger.info("Exceeded the training patience. Terminating the training procedure...")
-                    break
-
-        except KeyboardInterrupt:  # if keyboard interrupt, only warning
-            logger.warning("‼️ Training got interrupted by the user. Exist now ...")
-        except Exception as e:  # other kind of exception follows below processing
-            logger.error(f"❌ Exception: {e}")
-            if self.best_model_dict is None:  # if no best model, raise error
-                raise RuntimeError(
-                    "Training got interrupted. Model was not trained. Please investigate the error printed above."
-                )
-            else:
-                RuntimeWarning(
-                    "Training got interrupted. Please investigate the error printed above.\n"
-                    "Model got trained and will load the best checkpoint so far for testing.\n"
-                    "If you don't want it, please try fit() again."
-                )
-
-        if np.isnan(self.best_loss):
-            raise ValueError("Something is wrong. best_loss is Nan after training.")
-
-        logger.info(f"Finished training. The best model is from epoch#{self.best_epoch}.")
-
     def fit(
         self,
         train_set: Union[dict, str],
         val_set: Optional[Union[dict, str]] = None,
         file_type: str = "hdf5",
     ) -> None:
+        """Train the classifier on the given data.
+
+        Parameters
+        ----------
+        train_set :
+            The dataset for model training, should be a dictionary including keys as 'X' and 'y',
+            or a path string locating a data file.
+            If it is a dict, X should be array-like with shape [n_samples, n_steps, n_features],
+            which is time-series data for training, can contain missing values, and y should be array-like of shape
+            [n_samples], which is classification labels of X.
+            If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
+            key-value pairs like a dict, and it has to include keys as 'X' and 'y'.
+
+        val_set :
+            The dataset for model validating, should be a dictionary including keys as 'X' and 'y',
+            or a path string locating a data file.
+            If it is a dict, X should be array-like with shape [n_samples, n_steps, n_features],
+            which is time-series data for validating, can contain missing values, and y should be array-like of shape
+            [n_samples], which is classification labels of X.
+            If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
+            key-value pairs like a dict, and it has to include keys as 'X' and 'y'.
+
+        file_type :
+            The type of the given file if train_set and val_set are path strings.
+
+        """
         # Step 1: wrap the input data with classes Dataset and DataLoader
-        training_set = DatasetForTS2Vec(train_set, file_type=file_type)
-        training_loader = DataLoader(
-            training_set,
+        train_dataset = BaseDataset(
+            train_set,
+            return_X_ori=False,
+            return_X_pred=False,
+            return_y=True,
+            file_type=file_type,
+        )
+        train_dataloader = DataLoader(
+            train_dataset,
             batch_size=self.batch_size,
             shuffle=True,
             num_workers=self.num_workers,
         )
-        self.training_set_loader = training_loader
-        val_loader = None
+        val_dataloader = None
         if val_set is not None:
-            val_set = DatasetForTS2Vec(val_set, file_type=file_type)
-            val_loader = DataLoader(
+            val_dataset = BaseDataset(
                 val_set,
+                return_X_ori=False,
+                return_X_pred=False,
+                return_y=True,
+                file_type=file_type,
+            )
+            val_dataloader = DataLoader(
+                val_dataset,
                 batch_size=self.batch_size,
                 shuffle=False,
                 num_workers=self.num_workers,
             )
 
         # Step 2: train the model and freeze it
-        self._train_model(training_loader, val_loader)
+        self._train_model(train_dataloader, val_dataloader)
         self.model.load_state_dict(self.best_model_dict)
 
         # Step 3: save the model if necessary
         self._auto_save_model_if_necessary(confirm_saving=self.model_saving_strategy == "best")
+
+        train_repr_collector = []
+        train_label_collector = []
+
+        for idx, data in enumerate(train_dataloader):
+            inputs = self._assemble_input_for_training(data)
+            train_repr = self.model(inputs, encoding_window="full_series")["representation"]
+            train_repr_collector.append(train_repr)
+            train_label_collector.append(inputs["y"])
+
+        self.train_reprs = torch.cat(train_repr_collector, dim=0).cpu().numpy()
+        self.train_labels = torch.cat(train_label_collector, dim=0).cpu().numpy()
 
     @torch.no_grad()
     def predict(
@@ -365,8 +305,9 @@ class TS2Vec(BaseNNClassifier):
 
         Returns
         -------
-        file_type :
-            The dictionary containing the clustering results and latent variables if necessary.
+        result_dict :
+            The dictionary containing the classification results as key 'classification' and
+            latent variables if necessary.
 
         """
         assert (
@@ -375,31 +316,22 @@ class TS2Vec(BaseNNClassifier):
 
         self.model.eval()  # set the model to evaluation mode
 
-        train_repr_collector = []
-        train_label_collector = []
-        for idx, data in enumerate(self.training_set_loader):
-            inputs = self._assemble_input_for_training(data)
-            train_repr = self.model(inputs, encoding_window="full_series")["representation"]
-            train_repr_collector.append(train_repr)
-            train_label_collector.append(inputs["y"])
-
-        train_repr_collector = torch.cat(train_repr_collector, dim=0).cpu().numpy()
-        train_label_collector = torch.cat(train_label_collector, dim=0).cpu().numpy()
-
-        test_set = DatasetForTS2Vec(
+        test_dataset = BaseDataset(
             test_set,
+            return_X_ori=False,
+            return_X_pred=False,
             return_y=False,
             file_type=file_type,
         )
-        test_loader = DataLoader(
-            test_set,
+        test_dataloader = DataLoader(
+            test_dataset,
             batch_size=self.batch_size,
             shuffle=False,
             num_workers=self.num_workers,
         )
 
         test_repr_collector = []
-        for idx, data in enumerate(test_loader):
+        for idx, data in enumerate(test_dataloader):
             inputs = self._assemble_input_for_testing(data)
             test_repr = self.model(inputs, encoding_window="full_series")["representation"]
             test_repr_collector.append(test_repr)
@@ -418,7 +350,7 @@ class TS2Vec(BaseNNClassifier):
         with warnings.catch_warnings():
             warnings.filterwarnings("ignore")  # just ignore warnings, most of them from sklearn
 
-            clf = fit_clf(train_repr_collector, train_label_collector)
+            clf = fit_clf(self.train_reprs, self.train_labels)
             if classifier_type == "svm":
                 y_score = clf.decision_function(test_repr_collector)
             else:
@@ -427,9 +359,39 @@ class TS2Vec(BaseNNClassifier):
 
         result_dict = {
             "classification": y_pred,
-            "score": y_score,
+            "classification_proba": y_score,
         }
         return result_dict
+
+    def predict_proba(
+        self,
+        test_set: Union[dict, str],
+        file_type: str = "hdf5",
+        classifier_type: str = "svm",
+    ) -> np.ndarray:
+        """Predict the classification probabilities of the input data with the trained model.
+
+        Parameters
+        ----------
+        test_set :
+            The data samples for testing, should be array-like with shape [n_samples, n_steps, n_features], or a path
+            string locating a data file, e.g. h5 file.
+
+        file_type :
+            The type of the given file if X is a path string.
+
+        classifier_type :
+            The type of classifier to use for the classification task.
+            It has to be one of ['linear_regression', 'svm', 'knn'].
+
+        Returns
+        -------
+        results :
+            Classification probabilities of the given samples.
+        """
+
+        result_dict = self.predict(test_set, file_type=file_type, classifier_type=classifier_type)
+        return result_dict["classification_proba"]
 
     def classify(
         self,
@@ -458,9 +420,9 @@ class TS2Vec(BaseNNClassifier):
 
         Returns
         -------
-        file_type :
-            The dictionary containing the clustering results and latent variables if necessary.
+        results :
+            Classification results of the given samples.
 
         """
-        result_dict = self.predict(test_set, file_type=file_type)
-        return result_dict["classification"]
+        results = super().classify(test_set, file_type, classifier_type=classifier_type)
+        return results

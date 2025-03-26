@@ -188,7 +188,8 @@ class BackboneCSAI(nn.Module):
             h = self.gru(input_t, h)
             Hiddens.append(h.unsqueeze(dim=1))
             reconstruction.append(x_comb_t.unsqueeze(dim=1))
-        Hiddens = torch.cat(Hiddens, dim=1)
+
+        reconstruction = torch.cat(reconstruction, dim=1)
 
         return x_imp, reconstruction, h, x_loss
 
