@@ -23,7 +23,10 @@ EPOCHS = 2
 N_STEPS = 6
 N_PRED_STEPS = 2
 N_FEATURES = 5
-ANOMALY_RATE = 0.01
+N_CLASSES = 2
+N_SAMPLES_PER_CLASS = 100
+ANOMALY_RATE = 0.1
+MISSING_RATE = 0.1
 # tensorboard and model files saving directory
 RESULT_SAVING_DIR = "testing_results"
 MODEL_SAVING_DIR = f"{RESULT_SAVING_DIR}/models"
@@ -53,10 +56,10 @@ set_random_seed(RANDOM_SEED)
 DATA = preprocess_random_walk(
     n_steps=N_STEPS + N_PRED_STEPS,  # the total sequence length
     n_features=N_FEATURES,
-    n_classes=2,
-    n_samples_each_class=100,
+    n_classes=N_CLASSES,
+    n_samples_each_class=N_SAMPLES_PER_CLASS,
     anomaly_rate=ANOMALY_RATE,
-    missing_rate=0.1,
+    missing_rate=MISSING_RATE,
 )
 # from benchpots.datasets import preprocess_physionet2012
 # DATA = preprocess_physionet2012(subset="set-a", rate=0.1)
