@@ -31,7 +31,7 @@ from ...optim.base import Optimizer
 class YourNewModel(BaseNNForecaster):
     def __init__(
         self,
-        # TODO: add your model's hyper-parameters here
+        # TODO: add your model's hyperparameters here
         batch_size: int = 32,
         epochs: int = 100,
         patience: Optional[int] = None,
@@ -56,8 +56,8 @@ class YourNewModel(BaseNNForecaster):
             model_saving_strategy=model_saving_strategy,
             verbose=verbose,
         )
-        # set up the hyper-parameters
-        # TODO: set up your model's hyper-parameters here
+        # set up the hyperparameters
+        # TODO: set up your model's hyperparameters here
 
         # set up the model
         self.model = _YourNewModel(

@@ -32,7 +32,7 @@ from ...optim.base import Optimizer
 class YourNewModel(BaseNNClassifier):
     def __init__(
         self,
-        # TODO: add your model's hyper-parameters here
+        # TODO: add your model's hyperparameters here
         n_classes: int,
         batch_size: int = 32,
         epochs: int = 100,
@@ -59,8 +59,8 @@ class YourNewModel(BaseNNClassifier):
             model_saving_strategy=model_saving_strategy,
             verbose=verbose,
         )
-        # set up the hyper-parameters
-        # TODO: set up your model's hyper-parameters here
+        # set up the hyperparameters
+        # TODO: set up your model's hyperparameters here
 
         # set up the model
         self.model = _YourNewModel(

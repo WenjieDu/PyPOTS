@@ -11,8 +11,11 @@ from typing import Optional, Union
 
 import numpy as np
 import torch
+from torch.utils.data import DataLoader
 
 from ..base import BaseModel, BaseNNModel
+from ..data.dataset.base import BaseDataset
+from ..nn.functional import autocast, gather_listed_dicts
 from ..nn.modules.loss import Criterion
 
 
@@ -106,14 +109,68 @@ class BaseClassifier(BaseModel):
         self,
         test_set: Union[dict, str],
         file_type: str = "hdf5",
+        **kwargs,
     ) -> dict:
+        """Make predictions for the input data with the trained model.
+
+        Parameters
+        ----------
+        test_set :
+            The test dataset for model to process, should be a dictionary including keys as 'X',
+            or a path string locating a data file supported by PyPOTS (e.g. h5 file).
+            If it is a dict, X should be array-like with shape [n_samples, n_steps, n_features],
+            which is the time-series data for processing.
+            If it is a path string, the path should point to a data file, e.g. a h5 file, which contains
+            key-value pairs like a dict, and it has to include 'X' key.
+
+        file_type :
+            The type of the given file if test_set is a path string.
+
+        Returns
+        -------
+        result_dict :
+            The dictionary containing the classification results as key 'classification' and
+            latent variables if necessary.
+
+        """
         raise NotImplementedError
 
-    @abstractmethod
+    def predict_proba(
+        self,
+        test_set: Union[dict, str],
+        file_type: str = "hdf5",
+        **kwargs,
+    ) -> np.ndarray:
+        """Predict the classification probabilities of the input data with the trained model.
+
+        Parameters
+        ----------
+        test_set :
+            The data samples for testing, should be array-like with shape [n_samples, n_steps, n_features], or a path
+            string locating a data file, e.g. h5 file.
+
+        file_type :
+            The type of the given file if X is a path string.
+
+        Returns
+        -------
+        array-like, shape [n_samples],
+            Classification probabilities of the given samples.
+        """
+
+        result_dict = self.predict(
+            test_set,
+            file_type,
+            **kwargs,
+        )
+        results = result_dict["classification_proba"]
+        return results
+
     def classify(
         self,
         test_set: Union[dict, str],
         file_type: str = "hdf5",
+        **kwargs,
     ) -> np.ndarray:
         """Classify the input data with the trained model.
 
@@ -128,11 +185,18 @@ class BaseClassifier(BaseModel):
 
         Returns
         -------
-        array-like, shape [n_samples],
+        results :
             Classification results of the given samples.
+
         """
 
-        raise NotImplementedError
+        result_dict = self.predict(
+            test_set,
+            file_type,
+            **kwargs,
+        )
+        results = result_dict["classification"]
+        return results
 
 
 class BaseNNClassifier(BaseNNModel):
@@ -233,7 +297,43 @@ class BaseNNClassifier(BaseNNModel):
         )
         self.n_classes = n_classes
 
-    @abstractmethod
+    def _assemble_input_for_training(self, data: list) -> dict:
+        # fetch data
+        (
+            indices,
+            X,
+            missing_mask,
+            y,
+        ) = self._send_data_to_given_device(data)
+
+        # assemble input data
+        inputs = {
+            "indices": indices,
+            "X": X,
+            "missing_mask": missing_mask,
+            "y": y,
+        }
+        return inputs
+
+    def _assemble_input_for_validating(self, data: list) -> dict:
+        return self._assemble_input_for_training(data)
+
+    def _assemble_input_for_testing(self, data: list) -> dict:
+        # fetch data
+        (
+            indices,
+            X,
+            missing_mask,
+        ) = self._send_data_to_given_device(data)
+
+        # assemble input data
+        inputs = {
+            "indices": indices,
+            "X": X,
+            "missing_mask": missing_mask,
+        }
+        return inputs
+
     def fit(
         self,
         train_set: Union[dict, str],
@@ -266,14 +366,49 @@ class BaseNNClassifier(BaseNNModel):
             The type of the given file if train_set and val_set are path strings.
 
         """
-        raise NotImplementedError
+        # Step 1: wrap the input data with classes Dataset and DataLoader
+        train_dataset = BaseDataset(
+            train_set,
+            return_X_ori=False,
+            return_X_pred=False,
+            return_y=True,
+            file_type=file_type,
+        )
+        train_dataloader = DataLoader(
+            train_dataset,
+            batch_size=self.batch_size,
+            shuffle=True,
+            num_workers=self.num_workers,
+        )
+        val_dataloader = None
+        if val_set is not None:
+            val_dataset = BaseDataset(
+                val_set,
+                return_X_ori=False,
+                return_X_pred=False,
+                return_y=True,
+                file_type=file_type,
+            )
+            val_dataloader = DataLoader(
+                val_dataset,
+                batch_size=self.batch_size,
+                shuffle=False,
+                num_workers=self.num_workers,
+            )
 
-    @abstractmethod
+        # Step 2: train the model and freeze it
+        self._train_model(train_dataloader, val_dataloader)
+        self.model.load_state_dict(self.best_model_dict)
+
+        # Step 3: save the model if necessary
+        self._auto_save_model_if_necessary(confirm_saving=self.model_saving_strategy == "best")
+
     @torch.no_grad()
     def predict(
         self,
         test_set: Union[dict, str],
         file_type: str = "hdf5",
+        **kwargs,
     ) -> dict:
         """Make predictions for the input data with the trained model.
 
@@ -292,17 +427,49 @@ class BaseNNClassifier(BaseNNModel):
 
         Returns
         -------
-        file_type :
-            The dictionary containing the clustering results and latent variables if necessary.
+        result_dict :
+            The dictionary containing the classification results as key 'classification' and
+            latent variables if necessary.
 
         """
-        raise NotImplementedError
 
-    @abstractmethod
+        self.model.eval()  # set the model to evaluation mode
+
+        # Step 1: wrap the input data with classes Dataset and DataLoader
+        test_dataset = BaseDataset(
+            test_set,
+            return_X_ori=False,
+            return_X_pred=False,
+            return_y=False,
+            file_type=file_type,
+        )
+        test_dataloader = DataLoader(
+            test_dataset,
+            batch_size=self.batch_size,
+            shuffle=False,
+            num_workers=self.num_workers,
+        )
+
+        # Step 2: process the data with the model
+        dict_result_collector = []
+        for idx, data in enumerate(test_dataloader):
+            inputs = self._assemble_input_for_testing(data)
+            with autocast(enabled=self.amp_enabled):
+                results = self.model(inputs, **kwargs)
+            dict_result_collector.append(results)
+
+        # Step 3: output collection and return
+        result_dict = gather_listed_dicts(dict_result_collector)
+        classification = np.argmax(result_dict["classification_proba"], axis=1)
+        result_dict["classification"] = classification
+
+        return result_dict
+
     def predict_proba(
         self,
         test_set: Union[dict, str],
         file_type: str = "hdf5",
+        **kwargs,
     ) -> np.ndarray:
         """Predict the classification probabilities of the input data with the trained model.
 
@@ -317,17 +484,23 @@ class BaseNNClassifier(BaseNNModel):
 
         Returns
         -------
-        array-like, shape [n_samples],
+        results :
             Classification probabilities of the given samples.
         """
 
-        raise NotImplementedError
+        result_dict = self.predict(
+            test_set,
+            file_type,
+            **kwargs,
+        )
+        results = result_dict["classification_proba"]
+        return results
 
-    @abstractmethod
     def classify(
         self,
         test_set: Union[dict, str],
         file_type: str = "hdf5",
+        **kwargs,
     ) -> np.ndarray:
         """Classify the input data with the trained model.
 
@@ -342,8 +515,15 @@ class BaseNNClassifier(BaseNNModel):
 
         Returns
         -------
-        array-like, shape [n_samples],
+        results :
             Classification results of the given samples.
+
         """
 
-        raise NotImplementedError
+        result_dict = self.predict(
+            test_set,
+            file_type,
+            **kwargs,
+        )
+        results = result_dict["classification"]
+        return results

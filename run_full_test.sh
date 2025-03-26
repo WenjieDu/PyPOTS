@@ -10,7 +10,7 @@ done
 # clean up and clone the full test branch of PyPOTS
 rm -rf full_test_pypots
 git clone https://github.com/WenjieDu/PyPOTS full_test_pypots -b full_test --depth 1
-cd full_test_pypots
+cd full_test_pypots || exit
 
 # run full testing
 python tests/global_test_config.py
@@ -30,5 +30,3 @@ if [[ "$push_flag" == true ]]; then
   fi
 
 fi
-
-cd ..

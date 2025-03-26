@@ -31,7 +31,11 @@ class _MRNN(ModelCore):
         else:
             self.validation_metric = validation_metric
 
-    def forward(self, inputs: dict) -> dict:
+    def forward(
+        self,
+        inputs: dict,
+        calc_criterion: bool = False,
+    ) -> dict:
         X = inputs["forward"]["X"]
         M = inputs["forward"]["missing_mask"]
 
@@ -39,30 +43,22 @@ class _MRNN(ModelCore):
 
         imputed_data = M * X + (1 - M) * FCN_estimation
         results = {
-            "imputed_data": imputed_data,
+            "imputation": imputed_data,
             "RNN_estimation": RNN_estimation,
             "RNN_imputed_data": RNN_imputed_data,
             "FCN_estimation": FCN_estimation,
+            "reconstruction": FCN_estimation,
         }
 
-        return results
-
-    def calc_criterion(self, inputs: dict) -> dict:
-        results = self.forward(inputs)
-        X = inputs["forward"]["X"]
-        M = inputs["forward"]["missing_mask"]
-        RNN_estimation = results["RNN_estimation"]
-        FCN_estimation = results["FCN_estimation"]
-        RNN_imputed_data = results["RNN_imputed_data"]
-
-        if self.training:  # if in the training mode (the training stage), return loss result from training_loss
-            # `loss` is always the item for backward propagating to update the model
-            RNN_loss = self.training_loss(RNN_estimation, X, M)
-            FCN_loss = self.training_loss(FCN_estimation, RNN_imputed_data)
-            reconstruction_loss = RNN_loss + FCN_loss
-            results["loss"] = reconstruction_loss
-        else:  # if in the eval mode (the validation stage), return metric result from validation_metric
-            X_ori, indicating_mask = inputs["X_ori"], inputs["indicating_mask"]
-            results["metric"] = self.validation_metric(FCN_estimation, X_ori, indicating_mask)
+        if calc_criterion:
+            if self.training:  # if in the training mode (the training stage), return loss result from training_loss
+                # `loss` is always the item for backward propagating to update the model
+                RNN_loss = self.training_loss(RNN_estimation, X, M)
+                FCN_loss = self.training_loss(FCN_estimation, RNN_imputed_data)
+                reconstruction_loss = RNN_loss + FCN_loss
+                results["loss"] = reconstruction_loss
+            else:  # if in the eval mode (the validation stage), return metric result from validation_metric
+                X_ori, indicating_mask = inputs["X_ori"], inputs["indicating_mask"]
+                results["metric"] = self.validation_metric(FCN_estimation, X_ori, indicating_mask)
 
         return results

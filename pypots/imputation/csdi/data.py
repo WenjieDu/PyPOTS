@@ -11,7 +11,7 @@ import numpy as np
 import torch
 from pygrinder import fill_and_get_mask_torch
 
-from ...data.dataset import BaseDataset
+from ...data.dataset.base import BaseDataset
 
 
 class DatasetForCSDI(BaseDataset):

@@ -65,6 +65,7 @@ class _SAITS(ModelCore):
     def forward(
         self,
         inputs: dict,
+        calc_criterion: bool = False,
         diagonal_attention_mask: bool = True,
     ) -> dict:
         X, missing_mask = inputs["X"], inputs["missing_mask"]
@@ -98,24 +99,18 @@ class _SAITS(ModelCore):
             "first_DMSA_attn_weights": first_DMSA_attn_weights,
             "second_DMSA_attn_weights": second_DMSA_attn_weights,
             "combining_weights": combining_weights,
-            "imputed_data": imputed_data,
+            "imputation": imputed_data,
             "classification_proba": classification_proba,
             "logits": logits,
         }
 
-        return results
-
-    def calc_criterion(self, inputs: dict) -> dict:
-        results = self.forward(inputs)
-
-        logits = results["logits"]
-
-        if self.training:  # if in the training mode (the training stage), return loss result from training_loss
-            loss = self.training_loss(logits, inputs["y"])
-            # `loss` is always the item for backward propagating to update the model
-            results["loss"] = loss
-        else:  # if in the eval mode (the validation stage), return metric result from validation_metric
-            metric = self.validation_metric(logits, inputs["y"])
-            results["metric"] = metric
+        if calc_criterion:
+            if self.training:  # if in the training mode (the training stage), return loss result from training_loss
+                loss = self.training_loss(logits, inputs["y"])
+                # `loss` is always the item for backward propagating to update the model
+                results["loss"] = loss
+            else:  # if in the eval mode (the validation stage), return metric result from validation_metric
+                metric = self.validation_metric(logits, inputs["y"])
+                results["metric"] = metric
 
         return results

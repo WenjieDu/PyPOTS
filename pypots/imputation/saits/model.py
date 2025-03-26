@@ -16,7 +16,6 @@ from .core import _SAITS
 from .data import DatasetForSAITS
 from ..base import BaseNNImputer
 from ...data.checking import key_in_data_set
-from ...data.dataset import BaseDataset
 from ...nn.modules.loss import Criterion, MAE, MSE
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
@@ -174,7 +173,7 @@ class SAITS(BaseNNImputer):
 
         self.n_steps = n_steps
         self.n_features = n_features
-        # model hype-parameters
+        # model hyperparameters
         self.n_layers = n_layers
         self.d_model = d_model
         self.d_ffn = d_ffn
@@ -253,27 +252,27 @@ class SAITS(BaseNNImputer):
         file_type: str = "hdf5",
     ) -> None:
         # Step 1: wrap the input data with classes Dataset and DataLoader
-        training_set = DatasetForSAITS(train_set, return_X_ori=False, return_y=False, file_type=file_type)
-        training_loader = DataLoader(
-            training_set,
+        train_dataset = DatasetForSAITS(train_set, return_X_ori=False, return_y=False, file_type=file_type)
+        train_dataloader = DataLoader(
+            train_dataset,
             batch_size=self.batch_size,
             shuffle=True,
             num_workers=self.num_workers,
         )
-        val_loader = None
+        val_dataloader = None
         if val_set is not None:
             if not key_in_data_set("X_ori", val_set):
                 raise ValueError("val_set must contain 'X_ori' for model validation.")
-            val_set = DatasetForSAITS(val_set, return_X_ori=True, return_y=False, file_type=file_type)
-            val_loader = DataLoader(
-                val_set,
+            val_dataset = DatasetForSAITS(val_set, return_X_ori=True, return_y=False, file_type=file_type)
+            val_dataloader = DataLoader(
+                val_dataset,
                 batch_size=self.batch_size,
                 shuffle=False,
                 num_workers=self.num_workers,
             )
 
         # Step 2: train the model and freeze it
-        self._train_model(training_loader, val_loader)
+        self._train_model(train_dataloader, val_dataloader)
         self.model.load_state_dict(self.best_model_dict)
 
         # Step 3: save the model if necessary
@@ -285,7 +284,6 @@ class SAITS(BaseNNImputer):
         test_set: Union[dict, str],
         file_type: str = "hdf5",
         diagonal_attention_mask: bool = True,
-        return_latent_vars: bool = False,
     ) -> dict:
         """Make predictions for the input data with the trained model.
 
@@ -306,67 +304,49 @@ class SAITS(BaseNNImputer):
         diagonal_attention_mask :
             Whether to apply a diagonal attention mask to the self-attention mechanism in the testing stage.
 
-        return_latent_vars :
-            Whether to return the latent variables in SAITS, e.g. attention weights of two DMSA blocks and
-            the weight matrix from the combination block, etc.
-
         Returns
         -------
-        file_type :
-            The dictionary containing the clustering results and latent variables if necessary.
+        result_dict :
+            The dictionary containing the imputation results as key 'imputation' and latent variables if necessary.
 
         """
-        self.model.eval()  # set the model to evaluation mode
-        # Step 1: wrap the input data with classes Dataset and DataLoader
-        test_set = BaseDataset(
+
+        result_dict = super().predict(
             test_set,
-            return_X_ori=False,
-            return_X_pred=False,
-            return_y=False,
-            file_type=file_type,
+            file_type,
+            diagonal_attention_mask=diagonal_attention_mask,
         )
-        test_loader = DataLoader(
-            test_set,
-            batch_size=self.batch_size,
-            shuffle=False,
-            num_workers=self.num_workers,
-        )
-        imputation_collector = []
-        first_DMSA_attn_weights_collector = []
-        second_DMSA_attn_weights_collector = []
-        combining_weights_collector = []
-
-        # Step 2: process the data with the model
-        for idx, data in enumerate(test_loader):
-            inputs = self._assemble_input_for_testing(data)
-            results = self.model.forward(inputs, diagonal_attention_mask)
-            imputation_collector.append(results["imputed_data"])
-
-            if return_latent_vars:
-                first_DMSA_attn_weights_collector.append(results["first_DMSA_attn_weights"].cpu().numpy())
-                second_DMSA_attn_weights_collector.append(results["second_DMSA_attn_weights"].cpu().numpy())
-                combining_weights_collector.append(results["combining_weights"].cpu().numpy())
-
-        # Step 3: output collection and return
-        imputation = torch.cat(imputation_collector).cpu().detach().numpy()
-        result_dict = {
-            "imputation": imputation,
-        }
-
-        if return_latent_vars:
-            latent_var_collector = {
-                "first_DMSA_attn_weights": np.concatenate(first_DMSA_attn_weights_collector),
-                "second_DMSA_attn_weights": np.concatenate(second_DMSA_attn_weights_collector),
-                "combining_weights": np.concatenate(combining_weights_collector),
-            }
-            result_dict["latent_vars"] = latent_var_collector
-
         return result_dict
 
     def impute(
         self,
         test_set: Union[dict, str],
         file_type: str = "hdf5",
+        diagonal_attention_mask: bool = True,
     ) -> np.ndarray:
-        result_dict = self.predict(test_set, file_type=file_type)
-        return result_dict["imputation"]
+        """Impute missing values in the given data with the trained model.
+
+        Parameters
+        ----------
+        test_set :
+            The data samples for testing, should be array-like with shape [n_samples, n_steps, n_features], or a path
+            string locating a data file, e.g. h5 file.
+
+        file_type :
+            The type of the given file if X is a path string.
+
+        diagonal_attention_mask :
+            Whether to apply a diagonal attention mask to the self-attention mechanism in the testing stage.
+
+        Returns
+        -------
+        results :
+            Imputation results of the given data samples.
+
+        """
+        results = super().impute(
+            test_set,
+            file_type,
+            diagonal_attention_mask=diagonal_attention_mask,
+        )
+        return results

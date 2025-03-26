@@ -42,7 +42,7 @@ def ten2mat(tensor, mode):
 
 
 def sample_factor_u(tau_sparse_tensor, tau_ind, U, V, X, beta0=1):
-    """Sampling M-by-R factor matrix U and its hyper-parameters (mu_u, Lambda_u)."""
+    """Sampling M-by-R factor matrix U and its hyperparameters (mu_u, Lambda_u)."""
 
     dim1, rank = U.shape
     U_bar = np.mean(U, axis=0)
@@ -63,7 +63,7 @@ def sample_factor_u(tau_sparse_tensor, tau_ind, U, V, X, beta0=1):
 
 
 def sample_factor_v(tau_sparse_tensor, tau_ind, U, V, X, beta0=1):
-    """Sampling N-by-R factor matrix V and its hyper-parameters (mu_v, Lambda_v)."""
+    """Sampling N-by-R factor matrix V and its hyperparameters (mu_v, Lambda_v)."""
 
     dim2, rank = V.shape
     V_bar = np.mean(V, axis=0)
