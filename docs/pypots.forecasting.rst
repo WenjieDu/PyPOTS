@@ -1,4 +1,4 @@
-pypots.forecasting package
+pypots.forecasting
 ==========================
 
 pypots.forecasting.transformer

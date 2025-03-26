@@ -20,9 +20,13 @@ RANDOM_SEED = 2023
 # set the number of epochs for all model training
 EPOCHS = 2
 # set the number of prediction steps for forecasting models
-N_STEPS = 14
+N_STEPS = 6
 N_PRED_STEPS = 2
 N_FEATURES = 5
+N_CLASSES = 2
+N_SAMPLES_PER_CLASS = 100
+ANOMALY_RATE = 0.1
+MISSING_RATE = 0.1
 # tensorboard and model files saving directory
 RESULT_SAVING_DIR = "testing_results"
 MODEL_SAVING_DIR = f"{RESULT_SAVING_DIR}/models"
@@ -32,6 +36,7 @@ RESULT_SAVING_DIR_FOR_ANOMALY_DETECTION = os.path.join(MODEL_SAVING_DIR, "anomal
 RESULT_SAVING_DIR_FOR_CLASSIFICATION = os.path.join(MODEL_SAVING_DIR, "classification")
 RESULT_SAVING_DIR_FOR_CLUSTERING = os.path.join(MODEL_SAVING_DIR, "clustering")
 RESULT_SAVING_DIR_FOR_FORECASTING = os.path.join(MODEL_SAVING_DIR, "forecasting")
+RESULT_SAVING_DIR_FOR_VECTORIZATION = os.path.join(MODEL_SAVING_DIR, "vectorization")
 # paths to save the generated dataset into files for testing the lazy-loading strategy
 GENERAL_DATA_SAVING_DIR = f"{DATA_SAVING_DIR}/general_h5dataset"
 GENERAL_H5_TRAIN_SET_PATH = os.path.abspath(f"{GENERAL_DATA_SAVING_DIR}/train_set.h5")
@@ -51,13 +56,15 @@ set_random_seed(RANDOM_SEED)
 DATA = preprocess_random_walk(
     n_steps=N_STEPS + N_PRED_STEPS,  # the total sequence length
     n_features=N_FEATURES,
-    n_classes=2,
-    n_samples_each_class=100,
-    missing_rate=0.1,
+    n_classes=N_CLASSES,
+    n_samples_each_class=N_SAMPLES_PER_CLASS,
+    anomaly_rate=ANOMALY_RATE,
+    missing_rate=MISSING_RATE,
 )
 # from benchpots.datasets import preprocess_physionet2012
 # DATA = preprocess_physionet2012(subset="set-a", rate=0.1)
 
+DATA["anomaly_rate"] = ANOMALY_RATE
 DATA["test_X_indicating_mask"] = np.isnan(DATA["test_X"]) ^ np.isnan(DATA["test_X_ori"])
 DATA["test_X_ori"] = np.nan_to_num(DATA["test_X_ori"])
 
@@ -65,16 +72,19 @@ DATA["test_X_ori"] = np.nan_to_num(DATA["test_X_ori"])
 TRAIN_SET = {
     "X": DATA["train_X"],
     "y": DATA["train_y"].astype(float),
+    "anomaly_y": DATA["train_anomaly_y"].astype(float),
 }
 VAL_SET = {
     "X": DATA["val_X"],
     "X_ori": DATA["val_X_ori"],
     "y": DATA["val_y"].astype(float),
+    "anomaly_y": DATA["val_anomaly_y"].astype(float),
 }
 TEST_SET = {
     "X": DATA["test_X"],
     "X_ori": DATA["test_X_ori"],
     "y": DATA["test_y"].astype(float),
+    "anomaly_y": DATA["test_anomaly_y"].astype(float),
 }
 # for forecasting task, we feed only N_STEPS data into the model and let it predict the following N_PRED_STEPS
 FORECASTING_TRAIN_SET = {
@@ -94,12 +104,13 @@ FORECASTING_TEST_SET = {
 n_cuda_devices = torch.cuda.device_count()
 cuda_devices = [torch.device(i) for i in range(n_cuda_devices)]
 if n_cuda_devices > 1:
-    DEVICE = cuda_devices[np.random.randint(n_cuda_devices)]
-    logger.info(f"❗️Detected multiple cuda devices, using one of them {DEVICE} to run testing.")
+    DEVICE = cuda_devices[np.random.randint(n_cuda_devices, size=2)]
+    logger.info(f"❗️Detected multiple cuda devices, using {DEVICE} to run testing.")
 else:
     # if having no multiple cuda devices, leave it as None to use the default device
     DEVICE = None
 
+# DEVICE = ["cuda:1"]
 # DEVICE = ["cuda:1", "cuda:2"]
 # DEVICE = "cpu"
 # DEVICE = "mps"

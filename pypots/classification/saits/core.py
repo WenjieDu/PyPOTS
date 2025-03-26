@@ -11,11 +11,12 @@ and takes over the forward progress of the algorithm.
 import torch
 import torch.nn as nn
 
-from ...nn.modules.loss import Criterion, CrossEntropy
+from ...nn.modules import ModelCore
+from ...nn.modules.loss import Criterion
 from ...nn.modules.saits import BackboneSAITS
 
 
-class _SAITS(nn.Module):
+class _SAITS(ModelCore):
     def __init__(
         self,
         n_classes: int,
@@ -29,8 +30,9 @@ class _SAITS(nn.Module):
         d_ffn: int,
         dropout: float,
         attn_dropout: float,
-        diagonal_attention_mask: bool = True,
-        training_loss: Criterion = CrossEntropy(),
+        diagonal_attention_mask: bool,
+        training_loss: Criterion,
+        validation_metric: Criterion,
     ):
         super().__init__()
         self.n_layers = n_layers
@@ -38,7 +40,12 @@ class _SAITS(nn.Module):
         self.n_features = n_features
         self.diagonal_attention_mask = diagonal_attention_mask
         self.training_loss = training_loss
-        # self.imputation_loss = MAE()
+        if validation_metric.__class__.__name__ == "Criterion":
+            # in this case, we need validation_metric.lower_better in _train_model() so only pass Criterion()
+            # we use training_loss as validation_metric for concrete calculation process
+            self.validation_metric = self.training_loss
+        else:
+            self.validation_metric = validation_metric
 
         self.encoder = BackboneSAITS(
             n_steps,
@@ -58,6 +65,7 @@ class _SAITS(nn.Module):
     def forward(
         self,
         inputs: dict,
+        calc_criterion: bool = False,
         diagonal_attention_mask: bool = True,
     ) -> dict:
         X, missing_mask = inputs["X"], inputs["missing_mask"]
@@ -84,41 +92,25 @@ class _SAITS(nn.Module):
         imputed_data = missing_mask * X + (1 - missing_mask) * X_tilde_3
 
         logits = self.classifier(X_tilde_3.reshape(-1, self.n_steps * self.n_features))
-        classification_pred = torch.softmax(logits, dim=1)
+        classification_proba = torch.softmax(logits, dim=1)
 
         # ensemble the results as a dictionary for return
         results = {
             "first_DMSA_attn_weights": first_DMSA_attn_weights,
             "second_DMSA_attn_weights": second_DMSA_attn_weights,
             "combining_weights": combining_weights,
-            "imputed_data": imputed_data,
-            "classification_pred": classification_pred,
+            "imputation": imputed_data,
+            "classification_proba": classification_proba,
             "logits": logits,
         }
 
-        # if in training mode, return results with losses
-        if self.training:
-            # X_ori, indicating_mask = inputs["X_ori"], inputs["indicating_mask"]
-
-            # # calculate loss for the observed reconstruction task (ORT)
-            # # this calculation is more complicated that pypots.nn.modules.saits.SaitsLoss because
-            # # SAITS model structure has three parts of representation
-            # ORT_loss = 0
-            # ORT_loss += self.imputation_loss(X_tilde_1, X, missing_mask)
-            # ORT_loss += self.imputation_loss(X_tilde_2, X, missing_mask)
-            # ORT_loss += self.imputation_loss(X_tilde_3, X, missing_mask)
-            # ORT_loss /= 3
-            # ORT_loss = self.ORT_weight * ORT_loss
-            #
-            # # calculate loss for the masked imputation task (MIT)
-            # MIT_loss = self.MIT_weight * self.imputation_loss(X_tilde_3, X_ori, indicating_mask)
-            # # `loss` is always the item for backward propagating to update the model
-            #
-            # results["ORT_loss"] = ORT_loss
-            # results["MIT_loss"] = MIT_loss
-
-            classification_loss = self.training_loss(logits, inputs["y"])
-            loss = classification_loss
-            results["loss"] = loss
+        if calc_criterion:
+            if self.training:  # if in the training mode (the training stage), return loss result from training_loss
+                loss = self.training_loss(logits, inputs["y"])
+                # `loss` is always the item for backward propagating to update the model
+                results["loss"] = loss
+            else:  # if in the eval mode (the validation stage), return metric result from validation_metric
+                metric = self.validation_metric(logits, inputs["y"])
+                results["metric"] = metric
 
         return results

@@ -63,7 +63,7 @@ class TestTimesNet(unittest.TestCase):
     @pytest.mark.xdist_group(name="classification-timesnet")
     def test_1_classify(self):
         results = self.timesnet.predict(TEST_SET)
-        metrics = calc_binary_classification_metrics(results["classification"], DATA["test_y"])
+        metrics = calc_binary_classification_metrics(results["classification_proba"], DATA["test_y"])
         logger.info(
             f'TimesNet ROC_AUC: {metrics["roc_auc"]}, '
             f'PR_AUC: {metrics["pr_auc"]}, '
@@ -102,8 +102,10 @@ class TestTimesNet(unittest.TestCase):
     @pytest.mark.xdist_group(name="classification-timesnet")
     def test_4_lazy_loading(self):
         self.timesnet.fit(GENERAL_H5_TRAIN_SET_PATH, GENERAL_H5_VAL_SET_PATH)
-        results = self.timesnet.predict(GENERAL_H5_TEST_SET_PATH)
-        metrics = calc_binary_classification_metrics(results["classification"], DATA["test_y"])
+        classification_proba = self.timesnet.predict_proba(GENERAL_H5_TEST_SET_PATH)
+        classification = self.timesnet.classify(GENERAL_H5_TEST_SET_PATH)
+        assert len(classification) == len(classification_proba)
+        metrics = calc_binary_classification_metrics(classification_proba, DATA["test_y"])
         logger.info(
             f'Lazy-loading TimesNet ROC_AUC: {metrics["roc_auc"]}, '
             f'PR_AUC: {metrics["pr_auc"]}, '

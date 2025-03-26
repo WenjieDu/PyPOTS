@@ -9,7 +9,6 @@ PyTorch M-RNN model for the time-series imputation task.
 
 from typing import Union, Optional
 
-import numpy as np
 import torch
 from torch.utils.data import DataLoader
 
@@ -17,6 +16,7 @@ from .core import _MRNN
 from .data import DatasetForMRNN
 from ..base import BaseNNImputer
 from ...data.checking import key_in_data_set
+from ...nn.functional import gather_listed_dicts
 from ...nn.modules.loss import Criterion, RMSE, MSE
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
@@ -95,9 +95,9 @@ class MRNN(BaseNNImputer):
         batch_size: int = 32,
         epochs: int = 100,
         patience: Optional[int] = None,
-        training_loss: Criterion = RMSE(),
-        validation_metric: Criterion = MSE(),
-        optimizer: Optimizer = Adam(),
+        training_loss: Union[Criterion, type] = RMSE,
+        validation_metric: Union[Criterion, type] = MSE,
+        optimizer: Union[Optimizer, type] = Adam,
         num_workers: int = 0,
         device: Optional[Union[str, torch.device, list]] = None,
         saving_path: str = None,
@@ -105,11 +105,11 @@ class MRNN(BaseNNImputer):
         verbose: bool = True,
     ):
         super().__init__(
+            training_loss=training_loss,
+            validation_metric=validation_metric,
             batch_size=batch_size,
             epochs=epochs,
             patience=patience,
-            training_loss=training_loss,
-            validation_metric=validation_metric,
             num_workers=num_workers,
             device=device,
             saving_path=saving_path,
@@ -122,16 +122,21 @@ class MRNN(BaseNNImputer):
 
         # set up the model
         self.model = _MRNN(
-            self.n_steps,
-            self.n_features,
-            self.rnn_hidden_size,
-            self.training_loss,
+            n_steps=self.n_steps,
+            n_features=self.n_features,
+            rnn_hidden_size=self.rnn_hidden_size,
+            training_loss=self.training_loss,
+            validation_metric=self.validation_metric,
         )
         self._send_model_to_given_device()
         self._print_model_size()
 
         # set up the optimizer
-        self.optimizer = optimizer
+        if isinstance(optimizer, Optimizer):
+            self.optimizer = optimizer
+        else:
+            self.optimizer = optimizer()  # instantiate the optimizer if it is a class
+            assert isinstance(self.optimizer, Optimizer)
         self.optimizer.init_optimizer(self.model.parameters())
 
     def _assemble_input_for_training(self, data: list) -> dict:
@@ -206,27 +211,27 @@ class MRNN(BaseNNImputer):
         file_type: str = "hdf5",
     ) -> None:
         # Step 1: wrap the input data with classes Dataset and DataLoader
-        training_set = DatasetForMRNN(train_set, return_X_ori=False, return_y=False, file_type=file_type)
-        training_loader = DataLoader(
-            training_set,
+        train_dataset = DatasetForMRNN(train_set, return_X_ori=False, return_y=False, file_type=file_type)
+        train_dataloader = DataLoader(
+            train_dataset,
             batch_size=self.batch_size,
             shuffle=True,
             num_workers=self.num_workers,
         )
-        val_loader = None
+        val_dataloader = None
         if val_set is not None:
             if not key_in_data_set("X_ori", val_set):
                 raise ValueError("val_set must contain 'X_ori' for model validation.")
-            val_set = DatasetForMRNN(val_set, return_X_ori=True, return_y=False, file_type=file_type)
-            val_loader = DataLoader(
-                val_set,
+            val_dataset = DatasetForMRNN(val_set, return_X_ori=True, return_y=False, file_type=file_type)
+            val_dataloader = DataLoader(
+                val_dataset,
                 batch_size=self.batch_size,
                 shuffle=False,
                 num_workers=self.num_workers,
             )
 
         # Step 2: train the model and freeze it
-        self._train_model(training_loader, val_loader)
+        self._train_model(train_dataloader, val_dataloader)
         self.model.load_state_dict(self.best_model_dict)
 
         # Step 3: save the model if necessary
@@ -239,36 +244,27 @@ class MRNN(BaseNNImputer):
         file_type: str = "hdf5",
     ) -> dict:
         self.model.eval()  # set the model to evaluation mode
-        test_set = DatasetForMRNN(
+        test_dataset = DatasetForMRNN(
             test_set,
             return_X_ori=False,
             return_y=False,
             file_type=file_type,
         )
-        test_loader = DataLoader(
-            test_set,
+        test_dataloader = DataLoader(
+            test_dataset,
             batch_size=self.batch_size,
             shuffle=False,
             num_workers=self.num_workers,
         )
-        imputation_collector = []
 
-        for idx, data in enumerate(test_loader):
+        # Step 2: process the data with the model
+        dict_result_collector = []
+        for idx, data in enumerate(test_dataloader):
             inputs = self._assemble_input_for_testing(data)
-            results = self.model.forward(inputs)
-            imputed_data = results["imputed_data"]
-            imputation_collector.append(imputed_data)
+            results = self.model(inputs)
+            dict_result_collector.append(results)
 
-        imputation = torch.cat(imputation_collector).cpu().detach().numpy()
-        result_dict = {
-            "imputation": imputation,
-        }
+        # Step 3: output collection and return
+        result_dict = gather_listed_dicts(dict_result_collector)
+
         return result_dict
-
-    def impute(
-        self,
-        test_set: Union[dict, str],
-        file_type: str = "hdf5",
-    ) -> np.ndarray:
-        result_dict = self.predict(test_set, file_type=file_type)
-        return result_dict["imputation"]

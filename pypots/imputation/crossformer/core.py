@@ -12,13 +12,14 @@ import torch
 import torch.nn as nn
 from einops import rearrange
 
+from ...nn.modules import ModelCore
 from ...nn.modules.crossformer import CrossformerEncoder, ScaleBlock
-from ...nn.modules.loss import Criterion, MAE
+from ...nn.modules.loss import Criterion
 from ...nn.modules.patchtst import PredictionHead, PatchEmbedding
 from ...nn.modules.saits import SaitsLoss, SaitsEmbedding
 
 
-class _Crossformer(nn.Module):
+class _Crossformer(ModelCore):
     def __init__(
         self,
         n_steps,
@@ -31,9 +32,10 @@ class _Crossformer(nn.Module):
         seg_len,
         win_size,
         dropout,
-        ORT_weight: float = 1,
-        MIT_weight: float = 1,
-        training_loss: Criterion = MAE(),
+        ORT_weight: float,
+        MIT_weight: float,
+        training_loss: Criterion,
+        validation_metric: Criterion,
     ):
         super().__init__()
 
@@ -81,9 +83,19 @@ class _Crossformer(nn.Module):
         self.output_projection = nn.Linear(d_model, n_features)
 
         # apply SAITS loss function to Crossformer on the imputation task
-        self.saits_training_loss = SaitsLoss(ORT_weight, MIT_weight, training_loss)
+        self.training_loss = SaitsLoss(ORT_weight, MIT_weight, training_loss)
+        if validation_metric.__class__.__name__ == "Criterion":
+            # in this case, we need validation_metric.lower_better in _train_model() so only pass Criterion()
+            # we use training_loss as validation_metric for concrete calculation process
+            self.validation_metric = self.training_loss
+        else:
+            self.validation_metric = validation_metric
 
-    def forward(self, inputs: dict) -> dict:
+    def forward(
+        self,
+        inputs: dict,
+        calc_criterion: bool = False,
+    ) -> dict:
         X, missing_mask = inputs["X"], inputs["missing_mask"]
 
         # WDU: the original Crossformer paper isn't proposed for imputation task. Hence the model doesn't take
@@ -107,16 +119,20 @@ class _Crossformer(nn.Module):
 
         imputed_data = missing_mask * X + (1 - missing_mask) * reconstruction
         results = {
-            "imputed_data": imputed_data,
+            "imputation": imputed_data,
+            "reconstruction": reconstruction,
         }
 
-        # if in training mode, return results with losses
-        if self.training:
+        if calc_criterion:
             X_ori, indicating_mask = inputs["X_ori"], inputs["indicating_mask"]
-            loss, ORT_loss, MIT_loss = self.saits_training_loss(reconstruction, X_ori, missing_mask, indicating_mask)
-            results["ORT_loss"] = ORT_loss
-            results["MIT_loss"] = MIT_loss
-            # `loss` is always the item for backward propagating to update the model
-            results["loss"] = loss
+            if self.training:  # if in the training mode (the training stage), return loss result from training_loss
+                # `loss` is always the item for backward propagating to update the model
+                loss, ORT_loss, MIT_loss = self.training_loss(reconstruction, X_ori, missing_mask, indicating_mask)
+                results["ORT_loss"] = ORT_loss
+                results["MIT_loss"] = MIT_loss
+                # `loss` is always the item for backward propagating to update the model
+                results["loss"] = loss
+            else:  # if in the eval mode (the validation stage), return metric result from validation_metric
+                results["metric"] = self.validation_metric(reconstruction, X_ori, indicating_mask)
 
         return results

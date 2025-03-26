@@ -8,14 +8,10 @@ The implementation of Transformer for the partially-observed time-series forecas
 
 from typing import Union, Optional
 
-import numpy as np
 import torch
-from torch.utils.data import DataLoader
 
 from .core import _Transformer
-from .data import DatasetForTransformer
 from ..base import BaseNNForecaster
-from ...data.checking import key_in_data_set
 from ...nn.modules.loss import Criterion, MSE
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
@@ -139,9 +135,9 @@ class Transformer(BaseNNForecaster):
         batch_size: int = 32,
         epochs: int = 100,
         patience: Optional[int] = None,
-        training_loss: Criterion = MSE(),
-        validation_metric: Criterion = MSE(),
-        optimizer: Optimizer = Adam(),
+        training_loss: Union[Criterion, type] = MSE,
+        validation_metric: Union[Criterion, type] = MSE,
+        optimizer: Union[Optimizer, type] = Adam,
         num_workers: int = 0,
         device: Optional[Union[str, torch.device, list]] = None,
         saving_path: Optional[str] = None,
@@ -149,11 +145,11 @@ class Transformer(BaseNNForecaster):
         verbose: bool = True,
     ):
         super().__init__(
+            training_loss=training_loss,
+            validation_metric=validation_metric,
             batch_size=batch_size,
             epochs=epochs,
             patience=patience,
-            training_loss=training_loss,
-            validation_metric=validation_metric,
             num_workers=num_workers,
             device=device,
             saving_path=saving_path,
@@ -177,140 +173,29 @@ class Transformer(BaseNNForecaster):
 
         # set up the model
         self.model = _Transformer(
-            self.n_steps,
-            self.n_features,
-            self.n_pred_steps,
-            self.n_pred_features,
-            self.n_encoder_layers,
-            self.n_decoder_layers,
-            self.d_model,
-            self.n_heads,
-            self.d_k,
-            self.d_v,
-            self.d_ffn,
-            self.dropout,
-            self.attn_dropout,
-            self.training_loss,
+            n_steps=self.n_steps,
+            n_features=self.n_features,
+            n_pred_steps=self.n_pred_steps,
+            n_pred_features=self.n_pred_features,
+            n_encoder_layers=self.n_encoder_layers,
+            n_decoder_layers=self.n_decoder_layers,
+            d_model=self.d_model,
+            n_heads=self.n_heads,
+            d_k=self.d_k,
+            d_v=self.d_v,
+            d_ffn=self.d_ffn,
+            dropout=self.dropout,
+            attn_dropout=self.attn_dropout,
+            training_loss=self.training_loss,
+            validation_metric=self.validation_metric,
         )
         self._print_model_size()
         self._send_model_to_given_device()
 
         # set up the optimizer
-        self.optimizer = optimizer
+        if isinstance(optimizer, Optimizer):
+            self.optimizer = optimizer
+        else:
+            self.optimizer = optimizer()  # instantiate the optimizer if it is a class
+            assert isinstance(self.optimizer, Optimizer)
         self.optimizer.init_optimizer(self.model.parameters())
-
-    def _assemble_input_for_training(self, data: list) -> dict:
-        (
-            indices,
-            X,
-            missing_mask,
-            X_pred,
-            X_pred_missing_mask,
-        ) = self._send_data_to_given_device(data)
-
-        inputs = {
-            "X": X,
-            "missing_mask": missing_mask,
-            "X_pred": X_pred,
-            "X_pred_missing_mask": X_pred_missing_mask,
-        }
-        return inputs
-
-    def _assemble_input_for_validating(self, data: list) -> dict:
-        return self._assemble_input_for_training(data)
-
-    def _assemble_input_for_testing(self, data: list) -> dict:
-        (
-            indices,
-            X,
-            missing_mask,
-        ) = self._send_data_to_given_device(data)
-
-        inputs = {
-            "X": X,
-            "missing_mask": missing_mask,
-        }
-        return inputs
-
-    def fit(
-        self,
-        train_set: Union[dict, str],
-        val_set: Optional[Union[dict, str]] = None,
-        file_type: str = "hdf5",
-    ) -> None:
-        # Step 1: wrap the input data with classes Dataset and DataLoader
-        training_set = DatasetForTransformer(
-            train_set,
-            file_type=file_type,
-        )
-        training_loader = DataLoader(
-            training_set,
-            batch_size=self.batch_size,
-            shuffle=True,
-            num_workers=self.num_workers,
-        )
-        val_loader = None
-        if val_set is not None:
-            if not key_in_data_set("X_pred", val_set):
-                raise ValueError("val_set must contain 'X_pred' for model validation.")
-            val_set = DatasetForTransformer(
-                val_set,
-                file_type=file_type,
-            )
-            val_loader = DataLoader(
-                val_set,
-                batch_size=self.batch_size,
-                shuffle=False,
-                num_workers=self.num_workers,
-            )
-
-        # Step 2: train the model and freeze it
-        self._train_model(training_loader, val_loader)
-        self.model.load_state_dict(self.best_model_dict)
-
-        # Step 3: save the model if necessary
-        self._auto_save_model_if_necessary(confirm_saving=self.model_saving_strategy == "best")
-
-    @torch.no_grad()
-    def predict(
-        self,
-        test_set: Union[dict, str],
-        file_type: str = "hdf5",
-    ) -> dict:
-        self.model.eval()  # set the model to evaluation mode
-        # Step 1: wrap the input data with classes Dataset and DataLoader
-        test_set = DatasetForTransformer(
-            test_set,
-            return_X_pred=False,
-            file_type=file_type,
-        )
-
-        test_loader = DataLoader(
-            test_set,
-            batch_size=self.batch_size,
-            shuffle=False,
-            num_workers=self.num_workers,
-        )
-        forecasting_collector = []
-
-        # Step 2: process the data with the model
-        for idx, data in enumerate(test_loader):
-            inputs = self._assemble_input_for_testing(data)
-            results = self.model(inputs)
-            forecasting_data = results["forecasting_data"]
-            forecasting_collector.append(forecasting_data)
-
-        # Step 3: output collection and return
-        forecasting_data = torch.cat(forecasting_collector).cpu().detach().numpy()
-        result_dict = {
-            "forecasting": forecasting_data,  # [bz, n_pred_steps, n_features]
-        }
-        return result_dict
-
-    def forecast(
-        self,
-        test_set: Union[dict, str],
-        file_type: str = "hdf5",
-    ) -> np.ndarray:
-        result_dict = self.predict(test_set, file_type=file_type)
-        return result_dict["forecasting"]

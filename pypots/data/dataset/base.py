@@ -326,19 +326,12 @@ class BaseDataset(Dataset):
         if self.return_X_ori:
             # if X_ori is given, fetch missing mask from self.missing_mask that has been created in __init__()
             missing_mask = self.missing_mask[idx]
-        else:
-            X, missing_mask = fill_and_get_mask_torch(X)
-
-        sample = [
-            torch.tensor(idx),
-            X,
-            missing_mask,
-        ]
-
-        if self.return_X_ori:
             X_ori = self.X_ori[idx]
             indicating_mask = self.indicating_mask[idx]
-            sample.extend([X_ori, indicating_mask])
+            sample = [torch.tensor(idx), X, missing_mask, X_ori, indicating_mask]
+        else:
+            X, missing_mask = fill_and_get_mask_torch(X)
+            sample = [torch.tensor(idx), X, missing_mask]
 
         if self.return_X_pred:
             X_pred = self.X_pred[idx]

@@ -9,12 +9,13 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from ...nn.modules.loss import Criterion, CrossEntropy
+from ...nn.modules import ModelCore
+from ...nn.modules.loss import Criterion
 from ...nn.modules.timesnet import BackboneTimesNet
 from ...nn.modules.transformer.embedding import DataEmbedding
 
 
-class _TimesNet(nn.Module):
+class _TimesNet(ModelCore):
     def __init__(
         self,
         n_classes,
@@ -26,7 +27,8 @@ class _TimesNet(nn.Module):
         d_ffn,
         n_kernels,
         dropout,
-        training_loss: Criterion = CrossEntropy(),
+        training_loss: Criterion,
+        validation_metric: Criterion,
     ):
         super().__init__()
 
@@ -34,6 +36,12 @@ class _TimesNet(nn.Module):
         self.d_model = d_model
         self.n_layers = n_layers
         self.training_loss = training_loss
+        if validation_metric.__class__.__name__ == "Criterion":
+            # in this case, we need validation_metric.lower_better in _train_model() so only pass Criterion()
+            # we use training_loss as validation_metric for concrete calculation process
+            self.validation_metric = self.training_loss
+        else:
+            self.validation_metric = validation_metric
 
         self.enc_embedding = DataEmbedding(
             n_features,
@@ -55,7 +63,11 @@ class _TimesNet(nn.Module):
         self.dropout = nn.Dropout(dropout)
         self.projection = nn.Linear(d_model * n_steps, n_classes)
 
-    def forward(self, inputs: dict) -> dict:
+    def forward(
+        self,
+        inputs: dict,
+        calc_criterion: bool = False,
+    ) -> dict:
         X = inputs["X"]
 
         # embedding
@@ -67,16 +79,18 @@ class _TimesNet(nn.Module):
         output = self.dropout(output)
         logits = self.projection(output.reshape(-1, self.n_steps * self.d_model))
 
-        classification_pred = torch.softmax(logits, dim=1)
+        classification_proba = torch.softmax(logits, dim=1)
 
         results = {
-            "classification_pred": classification_pred,
+            "classification_proba": classification_proba,
             "logits": logits,
         }
 
-        if self.training:
-            # `loss` is always the item for backward propagating to update the model
-            classification_loss = self.training_loss(logits, inputs["y"])
-            results["loss"] = classification_loss
+        if calc_criterion:
+            if self.training:  # if in the training mode (the training stage), return loss result from training_loss
+                # `loss` is always the item for backward propagating to update the model
+                results["loss"] = self.training_loss(logits, inputs["y"])
+            else:  # if in the eval mode (the validation stage), return metric result from validation_metric
+                results["metric"] = self.validation_metric(logits, inputs["y"])
 
         return results

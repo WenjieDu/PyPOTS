@@ -6,18 +6,16 @@ The implementation of TimeLLM for the partially-observed time-series imputation 
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
+from copy import deepcopy
 from typing import Union, Optional
 
-import numpy as np
 import torch
 from torch.utils.data import DataLoader
 
 from .core import _TimeLLM
-from .data import DatasetForTimeLLM
 from ..base import BaseNNImputer
+from ..saits.data import DatasetForSAITS
 from ...data.checking import key_in_data_set
-from ...data.dataset import BaseDataset
-from ...nn.functional.cuda import autocast
 from ...nn.modules.loss import Criterion, MAE, MSE
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
@@ -142,9 +140,9 @@ class TimeLLM(BaseNNImputer):
         batch_size: int = 32,
         epochs: int = 100,
         patience: Optional[int] = None,
-        training_loss: Criterion = MAE(),
-        validation_metric: Criterion = MSE(),
-        optimizer: Optimizer = Adam(),
+        training_loss: Union[Criterion, type] = MAE,
+        validation_metric: Union[Criterion, type] = MSE,
+        optimizer: Union[Optimizer, type] = Adam,
         num_workers: int = 0,
         device: Optional[Union[str, torch.device, list]] = None,
         saving_path: Optional[str] = None,
@@ -152,11 +150,11 @@ class TimeLLM(BaseNNImputer):
         verbose: bool = True,
     ):
         super().__init__(
+            training_loss=training_loss,
+            validation_metric=validation_metric,
             batch_size=batch_size,
             epochs=epochs,
             patience=patience,
-            training_loss=training_loss,
-            validation_metric=validation_metric,
             num_workers=num_workers,
             device=device,
             enable_amp=True,
@@ -169,7 +167,7 @@ class TimeLLM(BaseNNImputer):
         self.n_steps = n_steps
         self.n_features = n_features
 
-        # model hype-parameters
+        # model hyperparameters
         self.n_heads = n_heads
         self.d_model = d_model
         self.d_ffn = d_ffn
@@ -185,27 +183,32 @@ class TimeLLM(BaseNNImputer):
 
         # set up the model
         self.model = _TimeLLM(
-            self.n_steps,
-            self.n_features,
-            self.n_layers,
-            self.patch_size,
-            self.patch_stride,
-            self.d_model,
-            self.d_ffn,
-            self.d_llm,
-            self.n_heads,
-            self.llm_model_type,
-            self.dropout,
-            self.domain_prompt_content,
-            self.ORT_weight,
-            self.MIT_weight,
-            self.training_loss,
+            n_steps=self.n_steps,
+            n_features=self.n_features,
+            n_layers=self.n_layers,
+            patch_size=self.patch_size,
+            patch_stride=self.patch_stride,
+            d_model=self.d_model,
+            d_ffn=self.d_ffn,
+            d_llm=self.d_llm,
+            n_heads=self.n_heads,
+            llm_model_type=self.llm_model_type,
+            dropout=self.dropout,
+            domain_prompt_content=self.domain_prompt_content,
+            ORT_weight=self.ORT_weight,
+            MIT_weight=self.MIT_weight,
+            training_loss=self.training_loss,
+            validation_metric=self.validation_metric,
         )
         self._send_model_to_given_device()
         self._print_model_size()
 
         # set up the optimizer
-        self.optimizer = optimizer
+        if isinstance(optimizer, Optimizer):
+            self.optimizer = optimizer
+        else:
+            self.optimizer = optimizer()  # instantiate the optimizer if it is a class
+            assert isinstance(self.optimizer, Optimizer)
         self.optimizer.init_optimizer(self.model.parameters())
 
     def _organize_content_to_save(self):
@@ -213,9 +216,9 @@ class TimeLLM(BaseNNImputer):
 
         if isinstance(self.device, list):
             # to save a DataParallel model generically, save the model.module.state_dict()
-            model_state_dict = self.model.module.state_dict()
+            model_state_dict = deepcopy(self.model.module.state_dict())
         else:
-            model_state_dict = self.model.state_dict()
+            model_state_dict = deepcopy(self.model.state_dict())
         model_state_dict = {k: v for k, v in model_state_dict.items() if "llm_model" not in k}
 
         all_attrs = dict({})
@@ -261,73 +264,28 @@ class TimeLLM(BaseNNImputer):
         file_type: str = "hdf5",
     ) -> None:
         # Step 1: wrap the input data with classes Dataset and DataLoader
-        training_set = DatasetForTimeLLM(train_set, return_X_ori=False, return_y=False, file_type=file_type)
-        training_loader = DataLoader(
-            training_set,
+        train_dataset = DatasetForSAITS(train_set, return_X_ori=False, return_y=False, file_type=file_type)
+        train_dataloader = DataLoader(
+            train_dataset,
             batch_size=self.batch_size,
             shuffle=True,
             num_workers=self.num_workers,
         )
-        val_loader = None
+        val_dataloader = None
         if val_set is not None:
             if not key_in_data_set("X_ori", val_set):
                 raise ValueError("val_set must contain 'X_ori' for model validation.")
-            val_set = DatasetForTimeLLM(val_set, return_X_ori=True, return_y=False, file_type=file_type)
-            val_loader = DataLoader(
-                val_set,
+            val_dataset = DatasetForSAITS(val_set, return_X_ori=True, return_y=False, file_type=file_type)
+            val_dataloader = DataLoader(
+                val_dataset,
                 batch_size=self.batch_size,
                 shuffle=False,
                 num_workers=self.num_workers,
             )
 
         # Step 2: train the model and freeze it
-        self._train_model(training_loader, val_loader)
+        self._train_model(train_dataloader, val_dataloader)
         self.model.load_state_dict(self.best_model_dict)
 
         # Step 3: save the model if necessary
         self._auto_save_model_if_necessary(confirm_saving=True)
-
-    @torch.no_grad()
-    def predict(
-        self,
-        test_set: Union[dict, str],
-        file_type: str = "hdf5",
-    ) -> dict:
-        self.model.eval()  # set the model to evaluation mode
-        # Step 1: wrap the input data with classes Dataset and DataLoader
-        test_set = BaseDataset(
-            test_set,
-            return_X_ori=False,
-            return_X_pred=False,
-            return_y=False,
-            file_type=file_type,
-        )
-        test_loader = DataLoader(
-            test_set,
-            batch_size=self.batch_size,
-            shuffle=False,
-            num_workers=self.num_workers,
-        )
-        imputation_collector = []
-
-        # Step 2: process the data with the model
-        for idx, data in enumerate(test_loader):
-            inputs = self._assemble_input_for_testing(data)
-            with autocast(enabled=self.amp_enabled):
-                results = self.model.forward(inputs)
-            imputation_collector.append(results["imputed_data"])
-
-        # Step 3: output collection and return
-        imputation = torch.cat(imputation_collector).cpu().detach().numpy()
-        result_dict = {
-            "imputation": imputation,
-        }
-        return result_dict
-
-    def impute(
-        self,
-        test_set: Union[dict, str],
-        file_type: str = "hdf5",
-    ) -> np.ndarray:
-        result_dict = self.predict(test_set, file_type=file_type)
-        return result_dict["imputation"]

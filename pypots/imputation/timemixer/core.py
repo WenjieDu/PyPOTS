@@ -5,17 +5,16 @@
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-import torch.nn as nn
-
 from ...nn.functional import (
     nonstationary_norm,
     nonstationary_denorm,
 )
-from ...nn.modules.loss import Criterion, MSE
+from ...nn.modules import ModelCore
+from ...nn.modules.loss import Criterion
 from ...nn.modules.timemixer import BackboneTimeMixer
 
 
-class _TimeMixer(nn.Module):
+class _TimeMixer(ModelCore):
     def __init__(
         self,
         n_steps: int,
@@ -30,13 +29,20 @@ class _TimeMixer(nn.Module):
         moving_avg: int,
         downsampling_layers: int,
         downsampling_window: int,
-        apply_nonstationary_norm: bool = False,
-        training_loss: Criterion = MSE(),
+        apply_nonstationary_norm: bool,
+        training_loss: Criterion,
+        validation_metric: Criterion,
     ):
         super().__init__()
 
         self.apply_nonstationary_norm = apply_nonstationary_norm
         self.training_loss = training_loss
+        if validation_metric.__class__.__name__ == "Criterion":
+            # in this case, we need validation_metric.lower_better in _train_model() so only pass Criterion()
+            # we use training_loss as validation_metric for concrete calculation process
+            self.validation_metric = self.training_loss
+        else:
+            self.validation_metric = validation_metric
 
         self.model = BackboneTimeMixer(
             task_name="imputation",
@@ -58,7 +64,11 @@ class _TimeMixer(nn.Module):
             use_future_temporal_feature=False,
         )
 
-    def forward(self, inputs: dict) -> dict:
+    def forward(
+        self,
+        inputs: dict,
+        calc_criterion: bool = False,
+    ) -> dict:
         X, missing_mask = inputs["X"], inputs["missing_mask"]
 
         if self.apply_nonstationary_norm:
@@ -66,21 +76,25 @@ class _TimeMixer(nn.Module):
             X, means, stdev = nonstationary_norm(X, missing_mask)
 
         # TimesMixer processing
-        dec_out = self.model.imputation(X, None)
+        reconstruction = self.model.imputation(X, None)
 
         if self.apply_nonstationary_norm:
             # De-Normalization from Non-stationary Transformer
-            dec_out = nonstationary_denorm(dec_out, means, stdev)
+            reconstruction = nonstationary_denorm(reconstruction, means, stdev)
 
-        imputed_data = missing_mask * X + (1 - missing_mask) * dec_out
+        imputed_data = missing_mask * X + (1 - missing_mask) * reconstruction
         results = {
-            "imputed_data": imputed_data,
+            "imputation": imputed_data,
+            "reconstruction": reconstruction,
         }
 
-        # if in training mode, return results with losses
-        if self.training:
-            # `loss` is always the item for backward propagating to update the model
-            loss = self.training_loss(dec_out, inputs["X_ori"], inputs["indicating_mask"])
-            results["loss"] = loss
+        if calc_criterion:
+            if self.training:  # if in the training mode (the training stage), return loss result from training_loss
+                # `loss` is always the item for backward propagating to update the model
+                loss = self.training_loss(reconstruction, X, missing_mask)
+                results["loss"] = loss
+            else:  # if in the eval mode (the validation stage), return metric result from validation_metric
+                X_ori, indicating_mask = inputs["X_ori"], inputs["indicating_mask"]
+                results["metric"] = self.validation_metric(reconstruction, X_ori, indicating_mask)
 
         return results

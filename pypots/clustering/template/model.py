@@ -21,6 +21,7 @@ from .core import _YourNewModel
 from ..base import BaseNNClusterer
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
+from ...nn.modules.loss import Criterion
 
 
 # TODO: define your new model's wrapper here.
@@ -30,12 +31,12 @@ from ...optim.base import Optimizer
 class YourNewModel(BaseNNClusterer):
     def __init__(
         self,
-        # TODO: add your model's hyper-parameters here
+        # TODO: add your model's hyperparameters here
         n_clusters: int,
         batch_size: int = 32,
         epochs: int = 100,
         patience: Optional[int] = None,
-        optimizer: Optimizer = Adam(),
+        optimizer: Union[Optimizer, type] = Adam,
         num_workers: int = 0,
         device: Optional[Union[str, torch.device, list]] = None,
         saving_path: Optional[str] = None,
@@ -44,29 +45,35 @@ class YourNewModel(BaseNNClusterer):
     ):
         super().__init__(
             n_clusters=n_clusters,
+            training_loss=Criterion,
+            validation_metric=Criterion,
             batch_size=batch_size,
             epochs=epochs,
             patience=patience,
-            training_loss=None,
-            validation_metric=None,
             num_workers=num_workers,
             device=device,
             saving_path=saving_path,
             model_saving_strategy=model_saving_strategy,
             verbose=verbose,
         )
-        # set up the hyper-parameters
-        # TODO: set up your model's hyper-parameters here
+        # set up the hyperparameters
+        # TODO: set up your model's hyperparameters here
 
         # set up the model
         self.model = _YourNewModel(
             # pass the arguments to your model
+            training_loss=self.training_loss,
+            validation_metric=self.validation_metric,
         )
         self._print_model_size()
         self._send_model_to_given_device()
 
         # set up the optimizer
-        self.optimizer = optimizer
+        if isinstance(optimizer, Optimizer):
+            self.optimizer = optimizer
+        else:
+            self.optimizer = optimizer()  # instantiate the optimizer if it is a class
+            assert isinstance(self.optimizer, Optimizer)
         self.optimizer.init_optimizer(self.model.parameters())
 
     def _assemble_input_for_training(self, data: list) -> dict:
