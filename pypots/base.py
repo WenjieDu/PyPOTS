@@ -70,7 +70,7 @@ class BaseModel(ABC):
 
         It is designed as being set up while initializing the model because it's created to
         1). help visualize the model's training procedure (during training not after) and
-        2). assist users to optimize the model's hype-parameters.
+        2). assist users to optimize the model's hyperparameters.
         If only setting it up after training with a function like setter(), it cannot achieve the 1st purpose.
 
     """
@@ -628,7 +628,7 @@ class BaseNNModel(BaseModel):
             validation_metric_name = validation_metric.__class__.__name__
             logger.info(f"Using customized {validation_metric_name} as the validation metric function.")
 
-        # set up the hype-parameters
+        # set up the hyperparameters
         self.batch_size = batch_size
         self.epochs = epochs
         self.patience = patience

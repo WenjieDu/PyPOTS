@@ -146,7 +146,7 @@ class FiLM(BaseNNImputer):
 
         self.n_steps = n_steps
         self.n_features = n_features
-        # model hype-parameters
+        # model hyperparameters
         self.window_size = window_size
         self.multiscale = multiscale
         self.modes1 = modes1

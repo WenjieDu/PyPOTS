@@ -158,7 +158,7 @@ class RevIN_SCINet(BaseNNImputer):
 
         self.n_steps = n_steps
         self.n_features = n_features
-        # model hype-parameters
+        # model hyperparameters
         self.n_stacks = n_stacks
         self.n_levels = n_levels
         self.n_groups = n_groups

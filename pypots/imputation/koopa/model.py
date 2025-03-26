@@ -143,7 +143,7 @@ class Koopa(BaseNNImputer):
 
         self.n_steps = n_steps
         self.n_features = n_features
-        # model hype-parameters
+        # model hyperparameters
         self.n_seg_steps = n_seg_steps
         self.d_dynamic = d_dynamic
         self.d_hidden = d_hidden

@@ -105,7 +105,7 @@ n_cuda_devices = torch.cuda.device_count()
 cuda_devices = [torch.device(i) for i in range(n_cuda_devices)]
 if n_cuda_devices > 1:
     DEVICE = cuda_devices[np.random.randint(n_cuda_devices, size=2)]
-    logger.info(f"❗️Detected multiple cuda devices, using one of them {DEVICE} to run testing.")
+    logger.info(f"❗️Detected multiple cuda devices, using {DEVICE} to run testing.")
 else:
     # if having no multiple cuda devices, leave it as None to use the default device
     DEVICE = None

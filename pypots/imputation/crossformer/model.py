@@ -153,7 +153,7 @@ class Crossformer(BaseNNImputer):
         )
         self.n_steps = n_steps
         self.n_features = n_features
-        # model hype-parameters
+        # model hyperparameters
         self.n_layers = n_layers
         self.n_heads = n_heads
         self.d_model = d_model

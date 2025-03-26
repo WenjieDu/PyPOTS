@@ -131,7 +131,7 @@ class TEFN(BaseNNImputer):
 
         self.n_steps = n_steps
         self.n_features = n_features
-        # model hype-parameters
+        # model hyperparameters
         self.n_fod = n_fod
         self.ORT_weight = ORT_weight
         self.MIT_weight = MIT_weight

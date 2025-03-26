@@ -138,7 +138,7 @@ class TCN(BaseNNImputer):
 
         self.n_steps = n_steps
         self.n_features = n_features
-        # model hype-parameters
+        # model hyperparameters
         self.n_levels = n_levels
         self.d_hidden = d_hidden
         self.kernel_size = kernel_size
