@@ -19,6 +19,15 @@ pypots.anomaly_detection.tefn
    :show-inheritance:
    :inherited-members:
 
+pypots.anomaly_detection.imputeformer
+-----------------------------------------------
+
+.. automodule:: pypots.anomaly_detection.imputeformer
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+
 pypots.anomaly_detection.autoformer
 -----------------------------------------------
 
