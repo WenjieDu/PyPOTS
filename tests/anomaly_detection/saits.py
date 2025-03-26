@@ -12,7 +12,7 @@ import unittest
 import pytest
 
 from pypots.anomaly_detection import SAITS
-from pypots.nn.functional import calc_acc
+from pypots.nn.functional import calc_acc, calc_precision_recall_f1
 from pypots.optim import Adam
 from pypots.utils.logging import logger
 from tests.global_test_config import (
@@ -67,11 +67,15 @@ class TestSAITS(unittest.TestCase):
         anomaly_detection_results = self.saits.predict(TEST_SET)
         anomaly_labels = TEST_SET["anomaly_y"].flatten()
 
-        test_accuracy = calc_acc(
+        accuracy = calc_acc(
             anomaly_detection_results["anomaly_detection"],
             anomaly_labels,
         )
-        logger.info(f"SAITS test_accuracy: {test_accuracy}")
+        precision, recall, f1 = calc_precision_recall_f1(
+            anomaly_detection_results["anomaly_detection"],
+            anomaly_labels,
+        )
+        logger.info(f"SAITS Accuracy: {accuracy}, F1: {f1}, Precision: {precision}, Recall: {recall}")
 
     @pytest.mark.xdist_group(name="anomaly-detection-saits")
     def test_2_parameters(self):
@@ -103,12 +107,17 @@ class TestSAITS(unittest.TestCase):
     def test_4_lazy_loading(self):
         self.saits.fit(GENERAL_H5_TRAIN_SET_PATH, GENERAL_H5_VAL_SET_PATH)
         anomaly_detection_results = self.saits.predict(GENERAL_H5_TEST_SET_PATH)
+        anomaly_labels = TEST_SET["anomaly_y"].flatten()
 
-        test_accuracy = calc_acc(
+        accuracy = calc_acc(
             anomaly_detection_results["anomaly_detection"],
-            TEST_SET["anomaly_y"].flatten(),
+            anomaly_labels,
         )
-        logger.info(f"Lazy-loading SAITS test_accuracy: {test_accuracy}")
+        precision, recall, f1 = calc_precision_recall_f1(
+            anomaly_detection_results["anomaly_detection"],
+            anomaly_labels,
+        )
+        logger.info(f"Lazy-loading SAITS Accuracy: {accuracy}, F1: {f1}, Precision: {precision}, Recall: {recall}")
 
 
 if __name__ == "__main__":
