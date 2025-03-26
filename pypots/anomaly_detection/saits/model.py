@@ -1,5 +1,5 @@
 """
-The implementation of Autoformer for the partially-observed time-series anomaly detection task.
+The implementation of SAITS for the partially-observed time-series anomaly detection task.
 
 """
 
@@ -14,15 +14,15 @@ from torch.utils.data import DataLoader
 
 from ..base import BaseNNDetector
 from ...data.checking import key_in_data_set
-from ...imputation.autoformer.core import _Autoformer
+from ...imputation.saits.core import _SAITS
 from ...imputation.saits.data import DatasetForSAITS
 from ...nn.modules.loss import Criterion, MAE, MSE
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
 
 
-class Autoformer(BaseNNDetector):
-    """The PyTorch implementation of the Autoformer model :cite:`wu2021autoformer` on the anomaly detection task.
+class SAITS(BaseNNDetector):
+    """The PyTorch implementation of the SAITS model :cite:`du2023saits` on the anomaly detection task.
 
     Parameters
     ----------
@@ -36,31 +36,43 @@ class Autoformer(BaseNNDetector):
         The rate of anomalies in the data, should be in the range (0, 1).
 
     n_layers :
-        The number of layers in the Autoformer model.
+        The number of layers in the 1st and 2nd DMSA blocks in the SAITS model.
 
     d_model :
-        The dimension of the model.
+        The dimension of the model's backbone.
+        It is the input dimension of the multi-head DMSA layers.
 
     n_heads :
-        The number of heads in each layer of Autoformer.
+        The number of heads in the multi-head DMSA mechanism.
+        ``d_model`` must be divisible by ``n_heads``, and the result should be equal to ``d_k``.
+
+    d_k :
+        The dimension of the `keys` (K) and the `queries` (Q) in the DMSA mechanism.
+        ``d_k`` should be the result of ``d_model`` divided by ``n_heads``. Although ``d_k`` can be directly calculated
+        with given ``d_model`` and ``n_heads``, we want it be explicitly given together with ``d_v`` by users to ensure
+        users be aware of them and to avoid any potential mistakes.
+
+    d_v :
+        The dimension of the `values` (V) in the DMSA mechanism.
 
     d_ffn :
-        The dimension of the feed-forward network.
-
-    factor :
-        The factor of the auto correlation mechanism for the Autoformer model.
-
-    moving_avg_window_size :
-        The window size of moving average.
+        The dimension of the layer in the Feed-Forward Networks (FFN).
 
     dropout :
-        The dropout rate for the model.
+        The dropout rate for all fully-connected layers in the model.
+
+    attn_dropout :
+        The dropout rate for DMSA.
+
+    diagonal_attention_mask :
+        Whether to apply a diagonal attention mask to the self-attention mechanism.
+        If so, the attention layers will use DMSA. Otherwise, the attention layers will use the original.
 
     ORT_weight :
-        The weight for the ORT loss, the same as SAITS.
+        The weight for the ORT loss.
 
     MIT_weight :
-        The weight for the MIT loss, the same as SAITS.
+        The weight for the MIT loss.
 
     batch_size :
         The batch size for training and evaluating the model.
@@ -121,12 +133,14 @@ class Autoformer(BaseNNDetector):
         n_layers: int,
         d_model: int,
         n_heads: int,
+        d_k: int,
+        d_v: int,
         d_ffn: int,
-        factor: int,
-        moving_avg_window_size: int,
         dropout: float = 0,
-        ORT_weight: float = 1,
-        MIT_weight: float = 1,
+        attn_dropout: float = 0,
+        diagonal_attention_mask: bool = True,
+        ORT_weight: int = 1,
+        MIT_weight: int = 1,
         batch_size: int = 32,
         epochs: int = 100,
         patience: Optional[int] = None,
@@ -155,27 +169,31 @@ class Autoformer(BaseNNDetector):
         self.n_steps = n_steps
         self.n_features = n_features
         # model hype-parameters
-        self.n_heads = n_heads
         self.n_layers = n_layers
         self.d_model = d_model
         self.d_ffn = d_ffn
-        self.factor = factor
-        self.moving_avg_window_size = moving_avg_window_size
+        self.n_heads = n_heads
+        self.d_k = d_k
+        self.d_v = d_v
         self.dropout = dropout
+        self.attn_dropout = attn_dropout
+        self.diagonal_attention_mask = diagonal_attention_mask
         self.ORT_weight = ORT_weight
         self.MIT_weight = MIT_weight
 
         # set up the model
-        self.model = _Autoformer(
+        self.model = _SAITS(
+            n_layers=self.n_layers,
             n_steps=self.n_steps,
             n_features=self.n_features,
-            n_layers=self.n_layers,
             d_model=self.d_model,
             n_heads=self.n_heads,
+            d_k=self.d_k,
+            d_v=self.d_v,
             d_ffn=self.d_ffn,
-            factor=self.factor,
-            moving_avg_window_size=self.moving_avg_window_size,
             dropout=self.dropout,
+            attn_dropout=self.attn_dropout,
+            diagonal_attention_mask=self.diagonal_attention_mask,
             ORT_weight=self.ORT_weight,
             MIT_weight=self.MIT_weight,
             training_loss=self.training_loss,
@@ -229,15 +247,9 @@ class Autoformer(BaseNNDetector):
         val_set: Optional[Union[dict, str]] = None,
         file_type: str = "hdf5",
     ) -> None:
-        self.train_set = train_set
-
         # Step 1: wrap the input data with classes Dataset and DataLoader
-        train_dataset = DatasetForSAITS(
-            train_set,
-            return_X_ori=False,
-            return_y=False,
-            file_type=file_type,
-        )
+        self.train_set = train_set
+        train_dataset = DatasetForSAITS(train_set, return_X_ori=False, return_y=False, file_type=file_type)
         train_dataloader = DataLoader(
             train_dataset,
             batch_size=self.batch_size,
@@ -248,12 +260,7 @@ class Autoformer(BaseNNDetector):
         if val_set is not None:
             if not key_in_data_set("X_ori", val_set):
                 raise ValueError("val_set must contain 'X_ori' for model validation.")
-            val_dataset = DatasetForSAITS(
-                val_set,
-                return_X_ori=True,
-                return_y=False,
-                file_type=file_type,
-            )
+            val_dataset = DatasetForSAITS(val_set, return_X_ori=True, return_y=False, file_type=file_type)
             val_dataloader = DataLoader(
                 val_dataset,
                 batch_size=self.batch_size,

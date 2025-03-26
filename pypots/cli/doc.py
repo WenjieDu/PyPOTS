@@ -24,7 +24,7 @@ DOC_RST_FILES = [
     "pypots.clustering.rst",
     "pypots.forecasting.rst",
     "pypots.anomaly_detection.rst",
-    "pypots.vec.rst",
+    "pypots.representation.rst",
     "pypots.data.rst",
     "pypots.utils.rst",
 ]
