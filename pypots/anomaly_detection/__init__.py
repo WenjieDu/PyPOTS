@@ -9,6 +9,7 @@ from .autoformer import Autoformer
 from .imputeformer import ImputeFormer
 from .patchtst import PatchTST
 from .saits import SAITS
+from .segrnn import SegRNN
 from .tefn import TEFN
 
 __all__ = [
@@ -17,4 +18,5 @@ __all__ = [
     "TEFN",
     "ImputeFormer",
     "PatchTST",
+    "SegRNN",
 ]
