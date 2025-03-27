@@ -82,6 +82,15 @@ pypots.imputation.fits
    :show-inheritance:
    :inherited-members:
 
+pypots.imputation.timemixerpp
+------------------------------------
+
+.. automodule:: pypots.imputation.timemixerpp
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+
 pypots.imputation.timemixer
 ------------------------------------
 

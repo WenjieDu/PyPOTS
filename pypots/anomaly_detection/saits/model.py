@@ -22,7 +22,7 @@ from ...optim.base import Optimizer
 
 
 class SAITS(BaseNNDetector):
-    """The PyTorch implementation of the SAITS model :cite:`du2023saits` on the anomaly detection task.
+    """The PyTorch implementation of the SAITS model :cite:`du2023SAITS` on the anomaly detection task.
 
     Parameters
     ----------
