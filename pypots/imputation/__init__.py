@@ -44,6 +44,7 @@ from .trmf import TRMF
 from .timellm import TimeLLM
 from .gpt4ts import GPT4TS
 from .moment import MOMENT
+from .timemixerpp import TimeMixerPP
 
 # naive imputation methods
 from .locf import LOCF
@@ -92,6 +93,7 @@ __all__ = [
     "TimeLLM",
     "GPT4TS",
     "MOMENT",
+    "TimeMixerPP",
     # naive imputation methods
     "LOCF",
     "Mean",
