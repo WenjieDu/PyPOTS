@@ -1,28 +1,27 @@
 """
-The implementation of SAITS for the partially-observed time-series anomaly detection task.
+The implementation of TimeMixer++ for the partially-observed time-series imputation task.
 
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-
 from typing import Union, Optional
 
 import torch
 from torch.utils.data import DataLoader
 
-from ..base import BaseNNDetector
+from .core import _TimeMixerPP
+from ..base import BaseNNImputer
+from ..saits.data import DatasetForSAITS
 from ...data.checking import key_in_data_set
-from ...imputation.saits.core import _SAITS
-from ...imputation.saits.data import DatasetForSAITS
 from ...nn.modules.loss import Criterion, MAE, MSE
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
 
 
-class SAITS(BaseNNDetector):
-    """The PyTorch implementation of the SAITS model :cite:`du2023SAITS` on the anomaly detection task.
+class TimeMixerPP(BaseNNImputer):
+    """The PyTorch implementation of the TimeMixer++ model :cite:`wang2025timemixerpp` on the imputation task.
 
     Parameters
     ----------
@@ -32,47 +31,44 @@ class SAITS(BaseNNDetector):
     n_features :
         The number of features in the time-series data sample.
 
-    anomaly_rate :
-        The rate of anomalies in the data, should be in the range (0, 1).
-
     n_layers :
-        The number of layers in the 1st and 2nd DMSA blocks in the SAITS model.
+        The number of layers in the TimeMixer++ model.
 
     d_model :
-        The dimension of the model's backbone.
-        It is the input dimension of the multi-head DMSA layers.
-
-    n_heads :
-        The number of heads in the multi-head DMSA mechanism.
-        ``d_model`` must be divisible by ``n_heads``, and the result should be equal to ``d_k``.
-
-    d_k :
-        The dimension of the `keys` (K) and the `queries` (Q) in the DMSA mechanism.
-        ``d_k`` should be the result of ``d_model`` divided by ``n_heads``. Although ``d_k`` can be directly calculated
-        with given ``d_model`` and ``n_heads``, we want it be explicitly given together with ``d_v`` by users to ensure
-        users be aware of them and to avoid any potential mistakes.
-
-    d_v :
-        The dimension of the `values` (V) in the DMSA mechanism.
+        The dimension of the model.
 
     d_ffn :
-        The dimension of the layer in the Feed-Forward Networks (FFN).
+        The dimension of the feed-forward network.
+
+    top_k :
+        The number of top-k amplitude values to be selected to  obtain the most significant frequencies.
+
+    n_heads:
+        The head number of full attention in the model.
+        Only work if channel_mixing is True.
+
+    n_kernels:
+        num_kernels for Inception module.
 
     dropout :
-        The dropout rate for all fully-connected layers in the model.
+        The dropout rate for the model.
 
-    attn_dropout :
-        The dropout rate for DMSA.
+    channel_mixing :
+        Whether to apply channel mixing in the model.
 
-    diagonal_attention_mask :
-        Whether to apply a diagonal attention mask to the self-attention mechanism.
-        If so, the attention layers will use DMSA. Otherwise, the attention layers will use the original.
+    channel_independence :
+        Whether to use channel independence in the model.
 
-    ORT_weight :
-        The weight for the ORT loss.
+    downsampling_layers :
+        The number of downsampling layers in the model.
 
-    MIT_weight :
-        The weight for the MIT loss.
+    downsampling_window :
+        The window size for downsampling.
+
+    apply_nonstationary_norm :
+        Whether to apply non-stationary normalization to the input data for TimeMixer++.
+        Please refer to :cite:`liu2022nonstationary` for details about non-stationary normalization,
+        which is not the idea of the original TimeMixer++ paper. Hence, we make it optional and default not to use here.
 
     batch_size :
         The batch size for training and evaluating the model.
@@ -129,18 +125,18 @@ class SAITS(BaseNNDetector):
         self,
         n_steps: int,
         n_features: int,
-        anomaly_rate: float,
         n_layers: int,
         d_model: int,
-        n_heads: int,
-        d_k: int,
-        d_v: int,
         d_ffn: int,
+        top_k: int,
+        n_heads: int,
+        n_kernels: int,
         dropout: float = 0,
-        attn_dropout: float = 0,
-        diagonal_attention_mask: bool = True,
-        ORT_weight: int = 1,
-        MIT_weight: int = 1,
+        channel_mixing: bool = True,
+        channel_independence: bool = True,
+        downsampling_layers: int = 3,
+        downsampling_window: int = 2,
+        apply_nonstationary_norm: bool = False,
         batch_size: int = 32,
         epochs: int = 100,
         patience: Optional[int] = None,
@@ -149,12 +145,11 @@ class SAITS(BaseNNDetector):
         optimizer: Union[Optimizer, type] = Adam,
         num_workers: int = 0,
         device: Optional[Union[str, torch.device, list]] = None,
-        saving_path: str = None,
+        saving_path: Optional[str] = None,
         model_saving_strategy: Optional[str] = "best",
         verbose: bool = True,
     ):
         super().__init__(
-            anomaly_rate=anomaly_rate,
             training_loss=training_loss,
             validation_metric=validation_metric,
             batch_size=batch_size,
@@ -166,36 +161,39 @@ class SAITS(BaseNNDetector):
             model_saving_strategy=model_saving_strategy,
             verbose=verbose,
         )
+
         self.n_steps = n_steps
         self.n_features = n_features
-        # model hyperparameters
+        # model hype-parameters
         self.n_layers = n_layers
         self.d_model = d_model
         self.d_ffn = d_ffn
         self.n_heads = n_heads
-        self.d_k = d_k
-        self.d_v = d_v
         self.dropout = dropout
-        self.attn_dropout = attn_dropout
-        self.diagonal_attention_mask = diagonal_attention_mask
-        self.ORT_weight = ORT_weight
-        self.MIT_weight = MIT_weight
+        self.n_kernels = n_kernels
+        self.top_k = top_k
+        self.channel_mixing = channel_mixing
+        self.channel_independence = channel_independence
+        self.downsampling_layers = downsampling_layers
+        self.downsampling_window = downsampling_window
+        self.apply_nonstationary_norm = apply_nonstationary_norm
 
         # set up the model
-        self.model = _SAITS(
-            n_layers=self.n_layers,
+        self.model = _TimeMixerPP(
             n_steps=self.n_steps,
             n_features=self.n_features,
+            n_layers=self.n_layers,
             d_model=self.d_model,
-            n_heads=self.n_heads,
-            d_k=self.d_k,
-            d_v=self.d_v,
             d_ffn=self.d_ffn,
+            n_heads=self.n_heads,
             dropout=self.dropout,
-            attn_dropout=self.attn_dropout,
-            diagonal_attention_mask=self.diagonal_attention_mask,
-            ORT_weight=self.ORT_weight,
-            MIT_weight=self.MIT_weight,
+            top_k=self.top_k,
+            n_kernels=self.n_kernels,
+            channel_mixing=self.channel_mixing,
+            channel_independence=self.channel_independence,
+            downsampling_layers=self.downsampling_layers,
+            downsampling_window=self.downsampling_window,
+            apply_nonstationary_norm=self.apply_nonstationary_norm,
             training_loss=self.training_loss,
             validation_metric=self.validation_metric,
         )
@@ -248,7 +246,6 @@ class SAITS(BaseNNDetector):
         file_type: str = "hdf5",
     ) -> None:
         # Step 1: wrap the input data with classes Dataset and DataLoader
-        self.train_set = train_set
         train_dataset = DatasetForSAITS(train_set, return_X_ori=False, return_y=False, file_type=file_type)
         train_dataloader = DataLoader(
             train_dataset,
