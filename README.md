@@ -131,6 +131,7 @@ The paper references and links are all listed at the bottom of this file.
 | Neural Net    | iTransformer🧑‍🔧[^24]                                                                                                           |    ✅     |          |    ✅     |          |          | `2024 - ICLR`                                      |
 | Neural Net    | ModernTCN[^38]                                                                                                                   |    ✅     |          |          |          |          | `2024 - ICLR`                                      |
 | Neural Net    | ImputeFormer🧑‍🔧[^34]                                                                                                           |    ✅     |          |          |          |    ✅     | `2024 - KDD`                                       |
+| Neural Net    | TOTEM [^50]                                                                                                                       |    ✅     |          |          |          |          | `2024 - TMLR`                                      |
 | Neural Net    | SAITS[^1]                                                                                                                        |    ✅     |          |    ✅     |          |    ✅     | `2023 - ESWA`                                      |
 | LLM           | GPT4TS[^46]                                                                                                                      |    ✅     |    ✅     |          |          |          | `2023 - NeurIPS`                                   |
 | Neural Net    | FreTS🧑‍🔧[^23]                                                                                                                  |    ✅     |          |          |          |          | `2023 - NeurIPS`                                   |
@@ -547,3 +548,6 @@ Time-Series.AI</a>
 [^49]: Wang, S., Li, J., Shi, X., Ye, Z., Mo, B., Lin, W., Ju, S., Chu, Z. & Jin, M. (2025).
 [TimeMixer++: A General Time Series Pattern Machine for Universal Predictive Analysis](https://openreview.net/forum?id=1CLzLXSFNn).
 *ICLR 2025*.
+[^50]: Talukder, S., Yue, Y., & Gkioxari, G. (2024). (2024).
+[TOTEM: TOkenized Time Series EMbeddings for General Time Series Analysis](https://openreview.net/forum?id=QlTLkH6xRC).
+*TMLR 2024*.
