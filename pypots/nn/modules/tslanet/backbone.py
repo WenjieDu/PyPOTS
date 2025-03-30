@@ -8,9 +8,8 @@
 import torch
 import torch.nn as nn
 from einops import rearrange
-from timm.models.layers import trunc_normal_
 
-from .layers import TSLANet_layer, PatchEmbed
+from .layers import TSLANet_layer, PatchEmbed, trunc_normal_
 
 
 def random_masking_3D(xb, mask_ratio):
