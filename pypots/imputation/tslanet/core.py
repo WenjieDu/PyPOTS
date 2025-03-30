@@ -7,7 +7,6 @@ and takes over the forward progress of the algorithm.
 # License: BSD-3-Clause
 
 from ...nn.modules import ModelCore
-from ...nn.modules.loss import Criterion
 from ...nn.modules.tslanet import BackboneTSLANet
 
 

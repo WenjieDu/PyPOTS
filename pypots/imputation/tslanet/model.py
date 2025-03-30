@@ -19,11 +19,6 @@ from ...nn.modules.loss import Criterion
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
 
-try:
-    import nni
-except ImportError:
-    pass
-
 
 class TSLANet(BaseNNImputer):
     """The PyTorch implementation of the TSLANet model :cite:`eldele2024tslanet`.
