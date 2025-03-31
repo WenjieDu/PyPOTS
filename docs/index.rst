@@ -58,11 +58,11 @@ Welcome to PyPOTS docs!
    :alt: Docs building
    :target: https://readthedocs.org/projects/pypots/builds
 
-.. image:: https://img.shields.io/endpoint?url=https://pypots.com/figs/downloads_badges/conda_pypots_downloads.json
+.. image:: https://pypots.com/figs/downloads_badges/conda_pypots_downloads.svg
    :alt: Conda downloads
    :target: https://anaconda.org/conda-forge/pypots
 
-.. image:: https://img.shields.io/endpoint?url=https://pypots.com/figs/downloads_badges/pypi_pypots_downloads.json
+.. image:: https://pypots.com/figs/downloads_badges/pypi_pypots_downloads.svg
    :alt: PyPI downloads
    :target: https://pepy.tech/project/pypots
 
@@ -132,9 +132,13 @@ The paper references are all listed at the bottom of this readme file.
 +----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
 | Type           | Algorithm                                                 | IMPU | FORE | CLAS | CLUS | ANOD | Year - Venue          |
 +================+===========================================================+======+======+======+======+======+=======================+
+| Neural Net     | TimeMixer++        :cite:`wang2025timemixerpp`            |  ✅  |      |      |      |      | ``2025 - ICLR``       |
++----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
 | LLM            | Time-LLM🧑‍🔧        :cite:`jin2024timellm`               |  ✅  |  ✅  |      |      |      | ``2024 - ICLR``       |
 +----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
 | TSFM           | MOMENT🧑‍🔧        :cite:`goswami2024moment`              |  ✅  |  ✅  |      |      |      | ``2024 - ICML``       |
++----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
+| Neural Net     | TSLANet            :cite:`eldele2024tslanet`              |  ✅  |      |      |      |      | ``2024 - ICML``       |
 +----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
 | Neural Net     | TEFN🧑‍🔧           :cite:`zhan2024tefn`                  |  ✅  |  ✅  |  ✅  |      |  ✅  | ``2024 - arXiv``      |
 +----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
@@ -147,6 +151,8 @@ The paper references are all listed at the bottom of this readme file.
 | Neural Net     | ModernTCN :cite:`luo2024moderntcn`                        |  ✅  |      |      |      |      | ``2024 - ICLR``       |
 +----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
 | Neural Net     | ImputeFormer      :cite:`nie2024imputeformer`             |  ✅  |      |      |      |  ✅  | ``2024 - KDD``        |
++----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
+| Neural Net     | TOTEM            :cite:`talukder2024totem`                |  ✅  |      |      |      |      | ``2024 - TMLR``       |
 +----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
 | Neural Net     | SAITS :cite:`du2023SAITS`                                 |  ✅  |      |  ✅  |      |  ✅  | ``2023 - ESWA``       |
 +----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
