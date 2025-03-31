@@ -58,11 +58,11 @@ Welcome to PyPOTS docs!
    :alt: Docs building
    :target: https://readthedocs.org/projects/pypots/builds
 
-.. image:: https://img.shields.io/endpoint?url=https://pypots.com/figs/downloads_badges/conda_pypots_downloads.json
+.. image:: https://pypots.com/figs/downloads_badges/conda_pypots_downloads.svg
    :alt: Conda downloads
    :target: https://anaconda.org/conda-forge/pypots
 
-.. image:: https://img.shields.io/endpoint?url=https://pypots.com/figs/downloads_badges/pypi_pypots_downloads.json
+.. image:: https://pypots.com/figs/downloads_badges/pypi_pypots_downloads.svg
    :alt: PyPI downloads
    :target: https://pepy.tech/project/pypots
 
