@@ -46,6 +46,15 @@ pypots.imputation.moment
    :show-inheritance:
    :inherited-members:
 
+pypots.imputation.tslanet
+------------------------------------
+
+.. automodule:: pypots.imputation.tslanet
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+
 pypots.imputation.timellm
 ------------------------------------
 
@@ -82,6 +91,15 @@ pypots.imputation.fits
    :show-inheritance:
    :inherited-members:
 
+pypots.imputation.timemixerpp
+------------------------------------
+
+.. automodule:: pypots.imputation.timemixerpp
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+
 pypots.imputation.timemixer
 ------------------------------------
 
@@ -104,6 +122,15 @@ pypots.imputation.imputeformer
 ------------------------------------
 
 .. automodule:: pypots.imputation.imputeformer
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+
+pypots.imputation.totem
+------------------------------------
+
+.. automodule:: pypots.imputation.totem
    :members:
    :undoc-members:
    :show-inheritance:
