@@ -118,6 +118,15 @@ pypots.imputation.imputeformer
    :show-inheritance:
    :inherited-members:
 
+pypots.imputation.totem
+------------------------------------
+
+.. automodule:: pypots.imputation.totem
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+
 pypots.imputation.itransformer
 ------------------------------------
 

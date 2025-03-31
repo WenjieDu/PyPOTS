@@ -19,8 +19,11 @@ docs/_build
 # ignore specific kinds of files like all PDFs
 *.pdf
 *.ipynb
-*TODO
+*TODO*
 
 # ignore executable and config files
 *.sh
 *.yml
+
+# to temporally ignore things under development locally, simply append '_indev' to the name of your workdir
+*_indev*
