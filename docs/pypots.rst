@@ -12,7 +12,7 @@ Subpackages
    pypots.clustering
    pypots.forecasting
    pypots.anomaly_detection
-   pypots.vec
+   pypots.representation
    pypots.nn
    pypots.optim
    pypots.data
