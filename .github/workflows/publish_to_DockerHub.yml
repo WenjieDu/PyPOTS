@@ -28,28 +28,20 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Build and Push Image for Linux-AMD64-CUDA
+      - name: Build and Push Image for Linux-AMD64
         uses: docker/build-push-action@v6
         with:
-          file: ./docker/Dockerfile_linux_amd64_cuda
+          file: ./docker/Dockerfile_linux
           platforms: linux/amd64
           build-args: |
             TARGETPLATFORM=linux/amd64
           push: true
-          tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/pypots:latest
-            ${{ secrets.DOCKERHUB_USERNAME }}/pypots:amd64
-            ${{ secrets.DOCKERHUB_USERNAME }}/pypots:x86_64
-            ${{ secrets.DOCKERHUB_USERNAME }}/pypots:linux_amd64_cuda
 
       - name: Build and Push Image for Linux-ARM64
         uses: docker/build-push-action@v6
         with:
-          file: ./docker/Dockerfile_linux_amd64_cuda
-          platforms: linux/arm64
+          file: ./docker/Dockerfile_linux
+          platforms: linux/arm64, linux/arm64/v8
           build-args: |
             TARGETPLATFORM=linux/arm64
           push: true
-          tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/pypots:linux_arm64_cuda
-            ${{ secrets.DOCKERHUB_USERNAME }}/pypots:arm
