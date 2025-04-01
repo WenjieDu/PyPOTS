@@ -18,10 +18,9 @@ This implementation is inspired by the official one https://github.com/thuml/Tim
 
 
 from .backbone import BackboneTimesNet
-from .layers import InceptionBlockV1, TimesBlock
+from .layers import TimesBlock
 
 __all__ = [
     "BackboneTimesNet",
-    "InceptionBlockV1",
     "TimesBlock",
 ]
