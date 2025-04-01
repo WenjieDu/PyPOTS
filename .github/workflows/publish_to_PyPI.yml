@@ -7,12 +7,13 @@
 # separate terms of service, privacy policy, and support
 # documentation.
 
-name: Publish to PyPI
+name: Publish PyPI Package
 
 on:
   push:
     branches:
       - release
+      - release_pypi
 
   release:
     types: [published]
