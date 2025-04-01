@@ -19,6 +19,9 @@
     <a href="https://github.com/WenjieDu/PyPOTS/blob/main/LICENSE">
         <img alt="BSD-3 license" src="https://img.shields.io/badge/License-BSD--3-E9BB41?logo=opensourceinitiative&logoColor=white">
     </a>
+    <a href="https://github.com/WenjieDu/PyPOTS?tab=coc-ov-file">
+        <img alt="Code of Conduct" src="https://img.shields.io/badge/Contributor_Covenant-2.1-4baaaa">
+    </a>
     <a href="https://github.com/WenjieDu/PyPOTS#-community">
         <img alt="Community" src="https://img.shields.io/badge/join_us-community!-C8A062">
     </a>
@@ -43,6 +46,9 @@
     <a href="https://docs.pypots.com">
         <img alt="Docs building" src="https://img.shields.io/readthedocs/pypots?logo=readthedocs&label=Docs&logoColor=white&color=395260">
     </a>
+    <a href="https://github.com/psf/black">
+        <img alt="Code Style" src="https://img.shields.io/badge/Code_Style-black-000000">
+    </a>
     <a href="https://anaconda.org/conda-forge/pypots">
         <img alt="Conda downloads" src="https://pypots.com/figs/downloads_badges/conda_pypots_downloads.svg">
     </a>
@@ -57,9 +63,6 @@
     </a>
    <a href="https://github.com/WenjieDu/PyPOTS/blob/main/README.md">
         <img alt="README in English" src="https://pypots.com/figs/pypots_logos/readme/US.svg">
-    </a>
-    <a href="https://github.com/WenjieDu/PyPOTS">
-        <img alt="PyPOTS Hits" src="https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2FPyPOTS%2FPyPOTS&count_bg=%23009A0A&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=Hits&edge_flat=false">
     </a>
 </p>
 
