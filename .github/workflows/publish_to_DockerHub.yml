@@ -31,7 +31,19 @@ jobs:
       - name: Build and Push Image for Linux-AMD64-CUDA
         uses: docker/build-push-action@v6
         with:
-          file: ./Dockerfile_linux_amd64_cuda
+          file: ./Dockerfile
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/pypots:latest
           platforms: linux/amd64
+          build-args: |
+            TARGETPLATFORM=linux/amd64
+
+      - name: Build and Push Image for Linux-ARM64
+        uses: docker/build-push-action@v6
+        with:
+          file: ./Dockerfile
+          push: true
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/pypots:latest
+          platforms: linux/arm64
+          build-args: |
+            TARGETPLATFORM=linux/arm64

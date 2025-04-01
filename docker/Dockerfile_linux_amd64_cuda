@@ -10,6 +10,7 @@ ARG REF=main
 RUN git clone https://github.com/WenjieDu/PyPOTS --depth=1 && cd PyPOTS && git checkout $REF
 
 # environment setup and dependency installation
+ARG TARGETPLATFORM
 ARG CUDA_VER='cu121'
 ARG PYTORCH_VER='2.5.1'
 ARG NUMPY_VER='1.26.4'
@@ -20,7 +21,15 @@ RUN python3 -m pip install --no-cache-dir torch==$PYTORCH_VER -f 'https://downlo
 # install other dependencies with instructions in the requirements file
 RUN python3 -m pip install --no-cache-dir -r ./PyPOTS/requirements/requirements.txt
 # install pyg for GNN models in PyPOTS, like Raindrop
-RUN python3 -m pip install --no-cache-dir torch_geometric torch_scatter torch_sparse -f 'https://data.pyg.org/whl/torch-'$PYTORCH_VER'+'$CUDA_VER'.html'
+RUN python3 -m pip install --no-cache-dir torch_geometric
+
+RUN if [[ "$TARGETPLATFORM" = "linux/amd64" ]]; then \
+        echo "Installing torch_scatter and torch_sparse for: $TARGETPLATFORM" && \
+        python3 -m pip install --no-cache-dir torch_scatter torch_sparse -f 'https://data.pyg.org/whl/torch-'$PYTORCH_VER'+'$CUDA_VER'.html'; \
+    else \
+        echo "No torch_scatter and torch_sparse wheels for $TARGETPLATFORM, skipping. Some GNN models in PyPOTS may not available due to dependencies missing"; \
+    fi
+
 # install pypots
 RUN python3 -m pip install --no-cache-dir ./PyPOTS
 
