@@ -37,6 +37,9 @@ jobs:
             TARGETPLATFORM=linux/amd64
           push: true
           tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/pypots:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/pypots:amd64
+            ${{ secrets.DOCKERHUB_USERNAME }}/pypots:x86_64
             ${{ secrets.DOCKERHUB_USERNAME }}/pypots:linux_amd64_cuda
 
       - name: Build and Push Image for Linux-ARM64
@@ -49,3 +52,4 @@ jobs:
           push: true
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/pypots:linux_arm64_cuda
+            ${{ secrets.DOCKERHUB_USERNAME }}/pypots:arm
