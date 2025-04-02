@@ -47,7 +47,6 @@ jobs:
         with:
           file: ./docker/Dockerfile_linux
           platforms: |
-            linux/arm64
             linux/arm64/v8
           build-args: |
             TARGETPLATFORM=linux/arm64
