@@ -26,6 +26,10 @@ Welcome to PyPOTS docs!
    :alt: BSD-3 license
    :target: https://github.com/WenjieDu/PyPOTS/blob/main/LICENSE
 
+.. image:: https://img.shields.io/badge/Contributor_Covenant-2.1-4baaaa
+   :alt: Code of Conduct
+   :target: https://github.com/WenjieDu/PyPOTS?tab=coc-ov-file
+
 .. image:: https://img.shields.io/badge/join_us-community!-C8A062
    :alt: Community
    :target: https://github.com/WenjieDu/PyPOTS#-community
@@ -58,6 +62,10 @@ Welcome to PyPOTS docs!
    :alt: Docs building
    :target: https://readthedocs.org/projects/pypots/builds
 
+.. image:: https://img.shields.io/badge/Code_Style-black-000000
+   :alt: Code Style
+   :target: https://github.com/psf/black
+
 .. image:: https://pypots.com/figs/downloads_badges/conda_pypots_downloads.svg
    :alt: Conda downloads
    :target: https://anaconda.org/conda-forge/pypots
@@ -77,9 +85,6 @@ Welcome to PyPOTS docs!
 .. image:: https://pypots.com/figs/pypots_logos/readme/US.svg
    :alt: README in English
    :target: https://github.com/WenjieDu/PyPOTS/blob/main/README.md
-
-.. image:: https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2FPyPOTS%2FPyPOTS&count_bg=%23009A0A&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=Hits&edge_flat=false
-   :alt: Hits number
 
 -----------------
 
