@@ -32,23 +32,25 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           file: ./docker/Dockerfile_linux
-          platforms: linux/amd64
+          platforms: |
+            linux/amd64
           build-args: |
             TARGETPLATFORM=linux/amd64
           push: true
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/pypots:latest
-            ${{ secrets.DOCKERHUB_USERNAME }}/pypots:linux_amd64
-            ${{ secrets.DOCKERHUB_USERNAME }}/pypots:linux_x86_64
+            ${{ secrets.DOCKERHUB_USERNAME }}/pypots:ubuntu-amd64
+            ${{ secrets.DOCKERHUB_USERNAME }}/pypots:ubuntu-x86_64
 
       - name: Build and Push Image for Linux-ARM64
         uses: docker/build-push-action@v6
         with:
           file: ./docker/Dockerfile_linux
-          platforms: linux/arm64, linux/arm64/v8
+          platforms: |
+            linux/arm64
+            linux/arm64/v8
           build-args: |
             TARGETPLATFORM=linux/arm64
           push: true
           tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/pypots:arm
-            ${{ secrets.DOCKERHUB_USERNAME }}/pypots:linux_arm64
+            ${{ secrets.DOCKERHUB_USERNAME }}/pypots:ubuntu-arm64
