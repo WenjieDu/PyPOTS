@@ -19,6 +19,9 @@
     <a href="https://github.com/WenjieDu/PyPOTS/blob/main/LICENSE">
         <img alt="BSD-3 license" src="https://img.shields.io/badge/License-BSD--3-E9BB41?logo=opensourceinitiative&logoColor=white">
     </a>
+    <a href="https://github.com/WenjieDu/PyPOTS?tab=coc-ov-file">
+        <img alt="Code of Conduct" src="https://img.shields.io/badge/Contributor_Covenant-2.1-4baaaa">
+    </a>
     <a href="https://github.com/WenjieDu/PyPOTS#-community">
         <img alt="Community" src="https://img.shields.io/badge/join_us-community!-C8A062">
     </a>
@@ -43,11 +46,14 @@
     <a href="https://docs.pypots.com">
         <img alt="Docs building" src="https://img.shields.io/readthedocs/pypots?logo=readthedocs&label=Docs&logoColor=white&color=395260">
     </a>
+    <a href="https://github.com/psf/black">
+        <img alt="Code Style" src="https://img.shields.io/badge/Code_Style-black-000000">
+    </a>
     <a href="https://anaconda.org/conda-forge/pypots">
-        <img alt="Conda downloads" src="https://img.shields.io/endpoint?url=https://pypots.com/figs/downloads_badges/conda_pypots_downloads.json">
+        <img alt="Conda downloads" src="https://pypots.com/figs/downloads_badges/conda_pypots_downloads.svg">
     </a>
     <a href="https://pepy.tech/project/pypots">
-        <img alt="PyPI downloads" src="https://img.shields.io/endpoint?url=https://pypots.com/figs/downloads_badges/pypi_pypots_downloads.json">
+        <img alt="PyPI downloads" src="https://pypots.com/figs/downloads_badges/pypi_pypots_downloads.svg">
     </a>
     <a href="https://arxiv.org/abs/2305.18811">
         <img alt="arXiv DOI" src="https://img.shields.io/badge/DOI-10.48550/arXiv.2305.18811-F8F7F0">
@@ -57,9 +63,6 @@
     </a>
    <a href="https://github.com/WenjieDu/PyPOTS/blob/main/README.md">
         <img alt="README in English" src="https://pypots.com/figs/pypots_logos/readme/US.svg">
-    </a>
-    <a href="https://github.com/WenjieDu/PyPOTS">
-        <img alt="PyPOTS Hits" src="https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2FPyPOTS%2FPyPOTS&count_bg=%23009A0A&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=Hits&edge_flat=false">
     </a>
 </p>
 
@@ -122,14 +125,17 @@ The paper references and links are all listed at the bottom of this file.
 | **Type**      | **Algo**                                                                                                                         | **IMPU** | **FORE** | **CLAS** | **CLUS** | **ANOD** | **Year - Venue**                                   |
 |:--------------|:---------------------------------------------------------------------------------------------------------------------------------|:--------:|:--------:|:--------:|:--------:|:--------:|:---------------------------------------------------|
 | LLM&TSFM      | <a href="https://time-series.ai"><img src="https://time-series.ai/static/figs/robot.svg" width="26px"> Time-Series.AI</a>  [^36] |    ✅     |    ✅     |    ✅     |    ✅     |    ✅     | <a href="https://time-series.ai">Join waitlist</a> |
+| Neural Net    | TimeMixer++[^49]                                                                                                                 |    ✅     |          |          |          |          | `2025 - ICLR`                                      |
 | LLM           | Time-LLM🧑‍🔧[^45]                                                                                                               |    ✅     |    ✅     |          |          |          | `2024 - ICLR`                                      |
 | TSFM          | MOMENT[^47]                                                                                                                      |    ✅     |    ✅     |          |          |          | `2024 - ICML`                                      |
+| Neural Net    | TSLANet[^51]                                                                                                                     |    ✅     |          |          |          |          | `2024 - ICML`                                      |
 | Neural Net    | TEFN🧑‍🔧[^39]                                                                                                                   |    ✅     |    ✅     |    ✅     |          |    ✅     | `2024 - arXiv`                                     |
 | Neural Net    | FITS🧑‍🔧[^41]                                                                                                                   |    ✅     |    ✅     |          |          |          | `2024 - ICLR`                                      |
 | Neural Net    | TimeMixer[^37]                                                                                                                   |    ✅     |    ✅     |          |          |          | `2024 - ICLR`                                      |
 | Neural Net    | iTransformer🧑‍🔧[^24]                                                                                                           |    ✅     |          |    ✅     |          |          | `2024 - ICLR`                                      |
 | Neural Net    | ModernTCN[^38]                                                                                                                   |    ✅     |          |          |          |          | `2024 - ICLR`                                      |
 | Neural Net    | ImputeFormer🧑‍🔧[^34]                                                                                                           |    ✅     |          |          |          |    ✅     | `2024 - KDD`                                       |
+| Neural Net    | TOTEM [^50]                                                                                                                      |    ✅     |          |          |          |          | `2024 - TMLR`                                      |
 | Neural Net    | SAITS[^1]                                                                                                                        |    ✅     |          |    ✅     |          |    ✅     | `2023 - ESWA`                                      |
 | LLM           | GPT4TS[^46]                                                                                                                      |    ✅     |    ✅     |          |          |          | `2023 - NeurIPS`                                   |
 | Neural Net    | FreTS🧑‍🔧[^23]                                                                                                                  |    ✅     |          |          |          |          | `2023 - NeurIPS`                                   |
@@ -543,3 +549,12 @@ Time-Series.AI</a>
 [^48]: Yue, Z., Wang, Y., Duan, J., Yang, T., Huang, C., Tong, Y., & Xu, B. (2022).
 [TS2Vec: Towards Universal Representation of Time Series](https://ojs.aaai.org/index.php/AAAI/article/view/20881).
 *AAAI 2022*.
+[^49]: Wang, S., Li, J., Shi, X., Ye, Z., Mo, B., Lin, W., Ju, S., Chu, Z. & Jin, M. (2025).
+[TimeMixer++: A General Time Series Pattern Machine for Universal Predictive Analysis](https://openreview.net/forum?id=1CLzLXSFNn).
+*ICLR 2025*.
+[^50]: Talukder, S., Yue, Y., & Gkioxari, G. (2024).
+[TOTEM: TOkenized Time Series EMbeddings for General Time Series Analysis](https://openreview.net/forum?id=QlTLkH6xRC).
+*TMLR 2024*.
+[^51]: Eldele, E., Ragab, M., Chen, Z., Wu, M., & Li, X. (2024).
+[TSLANet: Rethinking Transformers for Time Series Representation Learning](https://proceedings.mlr.press/v235/eldele24a.html).
+*ICML 2024*.
