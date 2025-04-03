@@ -26,6 +26,10 @@ Welcome to PyPOTS docs!
    :alt: BSD-3 license
    :target: https://github.com/WenjieDu/PyPOTS/blob/main/LICENSE
 
+.. image:: https://img.shields.io/badge/Contributor_Covenant-2.1-4baaaa
+   :alt: Code of Conduct
+   :target: https://github.com/WenjieDu/PyPOTS?tab=coc-ov-file
+
 .. image:: https://img.shields.io/badge/join_us-community!-C8A062
    :alt: Community
    :target: https://github.com/WenjieDu/PyPOTS#-community
@@ -58,11 +62,15 @@ Welcome to PyPOTS docs!
    :alt: Docs building
    :target: https://readthedocs.org/projects/pypots/builds
 
-.. image:: https://img.shields.io/endpoint?url=https://pypots.com/figs/downloads_badges/conda_pypots_downloads.json
+.. image:: https://img.shields.io/badge/Code_Style-black-000000
+   :alt: Code Style
+   :target: https://github.com/psf/black
+
+.. image:: https://pypots.com/figs/downloads_badges/conda_pypots_downloads.svg
    :alt: Conda downloads
    :target: https://anaconda.org/conda-forge/pypots
 
-.. image:: https://img.shields.io/endpoint?url=https://pypots.com/figs/downloads_badges/pypi_pypots_downloads.json
+.. image:: https://pypots.com/figs/downloads_badges/pypi_pypots_downloads.svg
    :alt: PyPI downloads
    :target: https://pepy.tech/project/pypots
 
@@ -77,9 +85,6 @@ Welcome to PyPOTS docs!
 .. image:: https://pypots.com/figs/pypots_logos/readme/US.svg
    :alt: README in English
    :target: https://github.com/WenjieDu/PyPOTS/blob/main/README.md
-
-.. image:: https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2FPyPOTS%2FPyPOTS&count_bg=%23009A0A&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=Hits&edge_flat=false
-   :alt: Hits number
 
 -----------------
 
@@ -132,9 +137,13 @@ The paper references are all listed at the bottom of this readme file.
 +----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
 | Type           | Algorithm                                                 | IMPU | FORE | CLAS | CLUS | ANOD | Year - Venue          |
 +================+===========================================================+======+======+======+======+======+=======================+
+| Neural Net     | TimeMixer++        :cite:`wang2025timemixerpp`            |  ✅  |      |      |      |      | ``2025 - ICLR``       |
++----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
 | LLM            | Time-LLM🧑‍🔧        :cite:`jin2024timellm`               |  ✅  |  ✅  |      |      |      | ``2024 - ICLR``       |
 +----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
 | TSFM           | MOMENT🧑‍🔧        :cite:`goswami2024moment`              |  ✅  |  ✅  |      |      |      | ``2024 - ICML``       |
++----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
+| Neural Net     | TSLANet            :cite:`eldele2024tslanet`              |  ✅  |      |      |      |      | ``2024 - ICML``       |
 +----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
 | Neural Net     | TEFN🧑‍🔧           :cite:`zhan2024tefn`                  |  ✅  |  ✅  |  ✅  |      |  ✅  | ``2024 - arXiv``      |
 +----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
@@ -147,6 +156,8 @@ The paper references are all listed at the bottom of this readme file.
 | Neural Net     | ModernTCN :cite:`luo2024moderntcn`                        |  ✅  |      |      |      |      | ``2024 - ICLR``       |
 +----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
 | Neural Net     | ImputeFormer      :cite:`nie2024imputeformer`             |  ✅  |      |      |      |  ✅  | ``2024 - KDD``        |
++----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
+| Neural Net     | TOTEM            :cite:`talukder2024totem`                |  ✅  |      |      |      |      | ``2024 - TMLR``       |
 +----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
 | Neural Net     | SAITS :cite:`du2023SAITS`                                 |  ✅  |      |  ✅  |      |  ✅  | ``2023 - ESWA``       |
 +----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+

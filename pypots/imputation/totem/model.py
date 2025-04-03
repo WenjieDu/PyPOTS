@@ -1,28 +1,27 @@
 """
-The implementation of SAITS for the partially-observed time-series anomaly detection task.
+The implementation of TOTEM for the partially-observed time-series imputation task.
 
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-
 from typing import Union, Optional
 
 import torch
 from torch.utils.data import DataLoader
 
-from ..base import BaseNNDetector
+from .core import _TOTEM
+from ..base import BaseNNImputer
+from ..saits.data import DatasetForSAITS
 from ...data.checking import key_in_data_set
-from ...imputation.saits.core import _SAITS
-from ...imputation.saits.data import DatasetForSAITS
-from ...nn.modules.loss import Criterion, MAE, MSE
+from ...nn.modules.loss import Criterion
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
 
 
-class SAITS(BaseNNDetector):
-    """The PyTorch implementation of the SAITS model :cite:`du2023SAITS` on the anomaly detection task.
+class TOTEM(BaseNNImputer):
+    """The PyTorch implementation of the TOTEM model :cite:`talukder2024totem`.
 
     Parameters
     ----------
@@ -32,47 +31,26 @@ class SAITS(BaseNNDetector):
     n_features :
         The number of features in the time-series data sample.
 
-    anomaly_rate :
-        The rate of anomalies in the data, should be in the range (0, 1).
+    d_block_hidden :
+        The hidden size of the block in the TOTEM model.
 
-    n_layers :
-        The number of layers in the 1st and 2nd DMSA blocks in the SAITS model.
+    n_residual_layers :
+        The number of residual layers in the TOTEM model.
 
-    d_model :
-        The dimension of the model's backbone.
-        It is the input dimension of the multi-head DMSA layers.
+    d_residual_hidden :
+        The hidden size of the residual layers in the TOTEM model.
 
-    n_heads :
-        The number of heads in the multi-head DMSA mechanism.
-        ``d_model`` must be divisible by ``n_heads``, and the result should be equal to ``d_k``.
+    d_embedding :
+        The embedding dimension of the TOTEM model.
 
-    d_k :
-        The dimension of the `keys` (K) and the `queries` (Q) in the DMSA mechanism.
-        ``d_k`` should be the result of ``d_model`` divided by ``n_heads``. Although ``d_k`` can be directly calculated
-        with given ``d_model`` and ``n_heads``, we want it be explicitly given together with ``d_v`` by users to ensure
-        users be aware of them and to avoid any potential mistakes.
+    n_embeddings :
+        The number of embeddings in the TOTEM model.
 
-    d_v :
-        The dimension of the `values` (V) in the DMSA mechanism.
+    commitment_cost :
+        The commitment loss weight in the paper.
 
-    d_ffn :
-        The dimension of the layer in the Feed-Forward Networks (FFN).
-
-    dropout :
-        The dropout rate for all fully-connected layers in the model.
-
-    attn_dropout :
-        The dropout rate for DMSA.
-
-    diagonal_attention_mask :
-        Whether to apply a diagonal attention mask to the self-attention mechanism.
-        If so, the attention layers will use DMSA. Otherwise, the attention layers will use the original.
-
-    ORT_weight :
-        The weight for the ORT loss.
-
-    MIT_weight :
-        The weight for the MIT loss.
+    compression_factor :
+        The compression factor in the paper.
 
     batch_size :
         The batch size for training and evaluating the model.
@@ -84,14 +62,6 @@ class SAITS(BaseNNDetector):
         The patience for the early-stopping mechanism. Given a positive integer, the training process will be
         stopped when the model does not perform better after that number of epochs.
         Leaving it default as None will disable the early-stopping.
-
-    training_loss:
-        The customized loss function designed by users for training the model.
-        If not given, will use the default loss as claimed in the original paper.
-
-    validation_metric:
-        The customized metric function designed by users for validating the model.
-        If not given, will use the default MSE metric.
 
     optimizer :
         The optimizer for model training.
@@ -129,23 +99,16 @@ class SAITS(BaseNNDetector):
         self,
         n_steps: int,
         n_features: int,
-        anomaly_rate: float,
-        n_layers: int,
-        d_model: int,
-        n_heads: int,
-        d_k: int,
-        d_v: int,
-        d_ffn: int,
-        dropout: float = 0,
-        attn_dropout: float = 0,
-        diagonal_attention_mask: bool = True,
-        ORT_weight: int = 1,
-        MIT_weight: int = 1,
+        d_block_hidden: int,
+        n_residual_layers: int,
+        d_residual_hidden: int,
+        d_embedding: int,
+        n_embeddings: int,
+        commitment_cost: float = 0.25,
+        compression_factor: int = 4,
         batch_size: int = 32,
         epochs: int = 100,
         patience: Optional[int] = None,
-        training_loss: Union[Criterion, type] = MAE,
-        validation_metric: Union[Criterion, type] = MSE,
         optimizer: Union[Optimizer, type] = Adam,
         num_workers: int = 0,
         device: Optional[Union[str, torch.device, list]] = None,
@@ -154,9 +117,8 @@ class SAITS(BaseNNDetector):
         verbose: bool = True,
     ):
         super().__init__(
-            anomaly_rate=anomaly_rate,
-            training_loss=training_loss,
-            validation_metric=validation_metric,
+            training_loss=Criterion,
+            validation_metric=Criterion,
             batch_size=batch_size,
             epochs=epochs,
             patience=patience,
@@ -169,35 +131,25 @@ class SAITS(BaseNNDetector):
         self.n_steps = n_steps
         self.n_features = n_features
         # model hyperparameters
-        self.n_layers = n_layers
-        self.d_model = d_model
-        self.d_ffn = d_ffn
-        self.n_heads = n_heads
-        self.d_k = d_k
-        self.d_v = d_v
-        self.dropout = dropout
-        self.attn_dropout = attn_dropout
-        self.diagonal_attention_mask = diagonal_attention_mask
-        self.ORT_weight = ORT_weight
-        self.MIT_weight = MIT_weight
+        self.block_hidden_size = d_block_hidden
+        self.num_residual_layers = n_residual_layers
+        self.res_hidden_size = d_residual_hidden
+        self.embedding_dim = d_embedding
+        self.num_embeddings = n_embeddings
+        self.commitment_cost = commitment_cost
+        self.compression_factor = compression_factor
 
         # set up the model
-        self.model = _SAITS(
-            n_layers=self.n_layers,
+        self.model = _TOTEM(
             n_steps=self.n_steps,
             n_features=self.n_features,
-            d_model=self.d_model,
-            n_heads=self.n_heads,
-            d_k=self.d_k,
-            d_v=self.d_v,
-            d_ffn=self.d_ffn,
-            dropout=self.dropout,
-            attn_dropout=self.attn_dropout,
-            diagonal_attention_mask=self.diagonal_attention_mask,
-            ORT_weight=self.ORT_weight,
-            MIT_weight=self.MIT_weight,
-            training_loss=self.training_loss,
-            validation_metric=self.validation_metric,
+            block_hidden_size=self.block_hidden_size,
+            num_residual_layers=self.num_residual_layers,
+            res_hidden_size=self.res_hidden_size,
+            embedding_dim=self.embedding_dim,
+            num_embeddings=self.num_embeddings,
+            commitment_cost=self.commitment_cost,
+            compression_factor=self.compression_factor,
         )
         self._send_model_to_given_device()
         self._print_model_size()
@@ -248,7 +200,6 @@ class SAITS(BaseNNDetector):
         file_type: str = "hdf5",
     ) -> None:
         # Step 1: wrap the input data with classes Dataset and DataLoader
-        self.train_set = train_set
         train_dataset = DatasetForSAITS(train_set, return_X_ori=False, return_y=False, file_type=file_type)
         train_dataloader = DataLoader(
             train_dataset,
