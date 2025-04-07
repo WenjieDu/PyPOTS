@@ -3,6 +3,7 @@ build
 torch-sparse
 torch-scatter
 torch-geometric
+sentencepiece
 pre-commit
 jupyterlab
 black

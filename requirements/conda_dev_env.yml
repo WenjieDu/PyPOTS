@@ -13,9 +13,12 @@ dependencies:
     - conda-forge::pypots >=0.15
 
     # optional
+    ## for GNNs in PyPOTS, e.g., Raindrop
     - pyg::pyg
     - pyg::pytorch-sparse
     - pyg::pytorch-scatter
+    ## for some LLM-based models in PyPOTS, e.g. LLaMA-based TimeLLM
+    - conda-forge::sentencepiece
 
     # test
     - conda-forge::coveralls
