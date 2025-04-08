@@ -2,14 +2,14 @@
 The package of the partially-observed time-series forecasting model ModernTCN.
 
 Refer to the paper
-`Haixu Wu, Tengge Hu, Yong Liu, Hang Zhou, Jianmin Wang, and Mingsheng Long.
-ModernTCN: Temporal 2D-Variation Modeling for General Time Series Analysis.
-In ICLR, 2023.
-<https://openreview.net/pdf?id=ju_Uqw384Oq>`_
+`Donghao Luo, and Xue Wang.
+ModernTCN: A Modern Pure Convolution Structure for General Time Series Analysis.
+In The Twelfth International Conference on Learning Representations. 2024.
+<https://openreview.net/pdf?id=vpJMJerXHU>`_
 
 Notes
 -----
-This implementation is inspired by the official one https://github.com/thuml/Time-Series-Library
+This implementation is inspired by the official one https://github.com/luodhhh/ModernTCN
 
 """
 
