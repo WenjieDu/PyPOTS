@@ -32,7 +32,14 @@ class _SegRNN(ModelCore):
         self.d_model = d_model
         self.dropout = dropout
 
-        self.backbone = BackboneSegRNN(n_steps, n_features, seg_len, d_model, dropout)
+        self.backbone = BackboneSegRNN(
+            n_steps,
+            n_features,
+            n_steps,
+            seg_len,
+            d_model,
+            dropout,
+        )
 
         # apply SAITS loss function to SegRNN on the imputation task
         self.training_loss = SaitsLoss(ORT_weight, MIT_weight, training_loss)

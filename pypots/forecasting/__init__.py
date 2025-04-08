@@ -11,6 +11,7 @@ from .fits import FITS
 from .gpt4ts import GPT4TS
 from .moderntcn import ModernTCN
 from .moment import MOMENT
+from .segrnn import SegRNN
 from .tefn import TEFN
 from .timellm import TimeLLM
 from .timemixer import TimeMixer
@@ -29,4 +30,5 @@ __all__ = [
     "MOMENT",
     "TimesNet",
     "ModernTCN",
+    "SegRNN",
 ]
