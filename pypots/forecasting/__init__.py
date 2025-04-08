@@ -13,6 +13,7 @@ from .moment import MOMENT
 from .tefn import TEFN
 from .timellm import TimeLLM
 from .timemixer import TimeMixer
+from .timesnet import TimesNet
 from .transformer import Transformer
 
 __all__ = [
@@ -25,4 +26,5 @@ __all__ = [
     "TimeLLM",
     "GPT4TS",
     "MOMENT",
+    "TimesNet",
 ]
