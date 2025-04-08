@@ -9,6 +9,7 @@ from .bttf import BTTF
 from .csdi import CSDI
 from .fits import FITS
 from .gpt4ts import GPT4TS
+from .moderntcn import ModernTCN
 from .moment import MOMENT
 from .tefn import TEFN
 from .timellm import TimeLLM
@@ -27,4 +28,5 @@ __all__ = [
     "GPT4TS",
     "MOMENT",
     "TimesNet",
+    "ModernTCN",
 ]
