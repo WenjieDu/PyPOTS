@@ -133,7 +133,7 @@ The paper references and links are all listed at the bottom of this file.
 | Neural Net    | FITS🧑‍🔧[^41]                                                                                                                   |    ✅     |    ✅     |          |          |          | `2024 - ICLR`                                      |
 | Neural Net    | TimeMixer[^37]                                                                                                                   |    ✅     |    ✅     |          |          |          | `2024 - ICLR`                                      |
 | Neural Net    | iTransformer🧑‍🔧[^24]                                                                                                           |    ✅     |          |    ✅     |          |          | `2024 - ICLR`                                      |
-| Neural Net    | ModernTCN[^38]                                                                                                                   |    ✅     |          |          |          |          | `2024 - ICLR`                                      |
+| Neural Net    | ModernTCN[^38]                                                                                                                   |    ✅     |    ✅     |          |          |          | `2024 - ICLR`                                      |
 | Neural Net    | ImputeFormer🧑‍🔧[^34]                                                                                                           |    ✅     |          |          |          |    ✅     | `2024 - KDD`                                       |
 | Neural Net    | TOTEM [^50]                                                                                                                      |    ✅     |          |          |          |          | `2024 - TMLR`                                      |
 | Neural Net    | SAITS[^1]                                                                                                                        |    ✅     |          |    ✅     |          |    ✅     | `2023 - ESWA`                                      |
@@ -141,14 +141,14 @@ The paper references and links are all listed at the bottom of this file.
 | Neural Net    | FreTS🧑‍🔧[^23]                                                                                                                  |    ✅     |          |          |          |          | `2023 - NeurIPS`                                   |
 | Neural Net    | Koopa🧑‍🔧[^29]                                                                                                                  |    ✅     |          |          |          |          | `2023 - NeurIPS`                                   |
 | Neural Net    | Crossformer🧑‍🔧[^16]                                                                                                            |    ✅     |          |          |          |          | `2023 - ICLR`                                      |
-| Neural Net    | TimesNet[^14]                                                                                                                    |    ✅     |          |    ✅     |          |    ✅     | `2023 - ICLR`                                      |
+| Neural Net    | TimesNet[^14]                                                                                                                    |    ✅     |    ✅     |    ✅     |          |    ✅     | `2023 - ICLR`                                      |
 | Neural Net    | PatchTST🧑‍🔧[^18]                                                                                                               |    ✅     |          |          |          |    ✅     | `2023 - ICLR`                                      |
 | Neural Net    | ETSformer🧑‍🔧[^19]                                                                                                              |    ✅     |          |          |          |          | `2023 - ICLR`                                      |
 | Neural Net    | MICN🧑‍🔧[^27]                                                                                                                   |    ✅     |          |          |          |          | `2023 - ICLR`                                      |
 | Neural Net    | DLinear🧑‍🔧[^17]                                                                                                                |    ✅     |          |          |          |          | `2023 - AAAI`                                      |
 | Neural Net    | TiDE🧑‍🔧[^28]                                                                                                                   |    ✅     |          |          |          |          | `2023 - TMLR`                                      |
 | Neural Net    | CSAI[^42]                                                                                                                        |    ✅     |          |    ✅     |          |          | `2023 - arXiv`                                     |
-| Neural Net    | SegRNN🧑‍🔧[^43]                                                                                                                 |    ✅     |          |          |          |    ✅     | `2023 - arXiv`                                     |
+| Neural Net    | SegRNN🧑‍🔧[^43]                                                                                                                 |    ✅     |    ✅     |          |          |    ✅     | `2023 - arXiv`                                     |
 | Neural Net    | TS2Vec[^48]                                                                                                                      |          |          |    ✅     |          |          | `2022 - AAAI`                                      |
 | Neural Net    | SCINet🧑‍🔧[^30]                                                                                                                 |    ✅     |          |          |          |          | `2022 - NeurIPS`                                   |
 | Neural Net    | Nonstationary Tr.🧑‍🔧[^25]                                                                                                      |    ✅     |          |          |          |          | `2022 - NeurIPS`                                   |
@@ -261,6 +261,12 @@ pip install https://github.com/WenjieDu/PyPOTS/archive/main.zip
 # via conda
 conda install conda-forge::pypots  # the first time installation
 conda update  conda-forge::pypots  # update pypots to the latest version
+
+# via docker
+docker run -it --name pypots wenjiedu/pypots  # docker will auto pull our built image and run a instance for you
+# after things settled, you can run python in the container to access the well-configured environment for running pypots
+# if you'd like to detach from the container, press ctrl-P + ctrl-Q 
+# run `docker attach pypots` to enter the container again. 
 ```
 
 ## ❖ Usage

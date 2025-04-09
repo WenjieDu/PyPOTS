@@ -13,9 +13,9 @@ import numpy as np
 import pytest
 
 from pypots.imputation import SegRNN
+from pypots.nn.functional import calc_mse
 from pypots.optim import Adam
 from pypots.utils.logging import logger
-from pypots.nn.functional import calc_mse
 from tests.global_test_config import (
     DATA,
     EPOCHS,
@@ -46,6 +46,7 @@ class TestSegRNN(unittest.TestCase):
         DATA["n_steps"],
         DATA["n_features"],
         seg_len=2,
+        d_model=64,
         dropout=0,
         epochs=EPOCHS,
         saving_path=saving_path,

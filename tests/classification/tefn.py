@@ -16,7 +16,6 @@ from pypots.optim import Adam
 from pypots.utils.logging import logger
 from tests.global_test_config import (
     DATA,
-    EPOCHS,
     DEVICE,
     TRAIN_SET,
     VAL_SET,
@@ -46,7 +45,7 @@ class TestTEFN(unittest.TestCase):
         n_classes=DATA["n_classes"],
         n_fod=8,
         dropout=0.1,
-        epochs=EPOCHS,
+        epochs=10,
         saving_path=saving_path,
         optimizer=optimizer,
         device=DEVICE,
