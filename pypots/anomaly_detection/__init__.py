@@ -11,6 +11,7 @@ from .patchtst import PatchTST
 from .saits import SAITS
 from .segrnn import SegRNN
 from .tefn import TEFN
+from .timesnet import TimesNet
 
 __all__ = [
     "Autoformer",
@@ -19,4 +20,5 @@ __all__ = [
     "ImputeFormer",
     "PatchTST",
     "SegRNN",
+    "TimesNet"
 ]
