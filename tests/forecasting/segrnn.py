@@ -1,5 +1,5 @@
 """
-Test cases for SegRNN imputation model.
+Test cases for SegRNN forecasting model.
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
@@ -12,7 +12,7 @@ import unittest
 import numpy as np
 import pytest
 
-from pypots.imputation import SegRNN
+from pypots.forecasting import SegRNN
 from pypots.nn.functional import calc_mse
 from pypots.optim import Adam
 from pypots.utils.logging import logger
@@ -20,22 +20,23 @@ from tests.global_test_config import (
     DATA,
     EPOCHS,
     DEVICE,
-    TRAIN_SET,
-    VAL_SET,
-    TEST_SET,
-    GENERAL_H5_TRAIN_SET_PATH,
-    GENERAL_H5_VAL_SET_PATH,
-    GENERAL_H5_TEST_SET_PATH,
-    RESULT_SAVING_DIR_FOR_IMPUTATION,
+    N_PRED_STEPS,
+    FORECASTING_TRAIN_SET,
+    FORECASTING_VAL_SET,
+    FORECASTING_TEST_SET,
+    FORECASTING_H5_TRAIN_SET_PATH,
+    FORECASTING_H5_VAL_SET_PATH,
+    FORECASTING_H5_TEST_SET_PATH,
+    RESULT_SAVING_DIR_FOR_FORECASTING,
     check_tb_and_model_checkpoints_existence,
 )
 
 
 class TestSegRNN(unittest.TestCase):
-    logger.info("Running tests for an imputation model SegRNN...")
+    logger.info("Running tests for a forecasting model SegRNN...")
 
     # set the log and model saving path
-    saving_path = os.path.join(RESULT_SAVING_DIR_FOR_IMPUTATION, "SegRNN")
+    saving_path = os.path.join(RESULT_SAVING_DIR_FOR_FORECASTING, "SegRNN")
     model_save_name = "saved_segrnn_model.pypots"
 
     # initialize an Adam optimizer
@@ -43,8 +44,10 @@ class TestSegRNN(unittest.TestCase):
 
     # initialize a SegRNN model
     segrnn = SegRNN(
-        DATA["n_steps"],
-        DATA["n_features"],
+        n_steps=DATA["n_steps"] - N_PRED_STEPS,
+        n_features=DATA["n_features"],
+        n_pred_steps=N_PRED_STEPS,
+        n_pred_features=DATA["n_features"],
         seg_len=2,
         d_model=64,
         dropout=0,
@@ -54,25 +57,24 @@ class TestSegRNN(unittest.TestCase):
         device=DEVICE,
     )
 
-    @pytest.mark.xdist_group(name="imputation-segrnn")
+    @pytest.mark.xdist_group(name="forecasting-segrnn")
     def test_0_fit(self):
-        self.segrnn.fit(TRAIN_SET, VAL_SET)
+        self.segrnn.fit(FORECASTING_TRAIN_SET, FORECASTING_VAL_SET)
 
-    @pytest.mark.xdist_group(name="imputation-segrnn")
-    def test_1_impute(self):
-        imputation_results = self.segrnn.predict(TEST_SET)
+    @pytest.mark.xdist_group(name="forecasting-segrnn")
+    def test_1_forecasting(self):
+        forecasting_X = self.segrnn.predict(FORECASTING_TEST_SET)["forecasting"]
         assert not np.isnan(
-            imputation_results["imputation"]
-        ).any(), "Output still has missing values after running impute()."
-
+            forecasting_X
+        ).any(), "Output has missing values in the forecasting results that should not be."
         test_MSE = calc_mse(
-            imputation_results["imputation"],
-            DATA["test_X_ori"],
-            DATA["test_X_indicating_mask"],
+            forecasting_X,
+            FORECASTING_TEST_SET["X_pred"],
+            ~np.isnan(FORECASTING_TEST_SET["X_pred"]),
         )
         logger.info(f"SegRNN test_MSE: {test_MSE}")
 
-    @pytest.mark.xdist_group(name="imputation-segrnn")
+    @pytest.mark.xdist_group(name="forecasting-segrnn")
     def test_2_parameters(self):
         assert hasattr(self.segrnn, "model") and self.segrnn.model is not None
 
@@ -83,7 +85,7 @@ class TestSegRNN(unittest.TestCase):
 
         assert hasattr(self.segrnn, "best_model_dict") and self.segrnn.best_model_dict is not None
 
-    @pytest.mark.xdist_group(name="imputation-segrnn")
+    @pytest.mark.xdist_group(name="forecasting-segrnn")
     def test_3_saving_path(self):
         # whether the root saving dir exists, which should be created by save_log_into_tb_file
         assert os.path.exists(self.saving_path), f"file {self.saving_path} does not exist"
@@ -98,18 +100,19 @@ class TestSegRNN(unittest.TestCase):
         # test loading the saved model, not necessary, but need to test
         self.segrnn.load(saved_model_path)
 
-    @pytest.mark.xdist_group(name="imputation-segrnn")
+    @pytest.mark.xdist_group(name="forecasting-segrnn")
     def test_4_lazy_loading(self):
-        self.segrnn.fit(GENERAL_H5_TRAIN_SET_PATH, GENERAL_H5_VAL_SET_PATH)
-        imputation_results = self.segrnn.predict(GENERAL_H5_TEST_SET_PATH)
+        self.segrnn.fit(FORECASTING_H5_TRAIN_SET_PATH, FORECASTING_H5_VAL_SET_PATH)
+        forecasting_results = self.segrnn.predict(FORECASTING_H5_TEST_SET_PATH)
+        forecasting_X = forecasting_results["forecasting"]
         assert not np.isnan(
-            imputation_results["imputation"]
-        ).any(), "Output still has missing values after running impute()."
+            forecasting_X
+        ).any(), "Output has missing values in the forecasting results that should not be."
 
         test_MSE = calc_mse(
-            imputation_results["imputation"],
-            DATA["test_X_ori"],
-            DATA["test_X_indicating_mask"],
+            forecasting_X,
+            FORECASTING_TEST_SET["X_pred"],
+            ~np.isnan(FORECASTING_TEST_SET["X_pred"]),
         )
         logger.info(f"Lazy-loading SegRNN test_MSE: {test_MSE}")
 

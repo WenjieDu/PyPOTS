@@ -25,7 +25,7 @@ N_PRED_STEPS = 2
 N_FEATURES = 5
 N_CLASSES = 2
 N_SAMPLES_PER_CLASS = 100
-ANOMALY_RATE = 0.1
+ANOMALY_RATE = 0.05
 MISSING_RATE = 0.1
 # tensorboard and model files saving directory
 RESULT_SAVING_DIR = "testing_results"
@@ -36,7 +36,7 @@ RESULT_SAVING_DIR_FOR_ANOMALY_DETECTION = os.path.join(MODEL_SAVING_DIR, "anomal
 RESULT_SAVING_DIR_FOR_CLASSIFICATION = os.path.join(MODEL_SAVING_DIR, "classification")
 RESULT_SAVING_DIR_FOR_CLUSTERING = os.path.join(MODEL_SAVING_DIR, "clustering")
 RESULT_SAVING_DIR_FOR_FORECASTING = os.path.join(MODEL_SAVING_DIR, "forecasting")
-RESULT_SAVING_DIR_FOR_VECTORIZATION = os.path.join(MODEL_SAVING_DIR, "vectorization")
+RESULT_SAVING_DIR_FOR_REPRESENTATION = os.path.join(MODEL_SAVING_DIR, "representation")
 # paths to save the generated dataset into files for testing the lazy-loading strategy
 GENERAL_DATA_SAVING_DIR = f"{DATA_SAVING_DIR}/general_h5dataset"
 GENERAL_H5_TRAIN_SET_PATH = os.path.abspath(f"{GENERAL_DATA_SAVING_DIR}/train_set.h5")
