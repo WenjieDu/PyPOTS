@@ -25,7 +25,7 @@ N_PRED_STEPS = 2
 N_FEATURES = 5
 N_CLASSES = 2
 N_SAMPLES_PER_CLASS = 100
-ANOMALY_RATE = 0.1
+ANOMALY_RATE = 0.05
 MISSING_RATE = 0.1
 # tensorboard and model files saving directory
 RESULT_SAVING_DIR = "testing_results"
