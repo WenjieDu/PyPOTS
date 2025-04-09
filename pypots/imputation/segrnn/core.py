@@ -7,7 +7,7 @@ and takes over the forward progress of the algorithm.
 
 from ...nn.modules import ModelCore
 from ...nn.modules.loss import Criterion
-from ...nn.modules.saits import SaitsLoss
+from ...nn.modules.saits import SaitsLoss, SaitsEmbedding
 from ...nn.modules.segrnn import BackboneSegRNN
 
 
@@ -32,6 +32,11 @@ class _SegRNN(ModelCore):
         self.d_model = d_model
         self.dropout = dropout
 
+        self.embedding = SaitsEmbedding(
+            n_features * 2,
+            n_features,
+            with_pos=False,
+        )
         self.backbone = BackboneSegRNN(
             n_steps,
             n_features,
@@ -57,6 +62,7 @@ class _SegRNN(ModelCore):
     ) -> dict:
         X, missing_mask = inputs["X"], inputs["missing_mask"]
 
+        X = self.embedding(X, missing_mask)
         reconstruction = self.backbone(X)
 
         imputed_data = missing_mask * X + (1 - missing_mask) * reconstruction

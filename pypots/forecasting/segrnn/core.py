@@ -8,6 +8,7 @@
 import torch.nn as nn
 
 from ...nn.modules.loss import Criterion
+from ...nn.modules.saits import SaitsEmbedding
 from ...nn.modules.segrnn import BackboneSegRNN
 
 
@@ -42,6 +43,11 @@ class _SegRNN(nn.Module):
         else:
             self.validation_metric = validation_metric
 
+        self.embedding = SaitsEmbedding(
+            n_features * 2,
+            n_features,
+            with_pos=False,
+        )
         self.backbone = BackboneSegRNN(
             n_steps,
             n_features,
@@ -57,6 +63,7 @@ class _SegRNN(nn.Module):
         calc_criterion: bool = False,
     ) -> dict:
         X, missing_mask = inputs["X"], inputs["missing_mask"]
+        X = self.embedding(X, missing_mask)
         forecasting_result = self.backbone(X)
 
         results = {
