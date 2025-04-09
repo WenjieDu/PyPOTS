@@ -16,7 +16,6 @@ from pypots.optim import Adam
 from pypots.utils.logging import logger
 from tests.global_test_config import (
     DATA,
-    EPOCHS,
     DEVICE,
     TRAIN_SET,
     VAL_SET,
@@ -49,7 +48,7 @@ class TestTS2Vec(unittest.TestCase):
         n_output_dims=d_vectorization,
         d_hidden=64,
         n_layers=2,
-        epochs=EPOCHS,
+        epochs=5,
         saving_path=saving_path,
         optimizer=optimizer,
         device=DEVICE,

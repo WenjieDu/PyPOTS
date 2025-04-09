@@ -25,7 +25,7 @@ from tests.global_test_config import (
     GENERAL_H5_TRAIN_SET_PATH,
     GENERAL_H5_VAL_SET_PATH,
     GENERAL_H5_TEST_SET_PATH,
-    RESULT_SAVING_DIR_FOR_VECTORIZATION,
+    RESULT_SAVING_DIR_FOR_REPRESENTATION,
     check_tb_and_model_checkpoints_existence,
 )
 
@@ -34,7 +34,7 @@ class TestTS2Vec(unittest.TestCase):
     logger.info("Running tests for a representor model TS2Vec...")
 
     # set the log and model saving path
-    saving_path = os.path.join(RESULT_SAVING_DIR_FOR_VECTORIZATION, "TS2Vec")
+    saving_path = os.path.join(RESULT_SAVING_DIR_FOR_REPRESENTATION, "TS2Vec")
     model_save_name = "saved_ts2vec_model.pypots"
 
     # initialize an Adam optimizer
