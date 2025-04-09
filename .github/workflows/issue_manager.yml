@@ -1,0 +1,29 @@
+name: "Close stale issues and PRs"
+
+on:
+  schedule:
+    - cron: "0 0 * * *"
+  issues:
+    types:
+      - labeled
+
+permissions:
+  issues: write
+
+jobs:
+  issue-manager:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: tiangolo/issue-manager@0.5.1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          config: >
+            {
+                "$schema": "https://raw.githubusercontent.com/tiangolo/issue-manager/master/schema.json",
+                "completed": {
+                    "delay": "30 days",
+                    "message": "It seems the issue was completed. Closing it now.",
+                    "remove_label_on_comment": false,
+                    "remove_label_on_close": false
+                },
+            }
