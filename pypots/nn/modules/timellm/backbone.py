@@ -10,13 +10,10 @@ import os
 import torch
 import torch.nn as nn
 from transformers import (
-    LlamaConfig,
     LlamaModel,
     LlamaTokenizer,
-    GPT2Config,
     GPT2Model,
     GPT2Tokenizer,
-    BertConfig,
     BertModel,
     BertTokenizer,
 )
@@ -24,7 +21,6 @@ from transformers import (
 from .layers import ReprogrammingLayer
 from ..patchtst.layers import PatchEmbedding, FlattenHead
 from ..revin import RevIN
-from ....utils.logging import logger
 
 SUPPORTED_LLM = [
     "LLaMA",
@@ -75,95 +71,32 @@ class BackboneTimeLLM(nn.Module):
         assert task_name in SUPPORTED_TASKS, f"The task name must be one of {SUPPORTED_TASKS}."
 
         if llm_model_type == "LLaMA":
-            self.llama_config = LlamaConfig.from_pretrained("huggyllama/llama-7b")
-            self.llama_config.num_hidden_layers = n_layers
-            self.llama_config.output_attentions = True
-            self.llama_config.output_hidden_states = True
-            try:
-                self.llm_model = LlamaModel.from_pretrained(
-                    "huggyllama/llama-7b",
-                    local_files_only=True,
-                    config=self.llama_config,
-                    # load_in_4bit=True
-                )
-            except EnvironmentError:  # downloads model from HF is not already done
-                logger.warning("Local model files not found. Attempting to download...")
-                self.llm_model = LlamaModel.from_pretrained(
-                    "huggyllama/llama-7b",
-                    local_files_only=False,
-                    config=self.llama_config,
-                    # load_in_4bit=True
-                )
-            try:
-                self.tokenizer = LlamaTokenizer.from_pretrained(
-                    "huggyllama/llama-7b",
-                    local_files_only=True,
-                )
-            except EnvironmentError:  # downloads the tokenizer from HF if not already done
-                logger.warning("Local tokenizer files not found. Atempting to download them..")
-                self.tokenizer = LlamaTokenizer.from_pretrained(
-                    "huggyllama/llama-7b",
-                    local_files_only=False,
-                )
-        elif llm_model_type == "GPT2":
-            self.gpt2_config = GPT2Config.from_pretrained("openai-community/gpt2")
-            self.gpt2_config.num_hidden_layers = n_layers
-            self.gpt2_config.output_attentions = True
-            self.gpt2_config.output_hidden_states = True
-            try:
-                self.llm_model = GPT2Model.from_pretrained(
-                    "openai-community/gpt2",
-                    local_files_only=True,
-                    config=self.gpt2_config,
-                )
-            except EnvironmentError:  # downloads model from HF is not already done
-                logger.warning("Local model files not found. Attempting to download...")
-                self.llm_model = GPT2Model.from_pretrained(
-                    "openai-community/gpt2",
-                    local_files_only=False,
-                    config=self.gpt2_config,
-                )
-            try:
-                self.tokenizer = GPT2Tokenizer.from_pretrained(
-                    "openai-community/gpt2",
-                    local_files_only=True,
-                )
-            except EnvironmentError:  # downloads the tokenizer from HF if not already done
-                logger.warning("Local tokenizer files not found. Atempting to download them..")
-                self.tokenizer = GPT2Tokenizer.from_pretrained(
-                    "openai-community/gpt2",
-                    local_files_only=False,
-                )
-        elif llm_model_type == "BERT":
-            self.bert_config = BertConfig.from_pretrained("google-bert/bert-base-uncased")
+            self.llm_model = LlamaModel.from_pretrained(
+                "huggyllama/llama-7b",
+                num_hidden_layers=n_layers,
+                output_attentions=True,
+                output_hidden_states=True,
+                # load_in_4bit=True
+            )
+            self.tokenizer = LlamaTokenizer.from_pretrained("huggyllama/llama-7b")
 
-            self.bert_config.num_hidden_layers = n_layers
-            self.bert_config.output_attentions = True
-            self.bert_config.output_hidden_states = True
-            try:
-                self.llm_model = BertModel.from_pretrained(
-                    "google-bert/bert-base-uncased",
-                    local_files_only=True,
-                    config=self.bert_config,
-                )
-            except EnvironmentError:  # downloads model from HF is not already done
-                logger.warning("Local model files not found. Attempting to download...")
-                self.llm_model = BertModel.from_pretrained(
-                    "google-bert/bert-base-uncased",
-                    local_files_only=False,
-                    config=self.bert_config,
-                )
-            try:
-                self.tokenizer = BertTokenizer.from_pretrained(
-                    "google-bert/bert-base-uncased",
-                    local_files_only=True,
-                )
-            except EnvironmentError:  # downloads the tokenizer from HF if not already done
-                logger.warning("Local tokenizer files not found. Atempting to download them..")
-                self.tokenizer = BertTokenizer.from_pretrained(
-                    "google-bert/bert-base-uncased",
-                    local_files_only=False,
-                )
+        elif llm_model_type == "GPT2":
+            self.llm_model = GPT2Model.from_pretrained(
+                "openai-community/gpt2",
+                num_hidden_layers=n_layers,
+                output_attentions=True,
+                output_hidden_states=True,
+            )
+            self.tokenizer = GPT2Tokenizer.from_pretrained("openai-community/gpt2")
+
+        elif llm_model_type == "BERT":
+            self.llm_model = BertModel.from_pretrained(
+                "google-bert/bert-base-uncased",
+                num_hidden_layers=n_layers,
+                output_attentions=True,
+                output_hidden_states=True,
+            )
+            self.tokenizer = BertTokenizer.from_pretrained("google-bert/bert-base-uncased")
         else:
             raise Exception("LLM model is not defined")
 

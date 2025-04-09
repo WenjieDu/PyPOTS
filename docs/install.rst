@@ -17,6 +17,12 @@ It is recommended to use **pip** or **conda** for PyPOTS installation as shown b
     conda install conda-forge::pypots  # the first time installation
     conda update  conda-forge::pypots  # update pypots to the latest version
 
+    # via docker
+    docker run -it --name pypots wenjiedu/pypots  # docker will auto pull our built image and run a instance for you
+    # after things settled, you can run python in the container to access the well-configured environment for running pypots
+    # if you'd like to detach from the container, press ctrl-P + ctrl-Q
+    # run `docker attach pypots` to enter the container again.
+
 
 Required Dependencies
 """""""""""""""""""""

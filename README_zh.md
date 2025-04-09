@@ -119,7 +119,7 @@ PyPOTS当前支持多变量POTS数据的插补, 预测, 分类, 聚类以及异�
 | Neural Net    | FITS🧑‍🔧[^41]                                                                                                                   |    ✅     |    ✅     |          |          |          | `2024 - ICLR`                                      |
 | Neural Net    | TimeMixer[^37]                                                                                                                   |    ✅     |    ✅     |          |          |          | `2024 - ICLR`                                      |
 | Neural Net    | iTransformer🧑‍🔧[^24]                                                                                                           |    ✅     |          |    ✅     |          |          | `2024 - ICLR`                                      |
-| Neural Net    | ModernTCN[^38]                                                                                                                   |    ✅     |          |          |          |          | `2024 - ICLR`                                      |
+| Neural Net    | ModernTCN[^38]                                                                                                                   |    ✅     |    ✅     |          |          |          | `2024 - ICLR`                                      |
 | Neural Net    | ImputeFormer🧑‍🔧[^34]                                                                                                           |    ✅     |          |          |          |    ✅     | `2024 - KDD`                                       |
 | Neural Net    | TOTEM [^50]                                                                                                                       |    ✅     |          |          |          |          | `2024 - TMLR`                                      |
 | Neural Net    | SAITS[^1]                                                                                                                        |    ✅     |          |    ✅     |          |    ✅     | `2023 - ESWA`                                      |
@@ -134,7 +134,7 @@ PyPOTS当前支持多变量POTS数据的插补, 预测, 分类, 聚类以及异�
 | Neural Net    | DLinear🧑‍🔧[^17]                                                                                                                |    ✅     |          |          |          |          | `2023 - AAAI`                                      |
 | Neural Net    | TiDE🧑‍🔧[^28]                                                                                                                   |    ✅     |          |          |          |          | `2023 - TMLR`                                      |
 | Neural Net    | CSAI[^42]                                                                                                                        |    ✅     |          |    ✅     |          |          | `2023 - arXiv`                                     |
-| Neural Net    | SegRNN🧑‍🔧[^43]                                                                                                                 |    ✅     |          |          |          |    ✅     | `2023 - arXiv`                                     |
+| Neural Net    | SegRNN🧑‍🔧[^43]                                                                                                                 |    ✅     |    ✅     |          |          |    ✅     | `2023 - arXiv`                                     |
 | Neural Net    | TS2Vec[^48]                                                                                                                      |          |          |    ✅     |          |          | `2022 - AAAI`                                      |
 | Neural Net    | SCINet🧑‍🔧[^30]                                                                                                                 |    ✅     |          |          |          |          | `2022 - NeurIPS`                                   |
 | Neural Net    | Nonstationary Tr.🧑‍🔧[^25]                                                                                                      |    ✅     |          |          |          |          | `2022 - NeurIPS`                                   |
@@ -244,6 +244,12 @@ pip install https://github.com/WenjieDu/PyPOTS/archive/main.zip
 # 通过conda安装
 conda install conda-forge::pypots  # 首次安装
 conda update  conda-forge::pypots  # 更新为最新版本
+
+# via docker
+docker run -it --name pypots wenjiedu/pypots  # docker会自动拉取我们构建好的镜像并为你运行一个实例
+# 运行结束后, 你可以在该容器中运行python即可使用我们为运行pypots配置好的环境
+# 如果你想退出该容器, 先按ctrl-P然后按ctrl-Q即可退出 
+# 运行命令`docker attach pypots`可以重新进入该容器
 ```
 
 ## ❖ 使用案例

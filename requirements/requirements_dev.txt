@@ -1,8 +1,9 @@
-pypots
+pypots>=0.15
 build
 torch-sparse
 torch-scatter
 torch-geometric
+sentencepiece
 pre-commit
 jupyterlab
 black
