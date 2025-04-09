@@ -1,28 +1,24 @@
 """
-The implementation of SegRNN for the partially-observed time-series imputation task.
+The implementation of TimesNet for the partially-observed time-series forecasting task.
 
 """
 
-# Created by Shengsheng Lin
+# Created by Wenjie Du <wenjay.du@gmail.com>
+# License: BSD-3-Clause
 
 from typing import Union, Optional
 
 import torch
-from torch.utils.data import DataLoader
 
-from .core import _SegRNN
-from ..base import BaseNNImputer
-from ..saits.data import DatasetForSAITS
-from ...data.checking import key_in_data_set
-from ...nn.modules.loss import Criterion, MAE, MSE
+from .core import _TimesNet
+from ..base import BaseNNForecaster
+from ...nn.modules.loss import Criterion, MSE
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
 
 
-class SegRNN(BaseNNImputer):
-    """The PyTorch implementation of the SegRNN model.
-    SegRNN is originally proposed by Shengsheng Lin et al. in :cite:`lin2023segrnn`.
-    See detail in https://arxiv.org/abs/2308.11200 or https://github.com/lss-1138/SegRNN.
+class TimesNet(BaseNNForecaster):
+    """The PyTorch implementation of the TimesNet model :cite:`wu2023timesnet`.
 
     Parameters
     ----------
@@ -32,20 +28,34 @@ class SegRNN(BaseNNImputer):
     n_features :
         The number of features in the time-series data sample.
 
-    seg_len :
-        The segment length for input of RNN.
+    n_pred_steps :
+        The number of steps in the forecasting time series.
 
-    d_model:
-        The dimension of RNN cell.
+    n_pred_features :
+        The number of features in the forecasting time series.
+
+    n_layers :
+        The number of layers in the TimesNet model.
+
+    top_k :
+        The number of top-k amplitude values to be selected to  obtain the most significant frequencies.
+
+    d_model :
+        The dimension of the model.
+
+    d_ffn :
+        The dimension of the feed-forward network.
+
+    n_kernels :
+        The number of 2D kernels (2D convolutional layers) to use in the submodule InceptionBlockV1.
 
     dropout :
-        The dropout rate of the output layer of SegRNN.
+        The dropout rate for the model.
 
-    ORT_weight :
-        The weight for the ORT loss, the same as SAITS.
-
-    MIT_weight :
-        The weight for the MIT loss, the same as SAITS.
+    apply_nonstationary_norm :
+        Whether to apply non-stationary normalization to the input data for TimesNet.
+        Please refer to :cite:`liu2022nonstationary` for details about non-stationary normalization,
+        which is not the idea of the original TimesNet paper. Hence, we make it optional and default not to use here.
 
     batch_size :
         The batch size for training and evaluating the model.
@@ -102,20 +112,24 @@ class SegRNN(BaseNNImputer):
         self,
         n_steps: int,
         n_features: int,
-        seg_len: int,
+        n_pred_steps: int,
+        n_pred_features: int,
+        n_layers: int,
+        top_k: int,
         d_model: int,
-        dropout: float,
-        ORT_weight: float = 1,
-        MIT_weight: float = 1,
+        d_ffn: int,
+        n_kernels: int,
+        dropout: float = 0,
+        apply_nonstationary_norm: bool = False,
         batch_size: int = 32,
         epochs: int = 100,
-        patience: int = None,
-        training_loss: Union[Criterion, type] = MAE,
+        patience: Optional[int] = None,
+        training_loss: Union[Criterion, type] = MSE,
         validation_metric: Union[Criterion, type] = MSE,
-        optimizer: Union[Optimizer, type] = Adam,
+        optimizer: Optimizer = Adam(),
         num_workers: int = 0,
         device: Optional[Union[str, torch.device, list]] = None,
-        saving_path: str = None,
+        saving_path: Optional[str] = None,
         model_saving_strategy: Optional[str] = "best",
         verbose: bool = True,
     ):
@@ -134,96 +148,35 @@ class SegRNN(BaseNNImputer):
 
         self.n_steps = n_steps
         self.n_features = n_features
-        # model hyperparameters
-        self.seg_len = seg_len
+        self.n_pred_steps = n_pred_steps
+        self.n_pred_features = n_pred_features
+        self.n_layers = n_layers
+        self.top_k = top_k
         self.d_model = d_model
+        self.d_ffn = d_ffn
+        self.n_kernels = n_kernels
         self.dropout = dropout
-        self.ORT_weight = ORT_weight
-        self.MIT_weight = MIT_weight
+        self.apply_nonstationary_norm = apply_nonstationary_norm
 
         # set up the model
-        self.model = _SegRNN(
+        self.model = _TimesNet(
+            n_layers=self.n_layers,
             n_steps=self.n_steps,
             n_features=self.n_features,
-            seg_len=self.seg_len,
+            n_pred_steps=self.n_pred_steps,
+            n_pred_features=self.n_pred_features,
+            top_k=self.top_k,
             d_model=self.d_model,
+            d_ffn=self.d_ffn,
+            n_kernels=self.n_kernels,
             dropout=self.dropout,
-            ORT_weight=self.ORT_weight,
-            MIT_weight=self.MIT_weight,
+            apply_nonstationary_norm=self.apply_nonstationary_norm,
             training_loss=self.training_loss,
             validation_metric=self.validation_metric,
         )
-        self._send_model_to_given_device()
         self._print_model_size()
+        self._send_model_to_given_device()
 
         # set up the optimizer
-        if isinstance(optimizer, Optimizer):
-            self.optimizer = optimizer
-        else:
-            self.optimizer = optimizer()  # instantiate the optimizer if it is a class
-            assert isinstance(self.optimizer, Optimizer)
+        self.optimizer = optimizer
         self.optimizer.init_optimizer(self.model.parameters())
-
-    def _assemble_input_for_training(self, data: list) -> dict:
-        (
-            indices,
-            X,
-            missing_mask,
-            X_ori,
-            indicating_mask,
-        ) = self._send_data_to_given_device(data)
-
-        inputs = {
-            "X": X,
-            "missing_mask": missing_mask,
-            "X_ori": X_ori,
-            "indicating_mask": indicating_mask,
-        }
-
-        return inputs
-
-    def _assemble_input_for_validating(self, data: list) -> dict:
-        return self._assemble_input_for_training(data)
-
-    def _assemble_input_for_testing(self, data: list) -> dict:
-        indices, X, missing_mask = self._send_data_to_given_device(data)
-
-        inputs = {
-            "X": X,
-            "missing_mask": missing_mask,
-        }
-
-        return inputs
-
-    def fit(
-        self,
-        train_set: Union[dict, str],
-        val_set: Optional[Union[dict, str]] = None,
-        file_type: str = "hdf5",
-    ) -> None:
-        # Step 1: wrap the input data with classes Dataset and DataLoader
-        train_dataset = DatasetForSAITS(train_set, return_X_ori=False, return_y=False, file_type=file_type)
-        train_dataloader = DataLoader(
-            train_dataset,
-            batch_size=self.batch_size,
-            shuffle=True,
-            num_workers=self.num_workers,
-        )
-        val_dataloader = None
-        if val_set is not None:
-            if not key_in_data_set("X_ori", val_set):
-                raise ValueError("val_set must contain 'X_ori' for model validation.")
-            val_dataset = DatasetForSAITS(val_set, return_X_ori=True, return_y=False, file_type=file_type)
-            val_dataloader = DataLoader(
-                val_dataset,
-                batch_size=self.batch_size,
-                shuffle=False,
-                num_workers=self.num_workers,
-            )
-
-        # Step 2: train the model and freeze it
-        self._train_model(train_dataloader, val_dataloader)
-        self.model.load_state_dict(self.best_model_dict)
-
-        # Step 3: save the model if necessary
-        self._auto_save_model_if_necessary(confirm_saving=self.model_saving_strategy == "best")
