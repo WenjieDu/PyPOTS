@@ -34,11 +34,47 @@ class ModernTCN(BaseNNForecaster):
     n_pred_features :
         The number of features in the forecasting time series.
 
+    patch_size :
+        The size of the patch for the patching mechanism.
+
+    patch_stride :
+        The stride for the patching mechanism.
+
+    downsampling_ratio :
+        The downsampling ratio for the downsampling mechanism.
+
+    ffn_ratio :
+        The ratio for the feed-forward neural network in the model.
+
+    num_blocks :
+        The number of blocks for the model. It should be a list of integers.
+
+    large_size :
+        The size of the large kernel. It should be a list of odd integers.
+
+    small_size :
+        The size of the small kernel. It should be a list of odd integers.
+
+    dims :
+        The dimensions for the model. It should be a list of integers.
+
+    small_kernel_merged :
+        Whether the small kernel is merged.
+
+    backbone_dropout :
+        The dropout rate for the backbone of the model.
+
+    head_dropout :
+        The dropout rate for the head of the model.
+
+    use_multi_scale :
+        Whether to use multi-scale fusing.
+
+    individual :
+        Whether to make a linear layer for each variate/channel/feature individually.
 
     apply_nonstationary_norm :
-        Whether to apply non-stationary normalization to the input data for ModernTCN.
-        Please refer to :cite:`liu2022nonstationary` for details about non-stationary normalization,
-        which is not the idea of the original ModernTCN paper. Hence, we make it optional and default not to use here.
+        Whether to apply non-stationary normalization.
 
     batch_size :
         The batch size for training and evaluating the model.
