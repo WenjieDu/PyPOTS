@@ -46,6 +46,15 @@ pypots.forecasting.tefn
    :show-inheritance:
    :inherited-members:
 
+pypots.forecasting.moderntcn
+------------------------------
+
+.. automodule:: pypots.forecasting.moderntcn
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+
 pypots.forecasting.fits
 ------------------------------
 
