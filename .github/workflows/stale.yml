@@ -13,8 +13,8 @@ jobs:
         with:
           stale-issue-message: 'This issue had no activity for **14 days**. It will be closed in **1 week** unless there is some new activity. Is this issue already resolved?'
           stale-issue-label: 'stale'
-          exempt-issue-labels: bug, potential bug, enhancement, new feature, new algo, good first issue, keep
-          exempt-pr-labels: bug, potential bug, enhancement, new feature, new algo, keep
+          exempt-issue-labels: bug, potential bug, enhancement, new feature, new algo, good first issue, keep, refactoring, completed
+          exempt-pr-labels: bug, potential bug, enhancement, new feature, new algo, keep, refactoring
           stale-pr-message: 'This pull request had no activity for **14 days**. It will be closed in **1 week** unless there is some new activity.'
           stale-pr-label: 'stale'
           days-before-stale: 14
