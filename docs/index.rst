@@ -314,6 +314,7 @@ Take a look at it now, and learn how to brew your POTS datasets!
 ❖ Installation
 ^^^^^^^^^^^^^^^
 PyPOTS is available on both `PyPI <https://pypi.python.org/pypi/pypots>`_ and `Anaconda <https://anaconda.org/conda-forge/pypots>`_.
+Furthermore, we also provide a `Docker image <https://hub.docker.com/r/wenjie_du/pypots>`_ for PyPOTS.
 
 Refer to the page `Installation <install.html>`_ to see different ways of installing PyPOTS.
 

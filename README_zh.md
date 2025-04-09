@@ -244,6 +244,12 @@ pip install https://github.com/WenjieDu/PyPOTS/archive/main.zip
 # 通过conda安装
 conda install conda-forge::pypots  # 首次安装
 conda update  conda-forge::pypots  # 更新为最新版本
+
+# via docker
+docker run -it --name pypots wenjiedu/pypots  # docker会自动拉取我们构建好的镜像并为你运行一个实例
+# 运行结束后, 你可以在该容器中运行python即可使用我们为运行pypots配置好的环境
+# 如果你想退出该容器, 先按ctrl-P然后按ctrl-Q即可退出 
+# 运行命令`docker attach pypots`可以重新进入该容器
 ```
 
 ## ❖ 使用案例
