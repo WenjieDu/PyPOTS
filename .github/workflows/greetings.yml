@@ -14,6 +14,8 @@ jobs:
     permissions:
       pull-requests: write
       issues: write
+      id-token: write
+      contents: read
 
     steps:
     - uses: actions/first-interaction@v1
