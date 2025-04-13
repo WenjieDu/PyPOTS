@@ -37,6 +37,15 @@ pypots.anomaly_detection.patchtst
    :show-inheritance:
    :inherited-members:
 
+pypots.anomaly_detection.timesnet
+-----------------------------------------------
+
+.. automodule:: pypots.anomaly_detection.timesnet
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+
 pypots.anomaly_detection.segrnn
 -----------------------------------------------
 
@@ -50,6 +59,15 @@ pypots.anomaly_detection.autoformer
 -----------------------------------------------
 
 .. automodule:: pypots.anomaly_detection.autoformer
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+
+pypots.anomaly_detection.reformer
+-----------------------------------------------
+
+.. automodule:: pypots.anomaly_detection.reformer
    :members:
    :undoc-members:
    :show-inheritance:
