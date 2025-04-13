@@ -308,7 +308,10 @@ class CSDI(BaseNNImputer):
         dict_result_collector = []
         for idx, data in enumerate(test_dataloader):
             inputs = self._assemble_input_for_testing(data)
-            results = self.model(inputs)
+            results = self.model(
+                inputs,
+                n_sampling_times=n_sampling_times,
+            )
             dict_result_collector.append(results)
 
         # Step 3: output collection and return
