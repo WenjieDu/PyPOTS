@@ -46,6 +46,15 @@ pypots.anomaly_detection.timesnet
    :show-inheritance:
    :inherited-members:
 
+pypots.anomaly_detection.dlinear
+-----------------------------------------------
+
+.. automodule:: pypots.anomaly_detection.dlinear
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+
 pypots.anomaly_detection.segrnn
 -----------------------------------------------
 
@@ -58,7 +67,7 @@ pypots.anomaly_detection.segrnn
 pypots.anomaly_detection.scinet
 -----------------------------------------------
 
-.. automodule:: pypots.anomaly_detection.SCINet
+.. automodule:: pypots.anomaly_detection.scinet
    :members:
    :undoc-members:
    :show-inheritance:
