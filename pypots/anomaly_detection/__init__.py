@@ -8,6 +8,7 @@ Expose all usable time-series anomaly detection models.
 from .autoformer import Autoformer
 from .imputeformer import ImputeFormer
 from .patchtst import PatchTST
+from .reformer import Reformer
 from .saits import SAITS
 from .segrnn import SegRNN
 from .tefn import TEFN
@@ -20,5 +21,6 @@ __all__ = [
     "ImputeFormer",
     "PatchTST",
     "SegRNN",
-    "TimesNet"
+    "TimesNet",
+    "Reformer",
 ]
