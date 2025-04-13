@@ -55,6 +55,15 @@ pypots.anomaly_detection.segrnn
    :show-inheritance:
    :inherited-members:
 
+pypots.anomaly_detection.scinet
+-----------------------------------------------
+
+.. automodule:: pypots.anomaly_detection.SCINet
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+
 pypots.anomaly_detection.autoformer
 -----------------------------------------------
 
