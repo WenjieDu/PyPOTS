@@ -14,6 +14,7 @@ from .saits import SAITS
 from .scinet import SCINet
 from .segrnn import SegRNN
 from .tefn import TEFN
+from .timemixerpp import TimeMixerPP
 from .timesnet import TimesNet
 
 __all__ = [
@@ -27,4 +28,5 @@ __all__ = [
     "Reformer",
     "SCINet",
     "DLinear",
+    "TimeMixerPP",
 ]
