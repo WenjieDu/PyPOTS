@@ -10,6 +10,7 @@ from .imputeformer import ImputeFormer
 from .patchtst import PatchTST
 from .reformer import Reformer
 from .saits import SAITS
+from .scinet import SCINet
 from .segrnn import SegRNN
 from .tefn import TEFN
 from .timesnet import TimesNet
@@ -23,4 +24,5 @@ __all__ = [
     "SegRNN",
     "TimesNet",
     "Reformer",
+    "SCINet",
 ]
