@@ -10,6 +10,15 @@ pypots.anomaly_detection.saits
    :show-inheritance:
    :inherited-members:
 
+pypots.anomaly_detection.timemixerpp
+-----------------------------------------------
+
+.. automodule:: pypots.anomaly_detection.timemixerpp
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+
 pypots.anomaly_detection.tefn
 -----------------------------------------------
 
