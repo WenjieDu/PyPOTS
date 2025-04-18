@@ -33,6 +33,7 @@ class _TimeMixerPP(ModelCore):
         apply_nonstationary_norm: bool,
         training_loss: Criterion,
         validation_metric: Criterion,
+        task_name: str,
     ):
         super().__init__()
 
@@ -46,7 +47,7 @@ class _TimeMixerPP(ModelCore):
             self.validation_metric = validation_metric
 
         self.model = BackboneTimeMixerPP(
-            task_name="imputation",
+            task_name=task_name,
             n_steps=n_steps,
             n_features=n_features,
             n_pred_steps=0,
