@@ -1,8 +1,11 @@
-name: "Close stale issues and PRs"
+name: "Issue Manager"
 
 on:
+  push:
+    branches:
+      - temp_test_manager
   schedule:
-    - cron: "0 0 * * *"
+    - cron: "0 8 * * *"
   issues:
     types:
       - labeled
@@ -19,11 +22,10 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           config: >
             {
-                "$schema": "https://raw.githubusercontent.com/tiangolo/issue-manager/master/schema.json",
                 "completed": {
                     "delay": "30 days",
                     "message": "It seems the issue was completed. Closing it now.",
                     "remove_label_on_comment": false,
                     "remove_label_on_close": false
-                },
+                }
             }
