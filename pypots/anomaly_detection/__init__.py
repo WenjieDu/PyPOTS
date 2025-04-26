@@ -6,11 +6,15 @@ Expose all usable time-series anomaly detection models.
 # License: BSD-3-Clause
 
 from .autoformer import Autoformer
+from .dlinear import DLinear
 from .imputeformer import ImputeFormer
 from .patchtst import PatchTST
+from .reformer import Reformer
 from .saits import SAITS
+from .scinet import SCINet
 from .segrnn import SegRNN
 from .tefn import TEFN
+from .timemixerpp import TimeMixerPP
 from .timesnet import TimesNet
 from .itransformer import iTransformer
 from .crossformer import Crossformer
@@ -31,6 +35,10 @@ __all__ = [
     "PatchTST",
     "SegRNN",
     "TimesNet",
+    "Reformer",
+    "SCINet",
+    "DLinear",
+    "TimeMixerPP",
     "iTransformer",
     "Crossformer",
     "Pyraformer",
