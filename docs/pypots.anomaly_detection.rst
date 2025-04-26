@@ -46,6 +46,96 @@ pypots.anomaly_detection.patchtst
    :show-inheritance:
    :inherited-members:
 
+pypots.anomaly_detection.itransformer
+-----------------------------------------------
+
+.. automodule:: pypots.anomaly_detection.itransformer
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+
+pypots.anomaly_detection.crossformer
+-----------------------------------------------
+
+.. automodule:: pypots.anomaly_detection.crossformer
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+
+pypots.anomaly_detection.pyraformer
+-----------------------------------------------
+
+.. automodule:: pypots.anomaly_detection.pyraformer
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+
+pypots.anomaly_detection.fedformer
+-----------------------------------------------
+
+.. automodule:: pypots.anomaly_detection.fedformer
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+
+pypots.anomaly_detection.informer
+-----------------------------------------------
+
+.. automodule:: pypots.anomaly_detection.informer
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+
+pypots.anomaly_detection.transformer
+-----------------------------------------------
+
+.. automodule:: pypots.anomaly_detection.transformer
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+
+pypots.anomaly_detection.efsformer
+-----------------------------------------------
+
+.. automodule:: pypots.anomaly_detection.efsformer
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+
+pypots.anomaly_detection.timemixer
+-----------------------------------------------
+
+.. automodule:: pypots.anomaly_detection.timemixer
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+
+pypots.anomaly_detection.nonstationary_transformer
+-----------------------------------------------
+
+.. automodule:: pypots.anomaly_detection.nonstationary_transformer
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+
+pypots.anomaly_detection.film
+-----------------------------------------------
+
+.. automodule:: pypots.anomaly_detection.film
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+
 pypots.anomaly_detection.timesnet
 -----------------------------------------------
 
