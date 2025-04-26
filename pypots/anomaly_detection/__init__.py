@@ -12,6 +12,16 @@ from .saits import SAITS
 from .segrnn import SegRNN
 from .tefn import TEFN
 from .timesnet import TimesNet
+from .itransformer import iTransformer
+from .crossformer import Crossformer
+from .pyraformer import Pyraformer
+from .fedformer import FEDformer
+from .informer import Informer
+from .transformer import Transformer
+from .etsformer import ETSformer
+from .timemixer import TimeMixer
+from .nonstationary_transformer import NonstationaryTransformer
+from .film import FiLM
 
 __all__ = [
     "Autoformer",
@@ -20,5 +30,15 @@ __all__ = [
     "ImputeFormer",
     "PatchTST",
     "SegRNN",
-    "TimesNet"
+    "TimesNet",
+    "iTransformer",
+    "Crossformer",
+    "Pyraformer",
+    "FEDformer",
+    "Informer",
+    "Transformer",
+    "ETSformer",
+    "TimeMixer",
+    "NonstationaryTransformer",
+    "FiLM",
 ]
