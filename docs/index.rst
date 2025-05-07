@@ -46,9 +46,9 @@ Welcome to PyPOTS docs!
    :alt: GitHub Repo forks
    :target: https://github.com/WenjieDu/PyPOTS/network/members
 
-.. image:: https://img.shields.io/codeclimate/maintainability-percentage/WenjieDu/PyPOTS?color=3C7699&label=Maintainability&logo=codeclimate
-   :alt: Code Climate maintainability
-   :target: https://codeclimate.com/github/WenjieDu/PyPOTS
+.. image:: https://sonarcloud.io/api/project_badges/measure?project=WenjieDu_PyPOTS&metric=sqale_rating
+   :alt: maintainability
+   :target: https://sonarcloud.io/component_measures?id=WenjieDu_PyPOTS&metric=sqale_rating&view=list
 
 .. image:: https://img.shields.io/coverallsCoverage/github/WenjieDu/PyPOTS?branch=full_test&logo=coveralls&color=75C1C4&label=Coverage
    :alt: Coveralls coverage

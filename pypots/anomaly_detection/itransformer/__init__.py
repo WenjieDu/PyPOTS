@@ -21,4 +21,3 @@ from .model import iTransformer
 __all__ = [
     "iTransformer",
 ]
-

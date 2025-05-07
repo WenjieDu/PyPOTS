@@ -9,7 +9,7 @@ KDD, 2024.
 
 Notes
 -----
-This implementation is inspired by the official one https://github.com/WenjieDu/SAITS
+This implementation is inspired by the official one https://github.com/tongnie/ImputeFormer
 
 """
 
