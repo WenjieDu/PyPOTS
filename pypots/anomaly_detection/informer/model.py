@@ -172,7 +172,7 @@ class Informer(BaseNNDetector):
         else:
             self.optimizer = optimizer()
             assert isinstance(self.optimizer, Optimizer)
-        
+
         self.optimizer.init_optimizer(self.model.parameters())
 
     def _assemble_input_for_training(self, data: list) -> dict:
