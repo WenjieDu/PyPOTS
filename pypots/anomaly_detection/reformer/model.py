@@ -1,27 +1,28 @@
 """
-The implementation of TimeMixer++ for the partially-observed time-series imputation task.
+The implementation of Reformer for the partially-observed time-series anomaly detection task.
 
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
+
 from typing import Union, Optional
 
 import torch
 from torch.utils.data import DataLoader
 
-from .core import _TimeMixerPP
-from ..base import BaseNNImputer
-from ..saits.data import DatasetForSAITS
+from ..base import BaseNNDetector
 from ...data.checking import key_in_data_set
+from ...imputation.reformer.core import _Reformer
+from ...imputation.saits.data import DatasetForSAITS
 from ...nn.modules.loss import Criterion, MAE, MSE
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
 
 
-class TimeMixerPP(BaseNNImputer):
-    """The PyTorch implementation of the TimeMixer++ model :cite:`wang2025timemixerpp` on the imputation task.
+class Reformer(BaseNNDetector):
+    """The PyTorch implementation of the Reformer model :cite:`kitaev2020reformer` on the anomaly detection task.
 
     Parameters
     ----------
@@ -31,44 +32,38 @@ class TimeMixerPP(BaseNNImputer):
     n_features :
         The number of features in the time-series data sample.
 
+    anomaly_rate :
+        The rate of anomalies in the data, should be in the range (0, 1).
     n_layers :
-        The number of layers in the TimeMixer++ model.
+        The number of layers in the Reformer model.
 
     d_model :
         The dimension of the model.
 
+    n_heads :
+        The number of heads in each layer of Reformer.
+
+    bucket_size :
+        Average size of qk per bucket, 64 was recommended in paper.
+
+    n_hashes :
+        4 is permissible per author, 8 is the best but slower.
+
+    causal :
+        Auto-regressive or not.
+
     d_ffn :
         The dimension of the feed-forward network.
-
-    top_k :
-        The number of top-k amplitude values to be selected to  obtain the most significant frequencies.
-
-    n_heads:
-        The head number of full attention in the model.
-        Only work if channel_mixing is True.
-
-    n_kernels:
-        num_kernels for Inception module.
+        The window size of moving average.
 
     dropout :
         The dropout rate for the model.
 
-    channel_mixing :
-        Whether to apply channel mixing in the model.
+    ORT_weight :
+        The weight for the ORT loss, the same as SAITS.
 
-    channel_independence :
-        Whether to use channel independence in the model.
-
-    downsampling_layers :
-        The number of downsampling layers in the model.
-
-    downsampling_window :
-        The window size for downsampling.
-
-    apply_nonstationary_norm :
-        Whether to apply non-stationary normalization to the input data for TimeMixer++.
-        Please refer to :cite:`liu2022nonstationary` for details about non-stationary normalization,
-        which is not the idea of the original TimeMixer++ paper. Hence, we make it optional and default not to use here.
+    MIT_weight :
+        The weight for the MIT loss, the same as SAITS.
 
     batch_size :
         The batch size for training and evaluating the model.
@@ -125,18 +120,17 @@ class TimeMixerPP(BaseNNImputer):
         self,
         n_steps: int,
         n_features: int,
+        anomaly_rate: float,
         n_layers: int,
         d_model: int,
-        d_ffn: int,
-        top_k: int,
         n_heads: int,
-        n_kernels: int,
+        bucket_size: int,
+        n_hashes: int,
+        causal: bool,
+        d_ffn: int,
         dropout: float = 0,
-        channel_mixing: bool = True,
-        channel_independence: bool = True,
-        downsampling_layers: int = 3,
-        downsampling_window: int = 2,
-        apply_nonstationary_norm: bool = False,
+        ORT_weight: float = 1,
+        MIT_weight: float = 1,
         batch_size: int = 32,
         epochs: int = 100,
         patience: Optional[int] = None,
@@ -145,11 +139,12 @@ class TimeMixerPP(BaseNNImputer):
         optimizer: Union[Optimizer, type] = Adam,
         num_workers: int = 0,
         device: Optional[Union[str, torch.device, list]] = None,
-        saving_path: Optional[str] = None,
+        saving_path: str = None,
         model_saving_strategy: Optional[str] = "best",
         verbose: bool = True,
     ):
         super().__init__(
+            anomaly_rate=anomaly_rate,
             training_loss=training_loss,
             validation_metric=validation_metric,
             batch_size=batch_size,
@@ -161,42 +156,36 @@ class TimeMixerPP(BaseNNImputer):
             model_saving_strategy=model_saving_strategy,
             verbose=verbose,
         )
-
         self.n_steps = n_steps
         self.n_features = n_features
-        # model hype-parameters
+        # model hyperparameters
+        self.n_heads = n_heads
         self.n_layers = n_layers
         self.d_model = d_model
+        self.bucket_size = bucket_size
+        self.n_hashes = n_hashes
+        self.causal = causal
         self.d_ffn = d_ffn
-        self.n_heads = n_heads
         self.dropout = dropout
-        self.n_kernels = n_kernels
-        self.top_k = top_k
-        self.channel_mixing = channel_mixing
-        self.channel_independence = channel_independence
-        self.downsampling_layers = downsampling_layers
-        self.downsampling_window = downsampling_window
-        self.apply_nonstationary_norm = apply_nonstationary_norm
+        self.ORT_weight = ORT_weight
+        self.MIT_weight = MIT_weight
 
         # set up the model
-        self.model = _TimeMixerPP(
+        self.model = _Reformer(
             n_steps=self.n_steps,
             n_features=self.n_features,
             n_layers=self.n_layers,
             d_model=self.d_model,
-            d_ffn=self.d_ffn,
             n_heads=self.n_heads,
+            bucket_size=self.bucket_size,
+            n_hashes=self.n_hashes,
+            causal=self.causal,
+            d_ffn=self.d_ffn,
             dropout=self.dropout,
-            top_k=self.top_k,
-            n_kernels=self.n_kernels,
-            channel_mixing=self.channel_mixing,
-            channel_independence=self.channel_independence,
-            downsampling_layers=self.downsampling_layers,
-            downsampling_window=self.downsampling_window,
-            apply_nonstationary_norm=self.apply_nonstationary_norm,
+            ORT_weight=self.ORT_weight,
+            MIT_weight=self.MIT_weight,
             training_loss=self.training_loss,
             validation_metric=self.validation_metric,
-            task_name="imputation",
         )
         self._send_model_to_given_device()
         self._print_model_size()
@@ -246,8 +235,15 @@ class TimeMixerPP(BaseNNImputer):
         val_set: Optional[Union[dict, str]] = None,
         file_type: str = "hdf5",
     ) -> None:
+        self.train_set = train_set
+
         # Step 1: wrap the input data with classes Dataset and DataLoader
-        train_dataset = DatasetForSAITS(train_set, return_X_ori=False, return_y=False, file_type=file_type)
+        train_dataset = DatasetForSAITS(
+            train_set,
+            return_X_ori=False,
+            return_y=False,
+            file_type=file_type,
+        )
         train_dataloader = DataLoader(
             train_dataset,
             batch_size=self.batch_size,
@@ -258,7 +254,12 @@ class TimeMixerPP(BaseNNImputer):
         if val_set is not None:
             if not key_in_data_set("X_ori", val_set):
                 raise ValueError("val_set must contain 'X_ori' for model validation.")
-            val_dataset = DatasetForSAITS(val_set, return_X_ori=True, return_y=False, file_type=file_type)
+            val_dataset = DatasetForSAITS(
+                val_set,
+                return_X_ori=True,
+                return_y=False,
+                file_type=file_type,
+            )
             val_dataloader = DataLoader(
                 val_dataset,
                 batch_size=self.batch_size,
