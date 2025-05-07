@@ -22,7 +22,7 @@ from ...optim.base import Optimizer
 
 class FEDformer(BaseNNDetector):
     """The PyTorch implementation of the FEDformer model for the anomaly detection task.
-    
+
     FEDformer was originally proposed by Zhou et al. in :cite:`zhou2022fedformer`.
 
     Parameters
