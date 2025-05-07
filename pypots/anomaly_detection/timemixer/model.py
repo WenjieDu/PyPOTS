@@ -143,8 +143,10 @@ class TimeMixer(BaseNNDetector):
             verbose=verbose,
         )
 
-        assert decomp_method in ["moving_avg", "dft_decomp"], \
-            "decomp_method must be one of ['moving_avg', 'dft_decomp']."
+        assert decomp_method in [
+            "moving_avg",
+            "dft_decomp",
+        ], "decomp_method must be one of ['moving_avg', 'dft_decomp']."
 
         self.n_steps = n_steps
         self.n_features = n_features

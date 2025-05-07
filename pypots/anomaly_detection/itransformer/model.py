@@ -19,7 +19,6 @@ from ...optim.base import Optimizer
 from ...utils.logging import logger
 
 
-
 class iTransformer(BaseNNDetector):
     """The PyTorch implementation of the iTransformer model :cite:`liu2024itransformer` for the anomaly detection task.
 
@@ -229,7 +228,12 @@ class iTransformer(BaseNNDetector):
             "missing_mask": missing_mask,
         }
 
-    def fit(self, train_set: Union[dict, str], val_set: Optional[Union[dict, str]] = None, file_type: str = "hdf5") -> None:
+    def fit(
+        self,
+        train_set: Union[dict, str],
+        val_set: Optional[Union[dict, str]] = None,
+        file_type: str = "hdf5",
+    ) -> None:
         """
         Trains the model on the given dataset.
 
