@@ -126,11 +126,7 @@ PyPOTS当前支持多变量POTS数据的插补, 预测, 分类, 聚类以及异�
 | LLM           | GPT4TS[^46]                                                                                                                      |    ✅     |    ✅     |          |          |          | `2023 - NeurIPS`                                   |
 | Neural Net    | FreTS🧑‍🔧[^23]                                                                                                                  |    ✅     |          |          |          |          | `2023 - NeurIPS`                                   |
 | Neural Net    | Koopa🧑‍🔧[^29]                                                                                                                  |    ✅     |          |          |          |          | `2023 - NeurIPS`                                   |
-<<<<<<< HEAD
-| Neural Net    | Crossformer🧑‍🔧[^16]                                                                                                            |    ✅     |          |          |          |          | `2023 - ICLR`                                      |
-=======
 | Neural Net    | Crossformer🧑‍🔧[^16]                                                                                                            |    ✅     |          |          |          |     ✅     | `2023 - ICLR`                                      |
->>>>>>> dev
 | Neural Net    | TimesNet[^14]                                                                                                                    |    ✅     |    ✅     |    ✅     |          |    ✅     | `2023 - ICLR`                                      |
 | Neural Net    | PatchTST🧑‍🔧[^18]                                                                                                               |    ✅     |          |          |          |    ✅     | `2023 - ICLR`                                      |
 | Neural Net    | ETSformer🧑‍🔧[^19]                                                                                                              |    ✅     |          |          |          |     ✅     | `2023 - ICLR`                                      |
