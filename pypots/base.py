@@ -9,7 +9,7 @@ import os
 from abc import ABC, abstractmethod
 from copy import deepcopy
 from datetime import datetime
-from typing import Optional, Union, Iterable
+from typing import Iterable, Optional, Union
 
 import numpy as np
 import torch
@@ -781,15 +781,22 @@ class BaseNNModel(BaseModel):
                 if np.isnan(mean_loss):
                     logger.warning(f"‼️ Got NaN loss in epoch#{epoch}. This may lead to unexpected errors.")
 
-                if (self.validation_metric.lower_better and mean_loss < self.best_loss) or (
-                    not self.validation_metric.lower_better and mean_loss > self.best_loss
-                ):
+                # Only update best model if early stopping is enabled (patience is not None)
+                if self.original_patience is not None:
+                    if (self.validation_metric.lower_better and mean_loss < self.best_loss) or (
+                        not self.validation_metric.lower_better and mean_loss > self.best_loss
+                    ):
+                        self.best_epoch = epoch
+                        self.best_loss = mean_loss
+                        self.best_model_dict = deepcopy(self.model.state_dict())
+                        self.patience = self.original_patience
+                    else:
+                        self.patience -= 1
+                else:
+                    # When early stopping is disabled, always use the latest model
                     self.best_epoch = epoch
                     self.best_loss = mean_loss
                     self.best_model_dict = deepcopy(self.model.state_dict())
-                    self.patience = self.original_patience
-                else:
-                    self.patience -= 1
 
                 # save the model if necessary
                 self._auto_save_model_if_necessary(

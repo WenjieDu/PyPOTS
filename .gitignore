@@ -1,3 +1,179 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# PyTorch
+*.pt
+*.pth
+*.ckpt
+*.pypots
+torch_save/
+
+# Virtual Environment
+venv/
+env/
+ENV/
+.env
+.venv
+env.bak/
+venv.bak/
+
+# IDE - VSCode
+.vscode/
+*.code-workspace
+.history
+
+# IDE - PyCharm
+.idea/
+*.iml
+*.iws
+*.ipr
+.idea_modules/
+
+# IDE - Jupyter Notebook
+.ipynb_checkpoints
+*.ipynb
+
+# Testing
+.coverage
+coverage.xml
+*.cover
+.hypothesis/
+.pytest_cache/
+htmlcov/
+
+# Logs and databases
+*.log
+*.sqlite
+*.db
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Project specific
+config.ini
+*.h5
+*.hdf5
+tensorboard/
+logs/
+wandb/
+runs/
+
+# Distribution / packaging
+.Python
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+
+# mypy
+.mypy_cache/
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Spyder project settings
+.spyderproject
+.spyproject
+
+# Rope project settings
+.ropeproject
+
+# mkdocs documentation
+/site
+
+# Pyre type checker
+.pyre/
+
+# pytype static type analyzer
+.pytype/
+
+# Cython debug symbols
+cython_debug/
+
+# VS Code
+.vscode/
+*.code-workspace
+.history
+
+# PyCharm
+.idea/
+*.iml
+*.iws
+*.ipr
+.idea_modules/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+*.ipynb
+
+# TensorBoard
+tensorboard/
+runs/
+
+# Weights & Biases
+wandb/
+
+# Project specific
+config.ini
+*.h5
+*.hdf5
+logs/
+
 # ignore special files or folds
 *~
 .idea
@@ -27,3 +203,7 @@ docs/_build
 
 # to temporally ignore things under development locally, simply append '_indev' to the name of your workdir
 *_indev*
+
+# Allow tests directory
+!tests/
+!tests/**
