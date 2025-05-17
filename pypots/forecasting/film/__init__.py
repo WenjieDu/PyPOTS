@@ -2,14 +2,14 @@
 The package of the partially-observed time-series forecasting model FiLM.
 
 Refer to the paper
-`Haixu Wu, Tengge Hu, Yong Liu, Hang Zhou, Jianmin Wang, and Mingsheng Long.
-FiLM: Temporal 2D-Variation Modeling for General Time Series Analysis.
-In ICLR, 2023.
-<https://openreview.net/pdf?id=ju_Uqw384Oq>`_
+`Zhou, Tian, Ziqing Ma, Qingsong Wen, Liang Sun, Tao Yao, Wotao Yin, and Rong Jin.
+"FiLM: Frequency improved legendre memory model for long-term time series forecasting."
+In Advances in Neural Information Processing Systems 35 (2022): 12677-12690.
+<https://proceedings.neurips.cc/paper_files/paper/2022/file/524ef58c2bd075775861234266e5e020-Paper-Conference.pdf>`_
 
 Notes
 -----
-This implementation is inspired by the official one https://github.com/thuml/Time-Series-Library
+This implementation is inspired by the official one https://github.com/tianzhou2011/FiLM
 
 """
 

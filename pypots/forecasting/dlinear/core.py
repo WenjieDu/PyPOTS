@@ -62,12 +62,6 @@ class _DLinear(nn.Module):
         seasonal_init, trend_init = self.series_decomp(X)
 
         if not self.individual:
-            # WDU: the original DLinear paper isn't proposed for imputation task. Hence the model doesn't take
-            # the missing mask into account, which means, in the process, the model doesn't know which part of
-            # the input data is missing, and this may hurt the model's imputation performance. Therefore, I apply the
-            # SAITS embedding method to project the concatenation of features and masks into a hidden space, as well as
-            # the output layers to project the seasonal and trend from the hidden space to the original space.
-            # But this is only for the non-individual mode.
             seasonal_init = self.seasonal_saits_embedding(seasonal_init, missing_mask)
             trend_init = self.trend_saits_embedding(trend_init, missing_mask)
 

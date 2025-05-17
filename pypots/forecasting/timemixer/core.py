@@ -70,7 +70,6 @@ class _TimeMixer(ModelCore):
             use_norm=use_norm,
         )
 
-        # for the imputation task, the output dim is the same as input dim
         self.output_projection = nn.Linear(n_features, n_pred_features)
 
     def forward(
@@ -82,10 +81,6 @@ class _TimeMixer(ModelCore):
         # missing_mask = inputs["missing_mask"]
 
         # TimesMixer processing
-        # WDU: missing_mask should not be passed into the model forward processing because the official implementation
-        # does not accept POTS on the forecasting task. And if pass in, it will result in
-        # x and x_mark shape not consistent bug
-        # enc_out = self.model.forecast(X, missing_mask)
         enc_out = self.model.forecast(X, None)
 
         # project back the original data space

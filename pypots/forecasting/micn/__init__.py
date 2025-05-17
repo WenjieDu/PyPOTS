@@ -1,5 +1,5 @@
 """
-The package of the partially-observed time-series imputation model MICN.
+The package of the partially-observed time-series forecasting model MICN.
 
 Refer to the paper
 `Huiqiang Wang, Jian Peng, Feihu Huang, Jince Wang, Junhui Chen, and Yifei Xiao
