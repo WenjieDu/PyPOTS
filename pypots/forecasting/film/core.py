@@ -64,12 +64,6 @@ class _FiLM(nn.Module):
     ) -> dict:
         X, missing_mask = inputs["X"], inputs["missing_mask"]
 
-        # WDU: the original FiLM paper isn't proposed for imputation task. Hence the model doesn't take
-        # the missing mask into account, which means, in the process, the model doesn't know which part of
-        # the input data is missing, and this may hurt the model's imputation performance. Therefore, I apply the
-        # SAITS embedding method to project the concatenation of features and masks into a hidden space, as well as
-        # the output layers to pro
-        # ject back from the hidden space to the original space.
         X_embedding = self.saits_embedding(X, missing_mask)
 
         # FiLM processing

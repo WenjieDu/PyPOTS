@@ -66,7 +66,6 @@ class _ModernTCN(nn.Module):
             individual,
         )
 
-        # for the imputation task, the output dim is the same as input dim
         self.projection = FlattenHead(
             self.backbone.head_nf,
             n_pred_steps,

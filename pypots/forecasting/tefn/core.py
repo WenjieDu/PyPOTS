@@ -53,7 +53,6 @@ class _TEFN(ModelCore):
             n_fod,
         )
 
-        # for the imputation task, the output dim is the same as input dim
         self.output_projection = nn.Linear(n_features, n_pred_features)
 
     def forward(
@@ -67,11 +66,6 @@ class _TEFN(ModelCore):
             # Normalization from Non-stationary Transformer
             X, means, stdev = nonstationary_norm(X, missing_mask)
 
-        # WDU: the original TEFN paper isn't proposed for imputation task. Hence the model doesn't take
-        # the missing mask into account, which means, in the process, the model doesn't know which part of
-        # the input data is missing, and this may hurt the model's imputation performance. Therefore, I apply the
-        # SAITS embedding method to project the concatenation of features and masks into a hidden space, as well as
-        # the output layers to project back from the hidden space to the original space.
         enc_out = self.saits_embedding(X.permute(0, 2, 1), missing_mask.permute(0, 2, 1)).permute(0, 2, 1)
 
         # TEFN encoder processing
