@@ -11,7 +11,7 @@
        <img alt="Python version" src="https://img.shields.io/badge/Python-v3.8+-F8C6B5?logo=python&logoColor=white">
     </a>
     <a href="https://landscape.pytorch.org/?item=modeling--specialized--pypots">
-        <img alt="powered by Pytorch" src="https://img.shields.io/badge/PyTorch%20Landscape-EE4C2C?logo=pytorch&logoColor=white">
+        <img alt="Pytorch landscape" src="https://img.shields.io/badge/PyTorch%20Landscape-EE4C2C?logo=pytorch&logoColor=white">
     </a>
     <a href="https://github.com/WenjieDu/PyPOTS/blob/main/LICENSE">
         <img alt="BSD-3 license" src="https://img.shields.io/badge/License-BSD--3-E9BB41?logo=opensourceinitiative&logoColor=white">
@@ -313,7 +313,7 @@ saits.load("save_it_here/saits_physionet2012.pypots")  # 重新加载模型用�
 
 PyPOTS的论文可以[在arXiv上获取](https://arxiv.org/abs/2305.18811), 其5页的短版论文已被第9届SIGKDD international workshop
 on Mining and Learning from Time Series ([MiLeTS'23](https://kdd-milets.github.io/milets2023/))收录, 与此同时,
-PyPOTS也已被纳入[PyTorch Ecosystem](https://pytorch.org/ecosystem/). 我们正在努力将其发表在更具影响力的学术刊物上,
+PyPOTS也已被纳入[PyTorch Ecosystem](https://landscape.pytorch.org/?item=modeling--specialized--pypots). 我们正在努力将其发表在更具影响力的学术刊物上,
 如JMLR (track for [Machine Learning Open Source Software](https://www.jmlr.org/mloss/)).
 如果你在工作中使用了PyPOTS, 请按照以下格式引用我们的论文并为将项目设为星标🌟, 以便让更多人关注到它, 对此我们深表感谢🤗.
 
