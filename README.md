@@ -1,5 +1,5 @@
 <a href="https://github.com/WenjieDu/PyPOTS">
-    <img src="https://pypots.com/figs/pypots_logos/PyPOTS/logo_FFBG.svg" width="200" align="right">
+    <img src="https://pypots.com/figs/pypots_logos/PyPOTS/logo_FFBG.svg" width="210" align="right">
 </a>
 
 <h3 align="center">Welcome to PyPOTS</h3>
@@ -8,13 +8,10 @@
 
 <p align="center">
     <a href="https://docs.pypots.com/en/latest/install.html#reasons-of-version-limitations-on-dependencies">
-       <img alt="Python version" src="https://img.shields.io/badge/Python-v3.8+-E97040?logo=python&logoColor=white">
+       <img alt="Python version" src="https://img.shields.io/badge/Python-v3.8+-F8C6B5?logo=python&logoColor=white">
     </a>
-    <a href="https://www.google.com/search?q=%22PyPOTS%22+site%3Apytorch.org">
-        <img alt="powered by Pytorch" src="https://img.shields.io/badge/PyTorch-%E2%9D%A4%EF%B8%8F-F8C6B5?logo=pytorch&logoColor=white">
-    </a>
-    <a href="https://github.com/WenjieDu/PyPOTS/releases">
-        <img alt="the latest release version" src="https://img.shields.io/github/v/release/wenjiedu/pypots?color=EE781F&include_prereleases&label=Release&logo=github&logoColor=white">
+    <a href="https://landscape.pytorch.org/?item=modeling--specialized--pypots">
+        <img alt="Pytorch landscape" src="https://img.shields.io/badge/PyTorch%20Landscape-EE4C2C?logo=pytorch&logoColor=white">
     </a>
     <a href="https://github.com/WenjieDu/PyPOTS/blob/main/LICENSE">
         <img alt="BSD-3 license" src="https://img.shields.io/badge/License-BSD--3-E9BB41?logo=opensourceinitiative&logoColor=white">
@@ -24,6 +21,9 @@
     </a>
     <a href="https://github.com/WenjieDu/PyPOTS#-community">
         <img alt="Community" src="https://img.shields.io/badge/join_us-community!-C8A062">
+    </a>
+    <a href="https://github.com/WenjieDu/PyPOTS/releases">
+        <img alt="the latest release version" src="https://img.shields.io/github/v/release/wenjiedu/pypots?color=EE781F&include_prereleases&label=Release&logo=github&logoColor=white">
     </a>
     <a href="https://github.com/WenjieDu/PyPOTS/graphs/contributors">
         <img alt="GitHub contributors" src="https://img.shields.io/github/contributors/wenjiedu/pypots?color=D8E699&label=Contributors&logo=GitHub">
@@ -144,7 +144,7 @@ The paper references and links are all listed at the bottom of this file.
 | Neural Net    | TimesNet[^14]                                                                                                                    |    ✅     |    ✅     |    ✅     |          |    ✅     | `2023 - ICLR`                                      |
 | Neural Net    | PatchTST🧑‍🔧[^18]                                                                                                               |    ✅     |          |          |          |    ✅     | `2023 - ICLR`                                      |
 | Neural Net    | ETSformer🧑‍🔧[^19]                                                                                                              |    ✅     |          |          |          |     ✅     | `2023 - ICLR`                                      |
-| Neural Net    | MICN🧑‍🔧[^27]                                                                                                                   |    ✅     |          |          |          |          | `2023 - ICLR`                                      |
+| Neural Net    | MICN🧑‍🔧[^27]                                                                                                                   |    ✅     |    ✅     |          |          |          | `2023 - ICLR`                                      |
 | Neural Net    | DLinear🧑‍🔧[^17]                                                                                                                |    ✅     |          |          |          |    ✅     | `2023 - AAAI`                                      |
 | Neural Net    | TiDE🧑‍🔧[^28]                                                                                                                   |    ✅     |          |          |          |          | `2023 - TMLR`                                      |
 | Neural Net    | CSAI[^42]                                                                                                                        |    ✅     |          |    ✅     |          |          | `2023 - arXiv`                                     |
@@ -333,7 +333,7 @@ saits.load("save_it_here/saits_physionet2012.pypots")  # reload the serialized m
 The paper introducing PyPOTS is available [on arXiv](https://arxiv.org/abs/2305.18811),
 and a short version of it is accepted by the 9th SIGKDD international workshop on Mining and Learning from Time
 Series ([MiLeTS'23](https://kdd-milets.github.io/milets2023/))).
-**Additionally**, PyPOTS has been included as a [PyTorch Ecosystem](https://pytorch.org/ecosystem/) project.
+**Additionally**, PyPOTS has been included as a [PyTorch Ecosystem](https://landscape.pytorch.org/?item=modeling--specialized--pypots) project.
 We are pursuing to publish it in prestigious academic venues, e.g. JMLR (track for
 [Machine Learning Open Source Software](https://www.jmlr.org/mloss/)). If you use PyPOTS in your work,
 please cite it as below and 🌟star this repository to make others notice this library. 🤗
