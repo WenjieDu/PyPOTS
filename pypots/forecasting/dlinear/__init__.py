@@ -1,5 +1,5 @@
 """
-The package of the partially-observed time-series imputation model DLinear.
+The package of the partially-observed time-series forecasting model DLinear.
 
 Refer to the paper
 `Ailing Zeng, Muxi Chen, Lei Zhang, and Qiang Xu.
