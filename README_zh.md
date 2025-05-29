@@ -1,5 +1,5 @@
 <a href="https://github.com/WenjieDu/PyPOTS">
-    <img src="https://pypots.com/figs/pypots_logos/PyPOTS/logo_FFBG.svg" width="200" align="right">
+    <img src="https://pypots.com/figs/pypots_logos/PyPOTS/logo_FFBG.svg" width="210" align="right">
 </a>
 
 <h3 align="center">欢迎来到PyPOTS</h3>
@@ -8,13 +8,10 @@
 
 <p align="center">
     <a href="https://docs.pypots.com/en/latest/install.html#reasons-of-version-limitations-on-dependencies">
-       <img alt="Python version" src="https://img.shields.io/badge/Python-v3.8+-E97040?logo=python&logoColor=white">
+       <img alt="Python version" src="https://img.shields.io/badge/Python-v3.8+-F8C6B5?logo=python&logoColor=white">
     </a>
-    <a href="https://www.google.com/search?q=%22PyPOTS%22+site%3Apytorch.org">
-        <img alt="powered by Pytorch" src="https://img.shields.io/badge/PyTorch-%E2%9D%A4%EF%B8%8F-F8C6B5?logo=pytorch&logoColor=white">
-    </a>
-    <a href="https://github.com/WenjieDu/PyPOTS/releases">
-        <img alt="the latest release version" src="https://img.shields.io/github/v/release/wenjiedu/pypots?color=EE781F&include_prereleases&label=Release&logo=github&logoColor=white">
+    <a href="https://landscape.pytorch.org/?item=modeling--specialized--pypots">
+        <img alt="Pytorch landscape" src="https://img.shields.io/badge/PyTorch%20Landscape-EE4C2C?logo=pytorch&logoColor=white">
     </a>
     <a href="https://github.com/WenjieDu/PyPOTS/blob/main/LICENSE">
         <img alt="BSD-3 license" src="https://img.shields.io/badge/License-BSD--3-E9BB41?logo=opensourceinitiative&logoColor=white">
@@ -24,6 +21,9 @@
     </a>
     <a href="https://github.com/WenjieDu/PyPOTS#-community">
         <img alt="Community" src="https://img.shields.io/badge/join_us-community!-C8A062">
+    </a>
+    <a href="https://github.com/WenjieDu/PyPOTS/releases">
+        <img alt="the latest release version" src="https://img.shields.io/github/v/release/wenjiedu/pypots?color=EE781F&include_prereleases&label=Release&logo=github&logoColor=white">
     </a>
     <a href="https://github.com/WenjieDu/PyPOTS/graphs/contributors">
         <img alt="GitHub contributors" src="https://img.shields.io/github/contributors/wenjiedu/pypots?color=D8E699&label=Contributors&logo=GitHub">
@@ -65,6 +65,7 @@
         <img alt="README in English" src="https://pypots.com/figs/pypots_logos/readme/US.svg">
     </a>
 </p>
+
 
 ⦿ `开发背景`: 由于传感器故障、通信异常以及不可预见的未知原因, 在现实环境中收集的时间序列数据普遍存在缺失值,
 这使得部分观测时间序列(partially-observed time series, 简称为POTS)成为现实世界数据的建模中普遍存在的问题.
@@ -130,15 +131,15 @@ PyPOTS当前支持多变量POTS数据的插补, 预测, 分类, 聚类以及异�
 | Neural Net    | TimesNet[^14]                                                                                                                    |    ✅     |    ✅     |    ✅     |          |    ✅     | `2023 - ICLR`                                      |
 | Neural Net    | PatchTST🧑‍🔧[^18]                                                                                                               |    ✅     |          |          |          |    ✅     | `2023 - ICLR`                                      |
 | Neural Net    | ETSformer🧑‍🔧[^19]                                                                                                              |    ✅     |          |          |          |     ✅     | `2023 - ICLR`                                      |
-| Neural Net    | MICN🧑‍🔧[^27]                                                                                                                   |    ✅     |          |          |          |          | `2023 - ICLR`                                      |
-| Neural Net    | DLinear🧑‍🔧[^17]                                                                                                                |    ✅     |          |          |          |    ✅     | `2023 - AAAI`                                      |
+| Neural Net    | MICN🧑‍🔧[^27]                                                                                                                   |    ✅     |    ✅     |          |          |          | `2023 - ICLR`                                      |
+| Neural Net    | DLinear🧑‍🔧[^17]                                                                                                                |    ✅     |    ✅     |          |          |    ✅     | `2023 - AAAI`                                      |
 | Neural Net    | TiDE🧑‍🔧[^28]                                                                                                                   |    ✅     |          |          |          |          | `2023 - TMLR`                                      |
 | Neural Net    | CSAI[^42]                                                                                                                        |    ✅     |          |    ✅     |          |          | `2023 - arXiv`                                     |
 | Neural Net    | SegRNN🧑‍🔧[^43]                                                                                                                 |    ✅     |    ✅     |          |          |    ✅     | `2023 - arXiv`                                     |
 | Neural Net    | TS2Vec[^48]                                                                                                                      |          |          |    ✅     |          |          | `2022 - AAAI`                                      |
 | Neural Net    | SCINet🧑‍🔧[^30]                                                                                                                 |    ✅     |          |          |          |    ✅     | `2022 - NeurIPS`                                   |
 | Neural Net    | Nonstationary Tr.🧑‍🔧[^25]                                                                                                      |    ✅     |          |          |          |     ✅     | `2022 - NeurIPS`                                   |
-| Neural Net    | FiLM🧑‍🔧[^22]                                                                                                                   |    ✅     |          |          |          |    ✅     | `2022 - NeurIPS`                                   |
+| Neural Net    | FiLM🧑‍🔧[^22]                                                                                                                   |    ✅     |    ✅     |          |          |    ✅     | `2022 - NeurIPS`                                   |
 | Neural Net    | RevIN_SCINet🧑‍🔧[^31]                                                                                                           |    ✅     |          |          |          |          | `2022 - ICLR`                                      |
 | Neural Net    | Pyraformer🧑‍🔧[^26]                                                                                                             |    ✅     |          |          |          |     ✅     | `2022 - ICLR`                                      |
 | Neural Net    | Raindrop[^5]                                                                                                                     |          |          |    ✅     |          |          | `2022 - ICLR`                                      |
@@ -312,7 +313,7 @@ saits.load("save_it_here/saits_physionet2012.pypots")  # 重新加载模型用�
 
 PyPOTS的论文可以[在arXiv上获取](https://arxiv.org/abs/2305.18811), 其5页的短版论文已被第9届SIGKDD international workshop
 on Mining and Learning from Time Series ([MiLeTS'23](https://kdd-milets.github.io/milets2023/))收录, 与此同时,
-PyPOTS也已被纳入[PyTorch Ecosystem](https://pytorch.org/ecosystem/). 我们正在努力将其发表在更具影响力的学术刊物上,
+PyPOTS也已被纳入[PyTorch Ecosystem](https://landscape.pytorch.org/?item=modeling--specialized--pypots). 我们正在努力将其发表在更具影响力的学术刊物上,
 如JMLR (track for [Machine Learning Open Source Software](https://www.jmlr.org/mloss/)).
 如果你在工作中使用了PyPOTS, 请按照以下格式引用我们的论文并为将项目设为星标🌟, 以便让更多人关注到它, 对此我们深表感谢🤗.
 
