@@ -93,11 +93,6 @@ class _MOMENT(ModelCore):
     ) -> dict:
         X, missing_mask = inputs["X"], inputs["missing_mask"]
 
-        # WDU: the original PatchTST paper isn't proposed for imputation task. Hence the model doesn't take
-        # the missing mask into account, which means, in the process, the model doesn't know which part of
-        # the input data is missing, and this may hurt the model's imputation performance. Therefore, I apply the
-        # SAITS embedding method to project the concatenation of features and masks into a hidden space, as well as
-        # the output layers to project back from the hidden space to the original space.
         input_X = self.saits_embedding(X, missing_mask)
         batch_size = X.shape[0]
         input_mask = torch.ones([batch_size, self.n_steps + self.n_pred_steps], device=X.device)

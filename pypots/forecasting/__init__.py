@@ -7,8 +7,11 @@ Expose all time-series forecasting models.
 
 from .bttf import BTTF
 from .csdi import CSDI
+from .dlinear import DLinear
+from .film import FiLM
 from .fits import FITS
 from .gpt4ts import GPT4TS
+from .micn import MICN
 from .moderntcn import ModernTCN
 from .moment import MOMENT
 from .segrnn import SegRNN
@@ -31,4 +34,7 @@ __all__ = [
     "TimesNet",
     "ModernTCN",
     "SegRNN",
+    "MICN",
+    "DLinear",
+    "FiLM",
 ]

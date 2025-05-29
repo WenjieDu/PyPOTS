@@ -1,6 +1,4 @@
 """
-The core wrapper assembles the submodules of TEFN forecasting model
-and takes over the forward progress of the algorithm.
 
 """
 
@@ -9,30 +7,42 @@ and takes over the forward progress of the algorithm.
 
 import torch.nn as nn
 
-from ...nn.functional import nonstationary_norm, nonstationary_denorm
-from ...nn.modules import ModelCore
+from ...nn.modules.autoformer import SeriesDecompositionBlock
+from ...nn.modules.dlinear import BackboneDLinear
 from ...nn.modules.loss import Criterion
 from ...nn.modules.saits import SaitsEmbedding
-from ...nn.modules.tefn import BackboneTEFN
 
 
-class _TEFN(ModelCore):
+class _DLinear(nn.Module):
     def __init__(
         self,
-        n_steps: int,
-        n_features: int,
-        n_pred_steps: int,
-        n_pred_features: int,
-        n_fod: int,
-        apply_nonstationary_norm: bool,
+        n_steps,
+        n_features,
+        n_pred_steps,
+        n_pred_features,
+        moving_avg_window_size: int,
+        individual: bool,
+        d_model: int,
         training_loss: Criterion,
         validation_metric: Criterion,
     ):
         super().__init__()
 
-        self.n_pred_steps = n_pred_steps
+        self.seq_len = n_steps
+        self.pred_len = n_pred_steps
         self.n_pred_features = n_pred_features
-        self.apply_nonstationary_norm = apply_nonstationary_norm
+
+        self.individual = individual
+
+        self.series_decomp = SeriesDecompositionBlock(moving_avg_window_size)
+        self.backbone = BackboneDLinear(n_steps, n_features, individual, d_model)
+
+        if not individual:
+            self.seasonal_saits_embedding = SaitsEmbedding(n_features * 2, d_model, with_pos=False)
+            self.trend_saits_embedding = SaitsEmbedding(n_features * 2, d_model, with_pos=False)
+            self.linear_seasonal_output = nn.Linear(d_model, n_features)
+            self.linear_trend_output = nn.Linear(d_model, n_features)
+
         self.training_loss = training_loss
         if validation_metric.__class__.__name__ == "Criterion":
             # in this case, we need validation_metric.lower_better in _train_model() so only pass Criterion()
@@ -41,20 +51,6 @@ class _TEFN(ModelCore):
         else:
             self.validation_metric = validation_metric
 
-        self.saits_embedding = SaitsEmbedding(
-            n_steps * 2,
-            n_steps + n_pred_steps,
-            with_pos=False,
-        )
-        self.backbone = BackboneTEFN(
-            n_steps,
-            n_features,
-            n_pred_steps,
-            n_fod,
-        )
-
-        self.output_projection = nn.Linear(n_features, n_pred_features)
-
     def forward(
         self,
         inputs: dict,
@@ -62,22 +58,22 @@ class _TEFN(ModelCore):
     ) -> dict:
         X, missing_mask = inputs["X"], inputs["missing_mask"]
 
-        if self.apply_nonstationary_norm:
-            # Normalization from Non-stationary Transformer
-            X, means, stdev = nonstationary_norm(X, missing_mask)
+        # input preprocessing and embedding for DLinear
+        seasonal_init, trend_init = self.series_decomp(X)
 
-        enc_out = self.saits_embedding(X.permute(0, 2, 1), missing_mask.permute(0, 2, 1)).permute(0, 2, 1)
+        if not self.individual:
+            seasonal_init = self.seasonal_saits_embedding(seasonal_init, missing_mask)
+            trend_init = self.trend_saits_embedding(trend_init, missing_mask)
 
-        # TEFN encoder processing
-        enc_out = self.backbone(enc_out)
-        if self.apply_nonstationary_norm:
-            # De-Normalization from Non-stationary Transformer
-            enc_out = nonstationary_denorm(enc_out, means, stdev)
+        seasonal_output, trend_output = self.backbone(seasonal_init, trend_init)
 
-        # project back the original data space
-        forecasting_result = self.output_projection(enc_out)
-        # the raw output has length = n_steps+n_pred_steps, we only need the last n_pred_steps
-        forecasting_result = forecasting_result[:, -self.n_pred_steps :]
+        if not self.individual:
+            seasonal_output = self.linear_seasonal_output(seasonal_output)
+            trend_output = self.linear_trend_output(trend_output)
+
+        output = seasonal_output + trend_output
+
+        forecasting_result = output[:, -self.pred_len :]
 
         results = {
             "forecasting": forecasting_result,
