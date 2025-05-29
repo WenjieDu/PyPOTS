@@ -14,9 +14,9 @@ Welcome to PyPOTS docs!
    :alt: Python version
    :target: https://docs.pypots.com/en/latest/install.html#reasons-of-version-limitations-on-dependencies
 
-.. image:: https://img.shields.io/badge/PyTorch-%E2%9D%A4%EF%B8%8F-F8C6B5?logo=pytorch&logoColor=white
-   :alt: powered by Pytorch
-   :target: https://www.google.com/search?q=%22PyPOTS%22+site%3Apytorch.org
+.. image:: https://img.shields.io/badge/PyTorch%20Landscape-EE4C2C?logo=pytorch&logoColor=white
+   :alt: Pytorch landscape
+   :target: https://landscape.pytorch.org/?item=modeling--specialized--pypots
 
 .. image:: https://img.shields.io/github/v/release/wenjiedu/pypots?color=EE781F&include_prereleases&label=Release&logo=github&logoColor=white
    :alt: the latest release version
@@ -175,7 +175,7 @@ The paper references are all listed at the bottom of this readme file.
 +----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
 | Neural Net     | ETSformer🧑‍🔧 :cite:`woo2023etsformer`                   |  ✅  |      |      |      |      | ``2023 - ICLR``       |
 +----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
-| Neural Net     | MICN🧑‍🔧 :cite:`wang2023micn`                            |  ✅  |      |      |      |      | ``2023 - ICLR``       |
+| Neural Net     | MICN🧑‍🔧 :cite:`wang2023micn`                            |  ✅  |  ✅  |      |      |      | ``2023 - ICLR``       |
 +----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
 | Neural Net     | DLinear🧑‍🔧 :cite:`zeng2023dlinear`                      |  ✅  |      |      |      |  ✅  | ``2023 - AAAI``       |
 +----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
@@ -333,7 +333,7 @@ Additionally, we present you a usage example of imputing missing values in time 
 ^^^^^^^^^^^^^^^^
 **[Updates in Jun 2023]** 🎉A short version of the PyPOTS paper is accepted by the 9th SIGKDD international workshop on
 Mining and Learning from Time Series (`MiLeTS'23 <https://kdd-milets.github.io/milets2023/>`_).
-Besides, PyPOTS has been included as a `PyTorch Ecosystem <https://pytorch.org/ecosystem/>`_ project.
+Besides, PyPOTS has been included as a `PyTorch Ecosystem <https://landscape.pytorch.org/?item=modeling--specialized--pypots>`_ project.
 
 The paper introducing PyPOTS is available on arXiv at `this URL <https://arxiv.org/abs/2305.18811>`_.,
 and we are pursuing to publish it in prestigious academic venues, e.g. JMLR (track for
