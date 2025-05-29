@@ -7,41 +7,47 @@
 
 import torch.nn as nn
 
-from ...nn.modules.autoformer import SeriesDecompositionBlock
-from ...nn.modules.dlinear import BackboneDLinear
+from ...nn.modules.film import BackboneFiLM
 from ...nn.modules.loss import Criterion
 from ...nn.modules.saits import SaitsEmbedding
 
 
-class _DLinear(nn.Module):
+class _FiLM(nn.Module):
     def __init__(
         self,
         n_steps,
         n_features,
         n_pred_steps,
         n_pred_features,
-        moving_avg_window_size: int,
-        individual: bool,
-        d_model: int,
+        window_size,
+        multiscale,
+        modes1,
+        ratio,
+        mode_type,
+        d_model,
         training_loss: Criterion,
         validation_metric: Criterion,
     ):
         super().__init__()
 
-        self.seq_len = n_steps
-        self.pred_len = n_pred_steps
         self.n_pred_features = n_pred_features
 
-        self.individual = individual
-
-        self.series_decomp = SeriesDecompositionBlock(moving_avg_window_size)
-        self.backbone = BackboneDLinear(n_steps, n_features, individual, d_model)
-
-        if not individual:
-            self.seasonal_saits_embedding = SaitsEmbedding(n_features * 2, d_model, with_pos=False)
-            self.trend_saits_embedding = SaitsEmbedding(n_features * 2, d_model, with_pos=False)
-            self.linear_seasonal_output = nn.Linear(d_model, n_features)
-            self.linear_trend_output = nn.Linear(d_model, n_features)
+        self.saits_embedding = SaitsEmbedding(
+            n_features * 2,
+            d_model,
+            with_pos=False,
+        )
+        self.backbone = BackboneFiLM(
+            n_steps,
+            d_model,
+            n_pred_steps,
+            window_size,
+            multiscale,
+            modes1,
+            ratio,
+            mode_type,
+        )
+        self.output_projection = nn.Linear(d_model, n_pred_features)
 
         self.training_loss = training_loss
         if validation_metric.__class__.__name__ == "Criterion":
@@ -58,22 +64,12 @@ class _DLinear(nn.Module):
     ) -> dict:
         X, missing_mask = inputs["X"], inputs["missing_mask"]
 
-        # input preprocessing and embedding for DLinear
-        seasonal_init, trend_init = self.series_decomp(X)
+        X_embedding = self.saits_embedding(X, missing_mask)
 
-        if not self.individual:
-            seasonal_init = self.seasonal_saits_embedding(seasonal_init, missing_mask)
-            trend_init = self.trend_saits_embedding(trend_init, missing_mask)
-
-        seasonal_output, trend_output = self.backbone(seasonal_init, trend_init)
-
-        if not self.individual:
-            seasonal_output = self.linear_seasonal_output(seasonal_output)
-            trend_output = self.linear_trend_output(trend_output)
-
-        output = seasonal_output + trend_output
-
-        forecasting_result = output[:, -self.pred_len :]
+        # FiLM processing
+        backbone_output = self.backbone(X_embedding)
+        forecasting_result = self.output_projection(backbone_output)
+        forecasting_result = forecasting_result[:, :, : self.n_pred_features]  # select the first n_pred_features
 
         results = {
             "forecasting": forecasting_result,

@@ -80,11 +80,6 @@ class _MICN(nn.Module):
 
         seasonal_init, trend_init = self.decomp_multi(X)
 
-        # WDU: the original MICN paper isn't proposed for imputation task. Hence the model doesn't take
-        # the missing mask into account, which means, in the process, the model doesn't know which part of
-        # the input data is missing, and this may hurt the model's imputation performance. Therefore, I apply the
-        # SAITS embedding method to project the concatenation of features and masks into a hidden space, as well as
-        # the output layers to project back from the hidden space to the original space.
         enc_out = self.saits_embedding(seasonal_init, missing_mask)
 
         # MICN encoder processing
