@@ -60,8 +60,7 @@ jobs:
               run: |
                   pip install torch-geometric torch-scatter torch-sparse -f "https://data.pyg.org/whl/torch-${{ matrix.pytorch-version }}+cpu.html"
                   pip install pypots[dev]
-                  pip install scikit-learn==1.6.1  # scikit-learn 1.7.0 request higher numpy version, so fix its version
-                  pip install numpy==1.24  # many libs not compatible with numpy 2.0. Note 3.12 requests for numpy>=2.0
+                  pip install numpy==1.26.4  # many libs not compatible with numpy 2.0. Note 3.12 requests for numpy>=2.0
                   pip install pandas==1.5  # fix pandas version to avoid installing pandas 2.0, the same reason with numpy
                   python_site_path=`python -c "import site; print(site.getsitepackages()[0])"`
                   echo "python site-packages path: $python_site_path"
