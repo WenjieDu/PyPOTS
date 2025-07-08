@@ -64,6 +64,15 @@ pypots.classification.timesnet
    :show-inheritance:
    :inherited-members:
 
+pypots.classification.autoformer
+----------------------------------
+
+.. automodule:: pypots.classification.autoformer
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+
 pypots.classification.ts2vec
 ----------------------------------
 

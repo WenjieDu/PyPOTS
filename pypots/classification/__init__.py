@@ -5,6 +5,7 @@ Expose all time-series classification models.
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
+from .autoformer import Autoformer
 from .brits import BRITS
 from .csai import CSAI
 from .grud import GRUD
@@ -27,4 +28,5 @@ __all__ = [
     "iTransformer",
     "TEFN",
     "PatchTST",
+    "Autoformer",
 ]
