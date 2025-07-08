@@ -66,6 +66,9 @@ class PatchTST(BaseNNImputer):
     dropout :
         The dropout rate for the model.
 
+    attn_dropout :
+        The dropout rate for the attention mechanism in the model.
+
     ORT_weight :
         The weight for the ORT loss, the same as SAITS.
 
