@@ -21,8 +21,7 @@ from ...optim.base import Optimizer
 
 
 class MICN(BaseNNImputer):
-    """The PyTorch implementation of the MICN model.
-    MICN is originally proposed by Huang et al. in :cite:`wang2023micn`.
+    """The PyTorch implementation of the MICN model :cite:`wang2023micn` for time series imputation.
 
     Parameters
     ----------

@@ -84,7 +84,7 @@ class _MICN(ModelCore):
         # the output layers to project back from the hidden space to the original space.
         enc_out = self.saits_embedding(seasonal_init, missing_mask)
 
-        # MICN encoder processing
+        # MICN processing
         reconstruction = self.backbone(enc_out)
         reconstruction = reconstruction + trend_init
 
