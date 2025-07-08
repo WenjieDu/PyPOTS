@@ -10,24 +10,32 @@ import torch.nn as nn
 
 from ...nn.modules import ModelCore
 from ...nn.modules.loss import Criterion
+from ...nn.modules.autoformer import AutoformerEncoder
 from ...nn.modules.saits import SaitsEmbedding
-from ...nn.modules.tefn import BackboneTEFN
 
 
-class _TEFN(ModelCore):
+class _Autoformer(ModelCore):
+
     def __init__(
         self,
         n_classes: int,
         n_steps: int,
         n_features: int,
-        n_fod: int,
+        n_layers: int,
+        d_model: int,
+        n_heads: int,
+        d_ffn: int,
+        factor: int,
+        moving_avg_window_size: int,
         dropout: float,
         training_loss: Criterion,
         validation_metric: Criterion,
     ):
         super().__init__()
 
-        self.n_fod = n_fod
+        self.n_steps = n_steps
+        self.d_model = d_model
+        self.n_layers = n_layers
         self.training_loss = training_loss
         if validation_metric.__class__.__name__ == "Criterion":
             # in this case, we need validation_metric.lower_better in _train_model() so only pass Criterion()
@@ -38,18 +46,21 @@ class _TEFN(ModelCore):
 
         self.saits_embedding = SaitsEmbedding(
             n_features * 2,
-            n_features,
+            d_model,
             with_pos=False,
+            dropout=dropout,
         )
-        self.model = BackboneTEFN(
-            n_steps,
-            n_features,
-            0,
-            n_fod,
+        self.encoder = AutoformerEncoder(
+            n_layers,
+            d_model,
+            n_heads,
+            d_ffn,
+            factor,
+            moving_avg_window_size,
+            dropout,
+            "relu",
         )
-        self.activation_func = nn.Sigmoid()
-        self.dropout = nn.Dropout(dropout)
-        self.output_projection = nn.Linear(n_features * n_steps, n_classes)
+        self.projection = nn.Linear(d_model * n_steps, n_classes)
 
     def forward(
         self,
@@ -57,17 +68,11 @@ class _TEFN(ModelCore):
         calc_criterion: bool = False,
     ) -> dict:
         X, missing_mask = inputs["X"], inputs["missing_mask"]
-        bz = X.shape[0]
-
         enc_out = self.saits_embedding(X, missing_mask)
 
-        # TEFN processing
-        out = self.model(enc_out)
-        out = self.activation_func(out)
-        out = self.dropout(out)
-
-        logits = self.output_projection(out.reshape(bz, -1))
-
+        # Autoformer encoder processing
+        enc_out, attns = self.encoder(enc_out)
+        logits = self.projection(enc_out.reshape(-1, self.n_steps * self.d_model))
         classification_proba = torch.softmax(logits, dim=1)
 
         results = {

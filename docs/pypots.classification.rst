@@ -37,6 +37,15 @@ pypots.classification.itransformer
    :show-inheritance:
    :inherited-members:
 
+pypots.classification.patchtst
+----------------------------------
+
+.. automodule:: pypots.classification.patchtst
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+
 pypots.classification.csai
 ----------------------------------
 
@@ -50,6 +59,15 @@ pypots.classification.timesnet
 ----------------------------------
 
 .. automodule:: pypots.classification.timesnet
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+
+pypots.classification.autoformer
+----------------------------------
+
+.. automodule:: pypots.classification.autoformer
    :members:
    :undoc-members:
    :show-inheritance:

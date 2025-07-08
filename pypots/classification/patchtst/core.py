@@ -10,24 +10,34 @@ import torch.nn as nn
 
 from ...nn.modules import ModelCore
 from ...nn.modules.loss import Criterion
+from ...nn.modules.patchtst import PatchEmbedding, PatchtstEncoder, PredictionHead
 from ...nn.modules.saits import SaitsEmbedding
-from ...nn.modules.tefn import BackboneTEFN
 
 
-class _TEFN(ModelCore):
+class _PatchTST(ModelCore):
     def __init__(
         self,
-        n_classes: int,
+        n_classes,
         n_steps: int,
         n_features: int,
-        n_fod: int,
+        n_layers: int,
+        d_model: int,
+        n_heads: int,
+        d_k: int,
+        d_v: int,
+        d_ffn: int,
+        patch_size: int,
+        patch_stride: int,
         dropout: float,
+        attn_dropout: float,
         training_loss: Criterion,
         validation_metric: Criterion,
     ):
         super().__init__()
 
-        self.n_fod = n_fod
+        self.n_steps = n_steps
+        self.d_model = d_model
+        self.n_layers = n_layers
         self.training_loss = training_loss
         if validation_metric.__class__.__name__ == "Criterion":
             # in this case, we need validation_metric.lower_better in _train_model() so only pass Criterion()
@@ -36,20 +46,23 @@ class _TEFN(ModelCore):
         else:
             self.validation_metric = validation_metric
 
-        self.saits_embedding = SaitsEmbedding(
-            n_features * 2,
-            n_features,
-            with_pos=False,
+        n_patches = int((n_steps - patch_size) / patch_stride + 2)  # number of patches
+        padding = patch_stride
+
+        self.saits_embedding = SaitsEmbedding(n_features * 2, d_model, with_pos=False)
+        self.patch_embedding = PatchEmbedding(d_model, patch_size, patch_stride, padding, dropout)
+        self.encoder = PatchtstEncoder(
+            n_layers,
+            d_model,
+            n_heads,
+            d_k,
+            d_v,
+            d_ffn,
+            dropout,
+            attn_dropout,
         )
-        self.model = BackboneTEFN(
-            n_steps,
-            n_features,
-            0,
-            n_fod,
-        )
-        self.activation_func = nn.Sigmoid()
-        self.dropout = nn.Dropout(dropout)
-        self.output_projection = nn.Linear(n_features * n_steps, n_classes)
+        self.head = PredictionHead(d_model, n_patches, n_steps, dropout)
+        self.projection = nn.Linear(d_model * n_steps, n_classes)
 
     def forward(
         self,
@@ -57,16 +70,18 @@ class _TEFN(ModelCore):
         calc_criterion: bool = False,
     ) -> dict:
         X, missing_mask = inputs["X"], inputs["missing_mask"]
-        bz = X.shape[0]
+        input_X = self.saits_embedding(X, missing_mask)
 
-        enc_out = self.saits_embedding(X, missing_mask)
+        # do patch  embedding
+        enc_out = self.patch_embedding(input_X.permute(0, 2, 1))  # [bz * d_model, n_patches, d_model]
 
-        # TEFN processing
-        out = self.model(enc_out)
-        out = self.activation_func(out)
-        out = self.dropout(out)
+        # PatchTST encoder processing
+        enc_out, attns = self.encoder(enc_out)
 
-        logits = self.output_projection(out.reshape(bz, -1))
+        # project back the original data space
+        dec_out = self.head(enc_out)  # [bz, n_steps, d_model]
+
+        logits = self.projection(dec_out.reshape(-1, self.n_steps * self.d_model))
 
         classification_proba = torch.softmax(logits, dim=1)
 
