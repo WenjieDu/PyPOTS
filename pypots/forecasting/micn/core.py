@@ -1,6 +1,4 @@
 """
-The core wrapper assembles the submodules of TEFN forecasting model
-and takes over the forward progress of the algorithm.
 
 """
 
@@ -9,30 +7,32 @@ and takes over the forward progress of the algorithm.
 
 import torch.nn as nn
 
-from ...nn.functional import nonstationary_norm, nonstationary_denorm
-from ...nn.modules import ModelCore
+from ...nn.modules.fedformer.layers import SeriesDecompositionMultiBlock
 from ...nn.modules.loss import Criterion
+from ...nn.modules.micn import BackboneMICN
 from ...nn.modules.saits import SaitsEmbedding
-from ...nn.modules.tefn import BackboneTEFN
 
 
-class _TEFN(ModelCore):
+class _MICN(nn.Module):
     def __init__(
         self,
-        n_steps: int,
-        n_features: int,
-        n_pred_steps: int,
-        n_pred_features: int,
-        n_fod: int,
-        apply_nonstationary_norm: bool,
+        n_layers,
+        n_steps,
+        n_features,
+        n_pred_steps,
+        n_pred_features,
+        d_model: int,
+        dropout: float,
+        conv_kernel: list,
         training_loss: Criterion,
         validation_metric: Criterion,
     ):
         super().__init__()
 
-        self.n_pred_steps = n_pred_steps
+        self.seq_len = n_steps
+        self.pred_len = n_pred_steps
         self.n_pred_features = n_pred_features
-        self.apply_nonstationary_norm = apply_nonstationary_norm
+        self.n_layers = n_layers
         self.training_loss = training_loss
         if validation_metric.__class__.__name__ == "Criterion":
             # in this case, we need validation_metric.lower_better in _train_model() so only pass Criterion()
@@ -42,18 +42,34 @@ class _TEFN(ModelCore):
             self.validation_metric = validation_metric
 
         self.saits_embedding = SaitsEmbedding(
-            n_steps * 2,
-            n_steps + n_pred_steps,
-            with_pos=False,
+            n_features * 2,
+            d_model,
+            with_pos=True,
+            dropout=dropout,
         )
-        self.backbone = BackboneTEFN(
+
+        decomp_kernel = []  # kernel of decomposition operation
+        isometric_kernel = []  # kernel of isometric convolution
+        for ii in conv_kernel:
+            if ii % 2 == 0:  # the kernel of decomposition operation must be odd
+                decomp_kernel.append(ii + 1)
+                isometric_kernel.append((n_steps + n_steps + ii) // ii)
+            else:
+                decomp_kernel.append(ii)
+                isometric_kernel.append((n_steps + n_steps + ii - 1) // ii)
+
+        self.decomp_multi = SeriesDecompositionMultiBlock(decomp_kernel)
+        self.backbone = BackboneMICN(
             n_steps,
             n_features,
             n_pred_steps,
-            n_fod,
+            n_pred_features,
+            n_layers,
+            d_model,
+            decomp_kernel,
+            isometric_kernel,
+            conv_kernel,
         )
-
-        self.output_projection = nn.Linear(n_features, n_pred_features)
 
     def forward(
         self,
@@ -62,22 +78,15 @@ class _TEFN(ModelCore):
     ) -> dict:
         X, missing_mask = inputs["X"], inputs["missing_mask"]
 
-        if self.apply_nonstationary_norm:
-            # Normalization from Non-stationary Transformer
-            X, means, stdev = nonstationary_norm(X, missing_mask)
+        seasonal_init, trend_init = self.decomp_multi(X)
 
-        enc_out = self.saits_embedding(X.permute(0, 2, 1), missing_mask.permute(0, 2, 1)).permute(0, 2, 1)
+        enc_out = self.saits_embedding(seasonal_init, missing_mask)
 
-        # TEFN encoder processing
+        # MICN encoder processing
         enc_out = self.backbone(enc_out)
-        if self.apply_nonstationary_norm:
-            # De-Normalization from Non-stationary Transformer
-            enc_out = nonstationary_denorm(enc_out, means, stdev)
+        enc_out = enc_out + trend_init
 
-        # project back the original data space
-        forecasting_result = self.output_projection(enc_out)
-        # the raw output has length = n_steps+n_pred_steps, we only need the last n_pred_steps
-        forecasting_result = forecasting_result[:, -self.n_pred_steps :]
+        forecasting_result = enc_out[:, -self.pred_len :]
 
         results = {
             "forecasting": forecasting_result,

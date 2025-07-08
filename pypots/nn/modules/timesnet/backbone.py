@@ -36,7 +36,8 @@ class BackboneTimesNet(nn.Module):
 
     def forward(self, X) -> torch.Tensor:
 
+        enc_out = X
         for i in range(self.n_layers):
-            enc_out = self.layer_norm(self.model[i](X))
+            enc_out = self.layer_norm(self.model[i](enc_out))
 
         return enc_out

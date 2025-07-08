@@ -100,10 +100,10 @@ pypots.anomaly_detection.transformer
    :show-inheritance:
    :inherited-members:
 
-pypots.anomaly_detection.efsformer
+pypots.anomaly_detection.etsformer
 -----------------------------------------------
 
-.. automodule:: pypots.anomaly_detection.efsformer
+.. automodule:: pypots.anomaly_detection.etsformer
    :members:
    :undoc-members:
    :show-inheritance:
