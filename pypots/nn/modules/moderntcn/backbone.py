@@ -172,7 +172,7 @@ class BackboneModernTCN(nn.Module):
                 if N % self.downsample_ratio != 0:
                     pad_len = self.downsample_ratio - (N % self.downsample_ratio)
                     x = torch.cat([x, x[:, :, -pad_len:]], dim=-1)
-                # When N is an integer multiple of self.downsample_ratio, padding is not needed for x, 
+                # When N is an integer multiple of self.downsample_ratio, padding is not needed for x,
                 # but downsampling is still required. The indentation in the original code is incorrect.
                 x = self.downsample_layers[i](x)
                 _, D_, N_ = x.shape
