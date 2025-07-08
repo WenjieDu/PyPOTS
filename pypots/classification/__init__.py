@@ -9,6 +9,7 @@ from .brits import BRITS
 from .csai import CSAI
 from .grud import GRUD
 from .itransformer import iTransformer
+from .patchtst import PatchTST
 from .raindrop import Raindrop
 from .saits import SAITS
 from .tefn import TEFN
@@ -25,4 +26,5 @@ __all__ = [
     "TimesNet",
     "iTransformer",
     "TEFN",
+    "PatchTST",
 ]
