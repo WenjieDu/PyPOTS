@@ -67,11 +67,6 @@ class _iTransformer(ModelCore):
     ) -> dict:
         X, missing_mask = inputs["X"], inputs["missing_mask"]
 
-        # WDU: the original Informer paper isn't proposed for imputation task. Hence the model doesn't take
-        # the missing mask into account, which means, in the process, the model doesn't know which part of
-        # the input data is missing, and this may hurt the model's imputation performance. Therefore, I apply the
-        # SAITS embedding method to project the concatenation of features and masks into a hidden space, as well as
-        # the output layers to project back from the hidden space to the original space.
         input_X = torch.cat([X.permute(0, 2, 1), missing_mask.permute(0, 2, 1)], dim=1)
         input_X = self.saits_embedding(input_X)
         bz = input_X.shape[0]
