@@ -343,21 +343,19 @@ please cite it as below and 🌟star `PyPOTS repository <https://github.com/Wenj
 .. code-block:: bibtex
    :linenos:
 
-   @article{du2023pypots,
-   title={{PyPOTS: a Python toolbox for data mining on Partially-Observed Time Series}},
-   author={Wenjie Du},
-   journal={arXiv preprint arXiv:2305.18811},
-   year={2023},
-   }
-
+    @article{du2023pypots,
+    title = {{PyPOTS: A Python Toolkit for Machine Learning on Partially-Observed Time Series}},
+    author = {Wenjie Du, Yiyuan Yang, Linglong Qian, Jun Wang, and Qingsong Wen},
+    journal = {arXiv preprint arXiv:2305.18811},
+    year = {2023},
+    }
 or
 
 ..
 
-   Wenjie Du.
-   PyPOTS: a Python toolbox for data mining on Partially-Observed Time Series.
-   arXiv, abs/2305.18811, 2023.
-
+    Wenjie Du, Yiyuan Yang, Linglong Qian, Jun Wang, Qingsong Wen. (2023).
+    PyPOTS: A Python Toolkit for Machine Learning on Partially-Observed Time Series.
+    arXiv, abs/2305.18811, 2023.
 
 ❖ Contribution
 ^^^^^^^^^^^^^^^
