@@ -1,4 +1,4 @@
-pypots>=0.15
+pypots>=1.0
 build
 torch-sparse
 torch-scatter
