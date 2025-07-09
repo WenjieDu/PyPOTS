@@ -26,7 +26,7 @@ def time_out(interval, callback):
     def decorator(func):
         def wrapper(*args, **kwargs):
             t = threading.Thread(target=func, args=args, kwargs=kwargs)
-            t.setDaemon(True)
+            t.daemon = True
             t.start()
             t.join(interval)  # wait for interval seconds
             if t.is_alive():
