@@ -184,7 +184,7 @@ The paper references and links are all listed at the bottom of this file.
 of foundation models in CV and NLP.
 
 💯 Contribute your model right now to increase your research impact! PyPOTS downloads are increasing rapidly
-(**[600K+ in total and 1K+ daily on PyPI so far](https://www.pepy.tech/projects/pypots)**),
+(**[1M+ in total and 2k+ daily on PyPI so far](https://www.pepy.tech/projects/pypots)**),
 and your work will be widely used and cited by the community.
 Refer to the [contribution guide](https://github.com/WenjieDu/PyPOTS#-contribution) to see how to include your model in
 PyPOTS.
