@@ -26,7 +26,13 @@ Yiyuan Yang
 ************
 - Joined in Jun 2024
 - `GitHub (yyysjz1997) <https://github.com/yyysjz1997>`_
-- `LinkedIn (Yiyuan Yang) <https://www.linkedin.com/in/yiyuan-yang-8154941ab/>`_
+- `LinkedIn (Yiyuan Yang) <https://www.linkedin.com/in/yiyuan-yang-8154941ab>`_
+
+Tianxiang Zhan
+**************
+- Joined in Jul 2025
+- `GitHub (ztxtech) <https://github.com/ztxtech>`_
+- `LinkedIn (Tianxiang Zhan) <https://www.linkedin.com/in/ztxtech>`_
 
 
 All Contributors
