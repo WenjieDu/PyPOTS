@@ -26,18 +26,21 @@ Yiyuan Yang
 ************
 - Joined in Jun 2024
 - `GitHub (yyysjz1997) <https://github.com/yyysjz1997>`_
-- `LinkedIn (Yiyuan Yang) <https://www.linkedin.com/in/yiyuan-yang-8154941ab/>`_
+- `LinkedIn (Yiyuan Yang) <https://www.linkedin.com/in/yiyuan-yang-8154941ab>`_
+
+Tianxiang Zhan
+**************
+- Joined in Jul 2025
+- `GitHub (ztxtech) <https://github.com/ztxtech>`_
+- `LinkedIn (Tianxiang Zhan) <https://www.linkedin.com/in/ztxtech>`_
 
 
 All Contributors
 """"""""""""""""
-PyPOTS exists thanks to all the nice people (sorted by contribution time) who contribute their time to work on the project (including the repositories
+PyPOTS exists thanks to all the nice people who contribute their time to work on the project (including the repositories
 `PyPOTS <https://github.com/WenjieDu/PyPOTS/graphs/contributors>`_,
 `BrewPOTS <https://github.com/WenjieDu/BrewPOTS/graphs/contributors>`_,
 `TSDB <https://github.com/WenjieDu/TSDB/graphs/contributors>`_,
-`PyGrinder <https://github.com/WenjieDu/PyGrinder/graphs/contributors>`_):
-
-.. raw:: html
-
-    <object data="https://pypots.com/figs/pypots_logos/publicity/PyPOTS_contributors.svg">
-    </object>
+`PyGrinder <https://github.com/WenjieDu/PyGrinder/graphs/contributors>`_,
+`BenchPOTS <https://github.com/WenjieDu/BenchPOTS/graphs/contributors>`_
+)
