@@ -25,7 +25,7 @@ from ...optim.base import Optimizer
 
 
 class TEFN(BaseNNDetector):
-    """The PyTorch implementation of the TEFN model :cite:`zhan2024tefn` on the anomaly detection task.
+    """The PyTorch implementation of the TEFN model :cite:`zhan2025tefn` on the anomaly detection task.
     Parameters
     ----------
     n_steps :
