@@ -18,7 +18,7 @@ from ...optim.base import Optimizer
 
 
 class TEFN(BaseNNForecaster):
-    """The PyTorch implementation of the TEFN forecasting model :cite:`zhan2024tefn`.
+    """The PyTorch implementation of the TEFN forecasting model :cite:`zhan2025tefn`.
 
     Parameters
     ----------
