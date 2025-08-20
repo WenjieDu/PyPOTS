@@ -125,11 +125,11 @@ The paper references and links are all listed at the bottom of this file.
 | **Type**      | **Algo**                                                                                                                         | **IMPU** | **FORE** | **CLAS** | **CLUS** | **ANOD** | **Year - Venue**                                   |
 |:--------------|:---------------------------------------------------------------------------------------------------------------------------------|:--------:|:--------:|:--------:|:--------:|:--------:|:---------------------------------------------------|
 | LLM&TSFM      | <a href="https://time-series.ai"><img src="https://time-series.ai/static/figs/robot.svg" width="26px"> Time-Series.AI</a>  [^36] |    ✅     |    ✅     |    ✅     |    ✅     |    ✅     | <a href="https://time-series.ai">Join waitlist</a> |
+| Neural Net    | TEFN🧑‍🔧[^39]                                                                                                                   |    ✅     |    ✅     |    ✅     |          |    ✅     | `2025 - TPAMI`                                     |
 | Neural Net    | TimeMixer++[^49]                                                                                                                 |    ✅     |          |          |          |    ✅     | `2025 - ICLR`                                      |
 | LLM           | Time-LLM🧑‍🔧[^45]                                                                                                               |    ✅     |    ✅     |          |          |          | `2024 - ICLR`                                      |
 | TSFM          | MOMENT[^47]                                                                                                                      |    ✅     |    ✅     |          |          |          | `2024 - ICML`                                      |
 | Neural Net    | TSLANet[^51]                                                                                                                     |    ✅     |          |          |          |          | `2024 - ICML`                                      |
-| Neural Net    | TEFN🧑‍🔧[^39]                                                                                                                   |    ✅     |    ✅     |    ✅     |          |    ✅     | `2024 - arXiv`                                     |
 | Neural Net    | FITS🧑‍🔧[^41]                                                                                                                   |    ✅     |    ✅     |          |          |          | `2024 - ICLR`                                      |
 | Neural Net    | TimeMixer[^37]                                                                                                                   |    ✅     |    ✅     |          |          |     ✅     | `2024 - ICLR`                                      |
 | Neural Net    | iTransformer🧑‍🔧[^24]                                                                                                           |    ✅     |          |    ✅     |          |    ✅      | `2024 - ICLR`                                      |
@@ -343,16 +343,16 @@ Here is [an incomplete list of them](https://scholar.google.com/scholar?as_ylo=2
 
 ```bibtex
 @article{du2023pypots,
-    title = {{PyPOTS: a Python toolbox for data mining on Partially-Observed Time Series}},
-    author = {Wenjie Du},
+    title = {{PyPOTS: A Python Toolkit for Machine Learning on Partially-Observed Time Series}},
+    author = {Wenjie Du, Yiyuan Yang, Linglong Qian, Jun Wang, and Qingsong Wen},
     journal = {arXiv preprint arXiv:2305.18811},
     year = {2023},
 }
 ```
 
 or
-> Wenjie Du.
-> PyPOTS: a Python toolbox for data mining on Partially-Observed Time Series.
+> Wenjie Du, Yiyuan Yang, Linglong Qian, Jun Wang, Qingsong Wen. (2023).
+> PyPOTS: A Python Toolkit for Machine Learning on Partially-Observed Time Series.
 > arXiv, abs/2305.18811, 2023.
 
 ## ❖ Contribution
@@ -527,9 +527,9 @@ Time-Series.AI</a>
 [^38]: Luo, D., & Wang X. (2024).
 [ModernTCN: A Modern Pure Convolution Structure for General Time Series Analysis](https://openreview.net/forum?id=vpJMJerXHU).
 *ICLR 2024*.
-[^39]: Zhan, T., He, Y., Deng, Y., Li, Z., Du, W., & Wen, Q. (2024).
-[Time Evidence Fusion Network: Multi-source View in Long-Term Time Series Forecasting](https://arxiv.org/abs/2405.06419).
-*arXiv 2024*.
+[^39]: Zhan, T., He, Y., Deng, Y., Li, Z., Du, W., & Wen, Q. (2025).
+[Time Evidence Fusion Network: Multi-source View in Long-Term Time Series Forecasting](https://doi.org/10.1109/TPAMI.2025.3596905).
+*TPAMI 2025*.
 [^40]: [Wikipedia: Linear interpolation](https://en.wikipedia.org/wiki/Linear_interpolation)
 [^41]: Xu, Z., Zeng, A., & Xu, Q. (2024).
 [FITS: Modeling Time Series with 10k parameters](https://openreview.net/forum?id=bWcnvZ3qMb).
