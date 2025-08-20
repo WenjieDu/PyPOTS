@@ -112,11 +112,11 @@ PyPOTS当前支持多变量POTS数据的插补, 预测, 分类, 聚类以及异�
 | **类型**        | **算法**                                                                                                                          | **IMPU** | **FORE** | **CLAS** | **CLUS** | **ANOD** | **年份 - 刊物**                                           |
 |:--------------|:---------------------------------------------------------------------------------------------------------------------------------|:--------:|:--------:|:--------:|:--------:|:--------:|:---------------------------------------------------|
 | LLM&TSFM      | <a href="https://time-series.ai"><img src="https://time-series.ai/static/figs/robot.svg" width="26px"> Time-Series.AI</a>  [^36] |    ✅     |    ✅     |    ✅     |    ✅     |    ✅     | <a href="https://time-series.ai">Join waitlist</a> |
+| Neural Net    | TEFN🧑‍🔧[^39]                                                                                                                   |    ✅     |    ✅     |    ✅     |          |    ✅     | `2025 - TPAMI`                                     |
 | Neural Net    | TimeMixer++[^49]                                                                                                                 |    ✅     |          |          |          |    ✅     | `2025 - ICLR`                                      |
 | LLM           | Time-LLM🧑‍🔧[^45]                                                                                                               |    ✅     |    ✅     |          |          |          | `2024 - ICLR`                                      |
 | TSFM          | MOMENT[^47]                                                                                                                      |    ✅     |    ✅     |          |          |          | `2024 - ICML`                                      |
 | Neural Net    | TSLANet[^51]                                                                                                                     |    ✅     |          |          |          |          | `2024 - ICML`                                      |
-| Neural Net    | TEFN🧑‍🔧[^39]                                                                                                                   |    ✅     |    ✅     |    ✅     |          |    ✅     | `2024 - arXiv`                                     |
 | Neural Net    | FITS🧑‍🔧[^41]                                                                                                                   |    ✅     |    ✅     |          |          |          | `2024 - ICLR`                                      |
 | Neural Net    | TimeMixer[^37]                                                                                                                   |    ✅     |    ✅     |          |          |     ✅     | `2024 - ICLR`                                      |
 | Neural Net    | iTransformer🧑‍🔧[^24]                                                                                                           |    ✅     |          |    ✅     |          |     ✅     | `2024 - ICLR`                                      |
@@ -322,17 +322,18 @@ PyPOTS也已被纳入[PyTorch Ecosystem](https://landscape.pytorch.org/?item=mod
 
 ```bibtex
 @article{du2023pypots,
-    title = {{PyPOTS: a Python toolbox for data mining on Partially-Observed Time Series}},
-    author = {Wenjie Du},
+    title = {{PyPOTS: A Python Toolkit for Machine Learning on Partially-Observed Time Series}},
+    author = {Wenjie Du, Yiyuan Yang, Linglong Qian, Jun Wang, and Qingsong Wen},
     journal = {arXiv preprint arXiv:2305.18811},
     year = {2023},
 }
 ```
 
-或者
-> Wenjie Du. (2023).
-> PyPOTS: a Python toolbox for data mining on Partially-Observed Time Series.
-> arXiv, abs/2305.18811. https://arxiv.org/abs/2305.18811
+or
+> Wenjie Du, Yiyuan Yang, Linglong Qian, Jun Wang, Qingsong Wen. (2023).
+> PyPOTS: A Python Toolkit for Machine Learning on Partially-Observed Time Series.
+> arXiv, abs/2305.18811, 2023.
+
 
 ## ❖ 贡献声明
 
@@ -501,9 +502,9 @@ Time-Series.AI</a>
 [^38]: Luo, D., & Wang X. (2024).
 [ModernTCN: A Modern Pure Convolution Structure for General Time Series Analysis](https://openreview.net/forum?id=vpJMJerXHU).
 *ICLR 2024*.
-[^39]: Zhan, T., He, Y., Deng, Y., Li, Z., Du, W., & Wen, Q. (2024).
-[Time Evidence Fusion Network: Multi-source View in Long-Term Time Series Forecasting](https://arxiv.org/abs/2405.06419).
-*arXiv 2024*.
+[^39]: Zhan, T., He, Y., Deng, Y., Li, Z., Du, W., & Wen, Q. (2025).
+[Time Evidence Fusion Network: Multi-source View in Long-Term Time Series Forecasting](https://doi.org/10.1109/TPAMI.2025.3596905).
+*TPAMI 2025*.
 [^40]: [Wikipedia: Linear interpolation](https://en.wikipedia.org/wiki/Linear_interpolation)
 [^41]: Xu, Z., Zeng, A., & Xu, Q. (2024).
 [FITS: Modeling Time Series with 10k parameters](https://openreview.net/forum?id=bWcnvZ3qMb).

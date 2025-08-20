@@ -137,6 +137,8 @@ The paper references are all listed at the bottom of this readme file.
 +----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
 | Type           | Algorithm                                                 | IMPU | FORE | CLAS | CLUS | ANOD | Year - Venue          |
 +================+===========================================================+======+======+======+======+======+=======================+
+| Neural Net     | TEFN🧑‍🔧           :cite:`zhan2025tefn`                  |  ✅  |  ✅  |  ✅  |      |  ✅  | ``2025 - TPAMI``     |
++----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
 | Neural Net     | TimeMixer++        :cite:`wang2025timemixerpp`            |  ✅  |      |      |      |  ✅  | ``2025 - ICLR``       |
 +----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
 | LLM            | Time-LLM🧑‍🔧        :cite:`jin2024timellm`               |  ✅  |  ✅  |      |      |      | ``2024 - ICLR``       |
@@ -144,8 +146,6 @@ The paper references are all listed at the bottom of this readme file.
 | TSFM           | MOMENT🧑‍🔧        :cite:`goswami2024moment`              |  ✅  |  ✅  |      |      |      | ``2024 - ICML``       |
 +----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
 | Neural Net     | TSLANet            :cite:`eldele2024tslanet`              |  ✅  |      |      |      |      | ``2024 - ICML``       |
-+----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
-| Neural Net     | TEFN🧑‍🔧           :cite:`zhan2024tefn`                  |  ✅  |  ✅  |  ✅  |      |  ✅  | ``2024 - arXiv``      |
 +----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
 | Neural Net     | FITS🧑‍🔧           :cite:`xu2024fits`                    |  ✅  |  ✅  |      |      |      | ``2024 - ICLR``       |
 +----------------+-----------------------------------------------------------+------+------+------+------+------+-----------------------+
@@ -343,21 +343,19 @@ please cite it as below and 🌟star `PyPOTS repository <https://github.com/Wenj
 .. code-block:: bibtex
    :linenos:
 
-   @article{du2023pypots,
-   title={{PyPOTS: a Python toolbox for data mining on Partially-Observed Time Series}},
-   author={Wenjie Du},
-   journal={arXiv preprint arXiv:2305.18811},
-   year={2023},
-   }
-
+    @article{du2023pypots,
+    title = {{PyPOTS: A Python Toolkit for Machine Learning on Partially-Observed Time Series}},
+    author = {Wenjie Du, Yiyuan Yang, Linglong Qian, Jun Wang, and Qingsong Wen},
+    journal = {arXiv preprint arXiv:2305.18811},
+    year = {2023},
+    }
 or
 
 ..
 
-   Wenjie Du.
-   PyPOTS: a Python toolbox for data mining on Partially-Observed Time Series.
-   arXiv, abs/2305.18811, 2023.
-
+    Wenjie Du, Yiyuan Yang, Linglong Qian, Jun Wang, Qingsong Wen. (2023).
+    PyPOTS: A Python Toolkit for Machine Learning on Partially-Observed Time Series.
+    arXiv, abs/2305.18811, 2023.
 
 ❖ Contribution
 ^^^^^^^^^^^^^^^
