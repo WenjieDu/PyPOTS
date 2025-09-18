@@ -20,8 +20,8 @@ jobs:
     steps:
     - uses: actions/first-interaction@v3
       with:
-        repo-token: ${{ secrets.GITHUB_TOKEN }}
-        issue-message: |
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        issue_message: |
           Hi there 👋,
 
           Thank you so much for your attention to PyPOTS! You can [follow me](https://github.com/WenjieDu) on GitHub to receive the latest news of PyPOTS.  
@@ -31,7 +31,7 @@ jobs:
 
           Best,
           Wenjie
-        pr-message: |
+        pr_message: |
           Hi there 👋,
 
           We really appreciate that you have taken the time to make your first PR on PyPOTS!
