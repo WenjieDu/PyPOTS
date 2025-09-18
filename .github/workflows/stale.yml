@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/stale@v9
+      - uses: actions/stale@v10
         with:
           stale-issue-message: 'This issue had no activity for **14 days**. It will be closed in **1 week** unless there is some new activity. Is this issue already resolved?'
           stale-issue-label: 'stale'
