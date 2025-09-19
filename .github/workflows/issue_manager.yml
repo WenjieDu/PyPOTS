@@ -23,8 +23,8 @@ jobs:
           config: >
             {
                 "completed": {
-                    "delay": "30 days",
-                    "message": "It seems the issue was completed. Closing it now.",
+                    "delay": "P14DT0H0M0S",
+                    "message": "The issue was completed 14 days ago and no more new comments posted recently. Closing it now.",
                     "remove_label_on_comment": false,
                     "remove_label_on_close": false
                 }
