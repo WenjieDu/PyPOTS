@@ -265,7 +265,7 @@ class BackboneTimeMixer(nn.Module):
                     dec_out = self.projection_layer(dec_out)
                 else:
                     dec_out = self.projection_layer(dec_out)
-                dec_out = dec_out.reshape(B, self.c_out, self.n_pred_steps).permute(0, 2, 1).contiguous()
+                dec_out = dec_out.reshape(B, self.n_pred_features, self.n_pred_steps).permute(0, 2, 1).contiguous()
                 dec_out_list.append(dec_out)
 
         else:
@@ -329,7 +329,7 @@ class BackboneTimeMixer(nn.Module):
             enc_out_list = self.pdm_blocks[i](enc_out_list)
 
         dec_out = self.projection_layer(enc_out_list[0])
-        dec_out = dec_out.reshape(B, self.c_out, -1).permute(0, 2, 1).contiguous()
+        dec_out = dec_out.reshape(B, self.n_pred_features, -1).permute(0, 2, 1).contiguous()
 
         dec_out = self.normalize_layers[0](dec_out, "denorm") if self.use_norm else dec_out
         return dec_out
