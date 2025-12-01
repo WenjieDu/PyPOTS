@@ -108,8 +108,8 @@ class _BCSAI(ModelCore):
             imputed_data,
             f_reconstruction,
             b_reconstruction,
-            f_hidden_states,
-            b_hidden_states,
+            _,
+            _,
             consistency_loss,
             reconstruction_loss,
         ) = self.model(inputs)
@@ -132,5 +132,9 @@ class _BCSAI(ModelCore):
                 X_ori, indicating_mask = inputs["X_ori"], inputs["indicating_mask"]
                 reconstruction = (results["f_reconstruction"] + results["b_reconstruction"]) / 2
                 results["metric"] = self.validation_metric(reconstruction, X_ori, indicating_mask)
+
+        if not self.training:
+            results['x_ori'] = inputs["X_ori"]
+            results['indicating_mask']= inputs["indicating_mask"]
 
         return results
