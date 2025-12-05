@@ -248,7 +248,7 @@ class BackboneTimeMixerPP(nn.Module):
             enc_out = self.enc_embedding(x, None)  # [B,T,C]
             enc_out_list.append(enc_out)
 
-        for i in range(self.n_layer):
+        for i in range(self.n_layers):
             enc_out_list = self.encoder_model[i](enc_out_list)
 
         enc_out = enc_out_list[0]

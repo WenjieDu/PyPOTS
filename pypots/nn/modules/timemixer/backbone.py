@@ -287,7 +287,7 @@ class BackboneTimeMixer(nn.Module):
             enc_out_list.append(enc_out)
 
         # MultiScale-CrissCrossAttention  as encoder for past
-        for i in range(self.n_layer):
+        for i in range(self.n_layers):
             enc_out_list = self.pdm_blocks[i](enc_out_list)
 
         enc_out = enc_out_list[0]
