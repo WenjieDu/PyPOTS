@@ -56,6 +56,7 @@ class TestTimeMixer(unittest.TestCase):
         moving_avg=25,
         downsampling_window=2,
         downsampling_layers=1,
+        channel_independence=True,
         use_norm=True,
         dropout=0.1,
         epochs=EPOCHS,
