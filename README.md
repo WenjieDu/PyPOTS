@@ -1,5 +1,7 @@
+<img src="https://pypots.com/figs/icons/translate.svg" width="18"> [简体中文](/README_zh.md) | English
+
 <a href="https://github.com/WenjieDu/PyPOTS">
-    <img src="https://pypots.com/figs/pypots_logos/PyPOTS/logo_FFBG.svg" width="210" align="right">
+    <img src="https://pypots.com/figs/pypots_logos/PyPOTS/logo_FFBG.svg" width="200" align="right">
 </a>
 
 <h3 align="center">Welcome to PyPOTS</h3>
@@ -57,12 +59,6 @@
     </a>
     <a href="https://arxiv.org/abs/2305.18811">
         <img alt="arXiv DOI" src="https://img.shields.io/badge/DOI-10.48550/arXiv.2305.18811-F8F7F0">
-    </a>
-    <a href="https://github.com/WenjieDu/PyPOTS/blob/main/README_zh.md">
-        <img alt="README in Chinese" src="https://pypots.com/figs/pypots_logos/readme/CN.svg">
-    </a>
-   <a href="https://github.com/WenjieDu/PyPOTS/blob/main/README.md">
-        <img alt="README in English" src="https://pypots.com/figs/pypots_logos/readme/US.svg">
     </a>
 </p>
 
@@ -124,7 +120,7 @@ The paper references and links are all listed at the bottom of this file.
 
 | **Type**      | **Algo**                                                                                                                         | **IMPU** | **FORE** | **CLAS** | **CLUS** | **ANOD** | **Year - Venue**                                   |
 |:--------------|:---------------------------------------------------------------------------------------------------------------------------------|:--------:|:--------:|:--------:|:--------:|:--------:|:---------------------------------------------------|
-| LLM&TSFM      | <a href="https://time-series.ai"><img src="https://time-series.ai/static/figs/robot.svg" width="26px"> Time-Series.AI</a>  [^36] |    ✅     |    ✅     |    ✅     |    ✅     |    ✅     | <a href="https://time-series.ai">Join waitlist</a> |
+| LLM&TSFM      | <a href="https://time-series.ai"><img src="https://pypots.com/figs/icons/robot.svg" width="26px"> Time-Series.AI</a>  [^36]      |    ✅     |    ✅     |    ✅     |    ✅     |    ✅     | <a href="https://docs.google.com/forms/d/1Ff2ndYUFQEL3tIcwtcR8lWeopQ2vTXX6D_x8WGFKH6E">Join waitlist</a> |
 | Neural Net    | TEFN🧑‍🔧[^39]                                                                                                                   |    ✅     |    ✅     |    ✅     |          |    ✅     | `2025 - TPAMI`                                     |
 | Neural Net    | TimeMixer++[^49]                                                                                                                 |    ✅     |          |          |          |    ✅     | `2025 - ICLR`                                      |
 | LLM           | Time-LLM🧑‍🔧[^45]                                                                                                               |    ✅     |    ✅     |          |          |          | `2024 - ICLR`                                      |
