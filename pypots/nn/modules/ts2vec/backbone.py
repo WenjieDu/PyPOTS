@@ -8,6 +8,7 @@
 from typing import Optional
 
 import numpy as np
+import sklearn
 import torch
 import torch.nn.functional as F
 from sklearn.linear_model import LogisticRegression
@@ -244,7 +245,15 @@ class TS2VecEncoder(nn.Module):
             features = split[0]
             y = split[2]
 
-        pipe = make_pipeline(StandardScaler(), LogisticRegression(random_state=0, max_iter=1000000, multi_class="ovr"))
+        if float(sklearn.__version__) >= 1.7:
+            # To fix TypeError: LogisticRegression.__init__() got an unexpected keyword argument 'multi_class'
+            # multi_class deprecated since sklearn 1.7
+            pipe = make_pipeline(
+                StandardScaler(),
+                sklearn.multiclass.OneVsRestClassifier(LogisticRegression(random_state=0, max_iter=1000000)),
+            )
+        else:
+            pipe = make_pipeline(StandardScaler(), LogisticRegression(random_state=0, max_iter=1000000))
         pipe.fit(features, y)
         return pipe
 
