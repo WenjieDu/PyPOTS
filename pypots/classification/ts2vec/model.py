@@ -20,7 +20,7 @@ from ...optim.adam import Adam
 from ...optim.base import Optimizer
 from ...representation.ts2vec.core import _TS2Vec
 
-SUPPORTED_CLASSIFIERS = ["linear_regression", "svm", "knn"]
+SUPPORTED_CLASSIFIERS = ["lr", "svm", "knn"]
 
 
 class TS2Vec(BaseNNClassifier):
@@ -301,7 +301,7 @@ class TS2Vec(BaseNNClassifier):
 
         classifier_type :
             The type of classifier to use for the classification task.
-            It has to be one of ['linear_regression', 'svm', 'knn'].
+            It has to be one of ['lr', 'svm', 'knn'].
 
         Returns
         -------
@@ -338,7 +338,7 @@ class TS2Vec(BaseNNClassifier):
 
         test_repr_collector = torch.cat(test_repr_collector, dim=0).cpu().numpy()
 
-        if classifier_type == "linear_regression":
+        if classifier_type == "lr":
             fit_clf = self.model.encoder.fit_lr
         elif classifier_type == "svm":
             fit_clf = self.model.encoder.fit_svm
@@ -382,7 +382,7 @@ class TS2Vec(BaseNNClassifier):
 
         classifier_type :
             The type of classifier to use for the classification task.
-            It has to be one of ['linear_regression', 'svm', 'knn'].
+            It has to be one of ['lr', 'svm', 'knn'].
 
         Returns
         -------
@@ -416,7 +416,7 @@ class TS2Vec(BaseNNClassifier):
 
         classifier_type :
             The type of classifier to use for the classification task.
-            It has to be one of ['linear_regression', 'svm', 'knn'].
+            It has to be one of ['lr', 'svm', 'knn'].
 
         Returns
         -------
