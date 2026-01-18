@@ -80,10 +80,10 @@ class TestTS2Vec(unittest.TestCase):
             f'Recall: {metrics["recall"]}'
         )
 
-        results = self.ts2vec.predict(TEST_SET, classifier_type="linear_regression")
+        results = self.ts2vec.predict(TEST_SET, classifier_type="lr")
         metrics = calc_binary_classification_metrics(results["classification_proba"], DATA["test_y"])
         logger.info(
-            f'TS2Vec+linear_regression ROC_AUC: {metrics["roc_auc"]}, '
+            f'TS2Vec+lr ROC_AUC: {metrics["roc_auc"]}, '
             f'PR_AUC: {metrics["pr_auc"]}, '
             f'F1: {metrics["f1"]}, '
             f'Precision: {metrics["precision"]}, '
