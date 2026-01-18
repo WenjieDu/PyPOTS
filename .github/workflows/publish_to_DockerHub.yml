@@ -36,6 +36,8 @@ jobs:
           build-args: |
             TARGETPLATFORM=linux/amd64
           push: true
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/pypots:latest
             ${{ secrets.DOCKERHUB_USERNAME }}/pypots:ubuntu-amd64
