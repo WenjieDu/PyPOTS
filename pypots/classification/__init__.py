@@ -13,6 +13,7 @@ from .itransformer import iTransformer
 from .patchtst import PatchTST
 from .raindrop import Raindrop
 from .saits import SAITS
+from .seft import SeFT
 from .tefn import TEFN
 from .timesnet import TimesNet
 from .ts2vec import TS2Vec
@@ -22,6 +23,7 @@ __all__ = [
     "BRITS",
     "GRUD",
     "Raindrop",
+    "SeFT",
     "TS2Vec",
     "SAITS",
     "TimesNet",
