@@ -36,7 +36,8 @@ def matern_kernel(T, length_scale):
     xs_in = torch.unsqueeze(xs, 0)
     xs_out = torch.unsqueeze(xs, 1)
     distance_matrix = torch.abs(xs_in - xs_out)
-    distance_matrix_scaled = distance_matrix / torch.sqrt(length_scale).type(torch.float32)
+    length_scale_tensor = torch.tensor(length_scale, dtype=torch.float32)
+    distance_matrix_scaled = distance_matrix / torch.sqrt(length_scale_tensor)
     kernel_matrix = torch.exp(-distance_matrix_scaled)
     return kernel_matrix
 
