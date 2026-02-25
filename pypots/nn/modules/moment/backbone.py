@@ -188,8 +188,14 @@ class BackboneMOMENT(nn.Module):
             transformer_backbone = transformer_backbone.get_decoder()
 
         if configs.getattr("enable_gradient_checkpointing", True):
-            transformer_backbone.gradient_checkpointing_enable()
-            logger.info("Enabling gradient checkpointing.")
+            if isinstance(configs.device, list):
+                logger.warning(
+                    "Gradient checkpointing is disabled when using multiple GPUs (DataParallel) "
+                    "due to incompatibility issues."
+                )
+            else:
+                transformer_backbone.gradient_checkpointing_enable()
+                logger.info("Enabling gradient checkpointing.")
 
         return transformer_backbone
 
