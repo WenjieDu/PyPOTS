@@ -27,6 +27,7 @@ from .tcn import TCN
 from .reformer import Reformer
 from .dlinear import DLinear
 from .patchtst import PatchTST
+from .pits import PITS
 from .usgan import USGAN
 from .scinet import SCINet
 from .revinscinet import RevIN_SCINet
@@ -66,6 +67,7 @@ __all__ = [
     "Crossformer",
     "TimesNet",
     "PatchTST",
+    "PITS",
     "DLinear",
     "Informer",
     "Autoformer",

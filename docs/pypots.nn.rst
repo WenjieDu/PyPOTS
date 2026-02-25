@@ -265,6 +265,14 @@ pypots.nn.modules.patchtst
 
 
 
+pypots.nn.modules.pits
+-------------------------------------------------
+
+.. automodule:: pypots.nn.modules.pits
+:members:
+
+
+
 pypots.nn.modules.timemixer
 -------------------------------------------------
 

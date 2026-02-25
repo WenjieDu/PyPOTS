@@ -190,6 +190,15 @@ pypots.imputation.patchtst
    :show-inheritance:
    :inherited-members:
 
+pypots.imputation.pits
+------------------------------
+
+.. automodule:: pypots.imputation.pits
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+
 pypots.imputation.etsformer
 ------------------------------
 
