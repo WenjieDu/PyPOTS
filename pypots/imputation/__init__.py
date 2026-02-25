@@ -47,6 +47,7 @@ from .moment import MOMENT
 from .timemixerpp import TimeMixerPP
 from .totem import TOTEM
 from .tslanet import TSLANet
+from .units import UniTS
 
 # naive imputation methods
 from .locf import LOCF
@@ -98,6 +99,7 @@ __all__ = [
     "TimeMixerPP",
     "TOTEM",
     "TSLANet",
+    "UniTS",
     # naive imputation methods
     "LOCF",
     "Mean",
