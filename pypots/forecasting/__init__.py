@@ -19,6 +19,7 @@ from .segrnn import SegRNN
 from .tefn import TEFN
 from .timellm import TimeLLM
 from .timemixer import TimeMixer
+from .timemixerpp import TimeMixerPP
 from .timesnet import TimesNet
 from .transformer import Transformer
 
@@ -29,6 +30,7 @@ __all__ = [
     "FITS",
     "TEFN",
     "TimeMixer",
+    "TimeMixerPP",
     "TimeLLM",
     "GPT4TS",
     "MOMENT",
