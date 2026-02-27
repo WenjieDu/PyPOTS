@@ -12,6 +12,7 @@ from .film import FiLM
 from .fits import FITS
 from .gpt4ts import GPT4TS
 from .micn import MICN
+from .mixlinear import MixLinear
 from .moderntcn import ModernTCN
 from .moment import MOMENT
 from .segrnn import SegRNN
@@ -37,4 +38,5 @@ __all__ = [
     "MICN",
     "DLinear",
     "FiLM",
+    "MixLinear",
 ]
