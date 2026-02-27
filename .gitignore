@@ -17,6 +17,7 @@ docs/_build
 *test*
 !tests/
 !tests/**
+*tests/**/__pycache__*
 
 # ignore specific kinds of files like all PDFs
 *.pdf
