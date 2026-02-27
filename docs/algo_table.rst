@@ -97,6 +97,14 @@
      -
      - ``2024 - ICLR``
    * - Neural Net
+     - PITS :cite:`lee2024pits`
+     - ✅
+     -
+     -
+     -
+     -
+     - ``2024 - ICLR``
+   * - Neural Net
      - ImputeFormer :cite:`nie2024imputeformer`
      - ✅
      -
