@@ -1,4 +1,4 @@
-.. |robot| image:: https://pypots.com/figs/icons/robot.svg
+.. |robot| image:: https://pypots.com/figs/timeseriesai/logo.png
    :width: 24px
    :height: 24px
    :alt: Robot Logo
