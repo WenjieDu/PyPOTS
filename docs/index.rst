@@ -238,18 +238,18 @@ please cite it as below and 🌟star `PyPOTS repository <https://github.com/Wenj
    :linenos:
 
     @article{du2023pypots,
-    title = {{PyPOTS: A Python Toolkit for Machine Learning on Partially-Observed Time Series}},
-    author = {Wenjie Du, Yiyuan Yang, Linglong Qian, Jun Wang, and Qingsong Wen},
-    journal = {arXiv preprint arXiv:2305.18811},
+    title = {{PyPOTS: A Python Toolkit for Data Mining on Partially-Observed Time Series}},
+    author = {Wenjie Du},
+    journal = {KDD 2023 MiLeTS},
     year = {2023},
     }
-or
 
-..
+    @article{du2025pypots,
+    title = {{PyPOTS v1.0: A Python Toolkit for Machine Learning on Partially-Observed Time Series}},
+    author = {Wenjie Du, Yiyuan Yang, Linglong Qian, Jun Wang, and Qingsong Wen},
+    year = {2025},
+    }
 
-    Wenjie Du, Yiyuan Yang, Linglong Qian, Jun Wang, Qingsong Wen. (2023).
-    PyPOTS: A Python Toolkit for Machine Learning on Partially-Observed Time Series.
-    arXiv, abs/2305.18811, 2023.
 
 ❖ Contribution
 ^^^^^^^^^^^^^^^

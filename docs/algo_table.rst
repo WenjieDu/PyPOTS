@@ -1,4 +1,4 @@
-.. |robot| image:: https://pypots.com/figs/icons/robot.svg
+.. |robot| image:: https://pypots.com/figs/timeseriesai/logo.png
    :width: 24px
    :height: 24px
    :alt: Robot Logo
@@ -24,6 +24,14 @@
      - ✅
      - ✅
      - `Join Waitlist <https://docs.google.com/forms/d/1Ff2ndYUFQEL3tIcwtcR8lWeopQ2vTXX6D_x8WGFKH6E>`_
+   * - Neural Net
+     - MixLinear🧑‍🔧 :cite:`ma2026mixlinear`
+     -
+     - ✅
+     -
+     -
+     -
+     - ``2026 - ICLR``
    * - Neural Net
      - TEFN🧑‍🔧 :cite:`zhan2025tefn`
      - ✅
@@ -336,6 +344,14 @@
      -
      -
      - ``2020 - NeurIPS``
+   * - Neural Net
+     - SeFT :cite:`horn2020seft`
+     -
+     -
+     - ✅
+     -
+     -
+     - ``2020 - ICML``
    * - Neural Net
      - Reformer🧑‍🔧 :cite:`kitaev2020reformer`
      - ✅
