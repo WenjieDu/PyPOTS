@@ -196,6 +196,7 @@ class TimeMixerPP(BaseNNImputer):
             apply_nonstationary_norm=self.apply_nonstationary_norm,
             training_loss=self.training_loss,
             validation_metric=self.validation_metric,
+            task_name="imputation",
         )
         self._send_model_to_given_device()
         self._print_model_size()

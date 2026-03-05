@@ -34,11 +34,11 @@ def torch_pad_nan(arr, left=0, right=0, dim=0):
     if left > 0:
         padshape = list(arr.shape)
         padshape[dim] = left
-        arr = torch.cat((torch.full(padshape, np.nan), arr), dim=dim)
+        arr = torch.cat((torch.full(padshape, np.nan, device=arr.device, dtype=arr.dtype), arr), dim=dim)
     if right > 0:
         padshape = list(arr.shape)
         padshape[dim] = right
-        arr = torch.cat((arr, torch.full(padshape, np.nan)), dim=dim)
+        arr = torch.cat((arr, torch.full(padshape, np.nan, device=arr.device, dtype=arr.dtype)), dim=dim)
     return arr
 
 

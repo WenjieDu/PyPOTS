@@ -63,8 +63,7 @@ class _TimesNet(nn.Module):
         )
         self.layer_norm = nn.LayerNorm(d_model)
 
-        # for the imputation task, the output dim is the same as input dim
-        self.projection = nn.Linear(d_model, n_features)
+        self.projection = nn.Linear(d_model, n_pred_features)
 
     def forward(
         self,

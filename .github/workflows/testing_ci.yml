@@ -19,16 +19,17 @@ jobs:
         strategy:
             fail-fast: false
             matrix:
-                os: [ubuntu-latest, windows-latest, macOS-latest]
+                # os: [ubuntu-latest, windows-latest, macOS-latest] # macOS and windows just too expensive
+                os: [ubuntu-latest]
                 python-version: ["3.9", "3.11"] # torch-geometric dependencies config below not compatible with 3.12
                 pytorch-version: ["2.3.0"]
 
         steps:
             - name: Check out the repo code
-              uses: actions/checkout@v4
+              uses: actions/checkout@v6
 
             - name: Set up Python
-              uses: actions/setup-python@v5
+              uses: actions/setup-python@v6
               with:
                 python-version: ${{ matrix.python-version }}
                 check-latest: true
@@ -60,7 +61,7 @@ jobs:
               run: |
                   pip install torch-geometric torch-scatter torch-sparse -f "https://data.pyg.org/whl/torch-${{ matrix.pytorch-version }}+cpu.html"
                   pip install pypots[dev]
-                  pip install numpy==1.24  # many libs not compatible with numpy 2.0. Note 3.12 requests for numpy>=2.0
+                  pip install numpy==1.26.4  # many libs not compatible with numpy 2.0. Note 3.12 requests for numpy>=2.0
                   pip install pandas==1.5  # fix pandas version to avoid installing pandas 2.0, the same reason with numpy
                   python_site_path=`python -c "import site; print(site.getsitepackages()[0])"`
                   echo "python site-packages path: $python_site_path"

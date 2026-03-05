@@ -22,7 +22,7 @@ from ...optim.base import Optimizer
 
 class TEFN(BaseNNImputer):
     """The PyTorch implementation of the TEFN model.
-    TEFN is originally proposed by Zhan et al. in :cite:`zhan2024tefn`.
+    TEFN is originally proposed by Zhan et al. in :cite:`zhan2025tefn`.
 
     Parameters
     ----------
