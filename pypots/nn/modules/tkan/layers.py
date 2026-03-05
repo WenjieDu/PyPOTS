@@ -254,20 +254,29 @@ class TKANCell(nn.Module):
             spline_order = int(config)
             return KANLinear(in_dim, out_dim, spline_order=spline_order, use_layernorm=True)
         elif isinstance(config, dict):
-            return KANLinear(in_dim, out_dim, **config, use_layernorm=True)
+            # Allow the dict to override use_layernorm; default to True if not specified
+            cfg = dict(config)
+            cfg.setdefault("use_layernorm", True)
+            return KANLinear(in_dim, out_dim, **cfg)
         elif isinstance(config, str):
-            # Use standard linear + named activation
-            act_fn = getattr(nn, config.capitalize(), None) or getattr(F, config, None)
+            # Use a simple nn.Linear + functional activation
+            act_fn = getattr(F, config, None)
             if act_fn is None or not callable(act_fn):
                 raise ValueError(
-                    f"Unknown activation '{config}'. Use a valid torch.nn or F activation name."
+                    f"Unknown activation '{config}'. Provide a valid torch.nn.functional name "
+                    f"(e.g. 'relu', 'tanh', 'sigmoid', 'gelu')."
                 )
-            if isinstance(act_fn, type):
-                return nn.Sequential(nn.Linear(in_dim, out_dim), act_fn())
-            else:
-                # Functional, wrap in a module
-                linear = nn.Linear(in_dim, out_dim)
-                return nn.Sequential(linear, nn.ReLU() if config == "relu" else nn.Tanh())
+
+            class _LinearActivation(nn.Module):
+                def __init__(self, in_d, out_d, activation):
+                    super().__init__()
+                    self.linear = nn.Linear(in_d, out_d)
+                    self.activation = activation
+
+                def forward(self, x):
+                    return self.activation(self.linear(x))
+
+            return _LinearActivation(in_dim, out_dim, act_fn)
         else:
             raise ValueError(f"Unsupported sub_kan_config type: {type(config)}")
 
