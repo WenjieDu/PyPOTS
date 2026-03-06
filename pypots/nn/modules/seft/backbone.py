@@ -216,9 +216,7 @@ class BackboneSeFT(nn.Module):
         self.feature_embedding = nn.Embedding(n_features, d_feat)
         self.input_projection = nn.Linear(d_obs, d_model)
 
-        self.sab_layers = nn.ModuleList(
-            [_SAB(d_model, n_heads, d_ffn, dropout) for _ in range(n_layers)]
-        )
+        self.sab_layers = nn.ModuleList([_SAB(d_model, n_heads, d_ffn, dropout) for _ in range(n_layers)])
         self.pma = _PMA(d_model, n_heads, n_seeds, d_ffn, dropout)
         self.classifier = nn.Linear(n_seeds * d_model, n_classes)
 

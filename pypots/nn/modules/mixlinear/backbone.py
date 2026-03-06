@@ -123,7 +123,8 @@ class BackboneMixLinear(nn.Module):
         if pad_len > 0:
             x = F.pad(x, (0, pad_len))
 
-        # Reshape to segments: (batch, n_features, seg_num_x, period_len) -> permute -> (batch, n_features, period_len, seg_num_x)
+        # Reshape to segments:
+        # (batch, n_features, seg_num_x, period_len) -> permute -> (batch, n_features, period_len, seg_num_x)
         x = x.reshape(batch_size, self.n_features, self.seg_num_x, self.period_len).permute(0, 1, 3, 2)
 
         # ── Time domain ──────────────────────────────────────────────────────────
@@ -168,9 +169,7 @@ class BackboneMixLinear(nn.Module):
 
         # ── Mix ──────────────────────────────────────────────────────────────────
         output = (
-            x_t[:, : self.n_pred_steps, :] * self.alpha
-            + seq_mean
-            + x_f[:, : self.n_pred_steps, :] * (1 - self.alpha)
+            x_t[:, : self.n_pred_steps, :] * self.alpha + seq_mean + x_f[:, : self.n_pred_steps, :] * (1 - self.alpha)
         )
 
         return output
