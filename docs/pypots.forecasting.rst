@@ -10,6 +10,15 @@ pypots.forecasting.transformer
    :show-inheritance:
    :inherited-members:
 
+pypots.forecasting.mixlinear
+------------------------------
+
+.. automodule:: pypots.forecasting.mixlinear
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+
 pypots.forecasting.timellm
 ------------------------------
 
@@ -104,6 +113,15 @@ pypots.forecasting.timesnet
 ------------------------------
 
 .. automodule:: pypots.forecasting.timesnet
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+
+pypots.forecasting.timemixerpp
+------------------------------
+
+.. automodule:: pypots.forecasting.timemixerpp
    :members:
    :undoc-members:
    :show-inheritance:

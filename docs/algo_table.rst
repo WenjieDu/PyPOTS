@@ -121,6 +121,14 @@
      -
      - ``2024 - TMLR``
    * - Neural Net
+     - TKAN :cite:`genet2024tkan`
+     - ✅
+     -
+     -
+     -
+     -
+     - ``2024 - arXiv``
+   * - Neural Net
      - SAITS :cite:`du2023SAITS`
      - ✅
      -

@@ -99,3 +99,12 @@ pypots.classification.raindrop
    :undoc-members:
    :show-inheritance:
    :inherited-members:
+
+pypots.classification.seft
+-------------------------------------
+
+.. automodule:: pypots.classification.seft
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
