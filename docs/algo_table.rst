@@ -43,7 +43,7 @@
    * - Neural Net
      - TimeMixer++ :cite:`wang2025timemixerpp`
      - ✅
-     -
+     - ✅
      -
      -
      - ✅
