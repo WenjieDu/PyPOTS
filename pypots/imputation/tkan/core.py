@@ -11,7 +11,7 @@ import torch.nn as nn
 
 from ...nn.modules import ModelCore
 from ...nn.modules.loss import Criterion
-from ...nn.modules.saits import BackboneSAITS, SaitsEmbedding, SaitsLoss
+from ...nn.modules.saits import SaitsEmbedding, SaitsLoss
 from ...nn.modules.tkan import BackboneTKAN
 
 
@@ -91,9 +91,7 @@ class _TKAN(ModelCore):
         if calc_criterion:
             X_ori, indicating_mask = inputs["X_ori"], inputs["indicating_mask"]
             if self.training:
-                loss, ORT_loss, MIT_loss = self.training_loss(
-                    reconstruction, X_ori, missing_mask, indicating_mask
-                )
+                loss, ORT_loss, MIT_loss = self.training_loss(reconstruction, X_ori, missing_mask, indicating_mask)
                 results["ORT_loss"] = ORT_loss
                 results["MIT_loss"] = MIT_loss
                 results["loss"] = loss

@@ -119,7 +119,8 @@ PyPOTS当前支持多变量POTS数据的插补, 预测, 分类, 聚类以及异�
 | Neural Net    | iTransformer🧑‍🔧[^24]                                                                                                                          |    ✅     |          |    ✅     |          |    ✅      | `2024 - ICLR`                                                                                            |
 | Neural Net    | ModernTCN[^38]                                                                                                                                  |    ✅     |    ✅     |          |          |          | `2024 - ICLR`                                                                                            |
 | Neural Net    | ImputeFormer🧑‍🔧[^34]                                                                                                                          |    ✅     |          |          |          |    ✅     | `2024 - KDD`                                                                                             |
-| Neural Net    | TOTEM [^50]                                                                                                                                     |    ✅     |          |          |          |          | `2024 - TMLR`                                                                                            |
+| Neural Net    | TOTEM[^50]                                                                                                                                      |    ✅     |          |          |          |          | `2024 - TMLR`                                                                                            |
+| Neural Net    | TKAN[^54]                                                                                                                                       |    ✅     |          |          |          |          | `2024 - arXiv`                                                                                           |
 | Neural Net    | SAITS[^1]                                                                                                                                       |    ✅     |          |    ✅     |          |    ✅     | `2023 - ESWA`                                                                                            |
 | LLM           | GPT4TS[^46]                                                                                                                                     |    ✅     |    ✅     |          |          |          | `2023 - NeurIPS`                                                                                         |
 | Neural Net    | FreTS🧑‍🔧[^23]                                                                                                                                 |    ✅     |          |          |          |          | `2023 - NeurIPS`                                                                                         |
@@ -539,6 +540,9 @@ test recently ;-) Follow us, and stay tuned!
 [^52]: Ma, A., Luo, D., & Sha, M. (2026).
 [MixLinear: Extreme Low Resource Multivariate Time Series Forecasting with 0.1K Parameters](https://openreview.net/forum?id=QUj0KuCumD).
 *ICLR 2026*.
-[^53]: Horn, M., Moor, M., Bock, C., Rieck, B. & Borgwardt, K. (2020).
+[^53]: Horn, M., Moor, M., Bock, C., Rieck, B., & Borgwardt, K. (2020).
 [Set Functions for Time Series](https://proceedings.mlr.press/v119/horn20a).
 *ICML 2020*.
+[^54]: Genet, R., & Inzirillo, H. (2024).
+[TKAN: Temporal Kolmogorov-Arnold Networks](https://arxiv.org/abs/2405.07344).
+*arXiv 2024*.

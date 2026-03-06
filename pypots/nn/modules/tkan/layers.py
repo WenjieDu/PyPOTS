@@ -6,7 +6,7 @@ The layers for TKAN (Temporal Kolmogorov-Arnold Networks).
 # License: BSD-3-Clause
 
 import math
-from typing import List, Optional, Union
+from typing import List, Optional
 
 import torch
 import torch.nn as nn
@@ -78,9 +78,7 @@ class KANLinear(nn.Module):
         # Base activation weight: relu(x) -> out_features
         self.base_weight = nn.Parameter(torch.empty(in_features, out_features))
         # Spline weight: b_splines(x) -> out_features
-        self.spline_weight = nn.Parameter(
-            torch.empty(in_features * (grid_size + spline_order), out_features)
-        )
+        self.spline_weight = nn.Parameter(torch.empty(in_features * (grid_size + spline_order), out_features))
 
         if use_layernorm:
             self.layer_norm = nn.LayerNorm(in_features)
@@ -222,23 +220,17 @@ class TKANCell(nn.Module):
         # Recurrent mixing kernels for sub-layers:
         # sub_tkan_recurrent_kernel_inputs[i]: [in_features, sub_kan_input_dim]
         # sub_tkan_recurrent_kernel_states[i]: [sub_kan_output_dim, sub_kan_input_dim]
-        self.sub_tkan_recurrent_kernel_inputs = nn.Parameter(
-            torch.empty(n_sub, in_features, self.sub_kan_input_dim)
-        )
+        self.sub_tkan_recurrent_kernel_inputs = nn.Parameter(torch.empty(n_sub, in_features, self.sub_kan_input_dim))
         self.sub_tkan_recurrent_kernel_states = nn.Parameter(
             torch.empty(n_sub, self.sub_kan_output_dim, self.sub_kan_input_dim)
         )
 
         # Sub-layer output mixing coefficients:
         # sub_tkan_kernel[i]: [sub_kan_output_dim * 2]  (split into h_coef and x_coef)
-        self.sub_tkan_kernel = nn.Parameter(
-            torch.empty(n_sub, self.sub_kan_output_dim * 2)
-        )
+        self.sub_tkan_kernel = nn.Parameter(torch.empty(n_sub, self.sub_kan_output_dim * 2))
 
         # Aggregation from all sub-layer outputs to output gate
-        self.aggregated_weight = nn.Parameter(
-            torch.empty(n_sub * self.sub_kan_output_dim, hidden_size)
-        )
+        self.aggregated_weight = nn.Parameter(torch.empty(n_sub * self.sub_kan_output_dim, hidden_size))
         self.aggregated_bias = nn.Parameter(torch.zeros(hidden_size))
 
         self._reset_parameters()
@@ -347,9 +339,7 @@ class TKANCell(nn.Module):
 
         return h_new, c_new, new_sub_states
 
-    def init_hidden_states(
-        self, batch_size: int, device: torch.device
-    ):
+    def init_hidden_states(self, batch_size: int, device: torch.device):
         """Initialize hidden states to zeros.
 
         Returns
@@ -360,8 +350,5 @@ class TKANCell(nn.Module):
         """
         h = torch.zeros(batch_size, self.hidden_size, device=device)
         c = torch.zeros(batch_size, self.hidden_size, device=device)
-        sub_states = [
-            torch.zeros(batch_size, self.sub_kan_output_dim, device=device)
-            for _ in self.tkan_sub_layers
-        ]
+        sub_states = [torch.zeros(batch_size, self.sub_kan_output_dim, device=device) for _ in self.tkan_sub_layers]
         return h, c, sub_states

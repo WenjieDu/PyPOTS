@@ -136,6 +136,15 @@ pypots.imputation.totem
    :show-inheritance:
    :inherited-members:
 
+pypots.imputation.tkan
+------------------------------------
+
+.. automodule:: pypots.imputation.tkan
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+
 pypots.imputation.itransformer
 ------------------------------------
 
