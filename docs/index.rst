@@ -62,6 +62,10 @@ Welcome to PyPOTS docs!
    :alt: Docs building
    :target: https://readthedocs.org/projects/pypots/builds
 
+.. image:: https://deepwiki.com/badge.svg
+   :alt: Ask DeepWiki
+   :target: https://deepwiki.com/WenjieDu/PyPOTS
+
 .. image:: https://img.shields.io/badge/Code_Style-black-000000
    :alt: Code Style
    :target: https://github.com/psf/black
