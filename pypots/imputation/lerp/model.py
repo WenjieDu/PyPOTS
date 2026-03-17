@@ -89,6 +89,7 @@ class Lerp(BaseImputer):
             imputed_data = imputed_trans_X.transpose((0, 2, 1))
 
         elif isinstance(X, torch.Tensor):
+            original_device = X.device
 
             trans_X = X.permute(0, 2, 1)
             n_samples, n_features, n_steps = trans_X.shape
@@ -98,13 +99,15 @@ class Lerp(BaseImputer):
             for i, univariate_series in enumerate(reshaped_X):
                 t = univariate_series.clone().cpu().detach().numpy()
                 _interpolate_missing_values(t)
-                imputed_X[i] = torch.from_numpy(t)
+                imputed_X[i] = torch.from_numpy(t).to(original_device)
 
             imputed_trans_X = imputed_X.reshape(n_samples, n_features, -1)
             imputed_data = imputed_trans_X.permute(0, 2, 1)
 
         else:
-            raise ValueError()
+            raise ValueError(
+                f"Input X must be numpy.ndarray or torch.Tensor, but got {type(X)}"
+            )
 
         result_dict = {
             "imputation": imputed_data,
