@@ -5,7 +5,7 @@ Evaluation metrics related to error calculation (like in tasks regression, imput
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-from typing import Union, Optional
+from typing import Union, Optional, Tuple
 
 import numpy as np
 import torch
@@ -16,7 +16,21 @@ def _check_inputs(
     targets: Union[np.ndarray, torch.Tensor, list],
     masks: Optional[Union[np.ndarray, torch.Tensor, list]] = None,
     check_shape: bool = True,
-):
+) -> Tuple:
+    """Validate inputs for metric computation.
+
+    Returns a tuple ``(lib, targets, masks)`` where ``targets`` and ``masks``
+    may have been updated to exclude NaN positions in ``targets`` (only when
+    ``masks`` is provided).
+
+    When ``masks`` is given, NaN values in ``targets`` are tolerated: the mask
+    is automatically extended so that NaN positions are excluded from the
+    metric, and the NaN values are replaced with zeros to prevent arithmetic
+    propagation (``NaN * 0 = NaN`` in both NumPy and PyTorch).
+
+    When ``masks`` is *not* given, NaN in ``targets`` raises an error because
+    there is no mask to indicate which positions should be evaluated.
+    """
     # check type
     assert isinstance(predictions, type(targets)), (
         f"types of `predictions` and `targets` must match, but got"
@@ -30,9 +44,30 @@ def _check_inputs(
         assert (
             prediction_shape == target_shape
         ), f"shape of `predictions` and `targets` must match, but got {prediction_shape} and {target_shape}"
-    # check NaN
+    # check NaN in predictions — model output should never contain NaN
     assert not lib.isnan(predictions).any(), "`predictions` mustn't contain NaN values, but detected NaN in it"
-    assert not lib.isnan(targets).any(), "`targets` mustn't contain NaN values, but detected NaN in it"
+
+    # handle NaN in targets
+    has_nan_targets = bool(lib.isnan(targets).any())
+    if has_nan_targets:
+        if masks is None:
+            raise ValueError(
+                "`targets` contains NaN values but no `masks` were provided. "
+                "Either remove NaN from `targets` or provide `masks` to indicate "
+                "which positions should be evaluated."
+            )
+        # Extend masks to also exclude NaN target positions.
+        # Convention: mask=1 means observed, mask=0 means missing.
+        if isinstance(targets, torch.Tensor):
+            nan_free = (~torch.isnan(targets)).to(masks.dtype)
+            targets = torch.where(torch.isnan(targets), torch.zeros_like(targets), targets)
+        else:
+            nan_free = (~np.isnan(targets)).astype(masks.dtype)
+            targets = np.where(np.isnan(targets), 0, targets)
+        masks = masks * nan_free
+    else:
+        # no NaN — nothing to do
+        pass
 
     if masks is not None:
         # check type
@@ -49,7 +84,7 @@ def _check_inputs(
         # check NaN
         assert not lib.isnan(masks).any(), "`masks` mustn't contain NaN values, but detected NaN in it"
 
-    return lib
+    return lib, targets, masks
 
 
 def calc_mae(
@@ -95,7 +130,7 @@ def calc_mae(
 
     """
     # check shapes and values of inputs
-    lib = _check_inputs(predictions, targets, masks)
+    lib, targets, masks = _check_inputs(predictions, targets, masks)
 
     if masks is not None:
         return lib.sum(lib.abs(predictions - targets) * masks) / (lib.sum(masks) + 1e-12)
@@ -146,7 +181,7 @@ def calc_mse(
 
     """
     # check shapes and values of inputs
-    lib = _check_inputs(predictions, targets, masks)
+    lib, targets, masks = _check_inputs(predictions, targets, masks)
 
     if masks is not None:
         return lib.sum(lib.square(predictions - targets) * masks) / (lib.sum(masks) + 1e-12)
@@ -246,7 +281,7 @@ def calc_mre(
 
     """
     # check shapes and values of inputs
-    lib = _check_inputs(predictions, targets, masks)
+    lib, targets, masks = _check_inputs(predictions, targets, masks)
 
     if masks is not None:
         return lib.sum(lib.abs(predictions - targets) * masks) / (lib.sum(lib.abs(targets * masks)) + 1e-12)
@@ -300,7 +335,7 @@ def calc_quantile_crps(
 
     """
     # check shapes and values of inputs
-    _ = _check_inputs(predictions, targets, masks, check_shape=False)
+    _, targets, masks = _check_inputs(predictions, targets, masks, check_shape=False)
 
     if isinstance(predictions, np.ndarray):
         predictions = torch.from_numpy(predictions)
@@ -359,7 +394,7 @@ def calc_quantile_crps_sum(
 
     """
     # check shapes and values of inputs
-    _ = _check_inputs(predictions, targets, masks, check_shape=False)
+    _, targets, masks = _check_inputs(predictions, targets, masks, check_shape=False)
 
     if isinstance(predictions, np.ndarray):
         predictions = torch.from_numpy(predictions)
