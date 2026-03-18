@@ -60,10 +60,11 @@ class TestMedian(unittest.TestCase):
         assert not torch.isnan(result_t).any(), "All-NaN feature should be filled with 0.0 for torch."
 
     @pytest.mark.xdist_group(name="imputation-median")
-    def test_2_invalid_input_type(self):
-        """Test that passing an unsupported type raises ValueError."""
-        with pytest.raises(ValueError, match="must be numpy.ndarray or torch.Tensor"):
-            self.median.predict({"X": [[1, 2], [3, 4]]})
+    def test_2_list_input(self):
+        """Test that list input is automatically converted to ndarray."""
+        X_list = np.random.randn(5, 10, 3).tolist()
+        result = self.median.predict({"X": X_list})["imputation"]
+        assert not np.isnan(result).any(), "List input should be converted and imputed."
 
     @pytest.mark.xdist_group(name="imputation-median")
     def test_4_lazy_loading(self):

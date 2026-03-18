@@ -53,12 +53,13 @@ class Mean(BaseImputer):
         else:
             X = test_set["X"]
 
+        if isinstance(X, list):
+            X = np.asarray(X)
+
         assert len(X.shape) == 3, (
             f"Input X should have 3 dimensions [n_samples, n_steps, n_features], "
             f"but the actual shape of X: {X.shape}"
         )
-        if isinstance(X, list):
-            X = np.asarray(X)
 
         n_samples, n_steps, n_features = X.shape
 

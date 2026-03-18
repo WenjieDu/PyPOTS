@@ -47,6 +47,13 @@ class TestLerp(unittest.TestCase):
         logger.info(f"Lerp test_MSE: {test_MSE}")
 
     @pytest.mark.xdist_group(name="imputation-lerp")
+    def test_1_list_input(self):
+        """Test that list input is automatically converted to ndarray."""
+        X_list = np.random.randn(5, 10, 3).tolist()
+        result = self.lerp.predict({"X": X_list})["imputation"]
+        assert not np.isnan(result).any(), "List input should be converted and imputed."
+
+    @pytest.mark.xdist_group(name="imputation-lerp")
     def test_4_lazy_loading(self):
         self.lerp.fit(GENERAL_H5_TRAIN_SET_PATH, GENERAL_H5_VAL_SET_PATH)
         imputation_results = self.lerp.predict(GENERAL_H5_TEST_SET_PATH)
