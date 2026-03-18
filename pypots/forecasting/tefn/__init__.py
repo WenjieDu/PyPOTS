@@ -4,7 +4,7 @@ The implementation of TEFN for the partially-observed time-series forecasting ta
 Refer to the paper
 `Tianxiang Zhan, Yuanpeng He, Yong Deng, Zhen Li, Wenjie Du, and Qingsong Wen.
 Time Evidence Fusion Network: Multi-source View in Long-Term Time Series Forecasting.
-In Arxiv, 2024.
+IEEE TPAMI. 2025.
 <https://arxiv.org/abs/2405.06419>`_
 
 Notes

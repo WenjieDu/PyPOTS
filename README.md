@@ -48,6 +48,9 @@
     <a href="https://docs.pypots.com">
         <img alt="Docs building" src="https://img.shields.io/readthedocs/pypots?logo=readthedocs&label=Docs&logoColor=white&color=395260">
     </a>
+    <a href="https://deepwiki.com/WenjieDu/PyPOTS">
+        <img alt="Ask DeepWiki" src="https://deepwiki.com/badge.svg">
+    </a>
     <a href="https://github.com/psf/black">
         <img alt="Code Style" src="https://img.shields.io/badge/Code_Style-black-000000">
     </a>
