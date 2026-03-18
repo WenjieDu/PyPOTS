@@ -47,6 +47,25 @@ class TestMedian(unittest.TestCase):
         logger.info(f"Median test_MSE: {test_MSE}")
 
     @pytest.mark.xdist_group(name="imputation-median")
+    def test_1_all_nan_feature(self):
+        """Test that a feature with all NaN values is filled with 0.0."""
+        X = np.random.randn(5, 10, 3)
+        X[:, :, 1] = np.nan
+        result = self.median.predict({"X": X})["imputation"]
+        assert not np.isnan(result).any(), "All-NaN feature should be filled with 0.0."
+
+        X_t = torch.randn(5, 10, 3)
+        X_t[:, :, 1] = float("nan")
+        result_t = self.median.predict({"X": X_t})["imputation"]
+        assert not torch.isnan(result_t).any(), "All-NaN feature should be filled with 0.0 for torch."
+
+    @pytest.mark.xdist_group(name="imputation-median")
+    def test_2_invalid_input_type(self):
+        """Test that passing an unsupported type raises ValueError."""
+        with pytest.raises(ValueError, match="must be numpy.ndarray or torch.Tensor"):
+            self.median.predict({"X": [[1, 2], [3, 4]]})
+
+    @pytest.mark.xdist_group(name="imputation-median")
     def test_4_lazy_loading(self):
         self.median.fit(GENERAL_H5_TRAIN_SET_PATH, GENERAL_H5_VAL_SET_PATH)
         imputation_results = self.median.predict(GENERAL_H5_TEST_SET_PATH)
