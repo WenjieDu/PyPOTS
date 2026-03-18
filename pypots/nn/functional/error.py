@@ -260,6 +260,14 @@ def calc_quantile_loss(
     q: float,
     eval_points: Union[np.ndarray, torch.Tensor],
 ) -> Union[float, torch.Tensor]:
+    # Handle numpy arrays by converting to torch tensors
+    if isinstance(predictions, np.ndarray):
+        predictions = torch.from_numpy(predictions)
+    if isinstance(targets, np.ndarray):
+        targets = torch.from_numpy(targets)
+    if isinstance(eval_points, np.ndarray):
+        eval_points = torch.from_numpy(eval_points)
+
     quantile_loss = 2 * torch.sum(
         torch.abs((predictions - targets) * eval_points * ((targets <= predictions) * 1.0 - q))
     )
