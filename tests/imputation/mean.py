@@ -62,10 +62,13 @@ class TestMean(unittest.TestCase):
 
     @pytest.mark.xdist_group(name="imputation-mean")
     def test_2_list_input(self):
-        """Test that list input is automatically converted to ndarray."""
-        X_list = np.random.randn(5, 10, 3).tolist()
+        """Test that list input with missing values is converted and imputed correctly."""
+        X = np.random.randn(5, 10, 3)
+        X[0, 0, 0] = np.nan
+        X[2, 5, 1] = np.nan
+        X_list = X.tolist()
         result = self.mean.predict({"X": X_list})["imputation"]
-        assert not np.isnan(result).any(), "List input should be converted and imputed."
+        assert not np.isnan(result).any(), "List input with NaN should be converted and imputed."
 
     @pytest.mark.xdist_group(name="imputation-mean")
     def test_4_lazy_loading(self):
