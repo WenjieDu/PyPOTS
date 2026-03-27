@@ -22,7 +22,7 @@ from ...optim.base import Optimizer
 
 
 class SegRNN(BaseNNDetector):
-    """The PyTorch implementation of the SegRNN model :cite:`lin2023segrnn` on the anomaly detection task.
+    """The PyTorch implementation of the SegRNN model :cite:`lin2026segrnn` on the anomaly detection task.
 
     Parameters
     ----------

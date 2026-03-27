@@ -125,6 +125,7 @@ The paper references and links are all listed at the bottom of this file.
 |:--------------|:------------------------------------------------------------------------------------------------------------------------------------------------|:--------:|:--------:|:--------:|:--------:|:--------:|:---------------------------------------------------------------------------------------------------------|
 | LLM&TSFM      | <a href="https://time-series.ai"><img src="https://pypots.com/figs/timeseriesai/logo.png" width="26px" align="center">Time-Series.AI</a>  [^36] |    ✅     |    ✅     |    ✅     |    ✅     |    ✅     | <a href="https://docs.google.com/forms/d/1Ff2ndYUFQEL3tIcwtcR8lWeopQ2vTXX6D_x8WGFKH6E">Join waitlist</a> |
 | Neural Net    | MixLinear🧑‍🔧[^52]                                                                                                                             |          |    ✅     |          |          |          | `2026 - ICLR`                                                                                            |
+| Neural Net    | SegRNN🧑‍🔧[^43]                                                                                                                                |    ✅     |    ✅     |          |          |    ✅     | `2026 - IoT-J`                                                                                           |
 | Neural Net    | TEFN🧑‍🔧[^39]                                                                                                                                  |    ✅     |    ✅     |    ✅     |          |    ✅     | `2025 - TPAMI`                                                                                           |
 | Neural Net    | TimeMixer++[^49]                                                                                                                                |    ✅     |    ✅     |          |          |    ✅     | `2025 - ICLR`                                                                                            |
 | LLM           | Time-LLM🧑‍🔧[^45]                                                                                                                              |    ✅     |    ✅     |          |          |          | `2024 - ICLR`                                                                                            |
@@ -149,7 +150,6 @@ The paper references and links are all listed at the bottom of this file.
 | Neural Net    | DLinear🧑‍🔧[^17]                                                                                                                               |    ✅     |    ✅     |          |          |    ✅     | `2023 - AAAI`                                                                                            |
 | Neural Net    | TiDE🧑‍🔧[^28]                                                                                                                                  |    ✅     |          |          |          |          | `2023 - TMLR`                                                                                            |
 | Neural Net    | CSAI[^42]                                                                                                                                       |    ✅     |          |    ✅     |          |          | `2023 - arXiv`                                                                                           |
-| Neural Net    | SegRNN🧑‍🔧[^43]                                                                                                                                |    ✅     |    ✅     |          |          |    ✅     | `2023 - arXiv`                                                                                           |
 | Neural Net    | TS2Vec[^48]                                                                                                                                     |          |          |    ✅     |          |          | `2022 - AAAI`                                                                                            |
 | Neural Net    | SCINet🧑‍🔧[^30]                                                                                                                                |    ✅     |          |          |          |    ✅     | `2022 - NeurIPS`                                                                                         |
 | Neural Net    | Nonstationary Tr.🧑‍🔧[^25]                                                                                                                     |    ✅     |          |          |          |     ✅     | `2022 - NeurIPS`                                                                                         |
@@ -354,7 +354,7 @@ year = {2023},
 
 ```bibtex
 @article{du2025pypots,
-title = {{PyPOTS v1.0: A Python Toolkit for Machine Learning on Partially-Observed Time Series}},
+title = {{PyPOTS v1: A Python Toolkit for Machine Learning on Partially-Observed Time Series}},
 author = {Wenjie Du, Yiyuan Yang, Linglong Qian, Jun Wang, and Qingsong Wen},
 year = {2025},
 }
@@ -540,9 +540,9 @@ Join our waitlist right now to receive the latest news and be the first to try i
 [^42]: Qian, L., Ibrahim, Z., Ellis, H. L., Zhang, A., Zhang, Y., Wang, T., & Dobson, R. (2023).
 [Knowledge Enhanced Conditional Imputation for Healthcare Time-series](https://arxiv.org/abs/2312.16713).
 *arXiv 2023*.
-[^43]: Lin, S., Lin, W., Wu, W., Zhao, F., Mo, R., & Zhang, H. (2023).
+[^43]: Lin, S., Lin, W., Wu, W., Zhao, F., Mo, R., & Zhang, H. (2026).
 [SegRNN: Segment Recurrent Neural Network for Long-Term Time Series Forecasting](https://arxiv.org/abs/2308.11200).
-*arXiv 2023*.
+*IEEE IoT-J 2026*.
 [^44]: Yu, H. F., Rao, N., & Dhillon, I. S. (2016).
 [Temporal regularized matrix factorization for high-dimensional time series prediction](https://papers.nips.cc/paper_files/paper/2016/hash/85422afb467e9456013a2a51d4dff702-Abstract.html).
 *NeurIPS 2016*.

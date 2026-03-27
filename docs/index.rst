@@ -249,7 +249,7 @@ please cite it as below and 🌟star `PyPOTS repository <https://github.com/Wenj
     }
 
     @article{du2025pypots,
-    title = {{PyPOTS v1.0: A Python Toolkit for Machine Learning on Partially-Observed Time Series}},
+    title = {{PyPOTS v1: A Python Toolkit for Machine Learning on Partially-Observed Time Series}},
     author = {Wenjie Du, Yiyuan Yang, Linglong Qian, Jun Wang, and Qingsong Wen},
     year = {2025},
     }
