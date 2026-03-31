@@ -33,6 +33,12 @@ class TestPyPOTSCLIData(unittest.TestCase):
         "val_ratio": 0.1,
         "test_ratio": 0.2,
         "seed": 2024,
+        "dataset": None,
+        "subset": None,
+        "rate": 0.1,
+        "n_steps": None,
+        "pattern": "point",
+        "task": None,
     }
     os.chdir(PROJECT_ROOT_DIR)
 
@@ -85,6 +91,30 @@ class TestPyPOTSCLIData(unittest.TestCase):
         arguments["output"] = output_path
         args = Namespace(**arguments)
         data_command_factory(args).run()
+
+    @pytest.mark.xdist_group(name="cli-data")
+    def test_3_list(self):
+        arguments = copy(self.default_arguments)
+        arguments["action"] = "list"
+        args = Namespace(**arguments)
+        data_command_factory(args).run()
+
+    @pytest.mark.xdist_group(name="cli-data")
+    def test_4_load(self):
+        output_dir = os.path.join(self.temp_dir, "benchmark_data")
+        arguments = copy(self.default_arguments)
+        arguments["action"] = "load"
+        arguments["dataset"] = "physionet_2012"
+        arguments["output_dir"] = output_dir
+        arguments["subset"] = "set-a"
+        arguments["rate"] = 0.1
+        args = Namespace(**arguments)
+        data_command_factory(args).run()
+
+        # verify output files exist
+        assert os.path.exists(os.path.join(output_dir, "train.h5")), "train.h5 should exist"
+        assert os.path.exists(os.path.join(output_dir, "val.h5")), "val.h5 should exist"
+        assert os.path.exists(os.path.join(output_dir, "test.h5")), "test.h5 should exist"
 
 
 if __name__ == "__main__":
