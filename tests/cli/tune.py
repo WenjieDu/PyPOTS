@@ -35,7 +35,6 @@ class TestPyPOTSCLITune(unittest.TestCase):
         "model": None,
         "n_trials": None,
         "device": None,
-        "port": 8080,
     }
     os.chdir(PROJECT_ROOT_DIR)
 
@@ -48,14 +47,22 @@ class TestPyPOTSCLITune(unittest.TestCase):
                 "name": "SAITS",
                 "n_steps": N_STEPS + N_PRED_STEPS,
                 "n_features": N_FEATURES,
+                "n_heads": 1,
+                "d_k": 8,
+                "d_v": 8,
+                "d_ffn": 32,
             },
             "search_space": {
-                "n_layers": {"type": "choice", "values": [1, 2]},
-                "d_model": {"type": "choice", "values": [64, 128]},
+                "n_layers": {"type": "int", "low": 1, "high": 2},
+                "d_model": {"type": "categorical", "choices": [32, 64]},
             },
             "tuner": {
-                "name": "TPE",
+                "sampler": "TPE",
                 "n_trials": 2,
+                "direction": "minimize",
+            },
+            "training": {
+                "epochs": 1,
             },
             "data": {
                 "train_set": GENERAL_H5_TRAIN_SET_PATH,

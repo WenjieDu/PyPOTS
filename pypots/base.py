@@ -21,11 +21,6 @@ from .nn.modules.loss import Criterion
 from .utils.file import create_dir_if_not_exist
 from .utils.logging import logger, logger_creator
 
-try:
-    import nni
-except ImportError:
-    pass
-
 
 class BaseModel(ABC):
     """The base model class for all model implementations.
@@ -584,6 +579,7 @@ class BaseNNModel(BaseModel):
         saving_path: str = None,
         model_saving_strategy: Optional[str] = "best",
         verbose: bool = True,
+        optuna_trial=None,
     ):
         super().__init__(
             device=device,
@@ -645,6 +641,7 @@ class BaseNNModel(BaseModel):
         self.best_model_dict = None
         self.best_loss = float("inf")
         self.best_epoch = -1
+        self.optuna_trial = optuna_trial
 
     def _print_model_size(self) -> None:
         """Print the number of trainable parameters in the initialized NN model."""
@@ -797,10 +794,11 @@ class BaseNNModel(BaseModel):
                     saving_name=f"{self.__class__.__name__}_epoch{epoch}_{self.validation_metric_name}{mean_loss:.4f}",
                 )
 
-                if os.getenv("ENABLE_HPO", False):
-                    nni.report_intermediate_result(mean_loss)
-                    if epoch == self.epochs - 1 or self.patience == 0:
-                        nni.report_final_result(self.best_loss)
+                if self.optuna_trial is not None:
+                    self.optuna_trial.report(mean_loss, epoch)
+                    if self.optuna_trial.should_prune():
+                        import optuna
+                        raise optuna.TrialPruned()
 
                 if self.patience == 0:
                     logger.info("Exceeded the training patience. Terminating the training procedure...")

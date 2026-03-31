@@ -1,14 +1,13 @@
 """
-CLI command for hyperparameter optimization with NNI.
+CLI command for hyperparameter optimization with Optuna.
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
 
-import json
+import inspect
 import os
-import tempfile
 from argparse import ArgumentParser, Namespace
 
 from .base import BaseCommand
@@ -18,65 +17,129 @@ from .utils import (
     merge_config_with_args,
     get_model_class,
     get_model_init_params,
+    get_optimizer_class,
 )
 from ..utils.logging import logger
 
-# Supported NNI search space types and their expected keys
-_SEARCH_SPACE_TYPES = {
-    "choice": "values",
-    "loguniform": "range",
-    "uniform": "range",
-    "randint": "range",
-    "quniform": "range",
+# Mapping from config sampler names to Optuna sampler classes
+_SAMPLER_MAPPING = {
+    "TPE": "TPESampler",
+    "Random": "RandomSampler",
+    "CmaEs": "CmaEsSampler",
+    "Grid": "GridSampler",
 }
 
+# Mapping from config pruner names to Optuna pruner classes
+_PRUNER_MAPPING = {
+    "MedianPruner": "MedianPruner",
+    "PercentilePruner": "PercentilePruner",
+    "HyperbandPruner": "HyperbandPruner",
+    "NopPruner": "NopPruner",
+}
 
-def _convert_search_space_to_nni(search_space: dict) -> dict:
-    """Convert our YAML search_space format to NNI's format.
+# GAN models use G_optimizer and D_optimizer instead of a single optimizer
+_GAN_OPTIMIZER_PARAMS = {"G_optimizer", "D_optimizer"}
 
-    Our format example::
 
-        lr:
-          type: loguniform
-          range: [0.00001, 0.1]
-        d_model:
-          type: choice
-          values: [32, 64, 128, 256]
-
-    NNI format example::
-
-        {"lr": {"_type": "loguniform", "_value": [0.00001, 0.1]},
-         "d_model": {"_type": "choice", "_value": [32, 64, 128, 256]}}
+def _suggest_param(trial, name: str, param_cfg: dict):
+    """Use ``trial.suggest_*()`` to sample a hyperparameter value.
 
     Parameters
     ----------
-    search_space : dict
-        Search space in our YAML config format.
+    trial :
+        An Optuna trial object.
+    name : str
+        The parameter name.
+    param_cfg : dict
+        The search space configuration for this parameter, containing at least ``type``.
 
     Returns
     -------
-    nni_search_space : dict
-        Search space in NNI format.
+    value :
+        The sampled value.
     """
-    nni_search_space = {}
-    for param_name, param_cfg in search_space.items():
-        sp_type = param_cfg.get("type")
-        assert sp_type in _SEARCH_SPACE_TYPES, (
-            f"Unsupported search space type '{sp_type}' for parameter '{param_name}'. "
-            f"Supported types: {list(_SEARCH_SPACE_TYPES.keys())}"
+    sp_type = param_cfg["type"]
+    if sp_type == "int":
+        kwargs = {"name": name, "low": param_cfg["low"], "high": param_cfg["high"]}
+        if "step" in param_cfg:
+            kwargs["step"] = param_cfg["step"]
+        if param_cfg.get("log", False):
+            kwargs["log"] = True
+        return trial.suggest_int(**kwargs)
+    elif sp_type == "float":
+        kwargs = {"name": name, "low": param_cfg["low"], "high": param_cfg["high"]}
+        if "step" in param_cfg:
+            kwargs["step"] = param_cfg["step"]
+        if param_cfg.get("log", False):
+            kwargs["log"] = True
+        return trial.suggest_float(**kwargs)
+    elif sp_type == "categorical":
+        return trial.suggest_categorical(name, param_cfg["choices"])
+    else:
+        raise ValueError(
+            f"Unsupported search space type '{sp_type}' for parameter '{name}'. "
+            f"Supported types: int, float, categorical"
         )
 
-        value_key = _SEARCH_SPACE_TYPES[sp_type]
-        assert value_key in param_cfg, (
-            f"Search space parameter '{param_name}' with type '{sp_type}' "
-            f"requires key '{value_key}', but it was not found. Got keys: {list(param_cfg.keys())}"
-        )
 
-        nni_search_space[param_name] = {
-            "_type": sp_type,
-            "_value": param_cfg[value_key],
-        }
-    return nni_search_space
+def _create_sampler(sampler_name: str, search_space: dict = None):
+    """Create an Optuna sampler instance from its config name.
+
+    Parameters
+    ----------
+    sampler_name : str
+        Sampler name as specified in the config file (e.g. "TPE", "Random").
+    search_space : dict, optional
+        Required for GridSampler — maps parameter names to lists of candidate values.
+
+    Returns
+    -------
+    sampler :
+        An Optuna sampler instance.
+    """
+    import optuna
+
+    assert sampler_name in _SAMPLER_MAPPING, (
+        f"Unknown sampler '{sampler_name}'. Supported samplers: {list(_SAMPLER_MAPPING.keys())}"
+    )
+    cls_name = _SAMPLER_MAPPING[sampler_name]
+    sampler_cls = getattr(optuna.samplers, cls_name)
+    if sampler_name == "Grid":
+        assert search_space is not None, "GridSampler requires the full search_space"
+        # GridSampler needs a dict of {param: [values]}
+        grid = {}
+        for pname, pcfg in search_space.items():
+            if pcfg["type"] == "categorical":
+                grid[pname] = pcfg["choices"]
+            else:
+                raise ValueError(
+                    f"GridSampler only supports categorical search spaces, "
+                    f"but parameter '{pname}' has type '{pcfg['type']}'"
+                )
+        return sampler_cls(grid)
+    return sampler_cls()
+
+
+def _create_pruner(pruner_name: str):
+    """Create an Optuna pruner instance from its config name.
+
+    Parameters
+    ----------
+    pruner_name : str
+        Pruner name as specified in the config file (e.g. "MedianPruner").
+
+    Returns
+    -------
+    pruner :
+        An Optuna pruner instance.
+    """
+    import optuna
+
+    assert pruner_name in _PRUNER_MAPPING, (
+        f"Unknown pruner '{pruner_name}'. Supported pruners: {list(_PRUNER_MAPPING.keys())}"
+    )
+    cls_name = _PRUNER_MAPPING[pruner_name]
+    return getattr(optuna.pruners, cls_name)()
 
 
 def tune_command_factory(args: Namespace):
@@ -86,29 +149,27 @@ def tune_command_factory(args: Namespace):
         model=args.model,
         n_trials=args.n_trials,
         device=args.device,
-        port=args.port,
     )
 
 
 class TuneCommand(BaseCommand):
-    """CLI command for hyperparameter optimization using NNI.
+    """CLI command for hyperparameter optimization using Optuna.
 
-    This is an improved interface over the low-level ``hpo`` command. It accepts a YAML/JSON
-    configuration file that describes the model, search space, tuner, and data paths, then
-    either launches NNI programmatically or generates the config files for manual execution.
+    Accepts a YAML/JSON configuration file describing the model, search space,
+    sampler/pruner settings, and data paths, then runs in-process HPO via Optuna.
 
     Examples
     --------
     $ pypots-cli tune --config tune_config.yaml
     $ pypots-cli tune --config tune_config.yaml --task imputation --model SAITS --n_trials 100
-    $ pypots-cli tune --config tune_config.yaml --device cuda:0 --port 8888
+    $ pypots-cli tune --config tune_config.yaml --device cuda:0
     """
 
     @staticmethod
     def register_subcommand(parser: ArgumentParser):
         sub_parser = parser.add_parser(
             "tune",
-            help="Run hyperparameter optimization for a PyPOTS model via NNI",
+            help="Run hyperparameter optimization for a PyPOTS model via Optuna",
             allow_abbrev=True,
         )
 
@@ -148,13 +209,6 @@ class TuneCommand(BaseCommand):
             default=None,
             help="Override the device to use (e.g. 'cpu', 'cuda:0')",
         )
-        sub_parser.add_argument(
-            "--port",
-            dest="port",
-            type=int,
-            default=8080,
-            help="Port for the NNI web UI (default: 8080)",
-        )
 
         sub_parser.set_defaults(func=tune_command_factory)
 
@@ -165,14 +219,12 @@ class TuneCommand(BaseCommand):
         model: str = None,
         n_trials: int = None,
         device: str = None,
-        port: int = 8080,
     ):
         self._config_path = config
         self._task = task
         self._model = model
         self._n_trials = n_trials
         self._device = device
-        self._port = port
 
     def checkup(self):
         """Validate arguments before running."""
@@ -182,7 +234,12 @@ class TuneCommand(BaseCommand):
 
     def run(self):
         """Execute the hyperparameter optimization pipeline."""
+        import optuna
+
         self.checkup()
+
+        # Suppress Optuna's verbose logging; let PyPOTS logger handle output
+        optuna.logging.set_verbosity(optuna.logging.WARNING)
 
         # ------------------------------------------------------------------
         # Step 1: Load configuration from file
@@ -223,10 +280,10 @@ class TuneCommand(BaseCommand):
         )
 
         # ------------------------------------------------------------------
-        # Step 3: Validate model exists in the registry
+        # Step 3: Validate model exists and resolve class
         # ------------------------------------------------------------------
         logger.info(f"Validating model: task='{task}', model='{model_name}'")
-        get_model_class(task, model_name)  # raises if not found
+        model_class = get_model_class(task, model_name)
 
         # ------------------------------------------------------------------
         # Step 4: Validate search_space param names against model __init__
@@ -238,7 +295,10 @@ class TuneCommand(BaseCommand):
         model_param_names = set(model_params.keys())
         search_param_names = set(search_space.keys())
 
-        invalid_params = search_param_names - model_param_names
+        # Allow 'lr' in search_space even though it's an optimizer kwarg, not a direct model param
+        lr_in_search = "lr" in search_param_names
+        validate_names = search_param_names - {"lr"}
+        invalid_params = validate_names - model_param_names
         if invalid_params:
             raise ValueError(
                 f"Search space contains parameters not accepted by {model_name}.__init__(): "
@@ -248,13 +308,7 @@ class TuneCommand(BaseCommand):
         logger.info(f"Search space parameters validated: {sorted(search_param_names)}")
 
         # ------------------------------------------------------------------
-        # Step 5: Convert search_space to NNI format
-        # ------------------------------------------------------------------
-        nni_search_space = _convert_search_space_to_nni(search_space)
-        logger.info(f"Converted search space to NNI format ({len(nni_search_space)} parameters)")
-
-        # ------------------------------------------------------------------
-        # Step 6: Resolve remaining config values
+        # Step 5: Resolve data paths
         # ------------------------------------------------------------------
         data_config = config.get("data", {})
         train_set = data_config.get("train_set")
@@ -264,170 +318,181 @@ class TuneCommand(BaseCommand):
 
         device = config.get("device", "cpu")
         seed = config.get("seed", None)
-        tuner_name = tuner_config.get("name", "TPE")
-        model_key = f"pypots.{task}.{model_name}"
 
-        # Build the trial command that NNI will execute for each trial
-        trial_cmd = f"ENABLE_HPO=1 pypots-cli hpo --model {model_key} --train_set {train_set} --val_set {val_set}"
+        # Set random seed if provided
         if seed is not None:
-            trial_cmd = f"RANDOM_SEED={seed} {trial_cmd}"
+            from ..utils.random import set_random_seed
+            set_random_seed(seed)
+            logger.info(f"Random seed set to {seed}")
 
         # ------------------------------------------------------------------
-        # Step 7 & 8: Try to launch NNI programmatically, fall back to file generation
+        # Step 6: Resolve fixed model kwargs (from model config, excluding name)
         # ------------------------------------------------------------------
-        try:
-            from nni.experiment import Experiment
+        training_config = config.get("training", {})
+        fixed_model_kwargs = {k: v for k, v in model_config.items() if k != "name"}
 
-            logger.info("NNI is available. Launching experiment programmatically...")
-            self._run_nni_experiment(
-                Experiment=Experiment,
-                nni_search_space=nni_search_space,
-                trial_cmd=trial_cmd,
-                tuner_name=tuner_name,
-                n_trials=n_trials,
-                port=self._port,
+        # Apply training params to model kwargs
+        training_key_mapping = [
+            "epochs", "batch_size", "patience", "saving_path",
+            "model_saving_strategy", "verbose",
+        ]
+        for key in training_key_mapping:
+            if key in training_config:
+                fixed_model_kwargs[key] = training_config[key]
+
+        # Set device
+        if device is not None:
+            fixed_model_kwargs["device"] = device
+
+        # Resolve optimizer configuration (used when lr is NOT in the search space)
+        optimizer_config = training_config.get("optimizer", None)
+
+        # Check if the model is a GAN (has G_optimizer / D_optimizer params)
+        is_gan_model = bool(_GAN_OPTIMIZER_PARAMS & model_param_names)
+
+        # Determine the direction for optimization
+        direction = tuner_config.get("direction", "minimize")
+        timeout = tuner_config.get("timeout", None)
+
+        # ------------------------------------------------------------------
+        # Step 7: Create Optuna study
+        # ------------------------------------------------------------------
+        sampler_name = tuner_config.get("sampler", "TPE")
+        sampler = _create_sampler(sampler_name, search_space)
+
+        pruner_name = tuner_config.get("pruner", None)
+        pruner = _create_pruner(pruner_name) if pruner_name else None
+
+        study_kwargs = {
+            "direction": direction,
+            "sampler": sampler,
+        }
+        if pruner is not None:
+            study_kwargs["pruner"] = pruner
+
+        study = optuna.create_study(**study_kwargs)
+        logger.info(
+            f"Created Optuna study (sampler={sampler_name}, direction={direction}, "
+            f"pruner={pruner_name or 'None'}, n_trials={n_trials})"
+        )
+
+        # ------------------------------------------------------------------
+        # Step 8: Define objective function
+        # ------------------------------------------------------------------
+        def objective(trial):
+            # Sample hyperparameters from the search space
+            trial_kwargs = {}
+            sampled_lr = None
+            for param_name, param_cfg in search_space.items():
+                value = _suggest_param(trial, param_name, param_cfg)
+                if param_name == "lr":
+                    sampled_lr = value
+                else:
+                    trial_kwargs[param_name] = value
+
+            # Merge fixed config with trial-sampled params (trial overrides fixed)
+            model_kwargs = {**fixed_model_kwargs, **trial_kwargs}
+
+            # Handle optimizer / learning rate
+            if sampled_lr is not None:
+                if is_gan_model:
+                    # GAN models: set lr on both G_optimizer and D_optimizer
+                    optimizer_name = "Adam"
+                    if optimizer_config and "name" in optimizer_config:
+                        optimizer_name = optimizer_config["name"]
+                    opt_cls = get_optimizer_class(optimizer_name)
+                    model_kwargs["G_optimizer"] = opt_cls(lr=sampled_lr)
+                    model_kwargs["D_optimizer"] = opt_cls(lr=sampled_lr)
+                else:
+                    # Standard models: create a single optimizer with the sampled lr
+                    optimizer_name = "Adam"
+                    if optimizer_config and "name" in optimizer_config:
+                        optimizer_name = optimizer_config["name"]
+                    opt_cls = get_optimizer_class(optimizer_name)
+                    model_kwargs["optimizer"] = opt_cls(lr=sampled_lr)
+            elif optimizer_config is not None:
+                # lr is not being tuned but an optimizer is configured
+                optimizer_name = optimizer_config.get("name", "Adam")
+                opt_cls = get_optimizer_class(optimizer_name)
+                opt_kwargs = {k: v for k, v in optimizer_config.items() if k != "name"}
+                if is_gan_model:
+                    model_kwargs["G_optimizer"] = opt_cls(**opt_kwargs)
+                    model_kwargs["D_optimizer"] = opt_cls(**opt_kwargs)
+                else:
+                    model_kwargs["optimizer"] = opt_cls(**opt_kwargs)
+
+            # Pass the Optuna trial for in-training pruning
+            model_kwargs["optuna_trial"] = trial
+
+            # Filter kwargs to only those accepted by the model's __init__
+            sig = inspect.signature(model_class.__init__)
+            accepted_params = set(sig.parameters.keys()) - {"self"}
+            has_var_keyword = any(
+                p.kind == inspect.Parameter.VAR_KEYWORD
+                for p in sig.parameters.values()
             )
-        except ImportError:
-            logger.warning(
-                "NNI is not installed. Generating config files for manual execution instead."
-            )
-            self._generate_nni_configs(
-                nni_search_space=nni_search_space,
-                trial_cmd=trial_cmd,
-                tuner_name=tuner_name,
-                n_trials=n_trials,
-                port=self._port,
-            )
+            if not has_var_keyword:
+                filtered_kwargs = {
+                    k: v for k, v in model_kwargs.items() if k in accepted_params
+                }
+                skipped = set(model_kwargs.keys()) - set(filtered_kwargs.keys())
+                if skipped:
+                    logger.debug(
+                        f"Trial {trial.number}: skipping params not accepted by "
+                        f"{model_name}: {skipped}"
+                    )
+                model_kwargs = filtered_kwargs
+
+            # Instantiate and train the model
+            model = model_class(**model_kwargs)
+            model.fit(train_set=train_set, val_set=val_set)
+            return model.best_loss
+
+        # ------------------------------------------------------------------
+        # Step 9: Run optimization
+        # ------------------------------------------------------------------
+        logger.info(f"Starting Optuna optimization ({n_trials} trials)...")
+        study.optimize(objective, n_trials=n_trials, timeout=timeout)
+
+        # ------------------------------------------------------------------
+        # Step 10: Print results summary
+        # ------------------------------------------------------------------
+        self._print_results(study)
 
     # ------------------------------------------------------------------
     # Private helpers
     # ------------------------------------------------------------------
 
     @staticmethod
-    def _run_nni_experiment(
-        Experiment,
-        nni_search_space: dict,
-        trial_cmd: str,
-        tuner_name: str,
-        n_trials: int,
-        port: int,
-    ):
-        """Launch an NNI experiment programmatically.
+    def _print_results(study):
+        """Print a summary of the Optuna study results.
 
         Parameters
         ----------
-        Experiment :
-            The ``nni.experiment.Experiment`` class.
-        nni_search_space : dict
-            Search space in NNI format.
-        trial_cmd : str
-            Shell command NNI executes for each trial.
-        tuner_name : str
-            Name of the NNI tuner (e.g. "TPE", "Random", "Anneal").
-        n_trials : int
-            Maximum number of trials.
-        port : int
-            Port for the NNI web UI.
+        study :
+            A completed Optuna study.
         """
-        experiment = Experiment("local")
-        experiment.config.trial_command = trial_cmd
-        experiment.config.trial_code_directory = "."
-        experiment.config.search_space = nni_search_space
-        experiment.config.tuner.name = tuner_name
-        experiment.config.max_trial_number = n_trials
-        experiment.config.trial_concurrency = 1
+        best = study.best_trial
 
-        logger.info(f"Starting NNI experiment (tuner={tuner_name}, max_trials={n_trials}, port={port})")
-        logger.info(f"Trial command: {trial_cmd}")
-        logger.info(f"NNI Web UI will be available at: http://localhost:{port}")
+        logger.info("=" * 70)
+        logger.info("Optuna Hyperparameter Optimization Complete")
+        logger.info("=" * 70)
+        logger.info(f"  Best trial number : {best.number}")
+        logger.info(f"  Best value        : {best.value}")
+        logger.info(f"  Best parameters   :")
+        for k, v in best.params.items():
+            logger.info(f"    {k}: {v}")
 
-        experiment.run(port)
-
-        # Wait for the experiment to finish
-        logger.info("Waiting for NNI experiment to complete... Press Ctrl+C to stop early.")
-        try:
-            input("Press Enter to stop the experiment and view results...")
-        except KeyboardInterrupt:
-            pass
-
-        # Print results summary
-        try:
-            logger.info("=" * 60)
-            logger.info("Experiment finished. Retrieving results summary...")
-            for trial in experiment.export_data():
-                logger.info(f"  Trial {trial.parameter['id']}: {trial.value}")
-            logger.info("=" * 60)
-        except Exception as e:
-            logger.warning(f"Could not retrieve experiment results: {e}")
-        finally:
-            experiment.stop()
-            logger.info("NNI experiment stopped.")
-
-    @staticmethod
-    def _generate_nni_configs(
-        nni_search_space: dict,
-        trial_cmd: str,
-        tuner_name: str,
-        n_trials: int,
-        port: int,
-    ):
-        """Generate NNI config files for manual execution when NNI is not installed.
-
-        Parameters
-        ----------
-        nni_search_space : dict
-            Search space in NNI format.
-        trial_cmd : str
-            Shell command NNI executes for each trial.
-        tuner_name : str
-            Name of the NNI tuner.
-        n_trials : int
-            Maximum number of trials.
-        port : int
-            Port for the NNI web UI.
-        """
-        output_dir = os.path.join(os.getcwd(), "nni_generated_configs")
-        os.makedirs(output_dir, exist_ok=True)
-
-        # Write search_space.json
-        search_space_path = os.path.join(output_dir, "search_space.json")
-        with open(search_space_path, "w") as f:
-            json.dump(nni_search_space, f, indent=2)
-
-        # Write NNI experiment config YAML
-        nni_config = {
-            "experimentName": "pypots_tune",
-            "trialCommand": trial_cmd,
-            "trialCodeDirectory": ".",
-            "searchSpaceFile": "search_space.json",
-            "trialConcurrency": 1,
-            "maxTrialNumber": n_trials,
-            "tuner": {"name": tuner_name},
-            "trainingService": {"platform": "local"},
-        }
-
-        config_path = os.path.join(output_dir, "nni_config.yaml")
-        try:
-            import yaml
-            with open(config_path, "w") as f:
-                yaml.dump(nni_config, f, default_flow_style=False, sort_keys=False)
-        except ImportError:
-            # Fall back to JSON if PyYAML is not available
-            config_path = os.path.join(output_dir, "nni_config.json")
-            with open(config_path, "w") as f:
-                json.dump(nni_config, f, indent=2)
-
-        logger.info("=" * 60)
-        logger.info("NNI configuration files generated successfully!")
-        logger.info(f"  Config file  : {config_path}")
-        logger.info(f"  Search space : {search_space_path}")
+        # Summary table of all trials
+        trials = study.trials
         logger.info("")
-        logger.info("NNI is required for hyperparameter optimization.")
-        logger.info("Install it with: pip install nni")
-        logger.info("")
-        logger.info("Once installed, launch the experiment with:")
-        logger.info(f"  nnictl create --config {config_path} --port {port}")
-        logger.info("")
-        logger.info(f"Or re-run this command to launch programmatically:")
-        logger.info(f"  pypots-cli tune --config {os.path.abspath(nni_config.get('trialCodeDirectory', '.'))}/../tune_config.yaml")
-        logger.info("=" * 60)
+        logger.info(f"  All trials ({len(trials)} total):")
+        logger.info(f"  {'Trial':>6}  {'Value':>14}  {'State':<10}  Params")
+        logger.info(f"  {'-' * 6}  {'-' * 14}  {'-' * 10}  {'-' * 30}")
+        for t in trials:
+            value_str = f"{t.value:.6f}" if t.value is not None else "N/A"
+            params_str = ", ".join(f"{k}={v}" for k, v in t.params.items())
+            logger.info(
+                f"  {t.number:>6}  {value_str:>14}  {t.state.name:<10}  {params_str}"
+            )
+        logger.info("=" * 70)

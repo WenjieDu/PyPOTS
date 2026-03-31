@@ -13,7 +13,6 @@ from .dev import DevCommand
 from .doc import DocCommand
 from .env import EnvCommand
 from .evaluate import EvaluateCommand
-from .hpo import HPOCommand
 from .info import InfoCommand
 from .model import ModelCommand
 from .predict import PredictCommand
@@ -32,7 +31,6 @@ def main():
     DocCommand.register_subcommand(commands_parser)
     EnvCommand.register_subcommand(commands_parser)
     EvaluateCommand.register_subcommand(commands_parser)
-    HPOCommand.register_subcommand(commands_parser)
     InfoCommand.register_subcommand(commands_parser)
     ModelCommand.register_subcommand(commands_parser)
     PredictCommand.register_subcommand(commands_parser)
