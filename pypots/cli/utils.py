@@ -10,7 +10,6 @@ import inspect
 import json
 import os
 import sys
-from argparse import Namespace
 from importlib import import_module, util
 from types import ModuleType
 from typing import Optional
@@ -100,26 +99,23 @@ def load_config(path: str) -> dict:
     return config
 
 
-def merge_config_with_args(config: dict, args: Namespace, keys: list) -> dict:
+def merge_config_with_overrides(config: dict, overrides: dict) -> dict:
     """Merge CLI argument overrides into a config dictionary.
-    CLI arguments take precedence over config file values.
+    CLI arguments take precedence over config file values. Only non-None values are merged.
 
     Parameters
     ----------
     config : dict
         Base configuration dictionary loaded from a file.
-    args : Namespace
-        Parsed CLI arguments.
-    keys : list
-        List of CLI argument names to check for overrides.
+    overrides : dict
+        Dictionary of CLI argument overrides.
 
     Returns
     -------
     config : dict
         The merged configuration dictionary.
     """
-    for key in keys:
-        val = getattr(args, key, None)
+    for key, val in overrides.items():
         if val is not None:
             config[key] = val
     return config

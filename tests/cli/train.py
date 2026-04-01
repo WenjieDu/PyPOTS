@@ -1,5 +1,5 @@
 """
-Test cases for the functions and classes in package `pypots.cli.train`.
+Test cases for the CLI command `pypots.cli.train`.
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
@@ -9,13 +9,12 @@ import os
 import shutil
 import tempfile
 import unittest
-from argparse import Namespace
-from copy import copy
 
 import pytest
 import yaml
+from click.testing import CliRunner
 
-from pypots.cli.train import train_command_factory
+from pypots.cli.train import train
 from tests.cli.config import PROJECT_ROOT_DIR
 from tests.global_test_config import (
     GENERAL_H5_TRAIN_SET_PATH,
@@ -28,19 +27,6 @@ from tests.global_test_config import (
 
 @pytest.mark.xfail(reason="Allow tests for CLI to fail")
 class TestPyPOTSCLITrain(unittest.TestCase):
-    # set up the default arguments
-    default_arguments = {
-        "config": None,
-        "task": None,
-        "model": None,
-        "train_set": None,
-        "val_set": None,
-        "epochs": None,
-        "batch_size": None,
-        "device": None,
-        "saving_path": None,
-        "seed": None,
-    }
     os.chdir(PROJECT_ROOT_DIR)
 
     def setUp(self):
@@ -71,18 +57,17 @@ class TestPyPOTSCLITrain(unittest.TestCase):
 
     @pytest.mark.xdist_group(name="cli-train")
     def test_0_train(self):
-        arguments = copy(self.default_arguments)
-        arguments["config"] = self.config_path
-        args = Namespace(**arguments)
-        train_command_factory(args).run()
+        runner = CliRunner(mix_stderr=False)
+        result = runner.invoke(train, ["--config", self.config_path], catch_exceptions=False)
+        assert result.exit_code == 0, result.output
 
     @pytest.mark.xdist_group(name="cli-train")
     def test_1_train_with_overrides(self):
-        arguments = copy(self.default_arguments)
-        arguments["config"] = self.config_path
-        arguments["epochs"] = 1
-        args = Namespace(**arguments)
-        train_command_factory(args).run()
+        runner = CliRunner(mix_stderr=False)
+        result = runner.invoke(
+            train, ["--config", self.config_path, "--epochs", "1"], catch_exceptions=False
+        )
+        assert result.exit_code == 0, result.output
 
 
 if __name__ == "__main__":

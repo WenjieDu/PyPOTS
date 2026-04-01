@@ -1,5 +1,5 @@
 """
-Test cases for the functions and classes in package `pypots.cli.evaluate`.
+Test cases for the CLI command `pypots.cli.evaluate`.
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
@@ -9,32 +9,22 @@ import os
 import shutil
 import tempfile
 import unittest
-from argparse import Namespace
-from copy import copy
 
 import numpy as np
 import pytest
+from click.testing import CliRunner
 
-from pypots.cli.evaluate import evaluate_command_factory
+from pypots.cli.evaluate import evaluate
 from pypots.data.saving.h5 import save_dict_into_h5
 from tests.cli.config import PROJECT_ROOT_DIR
 
 
 @pytest.mark.xfail(reason="Allow tests for CLI to fail")
 class TestPyPOTSCLIEvaluate(unittest.TestCase):
-    # set up the default arguments
-    default_arguments = {
-        "predictions": None,
-        "ground_truth": None,
-        "task": None,
-        "metrics": None,
-        "output": None,
-    }
     os.chdir(PROJECT_ROOT_DIR)
 
     def setUp(self):
         self.temp_dir = tempfile.mkdtemp(dir=PROJECT_ROOT_DIR)
-        # create mock prediction and ground truth H5 files
         n_samples, n_steps, n_features = 50, 6, 5
         np.random.seed(2023)
         predictions = np.random.randn(n_samples, n_steps, n_features)
@@ -53,25 +43,27 @@ class TestPyPOTSCLIEvaluate(unittest.TestCase):
 
     @pytest.mark.xdist_group(name="cli-evaluate")
     def test_0_evaluate_imputation(self):
-        arguments = copy(self.default_arguments)
-        arguments["predictions"] = self.pred_path
-        arguments["ground_truth"] = self.gt_path
-        arguments["task"] = "imputation"
-        arguments["metrics"] = "mse,mae"
-        args = Namespace(**arguments)
-        evaluate_command_factory(args).run()
+        runner = CliRunner(mix_stderr=False)
+        result = runner.invoke(
+            evaluate,
+            ["--predictions", self.pred_path, "--ground_truth", self.gt_path,
+             "--task", "imputation", "--metrics", "mse,mae"],
+            catch_exceptions=False,
+        )
+        assert result.exit_code == 0, result.output
 
     @pytest.mark.xdist_group(name="cli-evaluate")
     def test_1_evaluate_with_output(self):
-        arguments = copy(self.default_arguments)
-        arguments["predictions"] = self.pred_path
-        arguments["ground_truth"] = self.gt_path
-        arguments["task"] = "imputation"
-        arguments["metrics"] = "mse,mae"
-        arguments["output"] = os.path.join(self.temp_dir, "eval_results.json")
-        args = Namespace(**arguments)
-        evaluate_command_factory(args).run()
-        assert os.path.exists(os.path.join(self.temp_dir, "eval_results.json"))
+        output_path = os.path.join(self.temp_dir, "eval_results.json")
+        runner = CliRunner(mix_stderr=False)
+        result = runner.invoke(
+            evaluate,
+            ["--predictions", self.pred_path, "--ground_truth", self.gt_path,
+             "--task", "imputation", "--metrics", "mse,mae", "--output", output_path],
+            catch_exceptions=False,
+        )
+        assert result.exit_code == 0, result.output
+        assert os.path.exists(output_path)
 
 
 if __name__ == "__main__":

@@ -1,5 +1,5 @@
 """
-Test cases for the functions and classes in package `pypots.cli.benchmark`.
+Test cases for the CLI command `pypots.cli.benchmark`.
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
@@ -9,13 +9,12 @@ import os
 import shutil
 import tempfile
 import unittest
-from argparse import Namespace
-from copy import copy
 
 import pytest
 import yaml
+from click.testing import CliRunner
 
-from pypots.cli.benchmark import benchmark_command_factory
+from pypots.cli.benchmark import benchmark
 from tests.cli.config import PROJECT_ROOT_DIR
 from tests.global_test_config import (
     GENERAL_H5_TRAIN_SET_PATH,
@@ -29,13 +28,6 @@ from tests.global_test_config import (
 
 @pytest.mark.xfail(reason="Allow tests for CLI to fail")
 class TestPyPOTSCLIBenchmark(unittest.TestCase):
-    # set up the default arguments
-    default_arguments = {
-        "config": None,
-        "device": None,
-        "seed": None,
-        "output": None,
-    }
     os.chdir(PROJECT_ROOT_DIR)
 
     def setUp(self):
@@ -75,11 +67,12 @@ class TestPyPOTSCLIBenchmark(unittest.TestCase):
 
     @pytest.mark.xdist_group(name="cli-benchmark")
     def test_0_benchmark(self):
-        arguments = copy(self.default_arguments)
-        arguments["config"] = self.config_path
-        arguments["seed"] = 2023
-        args = Namespace(**arguments)
-        benchmark_command_factory(args).run()
+        runner = CliRunner(mix_stderr=False)
+        result = runner.invoke(
+            benchmark, ["--config", self.config_path, "--seed", "2023"],
+            catch_exceptions=False,
+        )
+        assert result.exit_code == 0, result.output
 
 
 if __name__ == "__main__":
