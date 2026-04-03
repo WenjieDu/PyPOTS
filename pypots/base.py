@@ -291,11 +291,42 @@ class BaseModel(ABC):
             else:
                 pass
 
+    def _collect_model_hyperparameters(self) -> dict:
+        """Collect model hyperparameters from instance attributes for saving.
+
+        Inspects ``self.__dict__`` and returns a dict of JSON-serializable
+        attributes, excluding internal / non-hyperparameter fields.
+
+        Returns
+        -------
+        hyperparameters : dict
+            A dict of hyperparameter names to their values.
+        """
+        # Attributes that are internal state, not hyperparameters
+        _EXCLUDED_ATTRS = {
+            "model", "summary_writer", "device", "saving_path",
+            "model_saving_strategy", "verbose", "amp_enabled", "enable_amp",
+            "training_loss", "validation_metric", "optimizer",
+            "best_loss", "best_model_dict", "patience",
+            "G_optimizer", "D_optimizer", "optuna_trial",
+            # Training state (not user-settable hyperparameters)
+            "num_params", "best_epoch", "training_loss_name",
+            "validation_metric_name", "original_patience",
+        }
+
+        hyperparameters = {}
+        for key, value in self.__dict__.items():
+            if key.startswith("_"):
+                continue
+            if key in _EXCLUDED_ATTRS:
+                continue
+            # Only keep JSON-serializable scalars and simple containers
+            if isinstance(value, (int, float, str, bool, list, tuple, dict, type(None))):
+                hyperparameters[key] = value
+        return hyperparameters
+
     def _organize_content_to_save(self):
         from .version import __version__ as pypots_version
-
-        # all_attrs = self.__dict__
-        # del all_attrs["model"]
 
         if isinstance(self.device, list):
             # to save a DataParallel model generically, save the model.module.state_dict()
@@ -303,9 +334,13 @@ class BaseModel(ABC):
         else:
             model_state_dict = deepcopy(self.model.state_dict())
 
-        all_attrs = dict({})
-        all_attrs["model_state_dict"] = model_state_dict
-        all_attrs["pypots_version"] = pypots_version
+        all_attrs = {
+            "model_state_dict": model_state_dict,
+            "pypots_version": pypots_version,
+            "model_class": self.__class__.__name__,
+            "hyperparameters": self._collect_model_hyperparameters(),
+            "save_timestamp": datetime.now().isoformat(),
+        }
 
         return all_attrs
 
@@ -400,6 +435,24 @@ class BaseModel(ABC):
                     current_model_dict = self.model.module.state_dict()
                     current_model_dict.update(loaded_model_dict)
                     self.model.module.load_state_dict(current_model_dict)
+
+                # Log metadata if available (files saved before this feature won't have it)
+                saved_version = loaded_file.get("pypots_version", "unknown")
+                from .version import __version__ as current_version
+
+                if saved_version != "unknown" and saved_version != current_version:
+                    logger.warning(
+                        f"‼️ Model was saved with PyPOTS {saved_version}, "
+                        f"but you are loading it with PyPOTS {current_version}. "
+                        f"This may cause compatibility issues."
+                    )
+
+                saved_class = loaded_file.get("model_class")
+                if saved_class and saved_class != self.__class__.__name__:
+                    logger.warning(
+                        f"‼️ Model file was saved as '{saved_class}', "
+                        f"but you are loading it as '{self.__class__.__name__}'."
+                    )
 
             self.model.eval()  # set the model as eval status to freeze it.
 

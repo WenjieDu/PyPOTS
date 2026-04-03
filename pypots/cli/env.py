@@ -5,27 +5,9 @@ CLI tools to help initialize environments for running and developing PyPOTS.
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-try:
-    import torch
-
-    # import numpy
-    # import sklearn
-    # import pandas
-    # import tensorboard
-    # import scipy
-    # import h5py
-    # import tsdb
-    # import pygrinder
-except ImportError:
-    raise ImportError(
-        "Torch not installed. Using this tool supposes that you've already installed `pypots` "
-        "with at least basic dependencies in requirements/requirements.txt in PyPOTS project's root dir."
-    )
-
 import click
 
 from .base import execute_command, check_if_under_root_dir
-from ..utils.logging import logger
 
 
 @click.command(
@@ -46,6 +28,10 @@ from ..utils.logging import logger
 )
 def env(install, tool):
     """Execute the env command."""
+    import torch
+
+    from ..utils.logging import logger
+
     # run checks
     check_if_under_root_dir(strict=True)
 

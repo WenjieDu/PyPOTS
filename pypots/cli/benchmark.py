@@ -9,36 +9,29 @@ import inspect
 import json
 
 import click
-import numpy as np
-import torch
 
 from .utils import load_config, merge_config_with_overrides, get_model_class
-from ..data.saving.h5 import load_dict_from_h5
-from ..nn.functional import (
-    calc_mse,
-    calc_mae,
-    calc_rmse,
-    calc_mre,
-    calc_binary_classification_metrics,
-    calc_external_cluster_validation_metrics,
-)
-from ..utils.logging import logger
-from ..utils.random import set_random_seed
+
 
 # Tasks that use regression-style metrics (mse, mae, rmse, mre)
 REGRESSION_METRIC_TASKS = {"imputation", "forecasting"}
-# Mapping from metric name to its computation function
-REGRESSION_METRIC_FUNCS = {
-    "mse": calc_mse,
-    "mae": calc_mae,
-    "rmse": calc_rmse,
-    "mre": calc_mre,
-}
 # Result key produced by model.predict() for each task
 TASK_PREDICTION_KEY = {
     "imputation": "imputation",
     "forecasting": "forecasting",
 }
+
+
+def _get_regression_metric_funcs():
+    """Lazy-load metric functions to avoid importing torch/numpy at module level."""
+    from ..nn.functional import calc_mse, calc_mae, calc_rmse, calc_mre
+
+    return {
+        "mse": calc_mse,
+        "mae": calc_mae,
+        "rmse": calc_rmse,
+        "mre": calc_mre,
+    }
 
 
 def _compute_metrics(task: str, prediction_results: dict, test_set: str, metrics_list: list) -> dict:
@@ -60,9 +53,15 @@ def _compute_metrics(task: str, prediction_results: dict, test_set: str, metrics
     metrics : dict
         Mapping from metric name to its computed value.
     """
+    import numpy as np
+    import torch
+
+    from ..data.saving.h5 import load_dict_from_h5
+
     metrics = {}
 
     if task in REGRESSION_METRIC_TASKS:
+        regression_metric_funcs = _get_regression_metric_funcs()
         # Load ground truth from the test set
         test_data = load_dict_from_h5(test_set)
         X_ori = test_data["X_ori"]
@@ -80,16 +79,20 @@ def _compute_metrics(task: str, prediction_results: dict, test_set: str, metrics
         if indicating_mask is not None and isinstance(indicating_mask, np.ndarray):
             indicating_mask = torch.from_numpy(indicating_mask).float()
 
+        from ..utils.logging import logger as _logger
+
         for metric_name in metrics_list:
             metric_name_lower = metric_name.lower()
-            if metric_name_lower not in REGRESSION_METRIC_FUNCS:
-                logger.warning(f"Unknown metric '{metric_name}' for task '{task}', skipping.")
+            if metric_name_lower not in regression_metric_funcs:
+                _logger.warning(f"Unknown metric '{metric_name}' for task '{task}', skipping.")
                 continue
-            func = REGRESSION_METRIC_FUNCS[metric_name_lower]
+            func = regression_metric_funcs[metric_name_lower]
             value = func(predictions, X_ori, indicating_mask)
             metrics[metric_name_lower] = float(value)
 
     elif task in ("classification", "anomaly_detection"):
+        from ..nn.functional import calc_binary_classification_metrics
+
         prob_predictions = prediction_results.get("classification", prediction_results.get("anomaly_detection"))
         test_data = load_dict_from_h5(test_set)
         targets = test_data.get("y", test_data.get("labels"))
@@ -109,6 +112,8 @@ def _compute_metrics(task: str, prediction_results: dict, test_set: str, metrics
             metrics = {k: float(v) for k, v in cls_metrics.items()}
 
     elif task == "clustering":
+        from ..nn.functional import calc_external_cluster_validation_metrics
+
         cluster_predictions = prediction_results.get("clustering")
         test_data = load_dict_from_h5(test_set)
         targets = test_data.get("y", test_data.get("labels"))
@@ -127,7 +132,9 @@ def _compute_metrics(task: str, prediction_results: dict, test_set: str, metrics
             metrics = {k: float(v) for k, v in cluster_metrics.items()}
 
     else:
-        logger.warning(f"Metric computation not implemented for task '{task}'. Returning empty metrics.")
+        from ..utils.logging import logger as _logger
+
+        _logger.warning(f"Metric computation not implemented for task '{task}'. Returning empty metrics.")
 
     return metrics
 
@@ -205,6 +212,9 @@ def _save_results(output_path: str, task: str, all_results: dict):
     }
     with open(output_path, "w") as f:
         json.dump(output, f, indent=2)
+
+    from ..utils.logging import logger
+
     logger.info(f"Benchmark results saved to {output_path}")
 
 
@@ -237,6 +247,11 @@ def _checkup(config_path: str):
 @click.option("--output", default=None, type=str, help="Override output file path for benchmark results JSON")
 def benchmark(config, device, seed, output):
     """Execute the benchmark: train each model, predict, compute metrics, and report results."""
+    import numpy as np
+
+    from ..utils.logging import logger
+    from ..utils.random import set_random_seed
+
     # Load config and merge CLI overrides
     cfg = load_config(config)
     cfg = merge_config_with_overrides(cfg, {"device": device, "seed": seed, "output": output})

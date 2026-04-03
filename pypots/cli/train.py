@@ -16,7 +16,6 @@ from .utils import (
     get_model_class,
     get_optimizer_class,
 )
-from ..utils.logging import logger
 
 
 @click.command(name="train", help="Train a PyPOTS model from a YAML/JSON configuration file")
@@ -32,6 +31,7 @@ from ..utils.logging import logger
 @click.option("--seed", default=None, type=int, help="Random seed for reproducibility")
 def train(config, task, model, train_set, val_set, epochs, batch_size, device, saving_path, seed):
     """Execute the training pipeline."""
+    from ..utils.logging import logger
 
     # Step 1: Load configuration from file
     cfg = load_config(config)

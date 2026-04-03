@@ -25,7 +25,6 @@ from tests.global_test_config import (
 )
 
 
-@pytest.mark.xfail(reason="Allow tests for CLI to fail")
 class TestPyPOTSCLITune(unittest.TestCase):
     os.chdir(PROJECT_ROOT_DIR)
 
@@ -49,7 +48,7 @@ class TestPyPOTSCLITune(unittest.TestCase):
             },
             "tuner": {
                 "sampler": "TPE",
-                "n_trials": 2,
+                "n_trials": 20,
                 "direction": "minimize",
             },
             "training": {
@@ -69,7 +68,7 @@ class TestPyPOTSCLITune(unittest.TestCase):
 
     @pytest.mark.xdist_group(name="cli-tune")
     def test_0_tune(self):
-        runner = CliRunner(mix_stderr=False)
+        runner = CliRunner()
         result = runner.invoke(tune, ["--config", self.config_path], catch_exceptions=False)
         assert result.exit_code == 0, result.output
 

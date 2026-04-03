@@ -14,7 +14,12 @@ from importlib import import_module, util
 from types import ModuleType
 from typing import Optional
 
-from ..utils.logging import logger
+
+def _get_logger():
+    """Lazy-load the PyPOTS logger to avoid triggering heavy imports at module level."""
+    from ..utils.logging import logger
+
+    return logger
 
 
 def load_package_from_path(pkg_path: str) -> ModuleType:
@@ -204,7 +209,7 @@ def list_available_models(task: Optional[str] = None) -> dict:
             module = import_module(module_path)
             result[t] = list(getattr(module, "__all__", []))
         except ImportError:
-            logger.warning(f"Could not import module for task '{t}', skipping.")
+            _get_logger().warning(f"Could not import module for task '{t}', skipping.")
             result[t] = []
     return result
 

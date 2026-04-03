@@ -9,10 +9,8 @@ import os
 import shutil
 
 import click
-from tsdb.utils.downloading import _download_and_extract
 
 from .base import execute_command, check_if_under_root_dir
-from ..utils.logging import logger
 
 CLONED_LATEST_PYPOTS = "temp_pypots_latest"
 
@@ -37,6 +35,8 @@ IMPORT_ERROR_MESSAGE = (
 
 
 def purge_temp_files():
+    from ..utils.logging import logger
+
     logger.info(f"Directories _build and {CLONED_LATEST_PYPOTS} will be deleted if exist")
     shutil.rmtree("docs/_build", ignore_errors=True)
     shutil.rmtree(CLONED_LATEST_PYPOTS, ignore_errors=True)
@@ -77,6 +77,8 @@ def purge_temp_files():
 )
 def doc(gene_rst, branch, gene_html, view_doc, port, cleanup):
     """Execute the doc command."""
+    from ..utils.logging import logger
+
     # run checks
     check_if_under_root_dir(strict=True)
 
@@ -102,6 +104,8 @@ def doc(gene_rst, branch, gene_html, view_doc, port, cleanup):
                 f"from GitHub into {CLONED_LATEST_PYPOTS}..."
             )
             url = f"https://github.com/WenjieDu/PyPOTS/archive/refs/heads/{branch}.zip"
+            from tsdb.utils.downloading import _download_and_extract
+
             _download_and_extract(url=url, saving_path=CLONED_LATEST_PYPOTS)
 
             code_dir = f"{CLONED_LATEST_PYPOTS}/PyPOTS-{branch}"

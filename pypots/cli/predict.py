@@ -9,10 +9,8 @@ import inspect
 import os
 
 import click
-import numpy as np
 
 from .utils import SUPPORTED_TASKS, get_model_class, load_config
-from ..utils.logging import logger
 
 
 @click.command(name="predict", help="Run predictions with a trained PyPOTS model")
@@ -26,6 +24,9 @@ from ..utils.logging import logger
 @click.option("--file_type", default="hdf5", type=str, help="Input file type for the test set (default: hdf5)")
 def predict(model_path, test_set, config, task, model, output, device, file_type):
     """Execute the predict command."""
+    import numpy as np
+
+    from ..utils.logging import logger
 
     # Load config if provided
     cfg = {}

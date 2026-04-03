@@ -8,9 +8,6 @@ CLI command for data management operations (convert, split, describe, load, list
 import os
 
 import click
-import numpy as np
-
-from ..utils.logging import logger
 
 
 @click.group(name="data", help="CLI tools for data management operations (convert, split, describe, load, list)")
@@ -24,6 +21,10 @@ def data():
 @click.option("--output", "output_path", required=True, type=str, help="Output file path")
 def data_convert(input_path, output_path):
     """Convert data between formats."""
+    import numpy as np
+
+    from ..utils.logging import logger
+
     input_ext = os.path.splitext(input_path)[1].lower()
     output_ext = os.path.splitext(output_path)[1].lower()
 
@@ -78,7 +79,10 @@ def data_convert(input_path, output_path):
 @click.option("--seed", default=2024, type=int, help="Random seed for reproducible splitting (default: 2024)")
 def data_split(input_path, output_dir, train_ratio, val_ratio, test_ratio, seed):
     """Split dataset into train/val/test sets."""
+    import numpy as np
+
     from ..data.saving.h5 import load_dict_from_h5, save_dict_into_h5
+    from ..utils.logging import logger
 
     ratio_sum = train_ratio + val_ratio + test_ratio
     if abs(ratio_sum - 1.0) > 1e-6:
@@ -141,7 +145,10 @@ def data_split(input_path, output_dir, train_ratio, val_ratio, test_ratio, seed)
 @click.option("--input", "input_path", required=True, type=click.Path(exists=True), help="Input H5 file path")
 def data_describe(input_path):
     """Inspect and describe dataset statistics."""
+    import numpy as np
+
     from ..data.saving.h5 import load_dict_from_h5
+    from ..utils.logging import logger
 
     logger.info(f"Describing dataset: {input_path}")
 
@@ -232,6 +239,10 @@ def data_list(task):
               help="Missing pattern for benchmark dataset (default: point)")
 def data_load(dataset, output_dir, subset, rate, n_steps, pattern):
     """Load a benchmark dataset via benchpots and save as train/val/test H5 files."""
+    import numpy as np
+
+    from ..utils.logging import logger
+
     try:
         import benchpots.datasets as bpd
     except ImportError:

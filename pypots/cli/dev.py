@@ -11,7 +11,6 @@ import shutil
 import click
 
 from .base import execute_command, check_if_under_root_dir
-from ..utils.logging import logger
 
 IMPORT_ERROR_MESSAGE = (
     "`pypots-cli dev` command is for PyPOTS developers to run tests easily. "
@@ -62,6 +61,8 @@ IMPORT_ERROR_MESSAGE = (
 )
 def dev(build, cleanup, run_tests, k, show_coverage, lint_code):
     """Execute the dev command."""
+    from ..utils.logging import logger
+
     # run checks
     check_if_under_root_dir(strict=True)
 

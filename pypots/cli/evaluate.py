@@ -9,10 +9,6 @@ import json
 import os
 
 import click
-import numpy as np
-import torch
-
-from ..utils.logging import logger
 
 TASK_CHOICES = ["imputation", "classification", "forecasting", "anomaly_detection", "clustering"]
 
@@ -27,6 +23,9 @@ TASK_METRICS = {
 
 def _evaluate_imputation_forecasting(task, pred_data, gt_data, metrics_to_compute):
     """Evaluate imputation or forecasting predictions."""
+    import numpy as np
+    import torch
+
     from ..nn.functional import calc_mse, calc_mae, calc_rmse, calc_mre
 
     pred_key = task  # "imputation" or "forecasting"
@@ -61,6 +60,8 @@ def _evaluate_imputation_forecasting(task, pred_data, gt_data, metrics_to_comput
 
 def _evaluate_classification(pred_data, gt_data, metrics_to_compute):
     """Evaluate classification or anomaly detection predictions."""
+    import numpy as np
+
     from ..nn.functional import calc_binary_classification_metrics
 
     prob_key = "classification_proba" if "classification_proba" in pred_data else "classification"
@@ -87,6 +88,8 @@ def _evaluate_classification(pred_data, gt_data, metrics_to_compute):
 
 def _evaluate_clustering(pred_data, gt_data, metrics_to_compute):
     """Evaluate clustering predictions."""
+    import numpy as np
+
     from ..nn.functional import (
         calc_external_cluster_validation_metrics,
         calc_internal_cluster_validation_metrics,
@@ -137,6 +140,8 @@ def _evaluate_clustering(pred_data, gt_data, metrics_to_compute):
 
 def _print_results(task, results):
     """Print evaluation results in a formatted table."""
+    from ..utils.logging import logger
+
     logger.info(f"Evaluation results for task '{task}':")
     header = f"{'Metric':<30} {'Value':>15}"
     separator = "-" * 46
@@ -150,6 +155,8 @@ def _print_results(task, results):
 
 def _save_results(output_path, results):
     """Save evaluation results as JSON."""
+    from ..utils.logging import logger
+
     output_dir = os.path.dirname(output_path)
     if output_dir:
         os.makedirs(output_dir, exist_ok=True)
@@ -167,6 +174,7 @@ def _save_results(output_path, results):
 @click.option("--output", default=None, type=str, help="Path to save evaluation results as JSON (optional; if not given, only prints)")
 def evaluate(predictions, ground_truth, task, metrics, output):
     """Execute the evaluate command."""
+    from ..utils.logging import logger
 
     # Validate metrics if provided
     if metrics is not None:

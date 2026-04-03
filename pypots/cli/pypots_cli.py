@@ -1,42 +1,58 @@
 """
 PyPOTS CLI (Command Line Interface) tool, built with Click.
+
+Commands are lazy-loaded so that ``pypots-cli --help`` stays fast even when
+heavy dependencies (torch, numpy, transformers …) are installed.
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
+import importlib
+
 import click
 
-from .benchmark import benchmark
-from .data import data
-from .dev import dev
-from .doc import doc
-from .env import env
-from .evaluate import evaluate
-from .info import info
-from .model import model
-from .predict import predict
-from .train import train
-from .tune import tune
+
+# Mapping from command name to the module attribute that holds the Click
+# command/group object.  Format: "cmd_name": ("module_path", "attr_name")
+_COMMAND_MAP = {
+    "benchmark": ("pypots.cli.benchmark", "benchmark"),
+    "data": ("pypots.cli.data", "data"),
+    "dev": ("pypots.cli.dev", "dev"),
+    "doc": ("pypots.cli.doc", "doc"),
+    "env": ("pypots.cli.env", "env"),
+    "evaluate": ("pypots.cli.evaluate", "evaluate"),
+    "info": ("pypots.cli.info", "info"),
+    "model": ("pypots.cli.model", "model"),
+    "predict": ("pypots.cli.predict", "predict"),
+    "train": ("pypots.cli.train", "train"),
+    "tune": ("pypots.cli.tune", "tune"),
+}
 
 
-@click.group(name="pypots-cli", help="PyPOTS Command-Line-Interface tool")
+class LazyGroup(click.Group):
+    """A Click Group that lazily imports command modules on first use.
+
+    This avoids importing heavyweight libraries (torch, numpy, …) just to
+    display ``--help`` for the top-level CLI.
+    """
+
+    def list_commands(self, ctx):
+        return sorted(_COMMAND_MAP.keys())
+
+    def get_command(self, ctx, cmd_name):
+        if cmd_name not in _COMMAND_MAP:
+            return None
+        module_path, attr_name = _COMMAND_MAP[cmd_name]
+        mod = importlib.import_module(module_path)
+        return getattr(mod, attr_name)
+
+
+@click.group(cls=LazyGroup, name="pypots-cli",
+             help="PyPOTS Command-Line-Interface tool")
 def cli():
     """PyPOTS CLI — a command-line tool for managing PyPOTS models, data, training, and more."""
     pass
-
-
-cli.add_command(benchmark)
-cli.add_command(data)
-cli.add_command(dev)
-cli.add_command(doc)
-cli.add_command(env)
-cli.add_command(evaluate)
-cli.add_command(info)
-cli.add_command(model)
-cli.add_command(predict)
-cli.add_command(train)
-cli.add_command(tune)
 
 
 def main():

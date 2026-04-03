@@ -18,7 +18,6 @@ from .utils import (
     get_model_init_params,
     get_optimizer_class,
 )
-from ..utils.logging import logger
 
 # Mapping from config sampler names to Optuna sampler classes
 _SAMPLER_MAPPING = {
@@ -149,6 +148,8 @@ def _print_results(study):
     study :
         A completed Optuna study.
     """
+    from ..utils.logging import logger
+
     best = study.best_trial
 
     logger.info("=" * 70)
@@ -184,6 +185,8 @@ def _print_results(study):
 def tune(config, task, model, n_trials, device):
     """Execute the hyperparameter optimization pipeline."""
     import optuna
+
+    from ..utils.logging import logger
 
     # Suppress Optuna's verbose logging; let PyPOTS logger handle output
     optuna.logging.set_verbosity(optuna.logging.WARNING)
@@ -323,6 +326,13 @@ def tune(config, task, model, n_trials, device):
     # Step 8: Define objective function
     # ------------------------------------------------------------------
     def objective(trial):
+        # Reset random seed before each trial to ensure reproducibility.
+        # With the same seed, identical hyperparameters produce identical
+        # model initializations, making trial comparisons fair.
+        if seed is not None:
+            from ..utils.random import set_random_seed
+            set_random_seed(seed)
+
         # Sample hyperparameters from the search space
         trial_kwargs = {}
         sampled_lr = None

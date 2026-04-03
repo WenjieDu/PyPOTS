@@ -10,8 +10,6 @@ import os
 import subprocess
 import sys
 
-from ..utils.logging import logger
-
 
 def execute_command(command: str, verbose: bool = True):
     """Run a shell command, streaming output to stdout/stderr when verbose.
@@ -28,6 +26,8 @@ def execute_command(command: str, verbose: bool = True):
     exec_result :
         The completed process result.
     """
+    from ..utils.logging import logger
+
     logger.info(f"Executing '{command}'...")
     if verbose:
         exec_result = subprocess.Popen(
