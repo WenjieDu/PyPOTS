@@ -25,6 +25,7 @@ _COMMAND_MAP = {
     "info": ("pypots.cli.info", "info"),
     "model": ("pypots.cli.model", "model"),
     "predict": ("pypots.cli.predict", "predict"),
+    "recommend": ("pypots.cli.recommend", "recommend"),
     "train": ("pypots.cli.train", "train"),
     "tune": ("pypots.cli.tune", "tune"),
 }
