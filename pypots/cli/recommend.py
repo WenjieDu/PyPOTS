@@ -313,7 +313,7 @@ def recommend(task, model_name, data_path, n_steps, n_features, n_samples, n_cla
         data_basename = os.path.basename(data_path)
         # try to infer sibling train/val/test files
         ext = os.path.splitext(data_path)[1]
-        for set_name, key in [("train", "train_set"), ("val", "val_set")]:
+        for set_name, key in [("train", "train_set"), ("val", "val_set"), ("test", "test_set")]:
             candidate = os.path.join(data_dir, f"{set_name}{ext}")
             if os.path.exists(candidate):
                 config["data"][key] = candidate

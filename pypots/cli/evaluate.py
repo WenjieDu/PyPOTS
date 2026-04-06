@@ -27,6 +27,7 @@ def _evaluate_imputation_forecasting(task, pred_data, gt_data, metrics_to_comput
     import torch
 
     from ..nn.functional import calc_mse, calc_mae, calc_rmse, calc_mre
+    from ..utils.logging import logger
 
     pred_key = task  # "imputation" or "forecasting"
     assert pred_key in pred_data, (
@@ -36,12 +37,31 @@ def _evaluate_imputation_forecasting(task, pred_data, gt_data, metrics_to_comput
         f"Key 'X_ori' not found in ground truth file. Available keys: {list(gt_data.keys())}"
     )
 
-    predictions = torch.from_numpy(np.asarray(pred_data[pred_key], dtype=np.float32))
-    targets = torch.from_numpy(np.asarray(gt_data["X_ori"], dtype=np.float32))
+    targets_np = np.asarray(gt_data["X_ori"], dtype=np.float32)
 
     masks = None
     if "indicating_mask" in gt_data:
         masks = torch.from_numpy(np.asarray(gt_data["indicating_mask"], dtype=np.float32))
+        logger.info("Using 'indicating_mask' from ground truth file for evaluation.")
+    elif "X" in gt_data:
+        # Auto-compute indicating_mask: positions observed in X_ori but artificially masked in X
+        X = np.asarray(gt_data["X"], dtype=np.float32)
+        indicating_mask = (~np.isnan(targets_np)) & np.isnan(X)
+        n_eval_positions = int(indicating_mask.sum())
+        n_natural_nan = int(np.isnan(targets_np).sum())
+        masks = torch.from_numpy(indicating_mask.astype(np.float32))
+        logger.info(
+            f"Auto-computed indicating_mask from X and X_ori: "
+            f"{n_eval_positions} artificially masked positions will be evaluated "
+            f"({n_natural_nan} naturally missing positions excluded)."
+        )
+
+    # Replace NaN in targets with 0 at positions where mask is 0 (not evaluated),
+    # so metric functions' NaN assertion passes while only masked positions contribute
+    targets_np = np.nan_to_num(targets_np, nan=0.0)
+
+    predictions = torch.from_numpy(np.asarray(pred_data[pred_key], dtype=np.float32))
+    targets = torch.from_numpy(targets_np)
 
     metric_funcs = {
         "mse": calc_mse,
