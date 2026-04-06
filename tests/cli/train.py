@@ -25,7 +25,6 @@ from tests.global_test_config import (
 )
 
 
-@pytest.mark.xfail(reason="Allow tests for CLI to fail")
 class TestPyPOTSCLITrain(unittest.TestCase):
     os.chdir(PROJECT_ROOT_DIR)
 
@@ -57,16 +56,14 @@ class TestPyPOTSCLITrain(unittest.TestCase):
 
     @pytest.mark.xdist_group(name="cli-train")
     def test_0_train(self):
-        runner = CliRunner(mix_stderr=False)
+        runner = CliRunner()
         result = runner.invoke(train, ["--config", self.config_path], catch_exceptions=False)
         assert result.exit_code == 0, result.output
 
     @pytest.mark.xdist_group(name="cli-train")
     def test_1_train_with_overrides(self):
-        runner = CliRunner(mix_stderr=False)
-        result = runner.invoke(
-            train, ["--config", self.config_path, "--epochs", "1"], catch_exceptions=False
-        )
+        runner = CliRunner()
+        result = runner.invoke(train, ["--config", self.config_path, "--epochs", "1"], catch_exceptions=False)
         assert result.exit_code == 0, result.output
 
 

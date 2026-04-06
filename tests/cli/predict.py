@@ -26,7 +26,6 @@ from tests.global_test_config import (
 )
 
 
-@pytest.mark.xfail(reason="Allow tests for CLI to fail")
 class TestPyPOTSCLIPredict(unittest.TestCase):
     os.chdir(PROJECT_ROOT_DIR)
 
@@ -54,6 +53,7 @@ class TestPyPOTSCLIPredict(unittest.TestCase):
             yaml.dump(config, f)
 
         from pypots.imputation import SAITS
+
         self.model = SAITS(
             n_steps=N_STEPS + N_PRED_STEPS,
             n_features=N_FEATURES,
@@ -75,11 +75,17 @@ class TestPyPOTSCLIPredict(unittest.TestCase):
 
     @pytest.mark.xdist_group(name="cli-predict")
     def test_0_predict(self):
-        runner = CliRunner(mix_stderr=False)
+        runner = CliRunner()
         result = runner.invoke(
             predict,
-            ["--model_path", self.model_save_path, "--test_set", GENERAL_H5_TEST_SET_PATH,
-             "--config", self.config_path],
+            [
+                "--model_path",
+                self.model_save_path,
+                "--test_set",
+                GENERAL_H5_TEST_SET_PATH,
+                "--config",
+                self.config_path,
+            ],
             catch_exceptions=False,
         )
         assert result.exit_code == 0, result.output
@@ -87,11 +93,19 @@ class TestPyPOTSCLIPredict(unittest.TestCase):
     @pytest.mark.xdist_group(name="cli-predict")
     def test_1_predict_with_output(self):
         output_path = os.path.join(self.temp_dir, "predictions.h5")
-        runner = CliRunner(mix_stderr=False)
+        runner = CliRunner()
         result = runner.invoke(
             predict,
-            ["--model_path", self.model_save_path, "--test_set", GENERAL_H5_TEST_SET_PATH,
-             "--config", self.config_path, "--output", output_path],
+            [
+                "--model_path",
+                self.model_save_path,
+                "--test_set",
+                GENERAL_H5_TEST_SET_PATH,
+                "--config",
+                self.config_path,
+                "--output",
+                output_path,
+            ],
             catch_exceptions=False,
         )
         assert result.exit_code == 0, result.output

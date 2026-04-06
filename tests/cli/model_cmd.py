@@ -15,36 +15,37 @@ from pypots.cli.model import model
 from tests.cli.config import PROJECT_ROOT_DIR
 
 
-@pytest.mark.xfail(reason="Allow tests for CLI to fail")
 class TestPyPOTSCLIModel(unittest.TestCase):
     os.chdir(PROJECT_ROOT_DIR)
 
     @pytest.mark.xdist_group(name="cli-model")
     def test_0_list(self):
-        runner = CliRunner(mix_stderr=False)
+        runner = CliRunner()
         result = runner.invoke(model, ["list"], catch_exceptions=False)
         assert result.exit_code == 0, result.output
 
     @pytest.mark.xdist_group(name="cli-model")
     def test_1_list_with_task(self):
-        runner = CliRunner(mix_stderr=False)
+        runner = CliRunner()
         result = runner.invoke(model, ["list", "--task", "imputation"], catch_exceptions=False)
         assert result.exit_code == 0, result.output
 
     @pytest.mark.xdist_group(name="cli-model")
     def test_2_describe(self):
-        runner = CliRunner(mix_stderr=False)
+        runner = CliRunner()
         result = runner.invoke(
-            model, ["describe", "--name", "SAITS", "--task", "imputation"],
+            model,
+            ["describe", "--name", "SAITS", "--task", "imputation"],
             catch_exceptions=False,
         )
         assert result.exit_code == 0, result.output
 
     @pytest.mark.xdist_group(name="cli-model")
     def test_3_config(self):
-        runner = CliRunner(mix_stderr=False)
+        runner = CliRunner()
         result = runner.invoke(
-            model, ["config", "--name", "SAITS", "--task", "imputation"],
+            model,
+            ["config", "--name", "SAITS", "--task", "imputation"],
             catch_exceptions=False,
         )
         assert result.exit_code == 0, result.output

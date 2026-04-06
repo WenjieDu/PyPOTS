@@ -38,14 +38,13 @@ def time_out(interval, callback):
     return decorator
 
 
-@pytest.mark.xfail(reason="Allow tests for CLI to fail")
 class TestPyPOTSCLIDoc(unittest.TestCase):
     # `pypots-cli doc` must run under the project root dir
     os.chdir(PROJECT_ROOT_DIR)
 
     @pytest.mark.xdist_group(name="cli-doc")
     def test_0_gene_rst(self):
-        runner = CliRunner(mix_stderr=False)
+        runner = CliRunner()
         result = runner.invoke(doc, ["--gene_rst"], catch_exceptions=False)
         assert result.exit_code == 0, result.output
 
@@ -62,7 +61,7 @@ class TestPyPOTSCLIDoc(unittest.TestCase):
 
     @pytest.mark.xdist_group(name="cli-doc")
     def test_1_gene_html(self):
-        runner = CliRunner(mix_stderr=False)
+        runner = CliRunner()
         try:
             runner.invoke(doc, ["--gene_html"], catch_exceptions=False)
         except Exception as e:  # somehow we have some error when testing on Windows, so just print and pass below
@@ -71,7 +70,7 @@ class TestPyPOTSCLIDoc(unittest.TestCase):
     @pytest.mark.xdist_group(name="cli-doc")
     @time_out(2, callback_func)  # wait for two seconds
     def test_2_view_doc(self):
-        runner = CliRunner(mix_stderr=False)
+        runner = CliRunner()
         try:
             runner.invoke(doc, ["--view_doc"], catch_exceptions=False)
         except Exception as e:  # somehow we have some error when testing on Windows, so just print and pass below
@@ -79,7 +78,7 @@ class TestPyPOTSCLIDoc(unittest.TestCase):
 
     @pytest.mark.xdist_group(name="cli-doc")
     def test_3_cleanup(self):
-        runner = CliRunner(mix_stderr=False)
+        runner = CliRunner()
         result = runner.invoke(doc, ["--cleanup"], catch_exceptions=False)
         assert result.exit_code == 0, result.output
 

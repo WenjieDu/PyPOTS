@@ -26,7 +26,6 @@ from tests.global_test_config import (
 )
 
 
-@pytest.mark.xfail(reason="Allow tests for CLI to fail")
 class TestPyPOTSCLIBenchmark(unittest.TestCase):
     os.chdir(PROJECT_ROOT_DIR)
 
@@ -67,9 +66,10 @@ class TestPyPOTSCLIBenchmark(unittest.TestCase):
 
     @pytest.mark.xdist_group(name="cli-benchmark")
     def test_0_benchmark(self):
-        runner = CliRunner(mix_stderr=False)
+        runner = CliRunner()
         result = runner.invoke(
-            benchmark, ["--config", self.config_path, "--seed", "2023"],
+            benchmark,
+            ["--config", self.config_path, "--seed", "2023"],
             catch_exceptions=False,
         )
         assert result.exit_code == 0, result.output

@@ -19,7 +19,6 @@ from pypots.data.saving.h5 import save_dict_into_h5
 from tests.cli.config import PROJECT_ROOT_DIR
 
 
-@pytest.mark.xfail(reason="Allow tests for CLI to fail")
 class TestPyPOTSCLIEvaluate(unittest.TestCase):
     os.chdir(PROJECT_ROOT_DIR)
 
@@ -43,11 +42,19 @@ class TestPyPOTSCLIEvaluate(unittest.TestCase):
 
     @pytest.mark.xdist_group(name="cli-evaluate")
     def test_0_evaluate_imputation(self):
-        runner = CliRunner(mix_stderr=False)
+        runner = CliRunner()
         result = runner.invoke(
             evaluate,
-            ["--predictions", self.pred_path, "--ground_truth", self.gt_path,
-             "--task", "imputation", "--metrics", "mse,mae"],
+            [
+                "--predictions",
+                self.pred_path,
+                "--ground_truth",
+                self.gt_path,
+                "--task",
+                "imputation",
+                "--metrics",
+                "mse,mae",
+            ],
             catch_exceptions=False,
         )
         assert result.exit_code == 0, result.output
@@ -55,11 +62,21 @@ class TestPyPOTSCLIEvaluate(unittest.TestCase):
     @pytest.mark.xdist_group(name="cli-evaluate")
     def test_1_evaluate_with_output(self):
         output_path = os.path.join(self.temp_dir, "eval_results.json")
-        runner = CliRunner(mix_stderr=False)
+        runner = CliRunner()
         result = runner.invoke(
             evaluate,
-            ["--predictions", self.pred_path, "--ground_truth", self.gt_path,
-             "--task", "imputation", "--metrics", "mse,mae", "--output", output_path],
+            [
+                "--predictions",
+                self.pred_path,
+                "--ground_truth",
+                self.gt_path,
+                "--task",
+                "imputation",
+                "--metrics",
+                "mse,mae",
+                "--output",
+                output_path,
+            ],
             catch_exceptions=False,
         )
         assert result.exit_code == 0, result.output

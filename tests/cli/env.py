@@ -16,17 +16,17 @@ from pypots.utils.logging import logger
 from tests.cli.config import PROJECT_ROOT_DIR
 
 
-@pytest.mark.xfail(reason="Allow tests for CLI to fail")
 class TestPyPOTSCLIEnv(unittest.TestCase):
     # `pypots-cli env` must run under the project root dir
     os.chdir(PROJECT_ROOT_DIR)
 
     @pytest.mark.xdist_group(name="cli-env")
     def test_0_install_with_conda(self):
-        runner = CliRunner(mix_stderr=False)
+        runner = CliRunner()
         try:
             result = runner.invoke(
-                env, ["--install", "optional", "--tool", "conda"],
+                env,
+                ["--install", "optional", "--tool", "conda"],
                 catch_exceptions=False,
             )
         except Exception as e:  # somehow we have some error when testing on Windows, so just print and pass below
@@ -34,10 +34,11 @@ class TestPyPOTSCLIEnv(unittest.TestCase):
 
     @pytest.mark.xdist_group(name="cli-env")
     def test_1_install_with_pip(self):
-        runner = CliRunner(mix_stderr=False)
+        runner = CliRunner()
         try:
             result = runner.invoke(
-                env, ["--install", "optional", "--tool", "pip"],
+                env,
+                ["--install", "optional", "--tool", "pip"],
                 catch_exceptions=False,
             )
         except Exception as e:  # somehow we have some error when testing on Windows, so just print and pass below

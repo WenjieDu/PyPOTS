@@ -38,11 +38,16 @@ class TestPyPOTSCLIRecommend(unittest.TestCase):
         result = self.runner.invoke(
             recommend,
             [
-                "--task", "imputation",
-                "--model", "SAITS",
-                "--n_steps", "24",
-                "--n_features", "10",
-                "--n_samples", "500",
+                "--task",
+                "imputation",
+                "--model",
+                "SAITS",
+                "--n_steps",
+                "24",
+                "--n_features",
+                "10",
+                "--n_samples",
+                "500",
             ],
             catch_exceptions=False,
         )
@@ -64,10 +69,14 @@ class TestPyPOTSCLIRecommend(unittest.TestCase):
         result = self.runner.invoke(
             recommend,
             [
-                "--task", "imputation",
-                "--model", "SAITS",
-                "--data", h5_path,
-                "--output", output_yaml,
+                "--task",
+                "imputation",
+                "--model",
+                "SAITS",
+                "--data",
+                h5_path,
+                "--output",
+                output_yaml,
             ],
             catch_exceptions=False,
         )
@@ -77,6 +86,7 @@ class TestPyPOTSCLIRecommend(unittest.TestCase):
 
         # verify the YAML file
         import yaml
+
         with open(output_yaml) as f:
             config = yaml.safe_load(f)
         assert config["task"] == "imputation"
@@ -91,13 +101,15 @@ class TestPyPOTSCLIRecommend(unittest.TestCase):
         rows = []
         for sid in range(15):
             for step in range(12):
-                rows.append({
-                    "SAMPLE_ID": sid,
-                    "feat_0": np.random.randn(),
-                    "feat_1": np.random.randn(),
-                    "feat_2": np.random.randn(),
-                    "CLAF_TARGET": sid % 2,
-                })
+                rows.append(
+                    {
+                        "SAMPLE_ID": sid,
+                        "feat_0": np.random.randn(),
+                        "feat_1": np.random.randn(),
+                        "feat_2": np.random.randn(),
+                        "CLAF_TARGET": sid % 2,
+                    }
+                )
         pd.DataFrame(rows).to_csv(csv_path, index=False)
 
         result = self.runner.invoke(
@@ -133,11 +145,16 @@ class TestPyPOTSCLIRecommend(unittest.TestCase):
             result = self.runner.invoke(
                 recommend,
                 [
-                    "--task", task,
-                    "--model", model,
-                    "--n_steps", "24",
-                    "--n_features", "10",
-                    "--n_samples", "200",
+                    "--task",
+                    task,
+                    "--model",
+                    model,
+                    "--n_steps",
+                    "24",
+                    "--n_features",
+                    "10",
+                    "--n_samples",
+                    "200",
                 ],
                 catch_exceptions=False,
             )

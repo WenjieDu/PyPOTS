@@ -37,23 +37,23 @@ def time_out(interval, callback):
     return decorator
 
 
-@pytest.mark.xfail(reason="Allow tests for CLI to fail")
 class TestPyPOTSCLIDev(unittest.TestCase):
     # `pypots-cli dev` must run under the project root dir
     os.chdir(PROJECT_ROOT_DIR)
 
     @pytest.mark.xdist_group(name="cli-dev")
     def test_0_build(self):
-        runner = CliRunner(mix_stderr=False)
+        runner = CliRunner()
         result = runner.invoke(dev, ["--build"], catch_exceptions=False)
         assert result.exit_code == 0, result.output
 
     @pytest.mark.xdist_group(name="cli-dev")
     def test_1_run_tests(self):
-        runner = CliRunner(mix_stderr=False)
+        runner = CliRunner()
         try:
             result = runner.invoke(
-                dev, ["--run_tests", "-k", "try_to_find_a_non_existing_test_case"],
+                dev,
+                ["--run_tests", "-k", "try_to_find_a_non_existing_test_case"],
                 catch_exceptions=False,
             )
         except RuntimeError:  # try to find a non-existing test case, so RuntimeError will be raised
@@ -64,12 +64,12 @@ class TestPyPOTSCLIDev(unittest.TestCase):
     # Don't test --lint-code because Black will reformat the code and cause error when generating the coverage report
     # @pytest.mark.xdist_group(name="cli-dev")
     # def test_2_lint_code(self):
-    #     runner = CliRunner(mix_stderr=False)
+    #     runner = CliRunner()
     #     result = runner.invoke(dev, ["--lint_code"], catch_exceptions=False)
 
     @pytest.mark.xdist_group(name="cli-dev")
     def test_3_cleanup(self):
-        runner = CliRunner(mix_stderr=False)
+        runner = CliRunner()
         result = runner.invoke(dev, ["--cleanup"], catch_exceptions=False)
         assert result.exit_code == 0, result.output
 
