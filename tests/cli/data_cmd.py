@@ -183,6 +183,7 @@ class TestPyPOTSCLIData(unittest.TestCase):
         assert os.path.exists(h5_path)
 
         from pypots.data.saving.h5 import load_dict_from_h5
+
         loaded = load_dict_from_h5(h5_path)
         assert "X" in loaded
         assert "X_ori" in loaded
@@ -223,12 +224,18 @@ class TestPyPOTSCLIData(unittest.TestCase):
             data,
             [
                 "prepare",
-                "--train", train_csv,
-                "--val", val_csv,
-                "--test", test_csv,
-                "--output_dir", h5_dir,
-                "--task", "imputation",
-                "--missing_rate", "0.1",
+                "--train",
+                train_csv,
+                "--val",
+                val_csv,
+                "--test",
+                test_csv,
+                "--output_dir",
+                h5_dir,
+                "--task",
+                "imputation",
+                "--missing_rate",
+                "0.1",
             ],
             catch_exceptions=False,
         )
@@ -256,12 +263,14 @@ class TestPyPOTSCLIData(unittest.TestCase):
         rows = []
         for sid in range(10):
             for step in range(5):
-                rows.append({
-                    "SAMPLE_ID": sid,
-                    "feat_0": np.random.randn(),
-                    "feat_1": np.random.randn(),
-                    "CLAF_TARGET": sid % 3,
-                })
+                rows.append(
+                    {
+                        "SAMPLE_ID": sid,
+                        "feat_0": np.random.randn(),
+                        "feat_1": np.random.randn(),
+                        "CLAF_TARGET": sid % 3,
+                    }
+                )
         pd.DataFrame(rows).to_csv(csv_path, index=False)
 
         h5_path = os.path.join(self.temp_dir, "claf.h5")
@@ -274,10 +283,144 @@ class TestPyPOTSCLIData(unittest.TestCase):
         assert result.exit_code == 0, result.output
 
         from pypots.data.saving.h5 import load_dict_from_h5
+
         loaded = load_dict_from_h5(h5_path)
         assert "y" in loaded
         assert loaded["y"].shape == (10,)
         assert len(np.unique(loaded["y"])) == 3
+
+    @pytest.mark.xdist_group(name="cli-data")
+    @pytest.mark.xfail(reason="Allow test to fail if ai4ts not installed")
+    def test_10_profile(self):
+        """Test data profile command."""
+        import pandas as pd
+
+        csv_path = os.path.join(self.temp_dir, "profile_test.csv")
+        np.random.seed(42)
+        rows = []
+        for sid in range(5):
+            for step in range(6):
+                rows.append({"SAMPLE_ID": sid, "feat_0": np.random.randn(), "feat_1": np.random.randn()})
+        pd.DataFrame(rows).to_csv(csv_path, index=False)
+
+        runner = CliRunner()
+        result = runner.invoke(data, ["profile", "--input", csv_path], catch_exceptions=False)
+        assert result.exit_code == 0, result.output
+        assert "Samples:" in result.output
+        assert "Features:" in result.output
+        assert "Strategy:" in result.output or "strategy" in result.output.lower()
+
+    @pytest.mark.xdist_group(name="cli-data")
+    @pytest.mark.xfail(reason="Allow test to fail if ai4ts not installed")
+    def test_11_profile_json(self):
+        """Test data profile with --json flag."""
+        import json
+        import pandas as pd
+
+        csv_path = os.path.join(self.temp_dir, "profile_json.csv")
+        np.random.seed(42)
+        rows = []
+        for sid in range(3):
+            for step in range(4):
+                rows.append({"SAMPLE_ID": sid, "feat_0": np.random.randn()})
+        pd.DataFrame(rows).to_csv(csv_path, index=False)
+
+        runner = CliRunner()
+        result = runner.invoke(data, ["profile", "--input", csv_path, "--json"], catch_exceptions=False)
+        assert result.exit_code == 0, result.output
+        # Filter out ai4ts banner lines and parse JSON
+        lines = result.output.strip().split("\n")
+        json_start = None
+        for i, line in enumerate(lines):
+            if line.strip().startswith("{"):
+                json_start = i
+                break
+        assert json_start is not None, f"No JSON found in output: {result.output}"
+        json_text = "\n".join(lines[json_start:])
+        parsed = json.loads(json_text)
+        assert parsed["dataset_stats"]["n_samples"] == 3
+        assert parsed["dataset_stats"]["n_features"] == 1
+
+    @pytest.mark.xdist_group(name="cli-data")
+    @pytest.mark.xfail(reason="Allow test to fail if ai4ts not installed")
+    def test_12_prepare_with_registry(self):
+        """Test data prepare creates registry file when pipeline available."""
+        import pandas as pd
+
+        csv_path = os.path.join(self.temp_dir, "registry_test.csv")
+        np.random.seed(42)
+        rows = []
+        for sid in range(8):
+            for step in range(10):
+                row = {"SAMPLE_ID": sid}
+                for f in range(3):
+                    row[f"feat_{f}"] = np.random.randn()
+                rows.append(row)
+        pd.DataFrame(rows).to_csv(csv_path, index=False)
+
+        h5_path = os.path.join(self.temp_dir, "reg_train.h5")
+        runner = CliRunner()
+        result = runner.invoke(
+            data,
+            ["prepare", "--input", csv_path, "--output", h5_path,
+             "--task", "imputation", "--set_type", "train"],
+            catch_exceptions=False,
+        )
+        assert result.exit_code == 0, result.output
+        assert os.path.exists(h5_path)
+        # A registry JSON should be created alongside
+        expected_reg = os.path.splitext(h5_path)[0] + "_registry.json"
+        assert os.path.exists(expected_reg), f"Registry not found at {expected_reg}"
+
+    @pytest.mark.xdist_group(name="cli-data")
+    @pytest.mark.xfail(reason="Allow test to fail if ai4ts not installed")
+    def test_13_reconstruct(self):
+        """Test data reconstruct command end-to-end."""
+        import h5py
+        import pandas as pd
+
+        from pypots.data.saving.h5 import load_dict_from_h5
+
+        # Create test CSV
+        csv_path = os.path.join(self.temp_dir, "recon_input.csv")
+        np.random.seed(42)
+        rows = []
+        for sid in range(5):
+            for step in range(12):
+                rows.append({"SAMPLE_ID": sid, "feat_0": np.random.randn(), "feat_1": np.random.randn()})
+        pd.DataFrame(rows).to_csv(csv_path, index=False)
+
+        # Prepare
+        h5_path = os.path.join(self.temp_dir, "recon_train.h5")
+        runner = CliRunner()
+        result = runner.invoke(
+            data,
+            ["prepare", "--input", csv_path, "--output", h5_path,
+             "--task", "imputation", "--set_type", "train"],
+            catch_exceptions=False,
+        )
+        assert result.exit_code == 0, result.output
+        reg_path = os.path.splitext(h5_path)[0] + "_registry.json"
+
+        # Create "predictions" by copying X
+        loaded = load_dict_from_h5(h5_path)
+        pred_path = os.path.join(self.temp_dir, "predictions.h5")
+        with h5py.File(pred_path, "w") as f:
+            f.create_dataset("X", data=loaded["X"])
+
+        # Reconstruct
+        out_csv = os.path.join(self.temp_dir, "reconstructed.csv")
+        result = runner.invoke(
+            data,
+            ["reconstruct", "--predictions", pred_path,
+             "--registry", reg_path, "--output", out_csv],
+            catch_exceptions=False,
+        )
+        assert result.exit_code == 0, result.output
+        assert os.path.exists(out_csv)
+        recon_df = pd.read_csv(out_csv)
+        assert "SAMPLE_ID" in recon_df.columns
+        assert len(recon_df) == 60  # 5 samples × 12 steps
 
 
 if __name__ == "__main__":

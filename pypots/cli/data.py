@@ -1,5 +1,5 @@
 """
-CLI command for data management operations (prepare, convert, split, describe, load, list).
+CLI command for data management operations (profile, prepare, reconstruct, convert, split, describe, load, list).
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
@@ -193,10 +193,85 @@ def _prepare_single_csv(input_path, output_path, task, set_type, missing_rate, s
     return summary
 
 
-@click.group(name="data", help="CLI tools for data management operations (prepare, convert, split, describe, load, list)")
+@click.group(name="data", help="CLI tools for data management operations (profile, prepare, reconstruct, convert, split, describe, load, list)")
 def data():
-    """Data management operations: prepare, convert, split, describe, load, list."""
+    """Data management operations: profile, prepare, reconstruct, convert, split, describe, load, list."""
     pass
+
+
+@data.command(name="profile", help="Analyze a CSV dataset and output a DataProfile JSON for agent consumption")
+@click.option("--input", "input_path", required=True, type=click.Path(exists=True),
+              help="Input CSV file path")
+@click.option("--task", default=None,
+              type=click.Choice(["imputation", "classification", "forecasting", "clustering", "anomaly_detection"]),
+              help="Task type hint (auto-detected if omitted)")
+@click.option("--json", "json_output", is_flag=True, default=False,
+              help="Output raw JSON (default: human-readable summary)")
+def data_profile(input_path, task, json_output):
+    """Analyze a CSV dataset and generate a DataProfile.
+
+    The DataProfile is a lightweight JSON structure describing the dataset's
+    statistics, column schema, timestamp regularity, and sample lengths.
+    Agents use this to make informed decisions about preprocessing strategy.
+    """
+    import json as json_mod
+
+    from ..utils.logging import logger
+
+    try:
+        from ai4ts.data_protocols.profile import analyze_dataset
+    except ImportError:
+        raise click.ClickException(
+            "The 'ai4ts' package is required for data profiling. "
+            "Install it with: pip install ai4ts"
+        )
+
+    logger.info(f"Profiling dataset: {input_path}")
+    profile = analyze_dataset(input_path, task_type=task)
+    d = profile.to_dict()
+
+    if json_output:
+        print(json_mod.dumps(d, indent=2))
+    else:
+        stats = d["dataset_stats"]
+        schema = d["schema_mapping"]
+        ts_info = d["timestamp_info"]
+
+        print(f"\n{'=' * 65}")
+        print(f"Data Profile: {input_path}")
+        print(f"{'=' * 65}")
+        print(f"  Samples:          {stats['n_samples']}")
+        print(f"  Features:         {stats['n_features']}")
+        print(f"  Total rows:       {stats['total_rows']}")
+        print(f"  Missing rate:     {stats['missing_rate']:.2%}")
+        print(f"  Sample lengths:   min={stats['min_sample_length']}, "
+              f"max={stats['max_sample_length']}, "
+              f"avg={stats['avg_sample_length']:.1f}")
+        print(f"  Variable length:  {stats['has_variable_length']}")
+        print(f"\n  Schema:")
+        print(f"    SAMPLE_ID:      {schema['sample_id_col'] or '(not present)'}")
+        print(f"    TIMESTAMP:      {schema['timestamp_col'] or '(not present)'}")
+        print(f"    Features:       {schema['feature_cols']}")
+        print(f"    Label column:   {schema['label_col'] or '(none)'}")
+        if schema['n_classes']:
+            print(f"    Classes:        {schema['n_classes']}")
+        print(f"\n  Task type:        {d['task_type']}")
+
+        if ts_info.get("warning"):
+            print(f"\n  ⚠ WARNING: {ts_info['warning']}")
+
+        # Suggest appropriate strategy
+        if stats['has_variable_length'] or stats['max_sample_length'] > 200:
+            if d['task_type'] == 'classification':
+                print(f"\n  → Strategy: pad_only (pad to max_len={stats['max_sample_length']})")
+            else:
+                print(f"\n  → Strategy: sliding_window (non-overlapping, window_size≤200)")
+        else:
+            print(f"\n  → Strategy: direct (uniform length ≤ 200)")
+
+        print(f"\n{'=' * 65}")
+        print(f"Next: pypots-cli data prepare --input {input_path} --output data.h5 --task {d['task_type'] or 'imputation'}")
+        print(f"{'=' * 65}\n")
 
 
 @data.command(name="prepare", help="Convert CSV data to PyPOTS H5 format with proper data structure for model training")
@@ -219,14 +294,22 @@ def data():
               help="Dataset split type (single-file mode). If not specified, auto-detected from filename.")
 @click.option("--missing_rate", default=0.1, type=float,
               help="Artificial missing rate for val/test sets (default: 0.1)")
+@click.option("--window_size", default=None, type=int,
+              help="Fixed window size for sliding window (auto-determined if omitted)")
 @click.option("--seed", default=2024, type=int, help="Random seed for reproducibility (default: 2024)")
 def data_prepare(input_path, output_path, train_path, val_path, test_path,
-                 output_dir, task, set_type, missing_rate, seed):
+                 output_dir, task, set_type, missing_rate, window_size, seed):
     """Prepare CSV data for PyPOTS model training.
 
     Converts CSV files following the ai4ts data protocol (with SAMPLE_ID, features,
     and optional CLAF_TARGET columns) into PyPOTS-compatible HDF5 format with proper
     3D arrays (n_samples, n_steps, n_features) and all required keys (X, X_ori, y).
+
+    Handles variable-length samples via:
+    - Classification tasks: pad to max length with NaN (no sliding window)
+    - Other tasks: non-overlapping sliding window if samples are long or variable-length
+
+    A window registry (JSON) is saved alongside each H5 file for reconstruction.
 
     Supports two modes:
       - Single-file: --input + --output + --set_type
@@ -253,6 +336,9 @@ def data_prepare(input_path, output_path, train_path, val_path, test_path,
     if single_mode and output_path is None:
         raise click.UsageError("--output is required for single-file mode.")
 
+    # Try to use the ai4ts pipeline if available (supports windowing + registry)
+    use_pipeline = _check_ai4ts_pipeline()
+
     all_summaries = []
 
     if batch_mode:
@@ -265,11 +351,19 @@ def data_prepare(input_path, output_path, train_path, val_path, test_path,
         for st, fpath in files:
             if fpath is None:
                 continue
-            out = os.path.join(output_dir, f"{st}.h5")
-            logger.info(f"Preparing {st} set: {fpath} -> {out}")
-            summary = _prepare_single_csv(fpath, out, task, st, missing_rate, seed, logger)
+            out_h5 = os.path.join(output_dir, f"{st}.h5")
+            logger.info(f"Preparing {st} set: {fpath} -> {out_h5}")
+            if use_pipeline:
+                summary = _prepare_with_pipeline(
+                    fpath, out_h5, task, st, missing_rate, window_size, seed, logger
+                )
+            else:
+                summary = _prepare_single_csv(
+                    fpath, out_h5, task, st, missing_rate, seed, logger
+                )
             all_summaries.append(summary)
-            logger.info(f"  {st}: {summary['n_samples']} samples, "
+            logger.info(f"  {st}: {summary['n_samples']} samples → "
+                        f"{summary.get('n_windows', summary['n_samples'])} windows, "
                         f"{summary['n_steps']} steps, {summary['n_features']} features")
 
     else:
@@ -290,7 +384,14 @@ def data_prepare(input_path, output_path, train_path, val_path, test_path,
                 )
 
         logger.info(f"Preparing {set_type} set: {input_path} -> {output_path}")
-        summary = _prepare_single_csv(input_path, output_path, task, set_type, missing_rate, seed, logger)
+        if use_pipeline:
+            summary = _prepare_with_pipeline(
+                input_path, output_path, task, set_type, missing_rate, window_size, seed, logger
+            )
+        else:
+            summary = _prepare_single_csv(
+                input_path, output_path, task, set_type, missing_rate, seed, logger
+            )
         all_summaries.append(summary)
 
     # print summary
@@ -300,13 +401,19 @@ def data_prepare(input_path, output_path, train_path, val_path, test_path,
     for s in all_summaries:
         print(f"\n  [{s['set_type'].upper()}]")
         print(f"    Samples:   {s['n_samples']}")
+        n_windows = s.get("n_windows", s["n_samples"])
+        if n_windows != s["n_samples"]:
+            print(f"    Windows:   {n_windows} (from sliding window)")
         print(f"    Steps:     {s['n_steps']}")
         print(f"    Features:  {s['n_features']}")
+        print(f"    Strategy:  {s.get('strategy', 'direct')}")
         print(f"    Natural missing rate:  {s['natural_missing_rate']:.2%}")
         print(f"    Actual missing rate:   {s['actual_missing_rate']:.2%}")
         if s['has_labels']:
             print(f"    Labels:    yes ({s['n_classes']} classes)")
         print(f"    H5 keys:   {s['keys_saved']}")
+        if s.get("registry_path"):
+            print(f"    Registry:  {s['registry_path']}")
 
     if batch_mode:
         print(f"\n  Output directory: {output_dir}/")
@@ -321,6 +428,153 @@ def data_prepare(input_path, output_path, train_path, val_path, test_path,
     print(f"  1. Inspect: pypots-cli data describe --input {desc_target}")
     print(f"  2. Recommend: pypots-cli recommend --task {task} --data {desc_target}")
     print(f"  3. Train:   pypots-cli train --config <config.yaml>")
+    print(f"{'=' * 65}\n")
+
+
+def _check_ai4ts_pipeline() -> bool:
+    """Check if the ai4ts pipeline module is available."""
+    try:
+        from ai4ts.data_protocols.pipeline import prepare_for_pypots  # noqa: F401
+        return True
+    except ImportError:
+        return False
+
+
+def _prepare_with_pipeline(input_path, output_path, task, set_type, missing_rate,
+                           window_size, seed, logger):
+    """Prepare using ai4ts pipeline with windowing and registry support."""
+    import numpy as np
+
+    from ai4ts.data_protocols.pipeline import prepare_for_pypots
+
+    from ..data.saving.h5 import save_dict_into_h5
+
+    result = prepare_for_pypots(
+        csv_path=input_path,
+        task=task,
+        window_size=window_size,
+        missing_rate=missing_rate,
+        set_type=set_type,
+        seed=seed,
+    )
+
+    X = result["X"]
+    X_ori = result["X_ori"]
+    registry = result["registry"]
+    profile = result["profile"]
+
+    n_windows, n_steps, n_features = X.shape
+    n_samples = profile.dataset_stats.n_samples
+
+    # Build H5 data dict
+    data_dict = {"X": X, "X_ori": X_ori}
+    if "y" in result:
+        data_dict["y"] = result["y"]
+
+    # Save H5
+    os.makedirs(os.path.dirname(os.path.abspath(output_path)), exist_ok=True)
+    save_dict_into_h5(data_dict, output_path)
+
+    # Save registry alongside the H5 file
+    registry_path = os.path.splitext(output_path)[0] + "_registry.json"
+    registry.to_json(registry_path)
+    logger.info(f"  Registry saved: {registry_path}")
+
+    natural_missing_rate = np.isnan(X_ori).sum() / X_ori.size
+    actual_missing_rate = np.isnan(X).sum() / X.size
+
+    return {
+        "n_samples": n_samples,
+        "n_windows": n_windows,
+        "n_steps": n_steps,
+        "n_features": n_features,
+        "strategy": registry.strategy,
+        "natural_missing_rate": float(natural_missing_rate),
+        "actual_missing_rate": float(actual_missing_rate),
+        "has_labels": "y" in result,
+        "n_classes": profile.schema_mapping.n_classes,
+        "set_type": set_type,
+        "keys_saved": list(data_dict.keys()),
+        "registry_path": registry_path,
+    }
+
+
+@data.command(name="reconstruct", help="Reconstruct original-shape data from model predictions using a window registry")
+@click.option("--predictions", required=True, type=click.Path(exists=True),
+              help="Path to predictions H5 file (must have 'X' key with 3D array)")
+@click.option("--registry", "registry_path", required=True, type=click.Path(exists=True),
+              help="Path to window registry JSON file (generated by 'data prepare')")
+@click.option("--output", "output_path", required=True, type=str,
+              help="Output CSV file path for reconstructed data")
+@click.option("--key", default="X", type=str,
+              help="Key in the H5 file containing the predictions (default: X)")
+def data_reconstruct(predictions, registry_path, output_path, key):
+    """Reconstruct original-shape time series from model predictions.
+
+    After running model inference (e.g., imputation) on windowed data,
+    this command reverses the windowing transformation:
+    1. Loads the predictions (3D tensor) from an H5 file
+    2. Reads the window registry (JSON) that was saved during 'data prepare'
+    3. Strips padding from each window
+    4. Reassembles windows belonging to the same original sample
+    5. Outputs a CSV file with SAMPLE_ID and reconstructed features
+    """
+    import numpy as np
+    import pandas as pd
+
+    from ..utils.logging import logger
+
+    try:
+        from ai4ts.data_protocols.registry import WindowRegistry
+        from ai4ts.data_protocols.pipeline import reconstruct_from_predictions
+    except ImportError:
+        raise click.ClickException(
+            "The 'ai4ts' package is required for data reconstruction. "
+            "Install it with: pip install ai4ts"
+        )
+
+    from ..data.saving.h5 import load_dict_from_h5
+
+    logger.info(f"Loading predictions from: {predictions}")
+    loaded = load_dict_from_h5(predictions)
+    if key not in loaded:
+        raise click.ClickException(
+            f"Key '{key}' not found in {predictions}. Available keys: {list(loaded.keys())}"
+        )
+    pred_array = loaded[key]
+    logger.info(f"Predictions shape: {pred_array.shape}")
+
+    logger.info(f"Loading registry from: {registry_path}")
+    registry = WindowRegistry.from_json(registry_path)
+    logger.info(f"Registry: {registry.n_windows} windows, strategy={registry.strategy}")
+
+    # Reconstruct
+    reconstructed = reconstruct_from_predictions(pred_array, registry)
+    logger.info(f"Reconstructed {len(reconstructed)} samples")
+
+    # Convert to CSV with SAMPLE_ID
+    frames = []
+    for sample_id in sorted(reconstructed.keys()):
+        arr = reconstructed[sample_id]
+        n_features = arr.shape[1]
+        feature_names = [f"feat_{i}" for i in range(n_features)]
+        sample_df = pd.DataFrame(arr, columns=feature_names)
+        sample_df.insert(0, "SAMPLE_ID", sample_id)
+        frames.append(sample_df)
+
+    output_df = pd.concat(frames, ignore_index=True)
+
+    os.makedirs(os.path.dirname(os.path.abspath(output_path)), exist_ok=True)
+    output_df.to_csv(output_path, index=False)
+
+    print(f"\n{'=' * 65}")
+    print("Reconstruction Complete")
+    print(f"{'=' * 65}")
+    print(f"  Samples:    {len(reconstructed)}")
+    total_steps = sum(arr.shape[0] for arr in reconstructed.values())
+    print(f"  Total rows: {total_steps}")
+    print(f"  Features:   {n_features}")
+    print(f"  Output:     {output_path}")
     print(f"{'=' * 65}\n")
 
 

@@ -6,9 +6,26 @@ Shared utilities for PyPOTS CLI commands.
 # License: BSD-3-Clause
 
 
+import io
 import os
 import subprocess
 import sys
+
+
+def _has_real_fileno(stream) -> bool:
+    """Return True if *stream* backs a real OS file descriptor.
+
+    Click's CliRunner (used in tests) replaces sys.stdout / sys.stderr with
+    in-memory StringIO objects that raise ``io.UnsupportedOperation`` when
+    ``.fileno()`` is called.  subprocess.Popen requires a real fd when a
+    stream is passed directly, so we must detect this situation and fall back
+    to subprocess.PIPE + manual forwarding instead.
+    """
+    try:
+        stream.fileno()
+        return True
+    except (AttributeError, io.UnsupportedOperation):
+        return False
 
 
 def execute_command(command: str, verbose: bool = True):
@@ -30,17 +47,32 @@ def execute_command(command: str, verbose: bool = True):
 
     logger.info(f"Executing '{command}'...")
     if verbose:
+        # When sys.stdout / sys.stderr are real file objects (normal CLI usage)
+        # pass them directly to Popen so output is streamed in real time.
+        # When they are in-memory wrappers (e.g. Click's CliRunner in tests)
+        # they have no underlying fd, so we capture via PIPE and forward
+        # manually – this also lets the test runner capture the output.
+        stdout_dest = sys.stdout if _has_real_fileno(sys.stdout) else subprocess.PIPE
+        stderr_dest = sys.stderr if _has_real_fileno(sys.stderr) else subprocess.PIPE
+
         exec_result = subprocess.Popen(
             command,
             stdin=subprocess.PIPE,
             close_fds=True,
-            stderr=sys.stderr,
-            stdout=sys.stdout,
+            stdout=stdout_dest,
+            stderr=stderr_dest,
             universal_newlines=True,
             shell=True,
             bufsize=1,
         )
-        exec_result.communicate()
+        stdout_output, stderr_output = exec_result.communicate()
+
+        # Forward captured output to sys.stdout/sys.stderr (no-op when the
+        # streams were passed directly, because communicate() returns None).
+        if stdout_output:
+            sys.stdout.write(stdout_output)
+        if stderr_output:
+            sys.stderr.write(stderr_output)
     else:
         exec_result = subprocess.run(
             command,
