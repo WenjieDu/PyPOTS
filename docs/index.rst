@@ -304,7 +304,7 @@ PyPOTS community is open, transparent, and surely friendly. Let's work together 
    :caption: Getting Started
 
    install
-   examples
+   tutorials
 
 .. toctree::
    :maxdepth: 4
