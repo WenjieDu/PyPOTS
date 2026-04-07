@@ -19,20 +19,10 @@ pypots.data.saving
    :show-inheritance:
    :inherited-members:
 
-pypots.data.generating
+pypots.data.checking
 -----------------------------
 
-.. automodule:: pypots.data.generating
-   :members:
-   :undoc-members:
-   :show-inheritance:
-   :inherited-members:
-
-
-pypots.data.load\_specific\_datasets
--------------------------------------------
-
-.. automodule:: pypots.data.load_specific_datasets
+.. automodule:: pypots.data.checking
    :members:
    :undoc-members:
    :show-inheritance:

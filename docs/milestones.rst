@@ -16,17 +16,17 @@ please cite it as below and 🌟star `PyPOTS repository <https://github.com/Wenj
    :linenos:
 
     @article{du2023pypots,
-    title={{PyPOTS: a Python toolbox for data mining on Partially-Observed Time Series}},
-    author={Wenjie Du},
-    journal={arXiv preprint arXiv:2305.18811},
-    year={2023},
+    title = {{PyPOTS: A Python Toolkit for Data Mining on Partially-Observed Time Series}},
+    author = {Wenjie Du},
+    journal = {SIGKDD MiLeTS Workshop},
+    year = {2023},
     }
 
-or
-
-   Wenjie Du. (2023).
-   PyPOTS: A Python Toolbox for Data Mining on Partially-Observed Time Series.
-   arXiv, abs/2305.18811. https://doi.org/10.48550/arXiv.2305.18811
+    @article{du2025pypots,
+    title = {{PyPOTS v1: A Python Toolkit for Machine Learning on Partially-Observed Time Series}},
+    author = {Wenjie Du, Yiyuan Yang, Linglong Qian, Jun Wang, and Qingsong Wen},
+    year = {2025},
+    }
 
 
 Research Projects Using PyPOTS

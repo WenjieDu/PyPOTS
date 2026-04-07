@@ -1,5 +1,5 @@
-Quick-start Examples
-====================
+Quick-Start Tutorials
+================================
 
 .. image:: https://pypots.com/figs/pypots_logos/BrewPOTS/logo_FFBG.svg
    :width: 160
@@ -7,16 +7,16 @@ Quick-start Examples
    :align: right
    :target: https://github.com/WenjieDu/BrewPOTS
 
-We put some examples here to help our users to get started quickly.
 
 Please refer to `BrewPOTS <https://github.com/WenjieDu/BrewPOTS>`_ for detailed PyPOTS tutorials.
-You can also find a simple and quick-start tutorial notebook on Google Colab
+You can also find a simple and quick-start tutorial notebook on Google Colab by clicking the badge below
 
 .. raw:: html
 
     <a href="https://colab.research.google.com/drive/1HEFjylEy05-r47jRy0H9jiS_WhD0UWmQ" target="_blank"><img src="https://img.shields.io/badge/GoogleColab-PyPOTS_Tutorials-F9AB00?logo=googlecolab&logoColor=white"></a>
     <br clear="right">
 
+We put some examples here to help our users to get started quickly.
 
 .. code-block:: python
 

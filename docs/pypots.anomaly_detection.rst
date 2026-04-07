@@ -119,7 +119,7 @@ pypots.anomaly_detection.timemixer
    :inherited-members:
 
 pypots.anomaly_detection.nonstationary_transformer
------------------------------------------------
+--------------------------------------------------
 
 .. automodule:: pypots.anomaly_detection.nonstationary_transformer
    :members:

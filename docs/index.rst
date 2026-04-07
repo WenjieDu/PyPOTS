@@ -133,8 +133,8 @@ proposed as algorithms for POTS data in their papers, and they cannot directly a
 To make them applicable to POTS data, we specifically apply the embedding strategy and training approach (ORT+MIT)
 the same as we did in `the SAITS paper <https://arxiv.org/pdf/2202.08516)>`_ :cite:`du2023SAITS`.
 
-The task types are abbreviated as follows: **IMPU**: Imputation; **FORE**: Forecasting;
-**CLAS**: Classification; **CLUS**: Clustering; **ANOD**: Anomaly Detection.
+The task types are abbreviated as follows: **IMPT**: Imputation; **FCST**: Forecasting;
+**CLAF**: Classification; **CLUS**: Clustering; **ANOD**: Anomaly Detection.
 In addition to the 5 tasks, PyPOTS also provides TS2Vec :cite:`yue2022ts2vec` for time series representation learning and vectorization.
 The paper references are all listed at the bottom of this readme file.
 
@@ -244,7 +244,7 @@ please cite it as below and 🌟star `PyPOTS repository <https://github.com/Wenj
     @article{du2023pypots,
     title = {{PyPOTS: A Python Toolkit for Data Mining on Partially-Observed Time Series}},
     author = {Wenjie Du},
-    journal = {KDD 2023 MiLeTS},
+    journal = {SIGKDD MiLeTS Workshop},
     year = {2023},
     }
 
@@ -304,12 +304,12 @@ PyPOTS community is open, transparent, and surely friendly. Let's work together 
    :caption: Getting Started
 
    install
-   examples
+   tutorials
 
 .. toctree::
    :maxdepth: 4
    :hidden:
-   :caption: Docs of PyPOTS Ecosystem
+   :caption: User Docs of PyPOTS
 
    model_api
    pypots
@@ -324,5 +324,4 @@ PyPOTS community is open, transparent, and surely friendly. Let's work together 
 
    faq
    milestones
-   about_us
    references
