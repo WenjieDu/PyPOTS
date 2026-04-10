@@ -8,7 +8,7 @@ seaborn
 matplotlib
 tensorboard
 scikit-learn
-transformers
+transformers<=4.57.6
 torch>=1.10.0
 tsdb>=0.7.1
 pygrinder>=0.7
