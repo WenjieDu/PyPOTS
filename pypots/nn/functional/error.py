@@ -260,8 +260,10 @@ def calc_quantile_loss(
     q: float,
     eval_points: Union[np.ndarray, torch.Tensor],
 ) -> Union[float, torch.Tensor]:
-    # check shapes and values of inputs, consistent with sibling calc_* functions
-    _check_inputs(predictions, targets, eval_points)
+    # check types and NaN (but not predictions/targets shape, which is
+    # broadcast here and explicitly differs in the calc_quantile_crps_sum
+    # caller). Mask shape is still validated against targets by _check_inputs.
+    _check_inputs(predictions, targets, eval_points, check_shape=False)
 
     # preserve numpy-in/numpy-out contract used by calc_mae/calc_mse/calc_rmse/calc_mre
     numpy_in = isinstance(predictions, np.ndarray)
