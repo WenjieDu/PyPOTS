@@ -260,6 +260,12 @@ def calc_quantile_loss(
     q: float,
     eval_points: Union[np.ndarray, torch.Tensor],
 ) -> Union[float, torch.Tensor]:
+    # check shapes and values of inputs, consistent with sibling calc_* functions
+    _check_inputs(predictions, targets, eval_points)
+
+    # preserve numpy-in/numpy-out contract used by calc_mae/calc_mse/calc_rmse/calc_mre
+    numpy_in = isinstance(predictions, np.ndarray)
+
     # Handle numpy arrays by converting to torch tensors
     if isinstance(predictions, np.ndarray):
         predictions = torch.from_numpy(predictions)
@@ -271,6 +277,8 @@ def calc_quantile_loss(
     quantile_loss = 2 * torch.sum(
         torch.abs((predictions - targets) * eval_points * ((targets <= predictions) * 1.0 - q))
     )
+    if numpy_in:
+        return quantile_loss.detach().cpu().numpy()
     return quantile_loss
 
 
