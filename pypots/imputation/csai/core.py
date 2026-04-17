@@ -134,7 +134,9 @@ class _BCSAI(ModelCore):
                 results["metric"] = self.validation_metric(reconstruction, X_ori, indicating_mask)
 
         if not self.training:
-            results["x_ori"] = inputs["X_ori"]
-            results["indicating_mask"] = inputs["indicating_mask"]
+            if "X_ori" in inputs:
+                results["x_ori"] = inputs["X_ori"]
+            if "indicating_mask" in inputs:
+                results["indicating_mask"] = inputs["indicating_mask"]
 
         return results
