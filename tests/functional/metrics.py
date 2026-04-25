@@ -17,10 +17,10 @@ from pypots.nn.functional import calc_quantile_crps
 class TestMetrics(unittest.TestCase):
     @pytest.mark.xdist_group(name="metric-quantile-crps")
     def test_quantile_crps(self):
-        if torch.mps.is_available():
-            device = "mps"
-        elif torch.cuda.is_available():
+        if torch.cuda.is_available():
             device = "cuda"
+        elif hasattr(torch.mps,  'is_available') and torch.mps.is_available():
+            device = "mps"
         else:
             device = "cpu"
 
