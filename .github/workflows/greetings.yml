@@ -3,7 +3,7 @@ name: Auto reply to new issues and PR
 on:
   issues:
     types: [opened]
-  pull_request:
+  pull_request_target:
     branches: [main, dev]
     types: [opened]
 

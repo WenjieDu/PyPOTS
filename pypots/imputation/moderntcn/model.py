@@ -40,9 +40,11 @@ class ModernTCN(BaseNNImputer):
 
     downsampling_ratio :
         The downsampling ratio for the downsampling mechanism.
+        Must be int, because it is also used as kernel size and stride of convolution modules in ModernTCN.
 
     ffn_ratio :
         The ratio for the feed-forward neural network in the model.
+        Must be int.
 
     num_blocks :
         The number of blocks for the model. It should be a list of integers.
@@ -131,8 +133,8 @@ class ModernTCN(BaseNNImputer):
         n_features: int,
         patch_size: int,
         patch_stride: int,
-        downsampling_ratio: float,
-        ffn_ratio: float,
+        downsampling_ratio: int,
+        ffn_ratio: int,
         num_blocks: list,
         large_size: list,
         small_size: list,

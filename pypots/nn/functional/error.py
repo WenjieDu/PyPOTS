@@ -260,6 +260,14 @@ def calc_quantile_loss(
     q: float,
     eval_points: Union[np.ndarray, torch.Tensor],
 ) -> Union[float, torch.Tensor]:
+    # check types and NaN (but not predictions/targets shape, which is
+    # broadcast here and explicitly differs in the calc_quantile_crps_sum
+    # caller). Mask shape is still validated against targets by _check_inputs.
+    _check_inputs(predictions, targets, eval_points, check_shape=False)
+
+    # preserve numpy-in/numpy-out contract used by calc_mae/calc_mse/calc_rmse/calc_mre
+    numpy_in = isinstance(predictions, np.ndarray)
+
     # Handle numpy arrays by converting to torch tensors
     if isinstance(predictions, np.ndarray):
         predictions = torch.from_numpy(predictions)
@@ -271,6 +279,8 @@ def calc_quantile_loss(
     quantile_loss = 2 * torch.sum(
         torch.abs((predictions - targets) * eval_points * ((targets <= predictions) * 1.0 - q))
     )
+    if numpy_in:
+        return quantile_loss.detach().cpu().numpy()
     return quantile_loss
 
 
@@ -322,7 +332,7 @@ def calc_quantile_crps(
 
     quantiles = np.arange(0.05, 1.0, 0.05)
     denominator = torch.sum(torch.abs(targets * masks))
-    CRPS = torch.tensor(0.0)
+    CRPS = torch.tensor(0.0, device=predictions.device)
     for i in range(len(quantiles)):
         q_pred = []
         for j in range(len(predictions)):
@@ -383,7 +393,7 @@ def calc_quantile_crps_sum(
 
     quantiles = np.arange(0.05, 1.0, 0.05)
     denominator = torch.sum(torch.abs(targets * masks))
-    CRPS = torch.tensor(0.0)
+    CRPS = torch.tensor(0.0, device=predictions.device)
     for i in range(len(quantiles)):
         q_pred = torch.quantile(predictions.sum(-1), quantiles[i], dim=1)
         q_loss = calc_quantile_loss(q_pred, targets, quantiles[i], masks)
