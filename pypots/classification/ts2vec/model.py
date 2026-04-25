@@ -22,6 +22,27 @@ from ...representation.ts2vec.core import _TS2Vec
 
 SUPPORTED_CLASSIFIERS = ["lr", "svm", "knn"]
 
+# Backward-compatibility aliases for classifier_type names that were renamed.
+# Kept so user code written before the rename keeps working for at least one
+# release, with a clear DeprecationWarning pointing to the new name.
+_DEPRECATED_CLASSIFIER_ALIASES = {
+    "linear_regression": "lr",
+}
+
+
+def _resolve_classifier_type(classifier_type: str) -> str:
+    if classifier_type in _DEPRECATED_CLASSIFIER_ALIASES:
+        new_name = _DEPRECATED_CLASSIFIER_ALIASES[classifier_type]
+        warnings.warn(
+            f"classifier_type={classifier_type!r} is deprecated; use "
+            f"{new_name!r} instead. The old name will be removed in a "
+            "future release.",
+            DeprecationWarning,
+            stacklevel=3,
+        )
+        return new_name
+    return classifier_type
+
 
 class TS2Vec(BaseNNClassifier):
     """The PyTorch implementation of the TS2Vec model :cite:`yue2022ts2vec`.
@@ -310,6 +331,7 @@ class TS2Vec(BaseNNClassifier):
             latent variables if necessary.
 
         """
+        classifier_type = _resolve_classifier_type(classifier_type)
         assert (
             classifier_type in SUPPORTED_CLASSIFIERS
         ), f"classifier_type should be one of {SUPPORTED_CLASSIFIERS}, but got {classifier_type}"
