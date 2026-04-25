@@ -47,6 +47,30 @@ class TestMean(unittest.TestCase):
         logger.info(f"Mean test_MSE: {test_MSE}")
 
     @pytest.mark.xdist_group(name="imputation-mean")
+    def test_1_all_nan_feature(self):
+        """Test that a feature with all NaN values is filled with 0.0 instead of propagating NaN."""
+        X = np.random.randn(5, 10, 3)
+        X[:, :, 1] = np.nan  # feature 1 is entirely NaN
+        result = self.mean.predict({"X": X})["imputation"]
+        assert not np.isnan(result).any(), "All-NaN feature should be filled with 0.0, not propagate NaN."
+
+        # Same test with torch tensor
+        X_t = torch.randn(5, 10, 3)
+        X_t[:, :, 1] = float("nan")
+        result_t = self.mean.predict({"X": X_t})["imputation"]
+        assert not torch.isnan(result_t).any(), "All-NaN feature should be filled with 0.0 for torch input."
+
+    @pytest.mark.xdist_group(name="imputation-mean")
+    def test_2_list_input(self):
+        """Test that list input with missing values is converted and imputed correctly."""
+        X = np.random.randn(5, 10, 3)
+        X[0, 0, 0] = np.nan
+        X[2, 5, 1] = np.nan
+        X_list = X.tolist()
+        result = self.mean.predict({"X": X_list})["imputation"]
+        assert not np.isnan(result).any(), "List input with NaN should be converted and imputed."
+
+    @pytest.mark.xdist_group(name="imputation-mean")
     def test_4_lazy_loading(self):
         self.mean.fit(GENERAL_H5_TRAIN_SET_PATH, GENERAL_H5_VAL_SET_PATH)
         imputation_results = self.mean.predict(GENERAL_H5_TEST_SET_PATH)

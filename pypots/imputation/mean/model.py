@@ -53,29 +53,38 @@ class Mean(BaseImputer):
         else:
             X = test_set["X"]
 
+        if isinstance(X, list):
+            X = np.asarray(X)
+
         assert len(X.shape) == 3, (
             f"Input X should have 3 dimensions [n_samples, n_steps, n_features], "
             f"but the actual shape of X: {X.shape}"
         )
-        if isinstance(X, list):
-            X = np.asarray(X)
 
         n_samples, n_steps, n_features = X.shape
 
         if isinstance(X, np.ndarray):
             X_imputed_reshaped = np.copy(X).reshape(-1, n_features)
             mean_values = np.nanmean(X_imputed_reshaped, axis=0)
+            # Use 0.0 as fallback for features where all values are NaN
+            mean_values = np.nan_to_num(mean_values, nan=0.0)
             for i, v in enumerate(mean_values):
                 X_imputed_reshaped[:, i] = np.nan_to_num(X_imputed_reshaped[:, i], nan=v)
             imputed_data = X_imputed_reshaped.reshape(n_samples, n_steps, n_features)
         elif isinstance(X, torch.Tensor):
             X_imputed_reshaped = torch.clone(X).reshape(-1, n_features)
-            mean_values = torch.nanmean(X_imputed_reshaped, dim=0).numpy()
-            for i, v in enumerate(mean_values):
-                X_imputed_reshaped[:, i] = torch.nan_to_num(X_imputed_reshaped[:, i], nan=v)
+            mean_values = torch.nanmean(X_imputed_reshaped, dim=0)
+            # Use 0.0 as fallback for features where all values are NaN
+            mean_values = torch.nan_to_num(mean_values, nan=0.0)
+            nan_mask = torch.isnan(X_imputed_reshaped)
+            X_imputed_reshaped = torch.where(
+                nan_mask, mean_values.unsqueeze(0).expand_as(X_imputed_reshaped), X_imputed_reshaped
+            )
             imputed_data = X_imputed_reshaped.reshape(n_samples, n_steps, n_features)
         else:
-            raise ValueError()
+            raise ValueError(
+                f"Input X must be numpy.ndarray or torch.Tensor, but got {type(X)}"
+            )
 
         result_dict = {
             "imputation": imputed_data,

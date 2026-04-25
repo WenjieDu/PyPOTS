@@ -6,6 +6,7 @@ The base (abstract) classes for models in PyPOTS.
 # License: BSD-3-Clause
 
 import os
+import inspect
 from abc import ABC, abstractmethod
 from copy import deepcopy
 from datetime import datetime
@@ -25,6 +26,16 @@ try:
     import nni
 except ImportError:
     pass
+
+
+_TORCH_LOAD_SUPPORTS_WEIGHTS_ONLY = "weights_only" in inspect.signature(torch.load).parameters
+
+
+def _load_model_file(path: str, map_location):
+    load_kwargs = {"map_location": map_location}
+    if _TORCH_LOAD_SUPPORTS_WEIGHTS_ONLY:
+        load_kwargs["weights_only"] = True
+    return torch.load(path, **load_kwargs)
 
 
 class BaseModel(ABC):
@@ -376,12 +387,15 @@ class BaseModel(ABC):
         If the training environment and the deploying/test environment use the same type of device (GPU/CPU),
         you can load the model directly with torch.load(model_path).
 
+        On PyTorch versions that support it, PyPOTS loads checkpoint files with ``weights_only=True``
+        so deserializing model state does not execute arbitrary pickle payloads from untrusted files.
+
         """
         assert os.path.exists(path), f"Model file {path} does not exist."
 
         try:
             map_location = self.device[0] if isinstance(self.device, list) else self.device
-            loaded_file = torch.load(path, map_location=map_location)
+            loaded_file = _load_model_file(path, map_location)
 
             if isinstance(loaded_file, torch.nn.Module):  # compatible model for pypots <0.13
                 if isinstance(self.device, torch.device):
