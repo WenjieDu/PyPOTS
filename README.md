@@ -113,15 +113,15 @@ embedding strategy and training approach (ORT+MIT) the same as we did in
 [the SAITS paper](https://arxiv.org/pdf/2202.08516)[^1].**
 
 The task types are abbreviated as follows:
-**`IMPU`**: Imputation;
-**`FORE`**: Forecasting;
-**`CLAS`**: Classification;
+**`IMPT`**: Imputation;
+**`FCST`**: Forecasting;
+**`CLAF`**: Classification;
 **`CLUS`**: Clustering;
 **`ANOD`**: Anomaly Detection.
 In addition to the 5 tasks, PyPOTS also provides TS2Vec[^48] for time series representation learning and vectorization.
 The paper references and links are all listed at the bottom of this file.
 
-| **Type**      | **Algo**                                                                                                                                        | **IMPU** | **FORE** | **CLAS** | **CLUS** | **ANOD** | **Year - Venue**                                                                                         |
+| **Type**      | **Algo**                                                                                                                                        | **IMPT** | **FCST** | **CLAF** | **CLUS** | **ANOD** | **Year - Venue**                                                                                         |
 |:--------------|:------------------------------------------------------------------------------------------------------------------------------------------------|:--------:|:--------:|:--------:|:--------:|:--------:|:---------------------------------------------------------------------------------------------------------|
 | LLM&TSFM      | <a href="https://time-series.ai"><img src="https://pypots.com/figs/timeseriesai/logo.png" width="26px" align="center">Time-Series.AI</a>  [^36] |    ✅     |    ✅     |    ✅     |    ✅     |    ✅     | <a href="https://docs.google.com/forms/d/1Ff2ndYUFQEL3tIcwtcR8lWeopQ2vTXX6D_x8WGFKH6E">Join waitlist</a> |
 | Neural Net    | MixLinear🧑‍🔧[^52]                                                                                                                             |          |    ✅     |          |          |          | `2026 - ICLR`                                                                                            |
@@ -347,7 +347,7 @@ Here is [an incomplete list of them](https://scholar.google.com/scholar?as_ylo=2
 @article{du2023pypots,
 title = {{PyPOTS: A Python Toolkit for Data Mining on Partially-Observed Time Series}},
 author = {Wenjie Du},
-journal = {KDD 2023 MiLeTS},
+journal = {SIGKDD MiLeTS Workshop},
 year = {2023},
 }
 ```

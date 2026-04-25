@@ -244,7 +244,7 @@ pypots.imputation.scinet
    :inherited-members:
 
 pypots.imputation.nonstationary_transformer
-------------------------------
+---------------------------------------------
 
 .. automodule:: pypots.imputation.nonstationary_transformer
    :members:

@@ -10,9 +10,9 @@
 
    * - Type
      - Algorithm
-     - IMPU
-     - FORE
-     - CLAS
+     - IMPT
+     - FCST
+     - CLAF
      - CLUS
      - ANOD
      - Year - Venue

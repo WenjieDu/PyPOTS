@@ -44,6 +44,7 @@ jobs:
               run: |
                   which python
                   which pip
+                  pip install --upgrade setuptools pip
                   pip install torch==${{ matrix.pytorch-version }} -f https://download.pytorch.org/whl/cpu
                   python -c "import torch; print('PyTorch:', torch.__version__)"
 

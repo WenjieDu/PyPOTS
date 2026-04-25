@@ -18,7 +18,7 @@ from ...optim.base import Optimizer
 
 
 class SeFT(BaseNNClassifier):
-    """The PyTorch implementation of the SeFT model :cite:`horn2020SeFT`.
+    """The PyTorch implementation of the SeFT model :cite:`horn2020seft`.
 
     Parameters
     ----------
