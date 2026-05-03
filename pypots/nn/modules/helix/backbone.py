@@ -17,39 +17,10 @@ This implementation is inspired by the official one https://github.com/milaogou/
 # License: BSD-3-Clause
 
 
-import math
 import torch
 import torch.nn as nn
 
-
-class RotaryPositionalEncoding(nn.Module):
-    """Rotary Positional Encoding for temporal dimension."""
-
-    def __init__(self, d_model, max_len=5000):
-        super().__init__()
-        assert d_model % 2 == 0, "d_model must be even for rotary positional encoding"
-
-        position = torch.arange(max_len).unsqueeze(1)
-        div_term = torch.exp(torch.arange(0, d_model, 2) * (-math.log(10000.0) / d_model))
-        pe = torch.zeros(max_len, d_model)
-        pe[:, 0::2] = torch.sin(position * div_term)
-        pe[:, 1::2] = torch.cos(position * div_term)
-
-        self.register_buffer("pe", pe)
-
-    def forward(self, positions):
-        """
-        Parameters
-        ----------
-        positions : tensor
-            Position indices [batch_size, seq_len] or [seq_len]
-
-        Returns
-        -------
-        pe : tensor
-            Positional encodings
-        """
-        return self.pe[positions]
+from ..transformer.embedding import PositionalEncoding
 
 
 class TimeSeriesEmbedding2D(nn.Module):
@@ -62,7 +33,7 @@ class TimeSeriesEmbedding2D(nn.Module):
         self.feature_embed_dim = feature_embed_dim
 
         # Rotary positional encoding for temporal dimension
-        self.temporal_pe = RotaryPositionalEncoding(d_model=pe_dim)
+        self.temporal_pe = PositionalEncoding(d_hid=pe_dim)
 
         # Learnable identity embedding for feature dimension
         self.feature_id = nn.Parameter(torch.randn(n_features, feature_embed_dim))
@@ -82,15 +53,13 @@ class TimeSeriesEmbedding2D(nn.Module):
             Embedded data, embed_dim = 1 + pe_dim + feature_embed_dim + 1
         """
         B, T, F = X.shape
-        device = X.device
 
         # Data value [B, T, F, 1]
         data_val = X.unsqueeze(-1)
 
-        # Temporal positional encoding [T, pe_dim] -> [B, T, F, pe_dim]
-        pos_indices = torch.arange(T, device=device)
-        temporal_encoding = self.temporal_pe(pos_indices)  # [T, pe_dim]
-        temporal_encoding = temporal_encoding.unsqueeze(0).unsqueeze(2)  # [1, T, 1, pe_dim]
+        # Temporal positional encoding
+        temporal_encoding = self.temporal_pe(X, return_only_pos=True)  # [T, pe_dim]
+        temporal_encoding = temporal_encoding.unsqueeze(2)  # [B, T, 1, pe_dim]
         temporal_encoding = temporal_encoding.expand(B, T, F, self.pe_dim)
 
         # Feature identity embedding [F, feature_embed_dim] -> [B, T, F, feature_embed_dim]
