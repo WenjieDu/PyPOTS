@@ -5,15 +5,11 @@ Refer to the paper
 `Fengming Zhang, Wenjie Du, Huan Zhang, Ke Yu, and Shen Qu.
 HELIX: Hybrid Encoding with Learnable Identity and Cross-dimensional Synthesis for Time Series Imputation.
 ICML (spotlight), 2026.
-<>`_
+<https://openreview.net/forum?id=FN20iuPnEU>`_
 
 Notes
 -----
-HELIX employs rotary positional encoding for temporal dimension and learnable
-identity embeddings for feature dimension, combined with parallel and serial
-cross-dimensional attention mechanism.
-
-This implementation is inspired by the official one https://github.com/milaogou/HELIX
+Refer to the repo https://github.com/milaogou/HELIX for details.
 
 """
 

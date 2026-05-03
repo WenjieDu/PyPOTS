@@ -32,11 +32,11 @@ class HELIX(BaseNNImputer):
     n_features :
         The number of features in the time-series data sample.
 
-    pe_dim :
-        The dimension of the rotary positional encoding for temporal dimension.
+    d_pe :
+        The dimension of the positional encoding for temporal dimension.
         Total embedding dimension will be pe_dim + feature_embed_dim + 2 (data + temporal_pe + feature_id + mask).
 
-    feature_embed_dim :
+    d_feature_embed :
         The dimension of the learnable feature identity embedding.
 
     d_model :
@@ -102,8 +102,8 @@ class HELIX(BaseNNImputer):
         self,
         n_steps: int,
         n_features: int,
-        pe_dim: int = 16,
-        feature_embed_dim: int = 1,
+        d_pe: int = 16,
+        d_feature_embed: int = 1,
         d_model: int = 256,
         n_heads: int = 8,
         n_layers: int = 2,
@@ -143,8 +143,8 @@ class HELIX(BaseNNImputer):
 
         self.n_steps = n_steps
         self.n_features = n_features
-        self.pe_dim = pe_dim
-        self.feature_embed_dim = feature_embed_dim
+        self.d_pe = d_pe
+        self.d_feature_embed = d_feature_embed
         self.d_model = d_model
         self.n_heads = n_heads
         self.n_layers = n_layers
@@ -156,8 +156,8 @@ class HELIX(BaseNNImputer):
         self.model = _HELIX(
             n_steps=n_steps,
             n_features=n_features,
-            pe_dim=pe_dim,
-            feature_embed_dim=feature_embed_dim,
+            d_pe=d_pe,
+            d_feature_embed=d_feature_embed,
             d_model=d_model,
             n_heads=n_heads,
             n_layers=n_layers,

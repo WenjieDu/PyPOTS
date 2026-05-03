@@ -5,11 +5,11 @@ Refer to the paper
 `Fengming Zhang, Wenjie Du, Huan Zhang, Ke Yu, and Shen Qu.
 HELIX: Hybrid Encoding with Learnable Identity and Cross-dimensional Synthesis for Time Series Imputation.
 ICML (spotlight), 2026.
-<>`_
+<https://openreview.net/forum?id=FN20iuPnEU>`_
 
 Notes
 -----
-This implementation is inspired by the official one https://github.com/milaogou/HELIX
+Refer to the repo https://github.com/milaogou/HELIX for details.
 
 """
 
@@ -193,12 +193,21 @@ class BackboneHELIX(nn.Module):
     Modified to provide access to all attention weights.
     """
 
-    def __init__(self, n_features, pe_dim, feature_embed_dim, d_model, n_heads, n_layers, dropout):
+    def __init__(
+        self,
+        n_features,
+        d_pe,
+        d_feature_embed,
+        d_model,
+        n_heads,
+        n_layers,
+        dropout,
+    ):
         super().__init__()
 
         # Embedding
-        embed_dim = pe_dim + feature_embed_dim + 2  # 1(data) + pe_dim(temporal) + feature_embed_dim + 1(mask)
-        self.embedding = TimeSeriesEmbedding2D(n_features, pe_dim, feature_embed_dim)
+        embed_dim = d_pe + d_feature_embed + 2  # 1(data) + pe_dim(temporal) + feature_embed_dim + 1(mask)
+        self.embedding = TimeSeriesEmbedding2D(n_features, d_pe, d_feature_embed)
 
         # Projection
         self.projection = FeatureProjection(embed_dim, d_model)

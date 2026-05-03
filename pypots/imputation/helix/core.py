@@ -24,8 +24,8 @@ class _HELIX(ModelCore):
         self,
         n_steps: int,
         n_features: int,
-        pe_dim: int,
-        feature_embed_dim: int,
+        d_pe: int,
+        d_feature_embed: int,
         d_model: int,
         n_heads: int,
         n_layers: int,
@@ -50,8 +50,8 @@ class _HELIX(ModelCore):
 
         self.backbone = BackboneHELIX(
             n_features=n_features,
-            pe_dim=pe_dim,
-            feature_embed_dim=feature_embed_dim,
+            d_pe=d_pe,
+            d_feature_embed=d_feature_embed,
             d_model=d_model,
             n_heads=n_heads,
             n_layers=n_layers,
