@@ -318,6 +318,16 @@ PyPOTS community is open, transparent, and surely friendly. Let's work together 
    benchpots
 
 .. toctree::
+   :maxdepth: 4
+   :hidden:
+   :caption: Developer Docs of PyPOTS
+
+   dev_getting_started
+   dev_architecture
+   dev_integration_guide
+   dev_quality
+
+.. toctree::
    :maxdepth: 2
    :hidden:
    :caption: Additional Information
