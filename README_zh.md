@@ -117,6 +117,7 @@ PyPOTS当前支持多变量POTS数据的插补, 预测, 分类, 聚类以及异�
 | **Type**      | **Algo**                                                                                                                                        | **IMPT** | **FCST** | **CLAF** | **CLUS** | **ANOD** | **Year - Venue**                                                                                         |
 |:--------------|:------------------------------------------------------------------------------------------------------------------------------------------------|:--------:|:--------:|:--------:|:--------:|:--------:|:---------------------------------------------------------------------------------------------------------|
 | LLM&TSFM      | <a href="https://time-series.ai"><img src="https://pypots.com/figs/timeseriesai/logo.png" width="26px" align="center">Time-Series.AI</a>  [^36] |    ✅     |    ✅     |    ✅     |    ✅     |    ✅     | <a href="https://docs.google.com/forms/d/1Ff2ndYUFQEL3tIcwtcR8lWeopQ2vTXX6D_x8WGFKH6E">Join waitlist</a> |
+| Neural Net    | HELIX [^55]                                                                                                                                     |    ✅     |          |          |          |          | `2026 - ICML`                                                                                            |
 | Neural Net    | MixLinear🧑‍🔧[^52]                                                                                                                             |          |    ✅     |          |          |          | `2026 - ICLR`                                                                                            |
 | Neural Net    | SegRNN🧑‍🔧[^43]                                                                                                                                |    ✅     |    ✅     |          |          |    ✅     | `2026 - IoT-J`                                                                                           |
 | Neural Net    | TEFN🧑‍🔧[^39]                                                                                                                                  |    ✅     |    ✅     |    ✅     |          |    ✅     | `2025 - TPAMI`                                                                                           |
@@ -557,3 +558,6 @@ test recently ;-) Follow us, and stay tuned!
 [^54]: Genet, R., & Inzirillo, H. (2024).
 [TKAN: Temporal Kolmogorov-Arnold Networks](https://arxiv.org/abs/2405.07344).
 *arXiv 2024*.
+[^55]: Zhang, F., Du, W., Zhang, H., Yu, K., & Qu, S. (2026).
+[HELIX: Hybrid Encoding with Learnable Identity and Cross-dimensional Synthesis for Time Series Imputation](https://openreview.net/forum?id=FN20iuPnEU).
+*ICML 2026*.

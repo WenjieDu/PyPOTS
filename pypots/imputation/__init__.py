@@ -34,6 +34,7 @@ from .koopa import Koopa
 from .micn import MICN
 from .tide import TiDE
 from .grud import GRUD
+from .helix import HELIX
 from .stemgnn import StemGNN
 from .imputeformer import ImputeFormer
 from .timemixer import TimeMixer
@@ -85,6 +86,7 @@ __all__ = [
     "MICN",
     "TiDE",
     "GRUD",
+    "HELIX",
     "StemGNN",
     "ImputeFormer",
     "TimeMixer",
