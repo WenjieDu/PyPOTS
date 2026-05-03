@@ -10,6 +10,15 @@ pypots.imputation.saits
    :show-inheritance:
    :inherited-members:
 
+pypots.imputation.helix
+------------------------------
+
+.. automodule:: pypots.imputation.helix
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+
 pypots.imputation.transformer
 ------------------------------------
 
