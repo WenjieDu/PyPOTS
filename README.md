@@ -124,6 +124,7 @@ The paper references and links are all listed at the bottom of this file.
 | **Type**      | **Algo**                                                                                                                                        | **IMPT** | **FCST** | **CLAF** | **CLUS** | **ANOD** | **Year - Venue**                                                                                         |
 |:--------------|:------------------------------------------------------------------------------------------------------------------------------------------------|:--------:|:--------:|:--------:|:--------:|:--------:|:---------------------------------------------------------------------------------------------------------|
 | LLM&TSFM      | <a href="https://time-series.ai"><img src="https://pypots.com/figs/timeseriesai/logo.png" width="26px" align="center">Time-Series.AI</a>  [^36] |    ✅     |    ✅     |    ✅     |    ✅     |    ✅     | <a href="https://docs.google.com/forms/d/1Ff2ndYUFQEL3tIcwtcR8lWeopQ2vTXX6D_x8WGFKH6E">Join waitlist</a> |
+| Neural Net    | HELIX [^55]                                                                                                                                     |    ✅     |          |          |          |          | `2026 - ICML`                                                                                            |
 | Neural Net    | MixLinear🧑‍🔧[^52]                                                                                                                             |          |    ✅     |          |          |          | `2026 - ICLR`                                                                                            |
 | Neural Net    | SegRNN🧑‍🔧[^43]                                                                                                                                |    ✅     |    ✅     |          |          |    ✅     | `2026 - IoT-J`                                                                                           |
 | Neural Net    | TEFN🧑‍🔧[^39]                                                                                                                                  |    ✅     |    ✅     |    ✅     |          |    ✅     | `2025 - TPAMI`                                                                                           |
@@ -576,3 +577,6 @@ Join our waitlist right now to receive the latest news and be the first to try i
 [^54]: Genet, R., & Inzirillo, H. (2024).
 [TKAN: Temporal Kolmogorov-Arnold Networks](https://arxiv.org/abs/2405.07344).
 *arXiv 2024*.
+[^55]: Zhang, F., Du, W., Zhang, H., Yu, K., & Qu, S. (2026).
+[HELIX: Hybrid Encoding with Learnable Identity and Cross-dimensional Synthesis for Time Series Imputation](https://openreview.net/forum?id=FN20iuPnEU).
+*ICML 2026*.

@@ -25,6 +25,14 @@
      - ✅
      - `Join Waitlist <https://docs.google.com/forms/d/1Ff2ndYUFQEL3tIcwtcR8lWeopQ2vTXX6D_x8WGFKH6E>`_
    * - Neural Net
+     - HELIX :cite:`zhang2026helix`
+     - ✅
+     -
+     -
+     -
+     -
+     - ``2026 - ICML``
+   * - Neural Net
      - MixLinear🧑‍🔧 :cite:`ma2026mixlinear`
      -
      - ✅

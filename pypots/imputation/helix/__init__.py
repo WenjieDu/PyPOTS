@@ -2,20 +2,18 @@
 The package of the partially-observed time-series imputation model HELIX.
 
 Refer to the paper
-`MiBah Cat.
-HELIX: Hybrid Encoding with Learnable Identity and Cross-dimensional Synthesis 
-for Time Series Imputation.
-<paper_url_placeholder>`_
+`Fengming Zhang, Wenjie Du, Huan Zhang, Ke Yu, and Shen Qu.
+HELIX: Hybrid Encoding with Learnable Identity and Cross-dimensional Synthesis for Time Series Imputation.
+ICML (spotlight), 2026.
+<https://openreview.net/forum?id=FN20iuPnEU>`_
 
 Notes
 -----
-HELIX employs rotary positional encoding for temporal dimension and learnable 
-identity embeddings for feature dimension, combined with parallel and serial 
-cross-dimensional attention mechanism.
+Refer to the repo https://github.com/milaogou/HELIX for details.
 
 """
 
-# Created by MiBah Cat <milaogou@gmail.com>
+# Created by Fengming Zhang <milaogou@gmail.com>
 # License: BSD-3-Clause
 
 from .model import HELIX
