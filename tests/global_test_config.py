@@ -28,7 +28,9 @@ N_SAMPLES_PER_CLASS = 100
 ANOMALY_RATE = 0.05
 MISSING_RATE = 0.1
 # tensorboard and model files saving directory
-RESULT_SAVING_DIR = "testing_results"
+TESTS_DIR_PATH = os.path.dirname(__file__)
+PRJ_ROOT_PATH = os.path.abspath(os.path.join(TESTS_DIR_PATH, '..'))
+RESULT_SAVING_DIR = os.path.join(PRJ_ROOT_PATH, 'testing_results')
 MODEL_SAVING_DIR = f"{RESULT_SAVING_DIR}/models"
 DATA_SAVING_DIR = f"{RESULT_SAVING_DIR}/datasets"
 RESULT_SAVING_DIR_FOR_IMPUTATION = os.path.join(MODEL_SAVING_DIR, "imputation")

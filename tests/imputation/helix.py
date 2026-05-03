@@ -5,10 +5,12 @@ Test cases for HELIX imputation model.
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
+import os
+import sys
 
-import os.path
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
+
 import unittest
-
 import numpy as np
 import pytest
 
