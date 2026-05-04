@@ -154,10 +154,10 @@ class DevCommand(BaseCommand):
                 if self._show_coverage and os.path.exists(".coverage"):
                     self.execute_command("coverage report -m")
             elif self._lint_code:
-                logger.info("Reformatting with Black...")
-                self.execute_command("black .")
-                logger.info("Linting with Flake8...")
-                self.execute_command("flake8 .")
+                logger.info("Reformatting with Ruff...")
+                self.execute_command("ruff format .")
+                logger.info("Linting with Ruff...")
+                self.execute_command("ruff check .")
         except ImportError:
             raise ImportError(IMPORT_ERROR_MESSAGE)
         except Exception as e:

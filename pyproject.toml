@@ -7,7 +7,7 @@ description = "A Python Toolbox for Machine Learning on Partially-Observed Time 
 authors = [{ name = "Wenjie Du", email = "wenjay.du@gmail.com" }]
 dynamic = ["version", "readme", "dependencies", "optional-dependencies"]
 license = { file = "LICENSE" }
-requires-python = ">=3.8"
+requires-python = ">=3.9"
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
@@ -17,10 +17,11 @@ classifiers = [
     "License :: OSI Approved :: BSD License",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
     "Topic :: Software Development :: Libraries :: Application Frameworks",
 ]
@@ -93,4 +94,23 @@ extend-ignore = """
 # ignore some errors that are not important in template files
 exclude = [
     "*/template"
+]
+
+[tool.ruff]
+line-length = 120
+target-version = "py313"
+exclude = [
+    "*/template",
+]
+extend-exclude = [
+    "*.rst",
+    "*.md",
+    "*.yml",
+    "*.yaml",
+]
+
+[tool.ruff.lint]
+ignore = [
+    "E203",
+    "E231",
 ]

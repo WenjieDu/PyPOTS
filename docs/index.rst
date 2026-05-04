@@ -66,9 +66,9 @@ Welcome to PyPOTS docs!
    :alt: Ask DeepWiki
    :target: https://deepwiki.com/WenjieDu/PyPOTS
 
-.. image:: https://img.shields.io/badge/Code_Style-black-000000
+.. image:: https://img.shields.io/badge/Code_Style-ruff-D7FF64
    :alt: Code Style
-   :target: https://github.com/psf/black
+   :target: https://github.com/astral-sh/ruff
 
 .. image:: https://pypots.com/figs/downloads_badges/conda_pypots_downloads.svg
    :alt: Conda downloads

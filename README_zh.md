@@ -51,8 +51,8 @@
     <a href="https://deepwiki.com/WenjieDu/PyPOTS">
         <img alt="Ask DeepWiki" src="https://deepwiki.com/badge.svg">
     </a>
-    <a href="https://github.com/psf/black">
-        <img alt="Code Style" src="https://img.shields.io/badge/Code_Style-black-000000">
+    <a href="https://github.com/astral-sh/ruff">
+        <img alt="Code Style" src="https://img.shields.io/badge/Code_Style-Ruff-D7FF64?logo=ruff">
     </a>
     <a href="https://anaconda.org/conda-forge/pypots">
         <img alt="Conda downloads" src="https://pypots.com/figs/downloads_badges/conda_pypots_downloads.svg">
@@ -258,7 +258,7 @@ conda update  conda-forge::pypots  # 更新为最新版本
 # via docker
 docker run -it --name pypots wenjiedu/pypots  # docker会自动拉取我们构建好的镜像并为你运行一个实例
 # 运行结束后, 你可以在该容器中运行python即可使用我们为运行pypots配置好的环境
-# 如果你想退出该容器, 先按ctrl-P然后按ctrl-Q即可退出 
+# 如果你想退出该容器, 先按ctrl-P然后按ctrl-Q即可退出
 # 运行命令`docker attach pypots`可以重新进入该容器
 ```
 
