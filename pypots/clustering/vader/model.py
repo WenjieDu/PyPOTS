@@ -6,8 +6,6 @@ The implementation of VaDER for the partially-observed time-series clustering ta
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-
-import os
 from copy import deepcopy
 from typing import Union, Optional
 
@@ -324,6 +322,7 @@ class VaDER(BaseNNClusterer):
                     self.optuna_trial.report(mean_loss, epoch)
                     if self.optuna_trial.should_prune():
                         import optuna
+
                         raise optuna.TrialPruned()
 
                 if self.patience == 0:

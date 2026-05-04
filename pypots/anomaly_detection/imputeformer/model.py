@@ -6,7 +6,6 @@ The implementation of ImputeFormer for the partially-observed time-series anomal
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-
 from typing import Union, Optional
 
 import torch

@@ -39,10 +39,7 @@ def _detect_columns(df):
             break
 
     reserved = _RESERVED_COLUMNS | ({label_col} if label_col else set())
-    feature_cols = [
-        c for c in columns
-        if c not in reserved and np.issubdtype(df[c].dtype, np.number)
-    ]
+    feature_cols = [c for c in columns if c not in reserved and np.issubdtype(df[c].dtype, np.number)]
 
     return sample_id_col, label_col, feature_cols
 
@@ -85,7 +82,7 @@ def _csv_to_3d_array(df, sample_id_col, feature_cols):
 
     X = np.full((n_samples, max_steps, n_features), np.nan, dtype=np.float64)
     for i, s in enumerate(samples):
-        X[i, :s.shape[0], :] = s
+        X[i, : s.shape[0], :] = s
 
     return X, sample_ids
 
@@ -108,6 +105,7 @@ def _extract_labels(df, sample_id_col, label_col):
     # encode string labels as integers if needed
     if y.dtype == object or y.dtype.kind in ("U", "S"):
         from sklearn.preprocessing import LabelEncoder
+
         le = LabelEncoder()
         y = le.fit_transform(y)
 
@@ -125,10 +123,7 @@ def _prepare_single_csv(input_path, output_path, task, set_type, missing_rate, s
     sample_id_col, label_col, feature_cols = _detect_columns(df)
 
     if not feature_cols:
-        raise click.BadParameter(
-            f"No numeric feature columns found in {input_path}. "
-            f"Columns found: {list(df.columns)}"
-        )
+        raise click.BadParameter(f"No numeric feature columns found in {input_path}. Columns found: {list(df.columns)}")
 
     logger.info(
         f"Detected columns — sample_id: {sample_id_col}, label: {label_col}, "
@@ -193,20 +188,26 @@ def _prepare_single_csv(input_path, output_path, task, set_type, missing_rate, s
     return summary
 
 
-@click.group(name="data", help="CLI tools for data management operations (profile, prepare, reconstruct, convert, split, describe, load, list)")
+@click.group(
+    name="data",
+    help="CLI tools for data management operations (profile, prepare, reconstruct, convert, split, describe, load, list)",
+)
 def data():
     """Data management operations: profile, prepare, reconstruct, convert, split, describe, load, list."""
     pass
 
 
 @data.command(name="profile", help="Analyze a CSV dataset and output a DataProfile JSON for agent consumption")
-@click.option("--input", "input_path", required=True, type=click.Path(exists=True),
-              help="Input CSV file path")
-@click.option("--task", default=None,
-              type=click.Choice(["imputation", "classification", "forecasting", "clustering", "anomaly_detection"]),
-              help="Task type hint (auto-detected if omitted)")
-@click.option("--json", "json_output", is_flag=True, default=False,
-              help="Output raw JSON (default: human-readable summary)")
+@click.option("--input", "input_path", required=True, type=click.Path(exists=True), help="Input CSV file path")
+@click.option(
+    "--task",
+    default=None,
+    type=click.Choice(["imputation", "classification", "forecasting", "clustering", "anomaly_detection"]),
+    help="Task type hint (auto-detected if omitted)",
+)
+@click.option(
+    "--json", "json_output", is_flag=True, default=False, help="Output raw JSON (default: human-readable summary)"
+)
 def data_profile(input_path, task, json_output):
     """Analyze a CSV dataset and generate a DataProfile.
 
@@ -222,8 +223,7 @@ def data_profile(input_path, task, json_output):
         from ai4ts.data_protocols.profile import analyze_dataset
     except ImportError:
         raise click.ClickException(
-            "The 'ai4ts' package is required for data profiling. "
-            "Install it with: pip install ai4ts"
+            "The 'ai4ts' package is required for data profiling. Install it with: pip install ai4ts"
         )
 
     logger.info(f"Profiling dataset: {input_path}")
@@ -244,16 +244,18 @@ def data_profile(input_path, task, json_output):
         print(f"  Features:         {stats['n_features']}")
         print(f"  Total rows:       {stats['total_rows']}")
         print(f"  Missing rate:     {stats['missing_rate']:.2%}")
-        print(f"  Sample lengths:   min={stats['min_sample_length']}, "
-              f"max={stats['max_sample_length']}, "
-              f"avg={stats['avg_sample_length']:.1f}")
+        print(
+            f"  Sample lengths:   min={stats['min_sample_length']}, "
+            f"max={stats['max_sample_length']}, "
+            f"avg={stats['avg_sample_length']:.1f}"
+        )
         print(f"  Variable length:  {stats['has_variable_length']}")
-        print(f"\n  Schema:")
+        print("\n  Schema:")
         print(f"    SAMPLE_ID:      {schema['sample_id_col'] or '(not present)'}")
         print(f"    TIMESTAMP:      {schema['timestamp_col'] or '(not present)'}")
         print(f"    Features:       {schema['feature_cols']}")
         print(f"    Label column:   {schema['label_col'] or '(none)'}")
-        if schema['n_classes']:
+        if schema["n_classes"]:
             print(f"    Classes:        {schema['n_classes']}")
         print(f"\n  Task type:        {d['task_type']}")
 
@@ -261,44 +263,72 @@ def data_profile(input_path, task, json_output):
             print(f"\n  ⚠ WARNING: {ts_info['warning']}")
 
         # Suggest appropriate strategy
-        if stats['has_variable_length'] or stats['max_sample_length'] > 200:
-            if d['task_type'] == 'classification':
+        if stats["has_variable_length"] or stats["max_sample_length"] > 200:
+            if d["task_type"] == "classification":
                 print(f"\n  → Strategy: pad_only (pad to max_len={stats['max_sample_length']})")
             else:
-                print(f"\n  → Strategy: sliding_window (non-overlapping, window_size≤200)")
+                print("\n  → Strategy: sliding_window (non-overlapping, window_size≤200)")
         else:
-            print(f"\n  → Strategy: direct (uniform length ≤ 200)")
+            print("\n  → Strategy: direct (uniform length ≤ 200)")
 
         print(f"\n{'=' * 65}")
-        print(f"Next: pypots-cli data prepare --input {input_path} --output data.h5 --task {d['task_type'] or 'imputation'}")
+        print(
+            f"Next: pypots-cli data prepare --input {input_path} --output data.h5 --task {d['task_type'] or 'imputation'}"
+        )
         print(f"{'=' * 65}\n")
 
 
 @data.command(name="prepare", help="Convert CSV data to PyPOTS H5 format with proper data structure for model training")
-@click.option("--input", "input_path", default=None, type=click.Path(exists=True),
-              help="Single input CSV file path (use with --output and --set_type)")
-@click.option("--output", "output_path", default=None, type=str,
-              help="Single output H5 file path (use with --input)")
-@click.option("--train", "train_path", default=None, type=click.Path(exists=True),
-              help="Training CSV file path (batch mode)")
-@click.option("--val", "val_path", default=None, type=click.Path(exists=True),
-              help="Validation CSV file path (batch mode)")
-@click.option("--test", "test_path", default=None, type=click.Path(exists=True),
-              help="Test CSV file path (batch mode)")
-@click.option("--output_dir", default=None, type=str,
-              help="Output directory for batch mode (saves train.h5, val.h5, test.h5)")
-@click.option("--task", required=True,
-              type=click.Choice(["imputation", "classification", "forecasting", "clustering", "anomaly_detection"]),
-              help="Target task type (determines which keys to generate in H5)")
-@click.option("--set_type", default=None, type=click.Choice(["train", "val", "test"]),
-              help="Dataset split type (single-file mode). If not specified, auto-detected from filename.")
-@click.option("--missing_rate", default=0.1, type=float,
-              help="Artificial missing rate for val/test sets (default: 0.1)")
-@click.option("--window_size", default=None, type=int,
-              help="Fixed window size for sliding window (auto-determined if omitted)")
+@click.option(
+    "--input",
+    "input_path",
+    default=None,
+    type=click.Path(exists=True),
+    help="Single input CSV file path (use with --output and --set_type)",
+)
+@click.option("--output", "output_path", default=None, type=str, help="Single output H5 file path (use with --input)")
+@click.option(
+    "--train", "train_path", default=None, type=click.Path(exists=True), help="Training CSV file path (batch mode)"
+)
+@click.option(
+    "--val", "val_path", default=None, type=click.Path(exists=True), help="Validation CSV file path (batch mode)"
+)
+@click.option("--test", "test_path", default=None, type=click.Path(exists=True), help="Test CSV file path (batch mode)")
+@click.option(
+    "--output_dir", default=None, type=str, help="Output directory for batch mode (saves train.h5, val.h5, test.h5)"
+)
+@click.option(
+    "--task",
+    required=True,
+    type=click.Choice(["imputation", "classification", "forecasting", "clustering", "anomaly_detection"]),
+    help="Target task type (determines which keys to generate in H5)",
+)
+@click.option(
+    "--set_type",
+    default=None,
+    type=click.Choice(["train", "val", "test"]),
+    help="Dataset split type (single-file mode). If not specified, auto-detected from filename.",
+)
+@click.option(
+    "--missing_rate", default=0.1, type=float, help="Artificial missing rate for val/test sets (default: 0.1)"
+)
+@click.option(
+    "--window_size", default=None, type=int, help="Fixed window size for sliding window (auto-determined if omitted)"
+)
 @click.option("--seed", default=2024, type=int, help="Random seed for reproducibility (default: 2024)")
-def data_prepare(input_path, output_path, train_path, val_path, test_path,
-                 output_dir, task, set_type, missing_rate, window_size, seed):
+def data_prepare(
+    input_path,
+    output_path,
+    train_path,
+    val_path,
+    test_path,
+    output_dir,
+    task,
+    set_type,
+    missing_rate,
+    window_size,
+    seed,
+):
     """Prepare CSV data for PyPOTS model training.
 
     Converts CSV files following the ai4ts data protocol (with SAMPLE_ID, features,
@@ -321,14 +351,10 @@ def data_prepare(input_path, output_path, train_path, val_path, test_path,
     single_mode = input_path is not None
 
     if not batch_mode and not single_mode:
-        raise click.UsageError(
-            "Either provide --input (single-file mode) or --train/--val/--test (batch mode)."
-        )
+        raise click.UsageError("Either provide --input (single-file mode) or --train/--val/--test (batch mode).")
 
     if batch_mode and single_mode:
-        raise click.UsageError(
-            "Cannot mix single-file mode (--input) with batch mode (--train/--val/--test)."
-        )
+        raise click.UsageError("Cannot mix single-file mode (--input) with batch mode (--train/--val/--test).")
 
     if batch_mode and output_dir is None:
         raise click.UsageError("--output_dir is required for batch mode.")
@@ -354,17 +380,15 @@ def data_prepare(input_path, output_path, train_path, val_path, test_path,
             out_h5 = os.path.join(output_dir, f"{st}.h5")
             logger.info(f"Preparing {st} set: {fpath} -> {out_h5}")
             if use_pipeline:
-                summary = _prepare_with_pipeline(
-                    fpath, out_h5, task, st, missing_rate, window_size, seed, logger
-                )
+                summary = _prepare_with_pipeline(fpath, out_h5, task, st, missing_rate, window_size, seed, logger)
             else:
-                summary = _prepare_single_csv(
-                    fpath, out_h5, task, st, missing_rate, seed, logger
-                )
+                summary = _prepare_single_csv(fpath, out_h5, task, st, missing_rate, seed, logger)
             all_summaries.append(summary)
-            logger.info(f"  {st}: {summary['n_samples']} samples → "
-                        f"{summary.get('n_windows', summary['n_samples'])} windows, "
-                        f"{summary['n_steps']} steps, {summary['n_features']} features")
+            logger.info(
+                f"  {st}: {summary['n_samples']} samples → "
+                f"{summary.get('n_windows', summary['n_samples'])} windows, "
+                f"{summary['n_steps']} steps, {summary['n_features']} features"
+            )
 
     else:
         # single-file mode — auto-detect set_type from filename if not specified
@@ -389,9 +413,7 @@ def data_prepare(input_path, output_path, train_path, val_path, test_path,
                 input_path, output_path, task, set_type, missing_rate, window_size, seed, logger
             )
         else:
-            summary = _prepare_single_csv(
-                input_path, output_path, task, set_type, missing_rate, seed, logger
-            )
+            summary = _prepare_single_csv(input_path, output_path, task, set_type, missing_rate, seed, logger)
         all_summaries.append(summary)
 
     # print summary
@@ -409,7 +431,7 @@ def data_prepare(input_path, output_path, train_path, val_path, test_path,
         print(f"    Strategy:  {s.get('strategy', 'direct')}")
         print(f"    Natural missing rate:  {s['natural_missing_rate']:.2%}")
         print(f"    Actual missing rate:   {s['actual_missing_rate']:.2%}")
-        if s['has_labels']:
+        if s["has_labels"]:
             print(f"    Labels:    yes ({s['n_classes']} classes)")
         print(f"    H5 keys:   {s['keys_saved']}")
         if s.get("registry_path"):
@@ -427,7 +449,7 @@ def data_prepare(input_path, output_path, train_path, val_path, test_path,
         desc_target = output_path
     print(f"  1. Inspect: pypots-cli data describe --input {desc_target}")
     print(f"  2. Recommend: pypots-cli recommend --task {task} --data {desc_target}")
-    print(f"  3. Train:   pypots-cli train --config <config.yaml>")
+    print("  3. Train:   pypots-cli train --config <config.yaml>")
     print(f"{'=' * 65}\n")
 
 
@@ -435,13 +457,13 @@ def _check_ai4ts_pipeline() -> bool:
     """Check if the ai4ts pipeline module is available."""
     try:
         from ai4ts.data_protocols.pipeline import prepare_for_pypots  # noqa: F401
+
         return True
     except ImportError:
         return False
 
 
-def _prepare_with_pipeline(input_path, output_path, task, set_type, missing_rate,
-                           window_size, seed, logger):
+def _prepare_with_pipeline(input_path, output_path, task, set_type, missing_rate, window_size, seed, logger):
     """Prepare using ai4ts pipeline with windowing and registry support."""
     import numpy as np
 
@@ -500,14 +522,21 @@ def _prepare_with_pipeline(input_path, output_path, task, set_type, missing_rate
 
 
 @data.command(name="reconstruct", help="Reconstruct original-shape data from model predictions using a window registry")
-@click.option("--predictions", required=True, type=click.Path(exists=True),
-              help="Path to predictions H5 file (must have 'X' key with 3D array)")
-@click.option("--registry", "registry_path", required=True, type=click.Path(exists=True),
-              help="Path to window registry JSON file (generated by 'data prepare')")
-@click.option("--output", "output_path", required=True, type=str,
-              help="Output CSV file path for reconstructed data")
-@click.option("--key", default="X", type=str,
-              help="Key in the H5 file containing the predictions (default: X)")
+@click.option(
+    "--predictions",
+    required=True,
+    type=click.Path(exists=True),
+    help="Path to predictions H5 file (must have 'X' key with 3D array)",
+)
+@click.option(
+    "--registry",
+    "registry_path",
+    required=True,
+    type=click.Path(exists=True),
+    help="Path to window registry JSON file (generated by 'data prepare')",
+)
+@click.option("--output", "output_path", required=True, type=str, help="Output CSV file path for reconstructed data")
+@click.option("--key", default="X", type=str, help="Key in the H5 file containing the predictions (default: X)")
 def data_reconstruct(predictions, registry_path, output_path, key):
     """Reconstruct original-shape time series from model predictions.
 
@@ -519,7 +548,6 @@ def data_reconstruct(predictions, registry_path, output_path, key):
     4. Reassembles windows belonging to the same original sample
     5. Outputs a CSV file with SAMPLE_ID and reconstructed features
     """
-    import numpy as np
     import pandas as pd
 
     from ..utils.logging import logger
@@ -529,8 +557,7 @@ def data_reconstruct(predictions, registry_path, output_path, key):
         from ai4ts.data_protocols.pipeline import reconstruct_from_predictions
     except ImportError:
         raise click.ClickException(
-            "The 'ai4ts' package is required for data reconstruction. "
-            "Install it with: pip install ai4ts"
+            "The 'ai4ts' package is required for data reconstruction. Install it with: pip install ai4ts"
         )
 
     from ..data.saving.h5 import load_dict_from_h5
@@ -538,9 +565,7 @@ def data_reconstruct(predictions, registry_path, output_path, key):
     logger.info(f"Loading predictions from: {predictions}")
     loaded = load_dict_from_h5(predictions)
     if key not in loaded:
-        raise click.ClickException(
-            f"Key '{key}' not found in {predictions}. Available keys: {list(loaded.keys())}"
-        )
+        raise click.ClickException(f"Key '{key}' not found in {predictions}. Available keys: {list(loaded.keys())}")
     pred_array = loaded[key]
     logger.info(f"Predictions shape: {pred_array.shape}")
 
@@ -654,8 +679,7 @@ def data_split(input_path, output_dir, train_ratio, val_ratio, test_ratio, seed)
         )
 
     logger.info(
-        f"Splitting {input_path} with ratios "
-        f"train={train_ratio}, val={val_ratio}, test={test_ratio}, seed={seed}"
+        f"Splitting {input_path} with ratios train={train_ratio}, val={val_ratio}, test={test_ratio}, seed={seed}"
     )
 
     loaded = load_dict_from_h5(input_path)
@@ -676,8 +700,8 @@ def data_split(input_path, output_dir, train_ratio, val_ratio, test_ratio, seed)
     n_val = int(n_samples * val_ratio)
 
     train_indices = indices[:n_train]
-    val_indices = indices[n_train:n_train + n_val]
-    test_indices = indices[n_train + n_val:]
+    val_indices = indices[n_train : n_train + n_val]
+    test_indices = indices[n_train + n_val :]
 
     logger.info(f"Split sizes: train={len(train_indices)}, val={len(val_indices)}, test={len(test_indices)}")
 
@@ -705,10 +729,11 @@ def data_split(input_path, output_dir, train_ratio, val_ratio, test_ratio, seed)
 
 @data.command(name="describe", help="Inspect and describe dataset statistics (supports both H5 and CSV files)")
 @click.option("--input", "input_path", required=True, type=click.Path(exists=True), help="Input H5 or CSV file path")
-@click.option("--json", "json_output", is_flag=True, default=False, help="Output in JSON format (for machine consumption)")
+@click.option(
+    "--json", "json_output", is_flag=True, default=False, help="Output in JSON format (for machine consumption)"
+)
 def data_describe(input_path, json_output):
     """Inspect and describe dataset statistics. Supports both H5 and CSV files."""
-    import numpy as np
 
     from ..utils.logging import logger
 
@@ -719,16 +744,13 @@ def data_describe(input_path, json_output):
     elif input_ext in (".h5", ".hdf5"):
         _describe_h5(input_path, json_output, logger)
     else:
-        raise click.BadParameter(
-            f"Unsupported file format '{input_ext}'. Supported: .csv, .h5, .hdf5"
-        )
+        raise click.BadParameter(f"Unsupported file format '{input_ext}'. Supported: .csv, .h5, .hdf5")
 
 
 def _describe_csv(input_path, json_output, logger):
     """Describe a CSV file following the ai4ts data protocol."""
     import json as json_mod
 
-    import numpy as np
     import pandas as pd
 
     logger.info(f"Describing CSV dataset: {input_path}")
@@ -806,10 +828,10 @@ def _describe_csv(input_path, json_output, logger):
         if label_col:
             print(f"  Labels:         yes — column '{label_col}' ({n_classes} classes)")
         else:
-            print(f"  Labels:         no")
+            print("  Labels:         no")
 
         print(f"\n  Feature columns: {feature_cols}")
-        print(f"\n  Per-feature missing rates:")
+        print("\n  Per-feature missing rates:")
         for col, rate in per_feature_missing.items():
             bar = "█" * int(rate * 30) + "░" * (30 - int(rate * 30))
             print(f"    {col:20s} {bar} {rate:.2%}")
@@ -923,8 +945,7 @@ def data_list(task):
         import tsdb
     except ImportError:
         raise ImportError(
-            "The 'tsdb' package is required for listing benchmark datasets. "
-            "Install it with: pip install tsdb"
+            "The 'tsdb' package is required for listing benchmark datasets. Install it with: pip install tsdb"
         )
 
     available = tsdb.list()
@@ -945,8 +966,12 @@ def data_list(task):
 @click.option("--subset", default=None, type=str, help="Dataset subset to load (e.g., set-a for physionet_2012)")
 @click.option("--rate", default=0.1, type=float, help="Artificially missing rate for benchmark dataset (default: 0.1)")
 @click.option("--n_steps", default=None, type=int, help="Number of time steps for benchmark dataset")
-@click.option("--pattern", default="point", type=click.Choice(["point", "subseq", "block"]),
-              help="Missing pattern for benchmark dataset (default: point)")
+@click.option(
+    "--pattern",
+    default="point",
+    type=click.Choice(["point", "subseq", "block"]),
+    help="Missing pattern for benchmark dataset (default: point)",
+)
 def data_load(dataset, output_dir, subset, rate, n_steps, pattern):
     """Load a benchmark dataset via benchpots and save as train/val/test H5 files."""
     import numpy as np
@@ -957,8 +982,7 @@ def data_load(dataset, output_dir, subset, rate, n_steps, pattern):
         import benchpots.datasets as bpd
     except ImportError:
         raise ImportError(
-            "The 'benchpots' package is required for loading benchmark datasets. "
-            "Install it with: pip install benchpots"
+            "The 'benchpots' package is required for loading benchmark datasets. Install it with: pip install benchpots"
         )
 
     dataset_name = dataset
@@ -1068,5 +1092,5 @@ def data_load(dataset, output_dir, subset, rate, n_steps, pattern):
     if test_data and "X" in test_data:
         print(f"  Test samples: {test_data['X'].shape[0]}")
     print(f"\n  Saved to: {output_dir}/")
-    print(f"    train.h5  val.h5  test.h5")
+    print("    train.h5  val.h5  test.h5")
     print(f"{'=' * 60}\n")

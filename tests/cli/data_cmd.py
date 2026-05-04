@@ -362,8 +362,7 @@ class TestPyPOTSCLIData(unittest.TestCase):
         runner = CliRunner()
         result = runner.invoke(
             data,
-            ["prepare", "--input", csv_path, "--output", h5_path,
-             "--task", "imputation", "--set_type", "train"],
+            ["prepare", "--input", csv_path, "--output", h5_path, "--task", "imputation", "--set_type", "train"],
             catch_exceptions=False,
         )
         assert result.exit_code == 0, result.output
@@ -395,8 +394,7 @@ class TestPyPOTSCLIData(unittest.TestCase):
         runner = CliRunner()
         result = runner.invoke(
             data,
-            ["prepare", "--input", csv_path, "--output", h5_path,
-             "--task", "imputation", "--set_type", "train"],
+            ["prepare", "--input", csv_path, "--output", h5_path, "--task", "imputation", "--set_type", "train"],
             catch_exceptions=False,
         )
         assert result.exit_code == 0, result.output
@@ -412,8 +410,7 @@ class TestPyPOTSCLIData(unittest.TestCase):
         out_csv = os.path.join(self.temp_dir, "reconstructed.csv")
         result = runner.invoke(
             data,
-            ["reconstruct", "--predictions", pred_path,
-             "--registry", reg_path, "--output", out_csv],
+            ["reconstruct", "--predictions", pred_path, "--registry", reg_path, "--output", out_csv],
             catch_exceptions=False,
         )
         assert result.exit_code == 0, result.output

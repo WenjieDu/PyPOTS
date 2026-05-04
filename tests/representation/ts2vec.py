@@ -5,7 +5,6 @@ Test cases for TS2Vec representation model.
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-
 import os.path
 import unittest
 
@@ -98,9 +97,9 @@ class TestTS2Vec(unittest.TestCase):
     def test_4_lazy_loading(self):
         self.ts2vec.fit(GENERAL_H5_TRAIN_SET_PATH, GENERAL_H5_VAL_SET_PATH)
         representor_results = self.ts2vec.predict(GENERAL_H5_TEST_SET_PATH)
-        assert not np.isnan(
-            representor_results["representation"]
-        ).any(), "Output still has missing values after running impute()."
+        assert not np.isnan(representor_results["representation"]).any(), (
+            "Output still has missing values after running impute()."
+        )
 
 
 if __name__ == "__main__":

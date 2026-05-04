@@ -241,13 +241,14 @@ def _checkup(config_path: str):
 
 
 @click.command(name="benchmark", help="Benchmark multiple models on the same dataset and compare metrics")
-@click.option("--config", required=True, type=click.Path(exists=True), help="Path to YAML/JSON benchmark configuration file")
+@click.option(
+    "--config", required=True, type=click.Path(exists=True), help="Path to YAML/JSON benchmark configuration file"
+)
 @click.option("--device", default=None, type=str, help="Override device for all models (e.g. cpu, cuda:0)")
 @click.option("--seed", type=int, default=None, help="Override random seed for reproducibility")
 @click.option("--output", default=None, type=str, help="Override output file path for benchmark results JSON")
 def benchmark(config, device, seed, output):
     """Execute the benchmark: train each model, predict, compute metrics, and report results."""
-    import numpy as np
 
     from ..utils.logging import logger
     from ..utils.random import set_random_seed
@@ -295,16 +296,12 @@ def benchmark(config, device, seed, output):
         # Filter kwargs to only those accepted by the model's __init__
         sig = inspect.signature(model_class.__init__)
         accepted_params = set(sig.parameters.keys()) - {"self"}
-        has_var_keyword = any(
-            p.kind == inspect.Parameter.VAR_KEYWORD for p in sig.parameters.values()
-        )
+        has_var_keyword = any(p.kind == inspect.Parameter.VAR_KEYWORD for p in sig.parameters.values())
         if not has_var_keyword:
             filtered_kwargs = {k: v for k, v in kwargs.items() if k in accepted_params}
             skipped = set(kwargs.keys()) - set(filtered_kwargs.keys())
             if skipped:
-                logger.warning(
-                    f"Skipping parameters not accepted by {model_name}: {skipped}"
-                )
+                logger.warning(f"Skipping parameters not accepted by {model_name}: {skipped}")
             kwargs = filtered_kwargs
 
         logger.info(f"Training model {model_name}...")

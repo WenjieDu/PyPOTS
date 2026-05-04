@@ -1,6 +1,4 @@
-"""
-
-"""
+""" """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
@@ -124,9 +122,9 @@ class ReparamLargeKernelConv(nn.Module):
                 bias=False,
             )
             if small_kernel is not None:
-                assert (
-                    small_kernel <= kernel_size
-                ), "The kernel size for re-param cannot be larger than the large kernel!"
+                assert small_kernel <= kernel_size, (
+                    "The kernel size for re-param cannot be larger than the large kernel!"
+                )
                 self.small_conv = conv_bn(
                     in_channels=in_channels,
                     out_channels=out_channels,

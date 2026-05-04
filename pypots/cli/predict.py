@@ -16,10 +16,25 @@ from .utils import SUPPORTED_TASKS, get_model_class, load_config
 @click.command(name="predict", help="Run predictions with a trained PyPOTS model")
 @click.option("--model_path", required=True, type=click.Path(exists=True), help="Path to the saved .pypots model file")
 @click.option("--test_set", required=True, type=click.Path(exists=True), help="Path to the test data (H5 file)")
-@click.option("--config", default=None, type=click.Path(exists=True), help="Path to the config file used for training (recommended, needed for correct model architecture)")
-@click.option("--task", type=click.Choice(SUPPORTED_TASKS), default=None, help="Task type override (read from config if not given)")
+@click.option(
+    "--config",
+    default=None,
+    type=click.Path(exists=True),
+    help="Path to the config file used for training (recommended, needed for correct model architecture)",
+)
+@click.option(
+    "--task",
+    type=click.Choice(SUPPORTED_TASKS),
+    default=None,
+    help="Task type override (read from config if not given)",
+)
 @click.option("--model", default=None, type=str, help="Model class name override (read from config if not given)")
-@click.option("--output", default=None, type=str, help="Path to save prediction results as an H5 file. If not given, only print a summary.")
+@click.option(
+    "--output",
+    default=None,
+    type=str,
+    help="Path to save prediction results as an H5 file. If not given, only print a summary.",
+)
 @click.option("--device", default=None, type=str, help="Device override (e.g. 'cpu', 'cuda:0')")
 @click.option("--file_type", default="hdf5", type=str, help="Input file type for the test set (default: hdf5)")
 def predict(model_path, test_set, config, task, model, output, device, file_type):
@@ -37,12 +52,8 @@ def predict(model_path, test_set, config, task, model, output, device, file_type
     resolved_task = task or cfg.get("task")
     model_config = cfg.get("model", {})
     model_name = model or model_config.get("name")
-    assert resolved_task is not None, (
-        "Task must be specified via --task or in the config file"
-    )
-    assert model_name is not None, (
-        "Model name must be specified via --model or in the config file (model.name)"
-    )
+    assert resolved_task is not None, "Task must be specified via --task or in the config file"
+    assert model_name is not None, "Model name must be specified via --model or in the config file (model.name)"
 
     logger.info(f"Resolving model class '{model_name}' for task '{resolved_task}'...")
     model_class = get_model_class(resolved_task, model_name)
@@ -64,9 +75,7 @@ def predict(model_path, test_set, config, task, model, output, device, file_type
     # Filter kwargs to only those accepted by the model's __init__
     sig = inspect.signature(model_class.__init__)
     accepted_params = set(sig.parameters.keys()) - {"self"}
-    has_var_keyword = any(
-        p.kind == inspect.Parameter.VAR_KEYWORD for p in sig.parameters.values()
-    )
+    has_var_keyword = any(p.kind == inspect.Parameter.VAR_KEYWORD for p in sig.parameters.values())
     if not has_var_keyword:
         model_kwargs = {k: v for k, v in model_kwargs.items() if k in accepted_params}
 
@@ -101,4 +110,3 @@ def predict(model_path, test_set, config, task, model, output, device, file_type
         logger.info(f"Predictions saved to '{output}'")
 
     logger.info("Predict command completed successfully.")
-

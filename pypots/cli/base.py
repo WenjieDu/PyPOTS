@@ -5,7 +5,6 @@ Shared utilities for PyPOTS CLI commands.
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-
 import io
 import os
 import subprocess

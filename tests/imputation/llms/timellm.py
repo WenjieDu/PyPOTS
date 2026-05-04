@@ -5,7 +5,6 @@ Test cases for TimeLLM imputation model.
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-
 import os.path
 import unittest
 
@@ -55,7 +54,7 @@ class TestTimeLLM(unittest.TestCase):
         llm_model_type="GPT2",
         dropout=0.1,
         domain_prompt_content="The next value in a random walk is a modification of the previous value in the "
-        f'sequence. This dataset contains {DATA["n_steps"]} steps of a random walk with {DATA["n_features"]} features.',
+        f"sequence. This dataset contains {DATA['n_steps']} steps of a random walk with {DATA['n_features']} features.",
         batch_size=8,
         epochs=EPOCHS,
         saving_path=saving_path,
@@ -70,9 +69,9 @@ class TestTimeLLM(unittest.TestCase):
     @pytest.mark.xdist_group(name="imputation-timellm")
     def test_1_impute(self):
         imputation_results = self.timellm.predict(TEST_SET)
-        assert not np.isnan(
-            imputation_results["imputation"]
-        ).any(), "Output still has missing values after running impute()."
+        assert not np.isnan(imputation_results["imputation"]).any(), (
+            "Output still has missing values after running impute()."
+        )
 
         test_MSE = calc_mse(
             imputation_results["imputation"],
@@ -111,9 +110,9 @@ class TestTimeLLM(unittest.TestCase):
     def test_4_lazy_loading(self):
         self.timellm.fit(GENERAL_H5_TRAIN_SET_PATH, GENERAL_H5_VAL_SET_PATH)
         imputation_results = self.timellm.predict(GENERAL_H5_TEST_SET_PATH)
-        assert not np.isnan(
-            imputation_results["imputation"]
-        ).any(), "Output still has missing values after running impute()."
+        assert not np.isnan(imputation_results["imputation"]).any(), (
+            "Output still has missing values after running impute()."
+        )
 
         test_MSE = calc_mse(
             imputation_results["imputation"],

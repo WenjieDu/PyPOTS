@@ -26,17 +26,20 @@ IMPORT_ERROR_MESSAGE = (
     help="Build PyPOTS into a wheel and package the source code into a .tar.gz file for distribution",
 )
 @click.option(
-    "-c", "--cleanup",
+    "-c",
+    "--cleanup",
     is_flag=True,
     help="Delete all caches and building files",
 )
 @click.option(
-    "--run_tests", "--run-tests",
+    "--run_tests",
+    "--run-tests",
     is_flag=True,
     help="Run all test cases",
 )
 @click.option(
-    "-k", "k",
+    "-k",
+    "k",
     default=None,
     type=str,
     help="The -k option of pytest. Description of -k option in pytest: "
@@ -50,12 +53,14 @@ IMPORT_ERROR_MESSAGE = (
     "matching is case-insensitive.",
 )
 @click.option(
-    "--show-coverage", "--show_coverage",
+    "--show-coverage",
+    "--show_coverage",
     is_flag=True,
     help="Show the code coverage report after running tests",
 )
 @click.option(
-    "--lint-code", "--lint_code",
+    "--lint-code",
+    "--lint_code",
     is_flag=True,
     help="Run Black and Flake8 to lint code",
 )
@@ -68,8 +73,7 @@ def dev(build, cleanup, run_tests, k, show_coverage, lint_code):
 
     if k is not None:
         assert run_tests, (
-            "Argument `-k` should combine the use of `--run_tests`. "
-            "Try `pypots-cli dev --run_tests -k your_pattern`"
+            "Argument `-k` should combine the use of `--run_tests`. Try `pypots-cli dev --run_tests -k your_pattern`"
         )
 
     if show_coverage:
@@ -79,9 +83,9 @@ def dev(build, cleanup, run_tests, k, show_coverage, lint_code):
         )
 
     if cleanup:
-        assert (
-            not run_tests and not lint_code
-        ), "Argument `--cleanup` should be used alone. Try `pypots-cli dev --cleanup`"
+        assert not run_tests and not lint_code, (
+            "Argument `--cleanup` should be used alone. Try `pypots-cli dev --cleanup`"
+        )
 
     try:
         if cleanup:
@@ -97,10 +101,10 @@ def dev(build, cleanup, run_tests, k, show_coverage, lint_code):
             if show_coverage and os.path.exists(".coverage"):
                 execute_command("coverage report -m")
         elif lint_code:
-            logger.info("Reformatting with Black...")
-            execute_command("black .")
-            logger.info("Linting with Flake8...")
-            execute_command("flake8 .")
+            logger.info("Reformatting with Ruff...")
+            execute_command("ruff format .")
+            logger.info("Linting with Ruff...")
+            execute_command("ruff check .")
     except ImportError:
         raise ImportError(IMPORT_ERROR_MESSAGE)
     except Exception as e:

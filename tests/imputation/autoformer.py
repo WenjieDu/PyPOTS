@@ -5,7 +5,6 @@ Test cases for Autoformer imputation model.
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-
 import os.path
 import unittest
 
@@ -65,9 +64,9 @@ class TestAutoformer(unittest.TestCase):
     @pytest.mark.xdist_group(name="imputation-autoformer")
     def test_1_impute(self):
         imputation_results = self.autoformer.predict(TEST_SET)
-        assert not np.isnan(
-            imputation_results["imputation"]
-        ).any(), "Output still has missing values after running impute()."
+        assert not np.isnan(imputation_results["imputation"]).any(), (
+            "Output still has missing values after running impute()."
+        )
 
         test_MSE = calc_mse(
             imputation_results["imputation"],
@@ -106,9 +105,9 @@ class TestAutoformer(unittest.TestCase):
     def test_4_lazy_loading(self):
         self.autoformer.fit(GENERAL_H5_TRAIN_SET_PATH, GENERAL_H5_VAL_SET_PATH)
         imputation_results = self.autoformer.predict(GENERAL_H5_TEST_SET_PATH)
-        assert not np.isnan(
-            imputation_results["imputation"]
-        ).any(), "Output still has missing values after running impute()."
+        assert not np.isnan(imputation_results["imputation"]).any(), (
+            "Output still has missing values after running impute()."
+        )
 
         test_MSE = calc_mse(
             imputation_results["imputation"],

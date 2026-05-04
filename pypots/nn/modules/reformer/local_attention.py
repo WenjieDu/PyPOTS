@@ -5,7 +5,6 @@ Local attention from https://github.com/lucidrains/local-attention
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-
 import math
 
 import torch
@@ -172,9 +171,9 @@ class LocalAttention(nn.Module):
 
         mask = default(mask, input_mask)
 
-        assert not (
-            exists(window_size) and not self.use_xpos
-        ), "cannot perform window size extrapolation if xpos is not turned on"
+        assert not (exists(window_size) and not self.use_xpos), (
+            "cannot perform window size extrapolation if xpos is not turned on"
+        )
 
         (autopad, pad_value, window_size, causal, look_backward, look_forward, shared_qk) = (
             self.autopad,
@@ -199,9 +198,9 @@ class LocalAttention(nn.Module):
 
         scale = default(self.scale, dim_head**-0.5)
 
-        assert (
-            n % window_size
-        ) == 0, f"sequence length {n} must be divisible by window size {window_size} for local attention"
+        assert (n % window_size) == 0, (
+            f"sequence length {n} must be divisible by window size {window_size} for local attention"
+        )
 
         windows = n // window_size
 

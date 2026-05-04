@@ -1,6 +1,4 @@
-"""
-
-"""
+""" """
 
 # Created by Wenjie Du <wdu@time-series.ai>
 # License: BSD-3-Clause

@@ -20,7 +20,12 @@ from .utils import (
 
 @click.command(name="train", help="Train a PyPOTS model from a YAML/JSON configuration file")
 @click.option("--config", required=True, type=click.Path(exists=True), help="Path to a YAML or JSON configuration file")
-@click.option("--task", type=click.Choice(SUPPORTED_TASKS), default=None, help="Override the task type specified in the config file")
+@click.option(
+    "--task",
+    type=click.Choice(SUPPORTED_TASKS),
+    default=None,
+    help="Override the task type specified in the config file",
+)
 @click.option("--model", default=None, type=str, help="Override the model name specified in the config file")
 @click.option("--train_set", default=None, type=str, help="Override the path to training data (H5 file)")
 @click.option("--val_set", default=None, type=str, help="Override the path to validation data (H5 file)")
@@ -44,6 +49,7 @@ def train(config, task, model, train_set, val_set, epochs, batch_size, device, s
     seed_val = cfg.get("seed", None)
     if seed_val is not None:
         from ..utils.random import set_random_seed
+
         set_random_seed(seed_val)
         logger.info(f"Random seed set to {seed_val}")
 
@@ -76,7 +82,12 @@ def train(config, task, model, train_set, val_set, epochs, batch_size, device, s
 
     # Apply training params
     training_key_mapping = [
-        "epochs", "batch_size", "patience", "saving_path", "model_saving_strategy", "verbose",
+        "epochs",
+        "batch_size",
+        "patience",
+        "saving_path",
+        "model_saving_strategy",
+        "verbose",
     ]
     for key in training_key_mapping:
         if key in training_config:
@@ -102,16 +113,12 @@ def train(config, task, model, train_set, val_set, epochs, batch_size, device, s
     # Step 7: Filter kwargs to only those accepted by the model's __init__
     sig = inspect.signature(model_class.__init__)
     accepted_params = set(sig.parameters.keys()) - {"self"}
-    has_var_keyword = any(
-        p.kind == inspect.Parameter.VAR_KEYWORD for p in sig.parameters.values()
-    )
+    has_var_keyword = any(p.kind == inspect.Parameter.VAR_KEYWORD for p in sig.parameters.values())
     if not has_var_keyword:
         filtered_kwargs = {k: v for k, v in model_kwargs.items() if k in accepted_params}
         skipped = set(model_kwargs.keys()) - set(filtered_kwargs.keys())
         if skipped:
-            logger.warning(
-                f"Skipping parameters not accepted by {model_name}: {skipped}"
-            )
+            logger.warning(f"Skipping parameters not accepted by {model_name}: {skipped}")
         model_kwargs = filtered_kwargs
 
     # Step 8: Instantiate the model
@@ -131,7 +138,4 @@ def train(config, task, model, train_set, val_set, epochs, batch_size, device, s
     model_instance.fit(train_set=resolved_train_set, val_set=resolved_val_set)
 
     # Step 11: Log success
-    logger.info(
-        f"Training complete! Model '{model_name}' for task '{resolved_task}' has been trained successfully."
-    )
-
+    logger.info(f"Training complete! Model '{model_name}' for task '{resolved_task}' has been trained successfully.")

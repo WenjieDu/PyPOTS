@@ -7,7 +7,6 @@ the partially-observed time-series clustering task.
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-import os
 from copy import deepcopy
 from typing import Union, Optional
 
@@ -318,6 +317,7 @@ class CRLI(BaseNNClusterer):
                     self.optuna_trial.report(mean_loss, epoch)
                     if self.optuna_trial.should_prune():
                         import optuna
+
                         raise optuna.TrialPruned()
 
                 # save the model if necessary

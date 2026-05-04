@@ -16,7 +16,6 @@ This implementation is inspired by the official one https://github.com/ant-resea
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-
 from .model import Pyraformer
 
 __all__ = [

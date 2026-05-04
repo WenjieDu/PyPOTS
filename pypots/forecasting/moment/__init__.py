@@ -17,7 +17,6 @@ https://github.com/moment-timeseries-foundation-model/moment-research
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-
 from .model import MOMENT
 
 __all__ = [

@@ -5,7 +5,6 @@ Adding CLI utilities here, including config loading and the model registry.
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-
 import inspect
 import json
 import os
@@ -89,18 +88,12 @@ def load_config(path: str) -> dict:
             try:
                 import yaml
             except ImportError:
-                raise ImportError(
-                    "PyYAML is required to load YAML config files. "
-                    "Install it with: pip install pyyaml"
-                )
+                raise ImportError("PyYAML is required to load YAML config files. Install it with: pip install pyyaml")
             config = yaml.safe_load(f)
         elif ext == ".json":
             config = json.load(f)
         else:
-            raise ValueError(
-                f"Unsupported config file format '{ext}'. "
-                f"Use .yaml, .yml, or .json."
-            )
+            raise ValueError(f"Unsupported config file format '{ext}'. Use .yaml, .yml, or .json.")
     return config
 
 
@@ -141,24 +134,16 @@ def get_model_class(task: str, model_name: str):
     model_class : type
         The resolved model class.
     """
-    assert task in SUPPORTED_TASKS, (
-        f"Unknown task '{task}'. Supported tasks: {SUPPORTED_TASKS}"
-    )
+    assert task in SUPPORTED_TASKS, f"Unknown task '{task}'. Supported tasks: {SUPPORTED_TASKS}"
     module_path = TASK_MODULES[task]
     try:
         module = import_module(module_path)
     except ImportError as e:
-        raise ImportError(
-            f"Failed to import module '{module_path}'. "
-            f"Ensure PyPOTS is properly installed. Error: {e}"
-        )
+        raise ImportError(f"Failed to import module '{module_path}'. Ensure PyPOTS is properly installed. Error: {e}")
 
     if not hasattr(module, model_name):
         available = list_available_models(task)
-        raise ValueError(
-            f"Model '{model_name}' not found in task '{task}'. "
-            f"Available models: {available}"
-        )
+        raise ValueError(f"Model '{model_name}' not found in task '{task}'. Available models: {available}")
     return getattr(module, model_name)
 
 
@@ -176,8 +161,7 @@ def get_optimizer_class(optimizer_name: str):
         The resolved optimizer class.
     """
     assert optimizer_name in OPTIMIZER_REGISTRY, (
-        f"Unknown optimizer '{optimizer_name}'. "
-        f"Supported optimizers: {list(OPTIMIZER_REGISTRY.keys())}"
+        f"Unknown optimizer '{optimizer_name}'. Supported optimizers: {list(OPTIMIZER_REGISTRY.keys())}"
     )
     module_path = OPTIMIZER_REGISTRY[optimizer_name].rsplit(".", 1)[0]
     class_name = OPTIMIZER_REGISTRY[optimizer_name].rsplit(".", 1)[1]
@@ -201,9 +185,7 @@ def list_available_models(task: Optional[str] = None) -> dict:
     tasks_to_list = [task] if task else SUPPORTED_TASKS
     result = {}
     for t in tasks_to_list:
-        assert t in SUPPORTED_TASKS, (
-            f"Unknown task '{t}'. Supported tasks: {SUPPORTED_TASKS}"
-        )
+        assert t in SUPPORTED_TASKS, f"Unknown task '{t}'. Supported tasks: {SUPPORTED_TASKS}"
         module_path = TASK_MODULES[t]
         try:
             module = import_module(module_path)
@@ -269,9 +251,16 @@ def generate_model_config_template(task: str, model_name: str) -> dict:
     model_params = {}
     training_params = {}
     training_keys = {
-        "epochs", "batch_size", "patience", "optimizer", "num_workers",
-        "saving_path", "model_saving_strategy", "verbose",
-        "training_loss", "validation_metric",
+        "epochs",
+        "batch_size",
+        "patience",
+        "optimizer",
+        "num_workers",
+        "saving_path",
+        "model_saving_strategy",
+        "verbose",
+        "training_loss",
+        "validation_metric",
     }
 
     for name, info in params.items():

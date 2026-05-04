@@ -6,7 +6,6 @@ The implementation of USGAN for the partially-observed time-series imputation ta
 # Created by Jun Wang <jwangfx@connect.ust.hk> and Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-import os
 from copy import deepcopy
 from typing import Union, Optional
 
@@ -353,6 +352,7 @@ class USGAN(BaseNNImputer):
                     self.optuna_trial.report(mean_loss, epoch)
                     if self.optuna_trial.should_prune():
                         import optuna
+
                         raise optuna.TrialPruned()
 
                 if self.patience == 0:

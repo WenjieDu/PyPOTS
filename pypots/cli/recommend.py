@@ -9,7 +9,6 @@ import os
 
 import click
 
-from .utils import SUPPORTED_TASKS
 
 
 def _get_data_properties(data_path):
@@ -70,8 +69,7 @@ def _get_data_properties(data_path):
         raise click.BadParameter(f"Unsupported file format '{ext}'. Supported: .csv, .h5, .hdf5")
 
 
-def _recommend_hyperparams(task, model_name, n_steps, n_features, n_samples,
-                           missing_rate=0.0, n_classes=None):
+def _recommend_hyperparams(task, model_name, n_steps, n_features, n_samples, missing_rate=0.0, n_classes=None):
     """Generate recommended hyperparameters based on data properties.
 
     Returns a config dict ready for YAML serialization.
@@ -133,83 +131,95 @@ def _recommend_hyperparams(task, model_name, n_steps, n_features, n_samples,
     model_name_upper = model_name.upper()
 
     if model_name_upper == "SAITS":
-        model_config.update({
-            "n_steps": n_steps,
-            "n_features": n_features,
-            "n_layers": n_layers,
-            "d_model": d_model,
-            "n_heads": n_heads,
-            "d_k": d_k,
-            "d_v": d_v,
-            "d_ffn": d_ffn,
-            "dropout": dropout,
-        })
+        model_config.update(
+            {
+                "n_steps": n_steps,
+                "n_features": n_features,
+                "n_layers": n_layers,
+                "d_model": d_model,
+                "n_heads": n_heads,
+                "d_k": d_k,
+                "d_v": d_v,
+                "d_ffn": d_ffn,
+                "dropout": dropout,
+            }
+        )
 
     elif model_name_upper == "TIMESNET":
         top_k = min(3, n_steps // 4) if n_steps > 8 else 1
         n_kernels = 6
-        model_config.update({
-            "n_steps": n_steps,
-            "n_features": n_features,
-            "n_layers": n_layers,
-            "top_k": top_k,
-            "d_model": d_model,
-            "d_ffn": d_ffn,
-            "n_kernels": n_kernels,
-            "dropout": dropout,
-        })
+        model_config.update(
+            {
+                "n_steps": n_steps,
+                "n_features": n_features,
+                "n_layers": n_layers,
+                "top_k": top_k,
+                "d_model": d_model,
+                "d_ffn": d_ffn,
+                "n_kernels": n_kernels,
+                "dropout": dropout,
+            }
+        )
         if task == "classification" and n_classes is not None:
             model_config["n_classes"] = n_classes
 
     elif model_name_upper == "TEFN":
         n_pred_steps = max(1, n_steps // 4)
-        model_config.update({
-            "n_steps": n_steps,
-            "n_features": n_features,
-            "n_pred_steps": n_pred_steps,
-            "n_pred_features": n_features,
-            "n_fod": 2,
-            "apply_nonstationary_norm": False,
-        })
+        model_config.update(
+            {
+                "n_steps": n_steps,
+                "n_features": n_features,
+                "n_pred_steps": n_pred_steps,
+                "n_pred_features": n_features,
+                "n_fod": 2,
+                "apply_nonstationary_norm": False,
+            }
+        )
 
     elif model_name_upper == "CRLI":
         n_clusters = n_classes if n_classes else 3
-        model_config.update({
-            "n_steps": n_steps,
-            "n_features": n_features,
-            "n_clusters": n_clusters,
-            "n_generator_layers": n_layers,
-            "rnn_hidden_size": d_model,
-            "rnn_cell_type": "GRU",
-            "lambda_kmeans": 1.0,
-        })
+        model_config.update(
+            {
+                "n_steps": n_steps,
+                "n_features": n_features,
+                "n_clusters": n_clusters,
+                "n_generator_layers": n_layers,
+                "rnn_hidden_size": d_model,
+                "rnn_cell_type": "GRU",
+                "lambda_kmeans": 1.0,
+            }
+        )
 
     elif model_name_upper == "TIMEMIXER":
         downsampling_layers = min(3, max(1, int(n_steps).bit_length() - 3))
-        model_config.update({
-            "n_steps": n_steps,
-            "n_features": n_features,
-            "n_layers": n_layers,
-            "d_model": d_model,
-            "d_ffn": d_ffn,
-            "top_k": min(3, n_steps // 4) if n_steps > 8 else 1,
-            "dropout": dropout,
-            "downsampling_layers": downsampling_layers,
-            "downsampling_window": 2,
-        })
+        model_config.update(
+            {
+                "n_steps": n_steps,
+                "n_features": n_features,
+                "n_layers": n_layers,
+                "d_model": d_model,
+                "d_ffn": d_ffn,
+                "top_k": min(3, n_steps // 4) if n_steps > 8 else 1,
+                "dropout": dropout,
+                "downsampling_layers": downsampling_layers,
+                "downsampling_window": 2,
+            }
+        )
         if task == "anomaly_detection":
             model_config["anomaly_rate"] = 0.05
 
     else:
         # generic fallback — include common params
-        model_config.update({
-            "n_steps": n_steps,
-            "n_features": n_features,
-            "n_layers": n_layers,
-            "d_model": d_model,
-            "d_ffn": d_ffn,
-            "dropout": dropout,
-        })
+        model_config.update(
+            {
+                "n_steps": n_steps,
+                "n_features": n_features,
+                "n_layers": n_layers,
+                "d_model": d_model,
+                "d_ffn": d_ffn,
+                "dropout": dropout,
+            }
+        )
         if n_classes is not None:
             model_config["n_classes"] = n_classes
 
@@ -246,19 +256,27 @@ _DEFAULT_MODELS = {
 
 
 @click.command(name="recommend", help="Recommend model hyperparameters based on data properties")
-@click.option("--task", required=True,
-              type=click.Choice(["imputation", "classification", "forecasting", "clustering", "anomaly_detection"]),
-              help="Target task type")
-@click.option("--model", "model_name", default=None, type=str,
-              help="Model name (default: recommended model for the task)")
-@click.option("--data", "data_path", default=None, type=click.Path(exists=True),
-              help="Path to data file (CSV or H5) to extract properties from")
+@click.option(
+    "--task",
+    required=True,
+    type=click.Choice(["imputation", "classification", "forecasting", "clustering", "anomaly_detection"]),
+    help="Target task type",
+)
+@click.option(
+    "--model", "model_name", default=None, type=str, help="Model name (default: recommended model for the task)"
+)
+@click.option(
+    "--data",
+    "data_path",
+    default=None,
+    type=click.Path(exists=True),
+    help="Path to data file (CSV or H5) to extract properties from",
+)
 @click.option("--n_steps", default=None, type=int, help="Number of time steps (if not using --data)")
 @click.option("--n_features", default=None, type=int, help="Number of features (if not using --data)")
 @click.option("--n_samples", default=None, type=int, help="Number of samples (if not using --data)")
 @click.option("--n_classes", default=None, type=int, help="Number of classes for classification/clustering")
-@click.option("--output", "output_path", default=None, type=str,
-              help="Save recommended config to YAML file")
+@click.option("--output", "output_path", default=None, type=str, help="Save recommended config to YAML file")
 def recommend(task, model_name, data_path, n_steps, n_features, n_samples, n_classes, output_path):
     """Recommend model hyperparameters based on data properties.
 
@@ -284,9 +302,7 @@ def recommend(task, model_name, data_path, n_steps, n_features, n_samples, n_cla
             n_classes = props["n_classes"]
     else:
         if n_steps is None or n_features is None:
-            raise click.UsageError(
-                "Either --data or both --n_steps and --n_features must be provided."
-            )
+            raise click.UsageError("Either --data or both --n_steps and --n_features must be provided.")
         if n_samples is None:
             n_samples = 1000  # assume medium size
         missing_rate = 0.1  # assume moderate missing rate
@@ -337,7 +353,7 @@ def recommend(task, model_name, data_path, n_steps, n_features, n_samples, n_cla
     print(f"Recommended Configuration: {model_name} for {task}")
     print(f"{'=' * 65}")
 
-    print(f"\n  Data properties:")
+    print("\n  Data properties:")
     print(f"    n_samples:    {n_samples}")
     print(f"    n_steps:      {n_steps}")
     print(f"    n_features:   {n_features}")
@@ -345,12 +361,12 @@ def recommend(task, model_name, data_path, n_steps, n_features, n_samples, n_cla
     if n_classes:
         print(f"    n_classes:    {n_classes}")
 
-    print(f"\n  Model hyperparameters:")
+    print("\n  Model hyperparameters:")
     for k, v in config["model"].items():
         if k != "name":
             print(f"    {k}: {v}")
 
-    print(f"\n  Training parameters:")
+    print("\n  Training parameters:")
     for k, v in config["training"].items():
         print(f"    {k}: {v}")
 
@@ -358,7 +374,9 @@ def recommend(task, model_name, data_path, n_steps, n_features, n_samples, n_cla
         print(f"\n  Config saved to: {output_path}")
         print(f"\n  To train: pypots-cli train --config {output_path}")
     else:
-        print(f"\n  To save: pypots-cli recommend --task {task} --model {model_name} "
-              f"--data <data_file> --output config.yaml")
+        print(
+            f"\n  To save: pypots-cli recommend --task {task} --model {model_name} "
+            f"--data <data_file> --output config.yaml"
+        )
 
     print(f"{'=' * 65}\n")

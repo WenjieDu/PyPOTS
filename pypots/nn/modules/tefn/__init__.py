@@ -16,7 +16,6 @@ This implementation is transfered from the official one https://github.com/ztxte
 # Created by Tianxiang Zhan <zhantianxianguestc@hotmail.com>
 # License: BSD-3-Clause
 
-
 from .backbone import BackboneTEFN
 
 __all__ = [

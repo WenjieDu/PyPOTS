@@ -5,7 +5,6 @@ CLI command for hyperparameter optimization with Optuna.
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-
 import inspect
 
 import click
@@ -157,7 +156,7 @@ def _print_results(study):
     logger.info("=" * 70)
     logger.info(f"  Best trial number : {best.number}")
     logger.info(f"  Best value        : {best.value}")
-    logger.info(f"  Best parameters   :")
+    logger.info("  Best parameters   :")
     for k, v in best.params.items():
         logger.info(f"    {k}: {v}")
 
@@ -170,15 +169,20 @@ def _print_results(study):
     for t in trials:
         value_str = f"{t.value:.6f}" if t.value is not None else "N/A"
         params_str = ", ".join(f"{k}={v}" for k, v in t.params.items())
-        logger.info(
-            f"  {t.number:>6}  {value_str:>14}  {t.state.name:<10}  {params_str}"
-        )
+        logger.info(f"  {t.number:>6}  {value_str:>14}  {t.state.name:<10}  {params_str}")
     logger.info("=" * 70)
 
 
 @click.command(name="tune", help="Run hyperparameter optimization for a PyPOTS model via Optuna")
-@click.option("--config", required=True, type=click.Path(exists=True), help="Path to a YAML or JSON tuning configuration file")
-@click.option("--task", type=click.Choice(SUPPORTED_TASKS), default=None, help="Override the task type specified in the config file")
+@click.option(
+    "--config", required=True, type=click.Path(exists=True), help="Path to a YAML or JSON tuning configuration file"
+)
+@click.option(
+    "--task",
+    type=click.Choice(SUPPORTED_TASKS),
+    default=None,
+    help="Override the task type specified in the config file",
+)
 @click.option("--model", default=None, type=str, help="Override the model name specified in the config file")
 @click.option("--n_trials", type=int, default=None, help="Override the maximum number of tuning trials (default: 50)")
 @click.option("--device", default=None, type=str, help="Override the device to use (e.g. 'cpu', 'cuda:0')")
@@ -215,15 +219,11 @@ def tune(config, task, model, n_trials, device):
         model_name = model
     else:
         model_name = model_config.get("name")
-    assert model_name is not None, (
-        "Model name must be specified in the config file (model.name) or via --model"
-    )
+    assert model_name is not None, "Model name must be specified in the config file (model.name) or via --model"
 
     # Resolve task
     resolved_task = cfg.get("task")
-    assert resolved_task is not None, (
-        "Task type must be specified in the config file or via --task"
-    )
+    assert resolved_task is not None, "Task type must be specified in the config file or via --task"
 
     # ------------------------------------------------------------------
     # Step 3: Validate model exists and resolve class
@@ -242,7 +242,7 @@ def tune(config, task, model, n_trials, device):
     search_param_names = set(search_space.keys())
 
     # Allow 'lr' in search_space even though it's an optimizer kwarg, not a direct model param
-    lr_in_search = "lr" in search_param_names
+    # lr_in_search = "lr" in search_param_names
     validate_names = search_param_names - {"lr"}
     invalid_params = validate_names - model_param_names
     if invalid_params:
@@ -268,6 +268,7 @@ def tune(config, task, model, n_trials, device):
     # Set random seed if provided
     if seed is not None:
         from ..utils.random import set_random_seed
+
         set_random_seed(seed)
         logger.info(f"Random seed set to {seed}")
 
@@ -279,8 +280,12 @@ def tune(config, task, model, n_trials, device):
 
     # Apply training params to model kwargs
     training_key_mapping = [
-        "epochs", "batch_size", "patience", "saving_path",
-        "model_saving_strategy", "verbose",
+        "epochs",
+        "batch_size",
+        "patience",
+        "saving_path",
+        "model_saving_strategy",
+        "verbose",
     ]
     for key in training_key_mapping:
         if key in training_config:
@@ -331,6 +336,7 @@ def tune(config, task, model, n_trials, device):
         # model initializations, making trial comparisons fair.
         if seed is not None:
             from ..utils.random import set_random_seed
+
             set_random_seed(seed)
 
         # Sample hyperparameters from the search space
@@ -380,20 +386,12 @@ def tune(config, task, model, n_trials, device):
         # Filter kwargs to only those accepted by the model's __init__
         sig = inspect.signature(model_class.__init__)
         accepted_params = set(sig.parameters.keys()) - {"self"}
-        has_var_keyword = any(
-            p.kind == inspect.Parameter.VAR_KEYWORD
-            for p in sig.parameters.values()
-        )
+        has_var_keyword = any(p.kind == inspect.Parameter.VAR_KEYWORD for p in sig.parameters.values())
         if not has_var_keyword:
-            filtered_kwargs = {
-                k: v for k, v in model_kwargs.items() if k in accepted_params
-            }
+            filtered_kwargs = {k: v for k, v in model_kwargs.items() if k in accepted_params}
             skipped = set(model_kwargs.keys()) - set(filtered_kwargs.keys())
             if skipped:
-                logger.debug(
-                    f"Trial {trial.number}: skipping params not accepted by "
-                    f"{model_name}: {skipped}"
-                )
+                logger.debug(f"Trial {trial.number}: skipping params not accepted by {model_name}: {skipped}")
             model_kwargs = filtered_kwargs
 
         # Instantiate and train the model

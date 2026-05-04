@@ -11,8 +11,7 @@ import os
 import click
 
 
-TASK_CHOICES = ["imputation", "classification", "forecasting",
-                "anomaly_detection", "clustering", "representation"]
+TASK_CHOICES = ["imputation", "classification", "forecasting", "anomaly_detection", "clustering", "representation"]
 
 
 def _save_yaml(data: dict, path: str):
@@ -20,9 +19,7 @@ def _save_yaml(data: dict, path: str):
     try:
         import yaml
     except ImportError:
-        raise ImportError(
-            "PyYAML is required to save YAML config files. Install it with: pip install pyyaml"
-        )
+        raise ImportError("PyYAML is required to save YAML config files. Install it with: pip install pyyaml")
     with open(path, "w") as f:
         yaml.dump(data, f, default_flow_style=False, sort_keys=False)
 
@@ -47,8 +44,7 @@ def model():
 
 
 @model.command(name="list", help="List available models, optionally filtered by task")
-@click.option("--task", default=None, type=click.Choice(TASK_CHOICES),
-              help="Task type to filter models")
+@click.option("--task", default=None, type=click.Choice(TASK_CHOICES), help="Task type to filter models")
 def model_list(task):
     """List available models, optionally filtered by task."""
     from .utils import list_available_models, SUPPORTED_TASKS
@@ -70,8 +66,7 @@ def model_list(task):
 
 @model.command(name="describe", help="Show detailed information about a specific model")
 @click.option("--name", required=True, type=str, help="Model class name (e.g. SAITS, BRITS)")
-@click.option("--task", required=True, type=click.Choice(TASK_CHOICES),
-              help="Task type to specify the model")
+@click.option("--task", required=True, type=click.Choice(TASK_CHOICES), help="Task type to specify the model")
 def model_describe(name, task):
     """Show detailed information about a specific model."""
     from .utils import get_model_class, get_model_init_params
@@ -106,8 +101,7 @@ def model_describe(name, task):
 
 
 @model.command(name="inspect", help="Inspect a saved .pypots model file")
-@click.option("--path", required=True, type=click.Path(exists=True),
-              help="Path to a saved .pypots model file")
+@click.option("--path", required=True, type=click.Path(exists=True), help="Path to a saved .pypots model file")
 def model_inspect(path):
     """Inspect a saved .pypots model file."""
     try:
@@ -150,8 +144,7 @@ def model_inspect(path):
                 print(f"  {k}: {v}")
 
         # Print top-level keys
-        meta_keys = {"model_state_dict", "pypots_version", "model_class",
-                     "hyperparameters", "save_timestamp"}
+        meta_keys = {"model_state_dict", "pypots_version", "model_class", "hyperparameters", "save_timestamp"}
         other_keys = [k for k in checkpoint.keys() if k not in meta_keys]
         if other_keys:
             print(f"\nOther checkpoint keys: {other_keys}")
@@ -179,10 +172,10 @@ def model_inspect(path):
 
 @model.command(name="config", help="Generate a template configuration file for a model")
 @click.option("--name", required=True, type=str, help="Model class name (e.g. SAITS, BRITS)")
-@click.option("--task", required=True, type=click.Choice(TASK_CHOICES),
-              help="Task type to specify the model")
-@click.option("--output", default=None, type=str,
-              help="Output file path for generated config (supports .yaml, .yml, .json)")
+@click.option("--task", required=True, type=click.Choice(TASK_CHOICES), help="Task type to specify the model")
+@click.option(
+    "--output", default=None, type=str, help="Output file path for generated config (supports .yaml, .yml, .json)"
+)
 def model_config(name, task, output):
     """Generate a template configuration file for a model."""
     from .utils import generate_model_config_template
@@ -201,13 +194,12 @@ def model_config(name, task, output):
 
             logger.info(f"Config template saved to {output}")
         else:
-            raise ValueError(
-                f"Unsupported output format '{ext}'. Use .yaml, .yml, or .json."
-            )
+            raise ValueError(f"Unsupported output format '{ext}'. Use .yaml, .yml, or .json.")
     else:
         # Print to stdout: prefer YAML, fall back to JSON
         try:
             import yaml
+
             print(yaml.dump(template, default_flow_style=False, sort_keys=False))
         except ImportError:
             print(json.dumps(template, indent=2, default=str))

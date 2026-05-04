@@ -169,9 +169,9 @@ class ModernTCN(BaseNNImputer):
             model_saving_strategy=model_saving_strategy,
             verbose=verbose,
         )
-        assert (
-            len(num_blocks) == len(dims) == len(large_size) == len(small_size)
-        ), "The length of num_blocks, dims, large_size, and small_size should be the same."
+        assert len(num_blocks) == len(dims) == len(large_size) == len(small_size), (
+            "The length of num_blocks, dims, large_size, and small_size should be the same."
+        )
 
         self.n_steps = n_steps
         self.n_features = n_features
