@@ -16,9 +16,7 @@ from pypots.utils.random import RANDOM_SEED as default_random_seed
 class TestRandom(unittest.TestCase):
     def test_set_random_seed(self):
         random_state1 = torch.get_rng_state()
-        torch.rand(
-            1, 3
-        )  # randomly generate something, the random state will be reset, so two states should be varying
+        torch.rand(1, 3)  # randomly generate something, the random state will be reset, so two states should be varying
         random_state2 = torch.get_rng_state()
         assert not torch.equal(
             random_state1, random_state2
@@ -39,9 +37,7 @@ class TestRandom(unittest.TestCase):
 
         set_random_seed(32)
         current_seed = get_random_seed()
-        assert (
-            current_seed == 32
-        ), "The random seed has been set to 32, should be equal."
+        assert current_seed == 32, "The random seed has been set to 32, should be equal."
 
 
 if __name__ == "__main__":

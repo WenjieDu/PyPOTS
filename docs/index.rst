@@ -124,7 +124,7 @@ The symbol ✅ indicates the algorithm is available for the corresponding task (
 in the future to handle tasks that are not currently supported. Stay tuned❗️).
 
 🌟 Since **v0.2**, all neural-network models in PyPOTS has got hyperparameter-optimization support.
-This functionality is implemented with the `Microsoft NNI <https://github.com/microsoft/nni>`_ framework. You may want to refer to our time-series
+This functionality is implemented with the `Optuna <https://github.com/optuna/optuna>`_ framework. You may want to refer to our time-series
 imputation survey repo `Awesome_Imputation <https://github.com/WenjieDu/Awesome_Imputation>`_ to see how to config and
 tune the hyperparameters.
 
