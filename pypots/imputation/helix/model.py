@@ -174,7 +174,7 @@ class HELIX(BaseNNImputer):
         if isinstance(optimizer, Optimizer):
             self.optimizer = optimizer
         else:
-            self.optimizer = optimizer(lr=self.lr)
+            self.optimizer = optimizer()
             assert isinstance(self.optimizer, Optimizer)
         self.optimizer.init_optimizer(self.model.parameters())
 
