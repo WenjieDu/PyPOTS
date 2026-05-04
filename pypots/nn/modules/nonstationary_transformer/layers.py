@@ -1,6 +1,4 @@
-"""
-
-"""
+""" """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
@@ -71,9 +69,9 @@ class Projector(nn.Module):
     ):
         super().__init__()
 
-        assert (
-            len(d_hidden) == n_hidden_layers
-        ), f"The length of d_hidden should be equal to n_hidden_layers, but got {len(d_hidden)} and {n_hidden_layers}."
+        assert len(d_hidden) == n_hidden_layers, (
+            f"The length of d_hidden should be equal to n_hidden_layers, but got {len(d_hidden)} and {n_hidden_layers}."
+        )
 
         padding = 1 if torch.__version__ >= "1.5.0" else 2
         self.series_conv = nn.Conv1d(

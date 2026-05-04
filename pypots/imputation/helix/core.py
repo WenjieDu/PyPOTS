@@ -8,7 +8,6 @@ Modified to save attention weights for visualization analysis.
 # Created by Fengming Zhang <milaogou@gmail.com>
 # License: BSD-3-Clause
 
-
 from ...nn.modules import ModelCore
 from ...nn.modules.helix import BackboneHELIX
 from ...nn.modules.loss import Criterion

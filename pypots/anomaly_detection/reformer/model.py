@@ -6,7 +6,6 @@ The implementation of Reformer for the partially-observed time-series anomaly de
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-
 from typing import Union, Optional
 
 import torch

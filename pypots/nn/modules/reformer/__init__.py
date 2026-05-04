@@ -17,7 +17,6 @@ https://github.com/lucidrains/reformer-pytorch
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-
 from .autoencoder import ReformerEncoder
 
 __all__ = [

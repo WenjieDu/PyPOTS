@@ -49,8 +49,7 @@ class LazyGroup(click.Group):
         return getattr(mod, attr_name)
 
 
-@click.group(cls=LazyGroup, name="pypots-cli",
-             help="PyPOTS Command-Line-Interface tool")
+@click.group(cls=LazyGroup, name="pypots-cli", help="PyPOTS Command-Line-Interface tool")
 def cli():
     """PyPOTS CLI — a command-line tool for managing PyPOTS models, data, training, and more."""
     pass

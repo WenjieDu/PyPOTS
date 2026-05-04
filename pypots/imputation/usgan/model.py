@@ -353,6 +353,7 @@ class USGAN(BaseNNImputer):
                     self.optuna_trial.report(mean_loss, epoch)
                     if self.optuna_trial.should_prune():
                         import optuna
+
                         raise optuna.TrialPruned()
 
                 if self.patience == 0:

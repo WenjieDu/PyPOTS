@@ -92,9 +92,9 @@ class BaseModel(ABC):
         verbose: bool = True,
     ):
         saving_strategies = [None, "best", "better", "all"]
-        assert (
-            model_saving_strategy in saving_strategies
-        ), f"saving_strategy must be one of {saving_strategies}, but got f{model_saving_strategy}."
+        assert model_saving_strategy in saving_strategies, (
+            f"saving_strategy must be one of {saving_strategies}, but got f{model_saving_strategy}."
+        )
         if saving_path is not None and saving_strategies is None:
             logger.warning("‼️ saving_path is given, but model_saving_strategy is None. No model file will be saved.")
 
@@ -144,14 +144,14 @@ class BaseModel(ABC):
                 for idx, d in enumerate(device):
                     if isinstance(d, str):
                         d = d.lower()
-                        assert (
-                            "cuda" in d
-                        ), "The feature of training on multiple devices currently only support CUDA devices."
+                        assert "cuda" in d, (
+                            "The feature of training on multiple devices currently only support CUDA devices."
+                        )
                         device_list.append(torch.device(d))
                     elif isinstance(d, torch.device):
-                        assert (
-                            "cuda" in d.type
-                        ), "The feature of training on multiple devices currently only support CUDA devices."
+                        assert "cuda" in d.type, (
+                            "The feature of training on multiple devices currently only support CUDA devices."
+                        )
                         device_list.append(d)
                     else:
                         raise TypeError(
@@ -173,9 +173,9 @@ class BaseModel(ABC):
         if (isinstance(self.device, list) and "cuda" in self.device[0].type) or (
             isinstance(self.device, torch.device) and "cuda" in self.device.type
         ):
-            assert (
-                torch.cuda.is_available() and torch.cuda.device_count() > 0
-            ), "You are trying to use CUDA for model training, but CUDA is not available in your environment."
+            assert torch.cuda.is_available() and torch.cuda.device_count() > 0, (
+                "You are trying to use CUDA for model training, but CUDA is not available in your environment."
+            )
 
         if os.getenv("ENABLE_AMP", False):
             if self.enable_amp:
@@ -317,14 +317,29 @@ class BaseModel(ABC):
         """
         # Attributes that are internal state, not hyperparameters
         _EXCLUDED_ATTRS = {
-            "model", "summary_writer", "device", "saving_path",
-            "model_saving_strategy", "verbose", "amp_enabled", "enable_amp",
-            "training_loss", "validation_metric", "optimizer",
-            "best_loss", "best_model_dict", "patience",
-            "G_optimizer", "D_optimizer", "optuna_trial",
+            "model",
+            "summary_writer",
+            "device",
+            "saving_path",
+            "model_saving_strategy",
+            "verbose",
+            "amp_enabled",
+            "enable_amp",
+            "training_loss",
+            "validation_metric",
+            "optimizer",
+            "best_loss",
+            "best_model_dict",
+            "patience",
+            "G_optimizer",
+            "D_optimizer",
+            "optuna_trial",
             # Training state (not user-settable hyperparameters)
-            "num_params", "best_epoch", "training_loss_name",
-            "validation_metric_name", "original_patience",
+            "num_params",
+            "best_epoch",
+            "training_loss_name",
+            "validation_metric_name",
+            "original_patience",
         }
 
         hyperparameters = {}
@@ -662,9 +677,9 @@ class BaseNNModel(BaseModel):
         if patience is None:
             patience = -1  # early stopping on patience won't work if it is set as < 0
         else:
-            assert (
-                patience <= epochs
-            ), f"patience must be smaller than epochs which is {epochs}, but got patience={patience}"
+            assert patience <= epochs, (
+                f"patience must be smaller than epochs which is {epochs}, but got patience={patience}"
+            )
 
         # check training_loss and validation_metric
         training_loss_name, validation_metric_name = "default", "loss"  # default names for loss and metric
@@ -867,6 +882,7 @@ class BaseNNModel(BaseModel):
                     self.optuna_trial.report(mean_loss, epoch)
                     if self.optuna_trial.should_prune():
                         import optuna
+
                         raise optuna.TrialPruned()
 
                 if self.patience == 0:

@@ -5,7 +5,6 @@ Test cases for CSAI imputation model.
 # Created by Linglong Qian <linglong.qian@kcl.ac.uk>
 # License: BSD-3-Clause
 
-
 import os.path
 import unittest
 
@@ -108,9 +107,9 @@ class TestCSAI(unittest.TestCase):
 
         # Perform imputation using lazy-loaded data
         imputation_results = self.csai.predict(GENERAL_H5_TEST_SET_PATH)
-        assert not np.isnan(
-            imputation_results["imputation"]
-        ).any(), "Output still has missing values after running impute()."
+        assert not np.isnan(imputation_results["imputation"]).any(), (
+            "Output still has missing values after running impute()."
+        )
 
         # Calculate the MSE on the test set
         test_MSE = calc_mse(

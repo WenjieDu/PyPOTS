@@ -7,7 +7,6 @@ which is mainly based on the implementation of TRMF in https://github.com/Semeno
 # Created by Jun Wang <jwangfx@connect.ust.hk> and Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-
 from typing import Union, Optional
 
 import numpy as np

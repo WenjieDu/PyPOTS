@@ -5,7 +5,6 @@ Test cases for CRLI clustering model.
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-
 import os
 import unittest
 

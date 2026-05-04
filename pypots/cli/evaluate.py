@@ -33,9 +33,7 @@ def _evaluate_imputation_forecasting(task, pred_data, gt_data, metrics_to_comput
     assert pred_key in pred_data, (
         f"Key '{pred_key}' not found in predictions file. Available keys: {list(pred_data.keys())}"
     )
-    assert "X_ori" in gt_data, (
-        f"Key 'X_ori' not found in ground truth file. Available keys: {list(gt_data.keys())}"
-    )
+    assert "X_ori" in gt_data, f"Key 'X_ori' not found in ground truth file. Available keys: {list(gt_data.keys())}"
 
     targets_np = np.asarray(gt_data["X_ori"], dtype=np.float32)
 
@@ -99,8 +97,7 @@ def _evaluate_classification(pred_data, gt_data, metrics_to_compute):
     results = {}
     for metric_name in metrics_to_compute:
         assert metric_name in all_metrics, (
-            f"Metric '{metric_name}' not found in classification metrics output. "
-            f"Available: {list(all_metrics.keys())}"
+            f"Metric '{metric_name}' not found in classification metrics output. Available: {list(all_metrics.keys())}"
         )
         results[metric_name] = float(all_metrics[metric_name])
     return results
@@ -187,11 +184,31 @@ def _save_results(output_path, results):
 
 
 @click.command(name="evaluate", help="Evaluate model predictions against ground truth")
-@click.option("--predictions", required=True, type=click.Path(exists=True), help="Path to prediction results H5 file (as saved by predict command)")
+@click.option(
+    "--predictions",
+    required=True,
+    type=click.Path(exists=True),
+    help="Path to prediction results H5 file (as saved by predict command)",
+)
 @click.option("--ground_truth", required=True, type=click.Path(exists=True), help="Path to ground truth data H5 file")
-@click.option("--task", required=True, type=click.Choice(TASK_CHOICES), help="Task type for evaluation: imputation, classification, forecasting, anomaly_detection, clustering")
-@click.option("--metrics", default=None, type=str, help="Comma-separated metric names to compute (default: all applicable metrics for the task)")
-@click.option("--output", default=None, type=str, help="Path to save evaluation results as JSON (optional; if not given, only prints)")
+@click.option(
+    "--task",
+    required=True,
+    type=click.Choice(TASK_CHOICES),
+    help="Task type for evaluation: imputation, classification, forecasting, anomaly_detection, clustering",
+)
+@click.option(
+    "--metrics",
+    default=None,
+    type=str,
+    help="Comma-separated metric names to compute (default: all applicable metrics for the task)",
+)
+@click.option(
+    "--output",
+    default=None,
+    type=str,
+    help="Path to save evaluation results as JSON (optional; if not given, only prints)",
+)
 def evaluate(predictions, ground_truth, task, metrics, output):
     """Execute the evaluate command."""
     from ..utils.logging import logger
@@ -201,10 +218,7 @@ def evaluate(predictions, ground_truth, task, metrics, output):
         requested = [m.strip() for m in metrics.split(",")]
         valid = TASK_METRICS[task]
         for m in requested:
-            assert m in valid, (
-                f"Metric '{m}' is not available for task '{task}'. "
-                f"Available metrics: {valid}"
-            )
+            assert m in valid, f"Metric '{m}' is not available for task '{task}'. Available metrics: {valid}"
 
     from ..data.saving.h5 import load_dict_from_h5
 
@@ -234,4 +248,3 @@ def evaluate(predictions, ground_truth, task, metrics, output):
 
     if output is not None:
         _save_results(output, results)
-

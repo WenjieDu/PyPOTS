@@ -5,7 +5,6 @@ The base classes for PyPOTS representor models.
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-
 from abc import abstractmethod
 from typing import Optional, Union
 

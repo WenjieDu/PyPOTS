@@ -44,34 +44,40 @@ def purge_temp_files():
 
 @click.command(name="doc", help="CLI tools helping build PyPOTS documentation")
 @click.option(
-    "--gene-rst", "--gene_rst",
+    "--gene-rst",
+    "--gene_rst",
     is_flag=True,
     help="Generate rst (reStructuredText) documentation according to the latest code on Github",
 )
 @click.option(
-    "-b", "--branch",
+    "-b",
+    "--branch",
     type=click.Choice(["main", "dev"]),
     default="main",
     help="Code on which branch will be used for documentation generating",
 )
 @click.option(
-    "--gene-html", "--gene_html",
+    "--gene-html",
+    "--gene_html",
     is_flag=True,
     help="Generate the sphinx documentation into static HTML files",
 )
 @click.option(
-    "--view-doc", "--view_doc",
+    "--view-doc",
+    "--view_doc",
     is_flag=True,
     help="Deploy the generated HTML documentation locally for view",
 )
 @click.option(
-    "-p", "--port",
+    "-p",
+    "--port",
     type=int,
     default=9075,
     help="Use which port to deploy the web server for doc view",
 )
 @click.option(
-    "-c", "--cleanup",
+    "-c",
+    "--cleanup",
     is_flag=True,
     help="Delete all caches and static resources like HTML and CSS files",
 )
@@ -83,9 +89,9 @@ def doc(gene_rst, branch, gene_html, view_doc, port, cleanup):
     check_if_under_root_dir(strict=True)
 
     if cleanup:
-        assert (
-            not gene_rst and not gene_html and not view_doc
-        ), "Argument `--cleanup` should be used alone. Try `pypots-cli doc --cleanup`"
+        assert not gene_rst and not gene_html and not view_doc, (
+            "Argument `--cleanup` should be used alone. Try `pypots-cli doc --cleanup`"
+        )
 
     try:
         if cleanup:
@@ -136,9 +142,9 @@ def doc(gene_rst, branch, gene_html, view_doc, port, cleanup):
             execute_command("cd docs && make html")
 
         if view_doc:
-            assert os.path.exists(
-                "docs/_build/html"
-            ), "docs/_build/html does not exists, please run `pypots-cli doc --gene_html` first"
+            assert os.path.exists("docs/_build/html"), (
+                "docs/_build/html does not exists, please run `pypots-cli doc --gene_html` first"
+            )
             logger.info(f"Deploying HTML to http://127.0.0.1:{port}...")
             execute_command(f"python -m http.server {port} -d docs/_build/html -b 127.0.0.1")
 

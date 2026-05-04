@@ -16,7 +16,6 @@ This implementation is inspired by the official one https://github.com/kwuking/T
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-
 from .model import TimeMixer
 
 __all__ = [

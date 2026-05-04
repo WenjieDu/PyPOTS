@@ -111,9 +111,9 @@ class BTTF(BaseForecaster):
         file_type: str = "hdf5",
         **kwargs,
     ) -> dict:
-        assert not isinstance(
-            test_set, str
-        ), "BTTF so far does not accept file input. It needs a specified Dataset class."
+        assert not isinstance(test_set, str), (
+            "BTTF so far does not accept file input. It needs a specified Dataset class."
+        )
 
         X = test_set["X"]
         X = X.transpose((0, 2, 1))

@@ -1,10 +1,7 @@
-"""
-
-"""
+""" """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
-
 
 import torch
 from torch.nn.modules.loss import _Loss

@@ -38,9 +38,9 @@ def env(install, tool):
     logger.info(f"Installing the dependencies in scope `{install}` for you...")
 
     if tool == "conda":
-        assert (
-            execute_command("which conda").returncode == 0
-        ), "Conda not installed, cannot set --tool=conda, please check your conda."
+        assert execute_command("which conda").returncode == 0, (
+            "Conda not installed, cannot set --tool=conda, please check your conda."
+        )
 
         execute_command("conda install pyg pytorch-scatter pytorch-sparse -c pyg")
 
