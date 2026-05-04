@@ -29,7 +29,9 @@ _TORCH_LOAD_SUPPORTS_WEIGHTS_ONLY = "weights_only" in inspect.signature(torch.lo
 def _load_model_file(path: str, map_location):
     load_kwargs = {"map_location": map_location}
     if _TORCH_LOAD_SUPPORTS_WEIGHTS_ONLY:
-        load_kwargs["weights_only"] = True
+        # manually set weights_only to `False` to load the whole checkpoint file
+        # 'cause pypots store data in the file in addition to model weights
+        load_kwargs["weights_only"] = False
     return torch.load(path, **load_kwargs)
 
 
