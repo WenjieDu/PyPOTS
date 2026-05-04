@@ -101,7 +101,7 @@ corresponding task (note that models will be continuously updated in the future 
 currently supported. Stay tuned❗️).
 
 🌟 Since **v0.2**, all neural-network models in PyPOTS has got hyperparameter-optimization support.
-This functionality is implemented with the [Microsoft NNI](https://github.com/microsoft/nni) framework. You may want to
+This functionality is implemented with the [Optuna](https://github.com/optuna/optuna) framework. You may want to
 refer to our time-series imputation survey and benchmark
 repo [Awesome_Imputation](https://github.com/WenjieDu/Awesome_Imputation)
 to see how to config and tune the hyperparameters.

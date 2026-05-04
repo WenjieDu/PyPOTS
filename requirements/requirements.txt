@@ -1,5 +1,7 @@
+click
 h5py
 numpy
+optuna
 scipy
 sympy
 einops
