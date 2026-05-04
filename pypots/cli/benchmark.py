@@ -249,7 +249,6 @@ def _checkup(config_path: str):
 @click.option("--output", default=None, type=str, help="Override output file path for benchmark results JSON")
 def benchmark(config, device, seed, output):
     """Execute the benchmark: train each model, predict, compute metrics, and report results."""
-    import numpy as np
 
     from ..utils.logging import logger
     from ..utils.random import set_random_seed

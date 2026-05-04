@@ -5,7 +5,6 @@ Test cases for the CLI command `pypots.cli.recommend`.
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-import json
 import os
 import shutil
 import tempfile

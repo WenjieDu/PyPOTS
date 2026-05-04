@@ -9,7 +9,6 @@ import os
 
 import click
 
-from .utils import SUPPORTED_TASKS
 
 
 def _get_data_properties(data_path):
@@ -354,7 +353,7 @@ def recommend(task, model_name, data_path, n_steps, n_features, n_samples, n_cla
     print(f"Recommended Configuration: {model_name} for {task}")
     print(f"{'=' * 65}")
 
-    print(f"\n  Data properties:")
+    print("\n  Data properties:")
     print(f"    n_samples:    {n_samples}")
     print(f"    n_steps:      {n_steps}")
     print(f"    n_features:   {n_features}")
@@ -362,12 +361,12 @@ def recommend(task, model_name, data_path, n_steps, n_features, n_samples, n_cla
     if n_classes:
         print(f"    n_classes:    {n_classes}")
 
-    print(f"\n  Model hyperparameters:")
+    print("\n  Model hyperparameters:")
     for k, v in config["model"].items():
         if k != "name":
             print(f"    {k}: {v}")
 
-    print(f"\n  Training parameters:")
+    print("\n  Training parameters:")
     for k, v in config["training"].items():
         print(f"    {k}: {v}")
 

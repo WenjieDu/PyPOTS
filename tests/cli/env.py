@@ -29,6 +29,7 @@ class TestPyPOTSCLIEnv(unittest.TestCase):
                 ["--install", "optional", "--tool", "conda"],
                 catch_exceptions=False,
             )
+            print(result.output)
         except Exception as e:  # somehow we have some error when testing on Windows, so just print and pass below
             logger.error(f"❌ Exception: {e}")
 
@@ -41,5 +42,6 @@ class TestPyPOTSCLIEnv(unittest.TestCase):
                 ["--install", "optional", "--tool", "pip"],
                 catch_exceptions=False,
             )
+            print(result.output)
         except Exception as e:  # somehow we have some error when testing on Windows, so just print and pass below
             logger.error(f"❌ Exception: {e}")

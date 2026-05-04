@@ -156,7 +156,7 @@ def _print_results(study):
     logger.info("=" * 70)
     logger.info(f"  Best trial number : {best.number}")
     logger.info(f"  Best value        : {best.value}")
-    logger.info(f"  Best parameters   :")
+    logger.info("  Best parameters   :")
     for k, v in best.params.items():
         logger.info(f"    {k}: {v}")
 
@@ -242,7 +242,7 @@ def tune(config, task, model, n_trials, device):
     search_param_names = set(search_space.keys())
 
     # Allow 'lr' in search_space even though it's an optimizer kwarg, not a direct model param
-    lr_in_search = "lr" in search_param_names
+    # lr_in_search = "lr" in search_param_names
     validate_names = search_param_names - {"lr"}
     invalid_params = validate_names - model_param_names
     if invalid_params:

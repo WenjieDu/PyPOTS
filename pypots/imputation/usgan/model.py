@@ -6,7 +6,6 @@ The implementation of USGAN for the partially-observed time-series imputation ta
 # Created by Jun Wang <jwangfx@connect.ust.hk> and Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-import os
 from copy import deepcopy
 from typing import Union, Optional
 

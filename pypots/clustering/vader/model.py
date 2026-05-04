@@ -6,7 +6,6 @@ The implementation of VaDER for the partially-observed time-series clustering ta
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-import os
 from copy import deepcopy
 from typing import Union, Optional
 

@@ -7,7 +7,6 @@ the partially-observed time-series clustering task.
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-import os
 from copy import deepcopy
 from typing import Union, Optional
 

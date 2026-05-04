@@ -56,6 +56,7 @@ class TestPyPOTSCLIDev(unittest.TestCase):
                 ["--run_tests", "-k", "try_to_find_a_non_existing_test_case"],
                 catch_exceptions=False,
             )
+            print(result.output)
         except RuntimeError:  # try to find a non-existing test case, so RuntimeError will be raised
             pass
         except Exception as e:  # other exceptions will cause an error and result in failed testing

@@ -250,7 +250,7 @@ def data_profile(input_path, task, json_output):
             f"avg={stats['avg_sample_length']:.1f}"
         )
         print(f"  Variable length:  {stats['has_variable_length']}")
-        print(f"\n  Schema:")
+        print("\n  Schema:")
         print(f"    SAMPLE_ID:      {schema['sample_id_col'] or '(not present)'}")
         print(f"    TIMESTAMP:      {schema['timestamp_col'] or '(not present)'}")
         print(f"    Features:       {schema['feature_cols']}")
@@ -267,9 +267,9 @@ def data_profile(input_path, task, json_output):
             if d["task_type"] == "classification":
                 print(f"\n  → Strategy: pad_only (pad to max_len={stats['max_sample_length']})")
             else:
-                print(f"\n  → Strategy: sliding_window (non-overlapping, window_size≤200)")
+                print("\n  → Strategy: sliding_window (non-overlapping, window_size≤200)")
         else:
-            print(f"\n  → Strategy: direct (uniform length ≤ 200)")
+            print("\n  → Strategy: direct (uniform length ≤ 200)")
 
         print(f"\n{'=' * 65}")
         print(
@@ -449,7 +449,7 @@ def data_prepare(
         desc_target = output_path
     print(f"  1. Inspect: pypots-cli data describe --input {desc_target}")
     print(f"  2. Recommend: pypots-cli recommend --task {task} --data {desc_target}")
-    print(f"  3. Train:   pypots-cli train --config <config.yaml>")
+    print("  3. Train:   pypots-cli train --config <config.yaml>")
     print(f"{'=' * 65}\n")
 
 
@@ -548,7 +548,6 @@ def data_reconstruct(predictions, registry_path, output_path, key):
     4. Reassembles windows belonging to the same original sample
     5. Outputs a CSV file with SAMPLE_ID and reconstructed features
     """
-    import numpy as np
     import pandas as pd
 
     from ..utils.logging import logger
@@ -735,7 +734,6 @@ def data_split(input_path, output_dir, train_ratio, val_ratio, test_ratio, seed)
 )
 def data_describe(input_path, json_output):
     """Inspect and describe dataset statistics. Supports both H5 and CSV files."""
-    import numpy as np
 
     from ..utils.logging import logger
 
@@ -753,7 +751,6 @@ def _describe_csv(input_path, json_output, logger):
     """Describe a CSV file following the ai4ts data protocol."""
     import json as json_mod
 
-    import numpy as np
     import pandas as pd
 
     logger.info(f"Describing CSV dataset: {input_path}")
@@ -831,10 +828,10 @@ def _describe_csv(input_path, json_output, logger):
         if label_col:
             print(f"  Labels:         yes — column '{label_col}' ({n_classes} classes)")
         else:
-            print(f"  Labels:         no")
+            print("  Labels:         no")
 
         print(f"\n  Feature columns: {feature_cols}")
-        print(f"\n  Per-feature missing rates:")
+        print("\n  Per-feature missing rates:")
         for col, rate in per_feature_missing.items():
             bar = "█" * int(rate * 30) + "░" * (30 - int(rate * 30))
             print(f"    {col:20s} {bar} {rate:.2%}")
@@ -1095,5 +1092,5 @@ def data_load(dataset, output_dir, subset, rate, n_steps, pattern):
     if test_data and "X" in test_data:
         print(f"  Test samples: {test_data['X'].shape[0]}")
     print(f"\n  Saved to: {output_dir}/")
-    print(f"    train.h5  val.h5  test.h5")
+    print("    train.h5  val.h5  test.h5")
     print(f"{'=' * 60}\n")
