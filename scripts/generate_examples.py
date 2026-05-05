@@ -1,6 +1,6 @@
-import os
-import glob
 import ast
+import glob
+import os
 import re
 
 TASKS = ["imputation", "classification", "clustering", "forecasting", "anomaly_detection"]
@@ -235,31 +235,33 @@ def main():
 
 if __name__ == "__main__":
     main()
-"""
+""",
 }
+
 
 def extract_clean_init_code(source_code, node):
     init_code = ast.get_source_segment(source_code, node)
     if not init_code:
         return ""
 
-    init_code = init_code.replace('DATA["n_steps"]', 'n_steps')
-    init_code = init_code.replace('DATA["n_features"]', 'n_features')
-    init_code = init_code.replace('DATA["n_classes"]', 'n_classes')
-    init_code = init_code.replace('DATA["n_clusters"]', 'n_clusters')
-    init_code = init_code.replace('DATA["n_pred_steps"]', 'n_pred_steps')
-    init_code = init_code.replace('N_PRED_STEPS', 'n_pred_steps')
-    init_code = init_code.replace('n_steps - n_pred_steps', 'n_steps')
-    init_code = init_code.replace('DATA["anomaly_rate"]', '0.05')
-    init_code = init_code.replace('EPOCHS', '2')
-    init_code = init_code.replace('DEVICE', '"cpu"')
+    init_code = init_code.replace('DATA["n_steps"]', "n_steps")
+    init_code = init_code.replace('DATA["n_features"]', "n_features")
+    init_code = init_code.replace('DATA["n_classes"]', "n_classes")
+    init_code = init_code.replace('DATA["n_clusters"]', "n_clusters")
+    init_code = init_code.replace('DATA["n_pred_steps"]', "n_pred_steps")
+    init_code = init_code.replace("N_PRED_STEPS", "n_pred_steps")
+    init_code = init_code.replace("n_steps - n_pred_steps", "n_steps")
+    init_code = init_code.replace('DATA["anomaly_rate"]', "0.05")
+    init_code = init_code.replace("EPOCHS", "2")
+    init_code = init_code.replace("DEVICE", '"cpu"')
 
-    init_code = re.sub(r'\n\s*saving_path=[^,)]+,?', '', init_code)
-    init_code = re.sub(r'\n\s*optimizer=[^,)]+,?', '', init_code)
-    init_code = re.sub(r'\n\s*G_optimizer=[^,)]+,?', '', init_code)
-    init_code = re.sub(r'\n\s*D_optimizer=[^,)]+,?', '', init_code)
+    init_code = re.sub(r"\n\s*saving_path=[^,)]+,?", "", init_code)
+    init_code = re.sub(r"\n\s*optimizer=[^,)]+,?", "", init_code)
+    init_code = re.sub(r"\n\s*G_optimizer=[^,)]+,?", "", init_code)
+    init_code = re.sub(r"\n\s*D_optimizer=[^,)]+,?", "", init_code)
 
     return init_code
+
 
 def main():
     print("🔍 Scanning tests directory and generating examples...")
@@ -269,12 +271,17 @@ def main():
         os.makedirs(output_dir, exist_ok=True)
 
         test_files = glob.glob(os.path.join(task_dir, "*.py"))
+        test_files.extend(glob.glob(os.path.join(task_dir, "llms/*.py")))
 
         for file in test_files:
-            basename = os.path.basename(file)
-            if basename.startswith("__"):
+            if os.path.isdir(file):
                 continue
 
+            basename = os.path.basename(file)
+            if basename.startswith("__"):  # skip __init__.py and similar files
+                continue
+
+            print(file)
             with open(file, "r", encoding="utf-8") as f:
                 source = f.read()
 
@@ -300,10 +307,7 @@ def main():
                                         break
 
             if model_name and init_code:
-                example_code = TEMPLATES[task].format(
-                    model_name=model_name,
-                    init_code=init_code
-                )
+                example_code = TEMPLATES[task].format(model_name=model_name, init_code=init_code)
 
                 task_str = task.replace("_", "")
                 example_filename = basename.replace(".py", f"_{task_str}_example.py")
@@ -312,6 +316,7 @@ def main():
                 with open(output_path, "w", encoding="utf-8") as f:
                     f.write(example_code)
                 print(f"✅ Generated {task}/{example_filename} (extracted model: {model_name})")
+
 
 if __name__ == "__main__":
     main()

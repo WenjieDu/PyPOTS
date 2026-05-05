@@ -19,9 +19,7 @@ example_scripts = glob.glob(os.path.join(examples_dir, "**/*.py"), recursive=Tru
 
 # Filter out valid scripts for test execution (e.g., exclude __init__.py or temporary files)
 valid_scripts = [
-    script
-    for script in example_scripts
-    if not os.path.basename(script).startswith("__") and not "checkpoint" in script
+    script for script in example_scripts if not os.path.basename(script).startswith("__") and not "checkpoint" in script
 ]
 
 
@@ -44,9 +42,7 @@ def test_standalone_examples_can_run(script_path):
 
     # Execute the command. A longer timeout is set here to ensure even larger examples can finish training.
     # We expect every example script to run properly as if a beginner executes `python example.py`.
-    result = subprocess.run(
-        ["python", script_path], capture_output=True, text=True, timeout=180, env=env
-    )
+    result = subprocess.run(["python", script_path], capture_output=True, text=True, timeout=180, env=env)
 
     # Verify if the subprocess exited successfully
     if result.returncode != 0:
