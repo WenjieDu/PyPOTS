@@ -289,8 +289,6 @@ class CSAI(BaseNNClassifier):
                 )
                 val_set = load_dict_from_h5(val_set)
 
-            if not key_in_data_set("X_ori", val_set):
-                raise ValueError("val_set must contain 'X_ori' for model validation.")
             val_dataset = DatasetForCSAI(
                 data=val_set,
                 file_type=file_type,
