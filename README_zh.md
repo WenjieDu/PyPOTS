@@ -555,5 +555,5 @@ test recently ;-) Follow us, and stay tuned!
 [TKAN: Temporal Kolmogorov-Arnold Networks](https://arxiv.org/abs/2405.07344).
 *arXiv 2024*.
 [^55]: Zhang, F., Du, W., Zhang, H., Yu, K., & Qu, S. (2026).
-[HELIX: Hybrid Encoding with Learnable Identity and Cross-dimensional Synthesis for Time Series Imputation](https://openreview.net/forum?id=FN20iuPnEU).
+[HELIX: Hybrid Encoding with Learnable Identity and Cross-dimensional Synthesis for Time Series Imputation](https://arxiv.org/abs/2605.02278).
 *ICML 2026*.
