@@ -42,10 +42,12 @@ def main():
 
     # 5. Impute missing values
     print("🔮 Imputing missing values...")
-    results = model.predict(test_set)
+    results = model.predict(
+        test_set,
+        n_sampling_times=2,  # for generation models like CSDI, we can sample multiple times to get multiple predications per data instance
+    )
     imputed_X = results["imputation"]
-    if len(imputed_X.shape) == 4:
-        imputed_X = imputed_X.mean(axis=1)
+    imputed_X = imputed_X.mean(axis=1)  # mean over sampling times
 
     # 6. Evaluate
     indicating_mask = np.isnan(test_set["X"])

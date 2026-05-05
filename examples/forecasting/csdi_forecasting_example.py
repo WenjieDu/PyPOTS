@@ -47,8 +47,12 @@ def main():
 
     # 5. Forecast
     print("🔮 Forecasting future steps...")
-    results = model.predict(test_set)
+    results = model.predict(
+        test_set,
+        n_sampling_times=2,  # for generation models like CSDI, we can sample multiple times to get multiple predications per data instance
+    )
     forecasts = results["forecasting"]
+    forecasts = forecasts.mean(axis=1)  # mean over sampling times
     
     test_MSE = calc_mse(forecasts, np.nan_to_num(test_set["X_pred"]), ~np.isnan(test_set["X_pred"]))    
     print(f"✅ CSDI forecasting MSE: {test_MSE:.4f}")
