@@ -44,7 +44,7 @@ def main():
         llm_model_type="GPT2",
         dropout=0.1,
         domain_prompt_content="The next value in a random walk is a modification of the previous value in the "
-        f"sequence. This dataset contains {DATA['n_steps']} steps of a random walk with {DATA['n_features']} features.",
+        f"sequence. This dataset contains {n_steps} steps of a random walk with {n_features} features.",
         batch_size=8,
         epochs=2,
         device="cpu",
