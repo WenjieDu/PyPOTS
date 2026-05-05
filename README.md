@@ -100,8 +100,8 @@ partially-observed time series with missing values. The table below shows the av
 corresponding task (note that models will be continuously updated in the future to handle tasks that are not
 currently supported. Stay tuned❗️).
 
-🌟 Since **v0.2**, all neural-network models in PyPOTS has got hyperparameter-optimization support.
-This functionality is implemented with the [Optuna](https://github.com/optuna/optuna) framework. You may want to
+🌟 Since **v0.2**, all neural-network models in PyPOTS has got hyperparameter-optimization support by [Microsoft NNI](https://github.com/microsoft/nni) until **v2.0**.
+In PyPOTS v2, this functionality is reimplemented with the [Optuna](https://github.com/optuna/optuna) framework. You may want to
 refer to our time-series imputation survey and benchmark
 repo [Awesome_Imputation](https://github.com/WenjieDu/Awesome_Imputation)
 to see how to config and tune the hyperparameters.
@@ -138,7 +138,7 @@ The paper references and links are all listed at the bottom of this file.
 | Neural Net    | ModernTCN[^38]                                                                                                                                  |    ✅     |    ✅     |          |          |          | `2024 - ICLR`                                                                                            |
 | Neural Net    | ImputeFormer🧑‍🔧[^34]                                                                                                                          |    ✅     |          |          |          |    ✅     | `2024 - KDD`                                                                                             |
 | Neural Net    | TOTEM[^50]                                                                                                                                      |    ✅     |          |          |          |          | `2024 - TMLR`                                                                                            |
-| Neural Net    | TKAN[^54]                                                                                                                                       |    ✅     |          |          |          |          | `2024 - arXiv`                                                                                           |
+| Neural Net    | TKAN🧑‍🔧[^54]                                                                                                                                       |    ✅     |          |          |          |          | `2024 - arXiv`                                                                                           |
 | Neural Net    | SAITS[^1]                                                                                                                                       |    ✅     |          |    ✅     |          |    ✅     | `2023 - ESWA`                                                                                            |
 | LLM           | GPT4TS[^46]                                                                                                                                     |    ✅     |    ✅     |          |          |          | `2023 - NeurIPS`                                                                                         |
 | Neural Net    | FreTS🧑‍🔧[^23]                                                                                                                                 |    ✅     |          |          |          |          | `2023 - NeurIPS`                                                                                         |
