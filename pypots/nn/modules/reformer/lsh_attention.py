@@ -203,9 +203,9 @@ class LSHAttention(nn.Module):
         self.dropout = nn.Dropout(dropout)
         self.dropout_for_hash = nn.Dropout(drop_for_hash_rate)
 
-        assert (
-            rehash_each_round or allow_duplicate_attention
-        ), "The setting {allow_duplicate_attention=False, rehash_each_round=False} is not implemented."
+        assert rehash_each_round or allow_duplicate_attention, (
+            "The setting {allow_duplicate_attention=False, rehash_each_round=False} is not implemented."
+        )
 
         self.causal = causal
         self.bucket_size = bucket_size
@@ -292,9 +292,9 @@ class LSHAttention(nn.Module):
         is_reverse = kwargs.pop("_reverse", False)
         depth = kwargs.pop("_depth", None)
 
-        assert (
-            seqlen % (self.bucket_size * 2) == 0
-        ), f"Sequence length ({seqlen}) needs to be divisible by target bucket size  x 2 - {self.bucket_size * 2}"
+        assert seqlen % (self.bucket_size * 2) == 0, (
+            f"Sequence length ({seqlen}) needs to be divisible by target bucket size  x 2 - {self.bucket_size * 2}"
+        )
 
         n_buckets = seqlen // self.bucket_size
         buckets = self.hash_vectors(

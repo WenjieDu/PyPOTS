@@ -5,7 +5,6 @@ Optimizers for PyPOTS NN models.
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-
 from .adadelta import Adadelta
 from .adagrad import Adagrad
 from .adam import Adam

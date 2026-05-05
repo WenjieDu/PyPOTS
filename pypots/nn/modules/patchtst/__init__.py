@@ -16,7 +16,6 @@ This implementation is inspired by the official one https://github.com/yuqinie98
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-
 from .autoencoder import PatchtstEncoder
 from .layers import PatchEmbedding, RegressionHead, ClassificationHead, PredictionHead
 

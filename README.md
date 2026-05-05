@@ -51,8 +51,8 @@
     <a href="https://deepwiki.com/WenjieDu/PyPOTS">
         <img alt="Ask DeepWiki" src="https://deepwiki.com/badge.svg">
     </a>
-    <a href="https://github.com/psf/black">
-        <img alt="Code Style" src="https://img.shields.io/badge/Code_Style-black-000000">
+    <a href="https://github.com/astral-sh/ruff">
+        <img alt="Code Style" src="https://img.shields.io/badge/Code_Style-Ruff-D7FF64?logo=ruff">
     </a>
     <a href="https://anaconda.org/conda-forge/pypots">
         <img alt="Conda downloads" src="https://pypots.com/figs/downloads_badges/conda_pypots_downloads.svg">
@@ -101,7 +101,7 @@ corresponding task (note that models will be continuously updated in the future 
 currently supported. Stay tuned❗️).
 
 🌟 Since **v0.2**, all neural-network models in PyPOTS has got hyperparameter-optimization support.
-This functionality is implemented with the [Microsoft NNI](https://github.com/microsoft/nni) framework. You may want to
+This functionality is implemented with the [Optuna](https://github.com/optuna/optuna) framework. You may want to
 refer to our time-series imputation survey and benchmark
 repo [Awesome_Imputation](https://github.com/WenjieDu/Awesome_Imputation)
 to see how to config and tune the hyperparameters.
@@ -268,8 +268,8 @@ conda update  conda-forge::pypots  # update pypots to the latest version
 # via docker
 docker run -it --name pypots wenjiedu/pypots  # docker will auto pull our built image and run a instance for you
 # after things settled, you can run python in the container to access the well-configured environment for running pypots
-# if you'd like to detach from the container, press ctrl-P + ctrl-Q 
-# run `docker attach pypots` to enter the container again. 
+# if you'd like to detach from the container, press ctrl-P + ctrl-Q
+# run `docker attach pypots` to enter the container again.
 ```
 
 ## ❖ Usage
@@ -295,7 +295,7 @@ data = preprocess_physionet2012(subset='set-a',rate=0.1) # Our ecosystem libs wi
 train_X, val_X, test_X = data["train_X"], data["val_X"], data["test_X"]
 print(train_X.shape)  # (n_samples, n_steps, n_features)
 print(val_X.shape)  # samples (n_samples) in train set and val set are different, but they have the same sequence len (n_steps) and feature dim (n_features)
-print(f"We have {calc_missing_rate(train_X):.1%} values missing in train_X")  
+print(f"We have {calc_missing_rate(train_X):.1%} values missing in train_X")
 train_set = {"X": train_X}  # in training set, simply put the incomplete time series into it
 val_set = {
     "X": val_X,
@@ -303,7 +303,7 @@ val_set = {
 }
 test_set = {"X": test_X}  # in test set, only give the testing incomplete time series for model to impute
 test_X_ori = data["test_X_ori"]  # test_X_ori bears ground truth for evaluation
-indicating_mask = np.isnan(test_X) ^ np.isnan(test_X_ori)  # mask indicates the values that are missing in X but not in X_ori, i.e. where the gt values are 
+indicating_mask = np.isnan(test_X) ^ np.isnan(test_X_ori)  # mask indicates the values that are missing in X but not in X_ori, i.e. where the gt values are
 
 from pypots.imputation import SAITS  # import the model you want to use
 from pypots.nn.functional import calc_mae
@@ -522,7 +522,7 @@ Fröhlich, H. (2019).
 [An empirical evaluation of generic convolutional and recurrent networks for sequence modeling](https://arxiv.org/abs/1803.01271).
 *arXiv 2018*.
 [^36]: Project Gungnir, the world 1st LLM for time-series multitask modeling, will meet you soon. 🚀 Missing values and
-variable lengths in your datasets? Hard to perform multitask learning with your time series? Not problems no longer. 
+variable lengths in your datasets? Hard to perform multitask learning with your time series? Not problems no longer.
 Join our waitlist right now to receive the latest news and be the first to try it when it's released!
 <a href="https://time-series.ai"><img src="https://pypots.com/figs/timeseriesai/logo.png" width="20px">Time-Series.AI</a>
 [^37]: Wang, S., Wu, H., Shi, X., Hu, T., Luo, H., Ma, L., ... & ZHOU, J. (2024).

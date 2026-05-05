@@ -1,5 +1,5 @@
 """
-Test cases for the functions and classes in package `pypots.cli.doc`.
+Test cases for the CLI command `pypots.cli.doc`.
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
@@ -8,12 +8,11 @@ Test cases for the functions and classes in package `pypots.cli.doc`.
 import os
 import threading
 import unittest
-from argparse import Namespace
-from copy import copy
 
 import pytest
+from click.testing import CliRunner
 
-from pypots.cli.doc import doc_command_factory
+from pypots.cli.doc import doc
 from pypots.utils.logging import logger
 from tests.cli.config import PROJECT_ROOT_DIR
 
@@ -39,31 +38,20 @@ def time_out(interval, callback):
     return decorator
 
 
-@pytest.mark.xfail(reason="Allow tests for CLI to fail")
 class TestPyPOTSCLIDoc(unittest.TestCase):
-    # set up the default arguments
-    default_arguments = {
-        "gene_rst": False,
-        "branch": "main",
-        "gene_html": False,
-        "view_doc": False,
-        "port": 9075,
-        "cleanup": False,
-    }
     # `pypots-cli doc` must run under the project root dir
     os.chdir(PROJECT_ROOT_DIR)
 
     @pytest.mark.xdist_group(name="cli-doc")
     def test_0_gene_rst(self):
-        arguments = copy(self.default_arguments)
-        arguments["gene_rst"] = True
-        args = Namespace(**arguments)
-        doc_command_factory(args).run()
+        runner = CliRunner()
+        result = runner.invoke(doc, ["--gene_rst"], catch_exceptions=False)
+        assert result.exit_code == 0, result.output
 
         logger.info("run again under a non-root dir")
         try:
             os.chdir(os.path.abspath(os.path.join(PROJECT_ROOT_DIR, "pypots")))
-            doc_command_factory(args).run()
+            runner.invoke(doc, ["--gene_rst"], catch_exceptions=False)
         except RuntimeError:  # try to run under a non-root dir, so RuntimeError will be raised
             pass
         except Exception as e:  # other exceptions will cause an error and result in failed testing
@@ -73,31 +61,26 @@ class TestPyPOTSCLIDoc(unittest.TestCase):
 
     @pytest.mark.xdist_group(name="cli-doc")
     def test_1_gene_html(self):
-        arguments = copy(self.default_arguments)
-        arguments["gene_html"] = True
-        args = Namespace(**arguments)
+        runner = CliRunner()
         try:
-            doc_command_factory(args).run()
+            runner.invoke(doc, ["--gene_html"], catch_exceptions=False)
         except Exception as e:  # somehow we have some error when testing on Windows, so just print and pass below
             logger.error(f"❌ Exception: {e}")
 
     @pytest.mark.xdist_group(name="cli-doc")
     @time_out(2, callback_func)  # wait for two seconds
     def test_2_view_doc(self):
-        arguments = copy(self.default_arguments)
-        arguments["view_doc"] = True
-        args = Namespace(**arguments)
+        runner = CliRunner()
         try:
-            doc_command_factory(args).run()
+            runner.invoke(doc, ["--view_doc"], catch_exceptions=False)
         except Exception as e:  # somehow we have some error when testing on Windows, so just print and pass below
             logger.error(f"❌ Exception: {e}")
 
     @pytest.mark.xdist_group(name="cli-doc")
     def test_3_cleanup(self):
-        arguments = copy(self.default_arguments)
-        arguments["cleanup"] = True
-        args = Namespace(**arguments)
-        doc_command_factory(args).run()
+        runner = CliRunner()
+        result = runner.invoke(doc, ["--cleanup"], catch_exceptions=False)
+        assert result.exit_code == 0, result.output
 
 
 if __name__ == "__main__":

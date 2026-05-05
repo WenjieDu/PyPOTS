@@ -63,32 +63,32 @@ class TestTS2Vec(unittest.TestCase):
         results = self.ts2vec.predict(TEST_SET, classifier_type="svm")
         metrics = calc_binary_classification_metrics(results["classification_proba"], DATA["test_y"])
         logger.info(
-            f'TS2Vec+svm ROC_AUC: {metrics["roc_auc"]}, '
-            f'PR_AUC: {metrics["pr_auc"]}, '
-            f'F1: {metrics["f1"]}, '
-            f'Precision: {metrics["precision"]}, '
-            f'Recall: {metrics["recall"]}'
+            f"TS2Vec+svm ROC_AUC: {metrics['roc_auc']}, "
+            f"PR_AUC: {metrics['pr_auc']}, "
+            f"F1: {metrics['f1']}, "
+            f"Precision: {metrics['precision']}, "
+            f"Recall: {metrics['recall']}"
         )
 
         results = self.ts2vec.predict(TEST_SET, classifier_type="knn")
         metrics = calc_binary_classification_metrics(results["classification_proba"], DATA["test_y"])
         logger.info(
-            f'TS2Vec+knn ROC_AUC: {metrics["roc_auc"]}, '
-            f'PR_AUC: {metrics["pr_auc"]}, '
-            f'F1: {metrics["f1"]}, '
-            f'Precision: {metrics["precision"]}, '
-            f'Recall: {metrics["recall"]}'
+            f"TS2Vec+knn ROC_AUC: {metrics['roc_auc']}, "
+            f"PR_AUC: {metrics['pr_auc']}, "
+            f"F1: {metrics['f1']}, "
+            f"Precision: {metrics['precision']}, "
+            f"Recall: {metrics['recall']}"
         )
 
         _ = self.ts2vec.predict(TEST_SET, classifier_type="linear_regression")
         results = self.ts2vec.predict(TEST_SET, classifier_type="lr")
         metrics = calc_binary_classification_metrics(results["classification_proba"], DATA["test_y"])
         logger.info(
-            f'TS2Vec+lr ROC_AUC: {metrics["roc_auc"]}, '
-            f'PR_AUC: {metrics["pr_auc"]}, '
-            f'F1: {metrics["f1"]}, '
-            f'Precision: {metrics["precision"]}, '
-            f'Recall: {metrics["recall"]}'
+            f"TS2Vec+lr ROC_AUC: {metrics['roc_auc']}, "
+            f"PR_AUC: {metrics['pr_auc']}, "
+            f"F1: {metrics['f1']}, "
+            f"Precision: {metrics['precision']}, "
+            f"Recall: {metrics['recall']}"
         )
 
         assert metrics["roc_auc"] >= 0.5, "ROC-AUC < 0.5"
@@ -127,11 +127,11 @@ class TestTS2Vec(unittest.TestCase):
         assert len(classification) == len(classification_proba)
         metrics = calc_binary_classification_metrics(classification_proba, DATA["test_y"])
         logger.info(
-            f'Lazy-loading TS2Vec ROC_AUC: {metrics["roc_auc"]}, '
-            f'PR_AUC: {metrics["pr_auc"]}, '
-            f'F1: {metrics["f1"]}, '
-            f'Precision: {metrics["precision"]}, '
-            f'Recall: {metrics["recall"]}'
+            f"Lazy-loading TS2Vec ROC_AUC: {metrics['roc_auc']}, "
+            f"PR_AUC: {metrics['pr_auc']}, "
+            f"F1: {metrics['f1']}, "
+            f"Precision: {metrics['precision']}, "
+            f"Recall: {metrics['recall']}"
         )
         assert metrics["roc_auc"] >= 0.5, "ROC-AUC < 0.5"
 

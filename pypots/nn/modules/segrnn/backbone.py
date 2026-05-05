@@ -1,6 +1,4 @@
-"""
-
-"""
+""" """
 
 # Created by Shengsheng Lin
 

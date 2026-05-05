@@ -6,7 +6,6 @@ The implementation of GP-VAE for the partially-observed time-series imputation t
 # Created by Jun Wang <jwangfx@connect.ust.hk> and Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-
 from typing import Union, Optional
 
 import numpy as np

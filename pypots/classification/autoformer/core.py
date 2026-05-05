@@ -1,6 +1,4 @@
-"""
-
-"""
+""" """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
@@ -15,7 +13,6 @@ from ...nn.modules.saits import SaitsEmbedding
 
 
 class _Autoformer(ModelCore):
-
     def __init__(
         self,
         n_classes: int,

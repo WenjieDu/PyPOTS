@@ -16,7 +16,6 @@ This implementation is inspired by the official one https://github.com/MAZiqing/
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-
 from .model import FEDformer
 
 __all__ = [

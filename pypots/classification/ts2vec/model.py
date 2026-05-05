@@ -332,9 +332,9 @@ class TS2Vec(BaseNNClassifier):
 
         """
         classifier_type = _resolve_classifier_type(classifier_type)
-        assert (
-            classifier_type in SUPPORTED_CLASSIFIERS
-        ), f"classifier_type should be one of {SUPPORTED_CLASSIFIERS}, but got {classifier_type}"
+        assert classifier_type in SUPPORTED_CLASSIFIERS, (
+            f"classifier_type should be one of {SUPPORTED_CLASSIFIERS}, but got {classifier_type}"
+        )
 
         self.model.eval()  # set the model to evaluation mode
 

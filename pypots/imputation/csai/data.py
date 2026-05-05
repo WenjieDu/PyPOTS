@@ -1,6 +1,4 @@
-"""
-
-"""
+""" """
 
 # Created by Linglong Qian, Joseph Arul Raj <linglong.qian@kcl.ac.uk, joseph_arul_raj@kcl.ac.uk>
 # License: BSD-3-Clause

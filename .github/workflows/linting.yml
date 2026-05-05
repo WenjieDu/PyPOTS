@@ -7,10 +7,11 @@ on:
             - dev
     pull_request:
         branches:
+            - main
             - dev
 
 jobs:
-    flake8-linting:
+    ruff-linting:
         runs-on: ubuntu-latest
 
         steps:
@@ -19,12 +20,12 @@ jobs:
             - name: Set up Python
               uses: actions/setup-python@v6
               with:
-                  python-version: "3.10"
+                  python-version: "3.13"
 
-            - name: Install Flake8
+            - name: Install Ruff
               run: |
-                pip install flake8 flake8-pyproject
+                pip install ruff
 
             - name: Run linting
               run: |
-                flake8 .
+                ruff check .

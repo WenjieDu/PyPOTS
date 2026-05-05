@@ -5,7 +5,6 @@ Test cases for metric functions
 # Created by Wenjie Du <wdu@time-series.ai>
 # License: BSD-3-Clause
 
-
 import unittest
 
 import pytest
@@ -19,7 +18,7 @@ class TestMetrics(unittest.TestCase):
     def test_quantile_crps(self):
         if torch.cuda.is_available():
             device = "cuda"
-        elif hasattr(torch.mps,  'is_available') and torch.mps.is_available():
+        elif hasattr(torch.mps, "is_available") and torch.mps.is_available():
             device = "mps"
         else:
             device = "cpu"

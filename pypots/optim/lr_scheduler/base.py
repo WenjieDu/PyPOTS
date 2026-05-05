@@ -64,8 +64,7 @@ class LRScheduler(ABC):
             for i, group in enumerate(optimizer.param_groups):
                 if "initial_lr" not in group:
                     raise KeyError(
-                        "param 'initial_lr' is not specified "
-                        "in param_groups[{}] when resuming an optimizer".format(i)
+                        "param 'initial_lr' is not specified in param_groups[{}] when resuming an optimizer".format(i)
                     )
         self.base_lrs = [group["initial_lr"] for group in optimizer.param_groups]
 

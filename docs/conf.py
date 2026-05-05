@@ -107,10 +107,7 @@ html_context = {
 if os.environ.get("READTHEDOCS", "") == "True":
     html_context["READTHEDOCS"] = True
 
-html_favicon = (
-    "https://raw.githubusercontent.com/PyPOTS/pypots.github.io/main/static/figs/pypots_logos/PyPOTS/logo_FFBG.svg"
-)
-
+html_favicon = "https://pypots.com/figs/pypots_logos/PyPOTS/logo_F5BG.svg"
 html_sidebars = {
     "**": [
         "sidebar/scroll-start.html",

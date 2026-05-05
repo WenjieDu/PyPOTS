@@ -16,7 +16,6 @@ This implementation is inspired by the official one https://github.com/thuml/Non
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-
 from .model import NonstationaryTransformer
 
 __all__ = [
