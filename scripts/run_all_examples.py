@@ -19,7 +19,7 @@ example_scripts = glob.glob(os.path.join(examples_dir, "**/*.py"), recursive=Tru
 
 # Filter out valid scripts for test execution (e.g., exclude __init__.py or temporary files)
 valid_scripts = [
-    script for script in example_scripts if not os.path.basename(script).startswith("__") and not "checkpoint" in script
+    script for script in example_scripts if not os.path.basename(script).startswith("__") and "checkpoint" not in script
 ]
 
 
