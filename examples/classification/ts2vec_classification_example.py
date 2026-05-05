@@ -27,7 +27,7 @@ def main():
         n_steps,
         n_features,
         n_classes=n_classes,
-        n_output_dims=d_vectorization,
+        n_output_dims=2,
         d_hidden=64,
         n_layers=2,
         epochs=5,

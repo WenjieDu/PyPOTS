@@ -14,6 +14,7 @@ from pypots.utils.logging import logger
 # 1. Scan all files ending with `.py` in the examples folder
 # and exclude system or hidden files that are not genuine example scripts.
 examples_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../examples"))
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 example_scripts = glob.glob(os.path.join(examples_dir, "**/*.py"), recursive=True)
 
 # Filter out valid scripts for test execution (e.g., exclude __init__.py or temporary files)
@@ -34,10 +35,17 @@ def test_standalone_examples_can_run(script_path):
     script_name = os.path.relpath(script_path, examples_dir)
     logger.info(f"🚀 [Testing Example Script] Running as subprocess: {script_name}...")
 
+    # Setup env to use local pypots package instead of the installed one
+    env = os.environ.copy()
+    if "PYTHONPATH" in env:
+        env["PYTHONPATH"] = f"{project_root}{os.pathsep}{env['PYTHONPATH']}"
+    else:
+        env["PYTHONPATH"] = project_root
+
     # Execute the command. A longer timeout is set here to ensure even larger examples can finish training.
     # We expect every example script to run properly as if a beginner executes `python example.py`.
     result = subprocess.run(
-        ["python", script_path], capture_output=True, text=True, timeout=180
+        ["python", script_path], capture_output=True, text=True, timeout=180, env=env
     )
 
     # Verify if the subprocess exited successfully
