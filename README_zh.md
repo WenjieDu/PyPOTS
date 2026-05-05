@@ -91,8 +91,8 @@ PyPOTS当前支持多变量POTS数据的插补, 预测, 分类, 聚类以及异�
 符号`✅`表示该算法当前可用于相应的任务, 你可以点击`✅`以快速跳转到该算法在该任务上的使用示例(如果有的话).
 注意, 目前模型尚不支持的任务在未来版本中可能会逐步添加, 敬请关注!
 
-🌟 自**v0.2**版本开始, PyPOTS中所有神经网络模型都支持超参数调优. 该功能基于[Optuna](https://github.com/optuna/optuna)
-框架实现.
+🌟 自**v0.2**版本开始, PyPOTS中所有神经网络模型都由[Microsoft NNI](https://github.com/microsoft/nni)支持超参数调优, 直到**v2.0**. 
+从PyPOTS v2开始, 该功能基于[Optuna](https://github.com/optuna/optuna)框架重新实现.
 你可以通过参考我们的时间序列插补综述和基准评估项目的代码[Awesome_Imputation](https://github.com/WenjieDu/Awesome_Imputation)
 来了解如何使用PyPOTS调优模型的超参.
 
@@ -127,7 +127,7 @@ PyPOTS当前支持多变量POTS数据的插补, 预测, 分类, 聚类以及异�
 | Neural Net | ModernTCN[^38] | [✅](examples/imputation/moderntcn_imputation_example.py) | [✅](examples/forecasting/moderntcn_forecasting_example.py) |  |  |  | `2024 - ICLR` |
 | Neural Net | ImputeFormer🧑‍🔧[^34] | [✅](examples/imputation/imputeformer_imputation_example.py) |  |  |  | [✅](examples/anomaly_detection/imputeformer_anomalydetection_example.py) | `2024 - KDD` |
 | Neural Net | TOTEM[^50] | [✅](examples/imputation/totem_imputation_example.py) |  |  |  |  | `2024 - TMLR` |
-| Neural Net | TKAN[^54] | [✅](examples/imputation/tkan_imputation_example.py) |  |  |  |  | `2024 - arXiv` |
+| Neural Net | TKAN🧑‍🔧[^54] | [✅](examples/imputation/tkan_imputation_example.py) |  |  |  |  | `2024 - arXiv` |
 | Neural Net | SAITS[^1] | [✅](examples/imputation/saits_imputation_example.py) |  | [✅](examples/classification/saits_classification_example.py) |  | [✅](examples/anomaly_detection/saits_anomalydetection_example.py) | `2023 - ESWA` |
 | LLM | GPT4TS[^46] | [✅](examples/imputation/gpt4ts_imputation_example.py) | [✅](examples/forecasting/gpt4ts_forecasting_example.py) |  |  |  | `2023 - NeurIPS` |
 | Neural Net | FreTS🧑‍🔧[^23] | [✅](examples/imputation/frets_imputation_example.py) |  |  |  |  | `2023 - NeurIPS` |
