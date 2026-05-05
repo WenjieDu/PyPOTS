@@ -1,7 +1,7 @@
 """
-此测试用于统一且自动化地覆盖 `examples/` 目录下的所有独立 Python 脚本。
-它能在后续每次运行 CI 时，确保为初学者提供的 Demo 脚本依然能够完美跑通，
-避免后续 PyPOTS 版本更新导致示例代码报错失效。
+This test is used for unified and automated coverage of all independent Python scripts in the `examples/` directory.
+It ensures that the demo scripts provided for beginners run perfectly during every CI run,
+preventing subsequent PyPOTS updates from causing the example code to fail.
 """
 
 import os
@@ -11,12 +11,12 @@ import pytest
 
 from pypots.utils.logging import logger
 
-# 1. 扫描 examples 文件夹下的所有以 `.py` 结尾的文件
-# 并排除那些并非真正示例文件的系统或隐藏文件
+# 1. Scan all files ending with `.py` in the examples folder
+# and exclude system or hidden files that are not genuine example scripts.
 examples_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../examples"))
 example_scripts = glob.glob(os.path.join(examples_dir, "**/*.py"), recursive=True)
 
-# 筛选出需要运行测试的合法文件（比如排除 __init__.py 或者临时文件）
+# Filter out valid scripts for test execution (e.g., exclude __init__.py or temporary files)
 valid_scripts = [
     script for script in example_scripts
     if not os.path.basename(script).startswith("__") and not "checkpoint" in script
@@ -26,15 +26,15 @@ valid_scripts = [
 @pytest.mark.parametrize("script_path", valid_scripts)
 def test_standalone_examples_can_run(script_path):
     """
-    我们将每一个收集到的示例脚本作为独立的子进程执行。
-    如果子进程正常退出 (退出码 exit code == 0)，说明示例代码有效且正确。
-    反之则直接让单元测试爆出错误，提醒开发者修复对应 Example。
+    We execute each collected example script as an independent subprocess.
+    If the subprocess exits normally (exit code == 0), the example code is valid and correct.
+    Otherwise, the unit test will immediately fail, alerting the developer to fix the corresponding Example.
     """
     script_name = os.path.relpath(script_path, examples_dir)
-    logger.info(f"🚀 [Testing Example Script] 正在以子进程方式运行: {script_name}...")
+    logger.info(f"🚀 [Testing Example Script] Running as subprocess: {script_name}...")
 
-    # 执行命令，这里设定较长的 timeout 确保哪怕大点的例子能训得完，或者在示例里用更小的 epoch。
-    # 我们期望每个示例脚本都能像小白用户执行 `python example.py` 那样正常运转。
+    # Execute the command. A longer timeout is set here to ensure even larger examples can finish training.
+    # We expect every example script to run properly as if a beginner executes `python example.py`.
     result = subprocess.run(
         ["python", script_path],
         capture_output=True,
@@ -42,13 +42,12 @@ def test_standalone_examples_can_run(script_path):
         timeout=180
     )
 
-    # 验证子进程退出是否成功
+    # Verify if the subprocess exited successfully
     if result.returncode != 0:
-        logger.error(f"❌ '{script_name}' 运行失败!\n\nStandard Output:\n{result.stdout}\n\nStandard Error:\n{result.stderr}")
-        pytest.fail(f"示例代码 {script_name} 执行报错，请检查它是否与框架的最新 API 或参数不兼容。")
+        logger.error(f"❌ '{script_name}' execution failed!\n\nStandard Output:\n{result.stdout}\n\nStandard Error:\n{result.stderr}")
+        pytest.fail(f"Example code {script_name} execution failed. Please check if it's incompatible with the latest API or parameters of the framework.")
 
-    logger.info(f"✅ '{script_name}' 成功跑通！")
+    logger.info(f"✅ '{script_name}' successfully executed!")
 
 if __name__ == "__main__":
-    pytest.main(["-s", __file__])
-
+    pytest.main(["-s", "-n", "auto", __file__])
