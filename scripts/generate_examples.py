@@ -297,7 +297,8 @@ def main():
                     init_code=init_code
                 )
 
-                example_filename = basename.replace(".py", "_example.py")
+                task_str = task.replace("_", "")
+                example_filename = basename.replace(".py", f"_{task_str}_example.py")
                 output_path = os.path.join(output_dir, example_filename)
 
                 with open(output_path, "w", encoding="utf-8") as f:
