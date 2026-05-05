@@ -18,7 +18,8 @@ example_scripts = glob.glob(os.path.join(examples_dir, "**/*.py"), recursive=Tru
 
 # Filter out valid scripts for test execution (e.g., exclude __init__.py or temporary files)
 valid_scripts = [
-    script for script in example_scripts
+    script
+    for script in example_scripts
     if not os.path.basename(script).startswith("__") and not "checkpoint" in script
 ]
 
@@ -36,18 +37,20 @@ def test_standalone_examples_can_run(script_path):
     # Execute the command. A longer timeout is set here to ensure even larger examples can finish training.
     # We expect every example script to run properly as if a beginner executes `python example.py`.
     result = subprocess.run(
-        ["python", script_path],
-        capture_output=True,
-        text=True,
-        timeout=180
+        ["python", script_path], capture_output=True, text=True, timeout=180
     )
 
     # Verify if the subprocess exited successfully
     if result.returncode != 0:
-        logger.error(f"❌ '{script_name}' execution failed!\n\nStandard Output:\n{result.stdout}\n\nStandard Error:\n{result.stderr}")
-        pytest.fail(f"Example code {script_name} execution failed. Please check if it's incompatible with the latest API or parameters of the framework.")
+        logger.error(
+            f"❌ '{script_name}' execution failed!\n\nStandard Output:\n{result.stdout}\n\nStandard Error:\n{result.stderr}"
+        )
+        pytest.fail(
+            f"Example code {script_name} execution failed. Please check if it's incompatible with the latest API or parameters of the framework."
+        )
 
     logger.info(f"✅ '{script_name}' successfully executed!")
+
 
 if __name__ == "__main__":
     pytest.main(["-s", "-n", "auto", __file__])
