@@ -8,12 +8,15 @@ from benchpots.datasets import preprocess_random_walk
 from pypots.imputation import TSLANet
 from pypots.utils.metrics import calc_mse
 
+
 def main():
     n_steps = 48
     n_features = 35
 
     # 1. Generate a random walk time-series dataset
-    dataset = preprocess_random_walk(n_steps=n_steps, n_features=n_features, n_classes=5, n_samples_each_class=40, missing_rate=0.1)
+    dataset = preprocess_random_walk(
+        n_steps=n_steps, n_features=n_features, n_classes=5, n_samples_each_class=40, missing_rate=0.1
+    )
 
     # 2. Extract training and test sets
     train_set = {"X": dataset["train_X"], "X_ori": dataset["train_X_ori"]}
@@ -46,6 +49,7 @@ def main():
     indicating_mask = np.isnan(test_set["X"])
     mse = calc_mse(imputed_X, test_X_intact, indicating_mask)
     print(f"✅ The MSE of TSLANet imputation is: {mse:.4f}")
+
 
 if __name__ == "__main__":
     main()

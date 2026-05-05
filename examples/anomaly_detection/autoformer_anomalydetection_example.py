@@ -8,12 +8,20 @@ from benchpots.datasets import preprocess_random_walk
 from pypots.anomaly_detection import Autoformer
 from pypots.nn.functional import calc_acc, calc_precision_recall_f1
 
+
 def main():
     n_steps = 48
     n_features = 35
 
     # 1. Generate a random walk time-series dataset
-    dataset = preprocess_random_walk(n_steps=n_steps, n_features=n_features, n_classes=5, n_samples_each_class=40, missing_rate=0.1, anomaly_rate=0.05)
+    dataset = preprocess_random_walk(
+        n_steps=n_steps,
+        n_features=n_features,
+        n_classes=5,
+        n_samples_each_class=40,
+        missing_rate=0.1,
+        anomaly_rate=0.05,
+    )
 
     # 2. Extract training and test sets
     train_set = {"X": dataset["train_X"], "anomaly_y": dataset["train_anomaly_y"]}
@@ -45,11 +53,14 @@ def main():
     print("🔮 Calculating anomaly scores for the test set...")
     results = model.predict(test_set)
     scores = results["anomaly_detection"]
-    
+
     # 6. Evaluate
     accuracy = calc_acc(scores, test_anomaly_y)
     precision, recall, f1 = calc_precision_recall_f1(scores, test_anomaly_y)
-    print(f"✅ Autoformer anomaly detection - Accuracy: {accuracy:.4f}, F1: {f1:.4f}, Precision: {precision:.4f}, Recall: {recall:.4f}")
+    print(
+        f"✅ Autoformer anomaly detection - Accuracy: {accuracy:.4f}, F1: {f1:.4f}, Precision: {precision:.4f}, Recall: {recall:.4f}"
+    )
+
 
 if __name__ == "__main__":
     main()

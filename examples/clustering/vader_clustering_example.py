@@ -8,6 +8,7 @@ from benchpots.datasets import preprocess_random_walk
 from pypots.clustering import VaDER
 from pypots.nn.functional import calc_external_cluster_validation_metrics
 
+
 def main():
     n_steps = 48
     n_features = 35
@@ -15,7 +16,9 @@ def main():
     n_clusters = 5
 
     # 1. Generate a random walk time-series dataset
-    dataset = preprocess_random_walk(n_steps=n_steps, n_features=n_features, n_classes=n_classes, n_samples_each_class=40, missing_rate=0.1)
+    dataset = preprocess_random_walk(
+        n_steps=n_steps, n_features=n_features, n_classes=n_classes, n_samples_each_class=40, missing_rate=0.1
+    )
 
     # 2. Extract training and test sets
     train_set = {"X": dataset["train_X"]}
@@ -43,11 +46,14 @@ def main():
     print("🔮 Predicting clusters for the test set...")
     results = model.predict(test_set)
     clusters = results["clustering"]
-    
+
     # 6. Evaluate
     metrics = calc_external_cluster_validation_metrics(clusters, test_y_true)
-    print(f"✅ VaDER clustering external metrics: \n"
-          f"CR: {metrics['rand_index']:.4f}, Purity: {metrics['cluster_purity']:.4f}, NMI: {metrics['nmi']:.4f}")
+    print(
+        f"✅ VaDER clustering external metrics: \n"
+        f"CR: {metrics['rand_index']:.4f}, Purity: {metrics['cluster_purity']:.4f}, NMI: {metrics['nmi']:.4f}"
+    )
+
 
 if __name__ == "__main__":
     main()

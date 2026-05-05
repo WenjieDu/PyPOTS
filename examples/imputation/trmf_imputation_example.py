@@ -8,12 +8,15 @@ from benchpots.datasets import preprocess_random_walk
 from pypots.imputation import TRMF
 from pypots.utils.metrics import calc_mse
 
+
 def main():
     n_steps = 48
     n_features = 35
 
     # 1. Generate a random walk time-series dataset
-    dataset = preprocess_random_walk(n_steps=n_steps, n_features=n_features, n_classes=5, n_samples_each_class=40, missing_rate=0.1)
+    dataset = preprocess_random_walk(
+        n_steps=n_steps, n_features=n_features, n_classes=5, n_samples_each_class=40, missing_rate=0.1
+    )
 
     # 2. Extract training and test sets
     train_set = {"X": dataset["train_X"]}
@@ -42,9 +45,10 @@ def main():
     imputed_X = results["imputation"]
 
     # 6. Evaluate
-    indicating_mask = np.isnan(train_set['X'])
+    indicating_mask = np.isnan(train_set["X"])
     mse = calc_mse(imputed_X, train_X_intact, indicating_mask)
     print(f"✅ The MSE of TRMF imputation is: {mse:.4f}")
+
 
 if __name__ == "__main__":
     main()

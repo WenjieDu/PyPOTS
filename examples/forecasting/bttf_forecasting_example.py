@@ -8,13 +8,16 @@ from benchpots.datasets import preprocess_random_walk
 from pypots.nn.functional import calc_mse
 from pypots.forecasting import BTTF
 
+
 def main():
     n_steps = 48
     n_pred_steps = 12
     n_features = 35
 
     # 1. Generate a random walk time-series dataset
-    dataset = preprocess_random_walk(n_steps=n_steps + n_pred_steps, n_features=n_features, n_classes=5, n_samples_each_class=40, missing_rate=0.1)
+    dataset = preprocess_random_walk(
+        n_steps=n_steps + n_pred_steps, n_features=n_features, n_classes=5, n_samples_each_class=40, missing_rate=0.1
+    )
 
     # 2. Extract training and test sets
     train_X = dataset["train_X"]
@@ -45,9 +48,10 @@ def main():
     print("🔮 Forecasting future steps...")
     results = model.predict(test_set)
     forecasts = results["forecasting"]
-    
-    test_MSE = calc_mse(forecasts, np.nan_to_num(test_set["X_pred"]), ~np.isnan(test_set["X_pred"]))    
+
+    test_MSE = calc_mse(forecasts, np.nan_to_num(test_set["X_pred"]), ~np.isnan(test_set["X_pred"]))
     print(f"✅ BTTF forecasting MSE: {test_MSE:.4f}")
+
 
 if __name__ == "__main__":
     main()
