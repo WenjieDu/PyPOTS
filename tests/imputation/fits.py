@@ -11,7 +11,7 @@ import unittest
 import numpy as np
 import pytest
 
-from pypots.imputation.fits import FITS
+from pypots.imputation import FITS
 from pypots.optim import Adam
 from pypots.utils.logging import logger
 from pypots.nn.functional import calc_mse
