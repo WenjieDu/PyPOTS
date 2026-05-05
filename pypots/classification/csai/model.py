@@ -11,7 +11,6 @@ from torch.utils.data import DataLoader
 
 from .core import _BCSAI
 from ..base import BaseNNClassifier
-from ...data.checking import key_in_data_set
 from ...data.saving.h5 import load_dict_from_h5
 from ...imputation.csai.data import DatasetForCSAI
 from ...nn.functional import gather_listed_dicts

@@ -10,7 +10,6 @@ import os
 import click
 
 
-
 def _get_data_properties(data_path):
     """Extract data properties from an H5 or CSV file.
 
