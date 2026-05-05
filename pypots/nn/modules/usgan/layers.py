@@ -1,6 +1,4 @@
-"""
-
-"""
+""" """
 
 # Created by Jun Wang <jwangfx@connect.ust.hk> and Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause

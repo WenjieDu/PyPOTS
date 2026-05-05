@@ -14,7 +14,6 @@ CVPR 2015.
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-
 from .layers import (
     InceptionBlockV1,
     InceptionTransBlockV1,

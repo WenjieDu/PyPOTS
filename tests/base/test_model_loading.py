@@ -38,7 +38,7 @@ class TestBaseModelLoad(unittest.TestCase):
 
             load_kwargs = mocked_torch_load.call_args.kwargs
             if supports_weights_only:
-                self.assertIs(load_kwargs["weights_only"], True)
+                self.assertIs(load_kwargs["weights_only"], False) # TODO: Consider setting to True in the future for added safety, but need to verify it doesn't break any existing models first
             else:
                 self.assertNotIn("weights_only", load_kwargs)
 

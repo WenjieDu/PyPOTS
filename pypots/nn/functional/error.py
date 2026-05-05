@@ -27,9 +27,9 @@ def _check_inputs(
     prediction_shape = predictions.shape
     target_shape = targets.shape
     if check_shape:
-        assert (
-            prediction_shape == target_shape
-        ), f"shape of `predictions` and `targets` must match, but got {prediction_shape} and {target_shape}"
+        assert prediction_shape == target_shape, (
+            f"shape of `predictions` and `targets` must match, but got {prediction_shape} and {target_shape}"
+        )
     # check NaN
     assert not lib.isnan(predictions).any(), "`predictions` mustn't contain NaN values, but detected NaN in it"
     assert not lib.isnan(targets).any(), "`targets` mustn't contain NaN values, but detected NaN in it"

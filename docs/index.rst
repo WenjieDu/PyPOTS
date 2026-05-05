@@ -66,9 +66,9 @@ Welcome to PyPOTS docs!
    :alt: Ask DeepWiki
    :target: https://deepwiki.com/WenjieDu/PyPOTS
 
-.. image:: https://img.shields.io/badge/Code_Style-black-000000
+.. image:: https://img.shields.io/badge/Code_Style-ruff-D7FF64
    :alt: Code Style
-   :target: https://github.com/psf/black
+   :target: https://github.com/astral-sh/ruff
 
 .. image:: https://pypots.com/figs/downloads_badges/conda_pypots_downloads.svg
    :alt: Conda downloads
@@ -124,7 +124,7 @@ The symbol ✅ indicates the algorithm is available for the corresponding task (
 in the future to handle tasks that are not currently supported. Stay tuned❗️).
 
 🌟 Since **v0.2**, all neural-network models in PyPOTS has got hyperparameter-optimization support.
-This functionality is implemented with the `Microsoft NNI <https://github.com/microsoft/nni>`_ framework. You may want to refer to our time-series
+This functionality is implemented with the `Optuna <https://github.com/optuna/optuna>`_ framework. You may want to refer to our time-series
 imputation survey repo `Awesome_Imputation <https://github.com/WenjieDu/Awesome_Imputation>`_ to see how to config and
 tune the hyperparameters.
 
@@ -316,6 +316,16 @@ PyPOTS community is open, transparent, and surely friendly. Let's work together 
    tsdb
    pygrinder
    benchpots
+
+.. toctree::
+   :maxdepth: 4
+   :hidden:
+   :caption: Developer Docs of PyPOTS
+
+   dev_getting_started
+   dev_architecture
+   dev_integration_guide
+   dev_quality
 
 .. toctree::
    :maxdepth: 2

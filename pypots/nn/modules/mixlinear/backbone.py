@@ -67,8 +67,7 @@ class BackboneMixLinear(nn.Module):
         self.seg_num_y = math.ceil(n_pred_steps / period_len)
 
         assert self.lpf <= self.seg_num_x, (
-            f"lpf ({lpf}) must be <= ceil(n_steps / period_len) = {self.seg_num_x}. "
-            f"Please reduce lpf or period_len."
+            f"lpf ({lpf}) must be <= ceil(n_steps / period_len) = {self.seg_num_x}. Please reduce lpf or period_len."
         )
 
         self.sqrt_seg_num_x = math.ceil(math.sqrt(self.seg_num_x))

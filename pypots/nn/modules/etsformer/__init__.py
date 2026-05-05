@@ -16,7 +16,6 @@ This implementation is inspired by the official one https://github.com/salesforc
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-
 from .autoencoder import ETSformerEncoder, ETSformerDecoder
 from .layers import ETSformerEncoderLayer, ETSformerDecoderLayer, Transform
 

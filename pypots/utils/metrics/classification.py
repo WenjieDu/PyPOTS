@@ -5,7 +5,6 @@ Evaluation metrics related to classification.
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-
 from ..logging import logger
 from ...nn.functional.classification import (
     calc_binary_classification_metrics,

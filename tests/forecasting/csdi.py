@@ -5,7 +5,6 @@ Test cases for CSDI forecasting model.
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-
 import os.path
 import unittest
 
@@ -75,9 +74,9 @@ class TestCSDI(unittest.TestCase):
             ~np.isnan(FORECASTING_TEST_SET["X_pred"]),
         )
         forecasting_X = forecasting_X.mean(axis=1)  # mean over sampling times
-        assert not np.isnan(
-            forecasting_X
-        ).any(), "Output has missing values in the forecasting results that should not be."
+        assert not np.isnan(forecasting_X).any(), (
+            "Output has missing values in the forecasting results that should not be."
+        )
         test_MSE = calc_mse(
             forecasting_X,
             FORECASTING_TEST_SET["X_pred"],
@@ -122,9 +121,9 @@ class TestCSDI(unittest.TestCase):
             ~np.isnan(FORECASTING_TEST_SET["X_pred"]),
         )
         forecasting_X = forecasting_X.mean(axis=1)  # mean over sampling times
-        assert not np.isnan(
-            forecasting_X
-        ).any(), "Output has missing values in the forecasting results that should not be."
+        assert not np.isnan(forecasting_X).any(), (
+            "Output has missing values in the forecasting results that should not be."
+        )
 
         test_MSE = calc_mse(
             forecasting_X,

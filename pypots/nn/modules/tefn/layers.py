@@ -1,6 +1,4 @@
-"""
-
-"""
+""" """
 
 # Created by Tianxiang Zhan <zhantianxianguestc@hotmail.com>
 # License: BSD-3-Clause

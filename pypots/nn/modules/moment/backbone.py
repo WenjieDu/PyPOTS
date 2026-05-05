@@ -1,6 +1,4 @@
-"""
-
-"""
+""" """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
@@ -62,9 +60,9 @@ class BackboneMOMENT(nn.Module):
         configs = self._validate_inputs(configs)
 
         assert configs.finetuning_mode in TUNING_MODE, f"finetuning_mode should be one of {TUNING_MODE}"
-        assert (
-            configs.transformer_backbone in SUPPORTED_HUGGINGFACE_MODELS
-        ), f"transformer_type must be one of {SUPPORTED_HUGGINGFACE_MODELS}"
+        assert configs.transformer_backbone in SUPPORTED_HUGGINGFACE_MODELS, (
+            f"transformer_type must be one of {SUPPORTED_HUGGINGFACE_MODELS}"
+        )
         assert configs.transformer_type in TRANSFORMER_TYPE, f"transformer_type must be one of {TRANSFORMER_TYPE}"
 
         self.configs = configs

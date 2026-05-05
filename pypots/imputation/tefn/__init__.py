@@ -16,7 +16,6 @@ This implementation is transferred from the official one https://github.com/ztxt
 # Created by Tianxiang Zhan <zhantianxianguestc@hotmail.com>
 # License: BSD-3-Clause
 
-
 from .model import TEFN
 
 __all__ = [

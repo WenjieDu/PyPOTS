@@ -5,7 +5,6 @@ Test cases for data saving utils.
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-
 import unittest
 
 import numpy as np

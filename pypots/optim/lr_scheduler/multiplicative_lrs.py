@@ -5,7 +5,6 @@ Multiplicative learning rate scheduler.
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-
 from .base import LRScheduler, logger
 
 

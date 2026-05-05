@@ -6,6 +6,7 @@ torch-geometric
 sentencepiece
 pre-commit
 jupyterlab
+ruff
 black
 flake8
 flake8-pyproject
