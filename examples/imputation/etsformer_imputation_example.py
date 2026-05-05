@@ -44,8 +44,6 @@ def main():
     print("🔮 Imputing missing values...")
     results = model.predict(test_set)
     imputed_X = results["imputation"]
-    if len(imputed_X.shape) == 4:
-        imputed_X = imputed_X.mean(axis=1)
 
     # 6. Evaluate
     indicating_mask = np.isnan(test_set["X"])

@@ -16,10 +16,9 @@ def main():
     dataset = preprocess_random_walk(n_steps=n_steps, n_features=n_features, n_classes=5, n_samples_each_class=40, missing_rate=0.1)
 
     # 2. Extract training and test sets
-    train_set = {"X": dataset["train_X"], "X_ori": dataset["train_X_ori"]}
+    train_set = {"X": dataset["train_X"]}
     val_set = {"X": dataset["val_X"], "X_ori": dataset["val_X_ori"]}
-    test_set = {"X": dataset["test_X"], "X_ori": dataset["test_X_ori"]}
-    test_X_intact = dataset["test_X_ori"]
+    train_X_intact = dataset["train_X_ori"]
 
     # 3. Initialize the model
     model = TRMF(
@@ -39,14 +38,12 @@ def main():
 
     # 5. Impute missing values
     print("🔮 Imputing missing values...")
-    results = model.predict(test_set)
+    results = model.predict(train_set)
     imputed_X = results["imputation"]
-    if len(imputed_X.shape) == 4:
-        imputed_X = imputed_X.mean(axis=1)
 
     # 6. Evaluate
-    indicating_mask = np.isnan(test_set["X"])
-    mse = calc_mse(imputed_X, test_X_intact, indicating_mask)
+    indicating_mask = np.isnan(train_set['X'])
+    mse = calc_mse(imputed_X, train_X_intact, indicating_mask)
     print(f"✅ The MSE of TRMF imputation is: {mse:.4f}")
 
 if __name__ == "__main__":

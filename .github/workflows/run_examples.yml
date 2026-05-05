@@ -1,4 +1,4 @@
-name: CI
+name: Run Examples
 
 on:
     push:
@@ -6,7 +6,7 @@ on:
             - (test)run_examples
 
 jobs:
-    CI-testing:
+    Run-examples:
         runs-on: ${{ matrix.os }}
         defaults:
             run:
