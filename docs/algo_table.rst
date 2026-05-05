@@ -137,7 +137,7 @@
      -
      - ``2024 - TMLR``
    * - Neural Net
-     - TKAN :cite:`genet2024tkan`
+     - TKAN🧑‍🔧 :cite:`genet2024tkan`
      - ✅
      -
      -
