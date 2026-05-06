@@ -102,7 +102,7 @@
      - `✅ <https://github.com/WenjieDu/PyPOTS/blob/main/examples/forecasting/timemixer_forecasting_example.py>`_
      -
      -
-     -
+     - `✅ <https://github.com/WenjieDu/PyPOTS/blob/main/examples/anomaly_detection/timemixer_anomalydetection_example.py>`_
      - ``2024 - ICLR``
    * - Neural Net
      - iTransformer🧑‍🔧 :cite:`liu2024itransformer`
@@ -110,7 +110,7 @@
      -
      - `✅ <https://github.com/WenjieDu/PyPOTS/blob/main/examples/classification/itransformer_classification_example.py>`_
      -
-     -
+     - `✅ <https://github.com/WenjieDu/PyPOTS/blob/main/examples/anomaly_detection/itransformer_anomalydetection_example.py>`_
      - ``2024 - ICLR``
    * - Neural Net
      - ModernTCN :cite:`luo2024moderntcn`
@@ -182,7 +182,7 @@
      -
      -
      -
-     -
+     - `✅ <https://github.com/WenjieDu/PyPOTS/blob/main/examples/anomaly_detection/crossformer_anomalydetection_example.py>`_
      - ``2023 - ICLR``
    * - Neural Net
      - TimesNet :cite:`wu2023timesnet`
@@ -206,7 +206,7 @@
      -
      -
      -
-     -
+     - `✅ <https://github.com/WenjieDu/PyPOTS/blob/main/examples/anomaly_detection/etsformer_anomalydetection_example.py>`_
      - ``2023 - ICLR``
    * - Neural Net
      - MICN🧑‍🔧 :cite:`wang2023micn`
@@ -262,7 +262,7 @@
      -
      -
      -
-     -
+     - `✅ <https://github.com/WenjieDu/PyPOTS/blob/main/examples/anomaly_detection/nonstationary_anomalydetection_example.py>`_
      - ``2022 - NeurIPS``
    * - Neural Net
      - FiLM🧑‍🔧 :cite:`zhou2022film`
@@ -270,7 +270,7 @@
      - `✅ <https://github.com/WenjieDu/PyPOTS/blob/main/examples/forecasting/film_forecasting_example.py>`_
      -
      -
-     -
+     - `✅ <https://github.com/WenjieDu/PyPOTS/blob/main/examples/anomaly_detection/film_anomalydetection_example.py>`_
      - ``2022 - NeurIPS``
    * - Neural Net
      - RevIN_SCINet🧑‍🔧 :cite:`kim2022revin`
@@ -286,7 +286,7 @@
      -
      -
      -
-     -
+     - `✅ <https://github.com/WenjieDu/PyPOTS/blob/main/examples/anomaly_detection/pyraformer_anomalydetection_example.py>`_
      - ``2022 - ICLR``
    * - Neural Net
      - Raindrop :cite:`zhang2022Raindrop`
@@ -302,7 +302,7 @@
      -
      -
      -
-     -
+     - `✅ <https://github.com/WenjieDu/PyPOTS/blob/main/examples/anomaly_detection/fedformer_anomalydetection_example.py>`_
      - ``2022 - ICML``
    * - Neural Net
      - Autoformer🧑‍🔧 :cite:`wu2021autoformer`
@@ -326,7 +326,7 @@
      -
      -
      -
-     -
+     - `✅ <https://github.com/WenjieDu/PyPOTS/blob/main/examples/anomaly_detection/informer_anomalydetection_example.py>`_
      - ``2021 - AAAI``
    * - Neural Net
      - US-GAN :cite:`miao2021SSGAN`
@@ -430,7 +430,7 @@
      - `✅ <https://github.com/WenjieDu/PyPOTS/blob/main/examples/forecasting/transformer_forecasting_example.py>`_
      -
      -
-     -
+     - `✅ <https://github.com/WenjieDu/PyPOTS/blob/main/examples/anomaly_detection/transformer_anomalydetection_example.py>`_
      - ``2017 - NeurIPS``
    * - MF
      - TRMF :cite:`yu2016trmf`
