@@ -16,7 +16,6 @@ This implementation is inspired by the official one https://github.com/aikunyi/F
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-
 from .backbone import BackboneFreTS
 
 __all__ = [

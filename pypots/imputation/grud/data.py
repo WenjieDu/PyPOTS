@@ -5,7 +5,6 @@ Dataset class for the imputation model GRU-D.
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-
 from typing import Union, Iterable
 
 import torch

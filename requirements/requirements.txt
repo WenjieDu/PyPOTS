@@ -1,5 +1,7 @@
+click
 h5py
 numpy
+optuna
 scipy
 sympy
 einops
@@ -12,5 +14,5 @@ transformers<=4.57.6
 torch>=1.10.0
 tsdb>=0.8
 pygrinder>=0.7
-benchpots>=0.5
+benchpots>=1
 ai4ts

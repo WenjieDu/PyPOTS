@@ -16,7 +16,6 @@ This implementation is inspired by the official one https://github.com/salesforc
 # Created by Yiyuan Yang <yyy1997sjz@gmail.com>
 # License: BSD-3-Clause
 
-
 from .model import ETSformer
 
 __all__ = [

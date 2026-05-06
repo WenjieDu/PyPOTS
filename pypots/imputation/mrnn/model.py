@@ -6,7 +6,6 @@ PyTorch M-RNN model for the time-series imputation task.
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-
 from typing import Union, Optional
 
 import torch

@@ -1,10 +1,7 @@
-"""
-
-"""
+""" """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
-
 
 import torch.nn.functional as F
 from torch import nn

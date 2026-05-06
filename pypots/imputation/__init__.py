@@ -19,6 +19,7 @@ from .timesnet import TimesNet
 from .etsformer import ETSformer
 from .fedformer import FEDformer
 from .film import FiLM
+from .fits import FITS
 from .frets import FreTS
 from .crossformer import Crossformer
 from .informer import Informer
@@ -64,6 +65,7 @@ __all__ = [
     "ETSformer",
     "FEDformer",
     "FiLM",
+    "FITS",
     "FreTS",
     "Crossformer",
     "TimesNet",

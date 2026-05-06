@@ -66,9 +66,9 @@ Welcome to PyPOTS docs!
    :alt: Ask DeepWiki
    :target: https://deepwiki.com/WenjieDu/PyPOTS
 
-.. image:: https://img.shields.io/badge/Code_Style-black-000000
+.. image:: https://img.shields.io/badge/Code_Style-ruff-D7FF64
    :alt: Code Style
-   :target: https://github.com/psf/black
+   :target: https://github.com/astral-sh/ruff
 
 .. image:: https://pypots.com/figs/downloads_badges/conda_pypots_downloads.svg
    :alt: Conda downloads
@@ -102,10 +102,6 @@ to help engineers and researchers focus more on the core problems in their hands
 PyPOTS will keep integrating classical and the latest state-of-the-art data mining algorithms for partially-observed multivariate time series.
 For sure, besides various algorithms, PyPOTS is going to have unified APIs together with detailed documentation and interactive examples across algorithms as tutorials.
 
-🤗 **Please** star this repo to help others notice PyPOTS if you think it is a useful toolkit.
-**Please** properly `cite PyPOTS <https://docs.pypots.com/en/latest/milestones.html#citing-pypots>`_ in your publications
-if it helps with your research. This really means a lot to our open-source research. Thank you!
-
 The rest of this readme file is organized as follows:
 `❖ Available Algorithms <#id1>`_,
 `❖ PyPOTS Ecosystem <#id37>`_,
@@ -120,11 +116,12 @@ The rest of this readme file is organized as follows:
 ^^^^^^^^^^^^^^^^^^^^^^^
 PyPOTS supports imputation, classification, clustering, forecasting, and anomaly detection tasks on multivariate partially-observed
 time series with missing values. The table below shows the availability of each algorithm in PyPOTS for different tasks.
-The symbol ✅ indicates the algorithm is available for the corresponding task (note that models will be continuously updated
-in the future to handle tasks that are not currently supported. Stay tuned❗️).
+The symbol `✅` indicates the algorithm is available for the corresponding task, and you could click `✅` to
+jump to the code example of the algorithm on the task.
+Note that models will be continuously updated in the future to handle tasks that are not currently supported. Stay tuned!
 
-🌟 Since **v0.2**, all neural-network models in PyPOTS has got hyperparameter-optimization support.
-This functionality is implemented with the `Microsoft NNI <https://github.com/microsoft/nni>`_ framework. You may want to refer to our time-series
+🌟 Since **v0.2**, all neural-network models in PyPOTS has got hyperparameter-optimization support by `Microsoft NNI <https://github.com/microsoft/nni>`_ until **v2.0**.
+In PyPOTS v2, this functionality is reimplemented with the `Optuna <https://github.com/optuna/optuna>`_ framework. You may want to refer to our time-series
 imputation survey repo `Awesome_Imputation <https://github.com/WenjieDu/Awesome_Imputation>`_ to see how to config and
 tune the hyperparameters.
 
@@ -316,6 +313,16 @@ PyPOTS community is open, transparent, and surely friendly. Let's work together 
    tsdb
    pygrinder
    benchpots
+
+.. toctree::
+   :maxdepth: 4
+   :hidden:
+   :caption: Developer Docs of PyPOTS
+
+   dev_getting_started
+   dev_architecture
+   dev_integration_guide
+   dev_quality
 
 .. toctree::
    :maxdepth: 2

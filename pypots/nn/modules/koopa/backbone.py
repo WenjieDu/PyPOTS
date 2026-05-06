@@ -1,10 +1,7 @@
-"""
-
-"""
+""" """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
-
 
 import torch
 import torch.nn as nn
@@ -107,9 +104,9 @@ class BackboneKoopa(nn.Module):
         self.mask_spectrum = self._get_mask_spectrum(train_dataloader)
 
     def forward(self, X):
-        assert (
-            self.mask_spectrum is not None
-        ), "Please initialize the mask spectrum first with init_mask_spectrum() method."
+        assert self.mask_spectrum is not None, (
+            "Please initialize the mask spectrum first with init_mask_spectrum() method."
+        )
 
         residual, output = X, None
         for i in range(self.n_blocks):

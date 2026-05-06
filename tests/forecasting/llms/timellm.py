@@ -5,7 +5,6 @@ Test cases for TimeLLM forecasting model.
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-
 import os.path
 import unittest
 
@@ -59,7 +58,7 @@ class TestTimeLLM(unittest.TestCase):
         llm_model_type="GPT2",
         dropout=0.1,
         domain_prompt_content="The next value in a random walk is a modification of the previous value in the "
-        f'sequence. This dataset contains {DATA["n_steps"]} steps of a random walk with {DATA["n_features"]} features.',
+        f"sequence. This dataset contains {DATA['n_steps']} steps of a random walk with {DATA['n_features']} features.",
         batch_size=8,
         epochs=EPOCHS,
         saving_path=saving_path,
@@ -74,9 +73,9 @@ class TestTimeLLM(unittest.TestCase):
     @pytest.mark.xdist_group(name="forecasting-timellm")
     def test_1_forecasting(self):
         forecasting_X = self.timellm.predict(FORECASTING_TEST_SET)["forecasting"]
-        assert not np.isnan(
-            forecasting_X
-        ).any(), "Output has missing values in the forecasting results that should not be."
+        assert not np.isnan(forecasting_X).any(), (
+            "Output has missing values in the forecasting results that should not be."
+        )
         test_MSE = calc_mse(
             forecasting_X,
             FORECASTING_TEST_SET["X_pred"],
@@ -115,9 +114,9 @@ class TestTimeLLM(unittest.TestCase):
         self.timellm.fit(FORECASTING_H5_TRAIN_SET_PATH, FORECASTING_H5_VAL_SET_PATH)
         forecasting_results = self.timellm.predict(FORECASTING_H5_TEST_SET_PATH)
         forecasting_X = forecasting_results["forecasting"]
-        assert not np.isnan(
-            forecasting_X
-        ).any(), "Output has missing values in the forecasting results that should not be."
+        assert not np.isnan(forecasting_X).any(), (
+            "Output has missing values in the forecasting results that should not be."
+        )
 
         test_MSE = calc_mse(
             forecasting_X,

@@ -1,5 +1,5 @@
 """
-Test cases for the functions and classes in package `pypots.cli.dev`.
+Test cases for the CLI command `pypots.cli.dev`.
 """
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
@@ -8,12 +8,11 @@ Test cases for the functions and classes in package `pypots.cli.dev`.
 import os
 import threading
 import unittest
-from argparse import Namespace
-from copy import copy
 
 import pytest
+from click.testing import CliRunner
 
-from pypots.cli.dev import dev_command_factory
+from pypots.cli.dev import dev
 from tests.cli.config import PROJECT_ROOT_DIR
 
 
@@ -38,35 +37,26 @@ def time_out(interval, callback):
     return decorator
 
 
-@pytest.mark.xfail(reason="Allow tests for CLI to fail")
 class TestPyPOTSCLIDev(unittest.TestCase):
-    # set up the default arguments
-    default_arguments = {
-        "build": False,
-        "cleanup": False,
-        "run_tests": False,
-        "k": None,
-        "show_coverage": False,
-        "lint_code": False,
-    }
     # `pypots-cli dev` must run under the project root dir
     os.chdir(PROJECT_ROOT_DIR)
 
     @pytest.mark.xdist_group(name="cli-dev")
     def test_0_build(self):
-        arguments = copy(self.default_arguments)
-        arguments["build"] = True
-        args = Namespace(**arguments)
-        dev_command_factory(args).run()
+        runner = CliRunner()
+        result = runner.invoke(dev, ["--build"], catch_exceptions=False)
+        assert result.exit_code == 0, result.output
 
     @pytest.mark.xdist_group(name="cli-dev")
     def test_1_run_tests(self):
-        arguments = copy(self.default_arguments)
-        arguments["run_tests"] = True
-        arguments["k"] = "try_to_find_a_non_existing_test_case"
-        args = Namespace(**arguments)
+        runner = CliRunner()
         try:
-            dev_command_factory(args).run()
+            result = runner.invoke(
+                dev,
+                ["--run_tests", "-k", "try_to_find_a_non_existing_test_case"],
+                catch_exceptions=False,
+            )
+            print(result.output)
         except RuntimeError:  # try to find a non-existing test case, so RuntimeError will be raised
             pass
         except Exception as e:  # other exceptions will cause an error and result in failed testing
@@ -75,17 +65,14 @@ class TestPyPOTSCLIDev(unittest.TestCase):
     # Don't test --lint-code because Black will reformat the code and cause error when generating the coverage report
     # @pytest.mark.xdist_group(name="cli-dev")
     # def test_2_lint_code(self):
-    #     arguments = copy(self.default_arguments)
-    #     arguments["lint_code"] = True
-    #     args = Namespace(**arguments)
-    #     dev_command_factory(args).run()
+    #     runner = CliRunner()
+    #     result = runner.invoke(dev, ["--lint_code"], catch_exceptions=False)
 
     @pytest.mark.xdist_group(name="cli-dev")
     def test_3_cleanup(self):
-        arguments = copy(self.default_arguments)
-        arguments["cleanup"] = True
-        args = Namespace(**arguments)
-        dev_command_factory(args).run()
+        runner = CliRunner()
+        result = runner.invoke(dev, ["--cleanup"], catch_exceptions=False)
+        assert result.exit_code == 0, result.output
 
 
 if __name__ == "__main__":

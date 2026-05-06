@@ -7,7 +7,6 @@ which is mainly based on the implementation of TRMF in https://github.com/Semeno
 # Created by Jun Wang <jwangfx@connect.ust.hk> and Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-
 from typing import Union, Optional
 
 import numpy as np
@@ -133,7 +132,7 @@ class TRMF(BaseImputer):
         # Step 1: wrap the input data with classes Dataset and DataLoader
         train_dataset = DatasetForTRMF(train_set)
         if val_set is not None:
-            raise RuntimeError("TRMF does not support validation set.")
+            logger.warning("‼️ TRMF does not support validation set. The provided val_set will be ignored.")
 
         # Step 2: train the model and freeze it
         X = train_dataset.fetch_entire_dataset()["X"]

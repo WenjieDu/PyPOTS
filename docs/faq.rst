@@ -9,44 +9,8 @@ published for at least 1 year, have 20+ citations, and the usefulness to our use
 
 **However**, we encourage the authors of proposed new models to share and add your implementations into PyPOTS
 to help boost research accessibility and reproducibility in the field of POTS modeling.
-Note this exception only applies if you commit to the maintenance of your model for at least two years.
-
-
-Join PyPOTS
-^^^^^^^^^^^
-.. _becoming-a-volunteer:
-
-Becoming a Volunteer Developer
-""""""""""""""""""""""""""""""
-To become a member of PyPOTS volunteer development team, you should
-
-1. love open-source science and be active on GitHub;
-2. be familiar with the PyPOTS codebase and have made at least one pull request merged into branch ``main`` of PyPOTS,
-   which is not for fixing typos or improving the docs;
-3. watch PyPOTS repository to receive the latest news from it;
-4. join the `PyPOTS community on Slack <https://join.slack.com/t/pypots-org/shared_invite/zt-1gq6ufwsi-p0OZdW~e9UW_IA4_f1OfxA>`_
-   and become a member of the channel ``#dev-team``. ``#dev-team`` currently is a public channel, and you don't need an invitation to join it;
-5. commit to constantly maintain PyPOTS project and obey our development principles;
-
-Once you obtain the role, you'll be listed as a member on the ``About Us`` pages of
-`PyPOTS main site <https://pypots.com/about/>`_
-and
-`PyPOTS docs site <https://docs.pypots.com/en/latest/about_us.html>`_.
-
-Becoming a Lead
-"""""""""""""""
-To become a lead at PyPOTS, surely you have to already be a volunteer developer first, i.e. you've met all requirements in the section :ref:`becoming-a-volunteer`.
-Your research should be highly related to data mining/machine learning on POTS data, and
-you need to prove that you're capable of proposing a research plan solely and conducting it.
-You're willing to take developing PyPOTS as your responsibility and commit to constantly and regularly
-contribute you time and ideas to PyPOTS things (including community culture construction,
-code maintenance, current research implementation, new research planning).
-The lead is a permanent role unless your research is no longer related to the field of modeling POTS or
-you no longer want to get involved with affairs at PyPOTS.
-
-If you believe you want to do this, you can drop an email with anything you want to tell and your CV attachment to
-`team@pypots.com <mailto:team@pypots.com>`_. We will schedule a meeting for you and all other members at PyPOTS for further discussion.
-This is absolutely not a so-called interview, please don't take it formal and we just would like to listen to your thoughts about the field of POTS ;-)
+Note this exception only applies if you commit to the maintenance of your model for at least two years,
+and you should contact `Wenjie Du <mailto:wdu@time-series.ai>`_ to discuss the details of your implementation and maintenance plan before coding start.
 
 
 Our Development Principles

@@ -83,8 +83,7 @@ class LOCF(BaseImputer):
             X = test_set["X"]
 
         assert len(X.shape) == 3, (
-            f"Input X should have 3 dimensions [n_samples, n_steps, n_features], "
-            f"but the actual shape of X: {X.shape}"
+            f"Input X should have 3 dimensions [n_samples, n_steps, n_features], but the actual shape of X: {X.shape}"
         )
         if isinstance(X, list):
             X = np.asarray(X)
@@ -94,7 +93,7 @@ class LOCF(BaseImputer):
         elif isinstance(X, torch.Tensor):
             imputed_data = locf_torch(X, self.first_step_imputation)
         else:
-            raise TypeError("X must be type of list/np.ndarray/torch.Tensor, " f"but got {type(X)}")
+            raise TypeError(f"X must be type of list/np.ndarray/torch.Tensor, but got {type(X)}")
 
         result_dict = {
             "imputation": imputed_data,

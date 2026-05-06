@@ -105,9 +105,9 @@ class BaseDataset(Dataset):
         # check the data type and set up the fetch_data function
         if isinstance(self.data, str):  # data from file
             # check if the given file type is supported
-            assert (
-                file_type in SUPPORTED_DATASET_FILE_FORMATS
-            ), f"file_type should be one of {SUPPORTED_DATASET_FILE_FORMATS}, but got {file_type}"
+            assert file_type in SUPPORTED_DATASET_FILE_FORMATS, (
+                f"file_type should be one of {SUPPORTED_DATASET_FILE_FORMATS}, but got {file_type}"
+            )
             self.file_type = file_type
 
             # open the file handle
@@ -116,13 +116,13 @@ class BaseDataset(Dataset):
             assert "X" in self.file_handle.keys(), "The given dataset file doesn't contains X. Please double check."
             # check whether X_ori, X_pred, and y exist in the file if they are required
             if self.return_X_ori:
-                assert (
-                    "X_ori" in self.file_handle.keys()
-                ), "The given dataset file doesn't contains X_ori. Please double check."
+                assert "X_ori" in self.file_handle.keys(), (
+                    "The given dataset file doesn't contains X_ori. Please double check."
+                )
             if self.return_X_pred:
-                assert (
-                    "X_pred" in self.file_handle.keys()
-                ), "The given dataset file doesn't contains X_pred. Please double check."
+                assert "X_pred" in self.file_handle.keys(), (
+                    "The given dataset file doesn't contains X_pred. Please double check."
+                )
             if self.return_y:
                 assert "y" in self.file_handle.keys(), "The given dataset file doesn't contains y. Please double check."
 
@@ -134,13 +134,13 @@ class BaseDataset(Dataset):
             assert "X" in self.data.keys(), "The given dataset dictionary doesn't contains X. Please double check."
             # check whether X_ori, X_pred, and y exist in the file if they are required
             if self.return_X_ori:
-                assert (
-                    "X_ori" in self.data.keys()
-                ), "The given dataset dictionary doesn't contains X_ori. Please double check."
+                assert "X_ori" in self.data.keys(), (
+                    "The given dataset dictionary doesn't contains X_ori. Please double check."
+                )
             if self.return_X_pred:
-                assert (
-                    "X_pred" in self.data.keys()
-                ), "The given dataset dictionary doesn't contains X_pred. Please double check."
+                assert "X_pred" in self.data.keys(), (
+                    "The given dataset dictionary doesn't contains X_pred. Please double check."
+                )
             if self.return_y:
                 assert "y" in self.data.keys(), "The given dataset dictionary doesn't contains y. Please double check."
 
@@ -284,24 +284,24 @@ class BaseDataset(Dataset):
         # check the shape of X here
         X_shape = X.shape
         assert len(X_shape) == 3, (
-            f"input should have 3 dimensions [n_samples, seq_len, n_features]," f"but got X: {X_shape}"
+            f"input should have 3 dimensions [n_samples, seq_len, n_features],but got X: {X_shape}"
         )
         if X_ori is not None:
             X_ori = turn_data_into_specified_dtype(X_ori, out_dtype)
             X_ori = X_ori.to(torch.float32) if out_dtype == "tensor" else X_ori
-            assert (
-                X_shape == X_ori.shape
-            ), f"X and X_ori must have matched shape, but got X: f{X.shape} and X_ori: {X_ori.shape}"
+            assert X_shape == X_ori.shape, (
+                f"X and X_ori must have matched shape, but got X: f{X.shape} and X_ori: {X_ori.shape}"
+            )
 
         if X_pred is not None:
             X_pred = turn_data_into_specified_dtype(X_pred, out_dtype)
             X_pred = X_pred.to(torch.float32) if out_dtype == "tensor" else X_pred
-            assert len(X) == len(
-                X_pred
-            ), f"X and X_pred must have the same number of samples, but got X: f{X.shape} and X_pred: {X_pred.shape}"
+            assert len(X) == len(X_pred), (
+                f"X and X_pred must have the same number of samples, but got X: f{X.shape} and X_pred: {X_pred.shape}"
+            )
 
         if y is not None:
-            assert len(X) == len(y), f"lengths of X and y must match, " f"but got f{len(X)} and {len(y)}"
+            assert len(X) == len(y), f"lengths of X and y must match, but got f{len(X)} and {len(y)}"
             y = turn_data_into_specified_dtype(y, out_dtype)
             y = y.to(torch.long) if out_dtype == "tensor" else y
 
