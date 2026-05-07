@@ -122,8 +122,8 @@ PyPOTS当前支持多变量POTS数据的插补, 预测, 分类, 聚类以及异�
 | TSFM | MOMENT[^47] | [✅](examples/imputation/moment_imputation_example.py) | [✅](examples/forecasting/moment_forecasting_example.py) |  |  |  | `2024 - ICML` |
 | Neural Net | TSLANet[^51] | [✅](examples/imputation/tslanet_imputation_example.py) |  |  |  |  | `2024 - ICML` |
 | Neural Net | FITS🧑‍🔧[^41] | [✅](examples/imputation/fits_imputation_example.py) | [✅](examples/forecasting/fits_forecasting_example.py) |  |  |  | `2024 - ICLR` |
-| Neural Net | TimeMixer[^37] | [✅](examples/imputation/timemixer_imputation_example.py) | [✅](examples/forecasting/timemixer_forecasting_example.py) |  |  | ✅ | `2024 - ICLR` |
-| Neural Net | iTransformer🧑‍🔧[^24] | [✅](examples/imputation/itransformer_imputation_example.py) |  | [✅](examples/classification/itransformer_classification_example.py) |  | ✅ | `2024 - ICLR` |
+| Neural Net | TimeMixer[^37] | [✅](examples/imputation/timemixer_imputation_example.py) | [✅](examples/forecasting/timemixer_forecasting_example.py) |  |  | [✅](examples/anomaly_detection/timemixer_anomalydetection_example.py) | `2024 - ICLR` |
+| Neural Net | iTransformer🧑‍🔧[^24] | [✅](examples/imputation/itransformer_imputation_example.py) |  | [✅](examples/classification/itransformer_classification_example.py) |  | [✅](examples/anomaly_detection/itransformer_anomalydetection_example.py) | `2024 - ICLR` |
 | Neural Net | ModernTCN[^38] | [✅](examples/imputation/moderntcn_imputation_example.py) | [✅](examples/forecasting/moderntcn_forecasting_example.py) |  |  |  | `2024 - ICLR` |
 | Neural Net | ImputeFormer🧑‍🔧[^34] | [✅](examples/imputation/imputeformer_imputation_example.py) |  |  |  | [✅](examples/anomaly_detection/imputeformer_anomalydetection_example.py) | `2024 - KDD` |
 | Neural Net | TOTEM[^50] | [✅](examples/imputation/totem_imputation_example.py) |  |  |  |  | `2024 - TMLR` |
@@ -132,25 +132,25 @@ PyPOTS当前支持多变量POTS数据的插补, 预测, 分类, 聚类以及异�
 | LLM | GPT4TS[^46] | [✅](examples/imputation/gpt4ts_imputation_example.py) | [✅](examples/forecasting/gpt4ts_forecasting_example.py) |  |  |  | `2023 - NeurIPS` |
 | Neural Net | FreTS🧑‍🔧[^23] | [✅](examples/imputation/frets_imputation_example.py) |  |  |  |  | `2023 - NeurIPS` |
 | Neural Net | Koopa🧑‍🔧[^29] | [✅](examples/imputation/koopa_imputation_example.py) |  |  |  |  | `2023 - NeurIPS` |
-| Neural Net | Crossformer🧑‍🔧[^16] | [✅](examples/imputation/crossformer_imputation_example.py) |  |  |  | ✅ | `2023 - ICLR` |
+| Neural Net | Crossformer🧑‍🔧[^16] | [✅](examples/imputation/crossformer_imputation_example.py) |  |  |  | [✅](examples/anomaly_detection/crossformer_anomalydetection_example.py) | `2023 - ICLR` |
 | Neural Net | TimesNet[^14] | [✅](examples/imputation/timesnet_imputation_example.py) | [✅](examples/forecasting/timesnet_forecasting_example.py) | [✅](examples/classification/timesnet_classification_example.py) |  | [✅](examples/anomaly_detection/timesnet_anomalydetection_example.py) | `2023 - ICLR` |
 | Neural Net | PatchTST🧑‍🔧[^18] | [✅](examples/imputation/patchtst_imputation_example.py) |  | [✅](examples/classification/patchtst_classification_example.py) |  | [✅](examples/anomaly_detection/patchtst_anomalydetection_example.py) | `2023 - ICLR` |
-| Neural Net | ETSformer🧑‍🔧[^19] | [✅](examples/imputation/etsformer_imputation_example.py) |  |  |  | ✅ | `2023 - ICLR` |
+| Neural Net | ETSformer🧑‍🔧[^19] | [✅](examples/imputation/etsformer_imputation_example.py) |  |  |  | [✅](examples/anomaly_detection/etsformer_anomalydetection_example.py) | `2023 - ICLR` |
 | Neural Net | MICN🧑‍🔧[^27] | [✅](examples/imputation/micn_imputation_example.py) | [✅](examples/forecasting/micn_forecasting_example.py) |  |  |  | `2023 - ICLR` |
 | Neural Net | DLinear🧑‍🔧[^17] | [✅](examples/imputation/dlinear_imputation_example.py) | [✅](examples/forecasting/dlinear_forecasting_example.py) |  |  | [✅](examples/anomaly_detection/dlinear_anomalydetection_example.py) | `2023 - AAAI` |
 | Neural Net | TiDE🧑‍🔧[^28] | [✅](examples/imputation/tide_imputation_example.py) |  |  |  |  | `2023 - TMLR` |
 | Neural Net | CSAI[^42] | [✅](examples/imputation/csai_imputation_example.py) |  | [✅](examples/classification/csai_classification_example.py) |  |  | `2023 - arXiv` |
 | Neural Net | TS2Vec[^48] |  |  | [✅](examples/classification/ts2vec_classification_example.py) |  |  | `2022 - AAAI` |
 | Neural Net | SCINet🧑‍🔧[^30] | [✅](examples/imputation/scinet_imputation_example.py) |  |  |  | [✅](examples/anomaly_detection/scinet_anomalydetection_example.py) | `2022 - NeurIPS` |
-| Neural Net | Nonstationary Tr.🧑‍🔧[^25] | [✅](examples/imputation/nonstationary_transformer_imputation_example.py) |  |  |  | ✅ | `2022 - NeurIPS` |
-| Neural Net | FiLM🧑‍🔧[^22] | [✅](examples/imputation/film_imputation_example.py) | [✅](examples/forecasting/film_forecasting_example.py) |  |  | ✅ | `2022 - NeurIPS` |
+| Neural Net | Nonstationary Tr.🧑‍🔧[^25] | [✅](examples/imputation/nonstationary_transformer_imputation_example.py) |  |  |  | [✅](examples/anomaly_detection/nonstationary_transformer_anomalydetection_example.py) | `2022 - NeurIPS` |
+| Neural Net | FiLM🧑‍🔧[^22] | [✅](examples/imputation/film_imputation_example.py) | [✅](examples/forecasting/film_forecasting_example.py) |  |  | [✅](examples/anomaly_detection/film_anomalydetection_example.py) | `2022 - NeurIPS` |
 | Neural Net | RevIN_SCINet🧑‍🔧[^31] | [✅](examples/imputation/revin_scinet_imputation_example.py) |  |  |  |  | `2022 - ICLR` |
-| Neural Net | Pyraformer🧑‍🔧[^26] | [✅](examples/imputation/pyraformer_imputation_example.py) |  |  |  | ✅ | `2022 - ICLR` |
+| Neural Net | Pyraformer🧑‍🔧[^26] | [✅](examples/imputation/pyraformer_imputation_example.py) |  |  |  | [✅](examples/anomaly_detection/pyraformer_anomalydetection_example.py) | `2022 - ICLR` |
 | Neural Net | Raindrop[^5] |  |  | [✅](examples/classification/raindrop_classification_example.py) |  |  | `2022 - ICLR` |
-| Neural Net | FEDformer🧑‍🔧[^20] | [✅](examples/imputation/fedformer_imputation_example.py) |  |  |  | ✅ | `2022 - ICML` |
+| Neural Net | FEDformer🧑‍🔧[^20] | [✅](examples/imputation/fedformer_imputation_example.py) |  |  |  | [✅](examples/anomaly_detection/fedformer_anomalydetection_example.py) | `2022 - ICML` |
 | Neural Net | Autoformer🧑‍🔧[^15] | [✅](examples/imputation/autoformer_imputation_example.py) |  | [✅](examples/classification/autoformer_classification_example.py) |  | [✅](examples/anomaly_detection/autoformer_anomalydetection_example.py) | `2021 - NeurIPS` |
 | Neural Net | CSDI[^12] | [✅](examples/imputation/csdi_imputation_example.py) | [✅](examples/forecasting/csdi_forecasting_example.py) |  |  |  | `2021 - NeurIPS` |
-| Neural Net | Informer🧑‍🔧[^21] | [✅](examples/imputation/informer_imputation_example.py) |  |  |  | ✅ | `2021 - AAAI` |
+| Neural Net | Informer🧑‍🔧[^21] | [✅](examples/imputation/informer_imputation_example.py) |  |  |  | [✅](examples/anomaly_detection/informer_anomalydetection_example.py) | `2021 - AAAI` |
 | Neural Net | US-GAN[^10] | [✅](examples/imputation/usgan_imputation_example.py) |  |  |  |  | `2021 - AAAI` |
 | Neural Net | CRLI[^6] |  |  |  | [✅](examples/clustering/crli_clustering_example.py) |  | `2021 - AAAI` |
 | Probabilistic | BTTF[^8] |  | [✅](examples/forecasting/bttf_forecasting_example.py) |  |  |  | `2021 - TPAMI` |
@@ -163,7 +163,7 @@ PyPOTS当前支持多变量POTS数据的插补, 预测, 分类, 聚类以及异�
 | Neural Net | BRITS[^3] | [✅](examples/imputation/brits_imputation_example.py) |  | [✅](examples/classification/brits_classification_example.py) |  |  | `2018 - NeurIPS` |
 | Neural Net | GRU-D[^4] | [✅](examples/imputation/grud_imputation_example.py) |  | [✅](examples/classification/grud_classification_example.py) |  |  | `2018 - Sci. Rep.` |
 | Neural Net | TCN🧑‍🔧[^35] | [✅](examples/imputation/tcn_imputation_example.py) |  |  |  |  | `2018 - arXiv` |
-| Neural Net | Transformer🧑‍🔧[^2] | [✅](examples/imputation/transformer_imputation_example.py) | [✅](examples/forecasting/transformer_forecasting_example.py) |  |  | ✅ | `2017 - NeurIPS` |
+| Neural Net | Transformer🧑‍🔧[^2] | [✅](examples/imputation/transformer_imputation_example.py) | [✅](examples/forecasting/transformer_forecasting_example.py) |  |  | [✅](examples/anomaly_detection/transformer_anomalydetection_example.py) | `2017 - NeurIPS` |
 | MF | TRMF[^44] | [✅](examples/imputation/trmf_imputation_example.py) |  |  |  |  | `2016 - NeurIPS` |
 | Naive | Lerp[^40] | [✅](examples/imputation/lerp_imputation_example.py) |  |  |  |  |  |
 | Naive | LOCF/NOCB | [✅](examples/imputation/locf_imputation_example.py) |  |  |  |  |  |
