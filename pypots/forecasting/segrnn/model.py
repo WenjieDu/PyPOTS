@@ -18,7 +18,7 @@ from ...optim.base import Optimizer
 
 
 class SegRNN(BaseNNForecaster):
-    """The PyTorch implementation of the SegRNN model :cite:`lin2023segrnn`.
+    """The PyTorch implementation of the SegRNN model :cite:`lin2026segrnn`.
 
     Parameters
     ----------

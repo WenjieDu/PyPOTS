@@ -5,7 +5,6 @@ Test cases for Linear Interpolation(Lerp) imputation method.
 # Created by Cole Sussmeier <colesussmeier@gmail.com>
 # License: BSD-3-Clause
 
-
 import unittest
 
 import numpy as np
@@ -47,12 +46,23 @@ class TestLerp(unittest.TestCase):
         logger.info(f"Lerp test_MSE: {test_MSE}")
 
     @pytest.mark.xdist_group(name="imputation-lerp")
+    def test_1_list_input(self):
+        """Test that list input with missing values is converted and imputed correctly."""
+        X = np.random.randn(5, 10, 3)
+        X[0, 2, 0] = np.nan
+        X[1, 5, 1] = np.nan
+        X[2, 8, 2] = np.nan
+        X_list = X.tolist()
+        result = self.lerp.predict({"X": X_list})["imputation"]
+        assert not np.isnan(result).any(), "List input with NaN should be converted and interpolated."
+
+    @pytest.mark.xdist_group(name="imputation-lerp")
     def test_4_lazy_loading(self):
         self.lerp.fit(GENERAL_H5_TRAIN_SET_PATH, GENERAL_H5_VAL_SET_PATH)
         imputation_results = self.lerp.predict(GENERAL_H5_TEST_SET_PATH)
-        assert not np.isnan(
-            imputation_results["imputation"]
-        ).any(), "Output still has missing values after running impute()."
+        assert not np.isnan(imputation_results["imputation"]).any(), (
+            "Output still has missing values after running impute()."
+        )
 
         test_MSE = calc_mse(
             imputation_results["imputation"],

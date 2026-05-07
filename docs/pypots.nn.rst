@@ -5,7 +5,32 @@ pypots.nn.functional
 --------------------
 
 .. automodule:: pypots.nn.functional
-   :members:
+    :members:
+
+
+
+
+pypots.nn.modules.base_model_core
+-------------------------------------------------
+
+.. automodule:: pypots.nn.modules.base_model_core
+    :members:
+
+
+
+pypots.nn.modules.loss
+-------------------------------------------------
+
+.. automodule:: pypots.nn.modules.loss
+    :members:
+
+
+
+pypots.nn.modules.metric
+-------------------------------------------------
+
+.. automodule:: pypots.nn.modules.metric
+    :members:
 
 
 
@@ -13,7 +38,7 @@ pypots.nn.modules.revin
 -------------------------------------------------
 
 .. automodule:: pypots.nn.modules.revin
-:members:
+    :members:
 
 
 
@@ -21,7 +46,7 @@ pypots.nn.modules.tcn
 -------------------------------------------------
 
 .. automodule:: pypots.nn.modules.tcn
-:members:
+    :members:
 
 
 
@@ -29,7 +54,7 @@ pypots.nn.modules.pyraformer
 -------------------------------------------------
 
 .. automodule:: pypots.nn.modules.pyraformer
-:members:
+    :members:
 
 
 
@@ -37,7 +62,7 @@ pypots.nn.modules.film
 -------------------------------------------------
 
 .. automodule:: pypots.nn.modules.film
-:members:
+    :members:
 
 
 
@@ -45,7 +70,7 @@ pypots.nn.modules.raindrop
 -------------------------------------------------
 
 .. automodule:: pypots.nn.modules.raindrop
-:members:
+    :members:
 
 
 
@@ -53,7 +78,7 @@ pypots.nn.modules.frets
 -------------------------------------------------
 
 .. automodule:: pypots.nn.modules.frets
-:members:
+    :members:
 
 
 
@@ -61,7 +86,7 @@ pypots.nn.modules.timesnet
 -------------------------------------------------
 
 .. automodule:: pypots.nn.modules.timesnet
-:members:
+    :members:
 
 
 
@@ -69,7 +94,7 @@ pypots.nn.modules.moment
 -------------------------------------------------
 
 .. automodule:: pypots.nn.modules.moment
-:members:
+    :members:
 
 
 
@@ -77,7 +102,7 @@ pypots.nn.modules.inception
 -------------------------------------------------
 
 .. automodule:: pypots.nn.modules.inception
-:members:
+    :members:
 
 
 
@@ -85,7 +110,7 @@ pypots.nn.modules.segrnn
 -------------------------------------------------
 
 .. automodule:: pypots.nn.modules.segrnn
-:members:
+    :members:
 
 
 
@@ -93,7 +118,7 @@ pypots.nn.modules.stemgnn
 -------------------------------------------------
 
 .. automodule:: pypots.nn.modules.stemgnn
-:members:
+    :members:
 
 
 
@@ -101,7 +126,7 @@ pypots.nn.modules.timellm
 -------------------------------------------------
 
 .. automodule:: pypots.nn.modules.timellm
-:members:
+    :members:
 
 
 
@@ -109,7 +134,7 @@ pypots.nn.modules.imputeformer
 -------------------------------------------------
 
 .. automodule:: pypots.nn.modules.imputeformer
-:members:
+    :members:
 
 
 
@@ -117,7 +142,7 @@ pypots.nn.modules.csai
 -------------------------------------------------
 
 .. automodule:: pypots.nn.modules.csai
-:members:
+    :members:
 
 
 
@@ -125,7 +150,7 @@ pypots.nn.modules.transformer
 -------------------------------------------------
 
 .. automodule:: pypots.nn.modules.transformer
-:members:
+    :members:
 
 
 
@@ -133,7 +158,7 @@ pypots.nn.modules.mrnn
 -------------------------------------------------
 
 .. automodule:: pypots.nn.modules.mrnn
-:members:
+    :members:
 
 
 
@@ -141,7 +166,7 @@ pypots.nn.modules.reformer
 -------------------------------------------------
 
 .. automodule:: pypots.nn.modules.reformer
-:members:
+    :members:
 
 
 
@@ -149,7 +174,7 @@ pypots.nn.modules.micn
 -------------------------------------------------
 
 .. automodule:: pypots.nn.modules.micn
-:members:
+    :members:
 
 
 
@@ -157,7 +182,7 @@ pypots.nn.modules.trmf
 -------------------------------------------------
 
 .. automodule:: pypots.nn.modules.trmf
-:members:
+    :members:
 
 
 
@@ -165,7 +190,7 @@ pypots.nn.modules.tefn
 -------------------------------------------------
 
 .. automodule:: pypots.nn.modules.tefn
-:members:
+    :members:
 
 
 
@@ -173,15 +198,7 @@ pypots.nn.modules.informer
 -------------------------------------------------
 
 .. automodule:: pypots.nn.modules.informer
-:members:
-
-
-
-pypots.nn.modules.timemoe
--------------------------------------------------
-
-.. automodule:: pypots.nn.modules.timemoe
-:members:
+    :members:
 
 
 
@@ -189,7 +206,7 @@ pypots.nn.modules.dlinear
 -------------------------------------------------
 
 .. automodule:: pypots.nn.modules.dlinear
-:members:
+    :members:
 
 
 
@@ -197,7 +214,7 @@ pypots.nn.modules.etsformer
 -------------------------------------------------
 
 .. automodule:: pypots.nn.modules.etsformer
-:members:
+    :members:
 
 
 
@@ -205,7 +222,7 @@ pypots.nn.modules.fits
 -------------------------------------------------
 
 .. automodule:: pypots.nn.modules.fits
-:members:
+    :members:
 
 
 
@@ -213,7 +230,7 @@ pypots.nn.modules.autoformer
 -------------------------------------------------
 
 .. automodule:: pypots.nn.modules.autoformer
-:members:
+    :members:
 
 
 
@@ -221,7 +238,7 @@ pypots.nn.modules.scinet
 -------------------------------------------------
 
 .. automodule:: pypots.nn.modules.scinet
-:members:
+    :members:
 
 
 
@@ -229,7 +246,7 @@ pypots.nn.modules.brits
 -------------------------------------------------
 
 .. automodule:: pypots.nn.modules.brits
-:members:
+    :members:
 
 
 
@@ -237,7 +254,7 @@ pypots.nn.modules.koopa
 -------------------------------------------------
 
 .. automodule:: pypots.nn.modules.koopa
-:members:
+    :members:
 
 
 
@@ -245,7 +262,7 @@ pypots.nn.modules.tide
 -------------------------------------------------
 
 .. automodule:: pypots.nn.modules.tide
-:members:
+    :members:
 
 
 
@@ -253,7 +270,7 @@ pypots.nn.modules.vader
 -------------------------------------------------
 
 .. automodule:: pypots.nn.modules.vader
-:members:
+    :members:
 
 
 
@@ -261,7 +278,7 @@ pypots.nn.modules.patchtst
 -------------------------------------------------
 
 .. automodule:: pypots.nn.modules.patchtst
-:members:
+    :members:
 
 
 
@@ -269,7 +286,7 @@ pypots.nn.modules.timemixer
 -------------------------------------------------
 
 .. automodule:: pypots.nn.modules.timemixer
-:members:
+    :members:
 
 
 
@@ -277,7 +294,7 @@ pypots.nn.modules.gpt4ts
 -------------------------------------------------
 
 .. automodule:: pypots.nn.modules.gpt4ts
-:members:
+    :members:
 
 
 
@@ -285,7 +302,7 @@ pypots.nn.modules.moderntcn
 -------------------------------------------------
 
 .. automodule:: pypots.nn.modules.moderntcn
-:members:
+    :members:
 
 
 
@@ -293,7 +310,7 @@ pypots.nn.modules.crossformer
 -------------------------------------------------
 
 .. automodule:: pypots.nn.modules.crossformer
-:members:
+    :members:
 
 
 
@@ -301,7 +318,7 @@ pypots.nn.modules.grud
 -------------------------------------------------
 
 .. automodule:: pypots.nn.modules.grud
-:members:
+    :members:
 
 
 
@@ -309,7 +326,7 @@ pypots.nn.modules.saits
 -------------------------------------------------
 
 .. automodule:: pypots.nn.modules.saits
-:members:
+    :members:
 
 
 
@@ -317,7 +334,7 @@ pypots.nn.modules.csdi
 -------------------------------------------------
 
 .. automodule:: pypots.nn.modules.csdi
-:members:
+    :members:
 
 
 
@@ -325,7 +342,7 @@ pypots.nn.modules.timemixerpp
 -------------------------------------------------
 
 .. automodule:: pypots.nn.modules.timemixerpp
-:members:
+    :members:
 
 
 
@@ -333,7 +350,7 @@ pypots.nn.modules.gpvae
 -------------------------------------------------
 
 .. automodule:: pypots.nn.modules.gpvae
-:members:
+    :members:
 
 
 
@@ -341,7 +358,7 @@ pypots.nn.modules.fedformer
 -------------------------------------------------
 
 .. automodule:: pypots.nn.modules.fedformer
-:members:
+    :members:
 
 
 
@@ -349,7 +366,7 @@ pypots.nn.modules.nonstationary_transformer
 -------------------------------------------------
 
 .. automodule:: pypots.nn.modules.nonstationary_transformer
-:members:
+    :members:
 
 
 
@@ -357,7 +374,7 @@ pypots.nn.modules.crli
 -------------------------------------------------
 
 .. automodule:: pypots.nn.modules.crli
-:members:
+    :members:
 
 
 
@@ -365,7 +382,7 @@ pypots.nn.modules.ts2vec
 -------------------------------------------------
 
 .. automodule:: pypots.nn.modules.ts2vec
-:members:
+    :members:
 
 
 
@@ -373,7 +390,7 @@ pypots.nn.modules.totem
 -------------------------------------------------
 
 .. automodule:: pypots.nn.modules.totem
-:members:
+    :members:
 
 
 
@@ -381,4 +398,4 @@ pypots.nn.modules.usgan
 -------------------------------------------------
 
 .. automodule:: pypots.nn.modules.usgan
-:members:
+    :members:

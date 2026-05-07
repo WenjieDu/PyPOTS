@@ -10,6 +10,15 @@ pypots.imputation.saits
    :show-inheritance:
    :inherited-members:
 
+pypots.imputation.helix
+------------------------------
+
+.. automodule:: pypots.imputation.helix
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+
 pypots.imputation.transformer
 ------------------------------------
 
@@ -136,6 +145,15 @@ pypots.imputation.totem
    :show-inheritance:
    :inherited-members:
 
+pypots.imputation.tkan
+------------------------------------
+
+.. automodule:: pypots.imputation.tkan
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+
 pypots.imputation.itransformer
 ------------------------------------
 
@@ -235,7 +253,7 @@ pypots.imputation.scinet
    :inherited-members:
 
 pypots.imputation.nonstationary_transformer
-------------------------------
+---------------------------------------------
 
 .. automodule:: pypots.imputation.nonstationary_transformer
    :members:

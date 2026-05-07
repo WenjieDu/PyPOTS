@@ -16,7 +16,6 @@ This implementation is inspired by the official one https://github.com/tongnie/I
 # Created by Tong Nie <nietong@tongji.edu.cn> and Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-
 from .model import ImputeFormer
 
 __all__ = [

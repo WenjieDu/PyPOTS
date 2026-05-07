@@ -55,10 +55,10 @@ pypots.clustering.base
    :show-inheritance:
    :inherited-members:
 
-pypots.vec.base
+pypots.representation.base
 ------------------------------
 
-.. automodule:: pypots.vec.base
+.. automodule:: pypots.representation.base
    :members:
    :undoc-members:
    :show-inheritance:

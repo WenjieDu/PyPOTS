@@ -48,8 +48,11 @@
     <a href="https://docs.pypots.com">
         <img alt="Docs building" src="https://img.shields.io/readthedocs/pypots?logo=readthedocs&label=Docs&logoColor=white&color=395260">
     </a>
-    <a href="https://github.com/psf/black">
-        <img alt="Code Style" src="https://img.shields.io/badge/Code_Style-black-000000">
+    <a href="https://deepwiki.com/WenjieDu/PyPOTS">
+        <img alt="Ask DeepWiki" src="https://deepwiki.com/badge.svg">
+    </a>
+    <a href="https://github.com/astral-sh/ruff">
+        <img alt="Code Style" src="https://img.shields.io/badge/Code_Style-Ruff-D7FF64?logo=ruff">
     </a>
     <a href="https://anaconda.org/conda-forge/pypots">
         <img alt="Conda downloads" src="https://pypots.com/figs/downloads_badges/conda_pypots_downloads.svg">
@@ -69,13 +72,9 @@
 尽管关于在POTS上进行不同任务的机器学习算法已经有了不少的研究, 但当前没有专门针对POTS建模开发的工具箱.
 因此, 旨在填补该领域空白的"PyPOTS"应运而生.
 
-⦿ `应用意义`: PyPOTS(发音为"Pie Pots")是一个易上手的工具箱, 工程师和研究人员可以通过PyPOTS轻松地处理POTS数据建模问题,
+⦿ `社区使命`: PyPOTS(发音为"Pie Pots")是一个易上手的工具箱, 工程师和研究人员可以通过PyPOTS轻松地处理POTS数据建模问题,
 进而将注意力更多地聚焦在要解决的核心问题上. PyPOTS会持续不断的更新关于部分观测多变量时间序列的经典算法和先进算法.
 除此之外, PyPOTS还提供了统一的应用程序接口,详细的算法学习指南和应用示例.
-
-🤗 如果你认为PyPOTS有用, 请星标🌟该项目来帮助更多人注意到PyPOTS的存在.
-如果PyPOTS对你的研究有帮助, 请在你的研究中[引用PyPOTS](#-引用pypots).
-这是对我们开源研究工作的最大支持, 谢谢！
 
 该说明文档的后续内容如下:
 [**❖ 支持的算法**](#-支持的算法),
@@ -89,11 +88,11 @@
 ## ❖ 支持的算法
 
 PyPOTS当前支持多变量POTS数据的插补, 预测, 分类, 聚类以及异常检测五类任务. 下表描述了当前PyPOTS中所集成的算法以及对应不同任务的可用性.
-符号`✅`表示该算法当前可用于相应的任务(注意, 目前模型尚不支持的任务在未来版本中可能会逐步添加, 敬请关注！).
-算法的参考文献以及论文链接在该文档底部可以找到.
+符号`✅`表示该算法当前可用于相应的任务, 你可以点击`✅`以快速跳转到该算法在该任务上的使用示例(如果有的话).
+注意, 目前模型尚不支持的任务在未来版本中可能会逐步添加, 敬请关注!
 
-🌟 自**v0.2**版本开始, PyPOTS中所有神经网络模型都支持超参数调优. 该功能基于[微软的NNI](https://github.com/microsoft/nni)
-框架实现.
+🌟 自**v0.2**版本开始, PyPOTS中所有神经网络模型都由[Microsoft NNI](https://github.com/microsoft/nni)支持超参数调优, 直到**v2.0**. 
+从PyPOTS v2开始, 该功能基于[Optuna](https://github.com/optuna/optuna)框架重新实现.
 你可以通过参考我们的时间序列插补综述和基准评估项目的代码[Awesome_Imputation](https://github.com/WenjieDu/Awesome_Imputation)
 来了解如何使用PyPOTS调优模型的超参.
 
@@ -102,66 +101,74 @@ PyPOTS当前支持多变量POTS数据的插补, 预测, 分类, 聚类以及异�
 **为了使上述模型能够适用于POTS数据, 我们采用了与[SAITS论文](https://arxiv.org/pdf/2202.08516)[^1]
 中相同的embedding策略和训练方法(ORT+MIT)对它们进行改进**.
 
+任务类型缩写如下:
+**`IMPT`**: Imputation, 插补;
+**`FCST`**: Forecasting, 预测;
+**`CLAF`**: Classification, 分类;
+**`CLUS`**: Clustering, 聚类;
+**`ANOD`**: Anomaly Detection, 异常检测.
 除了下表中列出的5种任务(插补, 预测, 分类, 聚类和异常检测)的算法外, PyPOTS还包括了用于时序表征学习和向量化的TS2Vec[^48].
 所有算法的论文引用和链接可以在本文件的底部找到.
 
-| **Type**      | **Algo**                                                                                                                                        | **IMPU** | **FORE** | **CLAS** | **CLUS** | **ANOD** | **Year - Venue**                                                                                         |
+| **Type**      | **Algo**                                                                                                                                        | **IMPT** | **FCST** | **CLAF** | **CLUS** | **ANOD** | **Year - Venue**                                                                                         |
 |:--------------|:------------------------------------------------------------------------------------------------------------------------------------------------|:--------:|:--------:|:--------:|:--------:|:--------:|:---------------------------------------------------------------------------------------------------------|
-| LLM&TSFM      | <a href="https://time-series.ai"><img src="https://pypots.com/figs/timeseriesai/logo.png" width="26px" align="center">Time-Series.AI</a>  [^36] |    ✅     |    ✅     |    ✅     |    ✅     |    ✅     | <a href="https://docs.google.com/forms/d/1Ff2ndYUFQEL3tIcwtcR8lWeopQ2vTXX6D_x8WGFKH6E">Join waitlist</a> |
-| Neural Net    | MixLinear🧑‍🔧[^52]                                                                                                                             |          |    ✅     |          |          |          | `2026 - ICLR`                                                                                            |
-| Neural Net    | TEFN🧑‍🔧[^39]                                                                                                                                  |    ✅     |    ✅     |    ✅     |          |    ✅     | `2025 - TPAMI`                                                                                           |
-| Neural Net    | TimeMixer++[^49]                                                                                                                                |    ✅     |          |          |          |    ✅     | `2025 - ICLR`                                                                                            |
-| LLM           | Time-LLM🧑‍🔧[^45]                                                                                                                              |    ✅     |    ✅     |          |          |          | `2024 - ICLR`                                                                                            |
-| TSFM          | MOMENT[^47]                                                                                                                                     |    ✅     |    ✅     |          |          |          | `2024 - ICML`                                                                                            |
-| Neural Net    | TSLANet[^51]                                                                                                                                    |    ✅     |          |          |          |          | `2024 - ICML`                                                                                            |
-| Neural Net    | FITS🧑‍🔧[^41]                                                                                                                                  |    ✅     |    ✅     |          |          |          | `2024 - ICLR`                                                                                            |
-| Neural Net    | TimeMixer[^37]                                                                                                                                  |    ✅     |    ✅     |          |          |     ✅     | `2024 - ICLR`                                                                                            |
-| Neural Net    | iTransformer🧑‍🔧[^24]                                                                                                                          |    ✅     |          |    ✅     |          |    ✅      | `2024 - ICLR`                                                                                            |
-| Neural Net    | ModernTCN[^38]                                                                                                                                  |    ✅     |    ✅     |          |          |          | `2024 - ICLR`                                                                                            |
-| Neural Net    | ImputeFormer🧑‍🔧[^34]                                                                                                                          |    ✅     |          |          |          |    ✅     | `2024 - KDD`                                                                                             |
-| Neural Net    | TOTEM [^50]                                                                                                                                     |    ✅     |          |          |          |          | `2024 - TMLR`                                                                                            |
-| Neural Net    | SAITS[^1]                                                                                                                                       |    ✅     |          |    ✅     |          |    ✅     | `2023 - ESWA`                                                                                            |
-| LLM           | GPT4TS[^46]                                                                                                                                     |    ✅     |    ✅     |          |          |          | `2023 - NeurIPS`                                                                                         |
-| Neural Net    | FreTS🧑‍🔧[^23]                                                                                                                                 |    ✅     |          |          |          |          | `2023 - NeurIPS`                                                                                         |
-| Neural Net    | Koopa🧑‍🔧[^29]                                                                                                                                 |    ✅     |          |          |          |          | `2023 - NeurIPS`                                                                                         |
-| Neural Net    | Crossformer🧑‍🔧[^16]                                                                                                                           |    ✅     |          |          |          |     ✅     | `2023 - ICLR`                                                                                            |
-| Neural Net    | TimesNet[^14]                                                                                                                                   |    ✅     |    ✅     |    ✅     |          |    ✅     | `2023 - ICLR`                                                                                            |
-| Neural Net    | PatchTST🧑‍🔧[^18]                                                                                                                              |    ✅     |          |    ✅     |          |    ✅     | `2023 - ICLR`                                                                                            |
-| Neural Net    | ETSformer🧑‍🔧[^19]                                                                                                                             |    ✅     |          |          |          |     ✅     | `2023 - ICLR`                                                                                            |
-| Neural Net    | MICN🧑‍🔧[^27]                                                                                                                                  |    ✅     |    ✅     |          |          |          | `2023 - ICLR`                                                                                            |
-| Neural Net    | DLinear🧑‍🔧[^17]                                                                                                                               |    ✅     |    ✅     |          |          |    ✅     | `2023 - AAAI`                                                                                            |
-| Neural Net    | TiDE🧑‍🔧[^28]                                                                                                                                  |    ✅     |          |          |          |          | `2023 - TMLR`                                                                                            |
-| Neural Net    | CSAI[^42]                                                                                                                                       |    ✅     |          |    ✅     |          |          | `2023 - arXiv`                                                                                           |
-| Neural Net    | SegRNN🧑‍🔧[^43]                                                                                                                                |    ✅     |    ✅     |          |          |    ✅     | `2023 - arXiv`                                                                                           |
-| Neural Net    | TS2Vec[^48]                                                                                                                                     |          |          |    ✅     |          |          | `2022 - AAAI`                                                                                            |
-| Neural Net    | SCINet🧑‍🔧[^30]                                                                                                                                |    ✅     |          |          |          |    ✅     | `2022 - NeurIPS`                                                                                         |
-| Neural Net    | Nonstationary Tr.🧑‍🔧[^25]                                                                                                                     |    ✅     |          |          |          |     ✅     | `2022 - NeurIPS`                                                                                         |
-| Neural Net    | FiLM🧑‍🔧[^22]                                                                                                                                  |    ✅     |    ✅     |          |          |     ✅     | `2022 - NeurIPS`                                                                                         |
-| Neural Net    | RevIN_SCINet🧑‍🔧[^31]                                                                                                                          |    ✅     |          |          |          |          | `2022 - ICLR`                                                                                            |
-| Neural Net    | Pyraformer🧑‍🔧[^26]                                                                                                                            |    ✅     |          |          |          |     ✅     | `2022 - ICLR`                                                                                            |
-| Neural Net    | Raindrop[^5]                                                                                                                                    |          |          |    ✅     |          |          | `2022 - ICLR`                                                                                            |
-| Neural Net    | FEDformer🧑‍🔧[^20]                                                                                                                             |    ✅     |          |          |          |     ✅     | `2022 - ICML`                                                                                            |
-| Neural Net    | Autoformer🧑‍🔧[^15]                                                                                                                            |    ✅     |          |    ✅     |          |    ✅     | `2021 - NeurIPS`                                                                                         |
-| Neural Net    | CSDI[^12]                                                                                                                                       |    ✅     |    ✅     |          |          |          | `2021 - NeurIPS`                                                                                         |
-| Neural Net    | Informer🧑‍🔧[^21]                                                                                                                              |    ✅     |          |          |          |    ✅      | `2021 - AAAI`                                                                                            |
-| Neural Net    | US-GAN[^10]                                                                                                                                     |    ✅     |          |          |          |          | `2021 - AAAI`                                                                                            |
-| Neural Net    | CRLI[^6]                                                                                                                                        |          |          |          |    ✅     |          | `2021 - AAAI`                                                                                            |
-| Probabilistic | BTTF[^8]                                                                                                                                        |          |    ✅     |          |          |          | `2021 - TPAMI`                                                                                           |
-| Neural Net    | StemGNN🧑‍🔧[^33]                                                                                                                               |    ✅     |          |          |          |          | `2020 - NeurIPS`                                                                                         |
-| Neural Net    | SeFT[^53]                                                                                                                                       |          |          |    ✅     |          |          | `2020 - ICML`                                                                                            |
-| Neural Net    | Reformer🧑‍🔧[^32]                                                                                                                              |    ✅     |          |          |          |    ✅     | `2020 - ICLR`                                                                                            |
-| Neural Net    | GP-VAE[^11]                                                                                                                                     |    ✅     |          |          |          |          | `2020 - AISTATS`                                                                                         |
-| Neural Net    | VaDER[^7]                                                                                                                                       |          |          |          |    ✅     |          | `2019 - GigaSci.`                                                                                        |
-| Neural Net    | M-RNN[^9]                                                                                                                                       |    ✅     |          |          |          |          | `2019 - TBME`                                                                                            |
-| Neural Net    | BRITS[^3]                                                                                                                                       |    ✅     |          |    ✅     |          |          | `2018 - NeurIPS`                                                                                         |
-| Neural Net    | GRU-D[^4]                                                                                                                                       |    ✅     |          |    ✅     |          |          | `2018 - Sci. Rep.`                                                                                       |
-| Neural Net    | TCN🧑‍🔧[^35]                                                                                                                                   |    ✅     |          |          |          |          | `2018 - arXiv`                                                                                           |
-| Neural Net    | Transformer🧑‍🔧[^2]                                                                                                                            |    ✅     |    ✅     |          |          |     ✅     | `2017 - NeurIPS`                                                                                         |
-| MF            | TRMF[^44]                                                                                                                                       |    ✅     |          |          |          |          | `2016 - NeurIPS`                                                                                         |
-| Naive         | Lerp[^40]                                                                                                                                       |    ✅     |          |          |          |          |                                                                                                          |
-| Naive         | LOCF/NOCB                                                                                                                                       |    ✅     |          |          |          |          |                                                                                                          |
-| Naive         | Mean                                                                                                                                            |    ✅     |          |          |          |          |                                                                                                          |
-| Naive         | Median                                                                                                                                          |    ✅     |          |          |          |          |                                                                                                          |
+| LLM&TSFM | <a href="https://time-series.ai"><img src="https://pypots.com/figs/timeseriesai/logo.png" width="26px" align="center">Time-Series.AI</a>  [^36] | ✅ | ✅ | ✅ | ✅ | ✅ | <a href="https://docs.google.com/forms/d/1Ff2ndYUFQEL3tIcwtcR8lWeopQ2vTXX6D_x8WGFKH6E">Join waitlist</a> |
+| Neural Net | HELIX [^55] | [✅](examples/imputation/helix_imputation_example.py) |  |  |  |  | `2026 - ICML` |
+| Neural Net | MixLinear🧑‍🔧[^52] |  | [✅](examples/forecasting/mixlinear_forecasting_example.py) |  |  |  | `2026 - ICLR` |
+| Neural Net | SegRNN🧑‍🔧[^43] | [✅](examples/imputation/segrnn_imputation_example.py) | [✅](examples/forecasting/segrnn_forecasting_example.py) |  |  | [✅](examples/anomaly_detection/segrnn_anomalydetection_example.py) | `2026 - IoT-J` |
+| Neural Net | TEFN🧑‍🔧[^39] | [✅](examples/imputation/tefn_imputation_example.py) | [✅](examples/forecasting/tefn_forecasting_example.py) | [✅](examples/classification/tefn_classification_example.py) |  | [✅](examples/anomaly_detection/tefn_anomalydetection_example.py) | `2025 - TPAMI` |
+| Neural Net | TimeMixer++[^49] | [✅](examples/imputation/timemixerpp_imputation_example.py) | [✅](examples/forecasting/timemixerpp_forecasting_example.py) |  |  | [✅](examples/anomaly_detection/timemixerpp_anomalydetection_example.py) | `2025 - ICLR` |
+| LLM | Time-LLM🧑‍🔧[^45] | [✅](examples/imputation/timellm_imputation_example.py) | [✅](examples/forecasting/timellm_forecasting_example.py) |  |  |  | `2024 - ICLR` |
+| TSFM | MOMENT[^47] | [✅](examples/imputation/moment_imputation_example.py) | [✅](examples/forecasting/moment_forecasting_example.py) |  |  |  | `2024 - ICML` |
+| Neural Net | TSLANet[^51] | [✅](examples/imputation/tslanet_imputation_example.py) |  |  |  |  | `2024 - ICML` |
+| Neural Net | FITS🧑‍🔧[^41] | [✅](examples/imputation/fits_imputation_example.py) | [✅](examples/forecasting/fits_forecasting_example.py) |  |  |  | `2024 - ICLR` |
+| Neural Net | TimeMixer[^37] | [✅](examples/imputation/timemixer_imputation_example.py) | [✅](examples/forecasting/timemixer_forecasting_example.py) |  |  | [✅](examples/anomaly_detection/timemixer_anomalydetection_example.py) | `2024 - ICLR` |
+| Neural Net | iTransformer🧑‍🔧[^24] | [✅](examples/imputation/itransformer_imputation_example.py) |  | [✅](examples/classification/itransformer_classification_example.py) |  | [✅](examples/anomaly_detection/itransformer_anomalydetection_example.py) | `2024 - ICLR` |
+| Neural Net | ModernTCN[^38] | [✅](examples/imputation/moderntcn_imputation_example.py) | [✅](examples/forecasting/moderntcn_forecasting_example.py) |  |  |  | `2024 - ICLR` |
+| Neural Net | ImputeFormer🧑‍🔧[^34] | [✅](examples/imputation/imputeformer_imputation_example.py) |  |  |  | [✅](examples/anomaly_detection/imputeformer_anomalydetection_example.py) | `2024 - KDD` |
+| Neural Net | TOTEM[^50] | [✅](examples/imputation/totem_imputation_example.py) |  |  |  |  | `2024 - TMLR` |
+| Neural Net | TKAN🧑‍🔧[^54] | [✅](examples/imputation/tkan_imputation_example.py) |  |  |  |  | `2024 - arXiv` |
+| Neural Net | SAITS[^1] | [✅](examples/imputation/saits_imputation_example.py) |  | [✅](examples/classification/saits_classification_example.py) |  | [✅](examples/anomaly_detection/saits_anomalydetection_example.py) | `2023 - ESWA` |
+| LLM | GPT4TS[^46] | [✅](examples/imputation/gpt4ts_imputation_example.py) | [✅](examples/forecasting/gpt4ts_forecasting_example.py) |  |  |  | `2023 - NeurIPS` |
+| Neural Net | FreTS🧑‍🔧[^23] | [✅](examples/imputation/frets_imputation_example.py) |  |  |  |  | `2023 - NeurIPS` |
+| Neural Net | Koopa🧑‍🔧[^29] | [✅](examples/imputation/koopa_imputation_example.py) |  |  |  |  | `2023 - NeurIPS` |
+| Neural Net | Crossformer🧑‍🔧[^16] | [✅](examples/imputation/crossformer_imputation_example.py) |  |  |  | [✅](examples/anomaly_detection/crossformer_anomalydetection_example.py) | `2023 - ICLR` |
+| Neural Net | TimesNet[^14] | [✅](examples/imputation/timesnet_imputation_example.py) | [✅](examples/forecasting/timesnet_forecasting_example.py) | [✅](examples/classification/timesnet_classification_example.py) |  | [✅](examples/anomaly_detection/timesnet_anomalydetection_example.py) | `2023 - ICLR` |
+| Neural Net | PatchTST🧑‍🔧[^18] | [✅](examples/imputation/patchtst_imputation_example.py) |  | [✅](examples/classification/patchtst_classification_example.py) |  | [✅](examples/anomaly_detection/patchtst_anomalydetection_example.py) | `2023 - ICLR` |
+| Neural Net | ETSformer🧑‍🔧[^19] | [✅](examples/imputation/etsformer_imputation_example.py) |  |  |  | [✅](examples/anomaly_detection/etsformer_anomalydetection_example.py) | `2023 - ICLR` |
+| Neural Net | MICN🧑‍🔧[^27] | [✅](examples/imputation/micn_imputation_example.py) | [✅](examples/forecasting/micn_forecasting_example.py) |  |  |  | `2023 - ICLR` |
+| Neural Net | DLinear🧑‍🔧[^17] | [✅](examples/imputation/dlinear_imputation_example.py) | [✅](examples/forecasting/dlinear_forecasting_example.py) |  |  | [✅](examples/anomaly_detection/dlinear_anomalydetection_example.py) | `2023 - AAAI` |
+| Neural Net | TiDE🧑‍🔧[^28] | [✅](examples/imputation/tide_imputation_example.py) |  |  |  |  | `2023 - TMLR` |
+| Neural Net | CSAI[^42] | [✅](examples/imputation/csai_imputation_example.py) |  | [✅](examples/classification/csai_classification_example.py) |  |  | `2023 - arXiv` |
+| Neural Net | TS2Vec[^48] |  |  | [✅](examples/classification/ts2vec_classification_example.py) |  |  | `2022 - AAAI` |
+| Neural Net | SCINet🧑‍🔧[^30] | [✅](examples/imputation/scinet_imputation_example.py) |  |  |  | [✅](examples/anomaly_detection/scinet_anomalydetection_example.py) | `2022 - NeurIPS` |
+| Neural Net | Nonstationary Tr.🧑‍🔧[^25] | [✅](examples/imputation/nonstationary_transformer_imputation_example.py) |  |  |  | [✅](examples/anomaly_detection/nonstationary_transformer_anomalydetection_example.py) | `2022 - NeurIPS` |
+| Neural Net | FiLM🧑‍🔧[^22] | [✅](examples/imputation/film_imputation_example.py) | [✅](examples/forecasting/film_forecasting_example.py) |  |  | [✅](examples/anomaly_detection/film_anomalydetection_example.py) | `2022 - NeurIPS` |
+| Neural Net | RevIN_SCINet🧑‍🔧[^31] | [✅](examples/imputation/revin_scinet_imputation_example.py) |  |  |  |  | `2022 - ICLR` |
+| Neural Net | Pyraformer🧑‍🔧[^26] | [✅](examples/imputation/pyraformer_imputation_example.py) |  |  |  | [✅](examples/anomaly_detection/pyraformer_anomalydetection_example.py) | `2022 - ICLR` |
+| Neural Net | Raindrop[^5] |  |  | [✅](examples/classification/raindrop_classification_example.py) |  |  | `2022 - ICLR` |
+| Neural Net | FEDformer🧑‍🔧[^20] | [✅](examples/imputation/fedformer_imputation_example.py) |  |  |  | [✅](examples/anomaly_detection/fedformer_anomalydetection_example.py) | `2022 - ICML` |
+| Neural Net | Autoformer🧑‍🔧[^15] | [✅](examples/imputation/autoformer_imputation_example.py) |  | [✅](examples/classification/autoformer_classification_example.py) |  | [✅](examples/anomaly_detection/autoformer_anomalydetection_example.py) | `2021 - NeurIPS` |
+| Neural Net | CSDI[^12] | [✅](examples/imputation/csdi_imputation_example.py) | [✅](examples/forecasting/csdi_forecasting_example.py) |  |  |  | `2021 - NeurIPS` |
+| Neural Net | Informer🧑‍🔧[^21] | [✅](examples/imputation/informer_imputation_example.py) |  |  |  | [✅](examples/anomaly_detection/informer_anomalydetection_example.py) | `2021 - AAAI` |
+| Neural Net | US-GAN[^10] | [✅](examples/imputation/usgan_imputation_example.py) |  |  |  |  | `2021 - AAAI` |
+| Neural Net | CRLI[^6] |  |  |  | [✅](examples/clustering/crli_clustering_example.py) |  | `2021 - AAAI` |
+| Probabilistic | BTTF[^8] |  | [✅](examples/forecasting/bttf_forecasting_example.py) |  |  |  | `2021 - TPAMI` |
+| Neural Net | StemGNN🧑‍🔧[^33] | [✅](examples/imputation/stemgnn_imputation_example.py) |  |  |  |  | `2020 - NeurIPS` |
+| Neural Net | SeFT[^53] |  |  | [✅](examples/classification/seft_classification_example.py) |  |  | `2020 - ICML` |
+| Neural Net | Reformer🧑‍🔧[^32] | [✅](examples/imputation/reformer_imputation_example.py) |  |  |  | [✅](examples/anomaly_detection/reformer_anomalydetection_example.py) | `2020 - ICLR` |
+| Neural Net | GP-VAE[^11] | [✅](examples/imputation/gpvae_imputation_example.py) |  |  |  |  | `2020 - AISTATS` |
+| Neural Net | VaDER[^7] |  |  |  | [✅](examples/clustering/vader_clustering_example.py) |  | `2019 - GigaSci.` |
+| Neural Net | M-RNN[^9] | [✅](examples/imputation/mrnn_imputation_example.py) |  |  |  |  | `2019 - TBME` |
+| Neural Net | BRITS[^3] | [✅](examples/imputation/brits_imputation_example.py) |  | [✅](examples/classification/brits_classification_example.py) |  |  | `2018 - NeurIPS` |
+| Neural Net | GRU-D[^4] | [✅](examples/imputation/grud_imputation_example.py) |  | [✅](examples/classification/grud_classification_example.py) |  |  | `2018 - Sci. Rep.` |
+| Neural Net | TCN🧑‍🔧[^35] | [✅](examples/imputation/tcn_imputation_example.py) |  |  |  |  | `2018 - arXiv` |
+| Neural Net | Transformer🧑‍🔧[^2] | [✅](examples/imputation/transformer_imputation_example.py) | [✅](examples/forecasting/transformer_forecasting_example.py) |  |  | [✅](examples/anomaly_detection/transformer_anomalydetection_example.py) | `2017 - NeurIPS` |
+| MF | TRMF[^44] | [✅](examples/imputation/trmf_imputation_example.py) |  |  |  |  | `2016 - NeurIPS` |
+| Naive | Lerp[^40] | [✅](examples/imputation/lerp_imputation_example.py) |  |  |  |  |  |
+| Naive | LOCF/NOCB | [✅](examples/imputation/locf_imputation_example.py) |  |  |  |  |  |
+| Naive | Mean | [✅](examples/imputation/mean_imputation_example.py) |  |  |  |  |  |
+| Naive | Median | [✅](examples/imputation/median_imputation_example.py) |  |  |  |  |  |
 
 🙋 上表中`LLM (Large Language Model)`, `TSFM (Time-Series Foundation Model)`之间的区别:
 `LLM`是指在大规模文本数据上进行预训练的模型, 可以针对特定任务进行微调.
@@ -247,7 +254,7 @@ conda update  conda-forge::pypots  # 更新为最新版本
 # via docker
 docker run -it --name pypots wenjiedu/pypots  # docker会自动拉取我们构建好的镜像并为你运行一个实例
 # 运行结束后, 你可以在该容器中运行python即可使用我们为运行pypots配置好的环境
-# 如果你想退出该容器, 先按ctrl-P然后按ctrl-Q即可退出 
+# 如果你想退出该容器, 先按ctrl-P然后按ctrl-Q即可退出
 # 运行命令`docker attach pypots`可以重新进入该容器
 ```
 
@@ -320,18 +327,20 @@ PyPOTS也已被纳入[PyTorch Ecosystem](https://landscape.pytorch.org/?item=mod
 
 ```bibtex
 @article{du2023pypots,
-    title = {{PyPOTS: A Python Toolkit for Machine Learning on Partially-Observed Time Series}},
-    author = {Wenjie Du, Yiyuan Yang, Linglong Qian, Jun Wang, and Qingsong Wen},
-    journal = {arXiv preprint arXiv:2305.18811},
-    year = {2023},
+title = {{PyPOTS: A Python Toolkit for Data Mining on Partially-Observed Time Series}},
+author = {Wenjie Du},
+journal = {SIGKDD MiLeTS Workshop},
+year = {2023},
 }
 ```
 
-or
-> Wenjie Du, Yiyuan Yang, Linglong Qian, Jun Wang, Qingsong Wen. (2023).
-> PyPOTS: A Python Toolkit for Machine Learning on Partially-Observed Time Series.
-> arXiv, abs/2305.18811, 2023.
-
+```bibtex
+@article{du2025pypots,
+title = {{PyPOTS v1: A Python Toolkit for Machine Learning on Partially-Observed Time Series}},
+author = {Wenjie Du, Yiyuan Yang, Linglong Qian, Jun Wang, and Qingsong Wen},
+year = {2025},
+}
+```
 
 ## ❖ 贡献声明
 
@@ -509,9 +518,9 @@ test recently ;-) Follow us, and stay tuned!
 [^42]: Qian, L., Ibrahim, Z., Ellis, H. L., Zhang, A., Zhang, Y., Wang, T., & Dobson, R. (2023).
 [Knowledge Enhanced Conditional Imputation for Healthcare Time-series](https://arxiv.org/abs/2312.16713).
 *arXiv 2023*.
-[^43]: Lin, S., Lin, W., Wu, W., Zhao, F., Mo, R., & Zhang, H. (2023).
+[^43]: Lin, S., Lin, W., Wu, W., Zhao, F., Mo, R., & Zhang, H. (2026).
 [SegRNN: Segment Recurrent Neural Network for Long-Term Time Series Forecasting](https://arxiv.org/abs/2308.11200).
-*arXiv 2023*.
+*IEEE IoT-J 2026*.
 [^44]: Yu, H. F., Rao, N., & Dhillon, I. S. (2016).
 [Temporal regularized matrix factorization for high-dimensional time series prediction](https://papers.nips.cc/paper_files/paper/2016/hash/85422afb467e9456013a2a51d4dff702-Abstract.html).
 *NeurIPS 2016*.
@@ -539,6 +548,12 @@ test recently ;-) Follow us, and stay tuned!
 [^52]: Ma, A., Luo, D., & Sha, M. (2026).
 [MixLinear: Extreme Low Resource Multivariate Time Series Forecasting with 0.1K Parameters](https://openreview.net/forum?id=QUj0KuCumD).
 *ICLR 2026*.
-[^53]: Horn, M., Moor, M., Bock, C., Rieck, B. & Borgwardt, K. (2020).
+[^53]: Horn, M., Moor, M., Bock, C., Rieck, B., & Borgwardt, K. (2020).
 [Set Functions for Time Series](https://proceedings.mlr.press/v119/horn20a).
 *ICML 2020*.
+[^54]: Genet, R., & Inzirillo, H. (2024).
+[TKAN: Temporal Kolmogorov-Arnold Networks](https://arxiv.org/abs/2405.07344).
+*arXiv 2024*.
+[^55]: Zhang, F., Du, W., Zhang, H., Yu, K., & Qu, S. (2026).
+[HELIX: Hybrid Encoding with Learnable Identity and Cross-dimensional Synthesis for Time Series Imputation](https://arxiv.org/abs/2605.02278).
+*ICML 2026*.

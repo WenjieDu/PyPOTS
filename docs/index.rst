@@ -62,9 +62,13 @@ Welcome to PyPOTS docs!
    :alt: Docs building
    :target: https://readthedocs.org/projects/pypots/builds
 
-.. image:: https://img.shields.io/badge/Code_Style-black-000000
+.. image:: https://deepwiki.com/badge.svg
+   :alt: Ask DeepWiki
+   :target: https://deepwiki.com/WenjieDu/PyPOTS
+
+.. image:: https://img.shields.io/badge/Code_Style-ruff-D7FF64
    :alt: Code Style
-   :target: https://github.com/psf/black
+   :target: https://github.com/astral-sh/ruff
 
 .. image:: https://pypots.com/figs/downloads_badges/conda_pypots_downloads.svg
    :alt: Conda downloads
@@ -98,10 +102,6 @@ to help engineers and researchers focus more on the core problems in their hands
 PyPOTS will keep integrating classical and the latest state-of-the-art data mining algorithms for partially-observed multivariate time series.
 For sure, besides various algorithms, PyPOTS is going to have unified APIs together with detailed documentation and interactive examples across algorithms as tutorials.
 
-🤗 **Please** star this repo to help others notice PyPOTS if you think it is a useful toolkit.
-**Please** properly `cite PyPOTS <https://docs.pypots.com/en/latest/milestones.html#citing-pypots>`_ in your publications
-if it helps with your research. This really means a lot to our open-source research. Thank you!
-
 The rest of this readme file is organized as follows:
 `❖ Available Algorithms <#id1>`_,
 `❖ PyPOTS Ecosystem <#id37>`_,
@@ -116,11 +116,12 @@ The rest of this readme file is organized as follows:
 ^^^^^^^^^^^^^^^^^^^^^^^
 PyPOTS supports imputation, classification, clustering, forecasting, and anomaly detection tasks on multivariate partially-observed
 time series with missing values. The table below shows the availability of each algorithm in PyPOTS for different tasks.
-The symbol ✅ indicates the algorithm is available for the corresponding task (note that models will be continuously updated
-in the future to handle tasks that are not currently supported. Stay tuned❗️).
+The symbol `✅` indicates the algorithm is available for the corresponding task, and you could click `✅` to
+jump to the code example of the algorithm on the task.
+Note that models will be continuously updated in the future to handle tasks that are not currently supported. Stay tuned!
 
-🌟 Since **v0.2**, all neural-network models in PyPOTS has got hyperparameter-optimization support.
-This functionality is implemented with the `Microsoft NNI <https://github.com/microsoft/nni>`_ framework. You may want to refer to our time-series
+🌟 Since **v0.2**, all neural-network models in PyPOTS has got hyperparameter-optimization support by `Microsoft NNI <https://github.com/microsoft/nni>`_ until **v2.0**.
+In PyPOTS v2, this functionality is reimplemented with the `Optuna <https://github.com/optuna/optuna>`_ framework. You may want to refer to our time-series
 imputation survey repo `Awesome_Imputation <https://github.com/WenjieDu/Awesome_Imputation>`_ to see how to config and
 tune the hyperparameters.
 
@@ -129,8 +130,8 @@ proposed as algorithms for POTS data in their papers, and they cannot directly a
 To make them applicable to POTS data, we specifically apply the embedding strategy and training approach (ORT+MIT)
 the same as we did in `the SAITS paper <https://arxiv.org/pdf/2202.08516)>`_ :cite:`du2023SAITS`.
 
-The task types are abbreviated as follows: **IMPU**: Imputation; **FORE**: Forecasting;
-**CLAS**: Classification; **CLUS**: Clustering; **ANOD**: Anomaly Detection.
+The task types are abbreviated as follows: **IMPT**: Imputation; **FCST**: Forecasting;
+**CLAF**: Classification; **CLUS**: Clustering; **ANOD**: Anomaly Detection.
 In addition to the 5 tasks, PyPOTS also provides TS2Vec :cite:`yue2022ts2vec` for time series representation learning and vectorization.
 The paper references are all listed at the bottom of this readme file.
 
@@ -240,12 +241,12 @@ please cite it as below and 🌟star `PyPOTS repository <https://github.com/Wenj
     @article{du2023pypots,
     title = {{PyPOTS: A Python Toolkit for Data Mining on Partially-Observed Time Series}},
     author = {Wenjie Du},
-    journal = {KDD 2023 MiLeTS},
+    journal = {SIGKDD MiLeTS Workshop},
     year = {2023},
     }
 
     @article{du2025pypots,
-    title = {{PyPOTS v1.0: A Python Toolkit for Machine Learning on Partially-Observed Time Series}},
+    title = {{PyPOTS v1: A Python Toolkit for Machine Learning on Partially-Observed Time Series}},
     author = {Wenjie Du, Yiyuan Yang, Linglong Qian, Jun Wang, and Qingsong Wen},
     year = {2025},
     }
@@ -300,12 +301,12 @@ PyPOTS community is open, transparent, and surely friendly. Let's work together 
    :caption: Getting Started
 
    install
-   examples
+   tutorials
 
 .. toctree::
    :maxdepth: 4
    :hidden:
-   :caption: Docs of PyPOTS Ecosystem
+   :caption: User Docs of PyPOTS
 
    model_api
    pypots
@@ -314,11 +315,20 @@ PyPOTS community is open, transparent, and surely friendly. Let's work together 
    benchpots
 
 .. toctree::
+   :maxdepth: 4
+   :hidden:
+   :caption: Developer Docs of PyPOTS
+
+   dev_getting_started
+   dev_architecture
+   dev_integration_guide
+   dev_quality
+
+.. toctree::
    :maxdepth: 2
    :hidden:
    :caption: Additional Information
 
    faq
    milestones
-   about_us
    references

@@ -17,7 +17,6 @@ https://github.com/google-research/google-research/blob/master/tide and https://
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-
 from .model import TiDE
 
 __all__ = [

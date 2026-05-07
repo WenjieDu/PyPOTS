@@ -137,9 +137,9 @@ class MICN(BaseNNImputer):
         )
 
         assert isinstance(conv_kernel, list), "conv_kernel must be a list."
-        assert max(conv_kernel) <= min(
-            n_steps, n_features
-        ), "The maximum value in conv_kernel must be <=  the minimum value of n_steps and n_features."
+        assert max(conv_kernel) <= min(n_steps, n_features), (
+            "The maximum value in conv_kernel must be <=  the minimum value of n_steps and n_features."
+        )
 
         self.n_steps = n_steps
         self.n_features = n_features

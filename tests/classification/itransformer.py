@@ -66,11 +66,11 @@ class TestiTransformer(unittest.TestCase):
         results = self.itransformer.predict(TEST_SET)
         metrics = calc_binary_classification_metrics(results["classification_proba"], DATA["test_y"])
         logger.info(
-            f'iTransformer ROC_AUC: {metrics["roc_auc"]}, '
-            f'PR_AUC: {metrics["pr_auc"]}, '
-            f'F1: {metrics["f1"]}, '
-            f'Precision: {metrics["precision"]}, '
-            f'Recall: {metrics["recall"]}'
+            f"iTransformer ROC_AUC: {metrics['roc_auc']}, "
+            f"PR_AUC: {metrics['pr_auc']}, "
+            f"F1: {metrics['f1']}, "
+            f"Precision: {metrics['precision']}, "
+            f"Recall: {metrics['recall']}"
         )
         assert metrics["roc_auc"] >= 0.5, "ROC-AUC < 0.5"
 
@@ -108,11 +108,11 @@ class TestiTransformer(unittest.TestCase):
         assert len(classification) == len(classification_proba)
         metrics = calc_binary_classification_metrics(classification_proba, DATA["test_y"])
         logger.info(
-            f'Lazy-loading iTransformer ROC_AUC: {metrics["roc_auc"]}, '
-            f'PR_AUC: {metrics["pr_auc"]}, '
-            f'F1: {metrics["f1"]}, '
-            f'Precision: {metrics["precision"]}, '
-            f'Recall: {metrics["recall"]}'
+            f"Lazy-loading iTransformer ROC_AUC: {metrics['roc_auc']}, "
+            f"PR_AUC: {metrics['pr_auc']}, "
+            f"F1: {metrics['f1']}, "
+            f"Precision: {metrics['precision']}, "
+            f"Recall: {metrics['recall']}"
         )
         assert metrics["roc_auc"] >= 0.5, "ROC-AUC < 0.5"
 

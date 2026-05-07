@@ -6,7 +6,6 @@ The implementation of SegRNN for the partially-observed time-series anomaly dete
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-
 from typing import Union, Optional
 
 import torch
@@ -22,7 +21,7 @@ from ...optim.base import Optimizer
 
 
 class SegRNN(BaseNNDetector):
-    """The PyTorch implementation of the SegRNN model :cite:`lin2023segrnn` on the anomaly detection task.
+    """The PyTorch implementation of the SegRNN model :cite:`lin2026segrnn` on the anomaly detection task.
 
     Parameters
     ----------

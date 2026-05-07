@@ -26,9 +26,7 @@ class TestVisual(unittest.TestCase):
 
     def test_plot_missingness(self):
         plot_missingness(self.X_with_missingness, max_step=24, sample_idx=10)
-        plot_missingness(
-            ~np.isnan(self.X_with_missingness[10]), max_step=24, sample_idx=10
-        )
+        plot_missingness(~np.isnan(self.X_with_missingness[10]), max_step=24, sample_idx=10)
 
 
 if __name__ == "__main__":

@@ -5,7 +5,6 @@ Test cases for MixLinear forecasting model.
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-
 import os.path
 import unittest
 
@@ -67,9 +66,9 @@ class TestMixLinear(unittest.TestCase):
     @pytest.mark.xdist_group(name="forecasting-mixlinear")
     def test_1_forecasting(self):
         forecasting_X = self.mixlinear.predict(FORECASTING_TEST_SET)["forecasting"]
-        assert not np.isnan(
-            forecasting_X
-        ).any(), "Output has missing values in the forecasting results that should not be."
+        assert not np.isnan(forecasting_X).any(), (
+            "Output has missing values in the forecasting results that should not be."
+        )
         test_MSE = calc_mse(
             forecasting_X,
             FORECASTING_TEST_SET["X_pred"],
@@ -108,9 +107,9 @@ class TestMixLinear(unittest.TestCase):
         self.mixlinear.fit(FORECASTING_H5_TRAIN_SET_PATH, FORECASTING_H5_VAL_SET_PATH)
         forecasting_results = self.mixlinear.predict(FORECASTING_H5_TEST_SET_PATH)
         forecasting_X = forecasting_results["forecasting"]
-        assert not np.isnan(
-            forecasting_X
-        ).any(), "Output has missing values in the forecasting results that should not be."
+        assert not np.isnan(forecasting_X).any(), (
+            "Output has missing values in the forecasting results that should not be."
+        )
 
         test_MSE = calc_mse(
             forecasting_X,

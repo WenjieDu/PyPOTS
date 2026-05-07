@@ -6,7 +6,6 @@ The implementation of USGAN for the partially-observed time-series imputation ta
 # Created by Jun Wang <jwangfx@connect.ust.hk> and Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-import os
 from copy import deepcopy
 from typing import Union, Optional
 
@@ -24,11 +23,6 @@ from ...nn.modules.loss import Criterion
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
 from ...utils.logging import logger
-
-try:
-    import nni
-except ImportError:
-    pass
 
 
 class USGAN(BaseNNImputer):
@@ -354,10 +348,12 @@ class USGAN(BaseNNImputer):
                     saving_name=f"{self.__class__.__name__}_epoch{epoch}_{self.validation_metric_name}{mean_loss:.4f}",
                 )
 
-                if os.getenv("ENABLE_HPO", False):
-                    nni.report_intermediate_result(mean_loss)
-                    if epoch == self.epochs - 1 or self.patience == 0:
-                        nni.report_final_result(self.best_loss)
+                if self.optuna_trial is not None:
+                    self.optuna_trial.report(mean_loss, epoch)
+                    if self.optuna_trial.should_prune():
+                        import optuna
+
+                        raise optuna.TrialPruned()
 
                 if self.patience == 0:
                     logger.info("Exceeded the training patience. Terminating the training procedure...")

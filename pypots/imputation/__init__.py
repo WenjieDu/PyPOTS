@@ -19,6 +19,7 @@ from .timesnet import TimesNet
 from .etsformer import ETSformer
 from .fedformer import FEDformer
 from .film import FiLM
+from .fits import FITS
 from .frets import FreTS
 from .crossformer import Crossformer
 from .informer import Informer
@@ -34,6 +35,7 @@ from .koopa import Koopa
 from .micn import MICN
 from .tide import TiDE
 from .grud import GRUD
+from .helix import HELIX
 from .stemgnn import StemGNN
 from .imputeformer import ImputeFormer
 from .timemixer import TimeMixer
@@ -47,6 +49,7 @@ from .moment import MOMENT
 from .timemixerpp import TimeMixerPP
 from .totem import TOTEM
 from .tslanet import TSLANet
+from .tkan import TKAN
 
 # naive imputation methods
 from .locf import LOCF
@@ -62,6 +65,7 @@ __all__ = [
     "ETSformer",
     "FEDformer",
     "FiLM",
+    "FITS",
     "FreTS",
     "Crossformer",
     "TimesNet",
@@ -84,6 +88,7 @@ __all__ = [
     "MICN",
     "TiDE",
     "GRUD",
+    "HELIX",
     "StemGNN",
     "ImputeFormer",
     "TimeMixer",
@@ -98,6 +103,7 @@ __all__ = [
     "TimeMixerPP",
     "TOTEM",
     "TSLANet",
+    "TKAN",
     # naive imputation methods
     "LOCF",
     "Mean",

@@ -5,7 +5,6 @@ Store normalization functions for neural networks.
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-
 from typing import Tuple, Optional
 
 import torch
@@ -85,9 +84,9 @@ def nonstationary_denorm(
         De-normalized data. Shape: (n_samples, n_steps (seq_len), n_features).
 
     """
-    assert (
-        len(X) == len(means) == len(stdev)
-    ), "Input data and normalization parameters should have the same number of samples."
+    assert len(X) == len(means) == len(stdev), (
+        "Input data and normalization parameters should have the same number of samples."
+    )
     if len(means.shape) == 2:
         means = means.unsqueeze(1)
     if len(stdev.shape) == 2:

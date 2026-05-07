@@ -1,4 +1,4 @@
-pypots>=1.0
+pypots>=1.4
 build
 torch-sparse
 torch-scatter
@@ -6,6 +6,7 @@ torch-geometric
 sentencepiece
 pre-commit
 jupyterlab
+ruff
 black
 flake8
 flake8-pyproject

@@ -21,7 +21,7 @@ from ...optim.base import Optimizer
 
 class SegRNN(BaseNNImputer):
     """The PyTorch implementation of the SegRNN model.
-    SegRNN is originally proposed by Shengsheng Lin et al. in :cite:`lin2023segrnn`.
+    SegRNN is originally proposed by Shengsheng Lin et al. in :cite:`lin2026segrnn`.
     See detail in https://arxiv.org/abs/2308.11200 or https://github.com/lss-1138/SegRNN.
 
     Parameters

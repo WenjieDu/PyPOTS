@@ -21,7 +21,6 @@ This implementation is inspired by https://github.com/WenjieDu/SAITS
 # Created by Yiyuan Yang <yyy1997sjz@gmail.com>
 # License: BSD-3-Clause
 
-
 from .model import Transformer
 
 __all__ = [
