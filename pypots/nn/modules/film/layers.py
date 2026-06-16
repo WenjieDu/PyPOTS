@@ -105,6 +105,8 @@ class SpectralConv1d(nn.Module):
         self.weights1 = nn.Parameter(
             self.scale * torch.rand(in_channels, out_channels, len(self.index), dtype=torch.cfloat)
         )
+        # Register index as a buffer to ensure it's properly handled by DataParallel
+        self.register_buffer("index_buffer", torch.tensor(self.index, dtype=torch.long))
 
     def forward(self, x):
         B, H, E, N = x.shape
@@ -120,10 +122,32 @@ class SpectralConv1d(nn.Module):
 
         if self.modes1 > 1000:
             for wi, i in enumerate(self.index):
-                out_ft[:, :, :, i] = torch.einsum("bji,io->bjo", (x_ft[:, :, :, i], self.weights1[:, :, wi]))
+                # Handle complex einsum by splitting into real and imaginary parts
+                a_i = x_ft[:, :, :, i]
+                w_i = self.weights1[:, :, wi]
+                a_real, a_imag = a_i.real, a_i.imag
+                w_real, w_imag = w_i.real, w_i.imag
+
+                # Complex multiplication
+                out_real = torch.einsum("bji,io->bjo", a_real, w_real) - torch.einsum("bji,io->bjo", a_imag, w_imag)
+                out_imag = torch.einsum("bji,io->bjo", a_real, w_imag) + torch.einsum("bji,io->bjo", a_imag, w_real)
+
+                out_ft[:, :, :, i] = torch.complex(out_real, out_imag)
         else:
             a = x_ft[:, :, :, : self.modes2]
-            out_ft[:, :, :, : self.modes2] = torch.einsum("bjix,iox->bjox", a, self.weights1)
+            # Handle complex einsum by splitting into real and imaginary parts
+            # to avoid issues with DataParallel
+            a_real = a.real
+            a_imag = a.imag
+            w_real = self.weights1.real
+            w_imag = self.weights1.imag
+
+            # Complex multiplication: (a_real + i*a_imag) * (w_real + i*w_imag)
+            # = (a_real*w_real - a_imag*w_imag) + i*(a_real*w_imag + a_imag*w_real)
+            out_real = torch.einsum("bjix,iox->bjox", a_real, w_real) - torch.einsum("bjix,iox->bjox", a_imag, w_imag)
+            out_imag = torch.einsum("bjix,iox->bjox", a_real, w_imag) + torch.einsum("bjix,iox->bjox", a_imag, w_real)
+
+            out_ft[:, :, :, : self.modes2] = torch.complex(out_real, out_imag)
 
         x = torch.fft.irfft(out_ft, n=x.size(-1))
         return x

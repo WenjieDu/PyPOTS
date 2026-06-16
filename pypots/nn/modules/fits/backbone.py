@@ -29,13 +29,11 @@ class BackboneFITS(nn.Module):
             self.freq_upsampler = nn.ModuleList()
             for i in range(self.n_features):
                 self.freq_upsampler.append(
-                    nn.Linear(self.dominance_freq, int(self.dominance_freq * self.length_ratio)).to(torch.cfloat)
+                    nn.Linear(self.dominance_freq, int(self.dominance_freq * self.length_ratio))
                 )
         else:
-            # complex layer for frequency upsampling
-            self.freq_upsampler = nn.Linear(self.dominance_freq, int(self.dominance_freq * self.length_ratio)).to(
-                torch.cfloat
-            )
+            # Linear layer for frequency upsampling (will handle complex numbers in forward pass)
+            self.freq_upsampler = nn.Linear(self.dominance_freq, int(self.dominance_freq * self.length_ratio))
 
     def forward(self, x):
         low_specx = torch.fft.rfft(x, dim=1)
@@ -52,9 +50,23 @@ class BackboneFITS(nn.Module):
                 dtype=low_specx.dtype,
             ).to(low_specx.device)
             for i in range(self.n_features):
-                low_specxy_[:, :, i] = self.freq_upsampler[i](low_specx[:, :, i].permute(0, 1)).permute(0, 1)
+                # Apply linear transformation to complex numbers by treating real and imaginary parts separately
+                low_specx_i = low_specx[:, :, i]  # Shape: (batch, dominance_freq)
+                # Split into real and imaginary parts
+                real_part = self.freq_upsampler[i](low_specx_i.real)
+                imag_part = self.freq_upsampler[i](low_specx_i.imag)
+                # Recombine into complex tensor
+                low_specxy_[:, :, i] = torch.complex(real_part, imag_part)
         else:
-            low_specxy_ = self.freq_upsampler(low_specx.permute(0, 2, 1)).permute(0, 2, 1)
+            # Apply linear transformation to complex numbers
+            # low_specx shape: (batch, dominance_freq, n_features)
+            # Permute to (batch, n_features, dominance_freq) for linear layer
+            low_specx_permuted = low_specx.permute(0, 2, 1)
+            # Split into real and imaginary parts
+            real_part = self.freq_upsampler(low_specx_permuted.real)
+            imag_part = self.freq_upsampler(low_specx_permuted.imag)
+            # Recombine and permute back
+            low_specxy_ = torch.complex(real_part, imag_part).permute(0, 2, 1)
 
         low_specxy = torch.zeros(
             [low_specxy_.size(0), int((self.n_steps + self.n_pred_steps) / 2 + 1), low_specxy_.size(2)],

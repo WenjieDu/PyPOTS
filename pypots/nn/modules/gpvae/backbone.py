@@ -90,24 +90,7 @@ class BackboneGPVAE(nn.Module):
         self.M = M
         self.K = K
 
-        self.prior = None
-
-    def encode(self, x):
-        return self.encoder(x)
-
-    def decode(self, z):
-        if not torch.is_tensor(z):
-            z = torch.tensor(z).float()
-        num_dim = len(z.shape)
-        assert num_dim > 2
-        return self.decoder(torch.transpose(z, num_dim - 1, num_dim - 2))
-
-    @staticmethod
-    def kl_divergence(a, b):
-        return torch.distributions.kl.kl_divergence(a, b)
-
-    def _init_prior(self, device="cpu"):
-        # Compute kernel matrices for each latent dimension
+        # Pre-compute kernel matrices as buffers to be moved to the correct device by DataParallel
         kernel_matrices = []
         for i in range(self.kernel_scales):
             if self.kernel == "rbf":
@@ -131,11 +114,35 @@ class BackboneGPVAE(nn.Module):
             tiled_matrices.append(torch.unsqueeze(kernel_matrices[i], 0).repeat(multiplier, 1, 1))
         kernel_matrix_tiled = torch.cat(tiled_matrices)
         assert len(kernel_matrix_tiled) == self.latent_dim
-        prior = torch.distributions.MultivariateNormal(
+
+        # Register as buffer so it will be moved to the correct device by DataParallel
+        self.register_buffer("prior_covariance", kernel_matrix_tiled)
+
+    def encode(self, x):
+        return self.encoder(x)
+
+    def decode(self, z):
+        if not torch.is_tensor(z):
+            z = torch.tensor(z).float()
+        num_dim = len(z.shape)
+        assert num_dim > 2
+        return self.decoder(torch.transpose(z, num_dim - 1, num_dim - 2))
+
+    @staticmethod
+    def kl_divergence(a, b):
+        return torch.distributions.kl.kl_divergence(a, b)
+
+    def _get_prior(self, device):
+        """Get the prior distribution on the specified device.
+
+        This method creates a new prior distribution each time to avoid
+        issues with DataParallel where the distribution object cannot be
+        properly replicated across devices.
+        """
+        return torch.distributions.MultivariateNormal(
             loc=torch.zeros(self.latent_dim, self.time_length, device=device),
-            covariance_matrix=kernel_matrix_tiled.to(device),
+            covariance_matrix=self.prior_covariance.to(device),
         )
-        return prior
 
     def impute(self, X, missing_mask, n_sampling_times=1):
         n_samples, n_steps, n_features = X.shape
@@ -153,8 +160,8 @@ class BackboneGPVAE(nn.Module):
         X = X.repeat(self.K * self.M, 1, 1)
         missing_mask = missing_mask.repeat(self.K * self.M, 1, 1).type(torch.bool)
 
-        if self.prior is None:
-            self.prior = self._init_prior(device=X.device)
+        # Get the prior distribution for the current device
+        prior = self._get_prior(device=X.device)
 
         qz_x = self.encode(X)
         z = qz_x.rsample()
@@ -166,7 +173,7 @@ class BackboneGPVAE(nn.Module):
         nll = nll.sum(dim=(1, 2))
 
         if self.K > 1:
-            kl = qz_x.log_prob(z) - self.prior.log_prob(z)
+            kl = qz_x.log_prob(z) - prior.log_prob(z)
             kl = torch.where(torch.isfinite(kl), kl, torch.zeros_like(kl))
             kl = kl.sum(1)
 
@@ -176,7 +183,7 @@ class BackboneGPVAE(nn.Module):
             elbo = torch.logsumexp(weights, dim=1)
             elbo = elbo.mean()
         else:
-            kl = self.kl_divergence(qz_x, self.prior)
+            kl = self.kl_divergence(qz_x, prior)
             kl = torch.where(torch.isfinite(kl), kl, torch.zeros_like(kl))
             kl = kl.sum(1)
 
