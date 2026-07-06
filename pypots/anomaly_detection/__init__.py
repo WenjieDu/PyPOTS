@@ -27,6 +27,7 @@ from .timemixerpp import TimeMixerPP
 from .timesnet import TimesNet
 from .transformer import Transformer
 from .usad import USAD
+from .dcdetector import DCdetector
 
 __all__ = [
     "Autoformer",
@@ -51,4 +52,5 @@ __all__ = [
     "TimesNet",
     "Transformer",
     "USAD",
+    "DCdetector",
 ]
