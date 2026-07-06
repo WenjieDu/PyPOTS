@@ -48,12 +48,8 @@ class TestDCdetector(unittest.TestCase):
             d_model=32,
             n_heads=2,
             n_layers=1,
-            patch_size_1=4,
-            patch_size_2=8,
-            d_ff=64,
             epochs=3,
             batch_size=32,
-            verbose=False,
         )
 
     def test_01_fit(self):

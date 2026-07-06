@@ -285,22 +285,12 @@ class DCdetector(BaseNNDetector):
         Number of attention heads. Default is 4.
     n_layers : int
         Number of stacked encoder layers. Default is 2.
-    patch_size_1 : int
-        Patch size for the fine-grained attention branch. Default is 4.
-    patch_size_2 : int
-        Patch size for the coarse attention branch. Default is 8.
-    d_ff : int
-        Feed-forward inner dimensionality. Default is 128.
     dropout : float
         Dropout rate. Default is 0.1.
     batch_size : int
         Training batch size. Default is 32.
     epochs : int
         Number of training epochs. Default is 100.
-    training_loss : Criterion or type
-        Loss function used during training. Default is MAE.
-    validation_metric : Criterion or type
-        Metric used for validation. Default is MSE.
     optimizer : Optimizer or type
         Optimizer for parameter updates. Default is Adam.
     device : str or torch.device or list, optional
@@ -319,14 +309,9 @@ class DCdetector(BaseNNDetector):
         d_model: int = 64,
         n_heads: int = 4,
         n_layers: int = 2,
-        patch_size_1: int = 4,
-        patch_size_2: int = 8,
-        d_ff: int = 128,
         dropout: float = 0.1,
         batch_size: int = 32,
         epochs: int = 100,
-        training_loss: Union[Criterion, type] = MAE,
-        validation_metric: Union[Criterion, type] = MSE,
         optimizer: Union[Optimizer, type] = Adam,
         device: Optional[Union[str, torch.device, list]] = None,
         saving_path: str = None,
@@ -334,8 +319,8 @@ class DCdetector(BaseNNDetector):
     ):
         super().__init__(
             anomaly_rate=anomaly_rate,
-            training_loss=training_loss,
-            validation_metric=validation_metric,
+            training_loss=MAE,
+            validation_metric=MSE,
             batch_size=batch_size,
             epochs=epochs,
             device=device,
@@ -348,9 +333,6 @@ class DCdetector(BaseNNDetector):
         self.d_model = d_model
         self.n_heads = n_heads
         self.n_layers = n_layers
-        self.patch_size_1 = patch_size_1
-        self.patch_size_2 = patch_size_2
-        self.d_ff = d_ff
         self.dropout = dropout
 
         self.model = _DCdetectorNetwork(
@@ -359,9 +341,9 @@ class DCdetector(BaseNNDetector):
             d_model=self.d_model,
             n_heads=self.n_heads,
             n_layers=self.n_layers,
-            patch_size_1=self.patch_size_1,
-            patch_size_2=self.patch_size_2,
-            d_ff=self.d_ff,
+            patch_size_1=4,
+            patch_size_2=8,
+            d_ff=self.d_model * 2,
             dropout=self.dropout,
         )
         self._send_model_to_given_device()
@@ -374,15 +356,18 @@ class DCdetector(BaseNNDetector):
         assert isinstance(self.optimizer, Optimizer)
         self.optimizer.init_optimizer(self.model.parameters())
 
-    def _assemble_input_for_training(self, data) -> dict:
+    def _prepare_input(self, data) -> dict:
         # BaseDataset returns a list: [indices, X, missing_mask]
         return {"X": data[1].to(self.device).float()}
 
+    def _assemble_input_for_training(self, data) -> dict:
+        return self._prepare_input(data)
+
     def _assemble_input_for_validating(self, data) -> dict:
-        return {"X": data[1].to(self.device).float()}
+        return self._prepare_input(data)
 
     def _assemble_input_for_testing(self, data) -> dict:
-        return {"X": data[1].to(self.device).float()}
+        return self._prepare_input(data)
 
     @staticmethod
     def _contrastive_loss(reps1: list, reps2: list) -> torch.Tensor:
