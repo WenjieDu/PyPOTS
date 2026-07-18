@@ -7,6 +7,7 @@ Test cases for BTTF forecasting model.
 
 import unittest
 
+import numpy as np
 import pytest
 
 from pypots.forecasting import BTTF
@@ -33,9 +34,20 @@ class TestBTTF(unittest.TestCase):
 
     @pytest.mark.xdist_group(name="forecasting-bttf")
     def test_0_forecasting(self):
-        predictions = self.bttf.predict(FORECASTING_TEST_SET)["forecasting"]
-        mse = calc_mse(predictions, FORECASTING_TEST_SET["X_pred"])
-        logger.info(f"prediction MSE: {mse}")
+        # BTTF is a Bayesian model fitted via Gibbs sampling, so it has no
+        # separate fit()/save() step and forecasts directly on the test set.
+        forecasting_X = self.bttf.predict(FORECASTING_TEST_SET)["forecasting"]
+        assert not np.isnan(forecasting_X).any(), (
+            "Output has missing values in the forecasting results that should not be."
+        )
+
+        test_MSE = calc_mse(
+            forecasting_X,
+            FORECASTING_TEST_SET["X_pred"],
+            ~np.isnan(FORECASTING_TEST_SET["X_pred"]),
+        )
+        assert np.isfinite(test_MSE), "MSE should be a finite number."
+        logger.info(f"BTTF test_MSE: {test_MSE}")
 
 
 if __name__ == "__main__":
