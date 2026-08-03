@@ -18,7 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Handle stale items
-        uses: actions/stale@v10
+        uses: actions/stale@v11
         with:
           stale-issue-message: 'This issue is stale because it has been open 30 days with no activity. Remove stale label or comment or this will be closed in 10 days.'
           close-issue-message: 'This issue was closed because it has been stalled for 10 days with no activity.'
@@ -33,7 +33,7 @@ jobs:
           exempt-pr-labels: 'keep,awaiting-approval,work-in-progress,completed'
 
       - name: Handle completed items
-        uses: actions/stale@v10
+        uses: actions/stale@v11
         with:
           any-of-issue-labels: 'completed'
           stale-issue-message: 'This issue is marked as "completed" and has been open 14 days with no activity. It will be closed in 7 days if no further activity occurs.'
