@@ -79,6 +79,13 @@ class UnfusedGRU(nn.Module):
         return (1 - z) * n + z * h
 
     def forward(self, x: torch.Tensor, h0: torch.Tensor = None):
+        """Run the step-loop on x of shape (B, L, input_size) (or (L, B, ·) when
+        batch_first=False).
+
+        h0 follows nn.GRU's contract: (num_layers*num_directions, B, hidden_size).
+        With the supported single layer, h0[0] seeds the forward direction and
+        h0[1] the backward one; None means zero init (as nn.GRU does).
+        """
         # normalize to (B, L, input_size)
         if not self.batch_first:
             x = x.transpose(0, 1)
@@ -158,6 +165,13 @@ class UnfusedLSTM(nn.Module):
         return h_next, c_next
 
     def forward(self, x: torch.Tensor, h0=None):
+        """Run the step-loop with nn.LSTM's contract: h0 is (h_0, c_0), each of
+        shape (num_layers*num_directions, B, hidden_size); None zero-inits both.
+        Returns (output, (h_n, c_n)) like nn.LSTM.
+
+        No in-repo caller yet (no full-sequence nn.LSTM in PyPOTS models);
+        kept for API symmetry with gru() and future models.
+        """
         if not self.batch_first:
             x = x.transpose(0, 1)
         B, L, _ = x.shape
