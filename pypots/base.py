@@ -19,6 +19,13 @@ from torch.utils.tensorboard import SummaryWriter
 
 from .nn.functional import autocast
 from .nn.modules.loss import Criterion
+from .utils.devices import (
+    check_device_availability,
+    contains_full_sequence_rnn,
+    get_available_device_type,
+    parse_device_string,
+    supports_device,
+)
 from .utils.file import create_dir_if_not_exist
 from .utils.logging import logger, logger_creator
 
@@ -121,15 +128,13 @@ class BaseModel(ABC):
 
     def _setup_device(self, device: Union[None, str, torch.device, list]) -> None:
         if device is None:
-            # if it is None, then use the first cuda device if cuda is available, otherwise use cpu
-            if torch.cuda.is_available() and torch.cuda.device_count() > 0:
-                self.device = torch.device("cuda")
-            else:
-                self.device = torch.device("cpu")
+            # if it is None, probe for an accelerator: cuda first, then npu, cpu as the fallback
+            device_type = get_available_device_type()
+            self.device = torch.device(device_type)
             logger.info(f"No given device, using default device: {self.device}")
         else:
             if isinstance(device, str):
-                self.device = torch.device(device.lower())
+                self.device = parse_device_string(device)
             elif isinstance(device, torch.device):
                 self.device = device
             elif isinstance(device, list):
@@ -137,27 +142,31 @@ class BaseModel(ABC):
                     raise ValueError("The list of devices should have at least 1 device, but got 0.")
                 elif len(device) == 1:
                     return self._setup_device(device[0])
-                # parallely training on multiple CUDA devices
+                # parallely training on multiple devices
 
                 # ensure the list is not empty
                 device_list = []
                 for idx, d in enumerate(device):
                     if isinstance(d, str):
-                        d = d.lower()
-                        assert "cuda" in d, (
-                            "The feature of training on multiple devices currently only support CUDA devices."
-                        )
-                        device_list.append(torch.device(d))
+                        device_list.append(parse_device_string(d))
                     elif isinstance(d, torch.device):
-                        assert "cuda" in d.type, (
-                            "The feature of training on multiple devices currently only support CUDA devices."
-                        )
                         device_list.append(d)
                     else:
                         raise TypeError(
                             f"Devices in the list should be str or torch.device, "
                             f"but the device with index {idx} is {type(d)}."
                         )
+                # all devices in the list must be of the same type
+                device_types = {d.type for d in device_list}
+                assert len(device_types) == 1, (
+                    f"Devices in the list should be of the same type, but got {device_types}."
+                )
+                list_device_type = device_list[0].type
+                assert supports_device(list_device_type), (
+                    f"The feature of training on multiple devices currently only support "
+                    f"{'CUDA and NPU' if list_device_type not in ('cuda', 'npu') else list_device_type.upper()} devices, "
+                    f"but got {list_device_type}."
+                )
                 if len(device_list) > 1:
                     self.device = device_list
                 else:
@@ -169,23 +178,22 @@ class BaseModel(ABC):
 
             logger.info(f"Using the given device: {self.device}")
 
-        # check CUDA availability if using CUDA
-        if (isinstance(self.device, list) and "cuda" in self.device[0].type) or (
-            isinstance(self.device, torch.device) and "cuda" in self.device.type
-        ):
-            assert torch.cuda.is_available() and torch.cuda.device_count() > 0, (
-                "You are trying to use CUDA for model training, but CUDA is not available in your environment."
-            )
+        # check availability if using an accelerator (cuda or npu)
+        device_type = self.device[0].type if isinstance(self.device, list) else self.device.type
+        if device_type in ("cuda", "npu"):
+            check_device_availability(device_type)
 
         if os.getenv("ENABLE_AMP", False):
             if self.enable_amp:
-                if not torch.cuda.is_available() or torch.cuda.device_count() == 0:
-                    logger.warning(
-                        "‼️ You are trying to use AMP, but CUDA is not available in your environment. "
-                        "AMP will be disabled."
-                    )
-                else:
+                if device_type == "cuda":
                     self.amp_enabled = True
+                elif device_type == "npu":
+                    self.amp_enabled = True
+                else:
+                    logger.warning(
+                        "‼️ You are trying to use AMP, but no accelerator (CUDA/NPU) "
+                        "is available in your environment. AMP will be disabled."
+                    )
             else:
                 logger.warning(
                     f"‼️ You are trying to use AMP, but the model {self.__class__.__name__} "
@@ -235,6 +243,21 @@ class BaseModel(ABC):
             logger.info(f"Model has been allocated to the given multiple devices: {self.device}")
         else:
             self.model = self.model.to(self.device)
+
+        # NPU: full-sequence fused RNNs (nn.GRU/LSTM/RNN) have no fp32 backward kernel on
+        # Ascend (forward works), so fp32 training would fail asynchronously later.
+        # Warn here once so users know to enable AMP or use the Cell-loop fallback layers.
+        if (isinstance(self.device, torch.device) and self.device.type == "npu") or (
+            isinstance(self.device, list) and self.device[0].type == "npu"
+        ):
+            if contains_full_sequence_rnn(self.model):
+                logger.warning(
+                    "‼️ The model contains full-sequence fused RNN layers (nn.GRU/LSTM/RNN). "
+                    "On Ascend NPU, their fp32 backward pass is not supported (forward works), "
+                    "so fp32 training will fail asynchronously (often surfacing in optimizer.step). "
+                    "Please enable AMP via ENABLE_AMP=1 and enable_amp=True, or use the "
+                    "device-adaptive unfused RNN layers. Prediction/inference in fp32 is not affected."
+                )
 
     def _send_data_to_given_device(self, data) -> Iterable:
         if isinstance(self.device, (torch.device, list)):  # single device or parallely training on multiple devices
