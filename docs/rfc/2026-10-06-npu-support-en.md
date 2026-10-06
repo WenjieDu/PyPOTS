@@ -20,12 +20,15 @@ Scope: single device (P0) → AMP (P0, a correctness prerequisite for RNN models
 | `GRUCell/LSTMCell` step loops (GRUD/BRTITS/CSAI pattern) | ✅ | ✅ |
 | MHA / TransformerEncoder / LayerNorm / GELU / Dropout | ✅ | ✅ |
 | Adam(foreach) / SGD / GradScaler / masked arithmetic | ✅ | ✅ |
+| `torch.fft.rfft/irfft` (forward + backward) | ✅ | ✅ |
+| **complex64 matmul/einsum/addmm (Cube matmul unit)** | ❌ EZ1001 | ❌ same |
 
 Key points:
 - 4 models use full-sequence fused `nn.GRU/LSTM` (**mRNN, SegRNN, StemGNN, USGAN** — verified by grep; CRLI uses `GRUCell/LSTMCell` module-list loops and is fp32-safe) — they **cannot train** on NPU in fp32, but inference/predict works. **For training them, AMP or an equivalent fallback is a correctness prerequisite, not a speed knob.**
 - The failure is asynchronous (fp32 backward kernel missing → surfaces later in unrelated calls like `Adam.step`/`synchronize`) — documentation must call this out explicitly.
 - Measured fp16 RNN accuracy cost: rel_err 6.1e-4 vs CPU fp32 — acceptable. GRUD/BRTITS/CSAI/CRLI use Cell loops and are fp32-safe.
 - SegRNN calls its fused GRU **chunk-wise** (per-segment `(1, bc, d)`, not full length) — cast cost/benefit differs from the other three.
+- **Frequency-domain model limitation (measured across the full suite: 60 of 535 failures trace to this)**: FFT itself is fine fwd+bwd, but **complex64 matmul (matmul/einsum/addmm) is rejected by the Cube unit** (EZ1001 "Unsupported data types for Cube"). Training of FiTS/FiLM/ETSformer/PatchTST/Crossformer/MixLinear/GPVAE is affected — their frequency-domain attention/linear layers decompose on CPU via aicpu, which the NPU path lacks. Not fixed in P0 (would need real-pair weight representation or upstream op support); tracked under P2.
 
 ## 3. Design
 

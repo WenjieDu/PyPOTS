@@ -21,12 +21,15 @@ PyPOTS 目前仅支持 NVIDIA GPU。本 RFC 提出让 Ascend NPU 成为一等设
 | `GRUCell/LSTMCell` 逐步循环（GRUD/BRTITS/CSAI 模式） | ✅ | ✅ |
 | MHA / TransformerEncoder / LayerNorm / GELU / Dropout | ✅ | ✅ |
 | Adam(foreach) / SGD / GradScaler / 掩码算术 | ✅ | ✅ |
+| `torch.fft.rfft/irfft`（前向+反向） | ✅ | ✅ |
+| **complex64 的 matmul/einsum/addmm（Cube 矩阵乘）** | ❌ EZ1001 | ❌ 同 |
 
 要点：
 - 用整序列融合 `nn.GRU/LSTM` 的是 **4 个模型：mRNN/SegRNN/StemGNN/USGAN**（grep 源码核实；CRLI 用 `GRUCell/LSTMCell` module-list 循环，fp32 安全）——它们在 NPU 上 fp32 **无法训练**，但推理/predict 可用。**对它们的训练，AMP 或等价 fallback 是正确性前提而非提速选项**
 - 失败是异步的（fp32 backward kernel 缺失 → 炸在 `Adam.step`/`synchronize` 等不相关调用处），文档必须显式提示
 - RNN fp16 精度损失实测 rel_err 6.1e-4，可接受；GRUD/BRTITS/CSAI/CRLI 用 Cell 循环，fp32 安全
 - SegRNN 的融合 GRU 是**分块调用**（对 segment 后的 `(1, bc, d)`，非全长序列），cast 的成本/收益与其余三个不同
+- **频域模型限制（全量套件实测，535 项中 60 项失败归因于此）**：FFT 本身 fwd/bwd 均正常，但 **complex64 的矩阵乘（matmul/einsum/addmm）被 Cube 拒绝**（EZ1001 "Unsupported data types for Cube"）。影响 FiTS/FiLM/ETSformer/PatchTST/Crossformer/MixLinear/GPVAE 的训练——这些模型的频域 attention/线性层在 CPU 上有 aicpu 分解实现，NPU 上无。P0 不修（涉及权重改实数对表示或上游算子支持），列入 P2 跟踪
 
 ## 3. Design
 
