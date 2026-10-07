@@ -15,7 +15,7 @@ a checkpoint saved from a fused model loads into the unfused one and vice versa.
 The per-step math is identical to GRUCell/LSTMCell, hence to the fused kernels.
 """
 
-# Created by Wenjie Du <wenjay.du@gmail.com>
+# Created by Jun Wang <jwangfx@connect.ust.hk>
 # License: BSD-3-Clause
 
 import math

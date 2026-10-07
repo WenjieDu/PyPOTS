@@ -2,7 +2,7 @@
 Test cases for the functions and classes in module `pypots.utils.distributed`.
 """
 
-# Created by Wenjie Du <wenjay.du@gmail.com>
+# Created by Jun Wang <jwangfx@connect.ust.hk>
 # License: BSD-3-Clause
 
 import os

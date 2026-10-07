@@ -2,7 +2,7 @@
 Device backend utilities supporting CUDA, Ascend NPU, and CPU.
 """
 
-# Created by Wenjie Du <wenjay.du@gmail.com>
+# Created by Jun Wang <jwangfx@connect.ust.hk>
 # License: BSD-3-Clause
 
 import torch

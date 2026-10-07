@@ -28,7 +28,7 @@ This module pre-broadcasts parameters from rank 0 and skips that verification;
 training itself only uses broadcast + all_reduce, which are verified data-exact.
 """
 
-# Created by Wenjie Du <wenjay.du@gmail.com>
+# Created by Jun Wang <jwangfx@connect.ust.hk>
 # License: BSD-3-Clause
 
 import os
