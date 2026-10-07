@@ -151,8 +151,8 @@ class TestDistributedMultiProcessCpu(unittest.TestCase):
 
 # NPU-specific tests below: they exercise the real torch_npu path and are skipped
 # automatically when no Ascend NPU is visible (e.g. the CPU-only CI runners).
-# Multi-rank HCCL training is verified via torchrun — see the DDP recipe in
-# docs/rfc/2026-10-06-npu-support.md; pytest itself always runs single-process.
+# Multi-rank HCCL training is verified via torchrun — see the DDP recipe on the
+# NPU support doc page; pytest itself always runs single-process.
 @pytest.mark.npu
 class TestNpuDistributed(unittest.TestCase):
     def setUp(self):

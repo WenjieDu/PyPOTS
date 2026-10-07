@@ -6,8 +6,7 @@ PyPOTS supports Ascend NPUs (e.g. Atlas A2 / Ascend 910B3) as a first-class devi
 checkpoint saving/loading, at parity with ``device="cuda"``. No model code changes are needed.
 
 This page covers installation, usage, multi-device DDP training, and the hardware-specific
-notes you need before training on Ascend. The full design rationale lives in the RFC
-``docs/rfc/2026-10-06-npu-support.md``.
+notes you need before training on Ascend.
 
 
 Installation
