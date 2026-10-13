@@ -48,6 +48,14 @@
      -
      - `✅ <https://github.com/WenjieDu/PyPOTS/blob/main/examples/anomaly_detection/segrnn_anomalydetection_example.py>`_
      - ``2026 - IoT-J``
+   * - TSFM
+     - TS-ICL :cite:`lenaour2026tsicl`
+     - `✅ <https://github.com/WenjieDu/PyPOTS/blob/main/examples/imputation/tsicl_imputation_example.py>`_
+     - `✅ <https://github.com/WenjieDu/PyPOTS/blob/main/examples/forecasting/tsicl_forecasting_example.py>`_
+     -
+     -
+     -
+     - ``2026 - arXiv``
    * - Neural Net
      - TEFN🧑‍🔧 :cite:`zhan2025tefn`
      - `✅ <https://github.com/WenjieDu/PyPOTS/blob/main/examples/imputation/tefn_imputation_example.py>`_
