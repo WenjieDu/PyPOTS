@@ -98,6 +98,14 @@ pypots.nn.modules.moment
 
 
 
+pypots.nn.modules.tsicl
+-------------------------------------------------
+
+.. automodule:: pypots.nn.modules.tsicl
+    :members:
+
+
+
 pypots.nn.modules.inception
 -------------------------------------------------
 
