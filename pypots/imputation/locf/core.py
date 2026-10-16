@@ -120,7 +120,7 @@ def locf_torch(
     mask = torch.isnan(trans_X)
     n_samples, n_steps, n_features = mask.shape
     idx = torch.where(~mask, torch.arange(n_features, device=mask.device), 0)
-    idx = np.maximum.accumulate(idx, axis=2)
+    idx = torch.cummax(idx, dim=2).values
 
     collector = []
     for x, i in zip(trans_X, idx):
