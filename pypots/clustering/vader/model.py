@@ -456,7 +456,7 @@ class VaDER(BaseNNClusterer):
 
             p = np.array([func_to_apply(mu_tilde, mu[i], var[i], phi[i]) for i in np.arange(mu.shape[0])])
             clustering_results = np.argmax(p, axis=0)
-            clustering_results_collector.append(clustering_results)
+            clustering_results_collector.append(np.atleast_1d(clustering_results))
 
             if return_latent_vars:
                 stddev_tilde = results["stddev_tilde"].cpu().numpy()

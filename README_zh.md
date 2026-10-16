@@ -116,6 +116,7 @@ PyPOTS当前支持多变量POTS数据的插补, 预测, 分类, 聚类以及异�
 | Neural Net | HELIX [^55] | [✅](examples/imputation/helix_imputation_example.py) |  |  |  |  | `2026 - ICML` |
 | Neural Net | MixLinear🧑‍🔧[^52] |  | [✅](examples/forecasting/mixlinear_forecasting_example.py) |  |  |  | `2026 - ICLR` |
 | Neural Net | SegRNN🧑‍🔧[^43] | [✅](examples/imputation/segrnn_imputation_example.py) | [✅](examples/forecasting/segrnn_forecasting_example.py) |  |  | [✅](examples/anomaly_detection/segrnn_anomalydetection_example.py) | `2026 - IoT-J` |
+| TSFM | TS-ICL[^56] | [✅](examples/imputation/tsicl_imputation_example.py) | [✅](examples/forecasting/tsicl_forecasting_example.py) |  |  |  | `2026 - arXiv` |
 | Neural Net | TEFN🧑‍🔧[^39] | [✅](examples/imputation/tefn_imputation_example.py) | [✅](examples/forecasting/tefn_forecasting_example.py) | [✅](examples/classification/tefn_classification_example.py) |  | [✅](examples/anomaly_detection/tefn_anomalydetection_example.py) | `2025 - TPAMI` |
 | Neural Net | TimeMixer++[^49] | [✅](examples/imputation/timemixerpp_imputation_example.py) | [✅](examples/forecasting/timemixerpp_forecasting_example.py) |  |  | [✅](examples/anomaly_detection/timemixerpp_anomalydetection_example.py) | `2025 - ICLR` |
 | LLM | Time-LLM🧑‍🔧[^45] | [✅](examples/imputation/timellm_imputation_example.py) | [✅](examples/forecasting/timellm_forecasting_example.py) |  |  |  | `2024 - ICLR` |
@@ -557,3 +558,6 @@ test recently ;-) Follow us, and stay tuned!
 [^55]: Zhang, F., Du, W., Zhang, H., Yu, K., & Qu, S. (2026).
 [HELIX: Hybrid Encoding with Learnable Identity and Cross-dimensional Synthesis for Time Series Imputation](https://arxiv.org/abs/2605.02278).
 *ICML 2026*.
+[^56]: Le Naour, E., Nabil, T., & Petralia, A. (2026).
+[TS-ICL: A Flexible Time-Indexed Foundation Model for Time Series via In-Context Learning](https://arxiv.org/abs/2606.05878).
+*arXiv 2026*.

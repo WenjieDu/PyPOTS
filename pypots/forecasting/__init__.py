@@ -22,6 +22,7 @@ from .timemixer import TimeMixer
 from .timemixerpp import TimeMixerPP
 from .timesnet import TimesNet
 from .transformer import Transformer
+from .tsicl import TSICL
 
 __all__ = [
     "BTTF",
@@ -41,4 +42,5 @@ __all__ = [
     "DLinear",
     "FiLM",
     "MixLinear",
+    "TSICL",
 ]
