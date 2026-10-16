@@ -46,6 +46,15 @@ pypots.forecasting.moment
    :show-inheritance:
    :inherited-members:
 
+pypots.forecasting.tsicl
+------------------------------
+
+.. automodule:: pypots.forecasting.tsicl
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+
 pypots.forecasting.tefn
 ------------------------------
 

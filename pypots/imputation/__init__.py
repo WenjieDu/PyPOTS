@@ -50,6 +50,7 @@ from .timemixerpp import TimeMixerPP
 from .totem import TOTEM
 from .tslanet import TSLANet
 from .tkan import TKAN
+from .tsicl import TSICL
 
 # naive imputation methods
 from .locf import LOCF
@@ -104,6 +105,7 @@ __all__ = [
     "TOTEM",
     "TSLANet",
     "TKAN",
+    "TSICL",
     # naive imputation methods
     "LOCF",
     "Mean",
