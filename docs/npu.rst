@@ -5,16 +5,16 @@ PyPOTS supports Ascend NPUs (e.g. Atlas A2 / Ascend 910B3) as a first-class devi
 ``device="npu"`` works in model initialization, training, validation, prediction, and
 checkpoint saving/loading, at parity with ``device="cuda"``. No model code changes are needed.
 
-This page covers installation, usage, multi-device DDP training, and the hardware-specific
-notes you need before training on Ascend.
+This page covers installation, usage, multi-device DDP training, offline loading of the
+LLM backbones used by TimeLLM/GPT4TS/MOMENT, and the hardware-specific notes you need
+before training on Ascend.
 
 
 Installation
 ----------------
 
 PyPOTS itself does not add a new hard dependency: ``torch_npu`` is imported lazily, only on
-the ``npu`` code path. To train on Ascend you need the following stack (verified on 8×910B3,
-see the RFC §5 version matrix for details):
+the ``npu`` code path. To train on Ascend you need the following stack (verified on 8×910B3):
 
 .. code-block:: text
 
@@ -46,6 +46,40 @@ Basic usage
 Training, validation, prediction, and checkpoint save/load all follow the standard PyPOTS
 APIs — ``map_location`` handles cross-device checkpoint loading, so a checkpoint saved on
 NPU loads on CPU/GPU and vice versa.
+
+If you have existing CUDA scripts and want to run them on Ascend with zero code changes,
+``torch_npu.contrib.transfer_to_npu`` (import it before any torch device call) monkey-patches
+torch so that ``cuda`` silently maps to ``npu``. PyPOTS does not use this shim itself —
+``device="npu"`` is a real first-class backend — but it is convenient for porting user code
+that hard-codes ``device="cuda"``.
+
+
+Offline loading of LLM backbones
+----------------------------------------
+
+TimeLLM, GPT4TS, and MOMENT download Hugging Face backbones (GPT-2, BERT, T5) on first use.
+On air-gapped Ascend clusters, download the models on a machine with internet access, then
+copy the cache directory over:
+
+.. code-block:: bash
+
+    # on the internet-facing machine
+    huggingface-cli download openai-community/gpt2
+    huggingface-cli download google-bert/bert-base-uncased
+    huggingface-cli download t5-small
+
+    # copy with symlinks resolved — the HF cache is a symlink farm and a plain
+    # tar breaks it on extraction
+    tar czf hf_cache.tar.gz --dereference -C ~/.cache/huggingface/hub .
+
+    # on the Ascend host
+    mkdir -p ~/.cache/huggingface/hub && tar xzf hf_cache.tar.gz -C ~/.cache/huggingface/hub
+
+Then export ``HF_HUB_OFFLINE=1``. PyPOTS resolves the short model aliases (``gpt2``,
+``bert-base-uncased``, ``t5-small`` …) to full repo ids (``openai-community/gpt2`` …) via
+``pypots.utils.hf_offline.resolve_hf_repo_id``, because resolving a short alias normally
+requires a Hub API call even when the model is fully cached — full repo ids read the local
+cache directly.
 
 
 Multi-device training (DDP)
@@ -102,6 +136,14 @@ are fp32-safe as-is.
 complex64 matrix multiplies (matmul/einsum/addmm) are rejected by the Cube unit
 (EZ1001). FiTS/FiLM/ETSformer/PatchTST/Crossformer/MixLinear/GPVAE therefore cannot
 train on NPU yet (tracked in P2).
+
+**Integer ceil.** ``torch.ceil`` has no kernel for integer dtypes on NPU (EZ1001).
+MOMENT's mask ratio code casts to float before ceiling (``pypots/nn/modules/moment/masking.py``).
+
+**unfold backward.** The backward kernel for ``aten::unfold`` (aclnnUnfoldGrad) is
+missing on NPU, so backprop through patching fails. MOMENT's ``Patching`` therefore uses a
+mathematically equivalent gather-based unfold on NPU (``unfold_last_dim`` in
+``pypots/nn/modules/moment/modules.py``); on CPU/CUDA the native unfold is kept.
 
 **Virtualized hosts.** On some virtualized A2 hosts the HCCL gather family silently
 corrupts data (``all_gather`` returns only rank-0 data, SMMU fault in plog, iBMA virtual
