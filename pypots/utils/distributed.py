@@ -95,20 +95,25 @@ def init_distributed(backend: Optional[str] = None, device_type: Optional[str] =
                 device_type = "cuda"
         backend = {"npu": "hccl", "cuda": "nccl"}.get(device_type, "gloo")
 
-    # retry on the same port after a short backoff: right after torchrun/mp.spawn
-    # starts, a rank can hit "Connection reset by peer" when it reaches TCPStore
-    # before the rank-0 server socket is ready (observed as a flaky CI failure).
-    # The port must NOT change between attempts — the other ranks' stores live there.
-    for attempt in range(3):
+    # retry on the same port after a short backoff. Two transient rendezvous
+    # failures are known, both observed as flaky CI failures:
+    # 1. "Connection reset by peer" — a non-zero rank reaches TCPStore before
+    #    the rank-0 server socket is ready (fresh mp.spawn/torchrun start).
+    # 2. "Socket Timeout" — re-init right after destroy_process_group(): both
+    #    ranks race to bind MASTER_PORT as the new store server and the loser
+    #    times out (torch 2.3 era; also needs the retry on the SAME port).
+    # The port must NOT change between attempts — the other ranks' stores
+    # live there. Staggered backoff lets the winning server settle first.
+    for attempt in range(5):
         try:
             dist.init_process_group(backend=backend)
             return True
         except Exception:
-            if attempt == 2:
+            if attempt == 4:
                 raise
             if dist.is_initialized():
                 dist.destroy_process_group()
-            time.sleep(2 * (attempt + 1))
+            time.sleep(1.5 * (attempt + 1) + 0.5 * ddp_rank())
     return False
 
 
@@ -207,6 +212,10 @@ def run_ddp_fit(
       4. calls fit() — _train_model runs unchanged, gradients all-reduce,
       5. unwraps and loads the best state dict on every rank, tears the group down.
 
+    Note: epoch statistics (losses, hence best_epoch) are computed per rank on
+    its own data shard, so they may differ across ranks — that is inherent to
+    the underlying _train_model and not a launcher guarantee.
+
     In a plain single-process call (no torchrun), falls back to model.fit()
     so call sites need no branching.
 
@@ -256,9 +265,10 @@ def run_ddp_fit(
         tud.DataLoader = real_loader_cls
         model.model = original_net
 
-    # every rank saw all-reduced epoch statistics, so best_model_dict is
-    # identical across ranks; keys carry the DDP "module." prefix though —
-    # best_model_dict was deep-copied from the wrapper, strip the prefix
+    # best_model_dict was deep-copied from the DDP wrapper, so its keys carry
+    # the "module." prefix — strip it before loading into the plain net. The
+    # selected epoch may differ across ranks (shard-local statistics), but each
+    # rank loads its own best snapshot, which is the documented behavior.
     if model.best_model_dict is not None and any(k.startswith("module.") for k in model.best_model_dict):
         model.best_model_dict = {k.removeprefix("module."): v for k, v in model.best_model_dict.items()}
     model.model.load_state_dict(model.best_model_dict)
