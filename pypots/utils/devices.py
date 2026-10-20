@@ -7,8 +7,6 @@ Device backend utilities supporting CUDA, Ascend NPU, and CPU.
 
 import torch
 
-from .logging import logger
-
 # device types PyPOTS understands, in probing order
 DEVICE_TYPES = ("cuda", "npu", "cpu")
 
@@ -43,7 +41,7 @@ def _try_import_torch_npu():
     torch's "Expected one of cpu, cuda, ..." message.
     """
     try:
-        import torch_npu  # noqa: F401
+        import torch_npu
 
         return torch_npu
     except ImportError:

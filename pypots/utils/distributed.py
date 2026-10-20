@@ -32,6 +32,7 @@ training itself only uses broadcast + all_reduce, which are verified data-exact.
 # License: BSD-3-Clause
 
 import os
+import time
 from typing import Optional, Union
 
 import torch
@@ -94,8 +95,21 @@ def init_distributed(backend: Optional[str] = None, device_type: Optional[str] =
                 device_type = "cuda"
         backend = {"npu": "hccl", "cuda": "nccl"}.get(device_type, "gloo")
 
-    dist.init_process_group(backend=backend)
-    return True
+    # retry on the same port after a short backoff: right after torchrun/mp.spawn
+    # starts, a rank can hit "Connection reset by peer" when it reaches TCPStore
+    # before the rank-0 server socket is ready (observed as a flaky CI failure).
+    # The port must NOT change between attempts — the other ranks' stores live there.
+    for attempt in range(3):
+        try:
+            dist.init_process_group(backend=backend)
+            return True
+        except Exception:
+            if attempt == 2:
+                raise
+            if dist.is_initialized():
+                dist.destroy_process_group()
+            time.sleep(2 * (attempt + 1))
+    return False
 
 
 def rank_local_device(model_device: torch.device) -> torch.device:
@@ -148,7 +162,7 @@ def wrap_model_ddp(
         # plain broadcast of CPU tensors may lack a bound backend, and DDP's
         # own verification works fine there anyway
         _broadcast_module_states(module, src=0)
-    kwargs = dict(broadcast_buffers=False, find_unused_parameters=find_unused_parameters)
+    kwargs = {"broadcast_buffers": False, "find_unused_parameters": find_unused_parameters}
     if device.type in ("cuda", "npu"):
         kwargs["device_ids"] = [device.index] if device.index is not None else None
     return DistributedDataParallel(module, **kwargs)

@@ -145,7 +145,6 @@ class TestDistributedMultiProcessCpu(unittest.TestCase):
         with socket.socket() as s:
             s.bind(("127.0.0.1", 0))
             port = s.getsockname()[1]
-        ctx = mp.get_context("spawn")
         mp.spawn(_cpu_ddp_worker, args=(2, port), nprocs=2, join=True)
 
 
