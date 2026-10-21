@@ -72,11 +72,9 @@ def calc_binary_classification_metrics(
         prob_predictions = np.asarray(prob_predictions).flatten()  # turn the array shape into [n_samples]
         binary_predictions = prob_predictions
         prediction_categories = (prob_predictions >= 0.5).astype(int)
-        binary_prediction_categories = prediction_categories
     elif len(prob_predictions.shape) == 2 and prob_predictions.shape[1] > 1:
         prediction_categories = np.argmax(prob_predictions, axis=1)
         binary_predictions = prob_predictions[:, pos_label]
-        binary_prediction_categories = (prediction_categories == pos_label).astype(int)
     else:
         raise f"predictions dimensions should be 1 or 2, but got predictions.shape: {prob_predictions.shape}"
 
@@ -89,7 +87,7 @@ def calc_binary_classification_metrics(
     binary_targets = np.copy(targets)
     binary_targets[~mask] = mask_val
 
-    precision, recall, f1 = calc_precision_recall_f1(binary_prediction_categories, binary_targets, pos_label)
+    precision, recall, f1 = calc_precision_recall_f1(prediction_categories, targets, pos_label)
     pr_auc, precisions, recalls, _ = calc_pr_auc(binary_predictions, binary_targets, pos_label)
     ROC_AUC, fprs, tprs, _ = calc_roc_auc(binary_predictions, binary_targets, pos_label)
     PR_AUC = metrics.auc(recalls, precisions)
@@ -139,8 +137,8 @@ def calc_precision_recall_f1(
         The F1 score of model predictions.
 
     """
-    precision, recall, f1, _ = metrics.precision_recall_fscore_support(targets, prob_predictions, pos_label=pos_label)
-    precision, recall, f1 = precision[pos_label], recall[pos_label], f1[pos_label]
+    precision, recall, f1, _ = metrics.precision_recall_fscore_support(targets, prob_predictions, labels=[pos_label])
+    precision, recall, f1 = precision[0], recall[0], f1[0]
     return precision, recall, f1
 
 
