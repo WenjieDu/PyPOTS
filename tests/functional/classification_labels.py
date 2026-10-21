@@ -72,8 +72,9 @@ def test_precision_recall_f1_handles_a_single_present_positive_class() -> None:
 
 def test_precision_recall_f1_preserves_undefined_metric_warning() -> None:
     targets = np.zeros(3, dtype=int)
+    categories = targets.copy()
 
     with pytest.warns(UndefinedMetricWarning):
-        result = calc_precision_recall_f1(targets.copy(), targets)
+        result = calc_precision_recall_f1(categories, targets)
 
     assert result == (0.0, 0.0, 0.0)
