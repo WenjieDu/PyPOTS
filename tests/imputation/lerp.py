@@ -72,5 +72,34 @@ class TestLerp(unittest.TestCase):
         logger.info(f"Lazy-loading Lerp test_MSE: {test_MSE}")
 
 
+@pytest.mark.xdist_group(name="imputation-lerp")
+@pytest.mark.parametrize("position", [0, 1, 2])
+@pytest.mark.parametrize("dtype", [np.float32, np.float64])
+@pytest.mark.parametrize(
+    "backend",
+    [
+        "numpy",
+        "cpu",
+        pytest.param("cuda", marks=pytest.mark.skipif(not torch.cuda.is_available(), reason="CUDA unavailable")),
+    ],
+)
+def test_single_observed_value(position, dtype, backend):
+    """One observation extends to both endpoints instead of filling with zero."""
+    X = np.full((1, 3, 2), np.nan, dtype=dtype)
+    X[0, position] = [7, -3]
+    expected = np.broadcast_to(X[0, position], X.shape).copy()
+    if backend == "numpy":
+        original = X.copy()
+        actual = Lerp().predict({"X": X})["imputation"]
+        np.testing.assert_array_equal(actual, expected)
+        np.testing.assert_array_equal(X, original)
+    else:
+        X = torch.from_numpy(X).to(backend)
+        original = X.clone()
+        actual = Lerp().predict({"X": X})["imputation"]
+        torch.testing.assert_close(actual, torch.from_numpy(expected).to(backend), rtol=0, atol=0)
+        torch.testing.assert_close(X, original, equal_nan=True)
+
+
 if __name__ == "__main__":
     unittest.main()
