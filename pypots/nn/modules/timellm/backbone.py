@@ -16,6 +16,7 @@ from transformers import (
     BertTokenizer,
 )
 
+from ....utils.hf_offline import resolve_hf_repo_id
 from .layers import ReprogrammingLayer
 from ..patchtst.layers import PatchEmbedding, FlattenHead
 from ..revin import RevIN
@@ -70,31 +71,31 @@ class BackboneTimeLLM(nn.Module):
 
         if llm_model_type == "LLaMA":
             self.llm_model = LlamaModel.from_pretrained(
-                "huggyllama/llama-7b",
+                resolve_hf_repo_id("huggyllama/llama-7b"),
                 num_hidden_layers=n_layers,
                 output_attentions=True,
                 output_hidden_states=True,
                 # load_in_4bit=True
             )
-            self.tokenizer = LlamaTokenizer.from_pretrained("huggyllama/llama-7b")
+            self.tokenizer = LlamaTokenizer.from_pretrained(resolve_hf_repo_id("huggyllama/llama-7b"))
 
         elif llm_model_type == "GPT2":
             self.llm_model = GPT2Model.from_pretrained(
-                "openai-community/gpt2",
+                resolve_hf_repo_id("openai-community/gpt2"),
                 num_hidden_layers=n_layers,
                 output_attentions=True,
                 output_hidden_states=True,
             )
-            self.tokenizer = GPT2Tokenizer.from_pretrained("openai-community/gpt2")
+            self.tokenizer = GPT2Tokenizer.from_pretrained(resolve_hf_repo_id("openai-community/gpt2"))
 
         elif llm_model_type == "BERT":
             self.llm_model = BertModel.from_pretrained(
-                "google-bert/bert-base-uncased",
+                resolve_hf_repo_id("google-bert/bert-base-uncased"),
                 num_hidden_layers=n_layers,
                 output_attentions=True,
                 output_hidden_states=True,
             )
-            self.tokenizer = BertTokenizer.from_pretrained("google-bert/bert-base-uncased")
+            self.tokenizer = BertTokenizer.from_pretrained(resolve_hf_repo_id("google-bert/bert-base-uncased"))
         else:
             raise Exception("LLM model is not defined")
 

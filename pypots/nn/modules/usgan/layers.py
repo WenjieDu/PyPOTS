@@ -6,6 +6,8 @@
 import torch
 import torch.nn as nn
 
+from ..rnn_fallback import gru as device_adaptive_gru
+
 
 class UsganDiscriminator(nn.Module):
     """model Discriminator: built on BiRNN
@@ -38,7 +40,9 @@ class UsganDiscriminator(nn.Module):
     ):
         super().__init__()
         self.hint_rate = hint_rate
-        self.biRNN = nn.GRU(n_features * 2, rnn_hidden_size, bidirectional=True, batch_first=True)
+        # fused nn.GRU on CUDA/CPU; unfused GRUCell step-loops on Ascend NPU
+        # (DynamicGRUV2 has no fp32 backward there; the unfused path is equivalent and fp32-safe)
+        self.biRNN = device_adaptive_gru(n_features * 2, rnn_hidden_size, bidirectional=True, batch_first=True)
         self.dropout = nn.Dropout(dropout_rate)
         self.read_out = nn.Linear(rnn_hidden_size * 2, n_features)
 

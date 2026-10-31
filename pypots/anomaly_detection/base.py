@@ -369,7 +369,7 @@ class BaseNNDetector(BaseNNModel):
         anomaly_criterion = torch.nn.MSELoss(reduce=False)
         for idx, data in enumerate(train_dataloader):
             inputs = self._assemble_input_for_testing(data)
-            with autocast(enabled=self.amp_enabled):
+            with autocast(self._autocast_device_type, enabled=self.amp_enabled):
                 results = self.model(inputs, **kwargs)
             outputs = results["reconstruction"]
             score = torch.mean(anomaly_criterion(inputs["X"], outputs), dim=-1)
@@ -383,7 +383,7 @@ class BaseNNDetector(BaseNNModel):
         score_collector = []
         for idx, data in enumerate(test_dataloader):
             inputs = self._assemble_input_for_testing(data)
-            with autocast(enabled=self.amp_enabled):
+            with autocast(self._autocast_device_type, enabled=self.amp_enabled):
                 results = self.model(inputs, **kwargs)
             outputs = results["reconstruction"]
             # criterion

@@ -85,7 +85,9 @@ class Masking:
         n_observed_patches = input_mask.sum(dim=-1, keepdim=True)  # batch_size x 1
 
         batch_size, _, n_patches, _ = x.shape
-        len_keep = torch.ceil(n_observed_patches * (1 - self.mask_ratio)).long()
+        # cast to float before ceil: with an integral input_mask the product is an
+        # integer tensor, and ceil() has no kernel for integer dtypes on Ascend NPU
+        len_keep = torch.ceil(n_observed_patches.float() * (1 - self.mask_ratio)).long()
         noise = torch.rand(
             batch_size, n_patches, device=x.device
         )  # noise in [0, 1], batch_size x n_channels x n_patches

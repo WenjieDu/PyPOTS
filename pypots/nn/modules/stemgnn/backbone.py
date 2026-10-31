@@ -7,6 +7,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+from ..rnn_fallback import gru as device_adaptive_gru
 from .layers import StockBlockLayer
 
 
@@ -33,7 +34,9 @@ class BackboneStemGNN(nn.Module):
         nn.init.xavier_uniform_(self.weight_key.data, gain=1.414)
         self.weight_query = nn.Parameter(torch.zeros(size=(self.unit, 1)))
         nn.init.xavier_uniform_(self.weight_query.data, gain=1.414)
-        self.GRU = nn.GRU(self.time_step, self.unit)
+        # fused nn.GRU on CUDA/CPU; unfused GRUCell step-loop on Ascend NPU (fp32-safe there)
+        # this module is seq-first (batch_first=False), the adaptive gru handles both layouts
+        self.GRU = device_adaptive_gru(self.time_step, self.unit, batch_first=False)
         self.multi_layer = multi_layer
         self.stock_block = nn.ModuleList()
         self.stock_block.extend(
