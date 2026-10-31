@@ -70,13 +70,11 @@ def get_huggingface_model_dimensions(model_name: str = "flan-t5-base"):
     return config.d_model
 
 
-def _use_gather_unfold() -> bool:
-    """Whether to emulate unfold with gather: only on NPU.
+def _npu_runtime_available() -> bool:
+    """Whether torch_npu is importable and an NPU is visible on this host.
 
-    The backward kernel for aten::unfold (aclnnUnfoldGrad) is missing on
-    Ascend NPU, so patching a gradient-carrying tensor fails there. The
-    gather-based emulation below is mathematically equivalent and its
-    backward (scatter_add) is supported.
+    Only says the host HAS an NPU — whether the gather emulation is used for a
+    given call is decided from the input tensor's device, not from this probe.
     """
     try:
         import torch_npu
@@ -89,11 +87,12 @@ def _use_gather_unfold() -> bool:
 def unfold_last_dim(x: torch.Tensor, patch_size: int, stride: int) -> torch.Tensor:
     """Equivalent of x.unfold(-1, size=patch_size, step=stride), NPU-safe.
 
-    On CUDA/CPU the native unfold (fused, faster backward) is used; on NPU a
-    gather-based emulation avoids the missing aclnnUnfoldGrad kernel. Output
-    shape matches: [..., n_patches, patch_size].
+    The backend is chosen per call from the input tensor's device: CUDA/CPU
+    tensors keep the native unfold (fused, faster backward) even on an
+    NPU-equipped host; NPU tensors take a gather-based emulation that avoids
+    the missing aclnnUnfoldGrad kernel. Output shape matches: [..., n_patches, patch_size].
     """
-    if not _use_gather_unfold():
+    if not (x.device.type == "npu" and _npu_runtime_available()):
         return x.unfold(dimension=-1, size=patch_size, step=stride)
 
     seq_len = x.shape[-1]

@@ -65,6 +65,50 @@ class TestDeviceHelpers(unittest.TestCase):
             assert supports_device(dev_type)
         assert not supports_device("unknown_device")
 
+    def test_5_rnn_dispatcher_keeps_fused_on_cpu(self):
+        """gru()/lstm() dispatch per the input tensor's device: on CPU the
+        native fused kernels must run even if the host also has an NPU
+        (mixed-device hosts keep CPU/CUDA behavior unchanged), and the
+        dispatcher's state_dict keys must match plain nn.GRU/nn.LSTM exactly.
+        """
+        from pypots.nn.modules.rnn_fallback import gru, lstm
+
+        g = gru(5, 16, bidirectional=True, batch_first=True)
+        l = lstm(5, 16, bidirectional=True, batch_first=True)
+        # state_dict interchange with the fused modules at any nesting depth
+        assert set(g.state_dict().keys()) == set(torch.nn.GRU(5, 16, bidirectional=True).state_dict().keys())
+        assert set(l.state_dict().keys()) == set(torch.nn.LSTM(5, 16, bidirectional=True).state_dict().keys())
+
+        x = torch.randn(3, 7, 5)
+        out, _ = g(x)
+        loss = out.sum()
+        loss.backward()
+        assert g.weight_ih_l0.grad is not None, "gradient must reach the shared top-level parameter"
+
+    def test_6_unfused_lstm_matches_nn_lstm_with_nonzero_init_state(self):
+        """UnfusedLSTM must agree with nn.LSTM for nonzero (h_0, c_0) in both
+        directions, and tolerate h0=None (the old code raised IndexError on
+        the unidirectional nonzero path).
+        """
+        from pypots.nn.modules.rnn_fallback import UnfusedLSTM
+
+        torch.manual_seed(2023)
+        for bidirectional in (False, True):
+            unfused = UnfusedLSTM(5, 12, bidirectional=bidirectional, batch_first=True)
+            reference = torch.nn.LSTM(5, 12, bidirectional=bidirectional, batch_first=True)
+            unfused.load_state_dict(reference.state_dict())
+            x = torch.randn(3, 7, 5)
+            n_dirs = 2 if bidirectional else 1
+            h = torch.randn(n_dirs, 3, 12)
+            c = torch.randn(n_dirs, 3, 12)
+            out_u, (hn_u, cn_u) = unfused(x, (h, c))
+            out_r, (hn_r, cn_r) = reference(x, (h, c))
+            torch.testing.assert_close(out_u, out_r, rtol=1e-5, atol=1e-6)
+            torch.testing.assert_close(hn_u, hn_r, rtol=1e-5, atol=1e-6)
+            torch.testing.assert_close(cn_u, cn_r, rtol=1e-5, atol=1e-6)
+        out_none, _ = unfused(x)  # h0=None must not raise
+        assert out_none.shape == (3, 7, 24)
+
     def test_4_contains_full_sequence_rnn(self):
         class WithFused(torch.nn.Module):
             def __init__(self):

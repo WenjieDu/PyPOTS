@@ -329,6 +329,12 @@ class USGAN(BaseNNImputer):
                     )
                     mean_loss = mean_epoch_train_G_loss
 
+                # under DDP, average the epoch metric across ranks so the
+                # early-stopping / best-epoch decisions below are identical on
+                # every rank and no rank breaks the loop while others still
+                # expect its collectives (no-op in single-process runs)
+                mean_loss = self._sync_epoch_loss_if_ddp(mean_loss)
+
                 if np.isnan(mean_loss):
                     logger.warning(f"‼️ Attention: got NaN loss in Epoch {epoch}. This may lead to unexpected errors.")
 

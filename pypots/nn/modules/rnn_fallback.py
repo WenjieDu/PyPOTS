@@ -13,6 +13,12 @@ Equivalence: parameters are registered under the exact nn.GRU/nn.LSTM names
 backward direction), so state_dicts interchange directly at any nesting depth —
 a checkpoint saved from a fused model loads into the unfused one and vice versa.
 The per-step math is identical to GRUCell/LSTMCell, hence to the fused kernels.
+
+Device selection: gru()/lstm() return a thin dispatcher that picks the backend
+per call from the *input tensor's* device — a CPU/CUDA model on an NPU host
+keeps the native fused kernels; only tensors that actually live on an NPU take
+the unfused path. The dispatcher's parameter layout matches nn.GRU/nn.LSTM
+exactly (it IS an nn.GRU/LSTM), so state_dict compatibility is unaffected.
 """
 
 # Created by Jun Wang <jwangfx@connect.ust.hk>
@@ -26,7 +32,11 @@ import torch.nn.functional as F
 
 
 def _use_unfused_rnn() -> bool:
-    """Whether to pick the unfused step-loop implementations: only on NPU."""
+    """Whether the unfused step-loop path can run in this environment (NPU present).
+
+    Note this only says the *host* has an NPU — which backend a given model uses
+    is decided per call from the input tensor's device, not from this probe.
+    """
     try:
         import torch_npu
 
@@ -175,8 +185,11 @@ class UnfusedLSTM(nn.Module):
         if not self.batch_first:
             x = x.transpose(0, 1)
         B, L, _ = x.shape
-        cf = x.new_zeros(B, self.hidden_size) if h0 is None else h0[0][1]
-        hf = x.new_zeros(B, self.hidden_size) if h0 is None else h0[0][0]
+        # h0 is the (h_0, c_0) tuple: h0[0]=hidden states, h0[1]=cell states,
+        # each (num_layers*num_directions, B, hidden); index [0] = forward dir.
+        h0_t, c0_t = (None, None) if h0 is None else h0
+        hf = x.new_zeros(B, self.hidden_size) if h0_t is None else h0_t[0]
+        cf = x.new_zeros(B, self.hidden_size) if c0_t is None else c0_t[0]
         f_out = []
         for t in range(L):
             hf, cf = self._step(x[:, t], (hf, cf), self.weight_ih_l0, self.weight_hh_l0, self.bias_ih_l0, self.bias_hh_l0)
@@ -184,8 +197,8 @@ class UnfusedLSTM(nn.Module):
         outputs = [torch.stack(f_out, 1)]
         hiddens = [(hf, cf)]
         if self.bidirectional:
-            cb = x.new_zeros(B, self.hidden_size) if h0 is None else h0[1][1]
-            hb = x.new_zeros(B, self.hidden_size) if h0 is None else h0[1][0]
+            hb = x.new_zeros(B, self.hidden_size) if h0_t is None else h0_t[1]
+            cb = x.new_zeros(B, self.hidden_size) if c0_t is None else c0_t[1]
             b_out = []
             for t in range(L - 1, -1, -1):
                 hb, cb = self._step(
@@ -208,15 +221,58 @@ class UnfusedLSTM(nn.Module):
         return out, (h_n, c_n)
 
 
+class _DeviceAdaptiveRNN(nn.Module):
+    """Dispatch between the native fused RNN and the unfused step-loop per call,
+    keyed off the input tensor's device rather than the host's device inventory:
+    a CPU/CUDA workload on an NPU-equipped host keeps the native fused kernels.
+
+    Parameters are registered directly on this module under the exact
+    nn.GRU/nn.LSTM names (so state_dicts interchange with plain fused modules
+    at any nesting depth), and BOTH backends are kept outside the module tree
+    (object.__setattr__) sharing those same Parameter objects — gradients flow
+    back to the exact parameters DDP wraps and optimizers see, regardless of
+    which backend ran forward. Only single layer + optional bidirectional +
+    batch_first is supported — the subset PyPOTS models use.
+    """
+
+    def __init__(self, rnn_cls, unfused_cls, input_size: int, hidden_size: int, bidirectional: bool, batch_first: bool):
+        super().__init__()
+        # the unfused twin registers the nn.GRU/nn.LSTM-named parameters itself;
+        # hoist them to top level so this module's state_dict keys are identical
+        # to a plain fused module's
+        twin = unfused_cls(input_size, hidden_size, bidirectional=bidirectional, batch_first=batch_first)
+        for name, param in twin.named_parameters():
+            setattr(self, name, param)
+        native = rnn_cls(input_size, hidden_size, bidirectional=bidirectional, batch_first=batch_first)
+        # re-point the native module's parameters at the shared objects; nn.RNN's
+        # __setattr__ keeps its internal _flat_weights list in sync for the
+        # fused kernel path
+        for name, _ in native.named_parameters():
+            setattr(native, name, getattr(self, name))
+        # keep both backends out of the module tree: no duplicated state_dict
+        # keys, no double-registered parameters
+        object.__setattr__(self, "_native", native)
+        object.__setattr__(self, "_twin", twin)
+
+    def forward(self, x, h0=None):
+        if not (x.device.type == "npu" and _use_unfused_rnn()):
+            return self._native(x) if h0 is None else self._native(x, h0)
+        return self._twin(x, h0)
+
+
 def gru(input_size: int, hidden_size: int, bidirectional: bool = False, batch_first: bool = True) -> nn.Module:
-    """Device-adaptive nn.GRU: fused on CUDA/CPU, unfused step-loop on NPU."""
-    if _use_unfused_rnn():
-        return UnfusedGRU(input_size, hidden_size, bidirectional=bidirectional, batch_first=batch_first)
-    return nn.GRU(input_size, hidden_size, bidirectional=bidirectional, batch_first=batch_first)
+    """Device-adaptive nn.GRU: fused on CPU/CUDA, unfused step-loop on NPU.
+
+    The backend is selected per forward call from the input tensor's device,
+    so a CPU/CUDA model on an NPU host keeps the native fused kernel.
+    """
+    return _DeviceAdaptiveRNN(nn.GRU, UnfusedGRU, input_size, hidden_size, bidirectional, batch_first)
 
 
 def lstm(input_size: int, hidden_size: int, bidirectional: bool = False, batch_first: bool = True) -> nn.Module:
-    """Device-adaptive nn.LSTM: fused on CUDA/CPU, unfused step-loop on NPU."""
-    if _use_unfused_rnn():
-        return UnfusedLSTM(input_size, hidden_size, bidirectional=bidirectional, batch_first=batch_first)
-    return nn.LSTM(input_size, hidden_size, bidirectional=bidirectional, batch_first=batch_first)
+    """Device-adaptive nn.LSTM: fused on CPU/CUDA, unfused step-loop on NPU.
+
+    The backend is selected per forward call from the input tensor's device,
+    so a CPU/CUDA model on an NPU host keeps the native fused kernel.
+    """
+    return _DeviceAdaptiveRNN(nn.LSTM, UnfusedLSTM, input_size, hidden_size, bidirectional, batch_first)

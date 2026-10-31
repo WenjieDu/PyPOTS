@@ -26,6 +26,7 @@ from .utils.devices import (
     parse_device_string,
     supports_device,
 )
+from .utils.distributed import all_reduce_mean, ddp_is_initialized
 from .utils.file import create_dir_if_not_exist
 from .utils.logging import logger, logger_creator
 
@@ -229,6 +230,30 @@ class BaseModel(ABC):
             logger.info(f"Tensorboard file will be saved to {tb_saving_path}")
         else:
             logger.warning("‼️ saving_path not given. Model files and tensorboard file will not be saved.")
+
+    def _sync_epoch_loss_if_ddp(self, mean_loss: float) -> float:
+        """Average the per-epoch training/validation metric across DDP ranks.
+
+        Without this, each rank decides early stopping on its own shard-local
+        metric; one rank can then exit the epoch loop while others still expect
+        its gradient all-reduces, hanging the job. Averaging makes patience,
+        best_epoch and best_model_dict decisions bit-identical on every rank.
+        No-op in plain single-process runs.
+        """
+        if not ddp_is_initialized():
+            return mean_loss
+        return all_reduce_mean(mean_loss)
+
+    @property
+    def _autocast_device_type(self) -> str:
+        """Device type the AMP autocast context must target: the model's actual
+        training device — NOT torch's global default tensor device (which stays
+        "cpu" even when a model trains on cuda/npu, and would silently route
+        autocast to the wrong backend). "cpu" means AMP is disabled anyway.
+        """
+        if isinstance(self.device, list):
+            return self.device[0].type
+        return self.device.type
 
     def _send_model_to_given_device(self) -> None:
         if isinstance(self.model, torch.nn.DataParallel):
@@ -836,7 +861,7 @@ class BaseNNModel(BaseModel):
                     training_step += 1
                     inputs = self._assemble_input_for_training(data)
 
-                    with autocast(enabled=self.amp_enabled):
+                    with autocast(self._autocast_device_type, enabled=self.amp_enabled):
                         self.optimizer.zero_grad()
                         results = self.model(inputs, calc_criterion=True)
                         loss = results["loss"].sum()
@@ -857,7 +882,7 @@ class BaseNNModel(BaseModel):
                         for idx, data in enumerate(val_dataloader):
                             inputs = self._assemble_input_for_validating(data)
 
-                            with autocast(enabled=self.amp_enabled):
+                            with autocast(self._autocast_device_type, enabled=self.amp_enabled):
                                 results = self.model(inputs, calc_criterion=True)
 
                             val_metric = results["metric"].sum()
@@ -881,6 +906,12 @@ class BaseNNModel(BaseModel):
                 else:
                     logger.info(f"Epoch {epoch:03d} - training loss ({self.training_loss_name}): {mean_train_loss:.4f}")
                     mean_loss = mean_train_loss
+
+                # under DDP, average the epoch metric across ranks so that the
+                # early-stopping / best-epoch decisions below are identical on
+                # every rank and no rank breaks the loop while others still
+                # expect its collectives (no-op in single-process runs)
+                mean_loss = self._sync_epoch_loss_if_ddp(mean_loss)
 
                 if np.isnan(mean_loss):
                     logger.warning(f"‼️ Got NaN loss in epoch#{epoch}. This may lead to unexpected errors.")
