@@ -66,7 +66,7 @@ def calc_binary_classification_metrics(
     elif len(targets.shape) == 2 and targets.shape[1] == 1:
         targets = np.asarray(targets).flatten()
     else:
-        raise f"targets dimensions should be 1 or 2, but got targets.shape: {targets.shape}"
+        raise ValueError(f"targets dimensions should be 1 or 2, but got targets.shape: {targets.shape}")
 
     if len(prob_predictions.shape) == 1 or (len(prob_predictions.shape) == 2 and prob_predictions.shape[1] == 1):
         prob_predictions = np.asarray(prob_predictions).flatten()  # turn the array shape into [n_samples]
@@ -78,7 +78,9 @@ def calc_binary_classification_metrics(
         binary_predictions = prob_predictions[:, pos_label]
         binary_prediction_categories = (prediction_categories == pos_label).astype(int)
     else:
-        raise f"predictions dimensions should be 1 or 2, but got predictions.shape: {prob_predictions.shape}"
+        raise ValueError(
+            f"predictions dimensions should be 1 or 2, but got predictions.shape: {prob_predictions.shape}"
+        )
 
     # accuracy score doesn't have to be of binary classification
     acc_score = calc_acc(prediction_categories, targets)
