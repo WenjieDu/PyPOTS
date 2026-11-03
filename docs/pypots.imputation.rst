@@ -1,6 +1,16 @@
 pypots.imputation
 =========================
 
+pypots.imputation.lifts
+------------------------------------
+
+.. automodule:: pypots.imputation.lifts
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+
+
 pypots.imputation.saits
 ------------------------------
 

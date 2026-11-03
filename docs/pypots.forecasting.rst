@@ -1,6 +1,16 @@
 pypots.forecasting
 ==========================
 
+pypots.forecasting.lifts
+------------------------------------
+
+.. automodule:: pypots.forecasting.lifts
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+
+
 pypots.forecasting.transformer
 ------------------------------
 

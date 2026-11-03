@@ -114,3 +114,6 @@ ignore = [
     "E203",
     "E231",
 ]
+
+[tool.setuptools.package-data]
+"pypots.nn.modules.lifts" = ["LICENSE"]

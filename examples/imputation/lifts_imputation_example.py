@@ -1,0 +1,27 @@
+"""Small, offline LIFTS imputation example; inputs are already standardized."""
+
+import numpy as np
+
+from pypots.imputation import LIFTS
+
+rng = np.random.default_rng(42)
+X_ori = rng.normal(size=(16, 6, 3)).astype(np.float32)
+X = X_ori.copy()
+X[rng.random(X.shape) < 0.2] = np.nan
+model = LIFTS(
+    n_steps=6,
+    n_features=3,
+    d_latent=2,
+    d_model=16,
+    n_heads=2,
+    d_ffn=32,
+    n_layers=1,
+    n_inner_layers=1,
+    batch_size=8,
+    epochs=2,
+)
+model.fit({"X": X[:12]}, {"X": X[12:], "X_ori": X_ori[12:]})
+result = model.predict({"X": X[12:]}, n_sampling_times=10)
+print("Point imputation:", result["imputation"].shape)  # (4, 6, 3)
+print("Multiple imputations:", result["imputation_samples"].shape)  # (4, 10, 6, 3)
+model.save("lifts_imputation.pypots")
