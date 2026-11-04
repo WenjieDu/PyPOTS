@@ -38,7 +38,7 @@ class _LIFTS(ModelCore):
         self.n_sampling_times_train = n_sampling_times_train
         self.validation_metric = validation_metric
 
-    def forward(self, inputs, calc_criterion=False, n_sampling_times=100):
+    def forward(self, inputs, calc_criterion=False, n_sampling_times=100, in_sample_forecasting=False):
         if not isinstance(n_sampling_times, int) or isinstance(n_sampling_times, bool) or n_sampling_times < 1:
             raise ValueError("n_sampling_times must be a positive integer.")
         X, mask = inputs["X"], inputs["missing_mask"]
@@ -52,6 +52,9 @@ class _LIFTS(ModelCore):
                 self.n_sampling_times_train,
             )
             return {"loss": loss, "forecast_loss": forecast_loss, "self_mask_loss": self_mask_loss}
+        if in_sample_forecasting:
+            samples = self.backbone.forecast_in_sample(X, mask, n_sampling_times)
+            return {"forecasting": samples.mean(dim=1), "forecasting_samples": samples}
         samples = self.backbone.impute(X, mask, n_sampling_times)
         results = {"imputation": samples.mean(dim=1), "imputation_samples": samples}
         if calc_criterion:

@@ -140,6 +140,30 @@ class BackboneLIFTS(nn.Module):
         samples = torch.where(repeated_mask.bool(), repeated_X, samples)
         return samples.reshape(batch, n_sampling_times, steps, features)
 
+    def forecast_in_sample(self, X, mask, n_sampling_times):
+        """Original one-step predictions: at t, condition only on observations before t.
+
+        Retain both original forecast branches and mask emissions to preserve
+        the standalone forecasting routine's random-number consumption.
+        """
+        batch, steps, features = X.shape
+        feature_X = X.transpose(1, 2).contiguous()
+        feature_mask = mask.transpose(1, 2).contiguous()
+        if n_sampling_times > 1:
+            feature_X = feature_X[:, None].expand(-1, n_sampling_times, -1, -1).reshape(-1, features, steps)
+            feature_mask = feature_mask[:, None].expand(-1, n_sampling_times, -1, -1).reshape(-1, features, steps)
+        filtered = self.encoder_h(feature_X.transpose(1, 2), feature_mask.transpose(1, 2))
+        transitioned = self.transition_g(filtered[:, :-1])
+        z1 = self.noise_processor(filtered.shape[0], X.device)
+        z2 = self.noise_processor(filtered.shape[0], X.device)
+        z1 = torch.cat([z1, transitioned], dim=1)
+        z2 = torch.cat([z2, transitioned], dim=1)
+        forecast = self.out_fx(z1)
+        self.out_fx(z2)
+        self.out_fo(z1)
+        self.out_fo(z2)
+        return forecast.reshape(batch, n_sampling_times, steps, features)
+
     def forecast(self, X, mask, n_pred_steps, n_sampling_times):
         """Roll out the latent transition without accessing future observations."""
         batch, steps, features = X.shape

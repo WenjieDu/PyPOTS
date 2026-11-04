@@ -24,4 +24,8 @@ model.fit({"X": X[:12]}, {"X": X[12:], "X_ori": X_ori[12:]})
 result = model.predict({"X": X[12:]}, n_sampling_times=10)
 print("Point imputation:", result["imputation"].shape)  # (4, 6, 3)
 print("Multiple imputations:", result["imputation_samples"].shape)  # (4, 10, 6, 3)
+# The same fitted model also provides the original in-sample one-step forecasts.
+one_step = model.forecast_in_sample({"X": X[12:]})  # 100 draws by default
+print("One-step forecasts:", one_step["forecasting"].shape)  # (4, 6, 3)
+print("One-step samples:", one_step["forecasting_samples"].shape)  # (4, 100, 6, 3)
 model.save("lifts_imputation.pypots")

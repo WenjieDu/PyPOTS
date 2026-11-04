@@ -215,3 +215,19 @@ class LIFTS(ReferenceTrainingMixin, BaseNNImputer):
         """
         self._make_dataset(test_set, file_type, predicting=True)
         return super().predict(test_set, file_type, n_sampling_times=n_sampling_times)
+
+    def forecast_in_sample(self, test_set, file_type="hdf5", n_sampling_times=100):
+        """Return the original in-sample one-step forecasts from the same fitted model.
+
+        Inputs use [N, T, P], with NaN for missing values, and must use the
+        training-set standardization. At position t, predictions condition
+        only on positions before t; position zero uses the learned prior.
+        Observed target values are not copied into the predictions.
+
+        Returns a dictionary with ``forecasting`` [N,T,P] (sample means) and
+        ``forecasting_samples`` [N,M,T,P], with M=100 by default. No additional
+        fitting or future targets are needed. The output covers the input
+        time positions, rather than extending the forecast horizon.
+        """
+        self._make_dataset(test_set, file_type, predicting=True)
+        return super().predict(test_set, file_type, n_sampling_times=n_sampling_times, in_sample_forecasting=True)

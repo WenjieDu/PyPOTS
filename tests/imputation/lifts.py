@@ -157,3 +157,33 @@ def test_reference_checkpoint_policy_and_validation_rng_isolation():
     assert with_validation.predict(data)["imputation_samples"].shape[1] == 100
     with pytest.raises(ValueError, match="lambda_enc=0"):
         LIFTS(n_steps=4, n_features=3, lambda_enc=1, device="cpu", verbose=False)
+
+
+def test_in_sample_forecasting_contract_and_target_isolation(tmp_path):
+    model = make_model()
+    data = make_data()
+    model.fit({"X": data["X"]})
+    torch.manual_seed(123)
+    result = model.forecast_in_sample(data)
+    assert result["forecasting_samples"].shape == (5, 100, 4, 3)
+    assert result["forecasting"].shape == (5, 4, 3)
+    assert np.isfinite(result["forecasting_samples"]).all()
+    np.testing.assert_allclose(result["forecasting"], result["forecasting_samples"].mean(axis=1), rtol=1e-5, atol=1e-6)
+    # Current/future targets cannot change one-step predictions through t=2.
+    changed = data["X"].copy()
+    changed[:, 2:] = 1000
+    torch.manual_seed(123)
+    other = model.forecast_in_sample({"X": changed})
+    np.testing.assert_array_equal(result["forecasting_samples"][:, :, :3], other["forecasting_samples"][:, :, :3])
+    assert not np.array_equal(result["forecasting_samples"][:, :, 3], other["forecasting_samples"][:, :, 3])
+    observed = np.isfinite(data["X"])
+    assert not np.array_equal(result["forecasting"][observed], data["X"][observed])
+    path = str(tmp_path / "one_step.h5")
+    with h5py.File(path, "w") as handle:
+        handle["X"] = data["X"]
+    torch.manual_seed(123)
+    from_file = model.forecast_in_sample(path)
+    np.testing.assert_array_equal(from_file["forecasting_samples"], result["forecasting_samples"])
+    for invalid in [0, -1, True, 1.5]:
+        with pytest.raises(ValueError, match="positive integer"):
+            model.forecast_in_sample(data, n_sampling_times=invalid)
