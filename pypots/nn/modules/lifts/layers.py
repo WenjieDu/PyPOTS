@@ -277,11 +277,9 @@ class SSM_Filter(nn.Module):
         x_enc = x
         mask_enc = mask.float()
         x_noise = x_enc * mask_enc + (1 - mask_enc) * torch.randn_like(x_enc)
-        if mask_enc.all():
-            noise_channel = torch.randn_like(x_enc)
-            masked_x = torch.cat([x_noise, noise_channel], dim=-1)
-        else:
-            masked_x = torch.cat([x_noise, mask_enc], dim=-1)
+        # A batch-wide completeness branch leaks future/unrelated mask values.
+        # Keep the same mask channel for complete and incomplete observations.
+        masked_x = torch.cat([x_noise, mask_enc], dim=-1)
         Z_feat = self.encoder_embedding(masked_x)
         for encoder_layer in self.encoder_layer_stack:
             for _ in range(self.n_group_inner_layers):
@@ -467,7 +465,10 @@ class SSM_Transition_G(nn.Module):
             noise = torch.randn_like(z_prev)
         fusion_input = torch.cat([z_prev, noise], dim=-1)
         z_stochastic = self.noise_fusion(fusion_input)
-        z_next = self.output_norm(z_linear + z_trend_correction + z_stochastic)
+        z_next = z_linear + z_trend_correction + z_stochastic
+        # LayerNorm over one scalar erases all history and transition noise.
+        if z_prev.shape[-1] != 1:
+            z_next = self.output_norm(z_next)
         return z_next
 
 

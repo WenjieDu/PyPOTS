@@ -187,3 +187,52 @@ def test_in_sample_forecasting_contract_and_target_isolation(tmp_path):
     for invalid in [0, -1, True, 1.5]:
         with pytest.raises(ValueError, match="positive integer"):
             model.forecast_in_sample(data, n_sampling_times=invalid)
+
+
+def test_complete_mask_cannot_leak_future_or_other_batch_members():
+    model = BackboneLIFTS(4, 3, 2, 8, 2, 16, 1, 1).eval()
+    X = torch.randn(2, 4, 3)
+    complete = torch.ones_like(X)
+    future_missing = complete.clone()
+    future_missing[:, -1, 0] = 0
+    torch.manual_seed(100)
+    original = model.encoder_h(X, complete)
+    torch.manual_seed(100)
+    changed_future = model.encoder_h(X, future_missing)
+    torch.testing.assert_close(original[:, :-1], changed_future[:, :-1], rtol=0, atol=0)
+    other_member = complete.clone()
+    other_member[1, 0, 0] = 0
+    torch.manual_seed(100)
+    changed_member = model.encoder_h(X, other_member)
+    torch.testing.assert_close(original[0], changed_member[0], rtol=0, atol=0)
+
+
+def test_single_latent_transition_retains_history_and_gradients():
+    from pypots.nn.modules.lifts.layers import SSM_Transition_G
+
+    transition = SSM_Transition_G(1, 8).eval()
+    with torch.no_grad():
+        transition.noise_fusion[-1].weight.zero_()
+        transition.noise_fusion[-1].bias.zero_()
+    history = torch.tensor([[[0.2], [0.8]]], requires_grad=True)
+    result = transition(history, noise=torch.zeros_like(history))
+    torch.testing.assert_close(result, history, rtol=0, atol=0)
+    result.sum().backward()
+    torch.testing.assert_close(history.grad, torch.ones_like(history), rtol=0, atol=0)
+
+
+@pytest.mark.parametrize("features,latent", [(20, 20), (50, 50), (51, 50), (101, 50), (120, 60)])
+def test_requested_defaults(features, latent):
+    model = LIFTS(
+        n_steps=4,
+        n_features=features,
+        d_model=8,
+        n_heads=2,
+        d_ffn=16,
+        n_layers=1,
+        n_inner_layers=1,
+        device="cpu",
+        verbose=False,
+    )
+    assert model.d_latent == latent
+    assert model.batch_size == 64
