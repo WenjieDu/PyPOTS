@@ -121,3 +121,39 @@ def test_invalid_input_and_sampling():
             model.predict(make_data(), n_sampling_times=n)
     with pytest.raises(ValueError, match="X_ori"):
         model.fit(make_data(), {"X": make_data()["X"]})
+
+
+def test_reference_checkpoint_policy_and_validation_rng_isolation():
+    options = {
+        "n_steps": 4,
+        "n_features": 3,
+        "d_latent": 2,
+        "d_model": 8,
+        "n_heads": 2,
+        "d_ffn": 16,
+        "n_layers": 1,
+        "n_inner_layers": 1,
+        "epochs": 8,
+        "batch_size": 2,
+        "patience": 1,
+        "device": "cpu",
+        "verbose": False,
+    }
+    data = make_data()
+    torch.manual_seed(73)
+    baseline = LIFTS(**options)
+    baseline.fit({"X": data["X"]})
+    torch.manual_seed(73)
+    with_validation = LIFTS(**options)
+    poisoned = {"X": data["X"], "X_ori": data["X_ori"] * 1000}
+    with_validation.fit({"X": data["X"]}, poisoned)
+    assert len(with_validation.training_history_) == 8
+    eligible = [r for r in with_validation.training_history_ if r["checkpoint_eligible"]]
+    assert eligible[0]["epoch"] == 3  # zero-based epoch >= 8 // 4
+    assert with_validation.best_epoch == min(eligible, key=lambda r: r["joint_loss"])["epoch"]
+    assert baseline.training_history_ == with_validation.training_history_
+    for key, value in baseline.model.state_dict().items():
+        torch.testing.assert_close(value, with_validation.model.state_dict()[key], rtol=0, atol=0)
+    assert with_validation.predict(data)["imputation_samples"].shape[1] == 100
+    with pytest.raises(ValueError, match="lambda_enc=0"):
+        LIFTS(n_steps=4, n_features=3, lambda_enc=1, device="cpu", verbose=False)

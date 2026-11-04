@@ -7,6 +7,7 @@ from torch.utils.data import DataLoader
 
 from ...data.checking import key_in_data_set
 from ...data.dataset import BaseDataset
+from ...nn.modules.lifts.training import ReferenceTrainingMixin, reference_parameter_order
 from ...nn.modules.loss import MSE, Criterion
 from ...optim import Adam
 from ...optim.base import Optimizer
@@ -14,7 +15,7 @@ from ..base import BaseNNImputer
 from .core import _LIFTS
 
 
-class LIFTS(BaseNNImputer):
+class LIFTS(ReferenceTrainingMixin, BaseNNImputer):
     """Latent-driven Imputation and Forecasting in Time Series :cite:`wu2026lifts`.
 
     Parameters
@@ -34,11 +35,14 @@ class LIFTS(BaseNNImputer):
     self_mask_weight, mask_weight : float
         Weights for self-masked imputation and observation-mask prediction.
     n_sampling_times_train : int
-        Monte Carlo repetitions for the forecast training objective.
+        Monte Carlo repetitions for the forecast training objective (default 1).
+    lambda_enc : float
+        Encoder calibration weight; this faithful default path supports 0 only.
     batch_size, epochs, patience : int
-        Training batch size, maximum epochs, and early-stopping patience.
+        Training batch size and epoch count. Original LIFTS runs all epochs;
+        patience is retained for API compatibility and does not stop training.
     validation_metric : Criterion or type
-        Metric for selecting checkpoints; defaults to MSE.
+        Retained for API compatibility; checkpoints follow original training loss.
     optimizer : Optimizer or type
         PyPOTS optimizer; defaults to Adam with learning rate 0.001.
     num_workers : int
@@ -55,8 +59,8 @@ class LIFTS(BaseNNImputer):
     Notes
     -----
     Implements the reference default joint-training configuration (v1 filter,
-    v1 smoother, v2 decoder, MLP emissions), using the standard NN training
-    loop and one optimizer. Optional research variants and encoder calibration
+    v1 smoother, v2 decoder, MLP emissions), using the original joint-training
+    schedule, a single Adam optimizer, and training-loss checkpoint selection. Optional research variants and encoder calibration
     are not included. Standardize inputs using training-only statistics before
     fitting, as with other PyPOTS models. The estimator does not normalize data.
     """
@@ -75,6 +79,7 @@ class LIFTS(BaseNNImputer):
         self_mask_weight: float = 5.0,
         mask_weight: float = 1.0,
         n_sampling_times_train: int = 1,
+        lambda_enc: float = 0.0,
         batch_size: int = 32,
         epochs: int = 100,
         patience: int | None = None,
@@ -86,6 +91,9 @@ class LIFTS(BaseNNImputer):
         model_saving_strategy: str | None = "best",
         verbose: bool = True,
     ):
+        if lambda_enc != 0:
+            raise ValueError("This reference training path supports lambda_enc=0 only.")
+        self.lambda_enc = float(lambda_enc)
         d_latent = n_features if d_latent is None else d_latent
         dimensions = {
             "n_steps": n_steps,
@@ -144,7 +152,7 @@ class LIFTS(BaseNNImputer):
         self.optimizer = optimizer if isinstance(optimizer, Optimizer) else optimizer()
         if not isinstance(self.optimizer, Optimizer):
             raise TypeError("optimizer must be a PyPOTS Optimizer or Optimizer class.")
-        self.optimizer.init_optimizer(self.model.parameters())
+        self.optimizer.init_optimizer(reference_parameter_order(self.model.backbone))
 
     def _assemble_input_for_training(self, data):
         _, X, mask = self._send_data_to_given_device(data)
@@ -170,7 +178,10 @@ class LIFTS(BaseNNImputer):
         return dataset
 
     def fit(self, train_set, val_set=None, file_type="hdf5"):
-        """Train on a dict or HDF5 path, optionally selecting checkpoints on val_set."""
+        """Run all epochs; select minimum training joint loss after the first quarter.
+
+        val_set is checked for API compatibility but never selects the checkpoint.
+        """
         train_dataset = self._make_dataset(train_set, file_type)
         train_loader = DataLoader(
             train_dataset,
@@ -193,13 +204,12 @@ class LIFTS(BaseNNImputer):
         self.model.load_state_dict(self.best_model_dict)
         self._auto_save_model_if_necessary(confirm_saving=self.model_saving_strategy == "best")
 
-    def predict(self, test_set, file_type="hdf5", n_sampling_times=1):
+    def predict(self, test_set, file_type="hdf5", n_sampling_times=100):
         """Return point estimates and Monte Carlo samples.
 
         imputation has shape [batch, n_steps, n_features];
         imputation_samples adds a sample axis after batch. Point estimates
-        are means of these samples. Increase n_sampling_times for uncertainty
-        estimates. Data must be standardized using training-only statistics.
+        are means of these samples. By default, generate 100 samples. Data must be standardized using training-only statistics.
         """
         self._make_dataset(test_set, file_type, predicting=True)
         return super().predict(test_set, file_type, n_sampling_times=n_sampling_times)

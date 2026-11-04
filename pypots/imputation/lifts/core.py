@@ -38,7 +38,7 @@ class _LIFTS(ModelCore):
         self.n_sampling_times_train = n_sampling_times_train
         self.validation_metric = validation_metric
 
-    def forward(self, inputs, calc_criterion=False, n_sampling_times=1):
+    def forward(self, inputs, calc_criterion=False, n_sampling_times=100):
         if not isinstance(n_sampling_times, int) or isinstance(n_sampling_times, bool) or n_sampling_times < 1:
             raise ValueError("n_sampling_times must be a positive integer.")
         X, mask = inputs["X"], inputs["missing_mask"]

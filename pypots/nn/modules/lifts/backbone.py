@@ -26,11 +26,11 @@ def masked_distance(x, y, mask, other_mask=None, comparison_mask=None, mask_weig
     """
     if other_mask is None:
         difference = (x - y) * mask
-        return torch.sqrt(difference.square().sum(dim=-2) + 1e-8).mean()
+        return torch.sqrt(difference.square().sum(dim=-2) + 1e-8).mean(dim=-1).mean()
     selected = mask if comparison_mask is None else comparison_mask
-    measurement_distance = torch.sqrt(((x - y) * selected).square().sum(dim=-2) + 1e-8)
+    measurement_distance = torch.sqrt((x * selected - y * selected).square().sum(dim=-2) + 1e-8)
     mask_distance = torch.sqrt((mask - other_mask).square().sum(dim=-2) + 1e-8)
-    return (measurement_distance + mask_weight * mask_distance).mean()
+    return (measurement_distance + mask_weight * mask_distance).mean(dim=-1).mean()
 
 
 class BackboneLIFTS(nn.Module):
@@ -43,6 +43,8 @@ class BackboneLIFTS(nn.Module):
 
     def __init__(self, n_steps, n_features, d_latent, d_model, n_heads, d_ffn, n_layers, n_inner_layers):
         super().__init__()
+        # Preserve the standalone constructor's RNG consumption and initialization.
+        self.noise_processor = InitialNoiseProcessorLearnable(d_latent)
         self.encoder_h = SSM_Filter(
             n_steps,
             n_features,
@@ -66,7 +68,6 @@ class BackboneLIFTS(nn.Module):
             time_dim=n_steps,
             d_model=d_model,
         )
-        self.noise_processor = InitialNoiseProcessorLearnable(d_latent)
 
     def smooth(self, filtered):
         """Sample backward recursively, conditioned on the filtered terminal state."""
@@ -82,9 +83,14 @@ class BackboneLIFTS(nn.Module):
         lambda_d_o=0), without the optional experimental calibration stages.
         """
         batch, steps, features = X.shape
-        # Match the reference sample expansion and feature-major loss layout.
-        X = X[:, None].expand(-1, n_sampling_times, -1, -1).reshape(-1, steps, features)
-        mask = mask[:, None].expand(-1, n_sampling_times, -1, -1).reshape(-1, steps, features)
+        # The standalone loader batches contiguous [B,P,T] arrays. Preserve
+        # their strides, including torch.rand_like's self-mask RNG ordering.
+        feature_X = X.transpose(1, 2).contiguous()
+        feature_mask = mask.transpose(1, 2).contiguous()
+        original_X, original_mask = feature_X.transpose(1, 2), feature_mask.transpose(1, 2)
+        X = feature_X[:, None].expand(-1, n_sampling_times, -1, -1).reshape(-1, features, steps)
+        mask = feature_mask[:, None].expand(-1, n_sampling_times, -1, -1).reshape(-1, features, steps)
+        X, mask = X.transpose(1, 2), mask.transpose(1, 2)
         filtered = self.encoder_h(X, mask)
         transitioned = self.transition_g(filtered[:, :-1])
         z1 = self.noise_processor(X.shape[0], X.device)
@@ -107,8 +113,7 @@ class BackboneLIFTS(nn.Module):
         )
         # The reference self-masking branch uses the original batch, not the
         # Monte Carlo expansion used above for the forecast energy objective.
-        X = X.reshape(batch, n_sampling_times, steps, features)[:, 0]
-        mask = mask.reshape(batch, n_sampling_times, steps, features)[:, 0]
+        X, mask = original_X, original_mask
         keep = (torch.rand_like(mask) > self_mask_rate).to(mask.dtype)
         input_mask = mask * keep
         input_X = X * input_mask

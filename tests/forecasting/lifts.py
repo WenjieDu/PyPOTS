@@ -87,3 +87,17 @@ def test_invalid_target_shape_and_sampling():
         model.predict({"X": data["X"]}, n_sampling_times=0)
     with pytest.raises(ValueError, match="n_pred_steps"):
         LIFTS(n_steps=4, n_features=3, n_pred_steps=0)
+
+
+def test_reference_training_does_not_use_future_targets():
+    data = make_data()
+    torch.manual_seed(41)
+    baseline = make_model()
+    baseline.fit(data)
+    torch.manual_seed(41)
+    changed = make_model()
+    changed.fit({"X": data["X"], "X_pred": np.full_like(data["X_pred"], 1e6)})
+    assert baseline.training_history_ == changed.training_history_
+    for key, value in baseline.model.state_dict().items():
+        torch.testing.assert_close(value, changed.model.state_dict()[key], rtol=0, atol=0)
+    assert changed.predict({"X": data["X"]})["forecasting_samples"].shape[1] == 100

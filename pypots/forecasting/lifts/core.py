@@ -1,6 +1,5 @@
 """LIFTS forecasting core."""
 
-import torch
 
 from ...nn.modules import ModelCore
 from ...nn.modules.lifts import BackboneLIFTS
@@ -42,18 +41,16 @@ class _LIFTS(ModelCore):
         self.validation_metric = validation_metric
         self.n_pred_steps = n_pred_steps
 
-    def forward(self, inputs, calc_criterion=False, n_sampling_times=1):
+    def forward(self, inputs, calc_criterion=False, n_sampling_times=100):
         if not isinstance(n_sampling_times, int) or isinstance(n_sampling_times, bool) or n_sampling_times < 1:
             raise ValueError("n_sampling_times must be a positive integer.")
         X, mask = inputs["X"], inputs["missing_mask"]
         if self.training and calc_criterion:
-            # Teacher forcing only in training. The causal filter and one-step
-            # shift prevent the forecast at t from seeing its target at t.
-            sequence = torch.cat([X, inputs["X_pred"]], dim=1)
-            sequence_mask = torch.cat([mask, inputs["X_pred_missing_mask"]], dim=1)
+            # The standalone objective trains on the observed history only.
+            # Future targets must not change its training sequence or RNG flow.
             loss, forecast_loss, self_mask_loss = self.backbone.joint_loss(
-                sequence,
-                sequence_mask,
+                X,
+                mask,
                 self.self_mask_rate,
                 self.self_mask_weight,
                 self.mask_weight,
