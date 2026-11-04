@@ -28,7 +28,8 @@ class LIFTS(ReferenceTrainingMixin, BaseNNForecaster):
         X_pred is checked for API compatibility; the original training objective
         uses X only. Forecast prediction does not require X_pred.
     d_latent : int, optional
-        Latent dimension; defaults to n_features.
+        Latent dimension. Defaults to n_features for n_features <= 50,
+        otherwise max(50, n_features // 2), rounding the half down.
     d_model, n_heads, d_ffn : int
         Hidden width, attention heads, and feed-forward width. Each head's
         width (d_model / n_heads) must be even for rotary embeddings.
@@ -99,7 +100,8 @@ class LIFTS(ReferenceTrainingMixin, BaseNNForecaster):
         if lambda_enc != 0:
             raise ValueError("This reference training path supports lambda_enc=0 only.")
         self.lambda_enc = float(lambda_enc)
-        d_latent = n_features if d_latent is None else d_latent
+        if d_latent is None:
+            d_latent = n_features if n_features <= 50 else max(50, n_features // 2)
         dimensions = {
             "n_steps": n_steps,
             "n_features": n_features,
