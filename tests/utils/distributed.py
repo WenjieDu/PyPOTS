@@ -12,10 +12,12 @@ import socket
 import sys
 import tempfile
 import unittest
+from unittest import mock
 
 import numpy as np
 import pytest
 import torch
+import torch.distributed as dist
 import torch.multiprocessing as mp
 from torch.nn.parallel import DistributedDataParallel
 
@@ -89,7 +91,52 @@ class TestDistributedHelpers(unittest.TestCase):
         # without a process group, the model's own device comes back unchanged
         assert rank_local_device(torch.device("cpu")) == torch.device("cpu")
 
-    def test_2_run_ddp_fit_falls_back_to_fit(self):
+    def test_2_backend_reduce_device_matches_backend(self):
+        # without a process group the reduction stays on CPU; with a group it
+        # must match the backend: NCCL/HCCL cannot reduce CPU tensors at all,
+        # gloo cannot be assumed to bind accelerator devices
+        from pypots.utils.distributed import _backend_reduce_device
+
+        assert _backend_reduce_device() == torch.device("cpu")
+
+        for backend, expected in (
+            ("nccl", torch.device("cuda:0")),
+            ("hccl", torch.device("npu:0")),
+            ("gloo", torch.device("cpu")),
+        ):
+            with contextlib.ExitStack() as stack:
+                stack.enter_context(mock.patch("pypots.utils.distributed.ddp_is_initialized", return_value=True))
+                stack.enter_context(mock.patch("pypots.utils.distributed.ddp_rank", return_value=0))
+                stack.enter_context(mock.patch("pypots.utils.distributed.dist.get_backend", return_value=backend))
+                stack.enter_context(mock.patch.dict(os.environ, {"LOCAL_RANK": "0"}))
+                assert _backend_reduce_device() == expected, f"backend {backend} must reduce on {expected}"
+
+    def test_3_all_reduce_mean_uses_backend_compatible_device_and_dtype(self):
+        # the reduction tensor must carry the backend-compatible device and
+        # float32 dtype (NCCL rejects CPU tensors; HCCL on 910B has no fp64
+        # reduction support) — mock only the collective itself, then check
+        # exactly what was handed to it
+        from pypots.utils.distributed import all_reduce_mean
+
+        reduced = {}
+
+        def fake_all_reduce(t, op):
+            reduced["device"] = t.device.type
+            reduced["dtype"] = t.dtype
+            t += 3.0
+
+        with contextlib.ExitStack() as stack:
+            stack.enter_context(mock.patch("pypots.utils.distributed.ddp_is_initialized", return_value=True))
+            stack.enter_context(mock.patch("pypots.utils.distributed.ddp_world_size", return_value=2))
+            stack.enter_context(mock.patch("pypots.utils.distributed.dist.get_backend", return_value="gloo"))
+            stack.enter_context(mock.patch("pypots.utils.distributed.dist.all_reduce", side_effect=fake_all_reduce))
+            result = all_reduce_mean(1.5)
+
+        assert reduced["device"] == "cpu", "gloo backend must reduce on CPU"
+        assert reduced["dtype"] == torch.float32, "reduction dtype must be float32"
+        assert abs(result - 2.25) < 1e-6, f"expected mean (1.5+3.0)/2, got {result}"
+
+    def test_4_run_ddp_fit_falls_back_to_fit(self):
         # without torchrun, run_ddp_fit must simply drive model.fit()
         rng = np.random.default_rng(2023)
         train_set, val_set = _make_tiny_imputation_set(rng)
@@ -157,6 +204,39 @@ def _cpu_ddp_worker(rank: int, world: int, port: int) -> None:
     # are identical across ranks by construction; re-initializing a group just
     # to compare them would only double the rendezvous failure surface (a
     # destroy->re-init round-trip was flaky on CI runners, torch 2.3).
+
+
+def _different_seeds_worker(rank: int, world: int, port: int, tmp: str) -> None:
+    """One rank of the different-seeds init test: each rank builds the SAITS
+    net with its own random seed (so the local initial weights genuinely
+    differ across ranks), wraps it for DDP, and dumps its post-wrap parameter
+    hash for the parent to compare — DDP's own init sync must make every rank
+    converge to rank 0's weights on CPU/gloo (no pre-broadcast runs there).
+    """
+    os.environ["MASTER_ADDR"] = "127.0.0.1"
+    os.environ["MASTER_PORT"] = str(port)
+    os.environ["RANK"] = str(rank)
+    os.environ["WORLD_SIZE"] = str(world)
+    os.environ["LOCAL_RANK"] = str(rank)
+
+    from pypots.utils.distributed import init_distributed, wrap_model_ddp
+
+    assert init_distributed(backend="gloo")
+
+    # deliberately different init weights per rank
+    torch.manual_seed(1000 + rank)
+    net = torch.nn.Sequential(torch.nn.Linear(8, 32), torch.nn.ReLU(), torch.nn.Linear(32, 4))
+    local_params = [p.detach().flatten().tolist() for p in net.parameters()]
+
+    ddp_net = wrap_model_ddp(net, torch.device("cpu"), pre_broadcast=True)
+    wrapped_params = [p.detach().flatten().tolist() for p in ddp_net.parameters()]
+    del ddp_net
+
+    with open(os.path.join(tmp, f"rank{rank}.json"), "w", encoding="utf-8") as f:
+        json.dump({"local_params": local_params, "wrapped_params": wrapped_params}, f)
+
+    dist.barrier()
+    dist.destroy_process_group()
 
 
 def _shard_audit_worker(rank: int, world: int, port: int, tmp: str) -> None:
@@ -243,16 +323,19 @@ def _early_stop_worker(rank: int, world: int, port: int, tmp: str) -> None:
     set_random_seed(2023)
 
     # capture the local epoch metrics the base loop computes, then offset them
-    # per rank: without the all-reduce averaging, rank 0's best epoch would be
-    # epoch 1 and rank 1's epoch 2 (both would stop at different times with
-    # patience=1)
-    captured = []
+    # per rank BEFORE the averaging: without the all-reduce, the injected
+    # offsets alone would separate the ranks' best-epoch decisions (with
+    # patience=1 they could even stop at different epochs, hanging the job)
+    local_metrics = []
+    synced_metrics = []
     original_sync = SAITS._sync_epoch_loss_if_ddp if hasattr(SAITS, "_sync_epoch_loss_if_ddp") else None
     assert original_sync is not None, "BaseNNModel must expose _sync_epoch_loss_if_ddp"
 
     def spy_sync(self, mean_loss):
-        captured.append(mean_loss)
-        result = original_sync(self, mean_loss)
+        offset_loss = mean_loss + 2.0 * rank
+        local_metrics.append(offset_loss)
+        result = original_sync(self, offset_loss)
+        synced_metrics.append(result)
         return result
 
     SAITS._sync_epoch_loss_if_ddp = spy_sync
@@ -281,7 +364,12 @@ def _early_stop_worker(rank: int, world: int, port: int, tmp: str) -> None:
 
     with open(os.path.join(tmp, f"rank{rank}.json"), "w", encoding="utf-8") as f:
         json.dump(
-            {"best_epoch": model.best_epoch, "epochs_ran": len(captured), "local_metrics": captured},
+            {
+                "best_epoch": model.best_epoch,
+                "epochs_ran": len(synced_metrics),
+                "local_metrics": local_metrics,
+                "synced_metrics": synced_metrics,
+            },
             f,
         )
 
@@ -329,9 +417,11 @@ class TestDistributedMultiProcessCpu(unittest.TestCase):
 
     def test_2_early_stopping_is_synchronized(self):
         """With patience set, the stop decision must be identical on every rank
-        even when their shard-local metrics would disagree: the epoch metric is
-        averaged across ranks inside _train_model, so no rank exits the loop
-        while others still expect its collectives (this used to hang).
+        even when their shard-local metrics genuinely disagree: rank-dependent
+        offsets are injected before the averaging, the local metrics must
+        actually diverge, and the all-reduced metric must then drive identical
+        stop decisions — no rank exits the loop while others still expect its
+        collectives (this used to hang).
         """
         with socket.socket() as s:
             s.bind(("127.0.0.1", 0))
@@ -342,8 +432,43 @@ class TestDistributedMultiProcessCpu(unittest.TestCase):
             for rank in range(2):
                 with open(os.path.join(tmp, f"rank{rank}.json"), encoding="utf-8") as f:
                     decisions[rank] = json.load(f)
+            # the injected rank offsets must make the *local* metrics differ
+            for epoch in range(min(len(decisions[0]["local_metrics"]), len(decisions[1]["local_metrics"]))):
+                assert decisions[0]["local_metrics"][epoch] != decisions[1]["local_metrics"][epoch], (
+                    f"injected offsets failed to diverge at epoch {epoch}: the test would validate nothing"
+                )
+            # ...while the all-reduced metric stays identical on every rank
+            assert decisions[0]["synced_metrics"] == decisions[1]["synced_metrics"], (
+                "all-reduced epoch metrics diverged across ranks"
+            )
             assert decisions[0]["best_epoch"] == decisions[1]["best_epoch"], "best_epoch diverged across ranks"
             assert decisions[0]["epochs_ran"] == decisions[1]["epochs_ran"], "rank exited the loop at a different epoch"
+
+    def test_3_different_seeds_start_identical(self):
+        """Two ranks initialized with deliberately different seeds must hold
+        identical parameters immediately after DDP wrapping: on CPU/gloo
+        wrap_model_ddp retains DDP's own init sync (the pre-broadcast is
+        accelerator-only), and that sync broadcasts parameters AND buffers
+        from rank 0 — the exact gap the second review flagged.
+        """
+        with socket.socket() as s:
+            s.bind(("127.0.0.1", 0))
+            port = s.getsockname()[1]
+        with tempfile.TemporaryDirectory() as tmp:
+            mp.spawn(_different_seeds_worker, args=(2, port, tmp), nprocs=2, join=True)
+            states = {}
+            for rank in range(2):
+                with open(os.path.join(tmp, f"rank{rank}.json"), encoding="utf-8") as f:
+                    states[rank] = json.load(f)
+            # sanity: the local (pre-wrap) weights must genuinely differ —
+            # otherwise this test would validate nothing
+            assert states[0]["local_params"] != states[1]["local_params"], (
+                "per-rank seeds failed to produce different initial weights"
+            )
+            # the wrapped parameters must be identical on both ranks
+            assert states[0]["wrapped_params"] == states[1]["wrapped_params"], (
+                "DDP init did not synchronize differently-seeded parameters across ranks"
+            )
 
 
 # NPU-specific tests below: they exercise the real torch_npu path and are skipped
@@ -368,3 +493,43 @@ class TestNpuDistributed(unittest.TestCase):
         # without a process group, the model's own device comes back unchanged
         dev = torch.device("npu:0") if torch.npu.is_available() else torch.device("npu")
         assert rank_local_device(dev) == dev
+
+    def test_2_hccl_epoch_metric_sync(self):
+        """Actual HCCL epoch-metric synchronization, as run_ddp_fit performs
+        per training epoch: two torchrun-launched ranks all-reduce their
+        rank-local float through all_reduce_mean on real HCCL and must agree
+        on the mean — validating the reduction device (rank-local NPU, not
+        CPU) and dtype (float32) choices the backend dictates.
+        """
+        worker = (
+            "import json, os\n"
+            "from pypots.utils.distributed import init_distributed, all_reduce_mean, ddp_rank\n"
+            "assert init_distributed(device_type='npu')\n"
+            "local = 1.0 + ddp_rank()\n"
+            "mean = all_reduce_mean(local)\n"
+            "assert abs(mean - 1.5) < 1e-6, f'expected mean 1.5, got {mean}'\n"
+            "out_dir = os.environ['HCCL_SYNC_OUT']\n"
+            "with open(os.path.join(out_dir, f'result_rank{ddp_rank()}.json'), 'w', encoding='utf-8') as f:\n"
+            "    json.dump({'rank': ddp_rank(), 'local': local, 'mean': mean}, f)\n"
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            script = os.path.join(tmp, "hccl_sync_worker.py")
+            with open(script, "w", encoding="utf-8") as f:
+                f.write(worker)
+            env = dict(os.environ, HCCL_SYNC_OUT=tmp)
+            import subprocess
+
+            proc = subprocess.run(
+                [sys.executable, "-m", "torch.distributed.run", "--nproc_per_node=2", script],
+                env=env,
+                check=False,  # the returncode is asserted below with full stdout/stderr context
+                capture_output=True,
+                text=True,
+                timeout=300,
+            )
+            assert proc.returncode == 0, f"torchrun HCCL sync failed:\nstdout:\n{proc.stdout}\nstderr:\n{proc.stderr}"
+            for rank in range(2):
+                with open(os.path.join(tmp, f"result_rank{rank}.json"), encoding="utf-8") as f:
+                    result = json.load(f)
+                assert result["rank"] == rank
+                assert abs(result["mean"] - 1.5) < 1e-6, f"rank {rank} got mean {result['mean']}, expected 1.5"

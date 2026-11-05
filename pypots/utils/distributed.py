@@ -129,8 +129,10 @@ def rank_local_device(model_device: torch.device) -> torch.device:
     """
     if not ddp_is_initialized():
         return model_device
-    local_rank = int(os.environ.get("LOCAL_RANK", ddp_rank()))
-    return torch.device(f"{model_device.type}:{local_rank}")
+    local_rank = os.environ.get("LOCAL_RANK")
+    if local_rank is None:
+        local_rank = ddp_rank()
+    return torch.device(f"{model_device.type}:{int(local_rank)}")
 
 
 def _broadcast_module_states(module: torch.nn.Module, src: int = 0) -> None:
@@ -172,24 +174,36 @@ def wrap_model_ddp(
         verification across ranks, torch >= 2.2's ``init_sync``). That check
         uses the gather family of collectives, which silently corrupts data on
         some virtualized Ascend hosts (iBMA virtual NICs); pre_broadcast above
-        already guarantees identical initial states, so the verification is
-        redundant here. Parameter *structure* compatibility across ranks is
-        still the caller's responsibility (same model class/config on every
-        rank — which run_ddp_fit guarantees by construction).
+        already guarantees identical initial states there, so the verification
+        is redundant. Only honored on cuda/npu (where the pre-broadcast ran);
+        on CPU/gloo DDP's own init sync is always retained — it verifies
+        shapes AND broadcasts parameters/buffers from rank 0, which is what
+        makes differently-seeded ranks start identical. Parameter *structure*
+        compatibility across ranks is still the caller's responsibility (same
+        model class/config on every rank — which run_ddp_fit guarantees by
+        construction).
     """
-    if pre_broadcast and ddp_is_initialized() and device.type in ("cuda", "npu"):
+    on_accelerator = device.type in ("cuda", "npu")
+    if pre_broadcast and ddp_is_initialized() and on_accelerator:
         # only needed on gather-broken virtualized NPU hosts; on CPU/gloo the
         # plain broadcast of CPU tensors may lack a bound backend, and DDP's
-        # own verification works fine there anyway
+        # own init sync below covers the synchronization there
         _broadcast_module_states(module, src=0)
     kwargs = {"broadcast_buffers": False, "find_unused_parameters": find_unused_parameters}
     # torch >= 2.2: init_sync=False skips _verify_param_shape_across_processes
-    # (gather-based) and _sync_module_states at construction; parameters were
-    # pre-broadcast above instead. Older torch runs the check unconditionally
-    # and works fine on healthy backends, so just don't pass the kwarg there.
-    if skip_init_sync and "init_sync" in inspect.signature(DistributedDataParallel.__init__).parameters:
+    # (gather-based) and _sync_module_states at construction. On cuda/npu the
+    # states were pre-broadcast above, so the skipped sync is redundant. On
+    # CPU/gloo there is no pre-broadcast and the init sync MUST stay enabled —
+    # it is the only thing synchronizing initial parameters across ranks
+    # (covered by the different-seeds DDP test). Older torch has no
+    # init_sync parameter and always runs the full check.
+    if (
+        on_accelerator
+        and skip_init_sync
+        and "init_sync" in inspect.signature(DistributedDataParallel.__init__).parameters
+    ):
         kwargs["init_sync"] = False
-    if device.type in ("cuda", "npu"):
+    if on_accelerator:
         kwargs["device_ids"] = [device.index] if device.index is not None else None
     return DistributedDataParallel(module, **kwargs)
 
@@ -237,22 +251,34 @@ class _EpochShardedSampler(DistributedSampler):
         return super().__iter__()
 
 
+def _backend_reduce_device() -> torch.device:
+    """Device the active process-group backend can all-reduce a tensor on.
+
+    NCCL/HCCL collectives reject CPU tensors ("invalid device type" /
+    "No backend type associated with device type cpu"), so the reduction
+    tensor must live on this rank's accelerator; gloo reduces on CPU.
+    """
+    if not ddp_is_initialized():
+        return torch.device("cpu")
+    backend = dist.get_backend()
+    if backend == "nccl":
+        return rank_local_device(torch.device("cuda"))
+    if backend == "hccl":
+        return rank_local_device(torch.device("npu"))
+    return torch.device("cpu")
+
+
 def all_reduce_mean(value: float) -> float:
-    """All-reduce a python float across ranks and return the world mean."""
-    t = torch.tensor([float(value)], dtype=torch.float64)
+    """All-reduce a python float across ranks and return the world mean.
+
+    The reduction tensor is built on a device the active backend supports
+    (NCCL/HCCL need accelerator-resident tensors) and uses float32: HCCL on
+    Ascend 910B has no float64 reduction support, and float32 precision is
+    far beyond what an epoch-mean loss requires.
+    """
+    t = torch.tensor([float(value)], dtype=torch.float32, device=_backend_reduce_device())
     dist.all_reduce(t, op=dist.ReduceOp.SUM)
     return t.item() / ddp_world_size()
-
-
-def _sync_epoch_metric(samplers: list, metric_fn) -> float:
-    """Synchronize a per-epoch scalar metric across ranks.
-
-    metric_fn() is called after every rank's local samplers have advanced to
-    the same epoch, so the epoch counter itself is the rendezvous: ranks that
-    run more local epochs would desync here — but the loop terminates on the
-    synchronized decision below, keeping every rank in lockstep.
-    """
-    return all_reduce_mean(metric_fn())
 
 
 @contextlib.contextmanager
