@@ -99,17 +99,26 @@ class TestDistributedHelpers(unittest.TestCase):
 
         assert _backend_reduce_device() == torch.device("cpu")
 
-        for backend, expected in (
-            ("nccl", torch.device("cuda:0")),
-            ("hccl", torch.device("npu:0")),
-            ("gloo", torch.device("cpu")),
-        ):
+        cases = [("nccl", "cuda:0"), ("gloo", "cpu")]
+        # torch.device("npu:0") raises on builds without torch_npu (the "npu"
+        # type is registered by torch_npu), and hccl only ever becomes the
+        # active backend when torch_npu is importable — so pin that mapping
+        # only where it can actually occur
+        try:
+            import torch_npu  # noqa: F401
+
+            cases.append(("hccl", "npu:0"))
+        except ImportError:
+            pass
+        for backend, expected in cases:
             with contextlib.ExitStack() as stack:
                 stack.enter_context(mock.patch("pypots.utils.distributed.ddp_is_initialized", return_value=True))
                 stack.enter_context(mock.patch("pypots.utils.distributed.ddp_rank", return_value=0))
                 stack.enter_context(mock.patch("pypots.utils.distributed.dist.get_backend", return_value=backend))
                 stack.enter_context(mock.patch.dict(os.environ, {"LOCAL_RANK": "0"}))
-                assert _backend_reduce_device() == expected, f"backend {backend} must reduce on {expected}"
+                assert _backend_reduce_device() == torch.device(expected), (
+                    f"backend {backend} must reduce on {expected}"
+                )
 
     def test_3_all_reduce_mean_uses_backend_compatible_device_and_dtype(self):
         # the reduction tensor must carry the backend-compatible device and
