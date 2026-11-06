@@ -243,7 +243,15 @@ class _DeviceAdaptiveRNN(nn.Module):
         twin = unfused_cls(input_size, hidden_size, bidirectional=bidirectional, batch_first=batch_first)
         for name, param in twin.named_parameters():
             setattr(self, name, param)
+        # construct the fused backend WITHOUT consuming extra RNG draws: the
+        # twin already spent the draws this module's parameters are worth. An
+        # nn.GRU built here would shift the global RNG stream for every model
+        # constructed afterwards — the single-worker CI run shares one stream
+        # across all tests, so downstream models' initialization would move
+        rng_state = torch.get_rng_state()
+        torch.manual_seed(0)
         native = rnn_cls(input_size, hidden_size, bidirectional=bidirectional, batch_first=batch_first)
+        torch.set_rng_state(rng_state)
         # re-point the native module's parameters at the shared objects; nn.RNN's
         # __setattr__ keeps its internal _flat_weights list in sync for the
         # fused kernel path
