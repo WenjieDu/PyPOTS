@@ -485,9 +485,9 @@ class SSM_Decoder_V2(nn.Module):
         self.z_ctx_proj = nn.Linear(z_dim, d_model)
         self.mask_embedding = nn.Embedding(2, d_model)
         self.position_embedding = nn.Parameter(torch.randn(1, feature_dim, d_model))
-        self.feature_attention = nn.MultiheadAttention(
-            embed_dim=d_model, num_heads=n_heads, batch_first=True, dropout=dropout
-        )
+        # Sequence-first inputs keep the standard attention path during inference
+        # as well as training. The batch-first CUDA fast path can fail in DataParallel.
+        self.feature_attention = nn.MultiheadAttention(embed_dim=d_model, num_heads=n_heads, dropout=dropout)
         self.attn_norm = nn.LayerNorm(d_model)
         self.ffn = PositionWiseFeedForward(d_model, d_model * 2, dropout=dropout)
         self.ffn_norm = nn.LayerNorm(d_model)
@@ -508,9 +508,9 @@ class SSM_Decoder_V2(nn.Module):
         emb_mask = self.mask_embedding(m_flat.long())
         emb_pos = self.position_embedding.expand(B * T, -1, -1)
         context = emb_res + emb_mask + emb_pos + emb_z
-        context_norm = self.attn_norm(context)
+        context_norm = self.attn_norm(context).transpose(0, 1)
         context_h, _ = self.feature_attention(context_norm, context_norm, context_norm)
-        context = context + context_h
+        context = context + context_h.transpose(0, 1)
         context_norm = self.ffn_norm(context)
         context_ffn = self.ffn(context_norm)
         context = context + context_ffn

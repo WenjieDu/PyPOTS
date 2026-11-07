@@ -296,3 +296,6 @@ def test_data_parallel_training(monkeypatch, model_type, task_options):
     assert replica_counts == ([[2, 1], [1]] if isinstance(device, list) else [[3], [1]])
     assert model.best_epoch == 1
     assert model.best_loss == pytest.approx(np.mean(joint_losses))
+    result = model.predict({"X": data["X"]}, n_sampling_times=3)
+    key = "forecasting_samples" if task_options else "imputation_samples"
+    assert np.isfinite(result[key]).all()
