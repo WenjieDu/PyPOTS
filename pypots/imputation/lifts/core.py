@@ -2,6 +2,7 @@
 
 from ...nn.modules import ModelCore
 from ...nn.modules.lifts import BackboneLIFTS
+from ...nn.modules.lifts.training import reference_batch_losses
 
 
 class _LIFTS(ModelCore):
@@ -43,15 +44,7 @@ class _LIFTS(ModelCore):
             raise ValueError("n_sampling_times must be a positive integer.")
         X, mask = inputs["X"], inputs["missing_mask"]
         if self.training and calc_criterion:
-            loss, forecast_loss, self_mask_loss = self.backbone.joint_loss(
-                X,
-                mask,
-                self.self_mask_rate,
-                self.self_mask_weight,
-                self.mask_weight,
-                self.n_sampling_times_train,
-            )
-            return {"loss": loss, "forecast_loss": forecast_loss, "self_mask_loss": self_mask_loss}
+            return reference_batch_losses(self, inputs)
         if in_sample_forecasting:
             samples = self.backbone.forecast_in_sample(X, mask, n_sampling_times)
             return {"forecasting": samples.mean(dim=1), "forecasting_samples": samples}

@@ -80,7 +80,10 @@ def initialize_lifts(estimator, base_init, core_type, options):
     estimator.optimizer = optimizer if isinstance(optimizer, Optimizer) else optimizer()
     if not isinstance(estimator.optimizer, Optimizer):
         raise TypeError("optimizer must be a PyPOTS Optimizer or Optimizer class.")
-    estimator.optimizer.init_optimizer(reference_parameter_order(estimator.model.backbone))
+    core = estimator.model
+    if isinstance(core, torch.nn.DataParallel):
+        core = core.module
+    estimator.optimizer.init_optimizer(reference_parameter_order(core.backbone))
 
 
 class LIFTSInitializationMixin:

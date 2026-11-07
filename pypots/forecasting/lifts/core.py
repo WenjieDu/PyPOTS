@@ -3,6 +3,7 @@
 
 from ...nn.modules import ModelCore
 from ...nn.modules.lifts import BackboneLIFTS
+from ...nn.modules.lifts.training import reference_batch_losses
 
 
 class _LIFTS(ModelCore):
@@ -48,15 +49,7 @@ class _LIFTS(ModelCore):
         if self.training and calc_criterion:
             # The standalone objective trains on the observed history only.
             # Future targets must not change its training sequence or RNG flow.
-            loss, forecast_loss, self_mask_loss = self.backbone.joint_loss(
-                X,
-                mask,
-                self.self_mask_rate,
-                self.self_mask_weight,
-                self.mask_weight,
-                self.n_sampling_times_train,
-            )
-            return {"loss": loss, "forecast_loss": forecast_loss, "self_mask_loss": self_mask_loss}
+            return reference_batch_losses(self, inputs)
         samples = self.backbone.forecast(X, mask, self.n_pred_steps, n_sampling_times)
         results = {"forecasting": samples.mean(dim=1), "forecasting_samples": samples}
         if calc_criterion:

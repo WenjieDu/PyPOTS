@@ -5,6 +5,8 @@ import numpy as np
 import pytest
 import torch
 
+from pypots.base import BaseModel
+from pypots.forecasting import LIFTS as LIFTSForecaster
 from pypots.imputation import LIFTS
 from pypots.nn.modules.lifts import BackboneLIFTS
 
@@ -236,3 +238,61 @@ def test_requested_defaults(features, latent):
     )
     assert model.d_latent == latent
     assert model.batch_size == 64
+
+
+@pytest.mark.parametrize(
+    ("model_type", "task_options"),
+    [(LIFTS, {}), (LIFTSForecaster, {"n_pred_steps": 2})],
+    ids=["imputation", "forecasting"],
+)
+def test_data_parallel_training(monkeypatch, model_type, task_options):
+    if torch.cuda.device_count() >= 2:
+        device = ["cuda:0", "cuda:1"]
+    else:
+        device = "cuda:0" if torch.cuda.is_available() else "cpu"
+        send_model = BaseModel._send_model_to_given_device
+
+        def wrap_model(estimator):
+            send_model(estimator)
+            estimator.model = torch.nn.DataParallel(estimator.model)
+
+        # Exercise the actual wrapper even on CPU-only CI runners.
+        monkeypatch.setattr(BaseModel, "_send_model_to_given_device", wrap_model)
+
+    model = model_type(
+        n_steps=4,
+        n_features=3,
+        d_model=8,
+        n_heads=2,
+        d_ffn=16,
+        n_layers=1,
+        n_inner_layers=1,
+        epochs=1,
+        batch_size=3,
+        device=device,
+        verbose=False,
+        **task_options,
+    )
+    assert isinstance(model.model, torch.nn.DataParallel)
+    optimized = model.optimizer.torch_optimizer.param_groups[0]["params"]
+    assert {id(parameter) for parameter in optimized} == {
+        id(parameter) for parameter in model.model.module.backbone.parameters()
+    }
+
+    data = {"X": make_data()["X"][:4]}
+    if task_options:
+        data["X_pred"] = np.zeros((4, 2, 3), dtype=np.float32)
+    replica_counts = []
+    joint_losses = []
+
+    def record_losses(_model, _args, output):
+        counts = output["batch_size"].tolist()
+        replica_counts.append(counts)
+        joint_losses.append(np.average(output["loss"].detach().cpu().numpy(), weights=counts))
+
+    with model.model.register_forward_hook(record_losses):
+        model.fit(data)
+    # The full batch splits unevenly across two GPUs. The tail uses one replica.
+    assert replica_counts == ([[2, 1], [1]] if isinstance(device, list) else [[3], [1]])
+    assert model.best_epoch == 1
+    assert model.best_loss == pytest.approx(np.mean(joint_losses))

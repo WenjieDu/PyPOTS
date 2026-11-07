@@ -76,7 +76,17 @@ class BackboneLIFTS(nn.Module):
             states.append(self.backward_transition_q(filtered[:, t], states[-1]))
         return torch.stack(states[::-1], dim=1)
 
-    def joint_loss(self, X, mask, self_mask_rate, self_mask_weight, mask_weight, n_sampling_times):
+    def joint_loss(
+        self,
+        X,
+        mask,
+        self_mask_rate,
+        self_mask_weight,
+        mask_weight,
+        n_sampling_times,
+        self_mask_keep=None,
+        has_self_mask_targets=None,
+    ):
         """Joint one-step forecast and self-masked imputation energy objective.
 
         This implements the default joint-training path (lambda_enc=0 and
@@ -114,11 +124,13 @@ class BackboneLIFTS(nn.Module):
         # The reference self-masking branch uses the original batch, not the
         # Monte Carlo expansion used above for the forecast energy objective.
         X, mask = original_X, original_mask
-        keep = (torch.rand_like(mask) > self_mask_rate).to(mask.dtype)
+        keep = (torch.rand_like(mask) > self_mask_rate).to(mask.dtype) if self_mask_keep is None else self_mask_keep
         input_mask = mask * keep
         input_X = X * input_mask
         self_mask_loss = X.new_zeros(())
-        if self_mask_weight > 0 and (mask * (1 - keep)).any():
+        if self_mask_weight > 0 and (
+            (mask * (1 - keep)).any() if has_self_mask_targets is None else has_self_mask_targets
+        ):
             filtered = self.encoder_h(input_X, input_mask)
             smooth1, smooth2 = self.smooth(filtered), self.smooth(filtered)
             sample1 = self.decoder_u(smooth1, input_X, input_mask)

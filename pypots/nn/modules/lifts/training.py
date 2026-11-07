@@ -8,6 +8,7 @@ MIT license, see LICENSE. Validation never chooses the checkpoint here.
 from copy import deepcopy
 
 import numpy as np
+import torch
 
 from ....utils.logging import logger
 
@@ -29,6 +30,27 @@ def reference_parameter_order(backbone):
     ]
 
 
+def reference_batch_losses(core, inputs):
+    """Compute the joint objective, with one result per replica for DataParallel."""
+    X, mask = inputs["X"], inputs["missing_mask"]
+    keep = inputs.get("self_mask_keep")
+    loss, forecast_loss, self_mask_loss = core.backbone.joint_loss(
+        X,
+        mask,
+        core.self_mask_rate,
+        core.self_mask_weight,
+        core.mask_weight,
+        core.n_sampling_times_train,
+        self_mask_keep=keep,
+        has_self_mask_targets=inputs.get("has_self_mask_targets"),
+    )
+    losses = {"loss": loss, "forecast_loss": forecast_loss, "self_mask_loss": self_mask_loss}
+    if keep is not None:
+        losses = {name: value.unsqueeze(0) for name, value in losses.items()}
+        losses["batch_size"] = X.new_full((1,), X.shape[0], dtype=torch.long)
+    return losses
+
+
 class ReferenceTrainingMixin:
     """Keep PyPOTS data/API contracts and the original LIFTS training policy."""
 
@@ -45,13 +67,25 @@ class ReferenceTrainingMixin:
         self.best_epoch = -1
         self.training_history_ = []
         step = 0
+        data_parallel = isinstance(self.model, torch.nn.DataParallel)
         for epoch in range(self.epochs):
             self.model.train()
             totals, forecasts, imputations = [], [], []
             for data in train_dataloader:
                 inputs = self._assemble_input_for_training(data)
+                if data_parallel:
+                    # The reference enables self-masking for the entire batch if
+                    # any observed entry was held out, even across replicas.
+                    mask = inputs["missing_mask"].transpose(1, 2).contiguous().transpose(1, 2)
+                    keep = (torch.rand_like(mask) > self.self_mask_rate).to(mask.dtype)
+                    inputs["self_mask_keep"] = keep
+                    inputs["has_self_mask_targets"] = bool((mask * (1 - keep)).any())
                 self.optimizer.zero_grad()
                 results = self.model(inputs, calc_criterion=True)
+                if data_parallel:
+                    counts = results.pop("batch_size")
+                    weights = counts / counts.sum()
+                    results = {name: (value * weights).sum() for name, value in results.items()}
                 loss = results["loss"]
                 loss.backward()
                 self.optimizer.step()
