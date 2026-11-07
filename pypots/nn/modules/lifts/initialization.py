@@ -10,6 +10,13 @@ from ..loss import MSE, Criterion
 from .training import reference_parameter_order
 
 
+class _LIFTSDataParallel(torch.nn.DataParallel):
+    def forward(self, inputs, **kwargs):
+        # Scatter the batch and options together. Separate positional inputs
+        # and keyword options can create an empty replica on a short batch.
+        return super().forward(inputs=inputs, **kwargs)
+
+
 def initialize_lifts(estimator, base_init, core_type, options):
     """Initialize either task without duplicating model/optimizer configuration.
 
@@ -88,6 +95,11 @@ def initialize_lifts(estimator, base_init, core_type, options):
 
 class LIFTSInitializationMixin:
     """Common public configuration for LIFTS task estimators."""
+
+    def _send_model_to_given_device(self):
+        super()._send_model_to_given_device()
+        if isinstance(self.model, torch.nn.DataParallel):
+            self.model = _LIFTSDataParallel(self.model.module, device_ids=self.model.device_ids)
 
     def __init__(
         self,
