@@ -1,7 +1,8 @@
-"""Default LIFTS architecture and joint objective from the official implementation.
+"""Default LIFTS architecture and joint objective from the official implementation."""
 
-Copyright (c) 2026 LIFTS contributors. MIT license; see LICENSE.
-"""
+# Copyright (c) 2026 LIFTS contributors
+# Created by Sanyou Wu <sw4180@cumc.columbia.edu>
+# License: BSD-3-Clause
 
 import torch
 from torch import nn

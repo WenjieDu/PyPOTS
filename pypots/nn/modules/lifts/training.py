@@ -1,9 +1,20 @@
-"""Standalone LIFTS joint-training and checkpoint policy (lambda_enc=0).
+"""Reference LIFTS joint-training and checkpoint policy (lambda_enc=0).
 
-Ported from the official FBIImputer.fit default joint-training path at
-dd03fd1ae1cf426251dc434c4dd3ba323f2e1d40. Copyright LIFTS contributors;
-MIT license, see LICENSE. Validation never chooses the checkpoint here.
+This port follows the default joint-training path of LIFTSImputer.fit at
+revision dd03fd1ae1cf426251dc434c4dd3ba323f2e1d40. The public fit method
+delegates to the underlying FBIImputer.fit implementation.
+
+Public entry point:
+https://github.com/sanyouwu/lifts-open-source/blob/dd03fd1ae1cf426251dc434c4dd3ba323f2e1d40/src/lifts/api.py#L293-L301
+Underlying training loop:
+https://github.com/sanyouwu/lifts-open-source/blob/dd03fd1ae1cf426251dc434c4dd3ba323f2e1d40/src/baselines/fbi_wrapper.py#L343
+
+Checkpoint selection uses the training joint loss.
 """
+
+# Copyright (c) 2026 LIFTS contributors
+# Created by Sanyou Wu <sw4180@cumc.columbia.edu>
+# License: BSD-3-Clause
 
 from copy import deepcopy
 

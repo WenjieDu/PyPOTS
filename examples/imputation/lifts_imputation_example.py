@@ -1,5 +1,8 @@
 """Small, offline LIFTS imputation example; inputs are already standardized."""
 
+# Created by Sanyou Wu <sw4180@cumc.columbia.edu>
+# License: BSD-3-Clause
+
 import numpy as np
 
 from pypots.imputation import LIFTS

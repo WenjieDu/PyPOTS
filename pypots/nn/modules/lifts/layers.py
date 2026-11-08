@@ -2,9 +2,15 @@
 
 Source: https://github.com/sanyouwu/lifts-open-source
 Reference revision: dd03fd1ae1cf426251dc434c4dd3ba323f2e1d40
-Copyright (c) 2026 LIFTS contributors. MIT license; see LICENSE in this directory.
-Attention components also retain the SAITS MIT notice in LICENSE.
+
+For related attention-based imputation, see Du, Cote, and Liu (2023),
+SAITS: Self-Attention-based Imputation for Time Series.
+https://doi.org/10.1016/j.eswa.2023.119619
 """
+
+# Copyright (c) 2026 LIFTS contributors
+# Created by Sanyou Wu <sw4180@cumc.columbia.edu>
+# License: BSD-3-Clause
 
 import math
 

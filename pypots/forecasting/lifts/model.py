@@ -1,5 +1,8 @@
 """LIFTS for partially observed time-series forecasting."""
 
+# Created by Sanyou Wu <sw4180@cumc.columbia.edu>
+# License: BSD-3-Clause
+
 from __future__ import annotations
 
 from torch.utils.data import DataLoader

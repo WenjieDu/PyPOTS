@@ -1,5 +1,8 @@
 """LIFTS imputation core."""
 
+# Created by Sanyou Wu <sw4180@cumc.columbia.edu>
+# License: BSD-3-Clause
+
 from ...nn.modules import ModelCore
 from ...nn.modules.lifts import BackboneLIFTS
 from ...nn.modules.lifts.training import reference_batch_losses

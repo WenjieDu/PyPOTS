@@ -1,5 +1,8 @@
 """Shared setup for the two LIFTS task APIs; no training or sampling policy."""
 
+# Created by Sanyou Wu <sw4180@cumc.columbia.edu>
+# License: BSD-3-Clause
+
 from __future__ import annotations
 
 import torch

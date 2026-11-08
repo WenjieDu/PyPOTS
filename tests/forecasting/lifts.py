@@ -1,5 +1,8 @@
 """Contract and future-data isolation tests for LIFTS forecasting."""
 
+# Created by Sanyou Wu <sw4180@cumc.columbia.edu>
+# License: BSD-3-Clause
+
 import h5py
 import numpy as np
 import pytest
