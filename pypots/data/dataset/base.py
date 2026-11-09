@@ -204,12 +204,23 @@ class BaseDataset(Dataset):
             if self.file_handle is None:
                 self.file_handle = self._open_file_handle()
             n_samples = len(self.file_handle["X"])
+            if n_samples == 0:
+                self.file_handle.close()
+                raise ValueError("X must contain at least one sample.")
             first_sample = self.file_handle["X"][0]
             n_steps = len(first_sample)
             n_features = first_sample.shape[-1]
 
             if self.return_X_pred:
-                first_pred_sample = self.file_handle["X_pred"][0]
+                X_pred = self.file_handle["X_pred"]
+                n_pred_samples = len(X_pred)
+                if n_pred_samples != n_samples:
+                    self.file_handle.close()
+                    raise ValueError(
+                        "X and X_pred must have the same number of samples, "
+                        f"but got X: {n_samples}, X_pred: {n_pred_samples}."
+                    )
+                first_pred_sample = X_pred[0]
                 n_pred_steps = len(first_pred_sample)
                 n_pred_features = first_pred_sample.shape[-1]
         else:
@@ -286,6 +297,8 @@ class BaseDataset(Dataset):
         assert len(X_shape) == 3, (
             f"input should have 3 dimensions [n_samples, seq_len, n_features],but got X: {X_shape}"
         )
+        if X_shape[0] == 0:
+            raise ValueError("X must contain at least one sample.")
         if X_ori is not None:
             X_ori = turn_data_into_specified_dtype(X_ori, out_dtype)
             X_ori = X_ori.to(torch.float32) if out_dtype == "tensor" else X_ori
