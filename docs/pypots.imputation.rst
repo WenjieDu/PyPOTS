@@ -1,6 +1,38 @@
 pypots.imputation
 =========================
 
+pypots.imputation.lifts
+------------------------------------
+
+LIFTS trains imputation and in-sample one-step forecasting jointly. Inputs use
+``[samples, steps, features]``, with NaN for missing entries, and must be
+standardized using training-set statistics. ``predict()`` returns imputation
+means and samples; ``forecast_in_sample()`` reuses the same fitted weights and
+returns predictions at the input time positions, conditioning only on earlier
+observations (the first position uses the learned initial distribution).
+
+Both prediction methods generate 100 samples by default. The default batch
+size is 64. If ``d_latent`` is omitted, it is ``n_features`` up to 50 features
+and ``max(50, n_features // 2)`` above that threshold.
+
+The supported reference training path has ``lambda_enc=0`` and runs all epochs.
+It selects the minimum mean training joint loss from zero-based epoch
+``epochs // 4`` onward: epochs 26 through 100 when training for 100 epochs.
+Validation data do not select checkpoints or trigger early stopping.
+
+Two boundary corrections are intentional differences from the pinned reference:
+the filter always embeds the observation-mask channel, avoiding a branch on
+batch-wide completeness; a one-dimensional latent transition bypasses its final
+LayerNorm so it retains history dependence. Neither boundary occurs in the
+partially observed, five-dimensional Case 1 reference comparison.
+
+.. automodule:: pypots.imputation.lifts
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+
+
 pypots.imputation.saits
 ------------------------------
 
