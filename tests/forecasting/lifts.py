@@ -92,6 +92,20 @@ def test_invalid_target_shape_and_sampling():
         LIFTS(n_steps=4, n_features=3, n_pred_steps=0)
 
 
+@pytest.mark.parametrize("n_targets", [0, 2, 6])
+def test_fit_rejects_mismatched_hdf5_sample_counts(tmp_path, monkeypatch, n_targets):
+    model = make_model()
+    monkeypatch.setattr(model, "_train_model", lambda *args: pytest.fail("Training started with mismatched counts"))
+    path = str(tmp_path / "mismatched.h5")
+    with h5py.File(path, "w") as handle:
+        handle["X"] = make_data()["X"]
+        handle["X_pred"] = np.zeros((n_targets, 2, 3), dtype=np.float32)
+
+    message = rf"X and X_pred must have the same number of samples.*X: 5, X_pred: {n_targets}"
+    with pytest.raises(ValueError, match=message):
+        model.fit(path)
+
+
 def test_reference_training_does_not_use_future_targets():
     data = make_data()
     torch.manual_seed(41)

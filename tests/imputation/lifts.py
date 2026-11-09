@@ -128,6 +128,21 @@ def test_invalid_input_and_sampling():
         model.fit(make_data(), {"X": make_data()["X"]})
 
 
+@pytest.mark.parametrize("file_input", [False, True], ids=["dict", "hdf5"])
+def test_fit_rejects_empty_X(tmp_path, monkeypatch, file_input):
+    model = make_model()
+    monkeypatch.setattr(model, "_train_model", lambda *args: pytest.fail("Training started with empty X"))
+    X = np.empty((0, 4, 3), dtype=np.float32)
+    train_set = {"X": X}
+    if file_input:
+        train_set = str(tmp_path / "empty.h5")
+        with h5py.File(train_set, "w") as handle:
+            handle["X"] = X
+
+    with pytest.raises(ValueError, match="X must contain at least one sample"):
+        model.fit(train_set)
+
+
 def test_reference_checkpoint_policy_and_validation_rng_isolation():
     options = {
         "n_steps": 4,
