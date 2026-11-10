@@ -103,19 +103,23 @@ FORECASTING_TEST_SET = {
 }
 
 # set DEVICES to None if no cuda device is available, to avoid initialization failed while importing test classes
+# the probe covers Ascend NPUs as well: with torch_npu installed and a visible device, tests run on NPU
 n_cuda_devices = torch.cuda.device_count()
 cuda_devices = [torch.device(i) for i in range(n_cuda_devices)]
 if n_cuda_devices > 1:
     DEVICE = np.asarray(cuda_devices)[np.random.randint(n_cuda_devices, size=1)].tolist()
     logger.info(f"❗️Detected multiple cuda devices, using {DEVICE} to run testing.")
 else:
-    # if having no multiple cuda devices, leave it as None to use the default device
+    # if having no multiple cuda devices, leave it as None so models probe the device themselves
+    # (cuda first, then npu, and cpu as the fallback — see pypots.utils.devices)
     DEVICE = None
 
 # DEVICE = ["cuda:1"]
 # DEVICE = ["cuda:1", "cuda:2"]
 # DEVICE = "cpu"
 # DEVICE = "mps"
+# DEVICE = "npu"
+# DEVICE = "npu:0"
 
 
 def check_tb_and_model_checkpoints_existence(model):

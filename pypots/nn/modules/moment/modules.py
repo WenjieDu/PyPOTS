@@ -64,8 +64,47 @@ def get_anomaly_criterion(anomaly_criterion: str = "mse"):
 def get_huggingface_model_dimensions(model_name: str = "flan-t5-base"):
     from transformers import T5Config
 
-    config = T5Config.from_pretrained(model_name)
+    from ....utils.hf_offline import resolve_hf_repo_id
+
+    config = T5Config.from_pretrained(resolve_hf_repo_id(model_name))
     return config.d_model
+
+
+def _npu_runtime_available() -> bool:
+    """Whether torch_npu is importable and an NPU is visible on this host.
+
+    Only says the host HAS an NPU — whether the gather emulation is used for a
+    given call is decided from the input tensor's device, not from this probe.
+    """
+    try:
+        import torch_npu
+
+        return torch_npu.npu.is_available()
+    except ImportError:
+        return False
+
+
+def unfold_last_dim(x: torch.Tensor, patch_size: int, stride: int) -> torch.Tensor:
+    """Equivalent of x.unfold(-1, size=patch_size, step=stride), NPU-safe.
+
+    The backend is chosen per call from the input tensor's device: CUDA/CPU
+    tensors keep the native unfold (fused, faster backward) even on an
+    NPU-equipped host; NPU tensors take a gather-based emulation that avoids
+    the missing aclnnUnfoldGrad kernel. Output shape matches: [..., n_patches, patch_size].
+    """
+    if not (x.device.type == "npu" and _npu_runtime_available()):
+        return x.unfold(dimension=-1, size=patch_size, step=stride)
+
+    seq_len = x.shape[-1]
+    n_patches = (seq_len - patch_size) // stride + 1
+    # window source indices: [n_patches, patch_size] flattened
+    windows = (
+        torch.arange(n_patches, device=x.device).unsqueeze(-1) * stride
+        + torch.arange(patch_size, device=x.device).unsqueeze(0)
+    ).reshape(-1)
+    gather_idx = windows.expand(*x.shape[:-1], windows.shape[0])
+    out = x.gather(dim=-1, index=gather_idx)
+    return out.reshape(x.shape[:-1] + (n_patches, patch_size))
 
 
 def nanvar(tensor, dim=None, keepdim=False):
@@ -92,7 +131,7 @@ class Patching(nn.Module):
             )
 
     def forward(self, x):
-        x = x.unfold(dimension=-1, size=self.patch_size, step=self.patch_stride)
+        x = unfold_last_dim(x, self.patch_size, self.patch_stride)
         # x : [batch_size x n_channels x num_patch x patch_size]
         return x
 

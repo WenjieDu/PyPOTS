@@ -47,6 +47,21 @@ def info():
         # MPS (Apple Silicon) support
         has_mps = hasattr(torch.backends, "mps") and torch.backends.mps.is_available()
         print(f"{'MPS available:':<30} {has_mps}")
+
+        # Ascend NPU support
+        try:
+            import torch_npu
+
+            npu_available = torch_npu.npu.is_available()
+            print(f"{'NPU available:':<30} {npu_available}")
+            if npu_available:
+                print(f"{'torch_npu version:':<30} {torch_npu.__version__}")
+                npu_count = torch_npu.npu.device_count()
+                print(f"{'NPU count:':<30} {npu_count}")
+                for i in range(npu_count):
+                    print(f"{'  NPU ' + str(i) + ':':<30} {torch_npu.npu.get_device_name(i)}")
+        except ImportError:
+            print(f"{'NPU available:':<30} False (torch_npu not installed)")
     except ImportError:
         print("\nPyTorch:                       NOT INSTALLED")
 

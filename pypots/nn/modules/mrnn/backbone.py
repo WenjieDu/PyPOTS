@@ -8,6 +8,7 @@ from typing import Tuple
 import torch
 import torch.nn as nn
 
+from ..rnn_fallback import gru as device_adaptive_gru
 from .layers import MrnnFcnRegression
 
 
@@ -19,8 +20,9 @@ class BackboneMRNN(nn.Module):
         self.n_features = n_features
         self.rnn_hidden_size = rnn_hidden_size
 
-        self.f_rnn = nn.GRU(3, self.rnn_hidden_size, batch_first=True)
-        self.b_rnn = nn.GRU(3, self.rnn_hidden_size, batch_first=True)
+        # fused nn.GRU on CUDA/CPU; unfused GRUCell step-loops on Ascend NPU (fp32-safe there)
+        self.f_rnn = device_adaptive_gru(3, self.rnn_hidden_size, batch_first=True)
+        self.b_rnn = device_adaptive_gru(3, self.rnn_hidden_size, batch_first=True)
         self.concated_hidden_project = nn.Linear(self.rnn_hidden_size * 2, 1)
         self.fcn_regression = MrnnFcnRegression(n_features)
 

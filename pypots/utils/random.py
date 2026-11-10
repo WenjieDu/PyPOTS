@@ -29,7 +29,15 @@ def set_random_seed(random_seed: int = RANDOM_SEED) -> None:
     random.seed(random_seed)
     np.random.seed(random_seed)
     torch.manual_seed(random_seed)
-    torch.cuda.manual_seed_all(random_seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed_all(random_seed)
+    try:
+        import torch_npu
+
+        if torch_npu.npu.is_available():
+            torch_npu.npu.manual_seed_all(random_seed)
+    except ImportError:
+        pass
     # torch.backends.cudnn.deterministic = True  # This will slow down the training process.
     logger.info(f"Have set the random seed as {random_seed} for numpy and pytorch.")
 

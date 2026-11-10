@@ -47,7 +47,10 @@ def env(install, tool):
     else:  # tool == "pip"
         torch_version = torch.__version__
 
-        if not (torch.cuda.is_available() and torch.cuda.device_count() > 0):
+        # only append the +cpu local tag when neither CUDA nor NPU is available
+        from ..utils.devices import cuda_is_available, npu_is_available
+
+        if not (cuda_is_available() or npu_is_available()):
             if "cpu" not in torch_version:
                 torch_version = torch_version + "+cpu"
 

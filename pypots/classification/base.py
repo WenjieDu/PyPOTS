@@ -453,7 +453,7 @@ class BaseNNClassifier(BaseNNModel):
         dict_result_collector = []
         for idx, data in enumerate(test_dataloader):
             inputs = self._assemble_input_for_testing(data)
-            with autocast(enabled=self.amp_enabled):
+            with autocast(self._autocast_device_type, enabled=self.amp_enabled):
                 results = self.model(inputs, **kwargs)
             dict_result_collector.append(results)
 
