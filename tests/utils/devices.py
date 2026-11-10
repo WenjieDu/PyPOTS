@@ -109,6 +109,48 @@ class TestDeviceHelpers(unittest.TestCase):
         out_none, _ = unfused(x)  # h0=None must not raise
         assert out_none.shape == (3, 7, 24)
 
+    def test_7_rnn_constructor_is_cpu_rng_neutral(self):
+        """gru()/lstm() construction must consume exactly one module's worth
+        of CPU RNG draws (same as plain nn.GRU/nn.LSTM) — the dispatcher
+        builds two backends, and the extra draws would shift the shared RNG
+        stream of every later model (this broke the single-worker CI run).
+        fork_rng isolation must also leave the CPU state bit-identical.
+        """
+        from pypots.nn.modules.rnn_fallback import gru, lstm
+
+        for reference_cls, factory in ((torch.nn.GRU, gru), (torch.nn.LSTM, lstm)):
+            torch.manual_seed(1234)
+            reference_cls(8, 16, bidirectional=True, batch_first=True)
+            expected = torch.rand(4)
+            torch.manual_seed(1234)
+            factory(8, 16, bidirectional=True, batch_first=True)
+            actual = torch.rand(4)
+            assert torch.equal(expected, actual), (
+                f"{factory.__name__} construction must draw exactly as much CPU RNG as {reference_cls.__name__}"
+            )
+
+    def test_8_rnn_constructor_does_not_reseed_accelerator_generators(self):
+        """The dispatcher's temporary native construction must not seed any
+        non-CPU generator: torch.manual_seed would reset CUDA/NPU RNG to a
+        fixed state even when the CPU state is restored afterwards. CPU-only
+        CI covers this by watching a mocked device generator; on a real NPU
+        host the actual generator state is checked directly.
+        """
+        from pypots.nn.modules.rnn_fallback import gru
+
+        if NPU_AVAILABLE:
+            state_before = torch.npu.get_rng_state()
+            gru(8, 16, bidirectional=True, batch_first=True)
+            assert torch.equal(state_before, torch.npu.get_rng_state()), "NPU RNG state must be untouched"
+        else:
+            # no accelerator present: pin the guard by faking a device
+            # generator and asserting torch.manual_seed never runs on it
+            from unittest import mock
+
+            with mock.patch("torch.manual_seed") as mocked_seed:
+                gru(8, 16, bidirectional=True, batch_first=True)
+            mocked_seed.assert_not_called()
+
     def test_4_contains_full_sequence_rnn(self):
         class WithFused(torch.nn.Module):
             def __init__(self):

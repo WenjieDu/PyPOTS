@@ -247,11 +247,12 @@ class _DeviceAdaptiveRNN(nn.Module):
         # twin already spent the draws this module's parameters are worth. An
         # nn.GRU built here would shift the global RNG stream for every model
         # constructed afterwards — the single-worker CI run shares one stream
-        # across all tests, so downstream models' initialization would move
-        rng_state = torch.get_rng_state()
-        torch.manual_seed(0)
-        native = rnn_cls(input_size, hidden_size, bidirectional=bidirectional, batch_first=batch_first)
-        torch.set_rng_state(rng_state)
+        # across all tests, so downstream models' initialization would move.
+        # fork_rng(devices=[]) forks the CPU generator ONLY: the native
+        # construction's draws are discarded, and accelerator generators are
+        # never seeded (torch.manual_seed would reset CUDA/NPU RNG as well)
+        with torch.random.fork_rng(devices=[]):
+            native = rnn_cls(input_size, hidden_size, bidirectional=bidirectional, batch_first=batch_first)
         # re-point the native module's parameters at the shared objects; nn.RNN's
         # __setattr__ keeps its internal _flat_weights list in sync for the
         # fused kernel path
