@@ -5,6 +5,8 @@
 import torch
 import torch.nn as nn
 
+from ..rnn_fallback import gru as device_adaptive_gru
+
 
 class BackboneSegRNN(nn.Module):
     def __init__(
@@ -35,13 +37,13 @@ class BackboneSegRNN(nn.Module):
         self.seg_num_x = self.n_steps // self.seg_len
         self.seg_num_y = self.n_pred_steps // self.seg_len
         self.valueEmbedding = nn.Sequential(nn.Linear(self.seg_len, self.d_model), nn.ReLU())
-        self.rnn = nn.GRU(
+        # fused nn.GRU on CUDA/CPU; unfused GRUCell step-loop on Ascend NPU (fp32-safe there)
+        # note: called chunk-wise on (1, batch*channels, d_model), so the unfused loop cost is small
+        self.rnn = device_adaptive_gru(
             input_size=self.d_model,
             hidden_size=self.d_model,
-            num_layers=1,
-            bias=True,
-            batch_first=True,
             bidirectional=False,
+            batch_first=True,
         )
         self.pos_emb = nn.Parameter(torch.randn(self.seg_num_y, self.d_model // 2))
         self.channel_emb = nn.Parameter(torch.randn(self.n_features, self.d_model // 2))

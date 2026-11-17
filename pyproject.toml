@@ -72,6 +72,11 @@ readme = { file = "README.md", content-type = "text/markdown" }
 dependencies = { file = "requirements/requirements.txt" }
 optional-dependencies.dev = { file = "requirements/requirements_dev.txt" }
 
+[tool.pytest.ini_options]
+markers = [
+    "npu: tests that need a real Ascend NPU (skipped elsewhere)",
+]
+
 [tool.black]
 line-length = 120
 

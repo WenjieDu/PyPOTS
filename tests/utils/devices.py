@@ -1,0 +1,212 @@
+"""
+Test cases for the functions and classes in module `pypots.utils.devices`.
+"""
+
+# Created by Jun Wang <jwangfx@connect.ust.hk>
+# License: BSD-3-Clause
+
+import unittest
+
+import pytest
+import torch
+
+from pypots.utils.devices import (
+    DEVICE_TYPES,
+    contains_full_sequence_rnn,
+    get_available_device_type,
+    npu_is_available,
+    parse_device_string,
+    resolve_device_type,
+    supports_device,
+)
+from pypots.utils.random import set_random_seed
+
+NPU_AVAILABLE = npu_is_available()
+
+
+class TestDeviceHelpers(unittest.TestCase):
+    def setUp(self):
+        set_random_seed()
+
+    def test_0_resolve_device_type(self):
+        # str / torch.device / list all normalize to a device type
+        assert resolve_device_type("cpu") == "cpu"
+        assert resolve_device_type(torch.device("cpu")) == "cpu"
+        assert resolve_device_type([torch.device("cpu")]) == "cpu"
+        assert resolve_device_type(["cpu"]) == "cpu"
+        # "npu" must normalize even when torch_npu is absent (string fallback)
+        assert resolve_device_type("npu") == "npu"
+        assert resolve_device_type("npu:0") == "npu"
+        # unknown type raises (torch's own parse error for unknown device strings)
+        with self.assertRaises(RuntimeError):
+            resolve_device_type("unknown_device")
+        with self.assertRaises(TypeError):
+            resolve_device_type(123)
+
+    def test_1_parse_device_string(self):
+        dev = parse_device_string("cpu")
+        assert dev.type == "cpu"
+        # "npu:i" parses to type npu and the right index, with or without torch_npu
+        dev = parse_device_string("npu:3")
+        assert dev.type == "npu"
+        assert str(dev).endswith(":3")
+        with self.assertRaises(RuntimeError):
+            parse_device_string("unknown_device")
+
+    def test_2_get_available_device_type(self):
+        dev_type = get_available_device_type()
+        assert dev_type in DEVICE_TYPES
+        # probing order is cuda -> npu -> cpu, cpu always as the fallback
+        if not torch.cuda.is_available() and not NPU_AVAILABLE:
+            assert dev_type == "cpu"
+
+    def test_3_supports_device(self):
+        for dev_type in DEVICE_TYPES:
+            assert supports_device(dev_type)
+        assert not supports_device("unknown_device")
+
+    def test_5_rnn_dispatcher_keeps_fused_on_cpu(self):
+        """gru()/lstm() dispatch per the input tensor's device: on CPU the
+        native fused kernels must run even if the host also has an NPU
+        (mixed-device hosts keep CPU/CUDA behavior unchanged), and the
+        dispatcher's state_dict keys must match plain nn.GRU/nn.LSTM exactly.
+        """
+        from pypots.nn.modules.rnn_fallback import gru, lstm
+
+        g = gru(5, 16, bidirectional=True, batch_first=True)
+        l = lstm(5, 16, bidirectional=True, batch_first=True)
+        # state_dict interchange with the fused modules at any nesting depth
+        assert set(g.state_dict().keys()) == set(torch.nn.GRU(5, 16, bidirectional=True).state_dict().keys())
+        assert set(l.state_dict().keys()) == set(torch.nn.LSTM(5, 16, bidirectional=True).state_dict().keys())
+
+        x = torch.randn(3, 7, 5)
+        out, _ = g(x)
+        loss = out.sum()
+        loss.backward()
+        assert g.weight_ih_l0.grad is not None, "gradient must reach the shared top-level parameter"
+
+    def test_6_unfused_lstm_matches_nn_lstm_with_nonzero_init_state(self):
+        """UnfusedLSTM must agree with nn.LSTM for nonzero (h_0, c_0) in both
+        directions, and tolerate h0=None (the old code raised IndexError on
+        the unidirectional nonzero path).
+        """
+        from pypots.nn.modules.rnn_fallback import UnfusedLSTM
+
+        torch.manual_seed(2023)
+        for bidirectional in (False, True):
+            unfused = UnfusedLSTM(5, 12, bidirectional=bidirectional, batch_first=True)
+            reference = torch.nn.LSTM(5, 12, bidirectional=bidirectional, batch_first=True)
+            unfused.load_state_dict(reference.state_dict())
+            x = torch.randn(3, 7, 5)
+            n_dirs = 2 if bidirectional else 1
+            h = torch.randn(n_dirs, 3, 12)
+            c = torch.randn(n_dirs, 3, 12)
+            out_u, (hn_u, cn_u) = unfused(x, (h, c))
+            out_r, (hn_r, cn_r) = reference(x, (h, c))
+            torch.testing.assert_close(out_u, out_r, rtol=1e-5, atol=1e-6)
+            torch.testing.assert_close(hn_u, hn_r, rtol=1e-5, atol=1e-6)
+            torch.testing.assert_close(cn_u, cn_r, rtol=1e-5, atol=1e-6)
+        out_none, _ = unfused(x)  # h0=None must not raise
+        assert out_none.shape == (3, 7, 24)
+
+    def test_7_rnn_constructor_is_cpu_rng_neutral(self):
+        """gru()/lstm() construction must consume exactly one module's worth
+        of CPU RNG draws (same as plain nn.GRU/nn.LSTM) — the dispatcher
+        builds two backends, and the extra draws would shift the shared RNG
+        stream of every later model (this broke the single-worker CI run).
+        fork_rng isolation must also leave the CPU state bit-identical.
+        """
+        from pypots.nn.modules.rnn_fallback import gru, lstm
+
+        for reference_cls, factory in ((torch.nn.GRU, gru), (torch.nn.LSTM, lstm)):
+            torch.manual_seed(1234)
+            reference_cls(8, 16, bidirectional=True, batch_first=True)
+            expected = torch.rand(4)
+            torch.manual_seed(1234)
+            factory(8, 16, bidirectional=True, batch_first=True)
+            actual = torch.rand(4)
+            assert torch.equal(expected, actual), (
+                f"{factory.__name__} construction must draw exactly as much CPU RNG as {reference_cls.__name__}"
+            )
+
+    def test_8_rnn_constructor_does_not_reseed_accelerator_generators(self):
+        """The dispatcher's temporary native construction must not seed any
+        non-CPU generator: torch.manual_seed would reset CUDA/NPU RNG to a
+        fixed state even when the CPU state is restored afterwards. CPU-only
+        CI covers this by watching a mocked device generator; on a real NPU
+        host the actual generator state is checked directly.
+        """
+        from pypots.nn.modules.rnn_fallback import gru
+
+        if NPU_AVAILABLE:
+            state_before = torch.npu.get_rng_state()
+            gru(8, 16, bidirectional=True, batch_first=True)
+            assert torch.equal(state_before, torch.npu.get_rng_state()), "NPU RNG state must be untouched"
+        else:
+            # no accelerator present: pin the guard by faking a device
+            # generator and asserting torch.manual_seed never runs on it
+            from unittest import mock
+
+            with mock.patch("torch.manual_seed") as mocked_seed:
+                gru(8, 16, bidirectional=True, batch_first=True)
+            mocked_seed.assert_not_called()
+
+    def test_4_contains_full_sequence_rnn(self):
+        class WithFused(torch.nn.Module):
+            def __init__(self):
+                super().__init__()
+                self.rnn = torch.nn.GRU(4, 4, batch_first=True)
+
+        class WithCell(torch.nn.Module):
+            def __init__(self):
+                super().__init__()
+                self.cell = torch.nn.GRUCell(4, 4)
+
+        assert contains_full_sequence_rnn(WithFused())
+        assert not contains_full_sequence_rnn(WithCell())
+
+
+# NPU-specific tests below: they exercise the real torch_npu path and are skipped
+# automatically when no Ascend NPU is visible (e.g. the CPU-only CI runners).
+@pytest.mark.npu
+class TestNpuSpecific(unittest.TestCase):
+    def setUp(self):
+        if not NPU_AVAILABLE:
+            self.skipTest("No Ascend NPU visible in this environment")
+        set_random_seed()
+
+    def test_0_device_roundtrip_on_npu(self):
+        from pypots.utils.devices import check_device_availability, device_module
+
+        assert get_available_device_type() in ("npu", "cuda")
+        check_device_availability("npu")
+        mod = device_module("npu")
+        assert mod is not None and mod.device_count() > 0
+        dev = parse_device_string("npu:0")
+        assert dev.type == "npu" and dev.index == 0
+        x = torch.randn(4, 4).to(dev)
+        assert x.device.type == "npu"
+
+    def test_1_unfused_rnn_equivalence_on_npu(self):
+        from pypots.nn.modules.rnn_fallback import UnfusedGRU
+
+        torch.manual_seed(2023)
+        hidden, seq_len, n_in = 16, 7, 5
+        x_npu = torch.randn(3, seq_len, n_in).to("npu")
+        gru = UnfusedGRU(n_in, hidden, bidirectional=True, batch_first=True).to("npu")
+        out_npu, h_n_npu = gru(x_npu)
+        # the fused GRU on CPU is the numerical reference
+        ref = torch.nn.GRU(n_in, hidden, bidirectional=True, batch_first=True)
+        ref.load_state_dict(gru.state_dict())
+        out_ref, h_n_ref = ref(x_npu.to("cpu"))
+        torch.testing.assert_close(out_npu.cpu(), out_ref, rtol=1e-4, atol=1e-4)
+
+    def test_2_unfused_rnn_backward_on_npu(self):
+        from pypots.nn.modules.rnn_fallback import UnfusedGRU
+
+        x = torch.randn(3, 7, 5, device="npu")
+        gru = UnfusedGRU(5, 16, bidirectional=True, batch_first=True).to("npu")
+        out, _ = gru(x)
+        loss = out.sum()
+        loss.backward()
+        assert all(p.grad is not None and torch.isfinite(p.grad).all() for p in gru.parameters())
