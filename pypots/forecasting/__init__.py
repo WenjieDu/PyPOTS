@@ -11,6 +11,7 @@ from .dlinear import DLinear
 from .film import FiLM
 from .fits import FITS
 from .gpt4ts import GPT4TS
+from .lifts import LIFTS
 from .micn import MICN
 from .mixlinear import MixLinear
 from .moderntcn import ModernTCN
@@ -22,8 +23,10 @@ from .timemixer import TimeMixer
 from .timemixerpp import TimeMixerPP
 from .timesnet import TimesNet
 from .transformer import Transformer
+from .tsicl import TSICL
 
 __all__ = [
+    "LIFTS",
     "BTTF",
     "CSDI",
     "Transformer",
@@ -41,4 +44,5 @@ __all__ = [
     "DLinear",
     "FiLM",
     "MixLinear",
+    "TSICL",
 ]
