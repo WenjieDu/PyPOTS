@@ -68,7 +68,7 @@ class Lerp(BaseImputer):
             nans = np.isnan(X)
             nan_index = np.where(nans)[0]
             index = np.where(~nans)[0]
-            if np.any(nans) and index.size > 1:
+            if np.any(nans) and index.size > 0:
                 X[nans] = np.interp(nan_index, index, X[~nans])
             elif np.any(nans):
                 X[nans] = 0

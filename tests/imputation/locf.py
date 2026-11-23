@@ -111,5 +111,45 @@ class TestLOCF(unittest.TestCase):
         logger.info(f"Lazy-loading LOCF test_MSE: {test_MSE}")
 
 
+@pytest.mark.xdist_group(name="imputation-locf")
+@pytest.mark.parametrize("strategy", ["zero", "backward", "median", "nan"])
+@pytest.mark.parametrize("dtype", [torch.float32, torch.float64])
+@pytest.mark.parametrize(
+    "device",
+    ["cpu", pytest.param("cuda", marks=pytest.mark.skipif(not torch.cuda.is_available(), reason="CUDA unavailable"))],
+)
+def test_torch_device(strategy, dtype, device):
+    """Tensor imputation retains its device and handles leading or entire gaps."""
+    X = torch.tensor(
+        [
+            [
+                [np.nan, np.nan, np.nan],
+                [2, np.nan, np.nan],
+                [np.nan, 6, np.nan],
+                [4, np.nan, np.nan],
+                [np.nan, np.nan, np.nan],
+            ]
+        ],
+        dtype=dtype,
+        device=device,
+    )
+    original = X.clone()
+    expected = torch.tensor(
+        [[[np.nan, np.nan, np.nan], [2, np.nan, np.nan], [2, 6, np.nan], [4, 6, np.nan], [4, 6, np.nan]]],
+        dtype=dtype,
+        device=device,
+    )
+    if strategy == "zero":
+        expected = torch.nan_to_num(expected)
+    elif strategy in ["backward", "median"]:
+        # Both first observations and the existing lower-middle medians are 2, 6.
+        expected[:, :, 0] = torch.nan_to_num(expected[:, :, 0], nan=2)
+        expected[:, :, 1] = torch.nan_to_num(expected[:, :, 1], nan=6)
+        expected[:, :, 2] = 0
+    actual = LOCF(first_step_imputation=strategy).predict({"X": X})["imputation"]
+    torch.testing.assert_close(actual, expected, rtol=0, atol=0, equal_nan=True)
+    torch.testing.assert_close(X, original, equal_nan=True)
+
+
 if __name__ == "__main__":
     unittest.main()

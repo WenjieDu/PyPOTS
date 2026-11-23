@@ -5,6 +5,7 @@ Expose all usable time-series imputation models.
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
+from .lifts import LIFTS
 from .brits import BRITS
 from .csai import CSAI
 from .csdi import CSDI
@@ -50,6 +51,7 @@ from .timemixerpp import TimeMixerPP
 from .totem import TOTEM
 from .tslanet import TSLANet
 from .tkan import TKAN
+from .tsicl import TSICL
 
 # naive imputation methods
 from .locf import LOCF
@@ -58,6 +60,7 @@ from .median import Median
 from .lerp import Lerp
 
 __all__ = [
+    "LIFTS",
     # neural network imputation methods
     "SAITS",
     "Transformer",
@@ -104,6 +107,7 @@ __all__ = [
     "TOTEM",
     "TSLANet",
     "TKAN",
+    "TSICL",
     # naive imputation methods
     "LOCF",
     "Mean",
