@@ -7,7 +7,7 @@ channels:
 
 dependencies:
     # basic
-    - conda-forge::python >=3.8
+    - conda-forge::python >=3.10
     - conda-forge::pip
     - conda-forge::h5py
     - conda-forge::numpy <2.0

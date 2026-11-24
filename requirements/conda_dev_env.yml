@@ -8,7 +8,7 @@ channels:
 
 dependencies:
     ## Below we install the latest pypots because we need pypots-cli in it for development.
-    - conda-forge::python >=3.8
+    - conda-forge::python >=3.10
     - conda-forge::pip
     - conda-forge::pypots >=1.4
 
