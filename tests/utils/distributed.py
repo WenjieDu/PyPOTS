@@ -215,6 +215,49 @@ def _cpu_ddp_worker(rank: int, world: int, port: int) -> None:
     # destroy->re-init round-trip was flaky on CI runners, torch 2.3).
 
 
+def _checkpoint_worker(rank: int, world: int, port: int, tmp: str) -> None:
+    """One rank of the DDP checkpoint test: run_ddp_fit with a SHARED
+    saving_path and model_saving_strategy="best" — automatic checkpointing
+    must fire on rank 0 only (both ranks would otherwise race on the same
+    path), and the saved state dict must be the unwrapped net's (no
+    "module." prefix), loadable into a plain single-process model.
+    """
+    os.environ["MASTER_ADDR"] = "127.0.0.1"
+    os.environ["MASTER_PORT"] = str(port)
+    os.environ["RANK"] = str(rank)
+    os.environ["WORLD_SIZE"] = str(world)
+    os.environ["LOCAL_RANK"] = str(rank)
+    set_random_seed(2023)
+
+    rng = np.random.default_rng(2023)
+    train_set, val_set = _make_tiny_imputation_set(rng)
+    shared_dir = os.path.join(tmp, "shared_saving")
+    model = SAITS(
+        n_steps=24,
+        n_features=8,
+        n_layers=1,
+        d_model=32,
+        n_heads=2,
+        d_k=16,
+        d_v=16,
+        d_ffn=32,
+        dropout=0.1,
+        epochs=1,
+        batch_size=16,
+        patience=None,
+        saving_path=shared_dir,
+        model_saving_strategy="best",
+        device="cpu",
+        verbose=False,
+    )
+    # the auto-save happens INSIDE fit(), while the DDP group is live and
+    # model.model is the DDP wrapper — exactly the path the review flagged
+    run_ddp_fit(model, train_set, val_set)
+    # the group is torn down by run_ddp_fit — plain predict must still work
+    out = model.predict({"X": train_set["X"][:4]})["imputation"]
+    assert out.shape == (4, 24, 8) and np.isfinite(out).all()
+
+
 def _different_seeds_worker(rank: int, world: int, port: int, tmp: str) -> None:
     """One rank of the different-seeds init test: each rank builds the SAITS
     net with its own random seed (so the local initial weights genuinely
@@ -479,6 +522,63 @@ class TestDistributedMultiProcessCpu(unittest.TestCase):
                 "DDP init did not synchronize differently-seeded parameters across ranks"
             )
 
+    def test_4_checkpoint_saving_is_rank0_only_and_unwrapped(self):
+        """Under DDP, automatic checkpointing must (1) run on rank 0 only —
+        every rank writing the same path is a race — and (2) save the
+        unwrapped net's state dict (no "module." prefix), so the file loads
+        directly into a plain single-process PyPOTS model. A fresh SAITS
+        instance loads the saved file and predicts with it at the end.
+        """
+        with socket.socket() as s:
+            s.bind(("127.0.0.1", 0))
+            port = s.getsockname()[1]
+        with tempfile.TemporaryDirectory() as tmp:
+            mp.spawn(_checkpoint_worker, args=(2, port, tmp), nprocs=2, join=True)
+            # (1) exactly one model checkpoint in the whole saving tree, written
+            # by rank 0 only — a non-zero rank saving as well would produce a
+            # second timestamp dir / second model file. (tensorboard event
+            # files also carry the .pypots suffix, one per rank's writer, and
+            # are harmless — filter to the model file by exact name)
+            shared_dir = os.path.join(tmp, "shared_saving")
+            checkpoints = [
+                os.path.join(root, name)
+                for root, _, names in os.walk(shared_dir)
+                for name in names
+                if name == "SAITS.pypots"
+            ]
+            assert len(checkpoints) == 1, (
+                f"rank-0-only saving must produce exactly one model checkpoint, found {checkpoints}"
+            )
+            # (2) the saved state dict must carry no "module." prefix and must
+            # load into a plain (unwrapped) model
+            saved_path = checkpoints[0]
+            loaded = torch.load(saved_path, map_location="cpu")
+            state_keys = list(loaded["model_state_dict"].keys())
+            assert not any(k.startswith("module.") for k in state_keys), (
+                "checkpoint saved under DDP must contain the unwrapped net's state dict"
+            )
+            rng = np.random.default_rng(2023)
+            train_set, _ = _make_tiny_imputation_set(rng)
+            plain_model = SAITS(
+                n_steps=24,
+                n_features=8,
+                n_layers=1,
+                d_model=32,
+                n_heads=2,
+                d_k=16,
+                d_v=16,
+                d_ffn=32,
+                dropout=0.1,
+                epochs=1,
+                batch_size=16,
+                patience=None,
+                device="cpu",
+                verbose=False,
+            )
+            plain_model.load(saved_path)
+            out = plain_model.predict({"X": train_set["X"][:4]})["imputation"]
+            assert out.shape == (4, 24, 8) and np.isfinite(out).all()
+
 
 # NPU-specific tests below: they exercise the real torch_npu path and are skipped
 # automatically when no Ascend NPU is visible (e.g. the CPU-only CI runners).
@@ -525,7 +625,15 @@ class TestNpuDistributed(unittest.TestCase):
             script = os.path.join(tmp, "hccl_sync_worker.py")
             with open(script, "w", encoding="utf-8") as f:
                 f.write(worker)
-            env = dict(os.environ, HCCL_SYNC_OUT=tmp)
+            # co-tenant hosts run other HCCL jobs that bind the default
+            # socket port (EI0020 "port 16666 already bound") — pick a fresh
+            # port range per test invocation so the communication domain can
+            # always be established
+            with socket.socket() as s:
+                s.bind(("127.0.0.1", 0))
+                probe_port = s.getsockname()[1]
+            port_range = f"{probe_port}-{probe_port + 63}"
+            env = dict(os.environ, HCCL_SYNC_OUT=tmp, HCCL_NPU_SOCKET_PORT_RANGE=port_range)
             import subprocess
 
             proc = subprocess.run(

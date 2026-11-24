@@ -14,6 +14,7 @@ from typing import Optional, Union, Iterable
 
 import numpy as np
 import torch
+from torch.nn.parallel import DistributedDataParallel
 from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
 
@@ -26,7 +27,7 @@ from .utils.devices import (
     parse_device_string,
     supports_device,
 )
-from .utils.distributed import all_reduce_mean, ddp_is_initialized
+from .utils.distributed import all_reduce_mean, ddp_is_initialized, ddp_rank
 from .utils.file import create_dir_if_not_exist
 from .utils.logging import logger, logger_creator
 
@@ -339,6 +340,12 @@ class BaseModel(ABC):
 
         """
         if self.saving_path is not None and self.model_saving_strategy is not None:
+            # under DDP every rank would write the same checkpoint path —
+            # only rank 0 saves, all other ranks skip (their parameters are
+            # kept identical by the synchronized training loop anyway)
+            if ddp_is_initialized() and ddp_rank() != 0:
+                return
+
             # construct the saving path
             name = self.__class__.__name__ if saving_name is None else saving_name
             saving_path = os.path.join(self.saving_path, name)
@@ -406,6 +413,10 @@ class BaseModel(ABC):
 
         if isinstance(self.device, list):
             # to save a DataParallel model generically, save the model.module.state_dict()
+            model_state_dict = deepcopy(self.model.module.state_dict())
+        elif isinstance(self.model, DistributedDataParallel):
+            # the DDP wrapper's state_dict carries "module."-prefixed keys;
+            # save the wrapped net's dict so the file loads into a plain model
             model_state_dict = deepcopy(self.model.module.state_dict())
         else:
             model_state_dict = deepcopy(self.model.state_dict())
