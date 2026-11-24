@@ -53,7 +53,7 @@ jobs:
                   which python
                   which pip
                   pip install --upgrade setuptools pip
-                  pip install torch==${{ matrix.pytorch-version }} -f https://download.pytorch.org/whl/cpu
+                  pip install torch==${{ matrix.pytorch-version }}+cpu --index-url https://download.pytorch.org/whl/cpu
                   python -c "import torch; print('PyTorch:', torch.__version__)"
 
             - name: Install other dependencies
@@ -81,6 +81,7 @@ jobs:
               run: |
                   which python
                   pip list
+                  python -c "import torch; print('PyTorch:', torch.__version__); assert torch.version.cuda is None and torch.version.hip is None, 'Expected a CPU-only PyTorch build'"
 
             - name: Test with pytest
               run: |
