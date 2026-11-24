@@ -7,7 +7,7 @@ description = "A Python Toolbox for Machine Learning on Partially-Observed Time 
 authors = [{ name = "Wenjie Du", email = "wenjay.du@gmail.com" }]
 dynamic = ["version", "readme", "dependencies", "optional-dependencies"]
 license = { file = "LICENSE" }
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
@@ -17,11 +17,11 @@ classifiers = [
     "License :: OSI Approved :: BSD License",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
     "Topic :: Software Development :: Libraries :: Application Frameworks",
 ]
@@ -98,7 +98,7 @@ exclude = [
 
 [tool.ruff]
 line-length = 120
-target-version = "py313"
+target-version = "py310"
 exclude = [
     "*/template",
 ]
