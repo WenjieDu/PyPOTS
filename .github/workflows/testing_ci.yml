@@ -20,9 +20,17 @@ jobs:
             fail-fast: false
             matrix:
                 # os: [ubuntu-latest, windows-latest, macOS-latest] # macOS and windows just too expensive
-                os: [ubuntu-latest]
-                python-version: ["3.10", "3.14"]
-                pytorch-version: ["2.3.0"]
+                include:
+                    - os: ubuntu-latest
+                      python-version: "3.10"
+                      pytorch-version: "2.3.0"
+                      numpy-version: "1.26.4"
+                      pandas-version: "1.5"
+                    - os: ubuntu-latest
+                      python-version: "3.14"
+                      pytorch-version: "2.9.0"
+                      numpy-version: "2.3.5"
+                      pandas-version: "2.3.3"
 
         steps:
             - name: Check out the repo code
@@ -60,10 +68,10 @@ jobs:
 
             - name: Continue to install torch-geometric dependencies
               run: |
-                  pip install torch-geometric torch-scatter torch-sparse -f "https://data.pyg.org/whl/torch-${{ matrix.pytorch-version }}+cpu.html"
+                  pip install torch-geometric torch-scatter torch-sparse --only-binary=torch-scatter,torch-sparse -f "https://data.pyg.org/whl/torch-${{ matrix.pytorch-version }}+cpu.html"
                   pip install pypots[dev]
-                  pip install numpy==1.26.4  # many libs not compatible with numpy 2.0. Note 3.12 requests for numpy>=2.0
-                  pip install pandas==1.5  # fix pandas version to avoid installing pandas 2.0, the same reason with numpy
+                  # Use compatible NumPy/pandas versions for each Python environment.
+                  pip install numpy==${{ matrix.numpy-version }} pandas==${{ matrix.pandas-version }}
                   python_site_path=`python -c "import site; print(site.getsitepackages()[0])"`
                   echo "python site-packages path: $python_site_path"
                   rm -rf $python_site_path/pypots
