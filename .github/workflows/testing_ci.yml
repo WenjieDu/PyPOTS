@@ -20,8 +20,8 @@ jobs:
             fail-fast: false
             matrix:
                 # os: [ubuntu-latest, windows-latest, macOS-latest] # macOS and windows just too expensive
-                os: [ubuntu-24.04]
-                python-version: ["3.9", "3.11"] # torch-geometric dependencies config below not compatible with 3.12
+                os: [ubuntu-latest]
+                python-version: ["3.10", "3.14"]
                 pytorch-version: ["2.3.0"]
 
         steps:
