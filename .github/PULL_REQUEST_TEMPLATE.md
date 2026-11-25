@@ -1,31 +1,27 @@
-<!-- ‼️ Please create your PR to merge code from your branch to `dev` branch here, rather than to `main`. -->
+<!-- Target the dev branch for ordinary contributions, not main. -->
 
-# What does this PR do?
+## Summary
 
-<!-- Congrats! You've made it this far! You're not quite done yet though.
+<!-- Describe what changed, why, and the affected APIs/tasks. Use a separate closing directive (e.g. Closes #123) for each issue this PR fully resolves. Use a regular issue reference for related or partially addressed issues. -->
 
-Once merged, your PR is going to appear in the release notes with the title you set, so make sure it's a great title that fully reflects the extent of your awesome contribution 😉.
+## Validation
 
-Then, please replace this with a description of the change and which issue is fixed (if applicable). Please also include relevant motivation and context. List any dependencies (if any) that are required for this change.
+<!-- List the exact test commands, environment/device, and actual results. Identify tests not run and why. For model changes, include relevant correctness evidence, input/output contracts, and any missing-value handling or checkpoint compatibility considerations. -->
 
-Once you're done, I will review your PR shortly. I may suggest changes to improve the code 🤝
--->
+## Compatibility and licensing
 
-<!-- Add your comments below, please list your key points -->
+<!-- Describe API/dependency changes, migration implications, optional dependencies, and the source/license of any reused code, data, or weights. For a new model, link the original paper and implementation, explain any adaptations, and confirm the inclusion/maintenance plan. -->
 
-1. fixing #number_of_issue
+## Checklist
 
+<!-- Mark applicable items; explain N/A in the sections above. Documentation-only changes need not run model tests. -->
 
-## Before submitting
+- [ ] This PR targets `dev`, unless a maintainer has requested another base branch.
+- [ ] The change is focused and relevant discussion or issue links are included where applicable.
+- [ ] Scientific behavior and public API/data/checkpoint compatibility are preserved, or intentional changes and limitations are documented.
+- [ ] Relevant tests have been added or updated and run; device-specific claims distinguish real hardware from mocked/CPU tests.
+- [ ] Reused code, data, and weights have compatible licenses and required attribution; no confidential data or credentials are included.
+- [ ] Relevant examples, documentation, and localized READMEs have been updated where applicable.
+- [ ] `pre-commit run` (on staged changes), or `ruff check .` and `ruff format . --check`, pass locally.
 
-<!-- You can remove checks that are not relevant to this PR, like the below example:
-
-- [x] This PR is made to fix a typo...
-
--->
-
-- [ ] This PR is made to fix a typo or improve the docs (you can dismiss the other checks if this is the case);
-- [ ] Was this discussed/approved via a GitHub issue? Please add a link to it if that's the case;
-- [ ] I have commented my code, particularly in hard-to-understand areas;
-- [ ] I have written the necessary tests and already run them locally;
-- [ ] I have run `pre-commit run` on my staged changes (recommended), or verified that `ruff check .` and `ruff format . --check` pass locally. See the [developer guide](https://docs.pypots.com/en/latest/dev_getting_started.html#using-pre-commit);
+See the [developer guide](https://docs.pypots.com/en/latest/dev_getting_started.html) and [testing guide](https://docs.pypots.com/en/latest/dev_testing.html).

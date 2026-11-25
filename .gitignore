@@ -29,9 +29,14 @@ docs/_build
 *.sh
 !/scripts/build_and_run_sphinx_docs.sh
 *.yml
+!/.github/workflows/*.yml
 
 # to temporally ignore things under development locally, simply append '_indev' to the name of your workdir
 *_indev*
 
 # Track localized READMEs even when a global ignore excludes Markdown files
 !/i18n/README_*.md
+
+# Track maintainer documentation even with global Markdown ignores
+!/.github/SECURITY_MAINTENANCE.md
+!/.github/RELEASE_MAINTENANCE.md

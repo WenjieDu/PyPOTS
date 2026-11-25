@@ -1,10 +1,21 @@
 blank_issues_enabled: false
-version: 2.1
 contact_links:
-  - name: 🤗 PyPOTS Community on Slack
-    url: https://join.slack.com/t/pypots-org/shared_invite/zt-1gq6ufwsi-p0OZdW~e9UW_IA4_f1OfxA
-    about: General usage questions, community discussions, and the development team are here.
+  - name: PyPOTS Community on Discord
+    url: https://discord.gg/DXpCTdrvCE
+    about: General usage questions, community discussions, and development.
 
-  - name: 🇨🇳 PyPOTS微信社区 (Community on WeChat)
-    url: https://mp.weixin.qq.com/s/CGkirx7ODkngk6tGGANksw
+  - name: PyPOTS 微信社区 (Community on WeChat)
+    url: https://mp.weixin.qq.com/s/X3ukIgL1QpNH8ZEXq1YifA
     about: 中文社区讨论群，欢迎加入！
+
+  - name: PyPOTS Documentation
+    url: https://docs.pypots.com/
+    about: Installation, tutorials, model APIs, and developer guides.
+
+  - name: Report a security vulnerability privately
+    url: https://github.com/WenjieDu/PyPOTS/security/advisories/new
+    about: Do not disclose vulnerability details in a public issue. See SECURITY.md for the reporting policy and fallback contact.
+
+  - name: Report a community conduct concern privately
+    url: https://github.com/WenjieDu/PyPOTS/blob/main/CODE_OF_CONDUCT.md#enforcement
+    about: For harassment, discrimination, or other conduct concerns, use the private reporting process in our Code of Conduct.

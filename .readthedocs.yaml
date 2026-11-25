@@ -23,8 +23,8 @@ build:
             - python -m pip install --upgrade pip --index-url https://pypi.org/simple
             # Select the exact Linux x86-64 / CPython 3.10 CPU wheel.
             # Resolve all other dependencies from PyPI, not the restricted PyTorch index.
-            - python -m pip install --index-url https://pypi.org/simple -c requirements/requirements_docs.txt "https://download.pytorch.org/whl/cpu/torch-2.3.0%2Bcpu-cp310-cp310-linux_x86_64.whl"
-            - python -m pip install -c requirements/requirements_docs.txt torch-geometric==2.8.1 torch-scatter==2.1.2 torch-sparse==0.6.18 --only-binary=torch-scatter,torch-sparse -f https://data.pyg.org/whl/torch-2.3.0+cpu.html
+            - python -m pip install --index-url https://pypi.org/simple -c requirements/requirements_docs.txt "https://download-r2.pytorch.org/whl/cpu/torch-2.10.0%2Bcpu-cp310-cp310-manylinux_2_28_x86_64.whl#sha256=a280ffaea7b9c828e0c1b9b3bd502d9b6a649dc9416997b69b84544bd469f215"
+            - python -m pip install -c requirements/requirements_docs.txt torch-geometric==2.8.1 torch-scatter==2.1.2 torch-sparse==0.6.18 --only-binary=torch-scatter,torch-sparse -f https://data.pyg.org/whl/torch-2.10.0+cpu.html
 
         post_install:
             - python -m pip check

@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 push_flag=false
 coverage_filename="coverage.lcov"
 

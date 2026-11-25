@@ -1,42 +1,68 @@
 name: "🤙 New Model Addition"
-description: Submit a request to implement a new model.
+description: Propose a model or algorithm for inclusion in PyPOTS.
 labels: ["new algo", "enhancement"]
 
 body:
-  - type: textarea
-    id: model-description-requested
+  - type: markdown
+    attributes:
+      value: |
+        Please review the [inclusion criteria](https://docs.pypots.com/en/latest/faq.html#inclusion-criteria).
+        The usual rule of thumb is at least one year since publication, 20+ citations, and demonstrable usefulness.
+        Authors proposing their own new models may qualify for an exception if they commit to maintaining the implementation for at least two years; contact the maintainer as described in the FAQ before starting implementation.
+
+  - type: input
+    id: model-name
+    attributes:
+      label: Model / algorithm name
     validations:
       required: true
-    attributes:
-      label: 1. Model description
-      description: |
-        Put all important information relative to the new model, e.g. paper link, citation number, and why you think it is necessary for PyPOTS to include.
-        ❗️A rule of thumb is at least one year since publication, 10+ citations, and usefulness.
 
-  - type: checkboxes
-    id: information-tasks
+  - type: textarea
+    id: publication
     attributes:
-      label: 2. Check open-source status
-      description: |
-          Please note that if the model's open-source implementation is not available, it'll take much more time to finish the implementation, so we are less likely to implement it in `PyPOTS`.
+      label: Paper and evidence
+      description: Provide the paper link, publication date/venue, citation count and source, and evidence of usefulness. If no paper is available, explain the basis for inclusion.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: tasks
+    attributes:
+      label: Supported time-series tasks
+      multiple: true
       options:
-        - label: "The model implementation is publicly available"
-
-  - type: textarea
-    id: additional-info
-    attributes:
-      label: 3. Provide useful information for the implementation
-      description: |
-        Give any and all information you think is helpful to the implementation.
-        If there is open-source implementation, please provide information regarding it and the authors.
-        Please mention the authors by @github-username in case you're aware of their usernames.
-
-  - type: textarea
-    id: contribution
+        - Imputation
+        - Forecasting
+        - Classification
+        - Clustering
+        - Anomaly detection
+        - Representation learning
+        - Other
     validations:
       required: true
+
+  - type: textarea
+    id: implementation
     attributes:
-      label: 4. Your contribution
+      label: Original implementation and license
       description: |
-        Is there any way that you could help, for example, by submitting a PR? 
-        Star🌟 this repository is the easiest way to help us.
+        Provide the official repository and its license (including relevant third-party code or pretrained weights).
+        If no implementation or license is available, state that explicitly. Public availability alone does not establish permission to reuse code.
+    validations:
+      required: true
+
+  - type: textarea
+    id: missingness
+    attributes:
+      label: Partially-observed time-series support
+      description: Does the original model handle missing values natively? Describe any proposed adaptation, input/output contract, and relevant limitations.
+    validations:
+      required: true
+
+  - type: textarea
+    id: maintenance
+    attributes:
+      label: Authors, contributors, and maintenance (optional)
+      description: |
+        Identify the original authors or potential contributors, your relationship to the model, and any implementation or maintenance plan.
+        For the author exception, include the required two-year maintenance commitment.

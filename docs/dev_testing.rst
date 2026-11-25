@@ -302,9 +302,26 @@ What CI Checks
 
 The CI workflows currently perform these core checks:
 
-1. ``ruff check .`` and ``ruff format . --check`` — linting and formatting
-2. Package build — ``python -m build``
-3. Full pytest with coverage — parallel execution with ``--dist=loadgroup``
+1. Ruff, pre-commit, actionlint, ShellCheck, and deterministic documentation checks.
+2. CI on pull requests and pushes to main/dev: full Linux regression on Python
+   3.10 and 3.14, including CPU DDP, and a separate distribution validation job.
+3. Distribution validation: build wheel and sdist, check metadata, install the
+   wheel and run six public synthetic-data examples outside the source checkout,
+   then reinstall the sdist and check the installed CLI.
+4. Nightly compatibility: Linux Python 3.10–3.14 full tests and representative
+   macOS ARM64/Windows installed-package smoke tests. Scheduled runs check dev.
+5. Weekly examples: offline and pretrained-weight examples run in separate jobs;
+   either job fails on an example error. Manual dispatch tests the selected ref.
+
+CI installs the wheel built from the current checkout with compatible CPU
+PyTorch, NumPy and pandas versions and checks dependencies with ``pip check``.
+The full regression runs against the source tree because some developer CLI
+tests require the repository layout. The package job separately tests the
+installed artifact without source-tree imports. PyG is installed for Linux full
+regression and examples, but not required by the minimal-package smoke tests.
+JUnit and coverage reports are retained as workflow artifacts; Coveralls
+receives the Python 3.10 CI coverage report. Real CUDA/NPU validation remains
+separate. Read the Docs continues to own Sphinx documentation builds.
 
 
 Pre-commit Checks Before Opening a PR

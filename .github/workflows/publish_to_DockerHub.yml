@@ -1,53 +1,110 @@
 name: Publish Docker Image
 
 on:
-  push:
-    branches:
-      - release
-      - release_docker
-
   release:
     types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing stable release tag to validate (no publication)
+        type: string
+        required: true
 
 permissions:
   contents: read
 
+concurrency:
+  group: docker-release
+  cancel-in-progress: false
+
 jobs:
   docker:
-    runs-on: ubuntu-latest
+    if: >-
+      (github.event_name == 'release' && !github.event.release.prerelease && !github.event.release.draft) ||
+      (github.event_name == 'workflow_dispatch' && github.ref_name == github.event.repository.default_branch)
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: ubuntu-latest
+            arch: amd64
+            cuda: '12.1'
+          - runner: ubuntu-24.04-arm
+            arch: arm64
+            cuda: 'none'
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 60
     steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          ref: ${{ github.event_name == 'release' && github.sha || format('refs/tags/{0}', inputs.tag) }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: '3.10'
+
+      - name: Verify release identity
+        id: release
+        env:
+          RELEASE_TAG: ${{ github.event.release.tag_name || inputs.tag }}
+          EVENT_SHA: ${{ github.event_name == 'release' && github.sha || '' }}
+        run: |
+          python scripts/check_release.py --tag "$RELEASE_TAG" --event-sha "$EVENT_SHA" \
+            --github-output "$GITHUB_OUTPUT"
+
+      - name: Build exact release checkout on native runner
+        env:
+          ARCH: ${{ matrix.arch }}
+          VERSION: ${{ steps.release.outputs.version }}
+          REVISION: ${{ steps.release.outputs.commit }}
+        run: |
+          docker build --platform "linux/$ARCH" \
+            --file docker/Dockerfile_linux \
+            --label "org.opencontainers.image.version=$VERSION" \
+            --label "org.opencontainers.image.revision=$REVISION" \
+            --tag pypots-release:validated .
+
+      - name: Verify installed image before publication
+        env:
+          EXPECTED_VERSION: ${{ steps.release.outputs.version }}
+          EXPECTED_CUDA: ${{ matrix.cuda }}
+          EXPECTED_ARCH: ${{ matrix.arch }}
+          EXPECTED_REVISION: ${{ steps.release.outputs.commit }}
+        run: |
+          test "$(docker image inspect --format '{{.Architecture}}' pypots-release:validated)" = "$EXPECTED_ARCH"
+          test "$(docker image inspect --format '{{index .Config.Labels "org.opencontainers.image.revision"}}' pypots-release:validated)" = "$EXPECTED_REVISION"
+          docker run --rm -e EXPECTED_VERSION -e EXPECTED_CUDA pypots-release:validated \
+            python -c 'import os, importlib.metadata as m, torch, pypots; assert pypots.__version__ == m.version("pypots") == os.environ["EXPECTED_VERSION"]; assert (torch.version.cuda or "none") == os.environ["EXPECTED_CUDA"]; assert torch.ones(2).sum().item() == 2; print(pypots.__version__, torch.__version__)'
+          docker run --rm pypots-release:validated python -c 'import os, pathlib, tempfile, torch; from huggingface_hub.constants import HF_HUB_CACHE; home = pathlib.Path.home(); assert os.getuid() == os.getgid() == 10001; assert home == pathlib.Path("/home/pypots") == pathlib.Path.cwd(); pathlib.Path(HF_HUB_CACHE).mkdir(parents=True, exist_ok=True); assert os.access(HF_HUB_CACHE, os.W_OK); temp = tempfile.TemporaryDirectory(dir=home); path = pathlib.Path(temp.name) / "checkpoint.pt"; torch.save(torch.ones(2), path); assert torch.load(path, weights_only=True).sum().item() == 2; temp.cleanup()'
+          docker run --rm pypots-release:validated python -m pip check
+          docker run --rm pypots-release:validated pypots-cli --help
+          docker run --rm pypots-release:validated python -c 'import torch_geometric; print(torch_geometric.__version__)'
+          if [[ "$EXPECTED_ARCH" == amd64 ]]; then
+            docker run --rm pypots-release:validated python -c 'import torch_scatter, torch_sparse; print(torch_scatter.__version__, torch_sparse.__version__)'
+          fi
+
       - name: Login to Docker Hub
-        uses: docker/login-action@v4
+        if: github.event_name == 'release'
+        uses: docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550 # v4
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v4
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v4
-
-      - name: Build and Push Image for Linux-AMD64
-        uses: docker/build-push-action@v7
-        with:
-          file: ./docker/Dockerfile_linux
-          platforms: linux/amd64
-          build-args: |
-            TARGETPLATFORM=linux/amd64
-          push: true
-          tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/pypots:latest
-            ${{ secrets.DOCKERHUB_USERNAME }}/pypots:ubuntu-amd64
-            ${{ secrets.DOCKERHUB_USERNAME }}/pypots:ubuntu-x86_64
-
-      - name: Build and Push Image for Linux-ARM64
-        uses: docker/build-push-action@v7
-        with:
-          file: ./docker/Dockerfile_linux
-          platforms: linux/arm64, linux/arm64/v8
-          build-args: |
-            TARGETPLATFORM=linux/arm64
-          push: true
-          tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/pypots:ubuntu-arm64
+      - name: Publish exactly the validated local image
+        if: github.event_name == 'release'
+        env:
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          VERSION: ${{ steps.release.outputs.version }}
+          ARCH: ${{ matrix.arch }}
+        run: |
+          image="$DOCKERHUB_USERNAME/pypots"
+          tags=("$VERSION-$ARCH" "ubuntu-$ARCH")
+          if [[ "$ARCH" == amd64 ]]; then
+            tags+=("$VERSION" ubuntu-x86_64 latest)
+          fi
+          for tag in "${tags[@]}"; do
+            docker tag pypots-release:validated "$image:$tag"
+            docker push "$image:$tag"
+          done

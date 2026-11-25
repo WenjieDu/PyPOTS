@@ -1,54 +1,97 @@
-# This workflow will automatically publish a Python package to PyPI using Twine when a release is created
-# For more information, please refer to
-# https://help.github.com/en/actions/language-and-framework-guides/using-python-with-github-actions#publishing-to-package-registries
-
-# This workflow uses actions that are not certified by GitHub.
-# They are provided by a third-party and are governed by
-# separate terms of service, privacy policy, and support
-# documentation.
-
 name: Publish PyPI Package
 
 on:
-  push:
-    branches:
-      - release
-      - release_pypi
-
   release:
     types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing stable release tag to validate (no publication)
+        type: string
+        required: true
 
 permissions:
   contents: read
 
+concurrency:
+  group: pypi-release-${{ github.event.release.tag_name || inputs.tag }}
+  cancel-in-progress: false
+
 jobs:
-  PyPI-deployment:
+  validate:
+    if: >-
+      (github.event_name == 'release' && !github.event.release.prerelease && !github.event.release.draft) ||
+      (github.event_name == 'workflow_dispatch' && github.ref_name == github.event.repository.default_branch)
     runs-on: ubuntu-latest
+    timeout-minutes: 60
     steps:
-    - uses: actions/checkout@v6
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          ref: ${{ github.event_name == 'release' && github.sha || format('refs/tags/{0}', inputs.tag) }}
+          fetch-depth: 0
+          persist-credentials: false
 
-    - name: Set up Python
-      uses: actions/setup-python@v6
-      with:
-        python-version: '3.10'
-        check-latest: true
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: '3.10'
 
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install build
+      - name: Verify release identity
+        env:
+          RELEASE_TAG: ${{ github.event.release.tag_name || inputs.tag }}
+          EVENT_SHA: ${{ github.event_name == 'release' && github.sha || '' }}
+        run: python scripts/check_release.py --tag "$RELEASE_TAG" --event-sha "$EVENT_SHA"
 
-    - name: Fetch the test environment details
-      run: |
-        which python
-        pip list
+      - name: Build and install exact distributions
+        run: |
+          python scripts/ci_pipeline.py install --output "$RUNNER_TEMP/pypots-release" \
+            --torch 2.10.0 --numpy 1.26.4 --pandas 2.3.3 --sdist
 
-    - name: Build package
-      run: |
-        python -m build
+      - name: Validate wheel and source distribution
+        env:
+          RELEASE_TAG: ${{ github.event.release.tag_name || inputs.tag }}
+          EVENT_SHA: ${{ github.event_name == 'release' && github.sha || '' }}
+        run: |
+          python scripts/ci_pipeline.py package --output "$RUNNER_TEMP/pypots-release"
+          python scripts/check_release.py --tag "$RELEASE_TAG" --event-sha "$EVENT_SHA" \
+            --dist "$RUNNER_TEMP/pypots-release/dist"
+          cd "$RUNNER_TEMP/pypots-release"
+          sha256sum dist/*.whl dist/*.tar.gz > SHA256SUMS
 
-    - name: Publish the new package to PyPI
-      uses: pypa/gh-action-pypi-publish@v1.14.3
-      with:
-        user: __token__
-        password: ${{ secrets.PYPI_API_TOKEN }}
+      - name: Upload validated release artifacts
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: pypots-release-dist
+          path: |
+            ${{ runner.temp }}/pypots-release/dist/*
+            ${{ runner.temp }}/pypots-release/SHA256SUMS
+          if-no-files-found: error
+          retention-days: 14
+
+  publish:
+    if: github.event_name == 'release' && !github.event.release.prerelease && !github.event.release.draft
+    needs: validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment:
+      name: pypi
+      url: https://pypi.org/project/pypots/
+    permissions:
+      id-token: write
+    steps:
+      # No source checkout or build in the OIDC-enabled publishing job.
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: pypots-release-dist
+          path: release
+
+      - name: Verify artifact integrity
+        working-directory: release
+        run: |
+          test "$(find dist -maxdepth 1 -type f | wc -l)" -eq 2
+          test "$(wc -l < SHA256SUMS)" -eq 2
+          sha256sum --check SHA256SUMS
+
+      - name: Publish validated distributions using Trusted Publishing
+        uses: pypa/gh-action-pypi-publish@7245906fb61fa33a13554f9d5fb856fe61758086 # v1.14.3
+        with:
+          packages-dir: release/dist/

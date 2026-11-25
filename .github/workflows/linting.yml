@@ -2,34 +2,84 @@ name: Linting
 
 on:
     push:
-        branches:
-            - main
-            - dev
+        branches: [main, dev]
     pull_request:
-        branches:
-            - main
-            - dev
+        branches: [main, dev]
+    workflow_dispatch:
+
+permissions:
+    contents: read
+
+concurrency:
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
 
 jobs:
     ruff-linting:
         runs-on: ubuntu-latest
-
+        timeout-minutes: 15
         steps:
-            - uses: actions/checkout@v6
-
-            - name: Set up Python
-              uses: actions/setup-python@v6
+            - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
               with:
-                  python-version: "3.13"
+                  fetch-depth: 0
+                  persist-credentials: false
+            - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+              with:
+                  python-version: '3.13'
 
-            - name: Install Ruff
+            - name: Install lint tools
               run: |
-                pip install ruff==0.17.6
+                  python -m pip install --only-binary=:all: --require-hashes -r requirements/requirements_lint.txt
 
-            - name: Run linting
+            - name: Ruff lint and formatting
               run: |
-                ruff check .
+                  ruff check .
+                  ruff format . --check
 
-            - name: Check formatting
+            - name: Structural checks on all tracked files
               run: |
-                ruff format . --check
+                  pre-commit run check-yaml --all-files
+                  pre-commit run check-toml --all-files
+                  pre-commit run check-merge-conflict --all-files
+
+            - name: Pre-commit checks on changed files
+              env:
+                  BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+              run: |
+                  # Existing whitespace debt is not a reason to fail unrelated PRs.
+                  if [[ -n "$BASE" && "$BASE" != 0000000000000000000000000000000000000000 ]] && git cat-file -e "$BASE^{commit}"; then
+                      pre-commit run --from-ref "$BASE" --to-ref HEAD
+                  else
+                      echo "No comparison base; structural and Ruff checks ran on all tracked files."
+                  fi
+
+            - name: Check CI bootstrap without third-party packages
+              run: python -S scripts/ci_pipeline.py install --help
+
+            - name: Documentation consistency (no Sphinx build)
+              run: python scripts/check_docs_consistency.py
+
+    workflow-lint:
+        runs-on: ubuntu-latest
+        timeout-minutes: 10
+        steps:
+            - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+              with:
+                  persist-credentials: false
+            - name: Install verified actionlint release
+              run: |
+                  archive="$RUNNER_TEMP/actionlint_1.7.7_linux_amd64.tar.gz"
+                  curl --fail --silent --show-error --location --retry 3 \
+                      --proto '=https' --proto-redir '=https' \
+                      https://github.com/rhysd/actionlint/releases/download/v1.7.7/actionlint_1.7.7_linux_amd64.tar.gz \
+                      --output "$archive"
+                  echo "023070a287cd8cccd71515fedc843f1985bf96c436b7effaecce67290e7e0757  $archive" | sha256sum --check
+                  mkdir -p "$RUNNER_TEMP/actionlint-bin"
+                  tar -xzf "$archive" -C "$RUNNER_TEMP/actionlint-bin" actionlint
+                  echo "$RUNNER_TEMP/actionlint-bin" >> "$GITHUB_PATH"
+            - name: Validate workflow definitions
+              run: |
+                  actionlint -shellcheck=
+                  actionlint .github/workflows/{ci_job,testing_ci,testing_nightly,run_examples,linting}.yml
+            - name: ShellCheck testing and documentation scripts
+              run: shellcheck scripts/build_and_run_sphinx_docs.sh scripts/run_full_test.sh

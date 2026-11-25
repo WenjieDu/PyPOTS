@@ -1,64 +1,79 @@
 name: "🐞 Bug Report"
-description: Submit a bug report to help us improve PyPOTS.
-labels: ["bug"]
+description: Report unexpected behavior or an error in PyPOTS.
+labels: ["potential bug"]
 
 body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping improve PyPOTS! Please check the [documentation](https://docs.pypots.com/) and existing issues first.
+        Report security vulnerabilities [privately](https://github.com/WenjieDu/PyPOTS/security/advisories/new), not here.
+
   - type: textarea
     id: system-info
     attributes:
-      label: 1. System Info
-      description: Please share information about your operating environment with us.
-      placeholder: PyPOTS version, Python version, platform and your OS version, and versions of other libraries existing in the error message...
+      label: Environment
+      description: Include the installed PyPOTS version or commit, Python, OS, PyTorch, relevant dependency versions, and installation method.
+      placeholder: |
+        PyPOTS:
+        Python:
+        OS and architecture:
+        PyTorch:
+        Other relevant dependencies:
+        Installation method (pip, conda, Docker, source):
     validations:
       required: true
 
-  - type: checkboxes
-    id: information-scripts-examples
+  - type: dropdown
+    id: device
     attributes:
-      label: 2. Information
-      description: 'The problem happens when running:'
+      label: Device / execution environment
+      description: Select all that apply; include accelerator, driver, CUDA/CANN and distributed setup details in Environment if relevant.
+      multiple: true
       options:
-        - label: "The official example scripts"
-        - label: "My own created scripts"
+        - CPU
+        - NVIDIA CUDA GPU
+        - Ascend NPU
+        - Other accelerator
+        - Single-process
+        - DataParallel
+        - DistributedDataParallel (DDP)
+        - Not applicable
+    validations:
+      required: true
 
   - type: textarea
     id: reproduction
+    attributes:
+      label: Minimal reproduction
+      description: |
+        Provide reproducible code or steps, the model and task, input shape, missingness pattern, and a small synthetic or shareable dataset if relevant.
+        Use fenced code blocks for code and logs; redact credentials and sensitive data.
+      placeholder: |
+        Steps or minimal Python script:
+        Input shape and data:
+        Command to run:
     validations:
       required: true
-    attributes:
-      label: 3. Reproduction
-      description: |
-        Please provide a code sample that reproduces the problem you ran into. It can be a Colab link or just a code snippet.
-        If you have code snippets, error messages, stack traces please provide them here as well.
-        Important! Use code tags to correctly format your code. See https://help.github.com/en/github/writing-on-github/creating-and-highlighting-code-blocks#syntax-highlighting
-        Do not use screenshots, as they are hard to read and (more importantly) don't allow others to copy-and-paste your code.
-
-      placeholder: |
-        Steps to reproduce the behavior:
-
-          1.
-          2.
-          3.
-
-          ……
-
 
   - type: textarea
     id: expected-behavior
+    attributes:
+      label: Expected behavior
+      description: What should happen?
     validations:
       required: true
-    attributes:
-      label: 4. Expected behavior
-      description: | 
-        A clear and concise description of what error you would expect to happen.
-        Please provide the whole "Traceback" of the error message printed in the console.
 
   - type: textarea
-    id: contribution
+    id: actual-behavior
+    attributes:
+      label: Actual behavior
+      description: Describe what actually happens, including the full traceback or relevant logs if available.
     validations:
       required: true
+
+  - type: textarea
+    id: additional-context
     attributes:
-      label: 5. Your contribution
-      description: |
-        Is there any way that you could help, for example, by submitting a PR? 
-        Star🌟 this repository is the easiest way to help us.
+      label: Additional context (optional)
+      description: Related issues, workarounds, or whether you would like to contribute a fix.

@@ -1,0 +1,127 @@
+name: Reusable CI job
+
+on:
+    workflow_call:
+        inputs:
+            os:
+                required: true
+                type: string
+            python:
+                required: true
+                type: string
+            torch:
+                required: true
+                type: string
+            numpy:
+                required: true
+                type: string
+            pandas:
+                required: true
+                type: string
+            suite:
+                required: true
+                type: string
+            checkout-ref:
+                type: string
+                default: ''
+            coverage:
+                type: boolean
+                default: false
+
+permissions:
+    contents: read
+
+jobs:
+    test:
+        name: ${{ inputs.suite }} / ${{ inputs.os }} / Python ${{ inputs.python }}
+        runs-on: ${{ inputs.os }}
+        timeout-minutes: ${{ inputs.suite == 'offline' && 120 || 60 }}
+        defaults:
+            run:
+                shell: bash
+        env:
+            OMP_NUM_THREADS: '1'
+            MKL_NUM_THREADS: '1'
+            OPENBLAS_NUM_THREADS: '1'
+            MPLBACKEND: Agg
+            PYTHONUNBUFFERED: '1'
+            PIP_INDEX_URL: https://pypi.org/simple
+
+        steps:
+            - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+              with:
+                  ref: ${{ inputs.checkout-ref }}
+                  persist-credentials: false
+
+            - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+              with:
+                  python-version: ${{ inputs.python }}
+                  cache: pip
+                  cache-dependency-path: |
+                      requirements/requirements.txt
+                      requirements/requirements_ci.txt
+                      pyproject.toml
+
+            - name: Build and install this checkout
+              env:
+                  TORCH_VERSION: ${{ inputs.torch }}
+                  NUMPY_VERSION: ${{ inputs.numpy }}
+                  PANDAS_VERSION: ${{ inputs.pandas }}
+                  SUITE: ${{ inputs.suite }}
+              run: |
+                  args=()
+                  if [[ "$SUITE" == full ]]; then
+                      args+=(--full --pyg)
+                  elif [[ "$SUITE" == package ]]; then
+                      args+=(--sdist)
+                  elif [[ "$SUITE" == offline || "$SUITE" == network ]]; then
+                      args+=(--pyg)
+                  fi
+                  python scripts/ci_pipeline.py install --output "$RUNNER_TEMP/pypots-ci" \
+                      --torch "$TORCH_VERSION" --numpy "$NUMPY_VERSION" --pandas "$PANDAS_VERSION" "${args[@]}"
+
+            - name: Validate the distribution artifacts
+              if: inputs.suite == 'package'
+              run: python scripts/ci_pipeline.py package --output "$RUNNER_TEMP/pypots-ci"
+
+            - name: Full source regression
+              if: inputs.suite == 'full'
+              run: |
+                  python tests/global_test_config.py
+                  python -m pytest -rA -s tests/*/* -n 1 --dist=loadgroup --cov=pypots \
+                      --cov-config=.coveragerc --cov-report=term --cov-report=lcov:"$RUNNER_TEMP/pypots-ci/coverage.lcov" \
+                      --cov-report=xml:"$RUNNER_TEMP/pypots-ci/coverage.xml" \
+                      --junitxml="$RUNNER_TEMP/pypots-ci/pytest.xml"
+
+            - name: Run installed-package examples
+              if: inputs.suite == 'smoke' || inputs.suite == 'offline' || inputs.suite == 'network'
+              env:
+                  SUITE: ${{ inputs.suite }}
+              run: python scripts/ci_pipeline.py examples --scope "$SUITE" --output "$RUNNER_TEMP/pypots-ci"
+
+            - name: Submit coverage to Coveralls
+              if: inputs.coverage && success()
+              uses: coverallsapp/github-action@8d6379e14d29928660c4ba802d8e85393440b329 # v2
+              continue-on-error: true
+              with:
+                  github-token: ${{ secrets.GITHUB_TOKEN }}
+                  path-to-lcov: ${{ runner.temp }}/pypots-ci/coverage.lcov
+
+            - name: Upload reports
+              if: always()
+              uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+              with:
+                  name: ${{ inputs.suite }}-${{ inputs.os }}-py${{ inputs.python }}
+                  path: |
+                      ${{ runner.temp }}/pypots-ci/*.xml
+                      ${{ runner.temp }}/pypots-ci/*.lcov
+                      ${{ runner.temp }}/pypots-ci/constraints.txt
+                  if-no-files-found: warn
+
+            - name: Upload validated distributions
+              if: inputs.suite == 'package' && success()
+              uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+              with:
+                  name: validated-distributions
+                  path: ${{ runner.temp }}/pypots-ci/dist/*
+                  if-no-files-found: error
