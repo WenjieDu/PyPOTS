@@ -4,7 +4,7 @@
 # License: BSD-3-Clause
 
 import math
-from typing import Any
+from typing import Any, Optional
 
 import numpy as np
 import torch
@@ -220,6 +220,8 @@ class ObservationPropagation(MessagePassing):
         out *= alpha.view(-1, self.heads, 1)
         return out
 
+    # PyG inspects message and aggregate annotations at runtime. Keep typing.Optional
+    # for compatibility with its inspector on Python 3.10-3.13.
     def message(
         self,
         x_i: Tensor,
@@ -228,7 +230,7 @@ class ObservationPropagation(MessagePassing):
         edge_attr: OptTensor,
         index: Tensor,
         ptr: OptTensor,
-        size_i: int | None,
+        size_i: Optional[int],  # noqa: UP045
     ) -> Tensor:
         use_beta = self.use_beta
         if use_beta:
@@ -297,8 +299,8 @@ class ObservationPropagation(MessagePassing):
         self,
         inputs: Tensor,
         index: Tensor,
-        ptr: Tensor | None = None,
-        dim_size: int | None = None,
+        ptr: OptTensor = None,
+        dim_size: Optional[int] = None,  # noqa: UP045
     ) -> Tensor:
         r"""Aggregates messages from neighbors as
         :math:`\square_{j \in \mathcal{N}(i)}`.
