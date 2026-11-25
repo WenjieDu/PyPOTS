@@ -3,7 +3,7 @@ requires = ["setuptools>=71"]
 
 [project]
 name = "pypots"
-description = "A Python Toolbox for Machine Learning on Partially-Observed Time Series"
+description = "A Python Toolbox for Unified Analysis of Real-World Time Series"
 authors = [{ name = "Wenjie Du", email = "wenjay.du@gmail.com" }]
 dynamic = ["version", "readme", "dependencies", "optional-dependencies"]
 license = { file = "LICENSE" }
@@ -39,6 +39,9 @@ keywords = [
     "classification",
     "clustering",
     "forecasting",
+    "anomaly detection",
+    "representation learning",
+    "time series foundation models",
     "partially observed",
     "irregular sampled",
     "partially-observed time series",

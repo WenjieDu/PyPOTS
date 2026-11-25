@@ -1,4 +1,4 @@
-<img src="https://pypots.com/figs/icons/translate.svg" width="18"> [简体中文](/README_zh.md) | English
+<img src="https://pypots.com/figs/icons/translate.svg" width="18"> [简体中文](https://github.com/WenjieDu/PyPOTS/blob/main/README_zh.md) | English
 
 #  PyPOTS <a href="https://github.com/WenjieDu/PyPOTS"><img src="https://pypots.com/figs/pypots_logos/PyPOTS/logo_FFBG.svg" width="200" align='right'></a>
 
@@ -8,23 +8,26 @@
     <a href="https://docs.pypots.com/en/latest/install.html#reasons-of-version-limitations-on-dependencies">
        <img alt="Python version" src="https://img.shields.io/badge/Python-v3.10+-F8C6B5?logo=python&logoColor=white">
     </a>
+    <a href="https://github.com/WenjieDu/PyPOTS/releases">
+        <img alt="the latest release version" src="https://img.shields.io/github/v/release/wenjiedu/pypots?color=EE781F&include_prereleases&label=Release&logo=github&logoColor=white">
+    </a>
+    <a href="https://docs.pypots.com">
+        <img alt="Docs building" src="https://img.shields.io/readthedocs/pypots?logo=readthedocs&label=Docs&logoColor=white&color=395260">
+    </a>
+    <a href="https://pepy.tech/project/pypots">
+        <img alt="PyPI downloads" src="https://pypots.com/figs/downloads_badges/pypi_pypots_downloads.svg">
+    </a>
+    <a href="https://anaconda.org/conda-forge/pypots">
+        <img alt="Conda downloads" src="https://pypots.com/figs/downloads_badges/conda_pypots_downloads.svg">
+    </a>
     <a href="https://landscape.pytorch.org/?item=modeling--specialized--pypots">
         <img alt="Pytorch landscape" src="https://img.shields.io/badge/PyTorch%20Landscape-EE4C2C?logo=pytorch&logoColor=white">
     </a>
     <a href="https://github.com/WenjieDu/PyPOTS/blob/main/LICENSE">
         <img alt="BSD-3 license" src="https://img.shields.io/badge/License-BSD--3-E9BB41?logo=opensourceinitiative&logoColor=white">
     </a>
-    <a href="https://github.com/WenjieDu/PyPOTS?tab=coc-ov-file">
-        <img alt="Code of Conduct" src="https://img.shields.io/badge/Contributor_Covenant-2.1-4baaaa">
-    </a>
     <a href="https://github.com/WenjieDu/PyPOTS#-community">
         <img alt="Community" src="https://img.shields.io/badge/join_us-community!-C8A062">
-    </a>
-    <a href="https://github.com/WenjieDu/PyPOTS/releases">
-        <img alt="the latest release version" src="https://img.shields.io/github/v/release/wenjiedu/pypots?color=EE781F&include_prereleases&label=Release&logo=github&logoColor=white">
-    </a>
-    <a href="https://github.com/WenjieDu/PyPOTS/graphs/contributors">
-        <img alt="GitHub contributors" src="https://img.shields.io/github/contributors/wenjiedu/pypots?color=D8E699&label=Contributors&logo=GitHub">
     </a>
     <a href="https://star-history.com/#wenjiedu/pypots">
         <img alt="GitHub Repo stars" src="https://img.shields.io/github/stars/wenjiedu/pypots?logo=None&color=6BB392&label=%E2%98%85%20Stars">
@@ -32,29 +35,26 @@
     <a href="https://github.com/WenjieDu/PyPOTS/network/members">
         <img alt="GitHub Repo forks" src="https://img.shields.io/github/forks/wenjiedu/pypots?logo=forgejo&logoColor=black&label=Forks">
     </a>
-    <a href="https://sonarcloud.io/component_measures?id=WenjieDu_PyPOTS&metric=sqale_rating&view=list">
-        <img alt="maintainability" src="https://sonarcloud.io/api/project_badges/measure?project=WenjieDu_PyPOTS&metric=sqale_rating">
-    </a>
-    <a href="https://coveralls.io/github/WenjieDu/PyPOTS?branch=full_test">
-        <img alt="Coveralls coverage" src="https://img.shields.io/coverallsCoverage/github/WenjieDu/PyPOTS?branch=full_test&logo=coveralls&color=75C1C4&label=Coverage">
+    <a href="https://github.com/WenjieDu/PyPOTS/graphs/contributors">
+        <img alt="GitHub contributors" src="https://img.shields.io/github/contributors/wenjiedu/pypots?color=D8E699&label=Contributors&logo=GitHub">
     </a>
     <a href="https://github.com/WenjieDu/PyPOTS/actions/workflows/testing_ci.yml">
         <img alt="GitHub Testing" src="https://img.shields.io/github/actions/workflow/status/wenjiedu/pypots/testing_ci.yml?logo=circleci&color=C8D8E1&label=CI">
     </a>
-    <a href="https://docs.pypots.com">
-        <img alt="Docs building" src="https://img.shields.io/readthedocs/pypots?logo=readthedocs&label=Docs&logoColor=white&color=395260">
+    <a href="https://coveralls.io/github/WenjieDu/PyPOTS?branch=full_test">
+        <img alt="Coveralls coverage" src="https://img.shields.io/coverallsCoverage/github/WenjieDu/PyPOTS?branch=full_test&logo=coveralls&color=75C1C4&label=Coverage">
     </a>
-    <a href="https://deepwiki.com/WenjieDu/PyPOTS">
-        <img alt="Ask DeepWiki" src="https://deepwiki.com/badge.svg">
+    <a href="https://sonarcloud.io/component_measures?id=WenjieDu_PyPOTS&metric=sqale_rating&view=list">
+        <img alt="maintainability" src="https://sonarcloud.io/api/project_badges/measure?project=WenjieDu_PyPOTS&metric=sqale_rating">
     </a>
     <a href="https://github.com/astral-sh/ruff">
         <img alt="Code Style" src="https://img.shields.io/badge/Code_Style-Ruff-D7FF64?logo=ruff">
     </a>
-    <a href="https://anaconda.org/conda-forge/pypots">
-        <img alt="Conda downloads" src="https://pypots.com/figs/downloads_badges/conda_pypots_downloads.svg">
+    <a href="https://github.com/WenjieDu/PyPOTS?tab=coc-ov-file">
+        <img alt="Code of Conduct" src="https://img.shields.io/badge/Contributor_Covenant-2.1-4baaaa">
     </a>
-    <a href="https://pepy.tech/project/pypots">
-        <img alt="PyPI downloads" src="https://pypots.com/figs/downloads_badges/pypi_pypots_downloads.svg">
+    <a href="https://deepwiki.com/WenjieDu/PyPOTS">
+        <img alt="Ask DeepWiki" src="https://pypots.com/figs/misc/ask_deepwiki.svg">
     </a>
     <a href="https://arxiv.org/abs/2305.18811">
         <img alt="arXiv DOI" src="https://img.shields.io/badge/DOI-10.48550/arXiv.2305.18811-F8F7F0">
@@ -63,11 +63,12 @@
 
 PyPOTS (pronounced "Pie Pots") is an open-source Python toolbox for time series analysis, offering
 **50+ models and methods with unified APIs** for imputation, forecasting, classification, clustering, anomaly detection,
-and representation learning.
+and representation learning. It is designed for real-world time series, including those with missing values.
 
 A time series is not the underlying system itself, but a collection of observations of that system.
 Due to the inherent limitations of measurement and sampling, real-world time series are fundamentally partial
-observations, whether in terms of measured variables, sampling intervals, or missing values.
+observations: measured variables capture only certain aspects of the underlying system, observations are collected
+at discrete and potentially irregular intervals, and some measurements may be missing.
 
 **Being unobserved does not necessarily mean being nonexistent. Partial observation is the norm, not the exception.**
 
@@ -75,48 +76,59 @@ We conceptualize real-world time series as **Partially-Observed Time Series (POT
 time series modeling is fundamentally about learning the underlying system and its dynamics from partial observations.
 PyPOTS is built upon this philosophy to enable unified time series analysis for real-world data.
 
-[Website](https://pypots.com) · [Documentation](https://docs.pypots.com) · [Tutorials](https://github.com/WenjieDu/BrewPOTS) · [Community](#-community)
+[Website](https://pypots.com) · [Documentation](https://docs.pypots.com) · [Tutorials](https://github.com/WenjieDu/BrewPOTS) · [Community](https://github.com/WenjieDu/PyPOTS#-community)
 
-[**Key Features**](#-key-features) · [**Installation**](#-installation) · [**Usage**](#-usage) · [**Available Algorithms**](#-available-algorithms) · [**PyPOTS Ecosystem**](#-pypots-ecosystem) · [**Citing PyPOTS**](#-citing-pypots) · [**Contribution**](#-contribution)
+[**Key Features**](https://github.com/WenjieDu/PyPOTS#-key-features) · [**Installation**](https://github.com/WenjieDu/PyPOTS#-installation) · [**Usage**](https://github.com/WenjieDu/PyPOTS#-usage) · [**Model Zoo**](https://github.com/WenjieDu/PyPOTS#-model-zoo) · [**PyPOTS Ecosystem**](https://github.com/WenjieDu/PyPOTS#-pypots-ecosystem) · [**Citing PyPOTS**](https://github.com/WenjieDu/PyPOTS#-citing-pypots) · [**Contribution**](https://github.com/WenjieDu/PyPOTS#-contribution)
 
 ## ❖ Key Features
 
-- **50+ models and methods:** From classical methods to deep learning neural networks, LLMs, and time series foundation models.
-- **Unified APIs:** Consistent training and prediction interfaces across time series tasks for easier model comparison and switching.
-- **Native missing-value support:** Designed to model multivariate time series with missing values without requiring prior imputation.
+- **Multi-task support:** Imputation, forecasting, classification, clustering, anomaly detection, and representation learning in one toolbox.
+- **Native missing-value support:** Missingness-aware models can learn directly from incomplete time series without prior imputation.
+- **Unified APIs:** Consistent training and prediction interfaces across models, making experimentation and model comparison easier.
+- **Rich model zoo:** 50+ models and methods spanning classical approaches, deep learning, LLM-based models, and time series foundation models (TSFMs).
+- **<a href="https://landscape.pytorch.org/?item=modeling--specialized--pypots"><img src="https://pypots.com/figs/misc/pytorch.svg" width="26px" align="center">PyTorch Ecosystem</a>:** PyPOTS is built on PyTorch and featured in the PyTorch Landscape.
 - **Hardware acceleration:** CPU and NVIDIA GPU support, including multi-GPU training via PyTorch DataParallel and automatic mixed precision for supported models.
-- **Hyperparameter optimization:** Model tuning powered by [Optuna](https://github.com/optuna/optuna).
 - **Flexible data handling:** In-memory data and lazy loading from HDF5 files.
+- **Hyperparameter optimization:** Model tuning powered by [Optuna](https://github.com/optuna/optuna).
 - **Reproducible research:** Datasets, missingness simulation, standardized preprocessing, and evaluation tools across the PyPOTS ecosystem.
 - **Extensible architecture:** Modular model components and standardized templates for integrating new algorithms.
 
 ## ❖ Installation
 
-You can refer to [the installation instruction](https://docs.pypots.com/en/latest/install.html) in PyPOTS documentation
-for a guideline with more details.
+PyPOTS requires Python 3.10 or later and is available on [PyPI](https://pypi.org/project/pypots/)
+and [Anaconda](https://anaconda.org/conda-forge/pypots). See the
+[installation guide](https://docs.pypots.com/en/latest/install.html) for detailed dependency and environment requirements.
 
-PyPOTS is available on both [PyPI](https://pypi.python.org/pypi/pypots)
-and [Anaconda](https://anaconda.org/conda-forge/pypots).
-You can install PyPOTS like below, as well as
-[TSDB](https://github.com/WenjieDu/TSDB),[PyGrinder](https://github.com/WenjieDu/PyGrinder),
-[BenchPOTS](https://github.com/WenjieDu/BenchPOTS), and [AI4TS](https://github.com/WenjieDu/AI4TS):
+Choose **one** of the following installation methods according to your environment.
+Upgrade commands are only needed if you already have PyPOTS installed.
 
-``` bash
-# via pip
-pip install pypots            # the first time installation
-pip install pypots --upgrade  # update pypots to the latest version
-# install from the latest source code with the latest features but may not be officially released yet
+**Option 1: pip (recommended)**
+
+```bash
+pip install pypots
+# To upgrade: pip install pypots --upgrade
+```
+
+**Option 2: Conda**
+
+```bash
+conda install conda-forge::pypots
+# To upgrade: conda update conda-forge::pypots
+```
+
+**Option 3: Docker**
+
+```bash
+docker run -it --name pypots wenjiedu/pypots
+```
+
+Press Ctrl-P followed by Ctrl-Q to detach without stopping the container.
+To reconnect, run `docker attach pypots`.
+
+**Option 4: Latest source code on main (may include unreleased changes)**
+
+```bash
 pip install https://github.com/WenjieDu/PyPOTS/archive/main.zip
-
-# via conda
-conda install conda-forge::pypots  # the first time installation
-conda update  conda-forge::pypots  # update pypots to the latest version
-
-# via docker
-docker run -it --name pypots wenjiedu/pypots  # docker will auto pull our built image and run an instance for you
-# after things settle, you can run python in the container to access the well-configured environment for running pypots
-# If you'd like to detach from the container, press Ctrl-P + Ctrl-Q
-# run `docker attach pypots` to enter the container again.
 ```
 
 ## ❖ Usage
@@ -129,27 +141,49 @@ This self-contained SAITS imputation example uses synthetic data and requires no
 import numpy as np
 from pypots.imputation import SAITS
 
+# Generate synthetic time series with missing values
 rng = np.random.default_rng(42)
 X = rng.normal(size=(16, 24, 8)).astype(np.float32)
 X[rng.random(X.shape) < 0.1] = np.nan
 train_X, test_X = X[:12], X[12:]
 
+# Initialize a SAITS imputation model
 model = SAITS(
     n_steps=24, n_features=8,
     n_layers=2, d_model=64, n_heads=4,
     d_k=16, d_v=16, d_ffn=128,
     epochs=2, device="cpu",
 )
+# Train the model
 model.fit({"X": train_X})
+
+# Impute the test set
 imputed_X = model.impute({"X": test_X})
+print(imputed_X.shape)  # (4, 24, 8)
 ```
+
+### Explore PyPOTS by Task
+
+| Task | What it does | Resources |
+|:--|:--|:--|
+| Imputation | Estimate missing observations | [Examples](https://github.com/WenjieDu/PyPOTS/tree/main/examples/imputation) · [API](https://docs.pypots.com/en/latest/pypots.imputation.html) |
+| Forecasting | Predict future values | [Examples](https://github.com/WenjieDu/PyPOTS/tree/main/examples/forecasting) · [API](https://docs.pypots.com/en/latest/pypots.forecasting.html) |
+| Classification | Assign labels to time series | [Examples](https://github.com/WenjieDu/PyPOTS/tree/main/examples/classification) · [API](https://docs.pypots.com/en/latest/pypots.classification.html) |
+| Clustering | Discover groups of similar time series | [Examples](https://github.com/WenjieDu/PyPOTS/tree/main/examples/clustering) · [API](https://docs.pypots.com/en/latest/pypots.clustering.html) |
+| Anomaly detection | Identify abnormal observations or patterns | [Examples](https://github.com/WenjieDu/PyPOTS/tree/main/examples/anomaly_detection) · [API](https://docs.pypots.com/en/latest/pypots.anomaly_detection.html) |
+| Representation learning | Learn latent representations of time series | [Examples](https://github.com/WenjieDu/PyPOTS/tree/main/examples/representation) · [API](https://docs.pypots.com/en/latest/pypots.representation.html) |
+
+### Tutorials and a Real-World Example
 
 Besides [BrewPOTS](https://github.com/WenjieDu/BrewPOTS), you can also find a simple and quick-start tutorial notebook
 on Google Colab
 <a href="https://colab.research.google.com/drive/1HEFjylEy05-r47jRy0H9jiS_WhD0UWmQ">
 <img src="https://img.shields.io/badge/GoogleColab-PyPOTS_Tutorials-F9AB00?logo=googlecolab&logoColor=white" alt="Colab tutorials"/>
 </a>. If you have further questions, please refer to PyPOTS documentation [docs.pypots.com](https://docs.pypots.com).
-You can also [raise an issue](https://github.com/WenjieDu/PyPOTS/issues) or [ask in our community](#-community).
+You can also [raise an issue](https://github.com/WenjieDu/PyPOTS/issues) or [ask in our community](https://github.com/WenjieDu/PyPOTS#-community).
+
+For a comprehensive hands-on introduction to PyPOTS, explore our
+[KDD 2026 Tutorial: End-to-End Learning for Partially-Observed Time Series with PyPOTS](https://pypots.com/events/KDD2026Tutorial/).
 
 The PhysioNet2012 example below demonstrates training, validation, testing, and imputation evaluation.
 
@@ -186,150 +220,125 @@ saits.load("save_it_here/saits_physionet2012.pypots")  # reload the serialized m
 
 </details>
 
-## ❖ Available Algorithms
+<a name="-available-algorithms"></a>
 
-PyPOTS supports imputation, classification, clustering, forecasting, and anomaly detection tasks on multivariate
-partially-observed time series with missing values. The table below shows the availability of each algorithm
-(sorted by Year) in PyPOTS for different tasks. The symbol `✅` indicates the algorithm is available for the
-corresponding task, and you could click `✅` to jump to the code example of the algorithm on the task.
-Note that models will be continuously updated in the future to handle tasks that are not currently supported. Stay tuned!
+## ❖ Model Zoo
 
-🌟 Since **v0.2**, all neural-network models in PyPOTS have got hyperparameter-optimization support by [Microsoft NNI](https://github.com/microsoft/nni) until **v2.0**.
-In PyPOTS v2, this functionality is reimplemented with the [Optuna](https://github.com/optuna/optuna) framework. You may want to
-refer to our time-series imputation survey and benchmark
-repo [Awesome_Imputation](https://github.com/WenjieDu/Awesome_Imputation)
-to see how to configure and tune the hyperparameters.
+The table below lists the models and methods implemented in PyPOTS, sorted by publication year, alongside the Time-Series.AI waitlist entry.
+Each linked ✅ leads to a standalone, task-specific Python example. An empty cell indicates
+that the corresponding implementation is not currently available in PyPOTS.
 
-🔥 Note that all models whose names include `🧑‍🔧` in the table (e.g., Transformer, iTransformer, Informer, etc.) were not
-originally proposed as algorithms for POTS data in their papers, and they cannot directly accept time series with
-missing values as input, let alone imputation. **To make them applicable to POTS data, we specifically apply the
-embedding strategy and training approach (ORT+MIT) the same as we did in
-[the SAITS paper](https://arxiv.org/pdf/2202.08516)[^1].**
+Models marked with `🧑‍🔧` were adapted to handle explicit missing values. Depending on the task,
+these adaptations use missingness-aware embeddings and training strategies, including observed
+reconstruction and masked imputation (ORT + MIT) for imputation, as introduced in [SAITS](https://arxiv.org/abs/2202.08516)[^1].
+Input formats and support for irregular sampling depend on the individual model.
 
-The task types are abbreviated as follows:
-**`IMPT`**: Imputation;
-**`FCST`**: Forecasting;
-**`CLAF`**: Classification;
-**`CLUS`**: Clustering;
-**`ANOD`**: Anomaly Detection.
-In addition to the 5 tasks, PyPOTS also provides TS2Vec[^48] for time series representation learning and vectorization.
-The paper references and links are all listed at the bottom of this file.
+Task abbreviations: **IMPT** (Imputation), **FCST** (Forecasting), **CLAF** (Classification),
+**CLUS** (Clustering), **ANOD** (Anomaly Detection), and **REPR** (Representation Learning).
+Paper references appear at the end of this README.
 
-| **Type**      | **Algo**                                                                                                                                        | **IMPT** | **FCST** | **CLAF** | **CLUS** | **ANOD** | **Year - Venue**                                                                                         |
-|:--------------|:------------------------------------------------------------------------------------------------------------------------------------------------|:--------:|:--------:|:--------:|:--------:|:--------:|:---------------------------------------------------------------------------------------------------------|
-| LLM&TSFM | <a href="https://time-series.ai"><img src="https://pypots.com/figs/timeseriesai/logo.png" width="26px">Time-Series.AI</a>  [^36] | ✅ | ✅ | ✅ | ✅ | ✅ | <a href="https://docs.google.com/forms/d/1Ff2ndYUFQEL3tIcwtcR8lWeopQ2vTXX6D_x8WGFKH6E">Join waitlist</a> |
-| Neural Net | HELIX [^55] | [✅](examples/imputation/helix_imputation_example.py) |  |  |  |  | `2026 - ICML` |
-| Neural Net | MixLinear🧑‍🔧[^52] |  | [✅](examples/forecasting/mixlinear_forecasting_example.py) |  |  |  | `2026 - ICLR` |
-| Neural Net | SegRNN🧑‍🔧[^43] | [✅](examples/imputation/segrnn_imputation_example.py) | [✅](examples/forecasting/segrnn_forecasting_example.py) |  |  | [✅](examples/anomaly_detection/segrnn_anomalydetection_example.py) | `2026 - IoT-J` |
-| TSFM | TS-ICL[^56] | [✅](examples/imputation/tsicl_imputation_example.py) | [✅](examples/forecasting/tsicl_forecasting_example.py) |  |  |  | `2026 - arXiv` |
-| Neural Net | LIFTS[^57] | [✅](examples/imputation/lifts_imputation_example.py) | [✅](examples/forecasting/lifts_forecasting_example.py) |  |  |  | `2026 - arXiv` |
-| Neural Net | TEFN🧑‍🔧[^39] | [✅](examples/imputation/tefn_imputation_example.py) | [✅](examples/forecasting/tefn_forecasting_example.py) | [✅](examples/classification/tefn_classification_example.py) |  | [✅](examples/anomaly_detection/tefn_anomalydetection_example.py) | `2025 - TPAMI` |
-| Neural Net | TimeMixer++[^49] | [✅](examples/imputation/timemixerpp_imputation_example.py) | [✅](examples/forecasting/timemixerpp_forecasting_example.py) |  |  | [✅](examples/anomaly_detection/timemixerpp_anomalydetection_example.py) | `2025 - ICLR` |
-| LLM | Time-LLM🧑‍🔧[^45] | [✅](examples/imputation/timellm_imputation_example.py) | [✅](examples/forecasting/timellm_forecasting_example.py) |  |  |  | `2024 - ICLR` |
-| TSFM | MOMENT[^47] | [✅](examples/imputation/moment_imputation_example.py) | [✅](examples/forecasting/moment_forecasting_example.py) |  |  |  | `2024 - ICML` |
-| Neural Net | TSLANet[^51] | [✅](examples/imputation/tslanet_imputation_example.py) |  |  |  |  | `2024 - ICML` |
-| Neural Net | FITS🧑‍🔧[^41] | [✅](examples/imputation/fits_imputation_example.py) | [✅](examples/forecasting/fits_forecasting_example.py) |  |  |  | `2024 - ICLR` |
-| Neural Net | TimeMixer[^37] | [✅](examples/imputation/timemixer_imputation_example.py) | [✅](examples/forecasting/timemixer_forecasting_example.py) |  |  | [✅](examples/anomaly_detection/timemixer_anomalydetection_example.py) | `2024 - ICLR` |
-| Neural Net | iTransformer🧑‍🔧[^24] | [✅](examples/imputation/itransformer_imputation_example.py) |  | [✅](examples/classification/itransformer_classification_example.py) |  | [✅](examples/anomaly_detection/itransformer_anomalydetection_example.py) | `2024 - ICLR` |
-| Neural Net | ModernTCN[^38] | [✅](examples/imputation/moderntcn_imputation_example.py) | [✅](examples/forecasting/moderntcn_forecasting_example.py) |  |  |  | `2024 - ICLR` |
-| Neural Net | ImputeFormer🧑‍🔧[^34] | [✅](examples/imputation/imputeformer_imputation_example.py) |  |  |  | [✅](examples/anomaly_detection/imputeformer_anomalydetection_example.py) | `2024 - KDD` |
-| Neural Net | TOTEM[^50] | [✅](examples/imputation/totem_imputation_example.py) |  |  |  |  | `2024 - TMLR` |
-| Neural Net | TKAN🧑‍🔧[^54] | [✅](examples/imputation/tkan_imputation_example.py) |  |  |  |  | `2024 - arXiv` |
-| Neural Net | SAITS[^1] | [✅](examples/imputation/saits_imputation_example.py) |  | [✅](examples/classification/saits_classification_example.py) |  | [✅](examples/anomaly_detection/saits_anomalydetection_example.py) | `2023 - ESWA` |
-| LLM | GPT4TS[^46] | [✅](examples/imputation/gpt4ts_imputation_example.py) | [✅](examples/forecasting/gpt4ts_forecasting_example.py) |  |  |  | `2023 - NeurIPS` |
-| Neural Net | FreTS🧑‍🔧[^23] | [✅](examples/imputation/frets_imputation_example.py) |  |  |  |  | `2023 - NeurIPS` |
-| Neural Net | Koopa🧑‍🔧[^29] | [✅](examples/imputation/koopa_imputation_example.py) |  |  |  |  | `2023 - NeurIPS` |
-| Neural Net | Crossformer🧑‍🔧[^16] | [✅](examples/imputation/crossformer_imputation_example.py) |  |  |  | [✅](examples/anomaly_detection/crossformer_anomalydetection_example.py) | `2023 - ICLR` |
-| Neural Net | TimesNet[^14] | [✅](examples/imputation/timesnet_imputation_example.py) | [✅](examples/forecasting/timesnet_forecasting_example.py) | [✅](examples/classification/timesnet_classification_example.py) |  | [✅](examples/anomaly_detection/timesnet_anomalydetection_example.py) | `2023 - ICLR` |
-| Neural Net | PatchTST🧑‍🔧[^18] | [✅](examples/imputation/patchtst_imputation_example.py) |  | [✅](examples/classification/patchtst_classification_example.py) |  | [✅](examples/anomaly_detection/patchtst_anomalydetection_example.py) | `2023 - ICLR` |
-| Neural Net | ETSformer🧑‍🔧[^19] | [✅](examples/imputation/etsformer_imputation_example.py) |  |  |  | [✅](examples/anomaly_detection/etsformer_anomalydetection_example.py) | `2023 - ICLR` |
-| Neural Net | MICN🧑‍🔧[^27] | [✅](examples/imputation/micn_imputation_example.py) | [✅](examples/forecasting/micn_forecasting_example.py) |  |  |  | `2023 - ICLR` |
-| Neural Net | DLinear🧑‍🔧[^17] | [✅](examples/imputation/dlinear_imputation_example.py) | [✅](examples/forecasting/dlinear_forecasting_example.py) |  |  | [✅](examples/anomaly_detection/dlinear_anomalydetection_example.py) | `2023 - AAAI` |
-| Neural Net | TiDE🧑‍🔧[^28] | [✅](examples/imputation/tide_imputation_example.py) |  |  |  |  | `2023 - TMLR` |
-| Neural Net | CSAI[^42] | [✅](examples/imputation/csai_imputation_example.py) |  | [✅](examples/classification/csai_classification_example.py) |  |  | `2023 - arXiv` |
-| Neural Net | TS2Vec[^48] |  |  | [✅](examples/classification/ts2vec_classification_example.py) |  |  | `2022 - AAAI` |
-| Neural Net | SCINet🧑‍🔧[^30] | [✅](examples/imputation/scinet_imputation_example.py) |  |  |  | [✅](examples/anomaly_detection/scinet_anomalydetection_example.py) | `2022 - NeurIPS` |
-| Neural Net | Nonstationary Tr.🧑‍🔧[^25] | [✅](examples/imputation/nonstationary_transformer_imputation_example.py) |  |  |  | [✅](examples/anomaly_detection/nonstationary_transformer_anomalydetection_example.py) | `2022 - NeurIPS` |
-| Neural Net | FiLM🧑‍🔧[^22] | [✅](examples/imputation/film_imputation_example.py) | [✅](examples/forecasting/film_forecasting_example.py) |  |  | [✅](examples/anomaly_detection/film_anomalydetection_example.py) | `2022 - NeurIPS` |
-| Neural Net | RevIN_SCINet🧑‍🔧[^31] | [✅](examples/imputation/revin_scinet_imputation_example.py) |  |  |  |  | `2022 - ICLR` |
-| Neural Net | Pyraformer🧑‍🔧[^26] | [✅](examples/imputation/pyraformer_imputation_example.py) |  |  |  | [✅](examples/anomaly_detection/pyraformer_anomalydetection_example.py) | `2022 - ICLR` |
-| Neural Net | Raindrop[^5] |  |  | [✅](examples/classification/raindrop_classification_example.py) |  |  | `2022 - ICLR` |
-| Neural Net | FEDformer🧑‍🔧[^20] | [✅](examples/imputation/fedformer_imputation_example.py) |  |  |  | [✅](examples/anomaly_detection/fedformer_anomalydetection_example.py) | `2022 - ICML` |
-| Neural Net | Autoformer🧑‍🔧[^15] | [✅](examples/imputation/autoformer_imputation_example.py) |  | [✅](examples/classification/autoformer_classification_example.py) |  | [✅](examples/anomaly_detection/autoformer_anomalydetection_example.py) | `2021 - NeurIPS` |
-| Neural Net | CSDI[^12] | [✅](examples/imputation/csdi_imputation_example.py) | [✅](examples/forecasting/csdi_forecasting_example.py) |  |  |  | `2021 - NeurIPS` |
-| Neural Net | Informer🧑‍🔧[^21] | [✅](examples/imputation/informer_imputation_example.py) |  |  |  | [✅](examples/anomaly_detection/informer_anomalydetection_example.py) | `2021 - AAAI` |
-| Neural Net | US-GAN[^10] | [✅](examples/imputation/usgan_imputation_example.py) |  |  |  |  | `2021 - AAAI` |
-| Neural Net | CRLI[^6] |  |  |  | [✅](examples/clustering/crli_clustering_example.py) |  | `2021 - AAAI` |
-| Probabilistic | BTTF[^8] |  | [✅](examples/forecasting/bttf_forecasting_example.py) |  |  |  | `2021 - TPAMI` |
-| Neural Net | StemGNN🧑‍🔧[^33] | [✅](examples/imputation/stemgnn_imputation_example.py) |  |  |  |  | `2020 - NeurIPS` |
-| Neural Net | SeFT[^53] |  |  | [✅](examples/classification/seft_classification_example.py) |  |  | `2020 - ICML` |
-| Neural Net | Reformer🧑‍🔧[^32] | [✅](examples/imputation/reformer_imputation_example.py) |  |  |  | [✅](examples/anomaly_detection/reformer_anomalydetection_example.py) | `2020 - ICLR` |
-| Neural Net | GP-VAE[^11] | [✅](examples/imputation/gpvae_imputation_example.py) |  |  |  |  | `2020 - AISTATS` |
-| Neural Net | VaDER[^7] |  |  |  | [✅](examples/clustering/vader_clustering_example.py) |  | `2019 - GigaSci.` |
-| Neural Net | M-RNN[^9] | [✅](examples/imputation/mrnn_imputation_example.py) |  |  |  |  | `2019 - TBME` |
-| Neural Net | BRITS[^3] | [✅](examples/imputation/brits_imputation_example.py) |  | [✅](examples/classification/brits_classification_example.py) |  |  | `2018 - NeurIPS` |
-| Neural Net | GRU-D[^4] | [✅](examples/imputation/grud_imputation_example.py) |  | [✅](examples/classification/grud_classification_example.py) |  |  | `2018 - Sci. Rep.` |
-| Neural Net | TCN🧑‍🔧[^35] | [✅](examples/imputation/tcn_imputation_example.py) |  |  |  |  | `2018 - arXiv` |
-| Neural Net | Transformer🧑‍🔧[^2] | [✅](examples/imputation/transformer_imputation_example.py) | [✅](examples/forecasting/transformer_forecasting_example.py) |  |  | [✅](examples/anomaly_detection/transformer_anomalydetection_example.py) | `2017 - NeurIPS` |
-| MF | TRMF[^44] | [✅](examples/imputation/trmf_imputation_example.py) |  |  |  |  | `2016 - NeurIPS` |
-| Naive | Lerp[^40] | [✅](examples/imputation/lerp_imputation_example.py) |  |  |  |  |  |
-| Naive | LOCF/NOCB | [✅](examples/imputation/locf_imputation_example.py) |  |  |  |  |  |
-| Naive | Mean | [✅](examples/imputation/mean_imputation_example.py) |  |  |  |  |  |
-| Naive | Median | [✅](examples/imputation/median_imputation_example.py) |  |  |  |  |  |
+| Type | Model | IMPT | FCST | CLAF | CLUS | ANOD | REPR | Publication |
+|:--|:--|:--:|:--:|:--:|:--:|:--:|:--:|:--|
+| LLM&TSFM | <a href="https://time-series.ai"><img src="https://pypots.com/figs/timeseriesai/logo.png" width="26px" align="center">Time-Series.AI</a>  [^36] | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | <a href="https://docs.google.com/forms/d/1Ff2ndYUFQEL3tIcwtcR8lWeopQ2vTXX6D_x8WGFKH6E">Join waitlist</a> |
+| Neural Net | HELIX [^55] | [✅](https://github.com/WenjieDu/PyPOTS/blob/main/examples/imputation/helix_imputation_example.py) |  |  |  |  |  | `2026 - ICML` |
+| Neural Net | MixLinear🧑‍🔧[^52] |  | [✅](https://github.com/WenjieDu/PyPOTS/blob/main/examples/forecasting/mixlinear_forecasting_example.py) |  |  |  |  | `2026 - ICLR` |
+| Neural Net | SegRNN🧑‍🔧[^43] | [✅](https://github.com/WenjieDu/PyPOTS/blob/main/examples/imputation/segrnn_imputation_example.py) | [✅](https://github.com/WenjieDu/PyPOTS/blob/main/examples/forecasting/segrnn_forecasting_example.py) |  |  | [✅](https://github.com/WenjieDu/PyPOTS/blob/main/examples/anomaly_detection/segrnn_anomalydetection_example.py) |  | `2026 - IoT-J` |
+| TSFM | TS-ICL[^56] | [✅](https://github.com/WenjieDu/PyPOTS/blob/main/examples/imputation/tsicl_imputation_example.py) | [✅](https://github.com/WenjieDu/PyPOTS/blob/main/examples/forecasting/tsicl_forecasting_example.py) |  |  |  |  | `2026 - arXiv` |
+| Neural Net | LIFTS[^57] | [✅](https://github.com/WenjieDu/PyPOTS/blob/main/examples/imputation/lifts_imputation_example.py) | [✅](https://github.com/WenjieDu/PyPOTS/blob/main/examples/forecasting/lifts_forecasting_example.py) |  |  |  |  | `2026 - arXiv` |
+| Neural Net | TEFN🧑‍🔧[^39] | [✅](https://github.com/WenjieDu/PyPOTS/blob/main/examples/imputation/tefn_imputation_example.py) | [✅](https://github.com/WenjieDu/PyPOTS/blob/main/examples/forecasting/tefn_forecasting_example.py) | [✅](https://github.com/WenjieDu/PyPOTS/blob/main/examples/classification/tefn_classification_example.py) |  | [✅](https://github.com/WenjieDu/PyPOTS/blob/main/examples/anomaly_detection/tefn_anomalydetection_example.py) |  | `2025 - TPAMI` |
+| Neural Net | TimeMixer++[^49] | [✅](https://github.com/WenjieDu/PyPOTS/blob/main/examples/imputation/timemixerpp_imputation_example.py) | [✅](https://github.com/WenjieDu/PyPOTS/blob/main/examples/forecasting/timemixerpp_forecasting_example.py) |  |  | [✅](https://github.com/WenjieDu/PyPOTS/blob/main/examples/anomaly_detection/timemixerpp_anomalydetection_example.py) |  | `2025 - ICLR` |
+| LLM | Time-LLM🧑‍🔧[^45] | [✅](https://github.com/WenjieDu/PyPOTS/blob/main/examples/imputation/timellm_imputation_example.py) | [✅](https://github.com/WenjieDu/PyPOTS/blob/main/examples/forecasting/timellm_forecasting_example.py) |  |  |  |  | `2024 - ICLR` |
+| TSFM | MOMENT[^47] | [✅](https://github.com/WenjieDu/PyPOTS/blob/main/examples/imputation/moment_imputation_example.py) | [✅](https://github.com/WenjieDu/PyPOTS/blob/main/examples/forecasting/moment_forecasting_example.py) |  |  |  |  | `2024 - ICML` |
+| Neural Net | TSLANet[^51] | [✅](https://github.com/WenjieDu/PyPOTS/blob/main/examples/imputation/tslanet_imputation_example.py) |  |  |  |  |  | `2024 - ICML` |
+| Neural Net | FITS🧑‍🔧[^41] | [✅](https://github.com/WenjieDu/PyPOTS/blob/main/examples/imputation/fits_imputation_example.py) | [✅](https://github.com/WenjieDu/PyPOTS/blob/main/examples/forecasting/fits_forecasting_example.py) |  |  |  |  | `2024 - ICLR` |
+| Neural Net | TimeMixer[^37] | [✅](https://github.com/WenjieDu/PyPOTS/blob/main/examples/imputation/timemixer_imputation_example.py) | [✅](https://github.com/WenjieDu/PyPOTS/blob/main/examples/forecasting/timemixer_forecasting_example.py) |  |  | [✅](https://github.com/WenjieDu/PyPOTS/blob/main/examples/anomaly_detection/timemixer_anomalydetection_example.py) |  | `2024 - ICLR` |
+| Neural Net | iTransformer🧑‍🔧[^24] | [✅](https://github.com/WenjieDu/PyPOTS/blob/main/examples/imputation/itransformer_imputation_example.py) |  | [✅](https://github.com/WenjieDu/PyPOTS/blob/main/examples/classification/itransformer_classification_example.py) |  | [✅](https://github.com/WenjieDu/PyPOTS/blob/main/examples/anomaly_detection/itransformer_anomalydetection_example.py) |  | `2024 - ICLR` |
+| Neural Net | ModernTCN[^38] | [✅](https://github.com/WenjieDu/PyPOTS/blob/main/examples/imputation/moderntcn_imputation_example.py) | [✅](https://github.com/WenjieDu/PyPOTS/blob/main/examples/forecasting/moderntcn_forecasting_example.py) |  |  |  |  | `2024 - ICLR` |
+| Neural Net | ImputeFormer🧑‍🔧[^34] | [✅](https://github.com/WenjieDu/PyPOTS/blob/main/examples/imputation/imputeformer_imputation_example.py) |  |  |  | [✅](https://github.com/WenjieDu/PyPOTS/blob/main/examples/anomaly_detection/imputeformer_anomalydetection_example.py) |  | `2024 - KDD` |
+| Neural Net | TOTEM[^50] | [✅](https://github.com/WenjieDu/PyPOTS/blob/main/examples/imputation/totem_imputation_example.py) |  |  |  |  |  | `2024 - TMLR` |
+| Neural Net | TKAN🧑‍🔧[^54] | [✅](https://github.com/WenjieDu/PyPOTS/blob/main/examples/imputation/tkan_imputation_example.py) |  |  |  |  |  | `2024 - arXiv` |
+| Neural Net | SAITS[^1] | [✅](https://github.com/WenjieDu/PyPOTS/blob/main/examples/imputation/saits_imputation_example.py) |  | [✅](https://github.com/WenjieDu/PyPOTS/blob/main/examples/classification/saits_classification_example.py) |  | [✅](https://github.com/WenjieDu/PyPOTS/blob/main/examples/anomaly_detection/saits_anomalydetection_example.py) |  | `2023 - ESWA` |
+| LLM | GPT4TS[^46] | [✅](https://github.com/WenjieDu/PyPOTS/blob/main/examples/imputation/gpt4ts_imputation_example.py) | [✅](https://github.com/WenjieDu/PyPOTS/blob/main/examples/forecasting/gpt4ts_forecasting_example.py) |  |  |  |  | `2023 - NeurIPS` |
+| Neural Net | FreTS🧑‍🔧[^23] | [✅](https://github.com/WenjieDu/PyPOTS/blob/main/examples/imputation/frets_imputation_example.py) |  |  |  |  |  | `2023 - NeurIPS` |
+| Neural Net | Koopa🧑‍🔧[^29] | [✅](https://github.com/WenjieDu/PyPOTS/blob/main/examples/imputation/koopa_imputation_example.py) |  |  |  |  |  | `2023 - NeurIPS` |
+| Neural Net | Crossformer🧑‍🔧[^16] | [✅](https://github.com/WenjieDu/PyPOTS/blob/main/examples/imputation/crossformer_imputation_example.py) |  |  |  | [✅](https://github.com/WenjieDu/PyPOTS/blob/main/examples/anomaly_detection/crossformer_anomalydetection_example.py) |  | `2023 - ICLR` |
+| Neural Net | TimesNet[^14] | [✅](https://github.com/WenjieDu/PyPOTS/blob/main/examples/imputation/timesnet_imputation_example.py) | [✅](https://github.com/WenjieDu/PyPOTS/blob/main/examples/forecasting/timesnet_forecasting_example.py) | [✅](https://github.com/WenjieDu/PyPOTS/blob/main/examples/classification/timesnet_classification_example.py) |  | [✅](https://github.com/WenjieDu/PyPOTS/blob/main/examples/anomaly_detection/timesnet_anomalydetection_example.py) |  | `2023 - ICLR` |
+| Neural Net | PatchTST🧑‍🔧[^18] | [✅](https://github.com/WenjieDu/PyPOTS/blob/main/examples/imputation/patchtst_imputation_example.py) |  | [✅](https://github.com/WenjieDu/PyPOTS/blob/main/examples/classification/patchtst_classification_example.py) |  | [✅](https://github.com/WenjieDu/PyPOTS/blob/main/examples/anomaly_detection/patchtst_anomalydetection_example.py) |  | `2023 - ICLR` |
+| Neural Net | ETSformer🧑‍🔧[^19] | [✅](https://github.com/WenjieDu/PyPOTS/blob/main/examples/imputation/etsformer_imputation_example.py) |  |  |  | [✅](https://github.com/WenjieDu/PyPOTS/blob/main/examples/anomaly_detection/etsformer_anomalydetection_example.py) |  | `2023 - ICLR` |
+| Neural Net | MICN🧑‍🔧[^27] | [✅](https://github.com/WenjieDu/PyPOTS/blob/main/examples/imputation/micn_imputation_example.py) | [✅](https://github.com/WenjieDu/PyPOTS/blob/main/examples/forecasting/micn_forecasting_example.py) |  |  |  |  | `2023 - ICLR` |
+| Neural Net | DLinear🧑‍🔧[^17] | [✅](https://github.com/WenjieDu/PyPOTS/blob/main/examples/imputation/dlinear_imputation_example.py) | [✅](https://github.com/WenjieDu/PyPOTS/blob/main/examples/forecasting/dlinear_forecasting_example.py) |  |  | [✅](https://github.com/WenjieDu/PyPOTS/blob/main/examples/anomaly_detection/dlinear_anomalydetection_example.py) |  | `2023 - AAAI` |
+| Neural Net | TiDE🧑‍🔧[^28] | [✅](https://github.com/WenjieDu/PyPOTS/blob/main/examples/imputation/tide_imputation_example.py) |  |  |  |  |  | `2023 - TMLR` |
+| Neural Net | CSAI[^42] | [✅](https://github.com/WenjieDu/PyPOTS/blob/main/examples/imputation/csai_imputation_example.py) |  | [✅](https://github.com/WenjieDu/PyPOTS/blob/main/examples/classification/csai_classification_example.py) |  |  |  | `2023 - arXiv` |
+| Neural Net | TS2Vec[^48] |  |  | [✅](https://github.com/WenjieDu/PyPOTS/blob/main/examples/classification/ts2vec_classification_example.py) |  |  | [✅](https://github.com/WenjieDu/PyPOTS/blob/main/examples/representation/ts2vec_representation_example.py) | `2022 - AAAI` |
+| Neural Net | SCINet🧑‍🔧[^30] | [✅](https://github.com/WenjieDu/PyPOTS/blob/main/examples/imputation/scinet_imputation_example.py) |  |  |  | [✅](https://github.com/WenjieDu/PyPOTS/blob/main/examples/anomaly_detection/scinet_anomalydetection_example.py) |  | `2022 - NeurIPS` |
+| Neural Net | Non-stationary Transformer🧑‍🔧[^25] | [✅](https://github.com/WenjieDu/PyPOTS/blob/main/examples/imputation/nonstationary_transformer_imputation_example.py) |  |  |  | [✅](https://github.com/WenjieDu/PyPOTS/blob/main/examples/anomaly_detection/nonstationary_transformer_anomalydetection_example.py) |  | `2022 - NeurIPS` |
+| Neural Net | FiLM🧑‍🔧[^22] | [✅](https://github.com/WenjieDu/PyPOTS/blob/main/examples/imputation/film_imputation_example.py) | [✅](https://github.com/WenjieDu/PyPOTS/blob/main/examples/forecasting/film_forecasting_example.py) |  |  | [✅](https://github.com/WenjieDu/PyPOTS/blob/main/examples/anomaly_detection/film_anomalydetection_example.py) |  | `2022 - NeurIPS` |
+| Neural Net | RevIN_SCINet🧑‍🔧[^31] | [✅](https://github.com/WenjieDu/PyPOTS/blob/main/examples/imputation/revin_scinet_imputation_example.py) |  |  |  |  |  | `2022 - ICLR` |
+| Neural Net | Pyraformer🧑‍🔧[^26] | [✅](https://github.com/WenjieDu/PyPOTS/blob/main/examples/imputation/pyraformer_imputation_example.py) |  |  |  | [✅](https://github.com/WenjieDu/PyPOTS/blob/main/examples/anomaly_detection/pyraformer_anomalydetection_example.py) |  | `2022 - ICLR` |
+| Neural Net | Raindrop[^5] |  |  | [✅](https://github.com/WenjieDu/PyPOTS/blob/main/examples/classification/raindrop_classification_example.py) |  |  |  | `2022 - ICLR` |
+| Neural Net | FEDformer🧑‍🔧[^20] | [✅](https://github.com/WenjieDu/PyPOTS/blob/main/examples/imputation/fedformer_imputation_example.py) |  |  |  | [✅](https://github.com/WenjieDu/PyPOTS/blob/main/examples/anomaly_detection/fedformer_anomalydetection_example.py) |  | `2022 - ICML` |
+| Neural Net | Autoformer🧑‍🔧[^15] | [✅](https://github.com/WenjieDu/PyPOTS/blob/main/examples/imputation/autoformer_imputation_example.py) |  | [✅](https://github.com/WenjieDu/PyPOTS/blob/main/examples/classification/autoformer_classification_example.py) |  | [✅](https://github.com/WenjieDu/PyPOTS/blob/main/examples/anomaly_detection/autoformer_anomalydetection_example.py) |  | `2021 - NeurIPS` |
+| Neural Net | CSDI[^12] | [✅](https://github.com/WenjieDu/PyPOTS/blob/main/examples/imputation/csdi_imputation_example.py) | [✅](https://github.com/WenjieDu/PyPOTS/blob/main/examples/forecasting/csdi_forecasting_example.py) |  |  |  |  | `2021 - NeurIPS` |
+| Neural Net | Informer🧑‍🔧[^21] | [✅](https://github.com/WenjieDu/PyPOTS/blob/main/examples/imputation/informer_imputation_example.py) |  |  |  | [✅](https://github.com/WenjieDu/PyPOTS/blob/main/examples/anomaly_detection/informer_anomalydetection_example.py) |  | `2021 - AAAI` |
+| Neural Net | US-GAN[^10] | [✅](https://github.com/WenjieDu/PyPOTS/blob/main/examples/imputation/usgan_imputation_example.py) |  |  |  |  |  | `2021 - AAAI` |
+| Neural Net | CRLI[^6] |  |  |  | [✅](https://github.com/WenjieDu/PyPOTS/blob/main/examples/clustering/crli_clustering_example.py) |  |  | `2021 - AAAI` |
+| Probabilistic | BTTF[^8] |  | [✅](https://github.com/WenjieDu/PyPOTS/blob/main/examples/forecasting/bttf_forecasting_example.py) |  |  |  |  | `2021 - TPAMI` |
+| Neural Net | StemGNN🧑‍🔧[^33] | [✅](https://github.com/WenjieDu/PyPOTS/blob/main/examples/imputation/stemgnn_imputation_example.py) |  |  |  |  |  | `2020 - NeurIPS` |
+| Neural Net | SeFT[^53] |  |  | [✅](https://github.com/WenjieDu/PyPOTS/blob/main/examples/classification/seft_classification_example.py) |  |  |  | `2020 - ICML` |
+| Neural Net | Reformer🧑‍🔧[^32] | [✅](https://github.com/WenjieDu/PyPOTS/blob/main/examples/imputation/reformer_imputation_example.py) |  |  |  | [✅](https://github.com/WenjieDu/PyPOTS/blob/main/examples/anomaly_detection/reformer_anomalydetection_example.py) |  | `2020 - ICLR` |
+| Neural Net | GP-VAE[^11] | [✅](https://github.com/WenjieDu/PyPOTS/blob/main/examples/imputation/gpvae_imputation_example.py) |  |  |  |  |  | `2020 - AISTATS` |
+| Neural Net | VaDER[^7] |  |  |  | [✅](https://github.com/WenjieDu/PyPOTS/blob/main/examples/clustering/vader_clustering_example.py) |  |  | `2019 - GigaSci.` |
+| Neural Net | M-RNN[^9] | [✅](https://github.com/WenjieDu/PyPOTS/blob/main/examples/imputation/mrnn_imputation_example.py) |  |  |  |  |  | `2019 - TBME` |
+| Neural Net | BRITS[^3] | [✅](https://github.com/WenjieDu/PyPOTS/blob/main/examples/imputation/brits_imputation_example.py) |  | [✅](https://github.com/WenjieDu/PyPOTS/blob/main/examples/classification/brits_classification_example.py) |  |  |  | `2018 - NeurIPS` |
+| Neural Net | GRU-D[^4] | [✅](https://github.com/WenjieDu/PyPOTS/blob/main/examples/imputation/grud_imputation_example.py) |  | [✅](https://github.com/WenjieDu/PyPOTS/blob/main/examples/classification/grud_classification_example.py) |  |  |  | `2018 - Sci. Rep.` |
+| Neural Net | TCN🧑‍🔧[^35] | [✅](https://github.com/WenjieDu/PyPOTS/blob/main/examples/imputation/tcn_imputation_example.py) |  |  |  |  |  | `2018 - arXiv` |
+| Neural Net | Transformer🧑‍🔧[^2] | [✅](https://github.com/WenjieDu/PyPOTS/blob/main/examples/imputation/transformer_imputation_example.py) | [✅](https://github.com/WenjieDu/PyPOTS/blob/main/examples/forecasting/transformer_forecasting_example.py) |  |  | [✅](https://github.com/WenjieDu/PyPOTS/blob/main/examples/anomaly_detection/transformer_anomalydetection_example.py) |  | `2017 - NeurIPS` |
+| MF | TRMF[^44] | [✅](https://github.com/WenjieDu/PyPOTS/blob/main/examples/imputation/trmf_imputation_example.py) |  |  |  |  |  | `2016 - NeurIPS` |
+| Naive | Lerp[^40] | [✅](https://github.com/WenjieDu/PyPOTS/blob/main/examples/imputation/lerp_imputation_example.py) |  |  |  |  |  |  |
+| Naive | LOCF/NOCB | [✅](https://github.com/WenjieDu/PyPOTS/blob/main/examples/imputation/locf_imputation_example.py) |  |  |  |  |  |  |
+| Naive | Mean | [✅](https://github.com/WenjieDu/PyPOTS/blob/main/examples/imputation/mean_imputation_example.py) |  |  |  |  |  |  |
+| Naive | Median | [✅](https://github.com/WenjieDu/PyPOTS/blob/main/examples/imputation/median_imputation_example.py) |  |  |  |  |  |  |
 
-🙋 Differences between `LLM (Large Language Model)` and `TSFM (Time-Series Foundation Model)` in the above table:
-`LLM` refers to the models that are pre-trained on large-scale text data and can be fine-tuned for specific tasks.
-`TSFM` refers to the models that are pre-trained on large-scale time series data, inspired by recent achievements
-of foundation models in CV and NLP.
+**Model types:** LLM-based models build on language models pretrained on text, whereas TSFMs build on models
+pretrained on time series data. These categories describe the underlying modeling approach.
 
-💯 Contribute your model right now to increase your research impact! PyPOTS downloads are increasing rapidly
-(**[1M+ in total and 2k+ daily on PyPI so far](https://www.pepy.tech/projects/pypots)**),
-and your work will be widely used and cited by the community.
-Refer to the [contribution guide](https://github.com/WenjieDu/PyPOTS#-contribution) to see how to include your model in
-PyPOTS.
+Want to add a model? See the [contribution guide](https://github.com/WenjieDu/PyPOTS#-contribution) to make your research more accessible,
+reproducible, and discoverable by the time series community.
 
 ## ❖ PyPOTS Ecosystem
 
-At PyPOTS, things are related to coffee, which we're familiar with. Yes, this is a coffee universe!
-As you can see, there is a coffee pot in the PyPOTS logo. And what else? Please read on ;-)
+Welcome to the PyPOTS coffee universe! Our ecosystem takes inspiration from brewing coffee,
+with each library playing a distinct role in the time series analysis pipeline.
 
 <a href="https://github.com/WenjieDu/TSDB">
     <img src="https://pypots.com/figs/pypots_logos/TSDB/logo_FFBG.svg" align="left" width="140" alt="TSDB logo"/>
 </a>
 
-👈 Time series datasets are taken as coffee beans at PyPOTS, and POTS datasets are incomplete coffee beans with missing
-parts that have their own meanings. To make various public time-series datasets readily available to users,
-<i>Time Series Data Beans (TSDB)</i> is created to make loading time-series datasets super easy!
-Visit [TSDB](https://github.com/WenjieDu/TSDB) right now to know more about this handy tool 🛠, and it now supports a
-total of 172 open-source datasets!
+👈 Time series datasets are our coffee beans, and POTS datasets are beans with missing parts.
+[Time Series Data Beans (TSDB)](https://github.com/WenjieDu/TSDB) makes public time series datasets easy to load.
+Visit its repository for the latest list of supported datasets.
 
 <a href="https://github.com/WenjieDu/PyGrinder">
     <img src="https://pypots.com/figs/pypots_logos/PyGrinder/logo_FFBG.svg" align="right" width="140" alt="PyGrinder logo"/>
 </a>
 
-👉 To simulate the real-world data beans with missingness, the ecosystem library
-[PyGrinder](https://github.com/WenjieDu/PyGrinder), a toolkit helping grind your coffee beans into incomplete ones, is
-created. Missing patterns fall into three categories according to Rubin's missing-data framework[^13]:
-MCAR (missing completely at random), MAR (missing at random), and MNAR (missing not at random).
-PyGrinder supports all of them and additional functionalities related to missingness.
-With PyGrinder, you can introduce synthetic missing values into your datasets with a single line of code.
+👉 [PyGrinder](https://github.com/WenjieDu/PyGrinder) grinds your coffee beans into incomplete ones by simulating missing values.
+It supports all three missingness mechanisms defined by Rubin[^13], namely MCAR (missing completely at random),
+MAR (missing at random), and MNAR (missing not at random). Introduce synthetic missing values in a single line of code.
 
 <a href="https://github.com/WenjieDu/BenchPOTS">
     <img src="https://pypots.com/figs/pypots_logos/BenchPOTS/logo_FFBG.svg" align="left" width="140" alt="BenchPOTS logo"/>
 </a>
 
-👈 To fairly evaluate the performance of PyPOTS algorithms, the benchmarking suite
-[BenchPOTS](https://github.com/WenjieDu/BenchPOTS) is created, which provides standard and unified data-preprocessing
-pipelines to prepare datasets for measuring the performance of different POTS algorithms on various tasks.
+👈 Take a seat on the bench! [BenchPOTS](https://github.com/WenjieDu/BenchPOTS) provides standardized
+data preprocessing pipelines for fair and reproducible evaluation of time series algorithms across tasks.
 
 <a href="https://github.com/WenjieDu/BrewPOTS">
     <img src="https://pypots.com/figs/pypots_logos/BrewPOTS/logo_FFBG.svg" align="right" width="140" alt="BrewPOTS logo"/>
 </a>
 
-👉 Now the beans, grinder, and pot are ready, please have a seat on the bench and let's think about how to brew us a cup
-of coffee. Tutorials are necessary! Considering the future workload, PyPOTS tutorials are released in a single repo,
-and you can find them in [BrewPOTS](https://github.com/WenjieDu/BrewPOTS).
-Take a look at it now, and learn how to brew your POTS datasets!
+👉 Ready to brew? [BrewPOTS](https://github.com/WenjieDu/BrewPOTS) brings together tutorials and notebooks
+to help you learn how to brew your POTS datasets with PyPOTS.
 
 <p align="center">
 <a href="https://pypots.com/ecosystem/">
@@ -341,82 +350,71 @@ Take a look at it now, and learn how to brew your POTS datasets!
 
 ## ❖ Citing PyPOTS
 
-> [!TIP]
-> **[Updates in Jun 2024]** 😎 The 1st comprehensive time series imputation benchmark paper
-[TSI-Bench: Benchmarking Time Series Imputation](https://arxiv.org/abs/2406.12747) now is public available.
-> The code is open source in the repo [Awesome_Imputation](https://github.com/WenjieDu/Awesome_Imputation).
-> With nearly 35,000 experiments, we provide a comprehensive benchmarking study on 28 imputation methods, 3 missing
-> patterns (points, sequences, blocks),
-> various missing rates, and 8 real-world datasets.
->
-> **[Updates in Feb 2024]** 🎉 Our survey
-> paper [Deep Learning for Multivariate Time Series Imputation: A Survey](https://arxiv.org/abs/2402.04059) has been
-> released on arXiv.
-> We comprehensively review the literature of the state-of-the-art deep-learning imputation methods for time series,
-> provide a taxonomy for them, and discuss the challenges and future directions in this field.
+PyPOTS was first introduced at the [MiLeTS workshop at KDD 2023](https://kdd-milets.github.io/milets2023/).
+If you use PyPOTS in your research, please cite the [toolkit paper](https://arxiv.org/abs/2305.18811v2).
 
-The paper introducing PyPOTS is available [on arXiv](https://arxiv.org/abs/2305.18811),
-and a short version of it is accepted by the 9th SIGKDD international workshop on Mining and Learning from Time
-Series ([MiLeTS'23](https://kdd-milets.github.io/milets2023/))).
-**Additionally**, PyPOTS has been included as a [PyTorch Ecosystem](https://landscape.pytorch.org/?item=modeling--specialized--pypots) project.
-We are pursuing to publish it in prestigious academic venues, e.g. JMLR (track for
-[Machine Learning Open Source Software](https://www.jmlr.org/mloss/)). If you use PyPOTS in your work,
-please cite it as below and 🌟star this repository to make others notice this library. 🤗
-
-There are scientific research projects using PyPOTS and referencing in their papers.
-Here is [an incomplete list of them](https://scholar.google.com/scholar?as_ylo=2022&q=%E2%80%9CPyPOTS%E2%80%9D&hl=en).
 
 ```bibtex
 @article{du2023pypots,
 title = {{PyPOTS: A Python Toolkit for Data Mining on Partially-Observed Time Series}},
 author = {Wenjie Du},
 journal = {SIGKDD MiLeTS Workshop},
+url = {https://arxiv.org/abs/2305.18811v1},
 year = {2023},
 }
 ```
 
 ```bibtex
 @article{du2025pypots,
-title = {{PyPOTS v1: A Python Toolkit for Machine Learning on Partially-Observed Time Series}},
-author = {Wenjie Du, Yiyuan Yang, Linglong Qian, Jun Wang, and Qingsong Wen},
+title = {{PyPOTS: A Python Toolkit for Machine Learning on Partially-Observed Time Series}},
+author = {Wenjie Du and Yiyuan Yang and Linglong Qian and Jun Wang and Qingsong Wen},
+journal = {arXiv preprint arXiv:2305.18811v2},
+url = {https://arxiv.org/abs/2305.18811v2},
 year = {2025},
 }
 ```
 
+There are scientific research projects using PyPOTS and referencing it in their papers.
+Explore [research citing or using PyPOTS here](https://scholar.google.com/scholar?as_ylo=2022&q=%E2%80%9CPyPOTS%E2%80%9D&hl=en).
+
+### Related Research
+
+- **[SAITS](https://doi.org/10.1016/j.eswa.2023.119619)** (ESWA 2023, 1K+ citations): The research project that gave rise to PyPOTS. Its original implementation of self-attention-based time series imputation laid the foundation for the PyPOTS codebase.
+- **[TSI-Bench](https://arxiv.org/abs/2406.12747)** (arXiv preprint 2024): A standardized benchmark spanning 34,804 experiments, 28 algorithms, and 8 datasets under diverse missingness settings.
+- **[Deep Learning for Multivariate Time Series Imputation: A Survey](https://doi.org/10.24963/ijcai.2025/1187)** (IJCAI 2025): A taxonomy of imputation methods, toolkits, and research directions.
+- **[HELIX](https://openreview.net/forum?id=FN20iuPnEU)** (ICML 2026 Spotlight): Learnable identities and cross-dimensional synthesis for time series imputation.
+- **[End-to-End Learning for Partially-Observed Time Series with PyPOTS](https://doi.org/10.1145/3770855.3816470)** (KDD 2026 Hands-on Tutorial): Practical end-to-end workflows for learning from partially observed time series, from data preparation and multi-task modeling to evaluation and custom model integration. [Tutorial materials](https://pypots.com/events/KDD2026Tutorial/).
+
+Find benchmark code, experiment logs, and research resources in [Awesome_Imputation](https://github.com/WenjieDu/Awesome_Imputation).
+
 ## ❖ Contribution
 
-You're very welcome to contribute to this exciting project!
+We welcome contributions from researchers, engineers, and users:
 
-By committing your code, you'll
+- **New models:** Review our [inclusion criteria](https://docs.pypots.com/en/latest/faq.html#inclusion-criteria) and use a task-specific template (e.g., [imputation](https://github.com/WenjieDu/PyPOTS/tree/main/pypots/imputation/template)).
+- **Bug fixes and features:** Report reproducible issues or propose improvements through [GitHub Issues](https://github.com/WenjieDu/PyPOTS/issues).
+- **Documentation and examples:** Improve tutorials, API documentation, usage examples, and translations.
+- **Testing:** Add regression tests and help improve the reliability and reproducibility of PyPOTS.
+- **Security:** Report vulnerabilities privately as described in [SECURITY.md](https://github.com/WenjieDu/PyPOTS/blob/main/SECURITY.md).
 
-1. make your well-established model out-of-the-box for PyPOTS users to run,
-   and help your work obtain more exposure and impact.
-   Take a look at our [inclusion criteria](https://docs.pypots.com/en/latest/faq.html#inclusion-criteria).
-   You can utilize the `template` folder in each task package (e.g.
-   [pypots/imputation/template](https://github.com/WenjieDu/PyPOTS/tree/main/pypots/imputation/template)) to quickly
-   start;
-2. become one of [PyPOTS contributors](https://github.com/WenjieDu/PyPOTS/graphs/contributors) and
-   be listed as a volunteer developer [on the PyPOTS website](https://pypots.com/about/#volunteer-developers);
-3. get mentioned in PyPOTS [release notes](https://github.com/WenjieDu/PyPOTS/releases);
+Contributors are recognized on the [GitHub contributors page](https://github.com/WenjieDu/PyPOTS/graphs/contributors),
+the [PyPOTS website](https://pypots.com/about/#volunteer-developers), and in release notes where applicable.
+Please follow our [Code of Conduct](https://github.com/WenjieDu/PyPOTS/blob/main/CODE_OF_CONDUCT.md).
 
-You can also contribute to PyPOTS by simply starring🌟 this repo to help more people notice it.
-Your star is your recognition to PyPOTS, and it matters!
-
-👀 Check out a full list of our users' affiliations [on PyPOTS website here](https://pypots.com/users/)!
+If you find PyPOTS useful, consider starring the repository to help others discover it.
+Explore the [affiliations of our users](https://pypots.com/users/).
 
 ## ❖ Community
 
-We care about the feedback from our users, so we're building PyPOTS community on
+Join the PyPOTS community to ask questions, discuss research, share feedback, and collaborate:
 
-- [Slack](https://join.slack.com/t/pypots-org/shared_invite/zt-1gq6ufwsi-p0OZdW~e9UW_IA4_f1OfxA). General discussion,
-  Q&A, and our development team are here;
-- [LinkedIn](https://www.linkedin.com/company/pypots). Official announcements and news are here;
-- [WeChat (微信公众号)](https://mp.weixin.qq.com/s/X3ukIgL1QpNH8ZEXq1YifA). We also run a group chat on WeChat,
-  and you can get the QR code from the official account after following it;
+- [Discord](https://discord.gg/DXpCTdrvCE): General discussion, Q&A, and development.
+- ~~Slack~~ (retired): We have moved to Discord because Slack's free plan does not retain conversation history indefinitely.
+- [LinkedIn](https://www.linkedin.com/company/pypots): Official announcements and news.
+- [WeChat (微信公众号)](https://mp.weixin.qq.com/s/X3ukIgL1QpNH8ZEXq1YifA): Follow the official account to access the community group QR code.
+- [GitHub Issues](https://github.com/WenjieDu/PyPOTS/issues): Bug reports and feature requests.
 
-If you have any suggestions or want to contribute ideas or share time-series related papers, join us and tell.
-PyPOTS community is open, transparent, and surely friendly. Let's work together to build and improve PyPOTS!
-
+We welcome feedback and ideas from everyone working on real-world time series.
 
 [//]: # (Use APA reference style below)
 [^1]: Du, W., Cote, D., & Liu, Y. (2023).
@@ -638,7 +636,7 @@ Join our waitlist right now to receive the latest news and be the first to try i
 *arXiv 2024*.
 
 [^55]: Zhang, F., Du, W., Zhang, H., Yu, K., & Qu, S. (2026).
-[HELIX: Hybrid Encoding with Learnable Identity and Cross-dimensional Synthesis for Time Series Imputation](https://arxiv.org/abs/2605.02278).
+[HELIX: Hybrid Encoding with Learnable Identity and Cross-dimensional Synthesis for Time Series Imputation](https://openreview.net/forum?id=FN20iuPnEU).
 *ICML 2026*.
 
 [^56]: Le Naour, E., Nabil, T., & Petralia, A. (2026).
