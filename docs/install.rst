@@ -26,7 +26,7 @@ It is recommended to use **pip** or **conda** for PyPOTS installation as shown b
 
 Required Dependencies
 """""""""""""""""""""
-* Python >=3.8
+* Python >=3.10
 * h5py
 * numpy
 * scipy
@@ -54,13 +54,12 @@ Optional Dependencies
 
 Reasons of Version Limitations on Dependencies
 **********************************************
-* **Why we need python >=3.8?**
+* **Why do we require Python >=3.10?**
 
-Python v3.6 and before versions have no longer been supported officially (check out `status of Python versions here <https://devguide.python.org/versions/>`_).
-Besides, PyG (torch-geometric) is available for Python >= v3.7 (refer to https://pytorch-geometric.readthedocs.io/en/latest/install/installation.html#installation-via-anaconda ).
-Although torch-geometric is an optional dependency, we hope things go smoothly when our users opt to install it.
-In addition, note that Python v.3.7 has also been in the end-of-life status since 2023-06-27.
-Hence, we raise the minimum support Python version to v3.8.
+Python 3.9 reached end of life in October 2025, and PyPOTS now requires Python 3.10 or newer, including native support for PEP 604 union type annotations.
+We retain Python 3.10 compatibility for users with existing environments while testing newer Python versions as well.
+Our Linux CPU CI tests Python 3.10 and 3.14 with compatible versions of PyTorch, NumPy, pandas, and the optional PyG extensions.
+Choose dependency versions that support your Python version and platform. See the `Python version status <https://devguide.python.org/versions/>`_ for upstream maintenance information.
 
 * **Why we need PyTorch >=1.10?**
 

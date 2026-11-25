@@ -25,6 +25,14 @@
      - ✅
      - `Join Waitlist <https://docs.google.com/forms/d/1Ff2ndYUFQEL3tIcwtcR8lWeopQ2vTXX6D_x8WGFKH6E>`_
    * - Neural Net
+     - LIFTS :cite:`wu2026lifts`
+     - `✅ <https://github.com/WenjieDu/PyPOTS/blob/main/examples/imputation/lifts_imputation_example.py>`_
+     - `✅ <https://github.com/WenjieDu/PyPOTS/blob/main/examples/forecasting/lifts_forecasting_example.py>`_
+     -
+     -
+     -
+     - 2026 - arXiv
+   * - Neural Net
      - HELIX :cite:`zhang2026helix`
      - `✅ <https://github.com/WenjieDu/PyPOTS/blob/main/examples/imputation/helix_imputation_example.py>`_
      -
@@ -48,6 +56,14 @@
      -
      - `✅ <https://github.com/WenjieDu/PyPOTS/blob/main/examples/anomaly_detection/segrnn_anomalydetection_example.py>`_
      - ``2026 - IoT-J``
+   * - TSFM
+     - TS-ICL :cite:`lenaour2026tsicl`
+     - `✅ <https://github.com/WenjieDu/PyPOTS/blob/main/examples/imputation/tsicl_imputation_example.py>`_
+     - `✅ <https://github.com/WenjieDu/PyPOTS/blob/main/examples/forecasting/tsicl_forecasting_example.py>`_
+     -
+     -
+     -
+     - ``2026 - arXiv``
    * - Neural Net
      - TEFN🧑‍🔧 :cite:`zhan2025tefn`
      - `✅ <https://github.com/WenjieDu/PyPOTS/blob/main/examples/imputation/tefn_imputation_example.py>`_

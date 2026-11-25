@@ -7,7 +7,7 @@ Test cases for BRITS classification model.
 
 import os
 import unittest
-
+import numpy as np
 import pytest
 
 from pypots.classification import BRITS
@@ -111,6 +111,30 @@ class TestBRITS(unittest.TestCase):
         )
         assert metrics["roc_auc"] >= 0.5, "ROC-AUC < 0.5"
 
+    @pytest.mark.xdist_group(name="classification-brits")
+    def test_5_fit_uses_val_set_for_validation(self):
+        """Regression test for #911: val_dataloader must use VAL_SET, not TRAIN_SET."""
+        brits = BRITS(
+            DATA["n_steps"],
+            DATA["n_features"],
+            n_classes=DATA["n_classes"],
+            rnn_hidden_size=32,
+            epochs=1,
+            saving_path=self.saving_path,
+            model_saving_strategy="better",
+            optimizer=Adam(lr=0.001, weight_decay=1e-5),
+            device=DEVICE,
+        )
+        brits.fit(TRAIN_SET, VAL_SET)
+
+        val_dataset = brits.val_dataloader.dataset
+        actual_X = val_dataset.data["X"]
+        expected_X = VAL_SET["X"]
+
+        assert actual_X.shape == expected_X.shape
+        assert np.allclose(actual_X, expected_X, equal_nan=True), (
+            "val_dataloader was built from TRAIN_SET instead of VAL_SET"
+        )
 
 if __name__ == "__main__":
     unittest.main()

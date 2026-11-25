@@ -10,7 +10,7 @@
 
 <p align="center">
     <a href="https://docs.pypots.com/en/latest/install.html#reasons-of-version-limitations-on-dependencies">
-       <img alt="Python version" src="https://img.shields.io/badge/Python-v3.8+-F8C6B5?logo=python&logoColor=white">
+       <img alt="Python version" src="https://img.shields.io/badge/Python-v3.10+-F8C6B5?logo=python&logoColor=white">
     </a>
     <a href="https://landscape.pytorch.org/?item=modeling--specialized--pypots">
         <img alt="Pytorch landscape" src="https://img.shields.io/badge/PyTorch%20Landscape-EE4C2C?logo=pytorch&logoColor=white">
@@ -119,9 +119,11 @@ The paper references and links are all listed at the bottom of this file.
 | **Type**      | **Algo**                                                                                                                                        | **IMPT** | **FCST** | **CLAF** | **CLUS** | **ANOD** | **Year - Venue**                                                                                         |
 |:--------------|:------------------------------------------------------------------------------------------------------------------------------------------------|:--------:|:--------:|:--------:|:--------:|:--------:|:---------------------------------------------------------------------------------------------------------|
 | LLM&TSFM | <a href="https://time-series.ai"><img src="https://pypots.com/figs/timeseriesai/logo.png" width="26px" align="center">Time-Series.AI</a>  [^36] | ✅ | ✅ | ✅ | ✅ | ✅ | <a href="https://docs.google.com/forms/d/1Ff2ndYUFQEL3tIcwtcR8lWeopQ2vTXX6D_x8WGFKH6E">Join waitlist</a> |
+| Neural Net | LIFTS[^57] | [✅](examples/imputation/lifts_imputation_example.py) | [✅](examples/forecasting/lifts_forecasting_example.py) |  |  |  | `2026 - arXiv` |
 | Neural Net | HELIX [^55] | [✅](examples/imputation/helix_imputation_example.py) |  |  |  |  | `2026 - ICML` |
 | Neural Net | MixLinear🧑‍🔧[^52] |  | [✅](examples/forecasting/mixlinear_forecasting_example.py) |  |  |  | `2026 - ICLR` |
 | Neural Net | SegRNN🧑‍🔧[^43] | [✅](examples/imputation/segrnn_imputation_example.py) | [✅](examples/forecasting/segrnn_forecasting_example.py) |  |  | [✅](examples/anomaly_detection/segrnn_anomalydetection_example.py) | `2026 - IoT-J` |
+| TSFM | TS-ICL[^56] | [✅](examples/imputation/tsicl_imputation_example.py) | [✅](examples/forecasting/tsicl_forecasting_example.py) |  |  |  | `2026 - arXiv` |
 | Neural Net | TEFN🧑‍🔧[^39] | [✅](examples/imputation/tefn_imputation_example.py) | [✅](examples/forecasting/tefn_forecasting_example.py) | [✅](examples/classification/tefn_classification_example.py) |  | [✅](examples/anomaly_detection/tefn_anomalydetection_example.py) | `2025 - TPAMI` |
 | Neural Net | TimeMixer++[^49] | [✅](examples/imputation/timemixerpp_imputation_example.py) | [✅](examples/forecasting/timemixerpp_forecasting_example.py) |  |  | [✅](examples/anomaly_detection/timemixerpp_anomalydetection_example.py) | `2025 - ICLR` |
 | LLM | Time-LLM🧑‍🔧[^45] | [✅](examples/imputation/timellm_imputation_example.py) | [✅](examples/forecasting/timellm_forecasting_example.py) |  |  |  | `2024 - ICLR` |
@@ -575,3 +577,10 @@ Join our waitlist right now to receive the latest news and be the first to try i
 [^55]: Zhang, F., Du, W., Zhang, H., Yu, K., & Qu, S. (2026).
 [HELIX: Hybrid Encoding with Learnable Identity and Cross-dimensional Synthesis for Time Series Imputation](https://arxiv.org/abs/2605.02278).
 *ICML 2026*.
+[^56]: Le Naour, E., Nabil, T., & Petralia, A. (2026).
+[TS-ICL: A Flexible Time-Indexed Foundation Model for Time Series via In-Context Learning](https://arxiv.org/abs/2606.05878).
+*arXiv 2026*.
+
+[^57]: Wu, S., Wei, Y., & Wang, K. (2026).
+[Latent-Driven Imputation and Forecasting for Partially Observed Time Series](https://arxiv.org/abs/2610.03916).
+*arXiv 2026*.
