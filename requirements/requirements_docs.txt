@@ -11,7 +11,7 @@ sphinx-autodoc-typehints==2.3.0
 
 # Stable runtime dependencies for autodoc; the +cpu wheel also satisfies this torch pin.
 torch==2.10.0
-numpy==1.26.4
+numpy==2.5.5
 pandas==2.3.3
 transformers==4.57.6
 tsdb==0.8
