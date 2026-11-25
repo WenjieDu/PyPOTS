@@ -12,7 +12,7 @@ from email.parser import BytesParser
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-STABLE_TAG = re.compile(r"v(?:0|[1-9][0-9]*)(?:\.(?:0|[1-9][0-9]*)){1,2}")
+STABLE_TAG = re.compile(r"v(?:0|[1-9]\d*)(?:\.(?:0|[1-9]\d*)){1,2}", flags=re.ASCII)
 
 
 def git(*args):

@@ -81,6 +81,19 @@ release version and source revision. The platform jobs are independent: one
 platform may publish successfully while the other fails. PyPI and DockerHub
 publication are also not an atomic transaction.
 
+The final image runs as non-root user `pypots` (UID/GID 10001) with a writable
+home and default working directory at `/home/pypots`. The validation job checks
+this identity, Hugging Face cache access, and a tensor checkpoint round trip.
+When bind-mounting datasets or output directories, grant UID/GID 10001 the
+required read/write permissions on the host. System dependencies are installed
+at build time; Python dependency installation is wheel-only, including
+isolated build requirements. The sole explicit third-party source-build
+exception is `progressbar==2.5` (via benchpots and nonlinear-benchmarks),
+which has no upstream wheel. Its exact PyPI archive is SHA-256 pinned and
+built without dependency resolution into a local wheel before installation.
+Remove this exception when the upstream dependency chain supports wheels.
+The verified local PyPOTS source is intentionally built by pip.
+
 The pinned CUDA base and Torch/NumPy compatibility baseline are intentionally
 retained; review base-image and dependency security alerts separately before
 release. Changing the CUDA/PyTorch matrix requires compatibility evidence.

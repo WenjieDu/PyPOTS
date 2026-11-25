@@ -1,9 +1,9 @@
-# Preserve the existing CUDA development base and both supported architectures.
-FROM nvidia/cuda:12.1.0-cudnn8-devel-ubuntu22.04@sha256:7d3c22648869d206dc4fdd6a304ffd18309b7adeee1e43a1b53b5f126c44e69b
+# CUDA 12.1.0, cuDNN 8, Ubuntu 22.04 devel; retain the multi-platform digest.
+FROM nvidia/cuda@sha256:7d3c22648869d206dc4fdd6a304ffd18309b7adeee1e43a1b53b5f126c44e69b
 LABEL maintainer="Wenjie Du"
 
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends ca-certificates python3 python3-pip python-is-python3 && \
+    apt-get install -y --no-install-recommends ca-certificates python-is-python3 python3 python3-pip && \
     rm -rf /var/lib/apt/lists/*
 
 ARG TARGETARCH
@@ -22,27 +22,41 @@ RUN set -eu; \
       arm64) torch_version="$PYTORCH_VER"; torch_index=https://pypi.org/simple ;; \
       *) echo "Unsupported architecture: $TARGETARCH" >&2; exit 1 ;; \
     esac; \
-    printf 'torch==%s\nnumpy==%s\n' "$torch_version" "$NUMPY_VER" > /tmp/pypots-constraints.txt; \
+    printf 'torch==%s\nnumpy==%s\nprogressbar==2.5\n' "$torch_version" "$NUMPY_VER" > /tmp/pypots-constraints.txt; \
     mkdir -p /tmp/torch-wheel; \
     python3 -m pip download --no-deps --only-binary=:all: --index-url "$torch_index" \
       --dest /tmp/torch-wheel "torch==$torch_version"; \
-    python3 -m pip install -c /tmp/pypots-constraints.txt /tmp/torch-wheel/torch-*.whl "numpy==$NUMPY_VER"; \
+    python3 -m pip install --only-binary=:all: -c /tmp/pypots-constraints.txt /tmp/torch-wheel/torch-*.whl "numpy==$NUMPY_VER"; \
     rm -rf /tmp/torch-wheel
 
 # Install only files from the checked-out build context, never a cloned branch.
+# Third-party installation is wheel-only. The legacy progressbar dependency
+# (benchpots -> nonlinear-benchmarks) has no upstream wheel. Build just this
+# pinned, hash-verified source archive into a wheel; never allow index fallback.
+# Building the local, verified PyPOTS checkout from source is intentional.
+RUN python3 -m pip wheel --only-binary=:all: --no-deps --require-hashes \
+    --wheel-dir /tmp/pypots-wheels \
+    'progressbar @ https://files.pythonhosted.org/packages/a3/a6/b8e451f6cff1c99b4747a2f7235aa904d2d49e8e1464e0b798272aa84358/progressbar-2.5.tar.gz#sha256=5d81cb529da2e223b53962afd6c8ca0f05c6670e40309a7219eacc36af9b6c63'
 WORKDIR /opt/pypots-source
 COPY pyproject.toml README.md LICENSE ./
 COPY requirements/requirements.txt requirements/requirements_dev.txt ./requirements/
 COPY pypots/ ./pypots/
-RUN python3 -m pip install -c /tmp/pypots-constraints.txt -r requirements/requirements.txt && \
-    python3 -m pip install -c /tmp/pypots-constraints.txt "torch-geometric==$PYG_VER" && \
+RUN python3 -m pip install --only-binary=:all: --find-links /tmp/pypots-wheels \
+    -c /tmp/pypots-constraints.txt -r requirements/requirements.txt && \
+    python3 -m pip install --only-binary=:all: -c /tmp/pypots-constraints.txt "torch-geometric==$PYG_VER" && \
     if [ "$TARGETARCH" = amd64 ]; then \
-      python3 -m pip install -c /tmp/pypots-constraints.txt --only-binary=:all: \
+      python3 -m pip install --only-binary=:all: -c /tmp/pypots-constraints.txt \
         torch-scatter==2.1.2 torch-sparse==0.6.18 \
         --find-links "https://data.pyg.org/whl/torch-2.5.0+cu121.html"; \
     fi && \
-    python3 -m pip install --no-deps . && \
+    python3 -m pip install --only-binary=:all: --no-deps . && \
     python3 -m pip check
 
 WORKDIR /
-RUN rm -rf /opt/pypots-source /tmp/pypots-constraints.txt
+RUN rm -rf /opt/pypots-source /tmp/pypots-constraints.txt /tmp/pypots-wheels && \
+    groupadd --gid 10001 pypots && \
+    useradd --uid 10001 --gid 10001 --create-home --no-log-init --shell /bin/bash pypots
+
+ENV HOME=/home/pypots
+WORKDIR /home/pypots
+USER pypots

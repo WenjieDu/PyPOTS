@@ -41,7 +41,7 @@ def test_exact_stable_tag(release_repo):
     assert check_release.validate_checkout("v2.1", "") == ("2.1", head)
 
 
-@pytest.mark.parametrize("tag", ["v2.1rc1", "v2.1.dev0", "2.1", "v02.1", "v2.1/evil"])
+@pytest.mark.parametrize("tag", ["v2.1rc1", "v2.1.dev0", "2.1", "v02.1", "v2.1/evil", "v2١.1", "v2.1２", "v2.1.3٤"])
 def test_nonstable_or_invalid_tag(release_repo, tag):
     with pytest.raises(ValueError, match="Expected a stable"):
         check_release.validate_checkout(tag, "")

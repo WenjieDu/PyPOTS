@@ -77,6 +77,7 @@ jobs:
           test "$(docker image inspect --format '{{index .Config.Labels "org.opencontainers.image.revision"}}' pypots-release:validated)" = "$EXPECTED_REVISION"
           docker run --rm -e EXPECTED_VERSION -e EXPECTED_CUDA pypots-release:validated \
             python -c 'import os, importlib.metadata as m, torch, pypots; assert pypots.__version__ == m.version("pypots") == os.environ["EXPECTED_VERSION"]; assert (torch.version.cuda or "none") == os.environ["EXPECTED_CUDA"]; assert torch.ones(2).sum().item() == 2; print(pypots.__version__, torch.__version__)'
+          docker run --rm pypots-release:validated python -c 'import os, pathlib, tempfile, torch; from huggingface_hub.constants import HF_HUB_CACHE; home = pathlib.Path.home(); assert os.getuid() == os.getgid() == 10001; assert home == pathlib.Path("/home/pypots") == pathlib.Path.cwd(); pathlib.Path(HF_HUB_CACHE).mkdir(parents=True, exist_ok=True); assert os.access(HF_HUB_CACHE, os.W_OK); temp = tempfile.TemporaryDirectory(dir=home); path = pathlib.Path(temp.name) / "checkpoint.pt"; torch.save(torch.ones(2), path); assert torch.load(path, weights_only=True).sum().item() == 2; temp.cleanup()'
           docker run --rm pypots-release:validated python -m pip check
           docker run --rm pypots-release:validated pypots-cli --help
           docker run --rm pypots-release:validated python -c 'import torch_geometric; print(torch_geometric.__version__)'
