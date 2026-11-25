@@ -9,6 +9,7 @@ import torch.nn.functional as F
 from einops import rearrange
 from transformers.models.gpt2.modeling_gpt2 import GPT2Model
 
+from ....utils.hf_offline import resolve_hf_repo_id
 from ..transformer.embedding import DataEmbedding
 
 
@@ -55,7 +56,7 @@ class BackboneGPT4TS(nn.Module):
         )
 
         self.gpt2 = GPT2Model.from_pretrained(
-            "gpt2",
+            resolve_hf_repo_id("gpt2"),
             output_attentions=True,
             output_hidden_states=True,
         )
@@ -94,12 +95,15 @@ class BackboneGPT4TS(nn.Module):
         x_mark_enc: torch.Tensor,
         mask: torch.Tensor,
     ):
-        # Normalization from Non-stationary Transformer
-        means = torch.sum(x_enc, dim=1) / torch.sum(mask == 1, dim=1)
+        # Normalization from Non-stationary Transformer.
+        # clamp the denominator: a fully-missing channel (all mask zeros, possible with
+        # runtime-artificial missingness like SAITS-style mcar) would give 0/0 = NaN here
+        n_observed = torch.sum(mask == 1, dim=1).clamp(min=1)
+        means = torch.sum(x_enc, dim=1) / n_observed
         means = means.unsqueeze(1).detach()
         x_enc = x_enc - means
         x_enc = x_enc.masked_fill(mask == 0, 0)
-        stdev = torch.sqrt(torch.sum(x_enc * x_enc, dim=1) / torch.sum(mask == 1, dim=1) + 1e-5)
+        stdev = torch.sqrt(torch.sum(x_enc * x_enc, dim=1) / n_observed + 1e-5)
         stdev = stdev.unsqueeze(1).detach()
         x_enc /= stdev
 
