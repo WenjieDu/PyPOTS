@@ -1,0 +1,71 @@
+name: Nightly Compatibility Testing
+
+on:
+    schedule:
+        - cron: '0 0 * * *'
+    workflow_dispatch:
+
+permissions:
+    contents: read
+
+concurrency:
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: false
+
+jobs:
+    compatibility:
+        strategy:
+            fail-fast: false
+            matrix:
+                include:
+                    - os: ubuntu-latest
+                      python: '3.10'
+                      torch: '2.3.0'
+                      numpy: '1.26.4'
+                      pandas: '2.3.3'
+                      suite: full
+                    - os: ubuntu-latest
+                      python: '3.11'
+                      torch: '2.9.0'
+                      numpy: '2.3.5'
+                      pandas: '2.3.3'
+                      suite: full
+                    - os: ubuntu-latest
+                      python: '3.12'
+                      torch: '2.9.0'
+                      numpy: '2.3.5'
+                      pandas: '2.3.3'
+                      suite: full
+                    - os: ubuntu-latest
+                      python: '3.13'
+                      torch: '2.9.0'
+                      numpy: '2.3.5'
+                      pandas: '2.3.3'
+                      suite: full
+                    - os: ubuntu-latest
+                      python: '3.14'
+                      torch: '2.9.0'
+                      numpy: '2.3.5'
+                      pandas: '2.3.3'
+                      suite: full
+                    - os: macos-15
+                      python: '3.13'
+                      torch: '2.9.0'
+                      numpy: '2.3.5'
+                      pandas: '2.3.3'
+                      suite: smoke
+                    - os: windows-latest
+                      python: '3.12'
+                      torch: '2.9.0'
+                      numpy: '2.3.5'
+                      pandas: '2.3.3'
+                      suite: smoke
+        uses: ./.github/workflows/ci_job.yml
+        with:
+            os: ${{ matrix.os }}
+            python: ${{ matrix.python }}
+            torch: ${{ matrix.torch }}
+            numpy: ${{ matrix.numpy }}
+            pandas: ${{ matrix.pandas }}
+            suite: ${{ matrix.suite }}
+            checkout-ref: ${{ github.event_name == 'schedule' && 'dev' || github.ref }}

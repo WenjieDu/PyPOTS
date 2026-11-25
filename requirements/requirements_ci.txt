@@ -1,0 +1,6 @@
+# Test tools only: do not install the released pypots[dev] into CI.
+build
+twine
+pytest
+pytest-cov
+pytest-xdist
