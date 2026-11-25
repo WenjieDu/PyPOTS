@@ -48,12 +48,12 @@ jobs:
             PIP_INDEX_URL: https://pypi.org/simple
 
         steps:
-            - uses: actions/checkout@v6
+            - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
               with:
                   ref: ${{ inputs.checkout-ref }}
                   persist-credentials: false
 
-            - uses: actions/setup-python@v6
+            - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
               with:
                   python-version: ${{ inputs.python }}
                   cache: pip
@@ -109,7 +109,7 @@ jobs:
 
             - name: Upload reports
               if: always()
-              uses: actions/upload-artifact@v4
+              uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
               with:
                   name: ${{ inputs.suite }}-${{ inputs.os }}-py${{ inputs.python }}
                   path: |
@@ -120,7 +120,7 @@ jobs:
 
             - name: Upload validated distributions
               if: inputs.suite == 'package' && success()
-              uses: actions/upload-artifact@v4
+              uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
               with:
                   name: validated-distributions
                   path: ${{ runner.temp }}/pypots-ci/dist/*

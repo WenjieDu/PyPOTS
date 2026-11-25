@@ -1,0 +1,12 @@
+# Release builds need only package inputs from the exact checkout.
+**
+!pyproject.toml
+!README.md
+!LICENSE
+!requirements/
+!requirements/requirements.txt
+!requirements/requirements_dev.txt
+!pypots/
+!pypots/**
+**/__pycache__/
+**/*.pyc
