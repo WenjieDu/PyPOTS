@@ -1,6 +1,24 @@
 pypots.imputation
 =========================
 
+pypots.imputation.saits
+------------------------------
+
+.. automodule:: pypots.imputation.saits
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+
+pypots.imputation.helix
+------------------------------
+
+.. automodule:: pypots.imputation.helix
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+
 pypots.imputation.lifts
 ------------------------------------
 
@@ -27,25 +45,6 @@ LayerNorm so it retains history dependence. Neither boundary occurs in the
 partially observed, five-dimensional Case 1 reference comparison.
 
 .. automodule:: pypots.imputation.lifts
-   :members:
-   :undoc-members:
-   :show-inheritance:
-   :inherited-members:
-
-
-pypots.imputation.saits
-------------------------------
-
-.. automodule:: pypots.imputation.saits
-   :members:
-   :undoc-members:
-   :show-inheritance:
-   :inherited-members:
-
-pypots.imputation.helix
-------------------------------
-
-.. automodule:: pypots.imputation.helix
    :members:
    :undoc-members:
    :show-inheritance:
