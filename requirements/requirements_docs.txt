@@ -7,7 +7,7 @@ pygments==2.20.0
 accessible-pygments==0.0.5
 sphinxcontrib-bibtex==2.6.5
 sphinxcontrib-gtagjs==0.2.1
-sphinx-autodoc-typehints==2.3.0
+sphinx-autodoc-typehints==3.0.1
 
 # Stable runtime dependencies for autodoc; the +cpu wheel also satisfies this torch pin.
 torch==2.10.0
