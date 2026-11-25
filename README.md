@@ -87,7 +87,7 @@ PyPOTS is built upon this philosophy to enable unified time series analysis for 
 - **Unified APIs:** Consistent training and prediction interfaces across models, making experimentation and model comparison easier.
 - **Rich model zoo:** 50+ models and methods spanning classical approaches, deep learning, LLM-based models, and time series foundation models (TSFMs).
 - **<a href="https://landscape.pytorch.org/?item=modeling--specialized--pypots"><img src="https://pypots.com/figs/misc/pytorch.svg" width="26px" align="center">PyTorch Ecosystem</a>:** PyPOTS is built on PyTorch and featured in the PyTorch Landscape.
-- **Hardware acceleration:** CPU and NVIDIA GPU support, including multi-GPU training via PyTorch DataParallel and automatic mixed precision for supported models.
+- **Hardware acceleration:** CPU, NVIDIA CUDA GPUs, and Ascend NPUs; multi-device training via PyTorch DistributedDataParallel (DDP), CUDA DataParallel, and automatic mixed precision for supported models. See the [acceleration guide](https://docs.pypots.com/en/latest/install.html#acceleration) for setup and limitations.
 - **Flexible data handling:** In-memory data and lazy loading from HDF5 files.
 - **Hyperparameter optimization:** Model tuning powered by [Optuna](https://github.com/optuna/optuna).
 - **Reproducible research:** Datasets, missingness simulation, standardized preprocessing, and evaluation tools across the PyPOTS ecosystem.

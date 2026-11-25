@@ -82,7 +82,7 @@ Wir verstehen reale Zeitreihen als **partiell beobachtete Zeitreihen (Partially-
 - **Einheitliche APIs:** Konsistente Trainings- und Vorhersageschnittstellen erleichtern Experimente und Modellvergleiche.
 - **Umfangreicher Modellkatalog:** Über 50 Modelle und Methoden, darunter klassische Ansätze, Deep Learning, LLM-basierte Modelle und Zeitreihen-Basismodelle (TSFM).
 - **<a href="https://landscape.pytorch.org/?item=modeling--specialized--pypots"><img src="https://pypots.com/figs/misc/pytorch.svg" width="26px" align="center">PyTorch Ecosystem</a>:** PyPOTS basiert auf PyTorch und ist in der PyTorch Landscape gelistet.
-- **Hardwarebeschleunigung:** CPU und NVIDIA-GPU, bei unterstützten Modellen Multi-GPU-Training mittels PyTorch DataParallel und automatische gemischte Genauigkeit.
+- **Hardwarebeschleunigung:** CPU, NVIDIA-CUDA-GPUs und Ascend-NPUs; Training auf mehreren Geräten mit PyTorch DistributedDataParallel (DDP), CUDA DataParallel und automatische gemischte Genauigkeit für unterstützte Modelle. Einrichtung und Einschränkungen siehe [Beschleunigungsleitfaden](https://docs.pypots.com/en/latest/install.html#acceleration).
 - **Flexible Datenverarbeitung:** Daten im Arbeitsspeicher und bedarfsgerechtes Laden aus HDF5-Dateien.
 - **Hyperparameteroptimierung:** Modelloptimierung mit [Optuna](https://github.com/optuna/optuna).
 - **Reproduzierbare Forschung:** Datensätze, Simulation fehlender Werte, standardisierte Vorverarbeitung und Evaluierungswerkzeuge im Ökosystem.

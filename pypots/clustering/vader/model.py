@@ -66,10 +66,9 @@ class VaDER(BaseNNClusterer):
         `0` means data loading will be in the main process, i.e. there won't be subprocesses.
 
     device :
-        The device for the model to run on.
-        If not given, will try to use CUDA devices first (will use the GPU with device number 0 only by default),
-        then CPUs, considering CUDA and CPU are so far the main devices for people to train ML models.
-        Other devices like Google TPU and Apple Silicon accelerator MPS may be added in the future.
+        The device for the model to run on. If None, PyPOTS selects CUDA, then Ascend NPU, then CPU,
+        depending on availability. Ascend NPU requires a compatible torch-npu and CANN environment;
+        model and operator support may vary.
 
     saving_path :
         The path for automatically saving model checkpoints and tensorboard files (i.e. loss values recorded during

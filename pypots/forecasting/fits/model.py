@@ -69,12 +69,12 @@ class FITS(BaseNNForecaster):
         `0` means data loading will be in the main process, i.e. there won't be subprocesses.
 
     device :
-        The device for the model to run on. It can be a string, a :class:`torch.device` object, or a list of them.
-        If not given, will try to use CUDA devices first (will use the default CUDA device if there are multiple),
-        then CPUs, considering CUDA and CPU are so far the main devices for people to train ML models.
-        If given a list of devices, e.g. ['cuda:0', 'cuda:1'], or [torch.device('cuda:0'), torch.device('cuda:1')] , the
-        model will be parallely trained on the multiple devices (so far only support parallel training on CUDA devices).
-        Other devices like Google TPU and Apple Silicon accelerator MPS may be added in the future.
+        The device for the model to run on, as a string, a :class:`torch.device` object, or a list of them.
+        If None, PyPOTS selects CUDA, then Ascend NPU, then CPU, depending on availability.
+        Use ``"cuda:0"``, ``"npu:0"``, or ``"cpu"`` to select a specific backend/device.
+        Ascend NPU requires a compatible torch-npu and CANN environment; model and operator support may vary.
+        For compatible neural-network models, a CUDA device list uses DataParallel; for DDP training,
+        pass a single device per process and use :func:`pypots.utils.distributed.run_ddp_fit`.
 
     saving_path :
         The path for automatically saving model checkpoints and tensorboard files (i.e. loss values recorded during

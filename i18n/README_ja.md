@@ -82,7 +82,7 @@ PyPOTS（発音は「Pie Pots」）は、時系列分析のためのオープン
 - **統一 API：** モデル間で一貫した学習・予測インターフェースを提供し、実験や比較を容易にします。
 - **豊富なモデル：** 古典的手法、深層学習、LLM ベースのモデル、時系列基盤モデル（TSFM）など 50 以上。
 - **<a href="https://landscape.pytorch.org/?item=modeling--specialized--pypots"><img src="https://pypots.com/figs/misc/pytorch.svg" width="26px" align="center">PyTorch Ecosystem</a>：** PyTorch を基盤とし、PyTorch Landscape に掲載されています。
-- **ハードウェアアクセラレーション：** CPU と NVIDIA GPU に対応し、対応モデルでは PyTorch DataParallel によるマルチ GPU 学習と自動混合精度を利用できます。
+- **ハードウェアアクセラレーション：** CPU、NVIDIA CUDA GPU、Ascend NPU に対応。対応モデルでは PyTorch DistributedDataParallel（DDP）によるマルチデバイス学習、CUDA DataParallel、自動混合精度を利用できます。設定方法と制約については[アクセラレーションガイド](https://docs.pypots.com/en/latest/install.html#acceleration)をご覧ください。
 - **柔軟なデータ処理：** メモリ上のデータと HDF5 ファイルの遅延読み込みに対応。
 - **ハイパーパラメータ最適化：** [Optuna](https://github.com/optuna/optuna) によるモデルの調整。
 - **再現可能な研究：** エコシステム全体でデータセット、欠損シミュレーション、標準化された前処理・評価ツールを提供。

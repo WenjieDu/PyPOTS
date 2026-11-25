@@ -57,8 +57,8 @@ The file ``tests/global_test_config.py`` sets up shared test data and configurat
    FORECASTING_VAL_SET = {"X": ..., "X_pred": ...}
    FORECASTING_TEST_SET = {"X": ..., "X_pred": ...}
 
-   # Device selection (auto-detects CUDA):
-   DEVICE = None  # or cuda device if available
+   # Device selection (auto-detects CUDA, then Ascend NPU, then CPU):
+   DEVICE = None  # or explicitly select "cuda", "npu", or "cpu"
 
 The test data is generated using ``benchpots.datasets.preprocess_random_walk()``
 which creates a synthetic random walk dataset with configurable missingness.
@@ -334,6 +334,20 @@ Lint
    ruff check .
    ruff format . --check
 
+
+Device and Distributed Training Tests
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. code-block:: bash
+
+   python -m pytest -rA tests/utils/devices.py tests/utils/distributed.py
+
+The CPU tests cover device helpers and real multi-process Gloo training, including
+data sharding, synchronized early stopping and checkpoint handling. NPU-specific
+tests require a working Ascend environment and are skipped when no NPU is visible.
+Run those tests on a suitable host (including at least two visible NPUs for HCCL
+collectives). CPU and mocked device checks do not establish accelerator runtime
+compatibility.
 
 Test Environment Setup
 ^^^^^^^^^^^^^^^^^^^^^^^^

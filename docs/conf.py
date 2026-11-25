@@ -89,8 +89,9 @@ templates_path = ["_templates"]
 # This pattern also affects html_static_path and html_extra_path.
 exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 
-# The name of the Pygments (syntax highlighting) style to use.
-pygments_style = "sphinx"
+# Use accessible, theme-specific Pygments palettes for Furo code blocks.
+pygments_style = "a11y-light"
+pygments_dark_style = "a11y-dark"
 
 # -- Options for PDF output -------------------------------------------------
 latex_engine = "xelatex"

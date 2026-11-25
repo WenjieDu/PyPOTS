@@ -82,7 +82,7 @@ Concebemos séries temporais reais como **séries temporais parcialmente observa
 - **APIs unificadas:** interfaces consistentes de treinamento e previsão, facilitando experimentos e comparações.
 - **Catálogo abrangente:** mais de 50 modelos e métodos clássicos, de aprendizado profundo, baseados em LLM e modelos fundacionais de séries temporais (TSFM).
 - **<a href="https://landscape.pytorch.org/?item=modeling--specialized--pypots"><img src="https://pypots.com/figs/misc/pytorch.svg" width="26px" align="center">PyTorch Ecosystem</a>:** o PyPOTS é construído sobre PyTorch e está presente no PyTorch Landscape.
-- **Aceleração por hardware:** CPU e GPU NVIDIA, treinamento multi-GPU com PyTorch DataParallel e precisão mista automática para modelos compatíveis.
+- **Aceleração por hardware:** CPU, GPU NVIDIA CUDA e NPU Ascend; treinamento em múltiplos dispositivos via PyTorch DistributedDataParallel (DDP), CUDA DataParallel e precisão mista automática para modelos compatíveis. Consulte o [guia de aceleração](https://docs.pypots.com/en/latest/install.html#acceleration) para a configuração e as limitações.
 - **Tratamento flexível de dados:** dados em memória e carregamento sob demanda de arquivos HDF5.
 - **Otimização de hiperparâmetros:** ajuste de modelos com [Optuna](https://github.com/optuna/optuna).
 - **Pesquisa reprodutível:** conjuntos de dados, simulação de valores ausentes, pré-processamento padronizado e ferramentas de avaliação no ecossistema.

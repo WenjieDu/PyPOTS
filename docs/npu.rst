@@ -1,20 +1,23 @@
 NPU Support (Ascend)
 ========================
 
-PyPOTS supports Ascend NPUs (e.g. Atlas A2 / Ascend 910B3) as a first-class device backend:
-``device="npu"`` works in model initialization, training, validation, prediction, and
-checkpoint saving/loading, at parity with ``device="cuda"``. No model code changes are needed.
+PyPOTS supports Huawei Ascend NPUs (e.g. Atlas A2 / Ascend 910B3) as a
+device backend for compatible models. Select ``device="npu"`` or a specific
+visible NPU with the standard model API for training, validation, prediction,
+and checkpoint handling. Operator and model coverage is not identical to CUDA;
+see the hardware notes below.
 
-This page covers installation, usage, multi-device DDP training, offline loading of the
-LLM backbones used by TimeLLM/GPT4TS/MOMENT, and the hardware-specific notes you need
-before training on Ascend.
+This page covers installation, single-device usage, multi-device DDP training,
+offline loading of Hugging Face backbones, and hardware-specific limitations.
+See :doc:`install` for installation from the development branch when the
+installed release does not yet include NPU support.
 
 
 Installation
 ----------------
 
-PyPOTS itself does not add a new hard dependency: ``torch_npu`` is imported lazily, only on
-the ``npu`` code path. To train on Ascend you need the following stack (verified on 8×910B3):
+PyPOTS does not add a hard dependency on torch-npu; CPU/CUDA users do not need it.
+The following stack was previously verified on 8 × Ascend 910B3:
 
 .. code-block:: text
 
@@ -27,9 +30,11 @@ running anything, otherwise ``libhccl.so`` fails to load).
 
 .. code-block:: bash
 
-    pip install pypots            # no extra needed; torch_npu is your responsibility
-    # on the Ascend host:
-    pip install torch_npu==2.9.0.post2
+    # Install PyPOTS with NPU support (see Installation for source installation)
+    pip install pypots
+    # Example torch-npu version for the tested PyTorch 2.9.0 stack
+    pip install torch-npu==2.9.0.post2
+    # Source the set_env.sh script from your CANN installation before running Python.
 
 
 Basic usage
@@ -37,15 +42,22 @@ Basic usage
 
 .. code-block:: python
 
+    import torch_npu  # register the NPU device before explicit selection
     from pypots.imputation import SAITS
 
-    model = SAITS(n_steps=24, n_features=8, ..., device="npu")      # first visible NPU
-    model = SAITS(..., device="npu:3")                              # a specific NPU
-    model = SAITS(..., device=None)                                 # auto: cuda → npu → cpu
+    model = SAITS(
+        n_steps=24, n_features=8,
+        n_layers=1, d_model=32, n_heads=2,
+        d_k=16, d_v=16, d_ffn=32,
+        epochs=2, num_workers=0, device="npu",
+    )
 
-Training, validation, prediction, and checkpoint save/load all follow the standard PyPOTS
-APIs — ``map_location`` handles cross-device checkpoint loading, so a checkpoint saved on
-NPU loads on CPU/GPU and vice versa.
+Use ``device="npu:3"`` to select a specific visible NPU, or ``device=None``
+to probe CUDA first, then NPU, then CPU. Use the standard ``fit()``,
+``predict()`` and ``save()`` / ``load()`` APIs. Checkpoint loading uses
+``map_location`` to map tensors to the target device; cross-device loading
+also requires a compatible model architecture and supported operators.
+
 
 If you have existing CUDA scripts and want to run them on Ascend with zero code changes,
 ``torch_npu.contrib.transfer_to_npu`` (import it before any torch device call) monkey-patches
@@ -85,40 +97,23 @@ cache directly.
 Multi-device training (DDP)
 ----------------------------------
 
-DDP on Ascend uses the HCCL backend (registered by ``torch_npu``) and is driven by
-``torchrun``. PyPOTS ships a launcher that drives the model's own ``fit()`` inside the
-process group — you do not rewrite the training loop:
+DDP on Ascend uses the HCCL backend registered by torch-npu. Use the
+``run_ddp_fit()`` helper and launch one process per visible NPU with
+``torchrun``. See :doc:`distributed` for the complete training script,
+rank-local device selection, batch-size semantics and checkpoint handling.
 
 .. code-block:: bash
 
-    # one process per visible device; rank i maps onto the i-th *visible* device
-    ASCEND_RT_VISIBLE_DEVICES=0,1,2,3 torchrun --nproc_per_node=4 train_script.py
+    ASCEND_RT_VISIBLE_DEVICES=0,1,2,3 PYPOTS_DEVICE=npu torchrun --standalone --nproc-per-node=4 train_ddp.py
 
-.. code-block:: python
+This command uses the script in :doc:`distributed`. Use
+``find_unused_parameters=True`` for models that require it, such as USGAN.
 
-    # train_script.py
-    from pypots.imputation import SAITS
-    from pypots.utils.distributed import run_ddp_fit
-
-    model = SAITS(n_steps=24, n_features=8, ..., device=None, epochs=10)
-    run_ddp_fit(model, train_set, val_set)
-    # GAN-style models whose discriminator is idle during generator steps:
-    run_ddp_fit(model, train_set, val_set, find_unused_parameters=True)
-
-The launcher:
-
-1. moves the model to its rank-local device,
-2. swaps the inner net for a DDP wrapper (parameters pre-broadcast from rank 0),
-3. shards the train/val dataloaders per rank,
-4. runs the model's own ``fit()`` unchanged (gradients all-reduce),
-5. unwraps and loads the best state dict on every rank.
-
-In a plain single-process call (no ``torchrun``), ``run_ddp_fit`` falls back to
-``model.fit()`` — call sites need no branching.
-
-Verified on 4×910B3: SAITS (Transformer) and USGAN (unfused biGRU discriminator,
-``find_unused_parameters=True``) both train to completion with identical best epochs
-across ranks; CPU hosts transparently use gloo instead of HCCL.
+Previous real-device validation on 4 × Ascend 910B3 covered SAITS
+(Transformer) and USGAN (unfused bidirectional GRU discriminator with
+``find_unused_parameters=True``), which trained to completion with
+identical best epochs across ranks. This is not a qualification of every
+model, NPU type or software stack.
 
 
 Hardware notes for Ascend 910B3
@@ -134,8 +129,9 @@ are fp32-safe as-is.
 
 **Frequency-domain models.** ``torch.fft`` forward and backward work on NPU, but
 complex64 matrix multiplies (matmul/einsum/addmm) are rejected by the Cube unit
-(EZ1001). FiTS/FiLM/ETSformer/PatchTST/Crossformer/MixLinear/GPVAE therefore cannot
-train on NPU yet (tracked in P2).
+(EZ1001). On the tested stack, training FiTS/FiLM/ETSformer/PatchTST/Crossformer/
+MixLinear/GPVAE is limited by these operators. This limitation may vary with
+the CANN and torch-npu versions.
 
 **Integer ceil.** ``torch.ceil`` has no kernel for integer dtypes on NPU (EZ1001).
 MOMENT's mask ratio code casts to float before ceiling (``pypots/nn/modules/moment/masking.py``).
@@ -147,9 +143,10 @@ mathematically equivalent gather-based unfold on NPU (``unfold_last_dim`` in
 
 **Virtualized hosts.** On some virtualized A2 hosts the HCCL gather family silently
 corrupts data (``all_gather`` returns only rank-0 data, SMMU fault in plog, iBMA virtual
-NICs without carrier). ``run_ddp_fit`` pre-broadcasts parameters and sets
-``broadcast_buffers=False`` to skip DDP's gather-based shape verification; training itself
-only relies on broadcast + all_reduce, which are data-exact on such hosts.
+NICs without carrier). ``run_ddp_fit`` pre-broadcasts parameters and buffers, sets
+``broadcast_buffers=False``, and on PyTorch versions exposing the ``init_sync``
+option, skips DDP initialization-time synchronization. Validate
+collective operations on your own host before relying on distributed results.
 
 **num_workers.** Use ``num_workers=0`` in dataloaders on Ascend to avoid fork-related
 deadlocks in HCCL initialization.

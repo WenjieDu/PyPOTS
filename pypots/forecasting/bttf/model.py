@@ -49,12 +49,8 @@ class BTTF(BaseForecaster):
         The number of time steps to forecast at each iteration.
 
     device :
-        The device for the model to run on. It can be a string, a :class:`torch.device` object, or a list of them.
-        If not given, will try to use CUDA devices first (will use the default CUDA device if there are multiple),
-        then CPUs, considering CUDA and CPU are so far the main devices for people to train ML models.
-        If given a list of devices, e.g. ['cuda:0', 'cuda:1'], or [torch.device('cuda:0'), torch.device('cuda:1')] , the
-        model will be parallely trained on the multiple devices (so far only support parallel training on CUDA devices).
-        Other devices like Google TPU and Apple Silicon accelerator MPS may be added in the future.
+        Device setting inherited from the base model. BTTF itself performs forecasting using NumPy
+        and SciPy on CPU; CUDA, Ascend NPU, and DDP do not accelerate this algorithm.
 
     Notes
     -----
