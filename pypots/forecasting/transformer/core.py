@@ -8,12 +8,12 @@ and takes over the forward progress of the algorithm.
 # License: BSD-3-Clause
 
 import torch
-import torch.nn as nn
+from torch import nn
 
 from ...nn.modules import ModelCore
 from ...nn.modules.loss import Criterion
 from ...nn.modules.saits import SaitsEmbedding
-from ...nn.modules.transformer import TransformerEncoder, TransformerDecoder
+from ...nn.modules.transformer import TransformerDecoder, TransformerEncoder
 
 
 class _Transformer(ModelCore):

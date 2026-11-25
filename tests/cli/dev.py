@@ -59,8 +59,8 @@ class TestPyPOTSCLIDev(unittest.TestCase):
             print(result.output)
         except RuntimeError:  # try to find a non-existing test case, so RuntimeError will be raised
             pass
-        except Exception as e:  # other exceptions will cause an error and result in failed testing
-            raise e
+        except Exception:  # other exceptions will cause an error and result in failed testing
+            raise
 
     # Don't test --lint-code because Black will reformat the code and cause error when generating the coverage report
     # @pytest.mark.xdist_group(name="cli-dev")

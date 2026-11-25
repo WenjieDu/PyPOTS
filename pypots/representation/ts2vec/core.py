@@ -46,7 +46,7 @@ class _TS2Vec(ModelCore):
         self,
         inputs: dict,
         calc_criterion: bool = False,
-        mask: str = None,
+        mask: str | None = None,
         encoding_window=None,
         causal=False,
         sliding_length=None,

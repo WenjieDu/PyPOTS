@@ -9,6 +9,6 @@ from .base_model_core import ModelCore
 from .loss import Criterion
 
 __all__ = [
-    "ModelCore",
     "Criterion",
+    "ModelCore",
 ]

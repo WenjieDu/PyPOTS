@@ -17,7 +17,7 @@ in one place, which could result in a mess and be not readable;
 # License: BSD-3-Clause
 
 from abc import ABC, abstractmethod
-from typing import Callable, Iterable, Optional
+from collections.abc import Callable, Iterable
 
 from .lr_scheduler.base import LRScheduler
 
@@ -40,7 +40,7 @@ class Optimizer(ABC):
 
     """
 
-    def __init__(self, lr, lr_scheduler: Optional[LRScheduler] = None):
+    def __init__(self, lr, lr_scheduler: LRScheduler | None = None):
         self.lr = lr
         self.torch_optimizer = None
         self.lr_scheduler = lr_scheduler
@@ -91,7 +91,7 @@ class Optimizer(ABC):
         state_dict = self.torch_optimizer.state_dict()
         return state_dict
 
-    def step(self, closure: Optional[Callable] = None) -> None:
+    def step(self, closure: Callable | None = None) -> None:
         """Performs a single optimization step (parameter update).
 
         Parameters

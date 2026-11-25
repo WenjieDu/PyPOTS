@@ -1,4 +1,4 @@
-""" """
+"""Package initialization for pypots.timeseries_ai."""
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause

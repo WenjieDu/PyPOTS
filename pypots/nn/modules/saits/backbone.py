@@ -1,19 +1,19 @@
-""" """
+"""Implementation of pypots.nn.modules.saits.backbone."""
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-from typing import Optional, Tuple
+from typing import Optional
 
 import torch
-import torch.nn as nn
 import torch.nn.functional as F
+from torch import nn
 
-from .embedding import SaitsEmbedding
 from ..transformer import (
-    TransformerEncoderLayer,
     ScaledDotProductAttention,
+    TransformerEncoderLayer,
 )
+from .embedding import SaitsEmbedding
 
 
 class BackboneSAITS(nn.Module):
@@ -88,7 +88,7 @@ class BackboneSAITS(nn.Module):
         # for delta decay factor
         self.weight_combine = nn.Linear(n_features + n_steps, n_features)
 
-    def forward(self, X, missing_mask, attn_mask: Optional = None) -> Tuple[torch.Tensor, ...]:
+    def forward(self, X, missing_mask, attn_mask: Optional = None) -> tuple[torch.Tensor, ...]:
 
         # first DMSA block
         enc_output = self.embedding_1(X, missing_mask)  # namely, term e in the math equation

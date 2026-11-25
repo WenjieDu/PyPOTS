@@ -6,7 +6,6 @@ The base class for PyPOTS imputation models.
 # License: BSD-3-Clause
 
 from abc import abstractmethod
-from typing import Union, Optional
 
 import numpy as np
 import torch
@@ -53,10 +52,10 @@ class BaseImputer(BaseModel):
 
     def __init__(
         self,
-        device: Optional[Union[str, torch.device, list]] = None,
+        device: str | torch.device | list | None = None,
         enable_amp: bool = False,
-        saving_path: str = None,
-        model_saving_strategy: Optional[str] = "best",
+        saving_path: str | None = None,
+        model_saving_strategy: str | None = "best",
         verbose: bool = True,
     ):
         super().__init__(
@@ -70,8 +69,8 @@ class BaseImputer(BaseModel):
     @abstractmethod
     def fit(
         self,
-        train_set: Union[dict, str],
-        val_set: Optional[Union[dict, str]] = None,
+        train_set: dict | str,
+        val_set: dict | str | None = None,
         file_type: str = "hdf5",
     ) -> None:
         """Train the imputer on the given data.
@@ -103,7 +102,7 @@ class BaseImputer(BaseModel):
     @abstractmethod
     def predict(
         self,
-        test_set: Union[dict, str],
+        test_set: dict | str,
         file_type: str = "hdf5",
         **kwargs,
     ) -> dict:
@@ -132,7 +131,7 @@ class BaseImputer(BaseModel):
 
     def impute(
         self,
-        test_set: Union[dict, str],
+        test_set: dict | str,
         file_type: str = "hdf5",
         **kwargs,
     ) -> np.ndarray:
@@ -228,16 +227,16 @@ class BaseNNImputer(BaseNNModel):
 
     def __init__(
         self,
-        training_loss: Union[Criterion, type],
-        validation_metric: Union[Criterion, type],
+        training_loss: Criterion | type,
+        validation_metric: Criterion | type,
         batch_size: int,
         epochs: int,
-        patience: Optional[int] = None,
+        patience: int | None = None,
         num_workers: int = 0,
-        device: Optional[Union[str, torch.device, list]] = None,
+        device: str | torch.device | list | None = None,
         enable_amp: bool = False,
-        saving_path: str = None,
-        model_saving_strategy: Optional[str] = "best",
+        saving_path: str | None = None,
+        model_saving_strategy: str | None = "best",
         verbose: bool = True,
     ):
         super().__init__(
@@ -257,8 +256,8 @@ class BaseNNImputer(BaseNNModel):
     @abstractmethod
     def fit(
         self,
-        train_set: Union[dict, str],
-        val_set: Optional[Union[dict, str]] = None,
+        train_set: dict | str,
+        val_set: dict | str | None = None,
         file_type: str = "hdf5",
     ) -> None:
         """Train the imputer on the given data.
@@ -290,7 +289,7 @@ class BaseNNImputer(BaseNNModel):
     @torch.no_grad()
     def predict(
         self,
-        test_set: Union[dict, str],
+        test_set: dict | str,
         file_type: str = "hdf5",
         **kwargs,
     ) -> dict:
@@ -347,7 +346,7 @@ class BaseNNImputer(BaseNNModel):
 
     def impute(
         self,
-        test_set: Union[dict, str],
+        test_set: dict | str,
         file_type: str = "hdf5",
         **kwargs,
     ) -> np.ndarray:

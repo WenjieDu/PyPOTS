@@ -1,16 +1,14 @@
-""" """
+"""Implementation of pypots.nn.modules.brits.backbone."""
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-from typing import Tuple
-
 import torch
-import torch.nn as nn
+from torch import nn
 
-from .layers import FeatureRegression
 from ..grud.layers import TemporalDecay
-from ..loss import Criterion, MAE
+from ..loss import MAE, Criterion
+from .layers import FeatureRegression
 
 
 class BackboneRITS(nn.Module):
@@ -64,9 +62,11 @@ class BackboneRITS(nn.Module):
         n_steps: int,
         n_features: int,
         rnn_hidden_size: int,
-        training_loss: Criterion = MAE(),
+        training_loss: Criterion | None = None,
     ):
         super().__init__()
+        if training_loss is None:
+            training_loss = MAE()
         self.n_steps = n_steps
         self.n_features = n_features
         self.rnn_hidden_size = rnn_hidden_size
@@ -79,7 +79,7 @@ class BackboneRITS(nn.Module):
         self.feat_reg = FeatureRegression(self.n_features)
         self.combining_weight = nn.Linear(self.n_features * 2, self.n_features)
 
-    def forward(self, inputs: dict, direction: str) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
+    def forward(self, inputs: dict, direction: str) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
         """
         Parameters
         ----------
@@ -184,9 +184,11 @@ class BackboneBRITS(nn.Module):
         n_steps: int,
         n_features: int,
         rnn_hidden_size: int,
-        training_loss: Criterion = MAE(),
+        training_loss: Criterion | None = None,
     ):
         super().__init__()
+        if training_loss is None:
+            training_loss = MAE()
         # data settings
         self.n_steps = n_steps
         self.n_features = n_features
@@ -218,7 +220,7 @@ class BackboneBRITS(nn.Module):
         return loss
 
     @staticmethod
-    def _reverse(ret: Tuple) -> Tuple:
+    def _reverse(ret: tuple) -> tuple:
         """Reverse the array values on the time dimension in the given dictionary."""
 
         def reverse_tensor(tensor_):
@@ -234,7 +236,7 @@ class BackboneBRITS(nn.Module):
 
         return tuple(collector)
 
-    def forward(self, inputs: dict) -> Tuple[torch.Tensor, ...]:
+    def forward(self, inputs: dict) -> tuple[torch.Tensor, ...]:
         # Results from the forward RITS.
         (
             f_imputed_data,

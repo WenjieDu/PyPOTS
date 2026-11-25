@@ -5,8 +5,6 @@ Utilities for data visualization.
 # Created by Jun Wang <jwangfx@connect.ust.hk> and Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-from typing import Optional
-
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -18,10 +16,10 @@ def plot_data(
     X: np.ndarray,
     X_ori: np.ndarray,
     X_imputed: np.ndarray,
-    sample_idx: Optional[int] = None,
+    sample_idx: int | None = None,
     n_rows: int = 10,
     n_cols: int = 4,
-    fig_size: Optional[list] = None,
+    fig_size: list | None = None,
 ):
     """Plot the imputed values, the observed values, and the evaluated values of one multivariate timeseries.
     The observed values are marked with red 'x',  the evaluated values are marked with blue 'o',
@@ -67,7 +65,7 @@ def plot_data(
     K = np.min([n_features, n_k])
     L = n_steps
     plt.rcParams["font.size"] = 16
-    fig, axes = plt.subplots(nrows=n_rows, ncols=n_cols, figsize=(fig_size[0], fig_size[1]))
+    _fig, axes = plt.subplots(nrows=n_rows, ncols=n_cols, figsize=(fig_size[0], fig_size[1]))
 
     for k in range(K):
         df = pd.DataFrame({"x": np.arange(0, L), "val": X_imputed[sample_idx, :, k]})
@@ -90,7 +88,7 @@ def plot_missingness(
     missing_mask: int,
     min_step: int = 0,
     max_step: int = 1,
-    sample_idx: Optional[int] = None,
+    sample_idx: int | None = None,
 ):
     """Plot the missingness pattern of one multivariate timeseries. For each feature,
     the observed timestamp is marked with blue '|'. The distribution of sequence lengths is also plotted.
@@ -137,7 +135,7 @@ def plot_missingness(
     )
     plot_sample = np.transpose(time, (1, 0))
 
-    fig, axes = plt.subplots(figsize=[12, 3.5], dpi=200, nrows=1, ncols=2)
+    _fig, axes = plt.subplots(figsize=[12, 3.5], dpi=200, nrows=1, ncols=2)
     plt.subplots_adjust(hspace=0.1)
     seq_len = []
     for feature_idx in range(n_features):

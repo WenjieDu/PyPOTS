@@ -5,7 +5,7 @@ Dataset class for the forecasting model CSDI.
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-from typing import Union, Iterable
+from collections.abc import Iterable
 
 import numpy as np
 import torch
@@ -19,7 +19,7 @@ class DatasetForCSDI(BaseDataset):
 
     def __init__(
         self,
-        data: Union[dict, str],
+        data: dict | str,
         file_type: str = "hdf5",
     ):
         super().__init__(
@@ -76,7 +76,7 @@ class DatasetForCSDI(BaseDataset):
         observed_data, observed_mask = fill_and_get_mask_torch(observed_data)
 
         # apply specifically given mask or the hist masking strategy, rather than the random masking strategy
-        if "for_pattern_mask" in self.data.keys():
+        if "for_pattern_mask" in self.data:
             for_pattern_mask = torch.from_numpy(self.data["for_pattern_mask"][idx]).to(torch.float32)
         else:
             previous_sample = self.X[idx - 1]
@@ -154,7 +154,7 @@ class DatasetForCSDI(BaseDataset):
         observed_data, observed_mask = fill_and_get_mask_torch(observed_data)
 
         # apply specifically given mask or the hist masking strategy, rather than the random masking strategy
-        if "for_pattern_mask" in self.file_handle.keys():
+        if "for_pattern_mask" in self.file_handle:
             for_pattern_mask = torch.from_numpy(self.file_handle["for_pattern_mask"][idx]).to(torch.float32)
         else:
             previous_sample = torch.from_numpy(self.file_handle["X"][idx - 1]).to(torch.float32)
@@ -199,7 +199,7 @@ class TestDatasetForCSDI(DatasetForCSDI):
 
     def __init__(
         self,
-        data: Union[dict, str],
+        data: dict | str,
         n_pred_steps: int,
         n_pred_features: int,
         file_type: str = "hdf5",

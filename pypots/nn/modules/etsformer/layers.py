@@ -1,4 +1,4 @@
-""" """
+"""Implementation of pypots.nn.modules.etsformer.layers."""
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
@@ -6,11 +6,10 @@
 import math
 
 import torch
-import torch.fft as fft
-import torch.nn as nn
 import torch.nn.functional as F
 from einops import rearrange, reduce, repeat
 from scipy.fftpack import next_fast_len
+from torch import fft, nn
 
 
 class Transform:
@@ -59,7 +58,7 @@ class ExponentialSmoothing(nn.Module):
             self.aux_dropout = nn.Dropout(dropout)
 
     def forward(self, values, aux_values=None):
-        b, t, h, d = values.shape
+        _b, t, _h, _d = values.shape
 
         init_weight, weight = self.get_exponential_weight(t)
         output = conv1d_fft(self.dropout(values), weight, dim=1)
@@ -123,7 +122,7 @@ class GrowthLayer(nn.Module):
         :param inputs: shape: (batch, seq_len, dim)
         :return: shape: (batch, seq_len, dim)
         """
-        b, t, d = inputs.shape
+        b, t, _d = inputs.shape
         values = self.in_proj(inputs).view(b, t, self.n_heads, -1)
         values = torch.cat([repeat(self.z0, "h d -> b 1 h d", b=b), values], dim=1)
         values = values[:, 1:] - values[:, :-1]
@@ -143,7 +142,7 @@ class FourierLayer(nn.Module):
 
     def forward(self, x):
         """x: (b, t, d)"""
-        b, t, d = x.shape
+        _b, t, _d = x.shape
         x_freq = fft.rfft(x, dim=1)
 
         if t % 2 == 0:
@@ -173,7 +172,7 @@ class FourierLayer(nn.Module):
         return reduce(x_time, "b f t d -> b t d", "sum")
 
     def topk_freq(self, x_freq):
-        values, indices = torch.topk(x_freq.abs(), self.k, dim=1, largest=True, sorted=True)
+        _values, indices = torch.topk(x_freq.abs(), self.k, dim=1, largest=True, sorted=True)
         mesh_a, mesh_b = torch.meshgrid(torch.arange(x_freq.size(0)), torch.arange(x_freq.size(2)))
         index_tuple = (mesh_a.unsqueeze(1), indices, mesh_b.unsqueeze(1))
         x_freq = x_freq[index_tuple]

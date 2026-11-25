@@ -1,17 +1,15 @@
-""" """
+"""Implementation of pypots.nn.modules.vader.backbone."""
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-from typing import Tuple
-
 import torch
-import torch.nn as nn
+from torch import nn
 
 from .layers import (
     GMMLayer,
-    PeepholeLSTMCell,
     ImplicitImputation,
+    PeepholeLSTMCell,
 )
 
 
@@ -79,7 +77,7 @@ class BackboneVaDER(nn.Module):
         self,
         X: torch.Tensor,
         missing_mask: torch.Tensor,
-    ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         batch_size = X.size(0)
 
         X_imputed = self.implicit_imputation_layer(X, missing_mask)
@@ -121,7 +119,7 @@ class BackboneVaDER(nn.Module):
         self,
         X: torch.Tensor,
         missing_mask: torch.Tensor,
-    ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
+    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
         z, mu_tilde, stddev_tilde = self.encode(X, missing_mask)
         X_reconstructed = self.decode(z)
         mu_c, var_c, phi_c = self.gmm_layer()

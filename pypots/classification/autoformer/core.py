@@ -1,14 +1,14 @@
-""" """
+"""Implementation of pypots.classification.autoformer.core."""
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
 import torch
-import torch.nn as nn
+from torch import nn
 
 from ...nn.modules import ModelCore
-from ...nn.modules.loss import Criterion
 from ...nn.modules.autoformer import AutoformerEncoder
+from ...nn.modules.loss import Criterion
 from ...nn.modules.saits import SaitsEmbedding
 
 
@@ -68,7 +68,7 @@ class _Autoformer(ModelCore):
         enc_out = self.saits_embedding(X, missing_mask)
 
         # Autoformer encoder processing
-        enc_out, attns = self.encoder(enc_out)
+        enc_out, _attns = self.encoder(enc_out)
         logits = self.projection(enc_out.reshape(-1, self.n_steps * self.d_model))
         classification_proba = torch.softmax(logits, dim=1)
 

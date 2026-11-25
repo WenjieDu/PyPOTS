@@ -135,6 +135,7 @@ class TestPyPOTSCLIData(unittest.TestCase):
     def test_6_describe_csv_json(self):
         """Test data describe with --json flag."""
         import json
+
         import pandas as pd
 
         csv_path = os.path.join(self.temp_dir, "test_json.csv")
@@ -315,6 +316,7 @@ class TestPyPOTSCLIData(unittest.TestCase):
     def test_11_profile_json(self):
         """Test data profile with --json flag."""
         import json
+
         import pandas as pd
 
         csv_path = os.path.join(self.temp_dir, "profile_json.csv")

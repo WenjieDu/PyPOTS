@@ -6,17 +6,17 @@ and takes over the forward progress of the algorithm.
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-import torch.nn as nn
+from torch import nn
 
 from ...nn.modules import ModelCore
 from ...nn.modules.informer import (
-    ProbAttention,
     ConvLayer,
-    InformerEncoderLayer,
     InformerEncoder,
+    InformerEncoderLayer,
+    ProbAttention,
 )
 from ...nn.modules.loss import Criterion
-from ...nn.modules.saits import SaitsLoss, SaitsEmbedding
+from ...nn.modules.saits import SaitsEmbedding, SaitsLoss
 from ...nn.modules.transformer import MultiHeadAttention
 
 
@@ -94,7 +94,7 @@ class _Informer(ModelCore):
         enc_out = self.saits_embedding(X, missing_mask)
 
         # Informer encoder processing
-        enc_out, attns = self.encoder(enc_out)
+        enc_out, _attns = self.encoder(enc_out)
 
         # project back the original data space
         reconstruction = self.output_projection(enc_out)

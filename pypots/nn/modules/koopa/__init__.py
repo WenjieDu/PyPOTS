@@ -17,12 +17,12 @@ This implementation is inspired by the official one https://github.com/thuml/Koo
 # License: BSD-3-Clause
 
 from .backbone import BackboneKoopa
-from .layers import FourierFilter, MLP, TimeVarKP, TimeInvKP
+from .layers import MLP, FourierFilter, TimeInvKP, TimeVarKP
 
 __all__ = [
-    "BackboneKoopa",
     "MLP",
+    "BackboneKoopa",
     "FourierFilter",
-    "TimeVarKP",
     "TimeInvKP",
+    "TimeVarKP",
 ]

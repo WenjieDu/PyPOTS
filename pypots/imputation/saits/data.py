@@ -5,10 +5,10 @@ Dataset class for the imputation model SAITS.
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-from typing import Union, Iterable
+from collections.abc import Iterable
 
 import torch
-from pygrinder import mcar, fill_and_get_mask_torch
+from pygrinder import fill_and_get_mask_torch, mcar
 
 from ...data.dataset.base import BaseDataset
 
@@ -52,7 +52,7 @@ class DatasetForSAITS(BaseDataset):
 
     def __init__(
         self,
-        data: Union[dict, str],
+        data: dict | str,
         return_X_ori: bool,
         return_y: bool,
         file_type: str = "hdf5",

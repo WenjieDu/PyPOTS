@@ -6,8 +6,8 @@ The implementation of the customized spatia-temporal modules for ImputeFormer :c
 # License: BSD-3-Clause
 
 import torch
-import torch.nn as nn
 from einops import repeat
+from torch import nn
 
 
 class AttentionLayer(nn.Module):

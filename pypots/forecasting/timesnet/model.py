@@ -6,15 +6,13 @@ The implementation of TimesNet for the partially-observed time-series forecastin
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-from typing import Union, Optional
-
 import torch
 
-from .core import _TimesNet
-from ..base import BaseNNForecaster
-from ...nn.modules.loss import Criterion, MSE
+from ...nn.modules.loss import MSE, Criterion
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
+from ..base import BaseNNForecaster
+from .core import _TimesNet
 
 
 class TimesNet(BaseNNForecaster):
@@ -123,14 +121,14 @@ class TimesNet(BaseNNForecaster):
         apply_nonstationary_norm: bool = False,
         batch_size: int = 32,
         epochs: int = 100,
-        patience: Optional[int] = None,
-        training_loss: Union[Criterion, type] = MSE,
-        validation_metric: Union[Criterion, type] = MSE,
-        optimizer: Optimizer = Adam(),
+        patience: int | None = None,
+        training_loss: Criterion | type = MSE,
+        validation_metric: Criterion | type = MSE,
+        optimizer: Optimizer | type = Adam,
         num_workers: int = 0,
-        device: Optional[Union[str, torch.device, list]] = None,
-        saving_path: Optional[str] = None,
-        model_saving_strategy: Optional[str] = "best",
+        device: str | torch.device | list | None = None,
+        saving_path: str | None = None,
+        model_saving_strategy: str | None = "best",
         verbose: bool = True,
     ):
         super().__init__(
@@ -178,5 +176,9 @@ class TimesNet(BaseNNForecaster):
         self._send_model_to_given_device()
 
         # set up the optimizer
-        self.optimizer = optimizer
+        if isinstance(optimizer, Optimizer):
+            self.optimizer = optimizer
+        else:
+            self.optimizer = optimizer()
+            assert isinstance(self.optimizer, Optimizer)
         self.optimizer.init_optimizer(self.model.parameters())

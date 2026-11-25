@@ -6,7 +6,6 @@ The implementation of linear interpolation for the partially-observed time-serie
 # License: BSD-3-Clause
 
 import warnings
-from typing import Union, Optional
 
 import h5py
 import numpy as np
@@ -31,8 +30,8 @@ class Lerp(BaseImputer):
 
     def fit(
         self,
-        train_set: Union[dict, str],
-        val_set: Optional[Union[dict, str]] = None,
+        train_set: dict | str,
+        val_set: dict | str | None = None,
         file_type: str = "hdf5",
     ) -> None:
         """Train the imputer on the given data.
@@ -46,7 +45,7 @@ class Lerp(BaseImputer):
 
     def predict(
         self,
-        test_set: Union[dict, str],
+        test_set: dict | str,
         file_type: str = "hdf5",
         **kwargs,
     ) -> dict:
@@ -104,7 +103,7 @@ class Lerp(BaseImputer):
             imputed_data = imputed_trans_X.permute(0, 2, 1)
 
         else:
-            raise ValueError(f"Input X must be numpy.ndarray or torch.Tensor, but got {type(X)}")
+            raise ValueError(f"Input X must be numpy.ndarray or torch.Tensor, but got {type(X)}")  # noqa: TRY004 - preserve the public exception type
 
         result_dict = {
             "imputation": imputed_data,

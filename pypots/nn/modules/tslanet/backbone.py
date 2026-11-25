@@ -1,13 +1,13 @@
-""" """
+"""Implementation of pypots.nn.modules.tslanet.backbone."""
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
 import torch
-import torch.nn as nn
 from einops import rearrange
+from torch import nn
 
-from .layers import TSLANet_layer, PatchEmbed, trunc_normal_
+from .layers import PatchEmbed, TSLANet_layer, trunc_normal_
 
 
 def random_masking_3D(xb, mask_ratio):
@@ -56,7 +56,7 @@ class BackboneTSLANet(nn.Module):
         emb_dim: int,
         dropout: float,
         mask_ratio: float,
-        num_classes: int = None,
+        num_classes: int | None = None,
     ):
         super().__init__()
 
@@ -129,7 +129,7 @@ class BackboneTSLANet(nn.Module):
             x = x + self.pos_embed
             x = self.pos_drop(x)
         elif self.task_name in ["forecasting", "imputation", "anomaly_detection"]:
-            B, L, M = x.shape
+            B, _L, M = x.shape
             x = rearrange(x, "b l m -> b m l")
             x = x.unfold(dimension=-1, size=self.patch_size, step=self.stride)
             x = rearrange(x, "b m n p -> (b m) n p")

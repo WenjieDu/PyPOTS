@@ -10,8 +10,7 @@ import json
 
 import click
 
-from .utils import load_config, merge_config_with_overrides, get_model_class
-
+from .utils import get_model_class, load_config, merge_config_with_overrides
 
 # Tasks that use regression-style metrics (mse, mae, rmse, mre)
 REGRESSION_METRIC_TASKS = {"imputation", "forecasting"}
@@ -24,7 +23,7 @@ TASK_PREDICTION_KEY = {
 
 def _get_regression_metric_funcs():
     """Lazy-load metric functions to avoid importing torch/numpy at module level."""
-    from ..nn.functional import calc_mse, calc_mae, calc_rmse, calc_mre
+    from ..nn.functional import calc_mae, calc_mre, calc_mse, calc_rmse
 
     return {
         "mse": calc_mse,

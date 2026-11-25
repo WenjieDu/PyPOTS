@@ -6,11 +6,10 @@ The layers for TKAN (Temporal Kolmogorov-Arnold Networks).
 # License: BSD-3-Clause
 
 import math
-from typing import List, Optional
 
 import torch
-import torch.nn as nn
 import torch.nn.functional as F
+from torch import nn
 
 
 class KANLinear(nn.Module):
@@ -183,9 +182,9 @@ class TKANCell(nn.Module):
         self,
         in_features: int,
         hidden_size: int,
-        sub_kan_configs: Optional[List] = None,
-        sub_kan_output_dim: Optional[int] = None,
-        sub_kan_input_dim: Optional[int] = None,
+        sub_kan_configs: list | None = None,
+        sub_kan_output_dim: int | None = None,
+        sub_kan_input_dim: int | None = None,
         use_bias: bool = True,
     ):
         super().__init__()
@@ -285,7 +284,7 @@ class TKANCell(nn.Module):
         x: torch.Tensor,
         h: torch.Tensor,
         c: torch.Tensor,
-        sub_states: List[torch.Tensor],
+        sub_states: list[torch.Tensor],
     ):
         """One step of the TKAN cell.
 

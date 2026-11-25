@@ -18,15 +18,15 @@ from pypots.utils.logging import logger
 from pypots.utils.visual.data import plot_data, plot_missingness
 from tests.global_test_config import (
     DATA,
-    EPOCHS,
     DEVICE,
-    TRAIN_SET,
-    VAL_SET,
-    TEST_SET,
+    EPOCHS,
+    GENERAL_H5_TEST_SET_PATH,
     GENERAL_H5_TRAIN_SET_PATH,
     GENERAL_H5_VAL_SET_PATH,
-    GENERAL_H5_TEST_SET_PATH,
     RESULT_SAVING_DIR_FOR_IMPUTATION,
+    TEST_SET,
+    TRAIN_SET,
+    VAL_SET,
     check_tb_and_model_checkpoints_existence,
 )
 

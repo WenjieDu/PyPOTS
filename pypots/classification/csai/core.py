@@ -1,10 +1,10 @@
-""" """
+"""Implementation of pypots.classification.csai.core."""
 
 # Created by Linglong Qian, Joseph Arul Raj <linglong.qian@kcl.ac.uk, joseph_arul_raj@kcl.ac.uk>
 # License: BSD-3-Clause
 
 import torch
-import torch.nn as nn
+from torch import nn
 
 from ...nn.modules import ModelCore
 from ...nn.modules.csai import BackboneBCSAI
@@ -62,8 +62,8 @@ class _BCSAI(ModelCore):
 
         (
             imputed_data,
-            f_reconstruction,
-            b_reconstruction,
+            _f_reconstruction,
+            _b_reconstruction,
             f_hidden_states,
             b_hidden_states,
             consistency_loss,

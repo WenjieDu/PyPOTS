@@ -1,10 +1,10 @@
-""" """
+"""Implementation of pypots.nn.modules.film.backbone."""
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
 import torch
-import torch.nn as nn
+from torch import nn
 
 from .layers import HiPPO_LegT, SpectralConv1d
 
@@ -55,7 +55,7 @@ class BackboneFiLM(nn.Module):
 
         x_decs = []
         jump_dist = 0
-        for i in range(0, len(self.multiscale) * len(self.window_size)):
+        for i in range(len(self.multiscale) * len(self.window_size)):
             x_in_len = self.multiscale[i % len(self.multiscale)] * self.n_pred_steps
             x_in = x_enc[:, -x_in_len:]
             legt = self.legts[i]

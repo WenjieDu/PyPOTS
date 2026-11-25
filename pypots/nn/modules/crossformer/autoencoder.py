@@ -1,10 +1,10 @@
-""" """
+"""Implementation of pypots.nn.modules.crossformer.autoencoder."""
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-import torch.nn as nn
 from einops import rearrange
+from torch import nn
 
 
 class CrossformerEncoder(nn.Module):
@@ -30,17 +30,14 @@ class CrossformerDecoder(nn.Module):
 
     def forward(self, x, cross):
         final_predict = None
-        i = 0
-
         ts_d = x.shape[1]
-        for layer in self.decode_layers:
+        for i, layer in enumerate(self.decode_layers):
             cross_enc = cross[i]
             x, layer_predict = layer(x, cross_enc)
             if final_predict is None:
                 final_predict = layer_predict
             else:
                 final_predict = final_predict + layer_predict
-            i += 1
 
         final_predict = rearrange(
             final_predict,

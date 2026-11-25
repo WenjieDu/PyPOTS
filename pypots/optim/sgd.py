@@ -6,7 +6,7 @@ The optimizer wrapper for PyTorch SGD :class:`torch.optim.SGD`.
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-from typing import Iterable, Optional
+from collections.abc import Iterable
 
 from torch.optim import SGD as torch_SGD
 
@@ -46,7 +46,7 @@ class SGD(Optimizer):
         weight_decay: float = 0,
         dampening: float = 0,
         nesterov: bool = False,
-        lr_scheduler: Optional[LRScheduler] = None,
+        lr_scheduler: LRScheduler | None = None,
     ):
         super().__init__(lr, lr_scheduler)
         self.momentum = momentum

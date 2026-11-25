@@ -1,15 +1,13 @@
-""" """
+"""Implementation of pypots.nn.modules.transformer.autoencoder."""
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-from typing import Optional, Tuple, Union
-
 import torch
-import torch.nn as nn
+from torch import nn
 
 from .attention import ScaledDotProductAttention
-from .layers import TransformerEncoderLayer, TransformerDecoderLayer
+from .layers import TransformerDecoderLayer, TransformerEncoderLayer
 
 
 class TransformerEncoder(nn.Module):
@@ -75,8 +73,8 @@ class TransformerEncoder(nn.Module):
     def forward(
         self,
         x: torch.Tensor,
-        src_mask: Optional[torch.Tensor] = None,
-    ) -> Union[torch.Tensor, Tuple[torch.Tensor, list]]:
+        src_mask: torch.Tensor | None = None,
+    ) -> torch.Tensor | tuple[torch.Tensor, list]:
         """Forward processing of the encoder.
 
         Parameters
@@ -170,9 +168,9 @@ class TransformerDecoder(nn.Module):
         self,
         trg_seq: torch.Tensor,
         enc_output: torch.Tensor,
-        trg_mask: Optional[torch.Tensor] = None,
-        src_mask: Optional[torch.Tensor] = None,
-    ) -> Union[torch.Tensor, Tuple[torch.Tensor, list, list]]:
+        trg_mask: torch.Tensor | None = None,
+        src_mask: torch.Tensor | None = None,
+    ) -> torch.Tensor | tuple[torch.Tensor, list, list]:
         """Forward processing of the decoder.
 
         Parameters

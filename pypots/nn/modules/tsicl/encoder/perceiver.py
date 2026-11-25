@@ -61,7 +61,7 @@ Vendored from the TS-ICL model architecture: https://github.com/EDF-Lab/ts-icl
 
 from __future__ import annotations
 
-from typing import Sequence, Tuple
+from collections.abc import Sequence
 
 import torch
 from einops import rearrange, repeat
@@ -314,7 +314,7 @@ class PerceiverEncoder(nn.Module):
         series_covar: torch.Tensor,
         coords_covar: torch.Tensor,
         mask: torch.Tensor | None = None,
-    ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor | None]:
+    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor | None]:
 
         b = series.shape[0]
         missing_len = series_covar.shape[2] - series.shape[1]
@@ -391,7 +391,7 @@ class PerceiverEncoder(nn.Module):
         return_stats: bool = False,
         return_latent_only: bool = False,
     ) -> (
-        torch.Tensor | Tuple[torch.Tensor, torch.Tensor] | Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]
+        torch.Tensor | tuple[torch.Tensor, torch.Tensor] | tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]
     ):
         """
         series is shape (B, T_shared, 1)
@@ -421,7 +421,7 @@ class PerceiverEncoder(nn.Module):
                 assert mask.ndim == 2
                 mask = repeat(mask, "c t -> (b c) t", b=series.shape[0])
 
-        b, c, t, _ = series_all.shape
+        b, c, _t, _ = series_all.shape
 
         series_all = rearrange(series_all, "b c t 1 -> (b c) t 1")  # (bs x C, seq_len, 1)
         coords_all = rearrange(coords_all, "b c t 1 -> (b c) t 1")  # (bs x C, seq_len, 1)
@@ -454,9 +454,7 @@ class PerceiverEncoder(nn.Module):
         # 3/5 Process in latent space
 
         # L layers of self-attention on latent tokens:
-        for index, (self_attn, self_ff) in enumerate(
-            self.layers_before_mixing
-        ):  # pyright: ignore[reportGeneralTypeIssues]
+        for index, (self_attn, self_ff) in enumerate(self.layers_before_mixing):  # pyright: ignore[reportGeneralTypeIssues]
             if index == self.bottleneck_index:
                 # bottleneck (compress hidden dim to latent dim)
                 mu = self.mean_fc(x)  # (bs x C, num_latents, latent_dim)

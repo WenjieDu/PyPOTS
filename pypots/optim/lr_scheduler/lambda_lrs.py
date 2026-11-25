@@ -5,7 +5,7 @@ Lambda learning rate scheduler.
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-from typing import Callable, Union
+from collections.abc import Callable
 
 from .base import LRScheduler, logger
 
@@ -42,7 +42,7 @@ class LambdaLR(LRScheduler):
 
     def __init__(
         self,
-        lr_lambda: Union[Callable, list],
+        lr_lambda: Callable | list,
         last_epoch: int = -1,
         verbose: bool = False,
     ):
@@ -55,9 +55,7 @@ class LambdaLR(LRScheduler):
             self.lr_lambdas = [self.lr_lambda] * len(optimizer.param_groups)
         else:
             if len(self.lr_lambda) != len(optimizer.param_groups):
-                raise ValueError(
-                    "Expected {} lr_lambdas, but got {}".format(len(optimizer.param_groups), len(self.lr_lambda))
-                )
+                raise ValueError(f"Expected {len(optimizer.param_groups)} lr_lambdas, but got {len(self.lr_lambda)}")
             self.lr_lambdas = list(self.lr_lambda)
 
         super().init_scheduler(optimizer)

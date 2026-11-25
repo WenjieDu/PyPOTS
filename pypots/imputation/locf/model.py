@@ -7,14 +7,13 @@ The implementation of LOCF (Last Observed Carried Forward) for the partially-obs
 # License: BSD-3-Clause
 
 import warnings
-from typing import Union, Optional
 
 import h5py
 import numpy as np
 import torch
 
-from .core import locf_numpy, locf_torch
 from ..base import BaseImputer
+from .core import locf_numpy, locf_torch
 
 
 class LOCF(BaseImputer):
@@ -44,7 +43,7 @@ class LOCF(BaseImputer):
     def __init__(
         self,
         first_step_imputation: str = "zero",
-        device: Optional[Union[str, torch.device, list]] = None,
+        device: str | torch.device | list | None = None,
     ):
         super().__init__(device=device)
         assert first_step_imputation in ["nan", "zero", "backward", "median"]
@@ -52,8 +51,8 @@ class LOCF(BaseImputer):
 
     def fit(
         self,
-        train_set: Union[dict, str],
-        val_set: Optional[Union[dict, str]] = None,
+        train_set: dict | str,
+        val_set: dict | str | None = None,
         file_type: str = "hdf5",
     ) -> None:
         """Train the imputer on the given data.
@@ -71,7 +70,7 @@ class LOCF(BaseImputer):
 
     def predict(
         self,
-        test_set: Union[dict, str],
+        test_set: dict | str,
         file_type: str = "hdf5",
         **kwargs,
     ) -> dict:

@@ -1,13 +1,13 @@
-""" """
+"""Implementation of pypots.nn.modules.crossformer.layers."""
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
 import torch
-import torch.nn as nn
 from einops import rearrange, repeat
+from torch import nn
 
-from ....nn.modules.transformer import ScaledDotProductAttention, MultiHeadAttention
+from ....nn.modules.transformer import MultiHeadAttention, ScaledDotProductAttention
 
 
 class TwoStageAttentionLayer(nn.Module):
@@ -65,10 +65,10 @@ class TwoStageAttentionLayer(nn.Module):
 
     def forward(self, x):
         # Cross Time Stage: Directly apply MSA to each dimension
-        batch, ts_d, seg_num, d_model = x.shape
+        batch, _ts_d, _seg_num, _d_model = x.shape
         time_in = rearrange(x, "b ts_d seg_num d_model -> (b ts_d) seg_num d_model")
         # time_in = x.reshape(-1, seg_num, d_model)
-        time_enc, attn = self.time_attention(time_in, time_in, time_in, attn_mask=None)
+        time_enc, _time_attn = self.time_attention(time_in, time_in, time_in, attn_mask=None)
         dim_in = time_in + self.dropout(time_enc)
         dim_in = self.norm1(dim_in)
         dim_in = dim_in + self.dropout(self.MLP1(dim_in))
@@ -83,8 +83,8 @@ class TwoStageAttentionLayer(nn.Module):
             "seg_num factor d_model -> (repeat seg_num) factor d_model",
             repeat=batch,
         )
-        dim_buffer, attn = self.dim_sender(batch_router, dim_send, dim_send, attn_mask=None)
-        dim_receive, attn = self.dim_receiver(dim_send, dim_buffer, dim_buffer, attn_mask=None)
+        dim_buffer, _attn = self.dim_sender(batch_router, dim_send, dim_send, attn_mask=None)
+        dim_receive, _attn = self.dim_receiver(dim_send, dim_buffer, dim_buffer, attn_mask=None)
         dim_enc = dim_send + self.dropout(dim_receive)
         dim_enc = self.norm3(dim_enc)
         dim_enc = dim_enc + self.dropout(self.MLP2(dim_enc))
@@ -104,7 +104,7 @@ class SegMerging(nn.Module):
         self.norm = norm_layer(win_size * d_model)
 
     def forward(self, x):
-        batch_size, ts_d, seg_num, d_model = x.shape
+        _batch_size, _ts_d, seg_num, _d_model = x.shape
         pad_num = seg_num % self.win_size
         if pad_num != 0:
             pad_num = self.win_size - pad_num
@@ -149,7 +149,7 @@ class ScaleBlock(nn.Module):
             )
 
     def forward(self, x, attn_mask=None, tau=None, delta=None):
-        _, ts_dim, _, _ = x.shape
+        _, _ts_dim, _, _ = x.shape
 
         if self.merge_layer is not None:
             x = self.merge_layer(x)
@@ -177,7 +177,7 @@ class CrossformerDecoderLayer(nn.Module):
         x = rearrange(x, "b ts_d out_seg_num d_model -> (b ts_d) out_seg_num d_model")
 
         cross = rearrange(cross, "b ts_d in_seg_num d_model -> (b ts_d) in_seg_num d_model")
-        tmp, attn = self.cross_attention(
+        tmp, _attn = self.cross_attention(
             x,
             cross,
             cross,

@@ -76,9 +76,9 @@ def execute_command(command: str, verbose: bool = True):
         exec_result = subprocess.run(
             command,
             text=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
+            capture_output=True,
             shell=True,
+            check=False,
         )
 
     if exec_result.returncode != 0:
@@ -109,11 +109,10 @@ def check_if_under_root_dir(strict: bool = True):
         }
     )
 
-    if strict:
-        if not check_result:
-            raise RuntimeError(
-                "Command `pypots-cli dev` can only be run under the root directory of project PyPOTS, "
-                f"but you're running it under the path {os.getcwd()}. Please make a check."
-            )
+    if strict and not check_result:
+        raise RuntimeError(
+            "Command `pypots-cli dev` can only be run under the root directory of project PyPOTS, "
+            f"but you're running it under the path {os.getcwd()}. Please make a check."
+        )
 
     return check_result

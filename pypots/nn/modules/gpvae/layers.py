@@ -1,12 +1,14 @@
-""" """
+"""Implementation of pypots.nn.modules.gpvae.layers."""
 
 # Created by Jun Wang <jwangfx@connect.ust.hk> and Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
+import itertools
+
 import numpy as np
 import torch
-import torch.nn as nn
 import torch.nn.functional as F
+from torch import nn
 
 
 def rbf_kernel(T, length_scale):
@@ -130,7 +132,7 @@ def make_cnn(input_size, output_size, hidden_sizes, kernel_size=3):
     cnn_layer = CustomConv1d(input_size, hidden_sizes[0], kernel_size=kernel_size, padding=padding)
     layers = [cnn_layer]
 
-    for i, h in zip(hidden_sizes, hidden_sizes[1:]):
+    for i, h in itertools.pairwise(hidden_sizes):
         layers.extend([nn.Linear(i, h), nn.ReLU()])
     if isinstance(output_size, tuple):
         net = nn.Sequential(*layers)

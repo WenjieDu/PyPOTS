@@ -18,7 +18,6 @@ This implementation is inspired by the official one https://github.com/VEWOXIC/F
 
 from .backbone import BackboneFITS
 
-
 __all__ = [
     "BackboneFITS",
 ]

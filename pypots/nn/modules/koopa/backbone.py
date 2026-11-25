@@ -1,13 +1,13 @@
-""" """
+"""Implementation of pypots.nn.modules.koopa.backbone."""
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
 import torch
-import torch.nn as nn
+from torch import nn
 from torch.utils.data import DataLoader
 
-from .layers import FourierFilter, MLP, TimeVarKP, TimeInvKP
+from .layers import MLP, FourierFilter, TimeInvKP, TimeVarKP
 
 
 class BackboneKoopa(nn.Module):

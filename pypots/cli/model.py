@@ -10,7 +10,6 @@ import os
 
 import click
 
-
 TASK_CHOICES = ["imputation", "classification", "forecasting", "anomaly_detection", "clustering", "representation"]
 
 
@@ -40,14 +39,13 @@ def _format_file_size(size_bytes: int) -> str:
 @click.group(name="model", help="Model management operations: list, describe, inspect, config")
 def model():
     """Model management operations: list, describe, inspect, config."""
-    pass
 
 
 @model.command(name="list", help="List available models, optionally filtered by task")
 @click.option("--task", default=None, type=click.Choice(TASK_CHOICES), help="Task type to filter models")
 def model_list(task):
     """List available models, optionally filtered by task."""
-    from .utils import list_available_models, SUPPORTED_TASKS
+    from .utils import SUPPORTED_TASKS, list_available_models
 
     models = list_available_models(task)
 
@@ -145,7 +143,7 @@ def model_inspect(path):
 
         # Print top-level keys
         meta_keys = {"model_state_dict", "pypots_version", "model_class", "hyperparameters", "save_timestamp"}
-        other_keys = [k for k in checkpoint.keys() if k not in meta_keys]
+        other_keys = [k for k in checkpoint if k not in meta_keys]
         if other_keys:
             print(f"\nOther checkpoint keys: {other_keys}")
 
@@ -164,7 +162,7 @@ def model_inspect(path):
 
         print()
 
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001 - report checkpoint inspection failures at the CLI boundary
         from ..utils.logging import logger
 
         logger.error(f"Failed to inspect model file '{path}': {e}")

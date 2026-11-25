@@ -1,12 +1,12 @@
-""" """
+"""Implementation of pypots.nn.modules.timesnet.layers."""
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
 import torch
 import torch.fft
-import torch.nn as nn
 import torch.nn.functional as F
+from torch import nn
 
 from ..inception import InceptionBlockV1
 

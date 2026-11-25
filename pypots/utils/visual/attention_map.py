@@ -9,11 +9,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 from numpy.typing import ArrayLike
 
-try:
-    import seaborn as sns
-except Exception:
-    pass
-
 
 def plot_attention(timeSteps: ArrayLike, attention: np.ndarray, fontscale=None):
     """Visualize the map of attention weights from Transformer-based models.
@@ -36,6 +31,8 @@ def plot_attention(timeSteps: ArrayLike, attention: np.ndarray, fontscale=None):
     ax: Matplotlib axes object
 
     """
+
+    import seaborn as sns
 
     if not all(isinstance(ele, str) for ele in timeSteps):
         timeSteps = [str(step) for step in timeSteps]

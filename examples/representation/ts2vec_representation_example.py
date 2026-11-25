@@ -4,6 +4,7 @@ A minimalist, standalone example of the PyPOTS TS2Vec model for time-series repr
 
 import numpy as np
 from benchpots.datasets import preprocess_random_walk
+
 from pypots.representation import TS2Vec
 
 

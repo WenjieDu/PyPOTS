@@ -1,12 +1,12 @@
-""" """
+"""Implementation of pypots.nn.modules.gpt4ts.backbone."""
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
 import torch
-import torch.nn as nn
 import torch.nn.functional as F
 from einops import rearrange
+from torch import nn
 from transformers.models.gpt2.modeling_gpt2 import GPT2Model
 
 from ..transformer.embedding import DataEmbedding
@@ -28,7 +28,7 @@ class BackboneGPT4TS(nn.Module):
         dropout,
         embed,
         freq,
-        n_classes: int = None,
+        n_classes: int | None = None,
     ):
         super().__init__()
         self.task_name = task_name
@@ -62,9 +62,7 @@ class BackboneGPT4TS(nn.Module):
         self.gpt2.h = self.gpt2.h[:n_layers]
 
         for i, (name, param) in enumerate(self.gpt2.named_parameters()):
-            if "ln" in name or "wpe" in name:  # or 'mlp' in name:
-                param.requires_grad = True
-            elif "mlp" in name and train_gpt_mlp:
+            if "ln" in name or "wpe" in name or "mlp" in name and train_gpt_mlp:  # or 'mlp' in name:
                 param.requires_grad = True
             else:
                 param.requires_grad = False
@@ -192,7 +190,7 @@ class BackboneGPT4TS(nn.Module):
         self,
         x_enc: torch.Tensor,
     ):
-        B, L, M = x_enc.shape
+        B, _L, _M = x_enc.shape
         input_x = rearrange(x_enc, "b l m -> b m l")
         input_x = self.padding_patch_layer(input_x)
         input_x = input_x.unfold(dimension=-1, size=self.patch_size, step=self.patch_stride)

@@ -10,7 +10,7 @@ import shutil
 
 import click
 
-from .base import execute_command, check_if_under_root_dir
+from .base import check_if_under_root_dir, execute_command
 
 CLONED_LATEST_PYPOTS = "temp_pypots_latest"
 
@@ -151,4 +151,4 @@ def doc(gene_rst, branch, gene_html, view_doc, port, cleanup):
     except ImportError:
         raise ImportError(IMPORT_ERROR_MESSAGE)
     except Exception as e:
-        raise RuntimeError(e)
+        raise RuntimeError(e) from e

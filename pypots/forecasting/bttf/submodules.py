@@ -1,19 +1,17 @@
-""" """
+"""Implementation of pypots.forecasting.bttf.submodules."""
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
 import numpy as np
 from numpy.linalg import cholesky as cholesky_lower
-from numpy.linalg import inv as inv
-from numpy.linalg import solve as solve
+from numpy.linalg import inv, solve
 from numpy.random import multivariate_normal as mvnrnd
 from numpy.random import normal as normrnd
 from scipy.linalg import cholesky as cholesky_upper
 from scipy.linalg import khatri_rao as kr_prod
 from scipy.linalg import solve_triangular as solve_ut
-from scipy.stats import invwishart
-from scipy.stats import wishart
+from scipy.stats import invwishart, wishart
 
 
 def mvnrnd_pre(mu, Lambda):
@@ -134,19 +132,17 @@ def sample_factor_x(tau_sparse_tensor, tau_ind, time_lags, U, V, X, A, Lambda_x)
         Mt = np.zeros((rank, rank))
         Nt = np.zeros(rank)
         Qt = mat0 @ X[t - time_lags, :].reshape(rank * d)
-        index = list(range(0, d))
+        index = list(range(d))
         if dim3 - tmax <= t < dim3 - tmin:
-            index = list(np.where(t + time_lags < dim3))[0]
+            index = next(iter(np.where(t + time_lags < dim3)))
         elif t < tmax:
             Qt = np.zeros(rank)
-            index = list(np.where(t + time_lags >= tmax))[0]
+            index = next(iter(np.where(t + time_lags >= tmax)))
         if t < dim3 - tmin:
             Mt = mat2.copy()
             temp = np.zeros((rank * d, len(index)))
-            n = 0
-            for k in index:
+            for n, k in enumerate(index):
                 temp[:, n] = X[t + time_lags[k] - time_lags, :].reshape(rank * d)
-                n += 1
             temp0 = X[t + time_lags[index], :].T - np.einsum("ijk, ik -> jk", A0[:, :, index], temp)
             Nt = np.einsum("kij, jk -> i", mat1[index, :, :], temp0)
 

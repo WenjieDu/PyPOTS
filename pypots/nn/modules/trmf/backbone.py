@@ -1,10 +1,10 @@
-""" """
+"""Implementation of pypots.nn.modules.trmf.backbone."""
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
 import numpy as np
-import torch.nn as nn
+from torch import nn
 
 
 class BackboneTRMF(nn.Module):

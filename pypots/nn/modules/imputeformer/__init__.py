@@ -20,7 +20,7 @@ from .attention import EmbeddedAttentionLayer, ProjectedAttentionLayer
 from .mlp import MLP
 
 __all__ = [
+    "MLP",
     "EmbeddedAttentionLayer",
     "ProjectedAttentionLayer",
-    "MLP",
 ]

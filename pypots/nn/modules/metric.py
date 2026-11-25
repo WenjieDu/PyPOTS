@@ -1,4 +1,4 @@
-""" """
+"""Implementation of pypots.nn.modules.metric."""
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
@@ -6,12 +6,12 @@
 import numpy as np
 import torch
 
-from .loss import Criterion
 from ..functional import (
     calc_acc,
     calc_pr_auc,
     calc_roc_auc,
 )
+from .loss import Criterion
 
 
 class PR_AUC(Criterion):

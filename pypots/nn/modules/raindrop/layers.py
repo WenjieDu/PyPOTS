@@ -1,24 +1,22 @@
-""" """
+"""Implementation of pypots.nn.modules.raindrop.layers."""
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
 import math
-from typing import Tuple, Any, Union, Optional
+from typing import Any
 
 import numpy as np
 import torch
-import torch.nn as nn
 import torch.nn.functional as F
-from torch import Tensor
-from torch.nn import Linear
-from torch.nn import init
+from torch import Tensor, nn
+from torch.nn import Linear, init
 from torch.nn.parameter import Parameter
 
 try:
     from torch_geometric.nn.conv import MessagePassing
     from torch_geometric.nn.inits import glorot
-    from torch_geometric.typing import PairTensor, Adj, OptTensor
+    from torch_geometric.typing import Adj, OptTensor, PairTensor
     from torch_geometric.utils import softmax
     from torch_scatter import scatter
     from torch_sparse import SparseTensor
@@ -64,7 +62,7 @@ class ObservationPropagation(MessagePassing):
 
     def __init__(
         self,
-        in_channels: Union[int, Tuple[int, int]],
+        in_channels: int | tuple[int, int],
         out_channels: int,
         n_nodes: int,
         ob_dim: int,
@@ -72,7 +70,7 @@ class ObservationPropagation(MessagePassing):
         concat: bool = True,
         beta: bool = False,
         dropout: float = 0.0,
-        edge_dim: Optional[int] = None,
+        edge_dim: int | None = None,
         bias: bool = True,
         root_weight: bool = True,
         **kwargs,
@@ -147,14 +145,14 @@ class ObservationPropagation(MessagePassing):
 
     def forward(
         self,
-        x: Union[Tensor, PairTensor],
+        x: Tensor | PairTensor,
         p_t: Tensor,
         edge_index: Adj,
         edge_weights=None,
         use_beta=False,
         edge_attr: OptTensor = None,
         return_attention_weights=None,
-    ) -> Tuple[torch.Tensor, Any]:
+    ) -> tuple[torch.Tensor, Any]:
         r"""
         Args:
             return_attention_weights (bool, optional): If set to :obj:`True`,
@@ -200,7 +198,7 @@ class ObservationPropagation(MessagePassing):
         edge_attr: OptTensor,
         index: Tensor,
         ptr: OptTensor,
-        size_i: Optional[int],
+        size_i: int | None,
     ) -> Tensor:
         query = self.lin_query(x_i).view(-1, self.heads, self.out_channels)
         key = self.lin_key(x_j).view(-1, self.heads, self.out_channels)
@@ -230,7 +228,7 @@ class ObservationPropagation(MessagePassing):
         edge_attr: OptTensor,
         index: Tensor,
         ptr: OptTensor,
-        size_i: Optional[int],
+        size_i: int | None,
     ) -> Tensor:
         use_beta = self.use_beta
         if use_beta:
@@ -299,8 +297,8 @@ class ObservationPropagation(MessagePassing):
         self,
         inputs: Tensor,
         index: Tensor,
-        ptr: Optional[Tensor] = None,
-        dim_size: Optional[int] = None,
+        ptr: Tensor | None = None,
+        dim_size: int | None = None,
     ) -> Tensor:
         r"""Aggregates messages from neighbors as
         :math:`\square_{j \in \mathcal{N}(i)}`.
@@ -316,4 +314,4 @@ class ObservationPropagation(MessagePassing):
         return scatter(inputs, index, dim=self.node_dim, dim_size=dim_size, reduce=self.aggr)
 
     def __repr__(self):
-        return "{}({}, {}, heads={})".format(self.__class__.__name__, self.in_channels, self.out_channels, self.heads)
+        return f"{self.__class__.__name__}({self.in_channels}, {self.out_channels}, heads={self.heads})"

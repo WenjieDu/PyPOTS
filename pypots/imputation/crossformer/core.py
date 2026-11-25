@@ -9,14 +9,14 @@ and takes over the forward progress of the algorithm.
 from math import ceil
 
 import torch
-import torch.nn as nn
 from einops import rearrange
+from torch import nn
 
 from ...nn.modules import ModelCore
 from ...nn.modules.crossformer import CrossformerEncoder, ScaleBlock
 from ...nn.modules.loss import Criterion
-from ...nn.modules.patchtst import PredictionHead, PatchEmbedding
-from ...nn.modules.saits import SaitsLoss, SaitsEmbedding
+from ...nn.modules.patchtst import PatchEmbedding, PredictionHead
+from ...nn.modules.saits import SaitsEmbedding, SaitsLoss
 
 
 class _Crossformer(ModelCore):
@@ -111,7 +111,7 @@ class _Crossformer(ModelCore):
 
         # Crossformer processing
         x_enc = self.pre_norm(x_enc)
-        enc_out, attns = self.encoder(x_enc)
+        enc_out, _attns = self.encoder(x_enc)
         # project back the original data space
         enc_out = enc_out.permute(0, 1, 3, 2)
         dec_out = self.head(enc_out)

@@ -24,7 +24,7 @@ jobs:
 
             - name: Install Ruff
               run: |
-                pip install ruff
+                pip install ruff==0.17.6
 
             - name: Run linting
               run: |

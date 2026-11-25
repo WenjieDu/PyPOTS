@@ -16,14 +16,14 @@ This implementation is inspired by the official one https://github.com/zhouhaoyi
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-from .autoencoder import InformerEncoder, InformerDecoder
-from .layers import ProbAttention, ConvLayer, InformerEncoderLayer, InformerDecoderLayer
+from .autoencoder import InformerDecoder, InformerEncoder
+from .layers import ConvLayer, InformerDecoderLayer, InformerEncoderLayer, ProbAttention
 
 __all__ = [
-    "ProbAttention",
     "ConvLayer",
-    "InformerEncoderLayer",
+    "InformerDecoder",
     "InformerDecoderLayer",
     "InformerEncoder",
-    "InformerDecoder",
+    "InformerEncoderLayer",
+    "ProbAttention",
 ]

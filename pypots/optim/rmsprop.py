@@ -6,7 +6,7 @@ The optimizer wrapper for PyTorch RMSprop.
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-from typing import Iterable, Optional
+from collections.abc import Iterable
 
 from torch.optim import RMSprop as torch_RMSprop
 
@@ -50,7 +50,7 @@ class RMSprop(Optimizer):
         eps: float = 1e-08,
         centered: bool = False,
         weight_decay: float = 0,
-        lr_scheduler: Optional[LRScheduler] = None,
+        lr_scheduler: LRScheduler | None = None,
     ):
         super().__init__(lr, lr_scheduler)
         self.momentum = momentum

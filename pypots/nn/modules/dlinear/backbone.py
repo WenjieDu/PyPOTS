@@ -1,12 +1,10 @@
-""" """
+"""Implementation of pypots.nn.modules.dlinear.backbone."""
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-from typing import Optional
-
 import torch
-import torch.nn as nn
+from torch import nn
 
 
 class BackboneDLinear(nn.Module):
@@ -15,7 +13,7 @@ class BackboneDLinear(nn.Module):
         n_steps: int,
         n_features: int,
         individual: bool = False,
-        d_model: Optional[int] = None,
+        d_model: int | None = None,
     ):
         super().__init__()
 

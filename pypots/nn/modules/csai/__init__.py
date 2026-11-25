@@ -16,16 +16,16 @@ This implementation is inspired by the official one the official implementation 
 # Created by Joseph Arul Raj <joseph_arul_raj@kcl.ac.uk>
 # License: BSD-3-Clause
 
-from .backbone import BackboneCSAI, BackboneBCSAI
-from .layers import FeatureRegression, Decay, Decay_obs, PositionalEncoding, Conv1dWithInit, TorchTransformerEncoder
+from .backbone import BackboneBCSAI, BackboneCSAI
+from .layers import Conv1dWithInit, Decay, Decay_obs, FeatureRegression, PositionalEncoding, TorchTransformerEncoder
 
 __all__ = [
-    "BackboneCSAI",
     "BackboneBCSAI",
-    "FeatureRegression",
+    "BackboneCSAI",
+    "Conv1dWithInit",
     "Decay",
     "Decay_obs",
+    "FeatureRegression",
     "PositionalEncoding",
-    "Conv1dWithInit",
     "TorchTransformerEncoder",
 ]

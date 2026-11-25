@@ -9,7 +9,7 @@ import pickle
 
 import pandas as pd
 
-from ...utils.file import extract_parent_dir, create_dir_if_not_exist
+from ...utils.file import create_dir_if_not_exist, extract_parent_dir
 from ...utils.logging import logger
 
 
@@ -35,10 +35,8 @@ def pickle_dump(data: object, path: str) -> None:
         with open(path, "wb") as f:
             pickle.dump(data, f, protocol=pickle.HIGHEST_PROTOCOL)
         logger.info(f"Successfully saved to {path}")
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001 - preserve the existing cache I/O failure contract
         logger.error(f"❌ Pickling failed. No cache data saved. Investigate the error below:\n{e}")
-
-    return None
 
 
 def pickle_load(path: str) -> object:
@@ -61,7 +59,7 @@ def pickle_load(path: str) -> object:
                 data = pd.read_pickle(f)
             else:
                 data = pickle.load(f)
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001 - preserve the existing cache I/O failure contract
         logger.error(f"❌ Loading data failed. Operation aborted. Investigate the error below:\n{e}")
         return None
 

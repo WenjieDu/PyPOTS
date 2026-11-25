@@ -6,7 +6,7 @@ The optimizer wrapper for PyTorch AdamW.
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-from typing import Iterable, Tuple, Optional
+from collections.abc import Iterable
 
 from torch.optim import AdamW as torch_AdamW
 
@@ -42,11 +42,11 @@ class AdamW(Optimizer):
     def __init__(
         self,
         lr: float = 0.001,
-        betas: Tuple[float, float] = (0.9, 0.999),
+        betas: tuple[float, float] = (0.9, 0.999),
         eps: float = 1e-08,
         weight_decay: float = 0.01,
         amsgrad: bool = False,
-        lr_scheduler: Optional[LRScheduler] = None,
+        lr_scheduler: LRScheduler | None = None,
     ):
         super().__init__(lr, lr_scheduler)
         self.betas = betas

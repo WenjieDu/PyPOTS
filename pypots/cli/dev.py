@@ -10,7 +10,7 @@ import shutil
 
 import click
 
-from .base import execute_command, check_if_under_root_dir
+from .base import check_if_under_root_dir, execute_command
 
 IMPORT_ERROR_MESSAGE = (
     "`pypots-cli dev` command is for PyPOTS developers to run tests easily. "
@@ -107,7 +107,7 @@ def dev(build, cleanup, run_tests, k, show_coverage, lint_code):
             execute_command("ruff check .")
     except ImportError:
         raise ImportError(IMPORT_ERROR_MESSAGE)
-    except Exception as e:
-        raise e
+    except Exception:
+        raise
     finally:
         shutil.rmtree(".pytest_cache", ignore_errors=True)

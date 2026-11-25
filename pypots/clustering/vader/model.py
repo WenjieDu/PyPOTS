@@ -7,7 +7,6 @@ The implementation of VaDER for the partially-observed time-series clustering ta
 # License: BSD-3-Clause
 
 from copy import deepcopy
-from typing import Union, Optional
 
 import numpy as np
 import torch
@@ -15,13 +14,13 @@ from scipy.stats import multivariate_normal
 from sklearn.mixture import GaussianMixture
 from torch.utils.data import DataLoader
 
-from .core import inverse_softplus, _VaDER
-from .data import DatasetForVaDER
-from ..base import BaseNNClusterer
 from ...nn.modules.loss import Criterion
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
 from ...utils.logging import logger
+from ..base import BaseNNClusterer
+from .core import _VaDER, inverse_softplus
+from .data import DatasetForVaDER
 
 
 class VaDER(BaseNNClusterer):
@@ -98,12 +97,12 @@ class VaDER(BaseNNClusterer):
         batch_size: int = 32,
         epochs: int = 100,
         pretrain_epochs: int = 10,
-        patience: Optional[int] = None,
-        optimizer: Union[Optimizer, type] = Adam,
+        patience: int | None = None,
+        optimizer: Optimizer | type = Adam,
         num_workers: int = 0,
-        device: Optional[Union[str, torch.device, list]] = None,
-        saving_path: str = None,
-        model_saving_strategy: Optional[str] = "best",
+        device: str | torch.device | list | None = None,
+        saving_path: str | None = None,
+        model_saving_strategy: str | None = "best",
         verbose: bool = True,
     ):
         super().__init__(
@@ -141,7 +140,7 @@ class VaDER(BaseNNClusterer):
 
     def _assemble_input_for_training(self, data: list) -> dict:
         # fetch data
-        indices, X, missing_mask = self._send_data_to_given_device(data)
+        _indices, X, missing_mask = self._send_data_to_given_device(data)
 
         inputs = {
             "X": X,
@@ -331,14 +330,14 @@ class VaDER(BaseNNClusterer):
 
         except KeyboardInterrupt:  # if keyboard interrupt, only warning
             logger.warning("‼️ Training got interrupted by the user. Exist now ...")
-        except Exception as e:  # other kind of exception follows below processing
+        except Exception as e:  # noqa: BLE001 - preserve recovery from interrupted training
             logger.error(f"❌ Exception: {e}")
             if self.best_model_dict is None:  # if no best model, raise error
                 raise RuntimeError(
                     "Training got interrupted. Model was not trained. Please investigate the error printed above."
                 )
             else:
-                RuntimeWarning(
+                logger.warning(
                     "Training got interrupted. Please investigate the error printed above.\n"
                     "Model got trained and will load the best checkpoint so far for testing.\n"
                     "If you don't want it, please try fit() again."
@@ -351,8 +350,8 @@ class VaDER(BaseNNClusterer):
 
     def fit(
         self,
-        train_set: Union[dict, str],
-        val_set: Optional[Union[dict, str]] = None,
+        train_set: dict | str,
+        val_set: dict | str | None = None,
         file_type: str = "hdf5",
     ) -> None:
         # Step 1: wrap the input data with classes Dataset and DataLoader
@@ -384,7 +383,7 @@ class VaDER(BaseNNClusterer):
     @torch.no_grad()
     def predict(
         self,
-        test_set: Union[dict, str],
+        test_set: dict | str,
         file_type: str = "hdf5",
         return_latent_vars: bool = False,
     ) -> dict:

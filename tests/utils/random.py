@@ -9,8 +9,8 @@ import unittest
 
 import torch
 
-from pypots.utils.random import set_random_seed, get_random_seed
 from pypots.utils.random import RANDOM_SEED as default_random_seed
+from pypots.utils.random import get_random_seed, set_random_seed
 
 
 class TestRandom(unittest.TestCase):
@@ -31,7 +31,7 @@ class TestRandom(unittest.TestCase):
         )
 
         current_seed = get_random_seed()
-        assert not current_seed == default_random_seed, (
+        assert current_seed != default_random_seed, (
             f"The random seed has been set to {current_seed} not equal to the default seed {default_random_seed}."
         )
 

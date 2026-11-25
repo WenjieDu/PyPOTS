@@ -20,7 +20,6 @@ https://github.com/jsyoon0823/MRNN and https://github.com/WenjieDu/SAITS
 from .backbone import BackboneMRNN
 from .layers import MrnnFcnRegression
 
-
 __all__ = [
     "BackboneMRNN",
     "MrnnFcnRegression",

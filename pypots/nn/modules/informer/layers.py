@@ -1,16 +1,15 @@
-""" """
+"""Implementation of pypots.nn.modules.informer.layers."""
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
 from math import sqrt
-from typing import Optional
 
 import numpy as np
 import torch
 import torch.fft
-import torch.nn as nn
 import torch.nn.functional as F
+from torch import nn
 
 from ....nn.modules.transformer.attention import AttentionOperator
 
@@ -87,7 +86,7 @@ class ProbAttention(AttentionOperator):
         return Q_K, M_top
 
     def _get_initial_context(self, V, L_Q):
-        B, H, L_V, D = V.shape
+        B, H, L_V, _D = V.shape
         if not self.mask_flag:
             # V_sum = V.sum(dim=-2)
             V_sum = V.mean(dim=-2)
@@ -98,7 +97,7 @@ class ProbAttention(AttentionOperator):
         return contex
 
     def _update_context(self, context_in, V, scores, index, L_Q, attn_mask):
-        B, H, L_V, D = V.shape
+        B, H, L_V, _D = V.shape
 
         if self.mask_flag:
             attn_mask = ProbMask(B, H, L_Q, index, scores, device=V.device)
@@ -119,13 +118,13 @@ class ProbAttention(AttentionOperator):
         q: torch.Tensor,
         k: torch.Tensor,
         v: torch.Tensor,
-        attn_mask: Optional[torch.Tensor] = None,
+        attn_mask: torch.Tensor | None = None,
         **kwargs,
     ):
         # q, k, v all have 4 dimensions [batch_size, n_steps, n_heads, d_tensor]
         # d_tensor could be d_q, d_k, d_v
 
-        B, L_Q, H, D = q.shape
+        _B, L_Q, _H, D = q.shape
         _, L_K, _, _ = k.shape
 
         q = q.transpose(2, 1)
@@ -135,8 +134,8 @@ class ProbAttention(AttentionOperator):
         U_part = self.factor * np.ceil(np.log(L_K)).astype("int").item()  # c*ln(L_k)
         u = self.factor * np.ceil(np.log(L_Q)).astype("int").item()  # c*ln(L_q)
 
-        U_part = U_part if U_part < L_K else L_K
-        u = u if u < L_Q else L_Q
+        U_part = min(L_K, U_part)
+        u = min(L_Q, u)
 
         scores_top, index = self._prob_QK(q, k, sample_k=U_part, n_top=u)
 

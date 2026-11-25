@@ -30,7 +30,7 @@ class TestPyPOTSCLIEnv(unittest.TestCase):
                 catch_exceptions=False,
             )
             print(result.output)
-        except Exception as e:  # somehow we have some error when testing on Windows, so just print and pass below
+        except Exception as e:  # noqa: BLE001 - retain existing Windows CLI test behavior
             logger.error(f"❌ Exception: {e}")
 
     @pytest.mark.xdist_group(name="cli-env")
@@ -43,5 +43,5 @@ class TestPyPOTSCLIEnv(unittest.TestCase):
                 catch_exceptions=False,
             )
             print(result.output)
-        except Exception as e:  # somehow we have some error when testing on Windows, so just print and pass below
+        except Exception as e:  # noqa: BLE001 - retain existing Windows CLI test behavior
             logger.error(f"❌ Exception: {e}")

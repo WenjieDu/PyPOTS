@@ -1,14 +1,12 @@
-""" """
+"""Implementation of pypots.nn.modules.crli.backbone."""
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-from typing import Tuple, Optional
-
 import torch
-import torch.nn as nn
+from torch import nn
 
-from .layers import CrliGenerator, CrliDecoder, CrliDiscriminator
+from .layers import CrliDecoder, CrliDiscriminator, CrliGenerator
 
 
 class BackboneCRLI(nn.Module):
@@ -18,7 +16,7 @@ class BackboneCRLI(nn.Module):
         n_features: int,
         n_generator_layers: int,
         rnn_hidden_size: int,
-        decoder_fcn_output_dims: Optional[list],
+        decoder_fcn_output_dims: list | None,
         rnn_cell_type: str = "GRU",
     ):
         super().__init__()
@@ -28,7 +26,7 @@ class BackboneCRLI(nn.Module):
             n_steps, rnn_hidden_size * 2, n_features, decoder_fcn_output_dims
         )  # fully connected network is included in Decoder
 
-    def forward(self, X, missing_mask) -> Tuple[torch.Tensor, ...]:
+    def forward(self, X, missing_mask) -> tuple[torch.Tensor, ...]:
         imputation_latent, generator_fb_hidden_states = self.generator(X, missing_mask)
         discrimination = self.discriminator(X, missing_mask, imputation_latent)
         reconstruction, fcn_latent = self.decoder(generator_fb_hidden_states)

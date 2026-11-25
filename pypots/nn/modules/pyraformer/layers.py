@@ -1,4 +1,4 @@
-""" """
+"""Implementation of pypots.nn.modules.pyraformer.layers."""
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
@@ -7,7 +7,7 @@ import math
 
 import torch
 import torch.fft
-import torch.nn as nn
+from torch import nn
 
 
 def get_mask(input_size, window_size, inner_size):

@@ -7,18 +7,17 @@ The implementation of TS2Vec for the partially-observed time-series classificati
 # License: BSD-3-Clause
 
 import warnings
-from typing import Optional, Union
 
 import numpy as np
 import torch
 from torch.utils.data import DataLoader
 
-from ..base import BaseNNClassifier
 from ...data.dataset.base import BaseDataset
 from ...nn.modules.loss import Criterion
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
 from ...representation.ts2vec.core import _TS2Vec
+from ..base import BaseNNClassifier
 
 SUPPORTED_CLASSIFIERS = ["lr", "svm", "knn"]
 
@@ -125,12 +124,12 @@ class TS2Vec(BaseNNClassifier):
         mask_mode: str = "binomial",
         batch_size: int = 32,
         epochs: int = 100,
-        patience: Optional[int] = None,
-        optimizer: Union[Optimizer, type] = Adam,
+        patience: int | None = None,
+        optimizer: Optimizer | type = Adam,
         num_workers: int = 0,
-        device: Optional[Union[str, torch.device, list]] = None,
-        saving_path: str = None,
-        model_saving_strategy: Optional[str] = "best",
+        device: str | torch.device | list | None = None,
+        saving_path: str | None = None,
+        model_saving_strategy: str | None = "best",
         verbose: bool = True,
     ):
         super().__init__(
@@ -219,8 +218,8 @@ class TS2Vec(BaseNNClassifier):
 
     def fit(
         self,
-        train_set: Union[dict, str],
-        val_set: Optional[Union[dict, str]] = None,
+        train_set: dict | str,
+        val_set: dict | str | None = None,
         file_type: str = "hdf5",
     ) -> None:
         """Train the classifier on the given data.
@@ -301,7 +300,7 @@ class TS2Vec(BaseNNClassifier):
     @torch.no_grad()
     def predict(
         self,
-        test_set: Union[dict, str],
+        test_set: dict | str,
         file_type: str = "hdf5",
         classifier_type: str = "svm",
     ) -> dict:
@@ -387,7 +386,7 @@ class TS2Vec(BaseNNClassifier):
 
     def predict_proba(
         self,
-        test_set: Union[dict, str],
+        test_set: dict | str,
         file_type: str = "hdf5",
         classifier_type: str = "svm",
     ) -> np.ndarray:
@@ -417,7 +416,7 @@ class TS2Vec(BaseNNClassifier):
 
     def classify(
         self,
-        test_set: Union[dict, str],
+        test_set: dict | str,
         file_type: str = "hdf5",
         classifier_type: str = "svm",
     ) -> np.ndarray:

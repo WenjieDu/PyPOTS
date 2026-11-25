@@ -112,9 +112,7 @@ class TestInformer(unittest.TestCase):
             anomaly_detection_results["anomaly_detection"],
             anomaly_labels,
         )
-        logger.info(
-            f"Lazy-loading Informer Accuracy: {accuracy}, F1: {f1}, Precision: {precision}, Recall: {recall}"
-        )
+        logger.info(f"Lazy-loading Informer Accuracy: {accuracy}, F1: {f1}, Precision: {precision}, Recall: {recall}")
 
 
 if __name__ == "__main__":

@@ -1,12 +1,10 @@
-""" """
+"""Implementation of pypots.nn.modules.grud.backbone."""
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-from typing import Tuple
-
 import torch
-import torch.nn as nn
+from torch import nn
 
 from .layers import TemporalDecay
 
@@ -28,7 +26,7 @@ class BackboneGRUD(nn.Module):
         self.temp_decay_h = TemporalDecay(input_size=self.n_features, output_size=self.rnn_hidden_size, diag=False)
         self.temp_decay_x = TemporalDecay(input_size=self.n_features, output_size=self.n_features, diag=True)
 
-    def forward(self, X, missing_mask, deltas, empirical_mean, X_filledLOCF) -> Tuple[torch.Tensor, ...]:
+    def forward(self, X, missing_mask, deltas, empirical_mean, X_filledLOCF) -> tuple[torch.Tensor, ...]:
         """Forward processing of GRU-D.
 
         Parameters

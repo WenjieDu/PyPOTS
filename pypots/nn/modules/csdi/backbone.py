@@ -1,11 +1,11 @@
-""" """
+"""Implementation of pypots.nn.modules.csdi.backbone."""
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
 import numpy as np
 import torch
-import torch.nn as nn
+from torch import nn
 
 from .layers import CsdiDiffusionModel
 
@@ -82,7 +82,7 @@ class BackboneCSDI(nn.Module):
         return loss_sum / self.n_diffusion_steps
 
     def calc_loss(self, observed_data, cond_mask, indicating_mask, side_info, set_t=-1):
-        B, K, L = observed_data.shape
+        B, _K, _L = observed_data.shape
         device = observed_data.device
         if self.training != 1:  # for validation
             t = (torch.ones(B) * set_t).long().to(device)

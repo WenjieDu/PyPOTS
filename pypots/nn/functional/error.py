@@ -5,16 +5,14 @@ Evaluation metrics related to error calculation (like in tasks regression, imput
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-from typing import Union, Optional
-
 import numpy as np
 import torch
 
 
 def _check_inputs(
-    predictions: Union[np.ndarray, torch.Tensor, list],
-    targets: Union[np.ndarray, torch.Tensor, list],
-    masks: Optional[Union[np.ndarray, torch.Tensor, list]] = None,
+    predictions: np.ndarray | torch.Tensor | list,
+    targets: np.ndarray | torch.Tensor | list,
+    masks: np.ndarray | torch.Tensor | list | None = None,
     check_shape: bool = True,
 ):
     # check type
@@ -53,10 +51,10 @@ def _check_inputs(
 
 
 def calc_mae(
-    predictions: Union[np.ndarray, torch.Tensor],
-    targets: Union[np.ndarray, torch.Tensor],
-    masks: Optional[Union[np.ndarray, torch.Tensor]] = None,
-) -> Union[float, torch.Tensor]:
+    predictions: np.ndarray | torch.Tensor,
+    targets: np.ndarray | torch.Tensor,
+    masks: np.ndarray | torch.Tensor | None = None,
+) -> float | torch.Tensor:
     """Calculate the Mean Absolute Error between ``predictions`` and ``targets``.
     ``masks`` can be used for filtering. For values==0 in ``masks``,
     values at their corresponding positions in ``predictions`` will be ignored.
@@ -104,10 +102,10 @@ def calc_mae(
 
 
 def calc_mse(
-    predictions: Union[np.ndarray, torch.Tensor],
-    targets: Union[np.ndarray, torch.Tensor],
-    masks: Optional[Union[np.ndarray, torch.Tensor]] = None,
-) -> Union[float, torch.Tensor]:
+    predictions: np.ndarray | torch.Tensor,
+    targets: np.ndarray | torch.Tensor,
+    masks: np.ndarray | torch.Tensor | None = None,
+) -> float | torch.Tensor:
     """Calculate the Mean Square Error between ``predictions`` and ``targets``.
     ``masks`` can be used for filtering. For values==0 in ``masks``,
     values at their corresponding positions in ``predictions`` will be ignored.
@@ -155,10 +153,10 @@ def calc_mse(
 
 
 def calc_rmse(
-    predictions: Union[np.ndarray, torch.Tensor],
-    targets: Union[np.ndarray, torch.Tensor],
-    masks: Optional[Union[np.ndarray, torch.Tensor]] = None,
-) -> Union[float, torch.Tensor]:
+    predictions: np.ndarray | torch.Tensor,
+    targets: np.ndarray | torch.Tensor,
+    masks: np.ndarray | torch.Tensor | None = None,
+) -> float | torch.Tensor:
     """Calculate the Root Mean Square Error between ``predictions`` and ``targets``.
     ``masks`` can be used for filtering. For values==0 in ``masks``,
     values at their corresponding positions in ``predictions`` will be ignored.
@@ -203,10 +201,10 @@ def calc_rmse(
 
 
 def calc_mre(
-    predictions: Union[np.ndarray, torch.Tensor],
-    targets: Union[np.ndarray, torch.Tensor],
-    masks: Optional[Union[np.ndarray, torch.Tensor]] = None,
-) -> Union[float, torch.Tensor]:
+    predictions: np.ndarray | torch.Tensor,
+    targets: np.ndarray | torch.Tensor,
+    masks: np.ndarray | torch.Tensor | None = None,
+) -> float | torch.Tensor:
     """Calculate the Mean Relative Error between ``predictions`` and ``targets``.
     ``masks`` can be used for filtering. For values==0 in ``masks``,
     values at their corresponding positions in ``predictions`` will be ignored.
@@ -255,11 +253,11 @@ def calc_mre(
 
 
 def calc_quantile_loss(
-    predictions: Union[np.ndarray, torch.Tensor],
-    targets: Union[np.ndarray, torch.Tensor],
+    predictions: np.ndarray | torch.Tensor,
+    targets: np.ndarray | torch.Tensor,
     q: float,
-    eval_points: Union[np.ndarray, torch.Tensor],
-) -> Union[float, torch.Tensor]:
+    eval_points: np.ndarray | torch.Tensor,
+) -> float | torch.Tensor:
     # check types and NaN (but not predictions/targets shape, which is
     # broadcast here and explicitly differs in the calc_quantile_crps_sum
     # caller). Mask shape is still validated against targets by _check_inputs.
@@ -285,9 +283,9 @@ def calc_quantile_loss(
 
 
 def calc_quantile_crps(
-    predictions: Union[np.ndarray, torch.Tensor],
-    targets: Union[np.ndarray, torch.Tensor],
-    masks: Union[np.ndarray, torch.Tensor],
+    predictions: np.ndarray | torch.Tensor,
+    targets: np.ndarray | torch.Tensor,
+    masks: np.ndarray | torch.Tensor,
     scaler_mean=0,
     scaler_stddev=1,
 ) -> float:
@@ -344,9 +342,9 @@ def calc_quantile_crps(
 
 
 def calc_quantile_crps_sum(
-    predictions: Union[np.ndarray, torch.Tensor],
-    targets: Union[np.ndarray, torch.Tensor],
-    masks: Union[np.ndarray, torch.Tensor],
+    predictions: np.ndarray | torch.Tensor,
+    targets: np.ndarray | torch.Tensor,
+    masks: np.ndarray | torch.Tensor,
     scaler_mean=0,
     scaler_stddev=1,
 ) -> float:

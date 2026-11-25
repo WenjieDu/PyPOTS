@@ -1,10 +1,10 @@
-""" """
+"""Implementation of pypots.nn.modules.stemgnn.layers."""
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
 import torch
-import torch.nn as nn
+from torch import nn
 
 
 class GLU(nn.Module):
@@ -68,7 +68,7 @@ class StockBlockLayer(nn.Module):
                 )
 
     def spe_seq_cell(self, input):
-        batch_size, k, input_channel, node_cnt, time_step = input.size()
+        batch_size, _k, _input_channel, node_cnt, time_step = input.size()
         input = input.view(batch_size, -1, node_cnt, time_step)
         # ffted = torch.fft.rfft(input, 1, onesided=False) # original old version, onesided doesn't work in new torch
         ffted = torch.view_as_real(torch.fft.fft(input, dim=1))  # WDU: replace the above line with this line

@@ -1,15 +1,13 @@
-""" """
+"""Implementation of pypots.nn.modules.nonstationary_transformer.autoencoder."""
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-from typing import Optional, Tuple, Union
-
 import torch
-import torch.nn as nn
+from torch import nn
 
-from .layers import DeStationaryAttention
 from ..transformer.layers import TransformerEncoderLayer
+from .layers import DeStationaryAttention
 
 
 class NonstationaryTransformerEncoder(nn.Module):
@@ -77,9 +75,9 @@ class NonstationaryTransformerEncoder(nn.Module):
     def forward(
         self,
         x: torch.Tensor,
-        src_mask: Optional[torch.Tensor] = None,
+        src_mask: torch.Tensor | None = None,
         **kwargs,
-    ) -> Union[torch.Tensor, Tuple[torch.Tensor, list]]:
+    ) -> torch.Tensor | tuple[torch.Tensor, list]:
         """Forward processing of the encoder.
 
         Parameters

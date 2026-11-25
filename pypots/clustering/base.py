@@ -6,7 +6,6 @@ The base classes for PyPOTS clustering models.
 # License: BSD-3-Clause
 
 from abc import abstractmethod
-from typing import Union, Optional
 
 import numpy as np
 import torch
@@ -50,10 +49,10 @@ class BaseClusterer(BaseModel):
     def __init__(
         self,
         n_clusters: int,
-        device: Optional[Union[str, torch.device, list]] = None,
+        device: str | torch.device | list | None = None,
         enable_amp: bool = False,
-        saving_path: str = None,
-        model_saving_strategy: Optional[str] = "best",
+        saving_path: str | None = None,
+        model_saving_strategy: str | None = "best",
         verbose: bool = True,
     ):
         super().__init__(
@@ -68,8 +67,8 @@ class BaseClusterer(BaseModel):
     @abstractmethod
     def fit(
         self,
-        train_set: Union[dict, str],
-        val_set: Union[dict, str] = None,
+        train_set: dict | str,
+        val_set: dict | str | None = None,
         file_type: str = "hdf5",
     ) -> None:
         """Train the cluster.
@@ -102,7 +101,7 @@ class BaseClusterer(BaseModel):
     @abstractmethod
     def predict(
         self,
-        test_set: Union[dict, str],
+        test_set: dict | str,
         file_type: str = "hdf5",
         **kwargs,
     ) -> dict:
@@ -131,7 +130,7 @@ class BaseClusterer(BaseModel):
 
     def cluster(
         self,
-        test_set: Union[dict, str],
+        test_set: dict | str,
         file_type: str = "hdf5",
         **kwargs,
     ) -> np.ndarray:
@@ -227,16 +226,16 @@ class BaseNNClusterer(BaseNNModel):
     def __init__(
         self,
         n_clusters: int,
-        training_loss: Union[Criterion, type],
-        validation_metric: Union[Criterion, type],
+        training_loss: Criterion | type,
+        validation_metric: Criterion | type,
         batch_size: int,
         epochs: int = 100,
-        patience: Optional[int] = None,
+        patience: int | None = None,
         num_workers: int = 0,
-        device: Optional[Union[str, torch.device, list]] = None,
+        device: str | torch.device | list | None = None,
         enable_amp: bool = False,
-        saving_path: str = None,
-        model_saving_strategy: Optional[str] = "best",
+        saving_path: str | None = None,
+        model_saving_strategy: str | None = "best",
         verbose: bool = True,
     ):
         super().__init__(
@@ -257,8 +256,8 @@ class BaseNNClusterer(BaseNNModel):
     @abstractmethod
     def fit(
         self,
-        train_set: Union[dict, str],
-        val_set: Union[dict, str] = None,
+        train_set: dict | str,
+        val_set: dict | str | None = None,
         file_type: str = "hdf5",
     ) -> None:
         """Train the cluster.
@@ -292,7 +291,7 @@ class BaseNNClusterer(BaseNNModel):
     @torch.no_grad()
     def predict(
         self,
-        test_set: Union[dict, str],
+        test_set: dict | str,
         file_type: str = "hdf5",
     ) -> dict:
         """Make predictions for the input data with the trained model.
@@ -320,7 +319,7 @@ class BaseNNClusterer(BaseNNModel):
 
     def cluster(
         self,
-        test_set: Union[dict, str],
+        test_set: dict | str,
         file_type: str = "hdf5",
         **kwargs,
     ) -> np.ndarray:

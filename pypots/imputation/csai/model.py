@@ -5,21 +5,19 @@ The implementation of CSAI
 # Created by Linglong Qian, Joseph Arul Raj <linglong.qian@kcl.ac.uk, joseph_arul_raj@kcl.ac.uk>
 # License: BSD-3-Clause
 
-from typing import Union, Optional
-
 import torch
 from torch.utils.data import DataLoader
 
-from .core import _BCSAI
-from .data import DatasetForCSAI
-from ..base import BaseNNImputer
 from ...data.checking import key_in_data_set
 from ...data.saving.h5 import load_dict_from_h5
 from ...nn.functional import gather_listed_dicts
-from ...nn.modules.loss import Criterion, MAE, MSE
+from ...nn.modules.loss import MAE, MSE, Criterion
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
 from ...utils.logging import logger
+from ..base import BaseNNImputer
+from .core import _BCSAI
+from .data import DatasetForCSAI
 
 
 class CSAI(BaseNNImputer):
@@ -123,14 +121,14 @@ class CSAI(BaseNNImputer):
         step_channels: int,
         batch_size: int = 32,
         epochs: int = 100,
-        patience: Optional[int] = None,
-        training_loss: Union[Criterion, type] = MAE,
-        validation_metric: Union[Criterion, type] = MSE,
-        optimizer: Union[Optimizer, type] = Adam,
+        patience: int | None = None,
+        training_loss: Criterion | type = MAE,
+        validation_metric: Criterion | type = MSE,
+        optimizer: Optimizer | type = Adam,
         num_workers: int = 0,
-        device: Union[str, torch.device, list, None] = None,
-        saving_path: str = None,
-        model_saving_strategy: Optional[str] = "best",
+        device: str | torch.device | list | None = None,
+        saving_path: str | None = None,
+        model_saving_strategy: str | None = "best",
         verbose: bool = True,
     ):
         super().__init__(
@@ -315,7 +313,7 @@ class CSAI(BaseNNImputer):
     @torch.no_grad()
     def predict(
         self,
-        test_set: Union[dict, str],
+        test_set: dict | str,
         file_type: str = "hdf5",
     ) -> dict:
         self.model.eval()  # set the model to evaluation mode

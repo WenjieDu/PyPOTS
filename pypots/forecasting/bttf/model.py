@@ -8,13 +8,12 @@ forecasting task.
 # License: BSD-3-Clause
 
 import warnings
-from typing import Union, Optional
 
 import numpy as np
 import torch
 
-from .core import BTTF_forecast
 from ..base import BaseForecaster
+from .core import BTTF_forecast
 
 
 class BTTF(BaseForecaster):
@@ -76,7 +75,7 @@ class BTTF(BaseForecaster):
         gibbs_iter: int,
         gamma: int = 10,
         multi_step: int = 1,
-        device: Optional[Union[str, torch.device, list]] = None,
+        device: str | torch.device | list | None = None,
     ):
         super().__init__(device)
         self.n_steps = n_steps
@@ -91,8 +90,8 @@ class BTTF(BaseForecaster):
 
     def fit(
         self,
-        train_set: Union[dict, str],
-        val_set: Optional[Union[dict, str]] = None,
+        train_set: dict | str,
+        val_set: dict | str | None = None,
         file_type: str = "hdf5",
     ) -> None:
         """Train the forecaster on the given data.
@@ -107,7 +106,7 @@ class BTTF(BaseForecaster):
 
     def predict(
         self,
-        test_set: Union[dict, str],
+        test_set: dict | str,
         file_type: str = "hdf5",
         **kwargs,
     ) -> dict:

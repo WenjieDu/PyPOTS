@@ -5,15 +5,13 @@ Dataset class for the imputation model TRMF.
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-from typing import Union
-
 from ...data.dataset.base import BaseDataset
 
 
 class DatasetForTRMF(BaseDataset):
     def __init__(
         self,
-        data: Union[dict, str],
+        data: dict | str,
     ):
         super().__init__(
             data,

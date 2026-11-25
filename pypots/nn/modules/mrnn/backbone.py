@@ -1,12 +1,10 @@
-""" """
+"""Implementation of pypots.nn.modules.mrnn.backbone."""
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-from typing import Tuple
-
 import torch
-import torch.nn as nn
+from torch import nn
 
 from .layers import MrnnFcnRegression
 
@@ -46,13 +44,13 @@ class BackboneMRNN(nn.Module):
 
         return feature_estimation, hidden_states_f, hidden_states_b
 
-    def forward(self, inputs: dict) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+    def forward(self, inputs: dict) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         X = inputs["forward"]["X"]
         M = inputs["forward"]["missing_mask"]
 
         feature_collector = []
         for f in range(self.n_features):
-            feat_estimation, hid_states_f, hid_states_b = self.gene_hidden_states(inputs, f)
+            feat_estimation, _hid_states_f, _hid_states_b = self.gene_hidden_states(inputs, f)
             feature_collector.append(feat_estimation)
 
         RNN_estimation = torch.concat(feature_collector, dim=2)

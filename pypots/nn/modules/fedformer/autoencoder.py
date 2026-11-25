@@ -1,22 +1,22 @@
-""" """
+"""Implementation of pypots.nn.modules.fedformer.autoencoder."""
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-import torch.nn as nn
+from torch import nn
 
-from .layers import (
-    MultiWaveletTransform,
-    MultiWaveletCross,
-    FourierBlock,
-    FourierCrossAttention,
-)
 from ....nn.modules.autoformer import (
-    AutoformerEncoderLayer,
     AutoformerDecoderLayer,
+    AutoformerEncoderLayer,
     SeasonalLayerNorm,
 )
-from ....nn.modules.informer import InformerEncoder, InformerDecoder
+from ....nn.modules.informer import InformerDecoder, InformerEncoder
+from .layers import (
+    FourierBlock,
+    FourierCrossAttention,
+    MultiWaveletCross,
+    MultiWaveletTransform,
+)
 
 
 class FEDformerEncoder(nn.Module):

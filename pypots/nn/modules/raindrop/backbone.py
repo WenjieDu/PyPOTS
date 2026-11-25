@@ -1,14 +1,12 @@
-""" """
+"""Implementation of pypots.nn.modules.raindrop.backbone."""
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-from typing import Tuple
-
 import torch
-import torch.nn as nn
 import torch.nn.functional as F
-from torch.nn import TransformerEncoderLayer, TransformerEncoder
+from torch import nn
+from torch.nn import TransformerEncoder, TransformerEncoderLayer
 
 
 class BackboneRaindrop(nn.Module):
@@ -30,7 +28,7 @@ class BackboneRaindrop(nn.Module):
     ):
 
         try:
-            from .layers import PositionalEncoding, ObservationPropagation
+            from .layers import ObservationPropagation, PositionalEncoding
         except (ImportError, NameError) as e:
             raise ImportError(
                 f"❌ {e}. Note that torch_geometric is missing, please install it with "
@@ -115,7 +113,7 @@ class BackboneRaindrop(nn.Module):
         X: torch.Tensor,
         timestamps: torch.Tensor,
         lengths: torch.Tensor,
-    ) -> Tuple[torch.Tensor, ...]:
+    ) -> tuple[torch.Tensor, ...]:
         """Forward processing of Raindrop.
 
         Parameters
@@ -160,7 +158,7 @@ class BackboneRaindrop(nn.Module):
         alpha_all = torch.zeros([edge_index.shape[1], batch_size], device=device)
 
         # iterate on each sample
-        for unit in range(0, batch_size):
+        for unit in range(batch_size):
             step_data = x[:, unit, :]
             p_t = pe[:, unit, :]
 

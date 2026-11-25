@@ -1,11 +1,11 @@
-""" """
+"""Implementation of pypots.forecasting.moderntcn.core."""
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-import torch.nn as nn
+from torch import nn
 
-from ...nn.functional import nonstationary_norm, nonstationary_denorm
+from ...nn.functional import nonstationary_denorm, nonstationary_norm
 from ...nn.modules.loss import Criterion
 from ...nn.modules.moderntcn import BackboneModernTCN
 from ...nn.modules.patchtst.layers import FlattenHead

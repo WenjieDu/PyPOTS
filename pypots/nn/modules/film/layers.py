@@ -1,14 +1,14 @@
-""" """
+"""Implementation of pypots.nn.modules.film.layers."""
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
 import numpy as np
 import torch
-import torch.nn as nn
 import torch.nn.functional as F
 from scipy import signal
 from scipy import special as ss
+from torch import nn
 
 
 class HiPPO_LegT(nn.Module):
@@ -49,7 +49,7 @@ class HiPPO_LegT(nn.Module):
         output : (length, ..., N) where N is the order of the HiPPO projection
         """
         device = inputs.device
-        c = torch.zeros(inputs.shape[:-1] + tuple([self.N])).to(device)
+        c = torch.zeros(inputs.shape[:-1] + (self.N,)).to(device)
         cs = []
         for f in inputs.permute([-1, 0, 1]):
             f = f.unsqueeze(-1)
@@ -84,11 +84,11 @@ class SpectralConv1d(nn.Module):
 
         if mode_type == 0:
             self.modes2 = min(32, seq_len // 2)
-            self.index = list(range(0, self.modes2))
+            self.index = list(range(self.modes2))
         elif mode_type == 1:
             modes2 = modes1
             self.modes2 = min(modes2, seq_len // 2)
-            self.index0 = list(range(0, int(ratio * min(seq_len // 2, modes2))))
+            self.index0 = list(range(int(ratio * min(seq_len // 2, modes2))))
             self.index1 = list(range(len(self.index0), self.modes2))
             np.random.shuffle(self.index1)
             self.index1 = self.index1[: min(seq_len // 2, self.modes2) - int(ratio * min(seq_len // 2, modes2))]
@@ -97,7 +97,7 @@ class SpectralConv1d(nn.Module):
         elif mode_type == 2:
             modes2 = modes1
             self.modes2 = min(modes2, seq_len // 2)
-            self.index = list(range(0, seq_len // 2))
+            self.index = list(range(seq_len // 2))
             np.random.shuffle(self.index)
             self.index = self.index[: self.modes2]
 
@@ -107,7 +107,7 @@ class SpectralConv1d(nn.Module):
         )
 
     def forward(self, x):
-        B, H, E, N = x.shape
+        B, H, _E, _N = x.shape
         x_ft = torch.fft.rfft(x)
         out_ft = torch.zeros(
             B,

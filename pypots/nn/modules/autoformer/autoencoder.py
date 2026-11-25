@@ -1,16 +1,16 @@
-""" """
+"""Implementation of pypots.nn.modules.autoformer.autoencoder."""
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-import torch.nn as nn
+from torch import nn
 
-from .layers import (
-    SeasonalLayerNorm,
-    AutoformerEncoderLayer,
-    AutoCorrelation,
-)
 from ..informer.autoencoder import InformerEncoder
+from .layers import (
+    AutoCorrelation,
+    AutoformerEncoderLayer,
+    SeasonalLayerNorm,
+)
 
 
 class AutoformerEncoder(nn.Module):
