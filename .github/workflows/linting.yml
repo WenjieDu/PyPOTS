@@ -52,6 +52,9 @@ jobs:
                       echo "No comparison base; structural and Ruff checks ran on all tracked files."
                   fi
 
+            - name: Check CI bootstrap without third-party packages
+              run: python -S scripts/ci_pipeline.py install --help
+
             - name: Documentation consistency (no Sphinx build)
               run: python scripts/check_docs_consistency.py
 

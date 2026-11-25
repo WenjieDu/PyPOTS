@@ -1,5 +1,6 @@
 # Test tools only: do not install the released pypots[dev] into CI.
 build
+packaging
 twine
 pytest
 pytest-cov

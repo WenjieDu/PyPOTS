@@ -12,8 +12,6 @@ import zipfile
 from email.parser import BytesParser
 from pathlib import Path
 
-from packaging.requirements import Requirement
-
 ROOT = Path(__file__).resolve().parents[1]
 
 
@@ -29,6 +27,9 @@ def pip(*args):
 
 def validate_artifacts(wheel, sdist):
     """Check the source and wheel metadata and license before installing."""
+    # CI dependencies have been installed by this point. Keep bootstrap imports stdlib-only.
+    from packaging.requirements import Requirement
+
     expected = {
         Requirement(line.strip())
         for line in (ROOT / "requirements/requirements.txt").read_text(encoding="utf-8").splitlines()
