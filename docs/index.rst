@@ -302,6 +302,7 @@ PyPOTS community is open, transparent, and surely friendly. Let's work together 
 
    install
    tutorials
+   npu
 
 .. toctree::
    :maxdepth: 4

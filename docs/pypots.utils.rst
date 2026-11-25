@@ -27,3 +27,21 @@ pypots.utils.random
    :undoc-members:
    :show-inheritance:
    :inherited-members:
+
+pypots.utils.devices
+--------------------------
+
+.. automodule:: pypots.utils.devices
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+
+pypots.utils.distributed
+-----------------------------
+
+.. automodule:: pypots.utils.distributed
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
