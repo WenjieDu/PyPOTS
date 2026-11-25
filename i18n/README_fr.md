@@ -344,12 +344,10 @@ Des projets scientifiques utilisent et citent PyPOTS. Découvrez les [recherches
 ### Travaux de recherche connexes
 
 - **[SAITS](https://doi.org/10.1016/j.eswa.2023.119619)** (ESWA 2023, plus de 1 000 citations) : le projet de recherche à l’origine de PyPOTS. Son implémentation initiale de l’imputation par auto-attention a constitué la base du code de PyPOTS.
-- **[TSI-Bench](https://arxiv.org/abs/2406.12747)** (prépublication arXiv 2024) : benchmark standardisé couvrant 34 804 expériences, 28 algorithmes et 8 jeux de données sous diverses conditions de valeurs manquantes.
+- **[TSI-Bench](https://arxiv.org/abs/2406.12747)** (prépublication arXiv 2024) : Benchmark standardisé d’imputation de séries temporelles couvrant 34 804 expériences, 28 algorithmes et 8 jeux de données sous diverses conditions de valeurs manquantes. Dépôt de code : [Awesome_Imputation](https://github.com/WenjieDu/Awesome_Imputation).
 - **[Deep Learning for Multivariate Time Series Imputation: A Survey](https://doi.org/10.24963/ijcai.2025/1187)** (IJCAI 2025) : taxonomie des méthodes d’imputation, outils et pistes de recherche.
 - **[HELIX](https://openreview.net/forum?id=FN20iuPnEU)** (ICML 2026 Spotlight) : identités apprises et synthèse interdimensionnelle pour l’imputation.
 - **[End-to-End Learning for Partially-Observed Time Series with PyPOTS](https://doi.org/10.1145/3770855.3816470)** (KDD 2026, tutoriel pratique) : workflows de la préparation des données et de la modélisation multitâche jusqu’à l’évaluation et à l’intégration de modèles personnalisés. [Supports du tutoriel](https://pypots.com/events/KDD2026Tutorial/).
-
-Retrouvez le code des benchmarks, les journaux d’expériences et les ressources de recherche dans [Awesome_Imputation](https://github.com/WenjieDu/Awesome_Imputation).
 
 ## ❖ Contribuer
 
@@ -521,9 +519,7 @@ Fröhlich, H. (2019).
 [An empirical evaluation of generic convolutional and recurrent networks for sequence modeling](https://arxiv.org/abs/1803.01271).
 *arXiv 2018*.
 
-[^36]: Project Gungnir, the world 1st LLM for time-series multitask modeling, will meet you soon. 🚀 Missing values and
-variable lengths in your datasets? Hard to perform multitask learning with your time series? Not problems no longer.
-Join our waitlist right now to receive the latest news and be the first to try it when it's released!
+[^36]: Time-Series.AI développe des solutions d’IA de nouvelle génération pour l’analyse unifiée des séries temporelles, basées sur des modèles de fondation et des agents d’IA. Inscrivez-vous sur notre liste d’attente pour bénéficier d’un accès anticipé.
 <a href="https://time-series.ai"><img src="https://pypots.com/figs/timeseriesai/logo.png" width="20px">Time-Series.AI</a>
 
 [^37]: Wang, S., Wu, H., Shi, X., Hu, T., Luo, H., Ma, L., ... & ZHOU, J. (2024).

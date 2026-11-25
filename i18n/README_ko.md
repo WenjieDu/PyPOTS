@@ -344,12 +344,10 @@ PyPOTS를 사용하고 논문에서 인용하는 연구 프로젝트들이 있�
 ### 관련 연구
 
 - **[SAITS](https://doi.org/10.1016/j.eswa.2023.119619)** (ESWA 2023, 인용 1,000회 이상): PyPOTS의 기원이 된 연구 프로젝트입니다. 자기 주의 기반 시계열 대치의 원래 구현이 PyPOTS 코드베이스의 토대를 마련했습니다.
-- **[TSI-Bench](https://arxiv.org/abs/2406.12747)** (arXiv 프리프린트 2024): 다양한 결측 조건에서 34,804건의 실험, 28개 알고리즘, 8개 데이터셋을 포함하는 표준화된 벤치마크.
+- **[TSI-Bench](https://arxiv.org/abs/2406.12747)** (arXiv 프리프린트 2024): 다양한 결측 조건에서 34,804건의 실험, 28개 알고리즘, 8개 데이터셋을 포함하는 표준화된 시계열 결측값 대치 벤치마크. 코드 저장소: [Awesome_Imputation](https://github.com/WenjieDu/Awesome_Imputation).
 - **[Deep Learning for Multivariate Time Series Imputation: A Survey](https://doi.org/10.24963/ijcai.2025/1187)** (IJCAI 2025): 대치 방법의 분류 체계, 툴킷 및 연구 방향.
 - **[HELIX](https://openreview.net/forum?id=FN20iuPnEU)** (ICML 2026 Spotlight): 학습 가능한 정체성 표현과 차원 간 합성을 이용한 시계열 대치.
 - **[End-to-End Learning for Partially-Observed Time Series with PyPOTS](https://doi.org/10.1145/3770855.3816470)** (KDD 2026 실습 튜토리얼): 데이터 준비와 다중 작업 모델링부터 평가, 사용자 정의 모델 통합까지의 실습 워크플로. [튜토리얼 자료](https://pypots.com/events/KDD2026Tutorial/).
-
-벤치마크 코드, 실험 로그 및 연구 자료는 [Awesome_Imputation](https://github.com/WenjieDu/Awesome_Imputation)에서 확인하세요.
 
 ## ❖ 기여
 
@@ -521,9 +519,7 @@ Fröhlich, H. (2019).
 [An empirical evaluation of generic convolutional and recurrent networks for sequence modeling](https://arxiv.org/abs/1803.01271).
 *arXiv 2018*.
 
-[^36]: Project Gungnir, the world 1st LLM for time-series multitask modeling, will meet you soon. 🚀 Missing values and
-variable lengths in your datasets? Hard to perform multitask learning with your time series? Not problems no longer.
-Join our waitlist right now to receive the latest news and be the first to try it when it's released!
+[^36]: Time-Series.AI는 파운데이션 모델과 AI 에이전트를 기반으로 통합 시계열 분석을 위한 차세대 AI 솔루션을 개발하고 있습니다. 얼리 액세스를 원하시면 대기 목록에 등록해 주세요.
 <a href="https://time-series.ai"><img src="https://pypots.com/figs/timeseriesai/logo.png" width="20px">Time-Series.AI</a>
 
 [^37]: Wang, S., Wu, H., Shi, X., Hu, T., Luo, H., Ma, L., ... & ZHOU, J. (2024).

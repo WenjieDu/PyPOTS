@@ -344,12 +344,10 @@ Sejumlah proyek penelitian menggunakan dan mengutip PyPOTS. Jelajahi [penelitian
 ### Penelitian terkait
 
 - **[SAITS](https://doi.org/10.1016/j.eswa.2023.119619)** (ESWA 2023, lebih dari 1.000 sitasi): proyek penelitian yang melahirkan PyPOTS. Implementasi asli imputasi deret waktu berbasis self-attention menjadi fondasi basis kode PyPOTS.
-- **[TSI-Bench](https://arxiv.org/abs/2406.12747)** (pracetak arXiv 2024): tolok ukur terstandar yang mencakup 34.804 eksperimen, 28 algoritme, dan 8 kumpulan data dalam beragam kondisi kehilangan data.
+- **[TSI-Bench](https://arxiv.org/abs/2406.12747)** (pracetak arXiv 2024): Tolok ukur terstandar untuk imputasi deret waktu yang mencakup 34.804 eksperimen, 28 algoritme, dan 8 kumpulan data dalam beragam kondisi kehilangan data. Repositori kode: [Awesome_Imputation](https://github.com/WenjieDu/Awesome_Imputation).
 - **[Deep Learning for Multivariate Time Series Imputation: A Survey](https://doi.org/10.24963/ijcai.2025/1187)** (IJCAI 2025): taksonomi metode imputasi, toolkit, dan arah penelitian.
 - **[HELIX](https://openreview.net/forum?id=FN20iuPnEU)** (ICML 2026 Spotlight): identitas yang dapat dipelajari dan sintesis lintas dimensi untuk imputasi deret waktu.
 - **[End-to-End Learning for Partially-Observed Time Series with PyPOTS](https://doi.org/10.1145/3770855.3816470)** (KDD 2026, tutorial praktik): alur kerja dari persiapan data dan pemodelan multitugas hingga evaluasi serta integrasi model kustom. [Materi tutorial](https://pypots.com/events/KDD2026Tutorial/).
-
-Temukan kode tolok ukur, log eksperimen, dan sumber daya penelitian di [Awesome_Imputation](https://github.com/WenjieDu/Awesome_Imputation).
 
 ## ❖ Kontribusi
 
@@ -521,9 +519,7 @@ Fröhlich, H. (2019).
 [An empirical evaluation of generic convolutional and recurrent networks for sequence modeling](https://arxiv.org/abs/1803.01271).
 *arXiv 2018*.
 
-[^36]: Project Gungnir, the world 1st LLM for time-series multitask modeling, will meet you soon. 🚀 Missing values and
-variable lengths in your datasets? Hard to perform multitask learning with your time series? Not problems no longer.
-Join our waitlist right now to receive the latest news and be the first to try it when it's released!
+[^36]: Time-Series.AI sedang mengembangkan solusi AI generasi berikutnya untuk analisis deret waktu terpadu, dengan dukungan model fondasi dan agen AI. Bergabunglah dengan daftar tunggu kami untuk mendapatkan akses lebih awal.
 <a href="https://time-series.ai"><img src="https://pypots.com/figs/timeseriesai/logo.png" width="20px">Time-Series.AI</a>
 
 [^37]: Wang, S., Wu, H., Shi, X., Hu, T., Luo, H., Ma, L., ... & ZHOU, J. (2024).

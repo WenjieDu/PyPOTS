@@ -344,12 +344,10 @@ Há projetos científicos que utilizam e citam o PyPOTS. Explore [pesquisas que 
 ### Pesquisas relacionadas
 
 - **[SAITS](https://doi.org/10.1016/j.eswa.2023.119619)** (ESWA 2023, mais de 1.000 citações): projeto de pesquisa que deu origem ao PyPOTS. Sua implementação original de imputação por autoatenção estabeleceu a base do código do PyPOTS.
-- **[TSI-Bench](https://arxiv.org/abs/2406.12747)** (preprint arXiv 2024): benchmark padronizado com 34.804 experimentos, 28 algoritmos e 8 conjuntos de dados sob diversas condições de ausência de dados.
+- **[TSI-Bench](https://arxiv.org/abs/2406.12747)** (preprint arXiv 2024): Benchmark padronizado de imputação de séries temporais com 34.804 experimentos, 28 algoritmos e 8 conjuntos de dados sob diversas condições de ausência de dados. Repositório de código: [Awesome_Imputation](https://github.com/WenjieDu/Awesome_Imputation).
 - **[Deep Learning for Multivariate Time Series Imputation: A Survey](https://doi.org/10.24963/ijcai.2025/1187)** (IJCAI 2025): taxonomia de métodos de imputação, ferramentas e direções de pesquisa.
 - **[HELIX](https://openreview.net/forum?id=FN20iuPnEU)** (ICML 2026 Spotlight): identidades aprendíveis e síntese entre dimensões para imputação de séries temporais.
 - **[End-to-End Learning for Partially-Observed Time Series with PyPOTS](https://doi.org/10.1145/3770855.3816470)** (KDD 2026, tutorial prático): fluxos de trabalho da preparação de dados e modelagem multitarefa até avaliação e integração de modelos personalizados. [Materiais do tutorial](https://pypots.com/events/KDD2026Tutorial/).
-
-Encontre código de benchmarks, logs de experimentos e recursos de pesquisa em [Awesome_Imputation](https://github.com/WenjieDu/Awesome_Imputation).
 
 ## ❖ Contribuições
 
@@ -521,9 +519,7 @@ Fröhlich, H. (2019).
 [An empirical evaluation of generic convolutional and recurrent networks for sequence modeling](https://arxiv.org/abs/1803.01271).
 *arXiv 2018*.
 
-[^36]: Project Gungnir, the world 1st LLM for time-series multitask modeling, will meet you soon. 🚀 Missing values and
-variable lengths in your datasets? Hard to perform multitask learning with your time series? Not problems no longer.
-Join our waitlist right now to receive the latest news and be the first to try it when it's released!
+[^36]: A Time-Series.AI está desenvolvendo soluções de IA de próxima geração para a análise unificada de séries temporais, baseadas em modelos fundacionais e agentes de IA. Entre na nossa lista de espera para obter acesso antecipado.
 <a href="https://time-series.ai"><img src="https://pypots.com/figs/timeseriesai/logo.png" width="20px">Time-Series.AI</a>
 
 [^37]: Wang, S., Wu, H., Shi, X., Hu, T., Luo, H., Ma, L., ... & ZHOU, J. (2024).

@@ -344,12 +344,10 @@ PyPOTS を利用し、論文で引用する研究が増えています。[PyPOTS
 ### 関連研究
 
 - **[SAITS](https://doi.org/10.1016/j.eswa.2023.119619)**（ESWA 2023、引用 1,000 件以上）：PyPOTS の出発点となった研究です。自己注意による時系列補完のオリジナル実装が PyPOTS のコードベースの基盤になりました。
-- **[TSI-Bench](https://arxiv.org/abs/2406.12747)**（arXiv プレプリント 2024）：多様な欠損条件で 34,804 件の実験、28 のアルゴリズム、8 つのデータセットを用いた標準ベンチマーク。
+- **[TSI-Bench](https://arxiv.org/abs/2406.12747)**（arXiv プレプリント 2024）：多様な欠損条件で 34,804 件の実験、28 のアルゴリズム、8 つのデータセットを用いた時系列欠損値補完の標準ベンチマーク。コードリポジトリ：[Awesome_Imputation](https://github.com/WenjieDu/Awesome_Imputation)。
 - **[Deep Learning for Multivariate Time Series Imputation: A Survey](https://doi.org/10.24963/ijcai.2025/1187)**（IJCAI 2025）：補完手法の分類体系、ツールキット、研究の方向性。
 - **[HELIX](https://openreview.net/forum?id=FN20iuPnEU)**（ICML 2026 Spotlight）：学習可能な識別表現と次元間合成による時系列補完。
 - **[End-to-End Learning for Partially-Observed Time Series with PyPOTS](https://doi.org/10.1145/3770855.3816470)**（KDD 2026 ハンズオンチュートリアル）：データ準備からマルチタスクモデリング、評価、独自モデルの統合までの実践的なワークフロー。[教材](https://pypots.com/events/KDD2026Tutorial/)。
-
-ベンチマークコード、実験ログ、研究リソースは [Awesome_Imputation](https://github.com/WenjieDu/Awesome_Imputation) をご覧ください。
 
 ## ❖ コントリビューション
 
@@ -521,9 +519,7 @@ Fröhlich, H. (2019).
 [An empirical evaluation of generic convolutional and recurrent networks for sequence modeling](https://arxiv.org/abs/1803.01271).
 *arXiv 2018*.
 
-[^36]: Project Gungnir, the world 1st LLM for time-series multitask modeling, will meet you soon. 🚀 Missing values and
-variable lengths in your datasets? Hard to perform multitask learning with your time series? Not problems no longer.
-Join our waitlist right now to receive the latest news and be the first to try it when it's released!
+[^36]: Time-Series.AI は、基盤モデルと AI エージェントを活用した、統一的な時系列分析のための次世代 AI ソリューションを開発しています。早期アクセスをご希望の方は、ウェイトリストにご登録ください。
 <a href="https://time-series.ai"><img src="https://pypots.com/figs/timeseriesai/logo.png" width="20px">Time-Series.AI</a>
 
 [^37]: Wang, S., Wu, H., Shi, X., Hu, T., Luo, H., Ma, L., ... & ZHOU, J. (2024).

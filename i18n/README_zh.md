@@ -346,12 +346,10 @@ year = {2025},
 ### 相关研究
 
 - **[SAITS](https://doi.org/10.1016/j.eswa.2023.119619)**（ESWA 2023，1K+ 次引用）：PyPOTS 项目的起源。其基于自注意力的时间序列插补原始实现奠定了 PyPOTS 代码库的基础。
-- **[TSI-Bench](https://arxiv.org/abs/2406.12747)**（arXiv 预印本，2024）：涵盖 34,804 次实验、28 种算法和 8 个数据集，在多种缺失情形下开展标准化基准测试。
+- **[TSI-Bench](https://arxiv.org/abs/2406.12747)**（arXiv 预印本，2024）：时间序列插补的标准化基准测试，涵盖多种缺失情形下的 34,804 次实验、28 种算法和 8 个数据集。代码仓库：[Awesome_Imputation](https://github.com/WenjieDu/Awesome_Imputation)。
 - **[Deep Learning for Multivariate Time Series Imputation: A Survey](https://doi.org/10.24963/ijcai.2025/1187)**（IJCAI 2025）：介绍插补方法的分类体系、工具箱和研究方向。
 - **[HELIX](https://openreview.net/forum?id=FN20iuPnEU)**（ICML 2026 Spotlight）：利用可学习身份标识和跨维度合成进行时间序列插补。
 - **[End-to-End Learning for Partially-Observed Time Series with PyPOTS](https://doi.org/10.1145/3770855.3816470)**（KDD 2026 实践教程）：覆盖数据准备、多任务建模、评估与自定义模型集成的端到端实践流程。[教程资料](https://pypots.com/events/KDD2026Tutorial/)。
-
-基准测试代码、实验日志和研究资源见 [Awesome_Imputation](https://github.com/WenjieDu/Awesome_Imputation)。
 
 ## ❖ 贡献声明
 
@@ -523,9 +521,7 @@ Fröhlich, H. (2019).
 [An empirical evaluation of generic convolutional and recurrent networks for sequence modeling](https://arxiv.org/abs/1803.01271).
 *arXiv 2018*.
 
-[^36]: Project Gungnir, the world 1st LLM for time-series multitask modeling, will meet you soon. 🚀 Missing values and
-variable lengths in your datasets? Hard to perform multitask learning with your time series? Not problems no longer.
-Join our waitlist right now to receive the latest news and be the first to try it when it's released!
+[^36]: Time-Series.AI 正在构建由基础模型和 AI 智能体驱动的下一代 AI 解决方案，用于统一的时间序列分析。欢迎加入候补名单，获取提前体验资格。
 <a href="https://time-series.ai"><img src="https://pypots.com/figs/timeseriesai/logo.png" width="20px">Time-Series.AI</a>
 
 [^37]: Wang, S., Wu, H., Shi, X., Hu, T., Luo, H., Ma, L., ... & ZHOU, J. (2024).

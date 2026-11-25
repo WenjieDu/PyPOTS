@@ -344,12 +344,10 @@ Wissenschaftliche Projekte nutzen und zitieren PyPOTS. Entdecke [Forschung, die 
 ### Verwandte Forschung
 
 - **[SAITS](https://doi.org/10.1016/j.eswa.2023.119619)** (ESWA 2023, über 1.000 Zitationen): Das Forschungsprojekt, aus dem PyPOTS hervorging. Seine ursprüngliche Implementierung der Imputation mittels Self-Attention legte den Grundstein für die PyPOTS-Codebasis.
-- **[TSI-Bench](https://arxiv.org/abs/2406.12747)** (arXiv-Preprint 2024): Standardisierter Benchmark mit 34.804 Experimenten, 28 Algorithmen und 8 Datensätzen unter vielfältigen Fehlwertbedingungen.
+- **[TSI-Bench](https://arxiv.org/abs/2406.12747)** (arXiv-Preprint 2024): Standardisierter Benchmark zur Imputation von Zeitreihen mit 34.804 Experimenten, 28 Algorithmen und 8 Datensätzen unter vielfältigen Fehlwertbedingungen. Code-Repository: [Awesome_Imputation](https://github.com/WenjieDu/Awesome_Imputation).
 - **[Deep Learning for Multivariate Time Series Imputation: A Survey](https://doi.org/10.24963/ijcai.2025/1187)** (IJCAI 2025): Taxonomie der Imputationsmethoden, Toolkits und Forschungsrichtungen.
 - **[HELIX](https://openreview.net/forum?id=FN20iuPnEU)** (ICML 2026 Spotlight): Lernbare Identitäten und dimensionsübergreifende Synthese zur Zeitreihenimputation.
 - **[End-to-End Learning for Partially-Observed Time Series with PyPOTS](https://doi.org/10.1145/3770855.3816470)** (KDD 2026 Hands-on-Tutorial): Praktische Abläufe von Datenaufbereitung und Multi-Task-Modellierung bis zur Evaluierung und Integration eigener Modelle. [Tutorial-Materialien](https://pypots.com/events/KDD2026Tutorial/).
-
-Benchmark-Code, Experimentprotokolle und Forschungsressourcen findest du in [Awesome_Imputation](https://github.com/WenjieDu/Awesome_Imputation).
 
 ## ❖ Mitwirken
 
@@ -521,9 +519,7 @@ Fröhlich, H. (2019).
 [An empirical evaluation of generic convolutional and recurrent networks for sequence modeling](https://arxiv.org/abs/1803.01271).
 *arXiv 2018*.
 
-[^36]: Project Gungnir, the world 1st LLM for time-series multitask modeling, will meet you soon. 🚀 Missing values and
-variable lengths in your datasets? Hard to perform multitask learning with your time series? Not problems no longer.
-Join our waitlist right now to receive the latest news and be the first to try it when it's released!
+[^36]: Time-Series.AI entwickelt KI-Lösungen der nächsten Generation für die einheitliche Zeitreihenanalyse auf Basis von Foundation Models und KI-Agenten. Trag dich in unsere Warteliste ein, um frühzeitig Zugang zu erhalten.
 <a href="https://time-series.ai"><img src="https://pypots.com/figs/timeseriesai/logo.png" width="20px">Time-Series.AI</a>
 
 [^37]: Wang, S., Wu, H., Shi, X., Hu, T., Luo, H., Ma, L., ... & ZHOU, J. (2024).
