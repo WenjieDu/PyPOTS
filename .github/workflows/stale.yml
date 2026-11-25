@@ -5,11 +5,8 @@ on:
     - cron: "0 8 * * *"
   workflow_dispatch:
 
-# Keep actions: write for the upstream action's state cache. No branch deletion or PR writes.
-permissions:
-  actions: write
-  issues: write
-  pull-requests: read
+# Grant only the permissions needed by each job.
+permissions: {}
 
 concurrency:
   group: stale-manager
@@ -17,6 +14,8 @@ concurrency:
 
 jobs:
   labels:
+    permissions:
+      issues: write
     if: github.ref_name == github.event.repository.default_branch
     runs-on: ubuntu-latest
     timeout-minutes: 5
@@ -46,6 +45,11 @@ jobs:
             }
 
   questions:
+    # actions: write is required for the stale action state cache.
+    permissions:
+      actions: write
+      issues: write
+      pull-requests: read
     needs: labels
     if: github.ref_name == github.event.repository.default_branch
     runs-on: ubuntu-latest
@@ -74,6 +78,11 @@ jobs:
           operations-per-run: 30
 
   reproduction:
+    # actions: write is required for the stale action state cache.
+    permissions:
+      actions: write
+      issues: write
+      pull-requests: read
     needs: labels
     if: github.ref_name == github.event.repository.default_branch
     runs-on: ubuntu-latest
@@ -103,6 +112,11 @@ jobs:
           operations-per-run: 30
 
   completed:
+    # actions: write is required for the stale action state cache.
+    permissions:
+      actions: write
+      issues: write
+      pull-requests: read
     needs: labels
     if: github.ref_name == github.event.repository.default_branch
     runs-on: ubuntu-latest
