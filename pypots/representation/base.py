@@ -6,7 +6,6 @@ The base classes for PyPOTS representor models.
 # License: BSD-3-Clause
 
 from abc import abstractmethod
-from typing import Optional, Union
 
 import numpy as np
 import torch
@@ -49,10 +48,10 @@ class BaseRepresentor(BaseModel):
 
     def __init__(
         self,
-        device: Optional[Union[str, torch.device, list]] = None,
+        device: str | torch.device | list | None = None,
         enable_amp: bool = False,
-        saving_path: str = None,
-        model_saving_strategy: Optional[str] = "best",
+        saving_path: str | None = None,
+        model_saving_strategy: str | None = "best",
         verbose: bool = True,
     ):
         super().__init__(
@@ -66,8 +65,8 @@ class BaseRepresentor(BaseModel):
     @abstractmethod
     def fit(
         self,
-        train_set: Union[dict, str],
-        val_set: Optional[Union[dict, str]] = None,
+        train_set: dict | str,
+        val_set: dict | str | None = None,
         file_type: str = "hdf5",
     ) -> None:
         """Train the representor on the given data.
@@ -101,7 +100,7 @@ class BaseRepresentor(BaseModel):
     @abstractmethod
     def predict(
         self,
-        test_set: Union[dict, str],
+        test_set: dict | str,
         file_type: str = "hdf5",
         **kwargs,
     ) -> dict:
@@ -132,7 +131,7 @@ class BaseRepresentor(BaseModel):
     @abstractmethod
     def represent(
         self,
-        test_set: Union[dict, str],
+        test_set: dict | str,
         file_type: str = "hdf5",
         **kwargs,
     ) -> np.ndarray:
@@ -223,16 +222,16 @@ class BaseNNRepresentor(BaseNNModel):
 
     def __init__(
         self,
-        training_loss: Union[Criterion, type],
-        validation_metric: Union[Criterion, type],
+        training_loss: Criterion | type,
+        validation_metric: Criterion | type,
         batch_size: int,
         epochs: int,
-        patience: Optional[int] = None,
+        patience: int | None = None,
         num_workers: int = 0,
-        device: Optional[Union[str, torch.device, list]] = None,
+        device: str | torch.device | list | None = None,
         enable_amp: bool = False,
-        saving_path: str = None,
-        model_saving_strategy: Optional[str] = "best",
+        saving_path: str | None = None,
+        model_saving_strategy: str | None = "best",
         verbose: bool = True,
     ):
         super().__init__(
@@ -251,8 +250,8 @@ class BaseNNRepresentor(BaseNNModel):
 
     def fit(
         self,
-        train_set: Union[dict, str],
-        val_set: Optional[Union[dict, str]] = None,
+        train_set: dict | str,
+        val_set: dict | str | None = None,
         file_type: str = "hdf5",
     ) -> None:
         """Train the representor on the given data.
@@ -321,7 +320,7 @@ class BaseNNRepresentor(BaseNNModel):
     @torch.no_grad()
     def predict(
         self,
-        test_set: Union[dict, str],
+        test_set: dict | str,
         file_type: str = "hdf5",
         **kwargs,
     ) -> dict:
@@ -379,7 +378,7 @@ class BaseNNRepresentor(BaseNNModel):
 
     def represent(
         self,
-        test_set: Union[dict, str],
+        test_set: dict | str,
         file_type: str = "hdf5",
         **kwargs,
     ) -> np.ndarray:

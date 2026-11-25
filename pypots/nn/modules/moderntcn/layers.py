@@ -1,4 +1,4 @@
-""" """
+"""Implementation of pypots.nn.modules.moderntcn.layers."""
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
@@ -146,7 +146,7 @@ class ReparamLargeKernelConv(nn.Module):
         return out
 
     def PaddingTwoEdge1d(self, x, pad_length_left, pad_length_right, pad_values=0):
-        D_out, D_in, ks = x.shape
+        D_out, D_in, _ks = x.shape
         if pad_values == 0:
             pad_left = torch.zeros(D_out, D_in, pad_length_left)
             pad_right = torch.zeros(D_out, D_in, pad_length_right)

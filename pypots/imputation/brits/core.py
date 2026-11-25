@@ -64,8 +64,8 @@ class _BRITS(ModelCore):
             imputed_data,
             f_reconstruction,
             b_reconstruction,
-            f_hidden_states,
-            b_hidden_states,
+            _f_hidden_states,
+            _b_hidden_states,
             consistency_loss,
             reconstruction_loss,
         ) = self.model(inputs)

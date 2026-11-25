@@ -1,10 +1,10 @@
-""" """
+"""Implementation of pypots.classification.patchtst.core."""
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
 import torch
-import torch.nn as nn
+from torch import nn
 
 from ...nn.modules import ModelCore
 from ...nn.modules.loss import Criterion
@@ -74,7 +74,7 @@ class _PatchTST(ModelCore):
         enc_out = self.patch_embedding(input_X.permute(0, 2, 1))  # [bz * d_model, n_patches, d_model]
 
         # PatchTST encoder processing
-        enc_out, attns = self.encoder(enc_out)
+        enc_out, _attns = self.encoder(enc_out)
 
         # project back the original data space
         dec_out = self.head(enc_out)  # [bz, n_steps, d_model]

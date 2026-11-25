@@ -74,10 +74,10 @@ class TestDeviceHelpers(unittest.TestCase):
         from pypots.nn.modules.rnn_fallback import gru, lstm
 
         g = gru(5, 16, bidirectional=True, batch_first=True)
-        l = lstm(5, 16, bidirectional=True, batch_first=True)
+        lstm_model = lstm(5, 16, bidirectional=True, batch_first=True)
         # state_dict interchange with the fused modules at any nesting depth
         assert set(g.state_dict().keys()) == set(torch.nn.GRU(5, 16, bidirectional=True).state_dict().keys())
-        assert set(l.state_dict().keys()) == set(torch.nn.LSTM(5, 16, bidirectional=True).state_dict().keys())
+        assert set(lstm_model.state_dict().keys()) == set(torch.nn.LSTM(5, 16, bidirectional=True).state_dict().keys())
 
         x = torch.randn(3, 7, 5)
         out, _ = g(x)
@@ -194,11 +194,11 @@ class TestNpuSpecific(unittest.TestCase):
         hidden, seq_len, n_in = 16, 7, 5
         x_npu = torch.randn(3, seq_len, n_in).to("npu")
         gru = UnfusedGRU(n_in, hidden, bidirectional=True, batch_first=True).to("npu")
-        out_npu, h_n_npu = gru(x_npu)
+        out_npu, _h_n_npu = gru(x_npu)
         # the fused GRU on CPU is the numerical reference
         ref = torch.nn.GRU(n_in, hidden, bidirectional=True, batch_first=True)
         ref.load_state_dict(gru.state_dict())
-        out_ref, h_n_ref = ref(x_npu.to("cpu"))
+        out_ref, _h_n_ref = ref(x_npu.to("cpu"))
         torch.testing.assert_close(out_npu.cpu(), out_ref, rtol=1e-4, atol=1e-4)
 
     def test_2_unfused_rnn_backward_on_npu(self):

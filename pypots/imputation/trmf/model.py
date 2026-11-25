@@ -7,18 +7,16 @@ which is mainly based on the implementation of TRMF in https://github.com/Semeno
 # Created by Jun Wang <jwangfx@connect.ust.hk> and Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-from typing import Union, Optional
-
 import numpy as np
 import torch
 from pygrinder import fill_and_get_mask_numpy
 
-from .core import _TRMF
-from .data import DatasetForTRMF
-from ..base import BaseImputer
 from ...data import inverse_sliding_window, sliding_window
 from ...data.dataset.base import BaseDataset
 from ...utils.logging import logger
+from ..base import BaseImputer
+from .core import _TRMF
+from .data import DatasetForTRMF
 
 
 class TRMF(BaseImputer):
@@ -91,8 +89,8 @@ class TRMF(BaseImputer):
         F_step=0.0001,
         X_step=0.0001,
         W_step=0.0001,
-        saving_path: Optional[str] = None,
-        model_saving_strategy: Optional[str] = "best",
+        saving_path: str | None = None,
+        model_saving_strategy: str | None = "best",
         verbose: bool = True,
     ):
         super().__init__(
@@ -125,8 +123,8 @@ class TRMF(BaseImputer):
 
     def fit(
         self,
-        train_set: Union[dict, str],
-        val_set: Optional[Union[dict, str]] = None,
+        train_set: dict | str,
+        val_set: dict | str | None = None,
         file_type: str = "hdf5",
     ) -> None:
         # Step 1: wrap the input data with classes Dataset and DataLoader
@@ -153,7 +151,7 @@ class TRMF(BaseImputer):
 
     def predict(
         self,
-        test_set: Union[dict, str],
+        test_set: dict | str,
         file_type: str = "hdf5",
         **kwargs,
     ) -> dict:
@@ -188,7 +186,7 @@ class TRMF(BaseImputer):
 
     def impute(
         self,
-        test_set: Union[dict, str],
+        test_set: dict | str,
         file_type: str = "hdf5",
         **kwargs,
     ) -> np.ndarray:

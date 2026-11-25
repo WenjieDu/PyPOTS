@@ -1,7 +1,7 @@
-""" """
+"""Implementation of pypots.nn.modules.totem.layers."""
 
-import torch.nn as nn
 import torch.nn.functional as F
+from torch import nn
 
 
 class Residual(nn.Module):

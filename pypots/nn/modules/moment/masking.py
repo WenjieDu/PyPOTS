@@ -1,9 +1,7 @@
-""" """
+"""Implementation of pypots.nn.modules.moment.masking."""
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
-
-from typing import Optional
 
 import torch
 
@@ -13,7 +11,7 @@ class Masking:
         self,
         mask_ratio: float = 0.3,
         patch_size: int = 8,
-        stride: Optional[int] = None,
+        stride: int | None = None,
     ):
         """
         Indices with 0 mask are hidden, and with 1 are observed.
@@ -26,7 +24,7 @@ class Masking:
     def convert_seq_to_patch_view(
         mask: torch.Tensor,
         patch_size: int = 8,
-        stride: Optional[int] = None,
+        stride: int | None = None,
     ):
         """
         Input:
@@ -55,7 +53,7 @@ class Masking:
     def generate_mask(
         self,
         x: torch.Tensor,
-        input_mask: Optional[torch.Tensor] = None,
+        input_mask: torch.Tensor | None = None,
     ):
         """
         Input:

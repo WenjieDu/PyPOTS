@@ -19,7 +19,6 @@ https://github.com/jsyoon0823/MRNN and https://github.com/WenjieDu/SAITS
 
 from .model import MRNN
 
-
 __all__ = [
     "MRNN",
 ]

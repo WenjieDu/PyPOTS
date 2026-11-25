@@ -1,8 +1,8 @@
 import math
 
 import torch
-import torch.nn as nn
 import torch.nn.functional as F
+from torch import nn
 from torch.autograd import Variable
 from torch.nn.parameter import Parameter
 

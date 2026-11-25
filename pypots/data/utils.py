@@ -5,17 +5,15 @@ Data utils.
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-from typing import Union
-
 import benchpots
 import numpy as np
 import torch
 
 
 def turn_data_into_specified_dtype(
-    data: Union[np.ndarray, torch.Tensor, list],
+    data: np.ndarray | torch.Tensor | list,
     dtype: str = "tensor",
-) -> Union[np.ndarray, torch.Tensor]:
+) -> np.ndarray | torch.Tensor:
     """Turn the given data into the specified data type."""
 
     if isinstance(data, torch.Tensor):
@@ -68,7 +66,7 @@ def _parse_delta_torch(missing_mask: torch.Tensor) -> torch.Tensor:
         n_steps, n_features = missing_mask.shape
         delta = cal_delta_for_single_sample(missing_mask)
     else:
-        n_samples, n_steps, n_features = missing_mask.shape
+        _n_samples, n_steps, n_features = missing_mask.shape
         delta_collector = []
         for m_mask in missing_mask:
             delta = cal_delta_for_single_sample(m_mask)
@@ -116,7 +114,7 @@ def _parse_delta_numpy(missing_mask: np.ndarray) -> np.ndarray:
         seq_len, n_features = missing_mask.shape
         delta = cal_delta_for_single_sample(missing_mask)
     else:
-        n_samples, seq_len, n_features = missing_mask.shape
+        _n_samples, seq_len, n_features = missing_mask.shape
         delta_collector = []
         for m_mask in missing_mask:
             delta = cal_delta_for_single_sample(m_mask)
@@ -125,7 +123,7 @@ def _parse_delta_numpy(missing_mask: np.ndarray) -> np.ndarray:
     return delta
 
 
-def parse_delta(missing_mask: Union[np.ndarray, torch.Tensor]) -> Union[np.ndarray, torch.Tensor]:
+def parse_delta(missing_mask: np.ndarray | torch.Tensor) -> np.ndarray | torch.Tensor:
     """Generate the time-gap matrix (i.e. the delta metrix) from the missing mask.
     Please refer to :cite:`che2018GRUD` for its math definition.
 
@@ -154,15 +152,15 @@ def parse_delta(missing_mask: Union[np.ndarray, torch.Tensor]) -> Union[np.ndarr
     elif isinstance(missing_mask, torch.Tensor):
         delta = _parse_delta_torch(missing_mask)
     else:
-        raise RuntimeError
+        raise RuntimeError  # noqa: TRY004 - preserve the public exception type
     return delta
 
 
 def sliding_window(
-    time_series: Union[np.ndarray, torch.Tensor],
+    time_series: np.ndarray | torch.Tensor,
     window_len: int,
-    sliding_len: int = None,
-) -> Union[np.ndarray, torch.Tensor]:
+    sliding_len: int | None = None,
+) -> np.ndarray | torch.Tensor:
     """Generate time series samples with sliding window method, truncating windows from time-series data
     with a given sequence length.
 

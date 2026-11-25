@@ -1,11 +1,11 @@
-""" """
+"""Implementation of pypots.nn.modules.saits.loss."""
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-import torch.nn as nn
+from torch import nn
 
-from ..loss import Criterion, MAE
+from ..loss import MAE, Criterion
 
 
 class SaitsLoss(nn.Module):
@@ -13,9 +13,11 @@ class SaitsLoss(nn.Module):
         self,
         ORT_weight,
         MIT_weight,
-        loss_calc_func: Criterion = MAE(),
+        loss_calc_func: Criterion | None = None,
     ):
         super().__init__()
+        if loss_calc_func is None:
+            loss_calc_func = MAE()
         self.ORT_weight = ORT_weight
         self.MIT_weight = MIT_weight
         self.loss_calc_func = loss_calc_func

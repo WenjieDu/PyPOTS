@@ -6,7 +6,6 @@ The base class for PyPOTS anomaly detection models.
 # License: BSD-3-Clause
 
 from abc import abstractmethod
-from typing import Union, Optional
 
 import numpy as np
 import torch
@@ -58,10 +57,10 @@ class BaseDetector(BaseModel):
     def __init__(
         self,
         anomaly_rate,
-        device: Optional[Union[str, torch.device, list]] = None,
+        device: str | torch.device | list | None = None,
         enable_amp: bool = False,
-        saving_path: str = None,
-        model_saving_strategy: Optional[str] = "best",
+        saving_path: str | None = None,
+        model_saving_strategy: str | None = "best",
         verbose: bool = True,
     ):
         super().__init__(
@@ -78,8 +77,8 @@ class BaseDetector(BaseModel):
     @abstractmethod
     def fit(
         self,
-        train_set: Union[dict, str],
-        val_set: Optional[Union[dict, str]] = None,
+        train_set: dict | str,
+        val_set: dict | str | None = None,
         file_type: str = "hdf5",
     ) -> None:
         """Train the detector on the given data.
@@ -111,7 +110,7 @@ class BaseDetector(BaseModel):
     @abstractmethod
     def predict(
         self,
-        test_set: Union[dict, str],
+        test_set: dict | str,
         file_type: str = "hdf5",
         **kwargs,
     ) -> dict:
@@ -141,7 +140,7 @@ class BaseDetector(BaseModel):
 
     def detect(
         self,
-        test_set: Union[dict, str],
+        test_set: dict | str,
         file_type: str = "hdf5",
         **kwargs,
     ) -> np.ndarray:
@@ -240,16 +239,16 @@ class BaseNNDetector(BaseNNModel):
     def __init__(
         self,
         anomaly_rate: float,
-        training_loss: Union[Criterion, type],
-        validation_metric: Union[Criterion, type],
+        training_loss: Criterion | type,
+        validation_metric: Criterion | type,
         batch_size: int,
         epochs: int,
-        patience: Optional[int] = None,
+        patience: int | None = None,
         num_workers: int = 0,
-        device: Optional[Union[str, torch.device, list]] = None,
+        device: str | torch.device | list | None = None,
         enable_amp: bool = False,
-        saving_path: str = None,
-        model_saving_strategy: Optional[str] = "best",
+        saving_path: str | None = None,
+        model_saving_strategy: str | None = "best",
         verbose: bool = True,
     ):
         super().__init__(
@@ -275,8 +274,8 @@ class BaseNNDetector(BaseNNModel):
     @abstractmethod
     def fit(
         self,
-        train_set: Union[dict, str],
-        val_set: Optional[Union[dict, str]] = None,
+        train_set: dict | str,
+        val_set: dict | str | None = None,
         file_type: str = "hdf5",
     ) -> None:
         """Train the detector on the given data.
@@ -308,7 +307,7 @@ class BaseNNDetector(BaseNNModel):
     @torch.no_grad()
     def predict(
         self,
-        test_set: Union[dict, str],
+        test_set: dict | str,
         file_type: str = "hdf5",
         **kwargs,
     ) -> dict:
@@ -406,7 +405,7 @@ class BaseNNDetector(BaseNNModel):
 
     def detect(
         self,
-        test_set: Union[dict, str],
+        test_set: dict | str,
         file_type: str = "hdf5",
         **kwargs,
     ) -> np.ndarray:

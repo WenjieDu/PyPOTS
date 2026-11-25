@@ -15,8 +15,6 @@ Official pretrained weights hosted on Hugging Face are subject to the TS-ICL mod
 # and Adrien Petralia <adrien.petralia@gmail.com>
 # License: BSD-3-Clause
 
-from typing import Optional
-
 import numpy as np
 import torch
 from torch import nn
@@ -100,8 +98,8 @@ def forecast_with_tsicl(
     batch_size: int,
     device: torch.device,
     point_estimator: str = "median",
-    quantile_levels: Optional[list[float]] = None,
-    context_length: Optional[int] = None,
+    quantile_levels: list[float] | None = None,
+    context_length: int | None = None,
 ) -> np.ndarray:
     """Forecast `prediction_length` steps beyond a `(n_samples, n_steps, n_features)` array
     (which may contain NaNs), feature by feature (TS-ICL models one series at a time; see the

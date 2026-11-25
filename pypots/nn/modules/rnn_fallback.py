@@ -27,8 +27,8 @@ exactly (it IS an nn.GRU/LSTM), so state_dict compatibility is unaffected.
 import math
 
 import torch
-import torch.nn as nn
 import torch.nn.functional as F
+from torch import nn
 
 
 def _use_unfused_rnn() -> bool:
@@ -192,7 +192,9 @@ class UnfusedLSTM(nn.Module):
         cf = x.new_zeros(B, self.hidden_size) if c0_t is None else c0_t[0]
         f_out = []
         for t in range(L):
-            hf, cf = self._step(x[:, t], (hf, cf), self.weight_ih_l0, self.weight_hh_l0, self.bias_ih_l0, self.bias_hh_l0)
+            hf, cf = self._step(
+                x[:, t], (hf, cf), self.weight_ih_l0, self.weight_hh_l0, self.bias_ih_l0, self.bias_hh_l0
+            )
             f_out.append(hf)
         outputs = [torch.stack(f_out, 1)]
         hiddens = [(hf, cf)]

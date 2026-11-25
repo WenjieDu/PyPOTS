@@ -5,7 +5,7 @@ Dataset class for the classification model GRU-D.
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-from typing import Union, Iterable
+from collections.abc import Iterable
 
 import torch
 
@@ -43,7 +43,7 @@ class DatasetForGRUD(BaseDataset):
 
     def __init__(
         self,
-        data: Union[dict, str],
+        data: dict | str,
         return_y: bool = True,
         file_type: str = "hdf5",
     ):

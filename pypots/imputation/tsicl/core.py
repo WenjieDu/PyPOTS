@@ -15,8 +15,6 @@ Official pretrained weights hosted on Hugging Face are subject to the TS-ICL mod
 # and Adrien Petralia <adrien.petralia@gmail.com>
 # License: BSD-3-Clause
 
-from typing import Optional
-
 import numpy as np
 import torch
 from einops import repeat
@@ -72,7 +70,7 @@ def impute_with_tsicl(
     batch_size: int,
     device: torch.device,
     point_estimator: str = "median",
-    quantile_levels: Optional[list[float]] = None,
+    quantile_levels: list[float] | None = None,
 ) -> np.ndarray:
     """Impute a `(n_samples, n_steps, n_features)` array with NaNs, feature by feature
     (TS-ICL models one series at a time; see the channel-independence note in ``TSICL``'s

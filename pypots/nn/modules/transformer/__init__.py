@@ -23,22 +23,22 @@ This implementation is inspired by https://github.com/WenjieDu/SAITS
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-from .attention import ScaledDotProductAttention, MultiHeadAttention
-from .autoencoder import TransformerEncoder, TransformerDecoder
+from .attention import MultiHeadAttention, ScaledDotProductAttention
+from .autoencoder import TransformerDecoder, TransformerEncoder
 from .embedding import PositionalEncoding
 from .layers import (
-    TransformerEncoderLayer,
-    TransformerDecoderLayer,
     PositionWiseFeedForward,
+    TransformerDecoderLayer,
+    TransformerEncoderLayer,
 )
 
 __all__ = [
-    "ScaledDotProductAttention",
     "MultiHeadAttention",
-    "PositionalEncoding",
-    "TransformerEncoderLayer",
-    "TransformerDecoderLayer",
     "PositionWiseFeedForward",
-    "TransformerEncoder",
+    "PositionalEncoding",
+    "ScaledDotProductAttention",
     "TransformerDecoder",
+    "TransformerDecoderLayer",
+    "TransformerEncoder",
+    "TransformerEncoderLayer",
 ]

@@ -36,7 +36,6 @@ import inspect
 import os
 import sys
 import time
-from typing import Optional, Union
 
 import torch
 import torch.distributed as dist
@@ -62,7 +61,7 @@ def ddp_world_size() -> int:
     return dist.get_world_size() if ddp_is_initialized() else 1
 
 
-def init_distributed(backend: Optional[str] = None, device_type: Optional[str] = None) -> bool:
+def init_distributed(backend: str | None = None, device_type: str | None = None) -> bool:
     """Initialize the DDP process group from torchrun/elastic environment variables.
 
     Returns True when this process is distributed (world size > 1 and the group
@@ -326,7 +325,11 @@ def _sharded_dataloaders(on_sampler=None):
         # patch the torch source class plus every pypots module that imported it
         targets = [torch.utils.data]
         for mod_name, mod in list(sys.modules.items()):
-            if mod is not None and mod_name.startswith("pypots.") and getattr(mod, "DataLoader", None) is real_loader_cls:
+            if (
+                mod is not None
+                and mod_name.startswith("pypots.")
+                and getattr(mod, "DataLoader", None) is real_loader_cls
+            ):
                 targets.append(mod)
         for target in targets:
             patched_namespaces[target] = target.DataLoader
@@ -337,7 +340,7 @@ def _sharded_dataloaders(on_sampler=None):
             target.DataLoader = original
 
 
-def _maybe_shard(loader: Optional[DataLoader]) -> Optional[DataLoader]:
+def _maybe_shard(loader: DataLoader | None) -> DataLoader | None:
     if loader is None:
         return None
     return shard_dataloader(loader)
@@ -345,8 +348,8 @@ def _maybe_shard(loader: Optional[DataLoader]) -> Optional[DataLoader]:
 
 def run_ddp_fit(
     model,
-    train_set: Union[dict, str],
-    val_set: Optional[Union[dict, str]] = None,
+    train_set: dict | str,
+    val_set: dict | str | None = None,
     file_type: str = "hdf5",
     find_unused_parameters: bool = False,
 ) -> None:

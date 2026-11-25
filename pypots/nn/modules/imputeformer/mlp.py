@@ -5,7 +5,7 @@ The implementation of the MLPs for ImputeFormer :cite:`nie2024imputeformer`
 # Created by Tong Nie <nietong@tongji.edu.cn> and Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-import torch.nn as nn
+from torch import nn
 
 
 class Dense(nn.Module):
@@ -47,7 +47,7 @@ class MLP(nn.Module):
             self.register_parameter("readout", None)
 
     def forward(self, x, u=None):
-        """"""
+        """Apply the MLP and its optional readout projection."""
         out = self.mlp(x)
         if self.readout is not None:
             return self.readout(out)

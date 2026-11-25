@@ -36,7 +36,8 @@ Vendored from the TS-ICL model architecture: https://github.com/EDF-Lab/ts-icl
 
 from __future__ import annotations
 
-from typing import Any, Dict, Sequence
+from collections.abc import Sequence
+from typing import Any
 
 import numpy as np
 import torch
@@ -133,7 +134,7 @@ class MultiScaleNeRFEncoding(nn.Module):
     def name(self) -> str:
         return "Multiscale Positional Encoding"
 
-    def public_properties(self) -> Dict[str, Any]:
+    def public_properties(self) -> dict[str, Any]:
         return {
             "Output Dim": self.out_dim,
             "Num. Frequencies": self.num_freqs_per_scale * len(self.scales),
@@ -154,7 +155,7 @@ class NeRFEncoding(nn.Module):
         include_input: bool = True,
         min_freq_log2: int = 0,
         input_dim: int = 3,
-        base_freq: float | int = 2,
+        base_freq: float = 2,
     ) -> None:
         """Initialize the module.
         Args:
@@ -221,7 +222,7 @@ class NeRFEncoding(nn.Module):
         """A human readable name for the given wisp module."""
         return "Positional Encoding"
 
-    def public_properties(self) -> Dict[str, Any]:
+    def public_properties(self) -> dict[str, Any]:
         """Wisp modules expose their public properties in a dictionary.
         The purpose of this method is to give an easy table of outwards facing attributes,
         for the purpose of logging, gui apps, etc.

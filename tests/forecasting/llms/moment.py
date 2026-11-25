@@ -17,15 +17,15 @@ from pypots.optim import Adam
 from pypots.utils.logging import logger
 from tests.global_test_config import (
     DATA,
-    EPOCHS,
     DEVICE,
-    N_PRED_STEPS,
-    FORECASTING_TRAIN_SET,
-    FORECASTING_VAL_SET,
-    FORECASTING_TEST_SET,
+    EPOCHS,
+    FORECASTING_H5_TEST_SET_PATH,
     FORECASTING_H5_TRAIN_SET_PATH,
     FORECASTING_H5_VAL_SET_PATH,
-    FORECASTING_H5_TEST_SET_PATH,
+    FORECASTING_TEST_SET,
+    FORECASTING_TRAIN_SET,
+    FORECASTING_VAL_SET,
+    N_PRED_STEPS,
     RESULT_SAVING_DIR_FOR_FORECASTING,
     check_tb_and_model_checkpoints_existence,
 )

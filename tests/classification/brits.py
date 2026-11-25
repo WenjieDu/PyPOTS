@@ -7,6 +7,7 @@ Test cases for BRITS classification model.
 
 import os
 import unittest
+
 import numpy as np
 import pytest
 
@@ -16,15 +17,15 @@ from pypots.optim import Adam
 from pypots.utils.logging import logger
 from tests.global_test_config import (
     DATA,
-    EPOCHS,
     DEVICE,
-    TRAIN_SET,
-    VAL_SET,
-    TEST_SET,
+    EPOCHS,
+    GENERAL_H5_TEST_SET_PATH,
     GENERAL_H5_TRAIN_SET_PATH,
     GENERAL_H5_VAL_SET_PATH,
-    GENERAL_H5_TEST_SET_PATH,
     RESULT_SAVING_DIR_FOR_CLASSIFICATION,
+    TEST_SET,
+    TRAIN_SET,
+    VAL_SET,
     check_tb_and_model_checkpoints_existence,
 )
 
@@ -135,6 +136,7 @@ class TestBRITS(unittest.TestCase):
         assert np.allclose(actual_X, expected_X, equal_nan=True), (
             "val_dataloader was built from TRAIN_SET instead of VAL_SET"
         )
+
 
 if __name__ == "__main__":
     unittest.main()

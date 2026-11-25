@@ -1,10 +1,10 @@
-""" """
+"""Implementation of pypots.nn.modules.inception.layers."""
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
 import torch
-import torch.nn as nn
+from torch import nn
 
 
 class InceptionBlockV1(nn.Module):

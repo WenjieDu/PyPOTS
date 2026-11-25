@@ -5,18 +5,16 @@ The implementation of FiLM for the partially-observed time-series anomaly detect
 # Created by Yiyuan Yang <yyy1997sjz@gmail.com>
 # License: BSD-3-Clause
 
-from typing import Union, Optional
-
 import torch
 from torch.utils.data import DataLoader
 
-from ..base import BaseNNDetector
 from ...data.checking import key_in_data_set
 from ...imputation.film.core import _FiLM
 from ...imputation.saits.data import DatasetForSAITS
-from ...nn.modules.loss import Criterion, MAE, MSE
+from ...nn.modules.loss import MAE, MSE, Criterion
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
+from ..base import BaseNNDetector
 
 
 class FiLM(BaseNNDetector):
@@ -107,14 +105,14 @@ class FiLM(BaseNNDetector):
         MIT_weight: float = 1,
         batch_size: int = 32,
         epochs: int = 100,
-        patience: Optional[int] = None,
-        training_loss: Union[Criterion, type] = MAE,
-        validation_metric: Union[Criterion, type] = MSE,
-        optimizer: Union[Optimizer, type] = Adam,
+        patience: int | None = None,
+        training_loss: Criterion | type = MAE,
+        validation_metric: Criterion | type = MSE,
+        optimizer: Optimizer | type = Adam,
         num_workers: int = 0,
-        device: Optional[Union[str, torch.device, list]] = None,
-        saving_path: str = None,
-        model_saving_strategy: Optional[str] = "best",
+        device: str | torch.device | list | None = None,
+        saving_path: str | None = None,
+        model_saving_strategy: str | None = "best",
         verbose: bool = True,
     ):
         super().__init__(
@@ -174,7 +172,7 @@ class FiLM(BaseNNDetector):
         Prepares input batch for training during anomaly detection.
         """
         (
-            indices,
+            _indices,
             X,
             missing_mask,
             X_ori,
@@ -198,7 +196,7 @@ class FiLM(BaseNNDetector):
         """
         Prepares input batch for inference (testing) during anomaly detection.
         """
-        indices, X, missing_mask = self._send_data_to_given_device(data)
+        _indices, X, missing_mask = self._send_data_to_given_device(data)
 
         return {
             "X": X,
@@ -207,8 +205,8 @@ class FiLM(BaseNNDetector):
 
     def fit(
         self,
-        train_set: Union[dict, str],
-        val_set: Optional[Union[dict, str]] = None,
+        train_set: dict | str,
+        val_set: dict | str | None = None,
         file_type: str = "hdf5",
     ) -> None:
         """

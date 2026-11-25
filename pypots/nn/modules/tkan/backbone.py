@@ -5,10 +5,8 @@ The backbone module of TKAN (Temporal Kolmogorov-Arnold Networks).
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-from typing import List, Optional
-
 import torch
-import torch.nn as nn
+from torch import nn
 
 from .layers import TKANCell
 
@@ -55,9 +53,9 @@ class BackboneTKAN(nn.Module):
         input_size: int,
         hidden_size: int,
         n_layers: int = 1,
-        sub_kan_configs: Optional[List] = None,
-        sub_kan_output_dim: Optional[int] = None,
-        sub_kan_input_dim: Optional[int] = None,
+        sub_kan_configs: list | None = None,
+        sub_kan_output_dim: int | None = None,
+        sub_kan_input_dim: int | None = None,
         dropout: float = 0.0,
     ):
         super().__init__()

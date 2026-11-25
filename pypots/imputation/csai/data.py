@@ -1,10 +1,10 @@
-""" """
+"""Implementation of pypots.imputation.csai.data."""
 
 # Created by Linglong Qian, Joseph Arul Raj <linglong.qian@kcl.ac.uk, joseph_arul_raj@kcl.ac.uk>
 # License: BSD-3-Clause
 
 import copy
-from typing import Iterable, Union
+from collections.abc import Iterable
 
 import numpy as np
 import torch
@@ -209,7 +209,7 @@ class DatasetForCSAI(BaseDataset):
 
     def __init__(
         self,
-        data: Union[dict, str],
+        data: dict | str,
         return_X_ori: bool,
         return_y: bool,
         file_type: str = "hdf5",

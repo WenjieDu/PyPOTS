@@ -1,9 +1,9 @@
-""" """
+"""Implementation of pypots.forecasting.dlinear.core."""
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-import torch.nn as nn
+from torch import nn
 
 from ...nn.modules.autoformer import SeriesDecompositionBlock
 from ...nn.modules.dlinear import BackboneDLinear

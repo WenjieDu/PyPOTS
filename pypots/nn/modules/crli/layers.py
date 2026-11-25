@@ -1,12 +1,10 @@
-""" """
+"""Implementation of pypots.nn.modules.crli.layers."""
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-from typing import Tuple
-
 import torch
-import torch.nn as nn
+from torch import nn
 
 RNN_CELL = {
     "LSTM": nn.LSTMCell,
@@ -46,7 +44,7 @@ class MultiRNNCell(nn.Module):
 
         self.output_layer = nn.Linear(d_hidden, d_input)
 
-    def forward(self, X: torch.Tensor, missing_mask: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
+    def forward(self, X: torch.Tensor, missing_mask: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
 
         bz, n_steps, _ = X.shape
         device = X.device
@@ -64,9 +62,9 @@ class MultiRNNCell(nn.Module):
                 imputed_x = missing_mask[:, step] * x + (1 - missing_mask[:, step]) * estimation
                 for i in range(self.n_layer):
                     if i == 0:
-                        hidden_state, cell_state = self.model[i](imputed_x, (hidden_state, cell_states[i]))
+                        hidden_state, _cell_state = self.model[i](imputed_x, (hidden_state, cell_states[i]))
                     else:
-                        hidden_state, cell_state = self.model[i](hidden_state, (hidden_state, cell_states[i]))
+                        hidden_state, _cell_state = self.model[i](hidden_state, (hidden_state, cell_states[i]))
 
                 hidden_state_collector[:, step, :] = hidden_state
 
@@ -102,7 +100,7 @@ class CrliGenerator(nn.Module):
         self.f_rnn = MultiRNNCell(cell_type, n_layers, n_features, d_hidden)
         self.b_rnn = MultiRNNCell(cell_type, n_layers, n_features, d_hidden)
 
-    def forward(self, X: torch.Tensor, missing_mask: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
+    def forward(self, X: torch.Tensor, missing_mask: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
         f_outputs, f_final_hidden_state = self.f_rnn(X, missing_mask)
         b_outputs, b_final_hidden_state = self.b_rnn(X, missing_mask)
         b_outputs = reverse_tensor(b_outputs)  # reverse the output of the backward rnn
@@ -190,7 +188,7 @@ class CrliDecoder(nn.Module):
         n_steps: int,
         d_input: int,
         d_output: int,
-        fcn_output_dims: list = None,
+        fcn_output_dims: list | None = None,
     ):
         super().__init__()
         self.n_steps = n_steps
@@ -208,7 +206,7 @@ class CrliDecoder(nn.Module):
         self.rnn_cell = nn.GRUCell(fcn_output_dims[-1], fcn_output_dims[-1])
         self.output_layer = nn.Linear(fcn_output_dims[-1], d_output)
 
-    def forward(self, generator_fb_hidden_states: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
+    def forward(self, generator_fb_hidden_states: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
         device = generator_fb_hidden_states.device
         bz, _ = generator_fb_hidden_states.shape
 

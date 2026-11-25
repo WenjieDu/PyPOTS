@@ -1,4 +1,4 @@
-""" """
+"""Implementation of pypots.nn.modules.moment.backbone."""
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
@@ -6,27 +6,26 @@
 import warnings
 from argparse import Namespace
 from math import ceil
-from typing import Union
 
 import torch
 from torch import nn
 
+from ....utils.hf_offline import resolve_hf_repo_id
+from ....utils.logging import logger
 from .masking import Masking
 from .modules import (
     TASKS,
+    ClassificationHead,
+    ForecastingHead,
+    NamespaceWithDefaults,
     PatchEmbedding,
     Patching,
     PretrainHead,
-    ClassificationHead,
-    ForecastingHead,
     RevIN,
     TimeseriesOutputs,
-    NamespaceWithDefaults,
     get_anomaly_criterion,
     get_huggingface_model_dimensions,
 )
-from ....utils.hf_offline import resolve_hf_repo_id
-from ....utils.logging import logger
 
 SUPPORTED_HUGGINGFACE_MODELS = [
     "t5-small",
@@ -55,7 +54,7 @@ TRANSFORMER_TYPE = [
 
 
 class BackboneMOMENT(nn.Module):
-    def __init__(self, configs: Union[Namespace, dict], **kwargs: dict):
+    def __init__(self, configs: Namespace | dict, **kwargs: dict):
         super().__init__()
         configs = self._update_inputs(configs, **kwargs)
         configs = self._validate_inputs(configs)
@@ -92,9 +91,9 @@ class BackboneMOMENT(nn.Module):
         # Prediction Head
         self.head = self._get_head(self.task_name)
 
-    def _update_inputs(self, configs: Union[Namespace, dict], **kwargs) -> NamespaceWithDefaults:
+    def _update_inputs(self, configs: Namespace | dict, **kwargs) -> NamespaceWithDefaults:
         if isinstance(configs, dict):
-            return NamespaceWithDefaults(**{**configs})
+            return NamespaceWithDefaults(**configs)
         else:
             return NamespaceWithDefaults.from_namespace(configs)
 
@@ -112,7 +111,7 @@ class BackboneMOMENT(nn.Module):
             )
         if configs.d_model is None and configs.transformer_backbone in SUPPORTED_HUGGINGFACE_MODELS:
             configs.d_model = get_huggingface_model_dimensions(configs.transformer_backbone)
-            logger.info("Setting d_model to {}".format(configs.d_model))
+            logger.info(f"Setting d_model to {configs.d_model}")
         elif configs.d_model is None:
             raise ValueError(
                 "d_model must be specified if transformer backbone \
@@ -537,7 +536,7 @@ class BackboneMOMENT(nn.Module):
         # scaler = torch.max(x_enc, dim=-1, keepdim=True)[0]
         # x_enc = x_enc / scaler
 
-        batch_size, n_channels, seq_len = x_enc.shape
+        batch_size, n_channels, _seq_len = x_enc.shape
         # frequency = kwargs["frequency"] if "frequency" in kwargs else None
         # NOTE: Add series decomposition
 

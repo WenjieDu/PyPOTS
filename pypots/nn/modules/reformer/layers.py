@@ -1,13 +1,13 @@
-""" """
+"""Implementation of pypots.nn.modules.reformer.layers."""
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
 import torch
-import torch.nn as nn
+from torch import nn
 
-from .lsh_attention import LSHSelfAttention
 from ..transformer import PositionWiseFeedForward
+from .lsh_attention import LSHSelfAttention
 
 
 class ReformerLayer(nn.Module):

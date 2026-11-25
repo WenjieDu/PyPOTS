@@ -9,7 +9,7 @@ and takes over the forward progress of the algorithm.
 from ...nn.modules import ModelCore
 from ...nn.modules.koopa import BackboneKoopa
 from ...nn.modules.loss import Criterion
-from ...nn.modules.saits import SaitsLoss, SaitsEmbedding
+from ...nn.modules.saits import SaitsEmbedding, SaitsLoss
 
 
 class _Koopa(ModelCore):

@@ -13,16 +13,16 @@ from .version import __version__
 
 __all__ = [
     "TimeSeriesAI",
-    "imputation",
+    "__version__",
+    "anomaly_detection",
     "classification",
     "clustering",
-    "forecasting",
-    "anomaly_detection",
-    "representation",
-    "optim",
     "data",
+    "forecasting",
+    "imputation",
+    "optim",
+    "representation",
     "utils",
-    "__version__",
 ]
 
 # Lazy-loaded submodules — imported on first attribute access

@@ -427,7 +427,6 @@ def _early_stop_worker(rank: int, world: int, port: int, tmp: str) -> None:
 
 
 class TestDistributedMultiProcessCpu(unittest.TestCase):
-
     def setUp(self):
         set_random_seed()
         if sys.platform == "win32":
@@ -455,7 +454,9 @@ class TestDistributedMultiProcessCpu(unittest.TestCase):
                 with open(os.path.join(tmp, f"rank{rank}.json"), encoding="utf-8") as f:
                     seen[rank] = json.load(f)
             orders0, orders1 = seen[0]["epoch_orders"], seen[1]["epoch_orders"]
-            assert len(orders0) == len(orders1) >= 2, f"expected both ranks to log 2 epochs, got {len(orders0)}/{len(orders1)}"
+            assert len(orders0) == len(orders1) >= 2, (
+                f"expected both ranks to log 2 epochs, got {len(orders0)}/{len(orders1)}"
+            )
             for epoch, (o0, o1) in enumerate(zip(orders0, orders1), start=1):
                 union = sorted(set(o0) | set(o1))
                 inter = sorted(set(o0) & set(o1))

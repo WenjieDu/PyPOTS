@@ -9,6 +9,6 @@ from .base import BaseDataset
 from .config import SUPPORTED_DATASET_FILE_FORMATS
 
 __all__ = [
-    "BaseDataset",
     "SUPPORTED_DATASET_FILE_FORMATS",
+    "BaseDataset",
 ]

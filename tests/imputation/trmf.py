@@ -12,15 +12,15 @@ import numpy as np
 import pytest
 
 from pypots.imputation import TRMF
-from pypots.utils.logging import logger
 from pypots.nn.functional import calc_mse
+from pypots.utils.logging import logger
 from pypots.utils.visual.data import plot_data, plot_missingness
 from tests.global_test_config import (
     DATA,
-    TRAIN_SET,
-    TEST_SET,
     GENERAL_H5_TRAIN_SET_PATH,
     RESULT_SAVING_DIR_FOR_IMPUTATION,
+    TEST_SET,
+    TRAIN_SET,
     check_tb_and_model_checkpoints_existence,
 )
 

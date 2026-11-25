@@ -9,7 +9,6 @@ import os
 
 import click
 
-
 # Reserved column names in the ai4ts data protocol
 _RESERVED_COLUMNS = {"SAMPLE_ID", "TIMESTAMP", "SAMPLE_LABEL", "STEP_LABEL"}
 
@@ -131,7 +130,7 @@ def _prepare_single_csv(input_path, output_path, task, set_type, missing_rate, s
     )
 
     # build 3D array
-    X_ori, sample_ids = _csv_to_3d_array(df, sample_id_col, feature_cols)
+    X_ori, _sample_ids = _csv_to_3d_array(df, sample_id_col, feature_cols)
     n_samples, n_steps, n_features = X_ori.shape
 
     # compute natural missing rate
@@ -194,7 +193,6 @@ def _prepare_single_csv(input_path, output_path, task, set_type, missing_rate, s
 )
 def data():
     """Data management operations: profile, prepare, reconstruct, convert, split, describe, load, list."""
-    pass
 
 
 @data.command(name="profile", help="Analyze a CSV dataset and output a DataProfile JSON for agent consumption")
@@ -466,7 +464,6 @@ def _check_ai4ts_pipeline() -> bool:
 def _prepare_with_pipeline(input_path, output_path, task, set_type, missing_rate, window_size, seed, logger):
     """Prepare using ai4ts pipeline with windowing and registry support."""
     import numpy as np
-
     from ai4ts.data_protocols.pipeline import prepare_for_pypots
 
     from ..data.saving.h5 import save_dict_into_h5
@@ -553,8 +550,8 @@ def data_reconstruct(predictions, registry_path, output_path, key):
     from ..utils.logging import logger
 
     try:
-        from ai4ts.data_protocols.registry import WindowRegistry
         from ai4ts.data_protocols.pipeline import reconstruct_from_predictions
+        from ai4ts.data_protocols.registry import WindowRegistry
     except ImportError:
         raise click.ClickException(
             "The 'ai4ts' package is required for data reconstruction. Install it with: pip install ai4ts"

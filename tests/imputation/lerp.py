@@ -12,14 +12,14 @@ import pytest
 import torch
 
 from pypots.imputation import Lerp
-from pypots.utils.logging import logger
 from pypots.nn.functional import calc_mse
+from pypots.utils.logging import logger
 from tests.global_test_config import (
     DATA,
-    TEST_SET,
+    GENERAL_H5_TEST_SET_PATH,
     GENERAL_H5_TRAIN_SET_PATH,
     GENERAL_H5_VAL_SET_PATH,
-    GENERAL_H5_TEST_SET_PATH,
+    TEST_SET,
 )
 
 

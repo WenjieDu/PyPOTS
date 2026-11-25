@@ -1,4 +1,4 @@
-""" """
+"""Implementation of pypots.nn.functional.cuda."""
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
@@ -6,21 +6,21 @@
 import torch
 
 
-def autocast(device_type: str = None, enabled: bool = True, **kwargs):
+def autocast(device_type: str | None = None, enabled: bool = True, **kwargs):
     """Device-aware autocast wrapper, supporting CUDA and Ascend NPU.
 
-   Keeps the historical signature ``autocast(enabled=...)`` working for CUDA (torch >=2.4
-    routes through ``torch.amp.autocast("cuda")``; older versions use ``torch.cuda.amp``),
-    and adds NPU via ``torch_npu.npu.amp.autocast`` when the device type is "npu".
+    Keeps the historical signature ``autocast(enabled=...)`` working for CUDA (torch >=2.4
+     routes through ``torch.amp.autocast("cuda")``; older versions use ``torch.cuda.amp``),
+     and adds NPU via ``torch_npu.npu.amp.autocast`` when the device type is "npu".
 
-    Parameters
-    ----------
-    device_type :
-        "cuda", "npu", or None. When None, the device type of the current default device
-        is used if it is cuda/npu, otherwise "cuda" (preserving the historical behavior).
+     Parameters
+     ----------
+     device_type :
+         "cuda", "npu", or None. When None, the device type of the current default device
+         is used if it is cuda/npu, otherwise "cuda" (preserving the historical behavior).
 
-    enabled :
-        Whether autocast is enabled, default as True.
+     enabled :
+         Whether autocast is enabled, default as True.
 
     """
     if device_type is None:

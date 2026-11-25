@@ -5,12 +5,12 @@ The base (abstract) classes for models in PyPOTS.
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-import os
 import inspect
+import os
 from abc import ABC, abstractmethod
+from collections.abc import Iterable
 from copy import deepcopy
 from datetime import datetime
-from typing import Optional, Union, Iterable
 
 import numpy as np
 import torch
@@ -30,7 +30,6 @@ from .utils.devices import (
 from .utils.distributed import all_reduce_mean, ddp_is_initialized, ddp_rank
 from .utils.file import create_dir_if_not_exist
 from .utils.logging import logger, logger_creator
-
 
 _TORCH_LOAD_SUPPORTS_WEIGHTS_ONLY = "weights_only" in inspect.signature(torch.load).parameters
 
@@ -94,10 +93,10 @@ class BaseModel(ABC):
 
     def __init__(
         self,
-        device: Optional[Union[str, torch.device, list]] = None,
+        device: str | torch.device | list | None = None,
         enable_amp: bool = False,
-        saving_path: str = None,
-        model_saving_strategy: Optional[str] = "best",
+        saving_path: str | None = None,
+        model_saving_strategy: str | None = "best",
         verbose: bool = True,
     ):
         saving_strategies = [None, "best", "better", "all"]
@@ -128,7 +127,7 @@ class BaseModel(ABC):
         # set up saving_path to save the trained model and training logs
         self._setup_path(saving_path)
 
-    def _setup_device(self, device: Union[None, str, torch.device, list]) -> None:
+    def _setup_device(self, device: None | str | torch.device | list) -> None:
         if device is None:
             # if it is None, probe for an accelerator: cuda first, then npu, cpu as the fallback
             device_type = get_available_device_type()
@@ -185,11 +184,9 @@ class BaseModel(ABC):
         if device_type in ("cuda", "npu"):
             check_device_availability(device_type)
 
-        if os.getenv("ENABLE_AMP", False):
+        if os.getenv("ENABLE_AMP", ""):
             if self.enable_amp:
-                if device_type == "cuda":
-                    self.amp_enabled = True
-                elif device_type == "npu":
+                if device_type in ("cuda", "npu"):
                     self.amp_enabled = True
                 else:
                     logger.warning(
@@ -273,27 +270,27 @@ class BaseModel(ABC):
         # NPU: full-sequence fused RNNs (nn.GRU/LSTM/RNN) have no fp32 backward kernel on
         # Ascend (forward works), so fp32 training would fail asynchronously later.
         # Warn here once so users know to enable AMP or use the Cell-loop fallback layers.
-        if (isinstance(self.device, torch.device) and self.device.type == "npu") or (
-            isinstance(self.device, list) and self.device[0].type == "npu"
-        ):
-            if contains_full_sequence_rnn(self.model):
-                logger.warning(
-                    "‼️ The model contains full-sequence fused RNN layers (nn.GRU/LSTM/RNN). "
-                    "On Ascend NPU, their fp32 backward pass is not supported (forward works), "
-                    "so fp32 training will fail asynchronously (often surfacing in optimizer.step). "
-                    "Please enable AMP via ENABLE_AMP=1 and enable_amp=True, or use the "
-                    "device-adaptive unfused RNN layers. Prediction/inference in fp32 is not affected."
-                )
+        if (
+            (isinstance(self.device, torch.device) and self.device.type == "npu")
+            or (isinstance(self.device, list) and self.device[0].type == "npu")
+        ) and contains_full_sequence_rnn(self.model):
+            logger.warning(
+                "‼️ The model contains full-sequence fused RNN layers (nn.GRU/LSTM/RNN). "
+                "On Ascend NPU, their fp32 backward pass is not supported (forward works), "
+                "so fp32 training will fail asynchronously (often surfacing in optimizer.step). "
+                "Please enable AMP via ENABLE_AMP=1 and enable_amp=True, or use the "
+                "device-adaptive unfused RNN layers. Prediction/inference in fp32 is not affected."
+            )
 
     def _send_data_to_given_device(self, data) -> Iterable:
         if isinstance(self.device, (torch.device, list)):  # single device or parallely training on multiple devices
             if isinstance(self.device, list):
-                data = map(lambda x: x.to(self.device[0]), data)
+                data = (x.to(self.device[0]) for x in data)
             else:
-                data = map(lambda x: x.to(self.device), data)
+                data = (x.to(self.device) for x in data)
 
         else:  # CPU
-            data = map(lambda x: x.to("cpu"), data)
+            data = (x.to("cpu") for x in data)
 
         return data
 
@@ -326,7 +323,7 @@ class BaseModel(ABC):
     def _auto_save_model_if_necessary(
         self,
         confirm_saving: bool = True,
-        saving_name: str = None,
+        saving_name: str | None = None,
     ) -> None:
         """Automatically save the current model into a file if in need.
 
@@ -350,11 +347,13 @@ class BaseModel(ABC):
             name = self.__class__.__name__ if saving_name is None else saving_name
             saving_path = os.path.join(self.saving_path, name)
 
-            if self.model_saving_strategy == "all":
-                self.save(saving_path)
-            elif self.model_saving_strategy == "better" and confirm_saving:
-                self.save(saving_path)
-            elif self.model_saving_strategy == "best" and confirm_saving:
+            if (
+                self.model_saving_strategy == "all"
+                or self.model_saving_strategy == "better"
+                and confirm_saving
+                or self.model_saving_strategy == "best"
+                and confirm_saving
+            ):
                 self.save(saving_path)
             else:
                 pass
@@ -478,7 +477,7 @@ class BaseModel(ABC):
             logger.info(f"Saved the model to {saving_path}")
 
         except Exception as e:
-            raise RuntimeError(f'Failed to save the model to "{saving_path}" because of the below error! \n{e}')
+            raise RuntimeError(f'Failed to save the model to "{saving_path}" because of the below error! \n{e}') from e
 
     def load(self, path: str) -> None:
         """Load the saved model from a disk file.
@@ -499,62 +498,58 @@ class BaseModel(ABC):
         """
         assert os.path.exists(path), f"Model file {path} does not exist."
 
-        try:
-            map_location = self.device[0] if isinstance(self.device, list) else self.device
-            loaded_file = _load_model_file(path, map_location)
+        map_location = self.device[0] if isinstance(self.device, list) else self.device
+        loaded_file = _load_model_file(path, map_location)
 
-            if isinstance(loaded_file, torch.nn.Module):  # compatible model for pypots <0.13
-                if isinstance(self.device, torch.device):
-                    self.model.load_state_dict(loaded_file.state_dict())
-                else:
-                    self.model.module.load_state_dict(loaded_file.state_dict())
+        if isinstance(loaded_file, torch.nn.Module):  # compatible model for pypots <0.13
+            if isinstance(self.device, torch.device):
+                self.model.load_state_dict(loaded_file.state_dict())
+            else:
+                self.model.module.load_state_dict(loaded_file.state_dict())
+            logger.warning(
+                "‼️ This model file is saved with pypots <0.13 and "
+                "has been loaded with the compatible mode which will be deprecated in the future. "
+                "Please save the model again with the later versions (>=0.13) of PyPOTS and "
+                "delete the old model file."
+            )
+        else:  # loading strategy for pypots >=0.13
+            loaded_model_dict = loaded_file["model_state_dict"]
+
+            if isinstance(self.device, torch.device):
+                current_model_dict = self.model.state_dict()
+                current_model_dict.update(loaded_model_dict)
+                self.model.load_state_dict(current_model_dict)
+            else:
+                current_model_dict = self.model.module.state_dict()
+                current_model_dict.update(loaded_model_dict)
+                self.model.module.load_state_dict(current_model_dict)
+
+            # Log metadata if available (files saved before this feature won't have it)
+            saved_version = loaded_file.get("pypots_version", "unknown")
+            from .version import __version__ as current_version
+
+            if saved_version != "unknown" and saved_version != current_version:
                 logger.warning(
-                    "‼️ This model file is saved with pypots <0.13 and "
-                    "has been loaded with the compatible mode which will be deprecated in the future. "
-                    "Please save the model again with the later versions (>=0.13) of PyPOTS and "
-                    "delete the old model file."
+                    f"‼️ Model was saved with PyPOTS {saved_version}, "
+                    f"but you are loading it with PyPOTS {current_version}. "
+                    f"This may cause compatibility issues."
                 )
-            else:  # loading strategy for pypots >=0.13
-                loaded_model_dict = loaded_file["model_state_dict"]
 
-                if isinstance(self.device, torch.device):
-                    current_model_dict = self.model.state_dict()
-                    current_model_dict.update(loaded_model_dict)
-                    self.model.load_state_dict(current_model_dict)
-                else:
-                    current_model_dict = self.model.module.state_dict()
-                    current_model_dict.update(loaded_model_dict)
-                    self.model.module.load_state_dict(current_model_dict)
+            saved_class = loaded_file.get("model_class")
+            if saved_class and saved_class != self.__class__.__name__:
+                logger.warning(
+                    f"‼️ Model file was saved as '{saved_class}', but you are loading it as '{self.__class__.__name__}'."
+                )
 
-                # Log metadata if available (files saved before this feature won't have it)
-                saved_version = loaded_file.get("pypots_version", "unknown")
-                from .version import __version__ as current_version
+        self.model.eval()  # set the model as eval status to freeze it.
 
-                if saved_version != "unknown" and saved_version != current_version:
-                    logger.warning(
-                        f"‼️ Model was saved with PyPOTS {saved_version}, "
-                        f"but you are loading it with PyPOTS {current_version}. "
-                        f"This may cause compatibility issues."
-                    )
-
-                saved_class = loaded_file.get("model_class")
-                if saved_class and saved_class != self.__class__.__name__:
-                    logger.warning(
-                        f"‼️ Model file was saved as '{saved_class}', "
-                        f"but you are loading it as '{self.__class__.__name__}'."
-                    )
-
-            self.model.eval()  # set the model as eval status to freeze it.
-
-        except Exception as e:
-            raise e
         logger.info(f"Model loaded successfully from {path}")
 
     @abstractmethod
     def fit(
         self,
-        train_set: Union[dict, str],
-        val_set: Optional[Union[dict, str]] = None,
+        train_set: dict | str,
+        val_set: dict | str | None = None,
         file_type: str = "hdf5",
     ) -> None:
         """Train the classifier on the given data.
@@ -588,7 +583,7 @@ class BaseModel(ABC):
     @abstractmethod
     def predict(
         self,
-        test_set: Union[dict, str],
+        test_set: dict | str,
         file_type: str = "hdf5",
     ) -> dict:
         """Make predictions for the input data with the trained model.
@@ -616,7 +611,7 @@ class BaseModel(ABC):
         """
         raise NotImplementedError
 
-    def to(self, device: Union[str, torch.device]) -> None:
+    def to(self, device: str | torch.device) -> None:
         """Move the model to the given device.
 
         Parameters
@@ -711,16 +706,16 @@ class BaseNNModel(BaseModel):
 
     def __init__(
         self,
-        training_loss: Union[Criterion, type],
-        validation_metric: Union[Criterion, type],
+        training_loss: Criterion | type,
+        validation_metric: Criterion | type,
         batch_size: int,
         epochs: int,
-        patience: Optional[int] = None,
+        patience: int | None = None,
         num_workers: int = 0,
-        device: Optional[Union[str, torch.device, list]] = None,
+        device: str | torch.device | list | None = None,
         enable_amp: bool = False,
-        saving_path: str = None,
-        model_saving_strategy: Optional[str] = "best",
+        saving_path: str | None = None,
+        model_saving_strategy: str | None = "best",
         verbose: bool = True,
         optuna_trial=None,
     ):
@@ -853,7 +848,7 @@ class BaseNNModel(BaseModel):
     def _train_model(
         self,
         train_dataloader: DataLoader,
-        val_dataloader: Optional[DataLoader] = None,
+        val_dataloader: DataLoader | None = None,
     ) -> None:
         # each training starts from the very beginning, so reset the loss and model dict here
         self.best_model_dict = None
@@ -956,14 +951,14 @@ class BaseNNModel(BaseModel):
 
         except KeyboardInterrupt:  # if keyboard interrupt, only warning
             logger.warning("‼️ Training got interrupted by the user. Exist now ...")
-        except Exception as e:  # other kind of exception follows below processing
+        except Exception as e:  # noqa: BLE001 - preserve recovery from interrupted training
             logger.error(f"❌ Exception: {e}")
             if self.best_model_dict is None:  # if no best model, raise error
                 raise RuntimeError(
                     "Training got interrupted. Model was not trained. Please investigate the error printed above."
                 )
             else:
-                RuntimeWarning(
+                logger.warning(
                     "Training got interrupted. Please investigate the error printed above.\n"
                     "Model got trained and will load the best checkpoint so far for testing.\n"
                     "If you don't want it, please try fit() again."
@@ -977,8 +972,8 @@ class BaseNNModel(BaseModel):
     @abstractmethod
     def fit(
         self,
-        train_set: Union[dict, str],
-        val_set: Optional[Union[dict, str]] = None,
+        train_set: dict | str,
+        val_set: dict | str | None = None,
         file_type: str = "hdf5",
     ) -> None:
         raise NotImplementedError
@@ -987,7 +982,7 @@ class BaseNNModel(BaseModel):
     @torch.no_grad()
     def predict(
         self,
-        test_set: Union[dict, str],
+        test_set: dict | str,
         file_type: str = "hdf5",
     ) -> dict:
         raise NotImplementedError

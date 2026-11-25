@@ -19,9 +19,9 @@ from tests.cli.config import PROJECT_ROOT_DIR
 from tests.global_test_config import (
     GENERAL_H5_TRAIN_SET_PATH,
     GENERAL_H5_VAL_SET_PATH,
-    N_STEPS,
     N_FEATURES,
     N_PRED_STEPS,
+    N_STEPS,
 )
 
 

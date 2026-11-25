@@ -1,17 +1,14 @@
-""" """
+"""Implementation of pypots.nn.modules.ts2vec.backbone."""
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
-
-from typing import Optional
 
 import numpy as np
 import sklearn
 import torch
 import torch.nn.functional as F
 from packaging import version
-from sklearn.linear_model import LogisticRegression
-from sklearn.linear_model import Ridge
+from sklearn.linear_model import LogisticRegression, Ridge
 from sklearn.model_selection import GridSearchCV, train_test_split
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.pipeline import make_pipeline
@@ -21,9 +18,9 @@ from torch import nn
 
 from .layers import DilatedConvEncoder
 from .utils import (
-    torch_pad_nan,
     generate_binomial_mask,
     generate_continuous_mask,
+    torch_pad_nan,
 )
 
 MASK_MODES = ["binomial", "continuous", "all_true", "all_false", "mask_last"]
@@ -125,10 +122,10 @@ class TS2VecEncoder(nn.Module):
     def encode(
         self,
         x: torch.Tensor,
-        mask: Optional[str] = None,
-        encoding_window: Optional[str] = None,
+        mask: str | None = None,
+        encoding_window: str | None = None,
         causal: bool = False,
-        sliding_length: Optional[int] = None,
+        sliding_length: int | None = None,
         sliding_padding: int = 0,
     ) -> torch.Tensor:
         """Compute representations using the trained model.
@@ -163,7 +160,7 @@ class TS2VecEncoder(nn.Module):
 
         """
 
-        n_samples, n_steps, _ = x.shape
+        _n_samples, n_steps, _ = x.shape
 
         if sliding_length is not None:
             reprs = []

@@ -17,13 +17,13 @@ from pypots.utils.logging import logger
 from tests.global_test_config import (
     DATA,
     DEVICE,
-    TRAIN_SET,
-    VAL_SET,
-    TEST_SET,
+    GENERAL_H5_TEST_SET_PATH,
     GENERAL_H5_TRAIN_SET_PATH,
     GENERAL_H5_VAL_SET_PATH,
-    GENERAL_H5_TEST_SET_PATH,
     RESULT_SAVING_DIR_FOR_CLASSIFICATION,
+    TEST_SET,
+    TRAIN_SET,
+    VAL_SET,
     check_tb_and_model_checkpoints_existence,
 )
 

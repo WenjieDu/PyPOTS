@@ -48,7 +48,9 @@ class _TOTEM(ModelCore):
 
         # TOTEM encoder processing
         flatten_X = X.permute(0, 2, 1).reshape(-1, self.n_steps)
-        reconstruction, vq_loss, perplexity, embedding_weight, encoding_indices, encodings = self.autoencoder(flatten_X)
+        reconstruction, vq_loss, _perplexity, _embedding_weight, _encoding_indices, _encodings = self.autoencoder(
+            flatten_X
+        )
         reconstruction = reconstruction.reshape(-1, self.n_features, self.n_steps).permute(0, 2, 1)
 
         imputed_data = missing_mask * X + (1 - missing_mask) * reconstruction

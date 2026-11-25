@@ -6,15 +6,16 @@ Test cases for data saving utils.
 # License: BSD-3-Clause
 
 import unittest
+from typing import ClassVar
 
 import numpy as np
 import pytest
 
 from pypots.data.saving import (
-    save_dict_into_h5,
     load_dict_from_h5,
     pickle_dump,
     pickle_load,
+    save_dict_into_h5,
 )
 from pypots.utils.logging import logger
 
@@ -22,7 +23,7 @@ from pypots.utils.logging import logger
 class TestDataSavingAndLoading(unittest.TestCase):
     logger.info("Running tests for data saving utils...")
 
-    data_to_save = {
+    data_to_save: ClassVar[dict] = {
         "a": 1,
         "b": 2,
         "c": {

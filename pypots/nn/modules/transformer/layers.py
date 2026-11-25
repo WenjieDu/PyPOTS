@@ -1,15 +1,13 @@
-""" """
+"""Implementation of pypots.nn.modules.transformer.layers."""
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-from typing import Tuple, Optional
-
 import torch
-import torch.nn as nn
 import torch.nn.functional as F
+from torch import nn
 
-from .attention import MultiHeadAttention, AttentionOperator
+from .attention import AttentionOperator, MultiHeadAttention
 
 
 class PositionWiseFeedForward(nn.Module):
@@ -116,9 +114,9 @@ class TransformerEncoderLayer(nn.Module):
     def forward(
         self,
         enc_input: torch.Tensor,
-        src_mask: Optional[torch.Tensor] = None,
+        src_mask: torch.Tensor | None = None,
         **kwargs,
-    ) -> Tuple[torch.Tensor, torch.Tensor]:
+    ) -> tuple[torch.Tensor, torch.Tensor]:
         """Forward processing of the encoder layer.
 
         Parameters
@@ -220,10 +218,10 @@ class TransformerDecoderLayer(nn.Module):
         self,
         dec_input: torch.Tensor,
         enc_output: torch.Tensor,
-        slf_attn_mask: Optional[torch.Tensor] = None,
-        dec_enc_attn_mask: Optional[torch.Tensor] = None,
+        slf_attn_mask: torch.Tensor | None = None,
+        dec_enc_attn_mask: torch.Tensor | None = None,
         **kwargs,
-    ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         """Forward processing of the decoder layer.
 
         Parameters

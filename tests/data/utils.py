@@ -1,4 +1,4 @@
-""" """
+"""Implementation of tests.data.utils."""
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
@@ -9,8 +9,8 @@ import numpy as np
 import pytest
 
 from pypots.data import (
-    sliding_window,
     inverse_sliding_window,
+    sliding_window,
 )
 from pypots.utils.logging import logger
 

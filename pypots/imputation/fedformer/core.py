@@ -6,12 +6,12 @@ and takes over the forward progress of the algorithm.
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-import torch.nn as nn
+from torch import nn
 
 from ...nn.modules import ModelCore
 from ...nn.modules.fedformer import FEDformerEncoder
 from ...nn.modules.loss import Criterion
-from ...nn.modules.saits import SaitsLoss, SaitsEmbedding
+from ...nn.modules.saits import SaitsEmbedding, SaitsLoss
 
 
 class _FEDformer(ModelCore):
@@ -82,7 +82,7 @@ class _FEDformer(ModelCore):
         enc_out = self.saits_embedding(X, missing_mask)
 
         # FEDformer encoder processing
-        enc_out, attns = self.encoder(enc_out)
+        enc_out, _attns = self.encoder(enc_out)
         reconstruction = self.output_projection(enc_out)
 
         imputed_data = missing_mask * X + (1 - missing_mask) * reconstruction

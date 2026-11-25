@@ -118,9 +118,7 @@ def resolve_device_type(device) -> str:
         if len(device) == 0:
             raise ValueError("The list of devices should have at least 1 device, but got 0.")
         return resolve_device_type(device[0])
-    raise TypeError(
-        f"device should be str/torch.device/a list containing str or torch.device, but got {type(device)}"
-    )
+    raise TypeError(f"device should be str/torch.device/a list containing str or torch.device, but got {type(device)}")
 
 
 def parse_device_string(device_str: str) -> torch.device:

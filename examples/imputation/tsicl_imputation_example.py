@@ -8,6 +8,7 @@ are licensed under the TS-ICL Non-Commercial License (non-commercial use only).
 
 import numpy as np
 from benchpots.datasets import preprocess_random_walk
+
 from pypots.imputation import TSICL
 from pypots.nn.functional import calc_mse
 

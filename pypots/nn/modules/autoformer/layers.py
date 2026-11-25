@@ -1,15 +1,14 @@
-""" """
+"""Implementation of pypots.nn.modules.autoformer.layers."""
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
 import math
-from typing import Tuple, Optional
 
 import torch
 import torch.fft
-import torch.nn as nn
 import torch.nn.functional as F
+from torch import nn
 
 from ..transformer.attention import AttentionOperator, MultiHeadAttention
 
@@ -128,14 +127,14 @@ class AutoCorrelation(AttentionOperator):
         q: torch.Tensor,
         k: torch.Tensor,
         v: torch.Tensor,
-        attn_mask: Optional[torch.Tensor] = None,
+        attn_mask: torch.Tensor | None = None,
         **kwargs,
-    ) -> Tuple[torch.Tensor, torch.Tensor]:
+    ) -> tuple[torch.Tensor, torch.Tensor]:
         # q, k, v all have 4 dimensions [batch_size, n_steps, n_heads, d_tensor]
         # d_tensor could be d_q, d_k, d_v
 
-        B, L, H, E = q.shape
-        _, S, _, D = v.shape
+        _B, L, _H, _E = q.shape
+        _, S, _, _D = v.shape
         if L > S:
             zeros = torch.zeros_like(q[:, : (L - S), :]).float()
             v = torch.cat([v, zeros], dim=1)

@@ -8,8 +8,6 @@ Vendored from the TS-ICL model architecture: https://github.com/EDF-Lab/ts-icl
 
 from __future__ import annotations
 
-from typing import Optional, Tuple
-
 import torch
 from einops import rearrange
 from torch import nn
@@ -42,7 +40,7 @@ class TSICLNetwork(nn.Module):
 
     def _prepare_inputs(
         self, series: torch.Tensor, series_covar: torch.Tensor | None = None
-    ) -> Tuple[torch.Tensor, torch.Tensor | None]:
+    ) -> tuple[torch.Tensor, torch.Tensor | None]:
 
         if self.apply_asinh_transform:
             series = torch.asinh(series)
@@ -63,15 +61,15 @@ class TSICLNetwork(nn.Module):
         series: torch.Tensor,
         coords: torch.Tensor,
         target_coords: torch.Tensor,
-        series_covar: Optional[torch.Tensor] = None,
-        coords_covar: Optional[torch.Tensor] = None,
-        mask: Optional[torch.Tensor] = None,
+        series_covar: torch.Tensor | None = None,
+        coords_covar: torch.Tensor | None = None,
+        mask: torch.Tensor | None = None,
         return_stats: bool = False,
         sample_posterior: bool = False,
         undo_asinh_transform: bool = True,
         return_latent_only: bool = False,
     ) -> (
-        torch.Tensor | Tuple[torch.Tensor, torch.Tensor] | Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]
+        torch.Tensor | tuple[torch.Tensor, torch.Tensor] | tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]
     ):
 
         # prepare inputs (asinh transform, etc.):

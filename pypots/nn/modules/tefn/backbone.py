@@ -1,10 +1,10 @@
-""" """
+"""Implementation of pypots.nn.modules.tefn.backbone."""
 
 # Created by Tianxiang Zhan <zhantianxianguestc@hotmail.com>
 # License: BSD-3-Clause
 
 import torch
-import torch.nn as nn
+from torch import nn
 
 from .layers import EvidenceMachineKernel
 

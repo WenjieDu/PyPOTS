@@ -17,9 +17,9 @@ https://github.com/moment-timeseries-foundation-model/moment-research
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-from .backbone import BackboneMOMENT, SUPPORTED_HUGGINGFACE_MODELS
+from .backbone import SUPPORTED_HUGGINGFACE_MODELS, BackboneMOMENT
 
 __all__ = [
-    "BackboneMOMENT",
     "SUPPORTED_HUGGINGFACE_MODELS",
+    "BackboneMOMENT",
 ]

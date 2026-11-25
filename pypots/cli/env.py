@@ -7,7 +7,7 @@ CLI tools to help initialize environments for running and developing PyPOTS.
 
 import click
 
-from .base import execute_command, check_if_under_root_dir
+from .base import check_if_under_root_dir, execute_command
 
 
 @click.command(
@@ -50,9 +50,8 @@ def env(install, tool):
         # only append the +cpu local tag when neither CUDA nor NPU is available
         from ..utils.devices import cuda_is_available, npu_is_available
 
-        if not (cuda_is_available() or npu_is_available()):
-            if "cpu" not in torch_version:
-                torch_version = torch_version + "+cpu"
+        if not (cuda_is_available() or npu_is_available()) and "cpu" not in torch_version:
+            torch_version = torch_version + "+cpu"
 
         execute_command(
             f"python -m pip install -e '.[optional]' -f https://data.pyg.org/whl/torch-{torch_version}.html"

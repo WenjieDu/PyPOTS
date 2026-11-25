@@ -7,15 +7,14 @@ The implementation of GPT4TS for the partially-observed time-series forecasting 
 # License: BSD-3-Clause
 
 from copy import deepcopy
-from typing import Union, Optional
 
 import torch
 
-from .core import _GPT4TS
-from ..base import BaseNNForecaster
-from ...nn.modules.loss import Criterion, MSE
+from ...nn.modules.loss import MSE, Criterion
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
+from ..base import BaseNNForecaster
+from .core import _GPT4TS
 
 
 class GPT4TS(BaseNNForecaster):
@@ -129,14 +128,14 @@ class GPT4TS(BaseNNForecaster):
         freq="h",
         batch_size: int = 32,
         epochs: int = 100,
-        patience: Optional[int] = None,
-        training_loss: Union[Criterion, type] = MSE,
-        validation_metric: Union[Criterion, type] = MSE,
-        optimizer: Union[Optimizer, type] = Adam,
+        patience: int | None = None,
+        training_loss: Criterion | type = MSE,
+        validation_metric: Criterion | type = MSE,
+        optimizer: Optimizer | type = Adam,
         num_workers: int = 0,
-        device: Optional[Union[str, torch.device, list]] = None,
-        saving_path: Optional[str] = None,
-        model_saving_strategy: Optional[str] = "best",
+        device: str | torch.device | list | None = None,
+        saving_path: str | None = None,
+        model_saving_strategy: str | None = "best",
         verbose: bool = True,
     ):
         super().__init__(
@@ -206,7 +205,7 @@ class GPT4TS(BaseNNForecaster):
             model_state_dict = deepcopy(self.model.state_dict())
         model_state_dict = {k: v for k, v in model_state_dict.items() if "gpt2" not in k}
 
-        all_attrs = dict({})
+        all_attrs = {}
         all_attrs["model_state_dict"] = model_state_dict
         all_attrs["pypots_version"] = pypots_version
         return all_attrs

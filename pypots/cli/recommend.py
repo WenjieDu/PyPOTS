@@ -54,7 +54,7 @@ def _get_data_properties(data_path):
 
         n_classes = None
         if "y" in loaded:
-            n_classes = int(len(np.unique(loaded["y"][~np.isnan(loaded["y"])])))
+            n_classes = len(np.unique(loaded["y"][~np.isnan(loaded["y"])]))
 
         return {
             "n_samples": n_samples,

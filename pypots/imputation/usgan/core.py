@@ -6,7 +6,7 @@ and takes over the forward progress of the algorithm.
 # Created by Jun Wang <jwangfx@connect.ust.hk> and Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-import torch.nn as nn
+from torch import nn
 
 from ...nn.modules.usgan import BackboneUSGAN
 

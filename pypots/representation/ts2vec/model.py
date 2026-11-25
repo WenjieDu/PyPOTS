@@ -6,18 +6,16 @@ The implementation of TS2Vec for the partially-observed time-series representati
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-from typing import Optional, Union
-
 import numpy as np
 import torch
 from torch.utils.data import DataLoader
 
-from .core import _TS2Vec
-from ..base import BaseNNRepresentor
 from ...data.dataset.base import BaseDataset
 from ...nn.modules.loss import Criterion
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
+from ..base import BaseNNRepresentor
+from .core import _TS2Vec
 
 
 class TS2Vec(BaseNNRepresentor):
@@ -97,12 +95,12 @@ class TS2Vec(BaseNNRepresentor):
         mask_mode: str = "binomial",
         batch_size: int = 32,
         epochs: int = 100,
-        patience: Optional[int] = None,
-        optimizer: Union[Optimizer, type] = Adam,
+        patience: int | None = None,
+        optimizer: Optimizer | type = Adam,
         num_workers: int = 0,
-        device: Optional[Union[str, torch.device, list]] = None,
-        saving_path: str = None,
-        model_saving_strategy: Optional[str] = "best",
+        device: str | torch.device | list | None = None,
+        saving_path: str | None = None,
+        model_saving_strategy: str | None = "best",
         verbose: bool = True,
     ):
         super().__init__(
@@ -165,8 +163,8 @@ class TS2Vec(BaseNNRepresentor):
 
     def fit(
         self,
-        train_set: Union[dict, str],
-        val_set: Optional[Union[dict, str]] = None,
+        train_set: dict | str,
+        val_set: dict | str | None = None,
         file_type: str = "hdf5",
     ) -> None:
         # Step 1: wrap the input data with classes Dataset and DataLoader
@@ -209,9 +207,9 @@ class TS2Vec(BaseNNRepresentor):
     @torch.no_grad()
     def predict(
         self,
-        test_set: Union[dict, str],
+        test_set: dict | str,
         file_type: str = "hdf5",
-        mask: str = None,
+        mask: str | None = None,
         encoding_window=None,
         causal=False,
         sliding_length=None,
@@ -230,9 +228,9 @@ class TS2Vec(BaseNNRepresentor):
 
     def represent(
         self,
-        test_set: Union[dict, str],
+        test_set: dict | str,
         file_type: str = "hdf5",
-        mask: str = None,
+        mask: str | None = None,
         encoding_window=None,
         causal=False,
         sliding_length=None,

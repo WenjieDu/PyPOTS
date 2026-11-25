@@ -11,7 +11,6 @@ import os
 import sys
 from importlib import import_module, util
 from types import ModuleType
-from typing import Optional
 
 
 def _get_logger():
@@ -169,7 +168,7 @@ def get_optimizer_class(optimizer_name: str):
     return getattr(module, class_name)
 
 
-def list_available_models(task: Optional[str] = None) -> dict:
+def list_available_models(task: str | None = None) -> dict:
     """List available model names, optionally filtered by task.
 
     Parameters

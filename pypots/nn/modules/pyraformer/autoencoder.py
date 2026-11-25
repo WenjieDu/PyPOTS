@@ -1,16 +1,14 @@
-""" """
+"""Implementation of pypots.nn.modules.pyraformer.autoencoder."""
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-from typing import Optional, Tuple, Union
-
 import torch
-import torch.nn as nn
+from torch import nn
 
-from .layers import get_mask, refer_points, Bottleneck_Construct
 from ..transformer.attention import ScaledDotProductAttention
 from ..transformer.layers import TransformerEncoderLayer
+from .layers import Bottleneck_Construct, get_mask, refer_points
 
 
 class PyraformerEncoder(nn.Module):
@@ -52,8 +50,8 @@ class PyraformerEncoder(nn.Module):
     def forward(
         self,
         x: torch.Tensor,
-        src_mask: Optional[torch.Tensor] = None,
-    ) -> Union[torch.Tensor, Tuple[torch.Tensor, list]]:
+        src_mask: torch.Tensor | None = None,
+    ) -> torch.Tensor | tuple[torch.Tensor, list]:
 
         mask = self.mask.repeat(len(x), 1, 1).to(x.device)
         x = self.conv_layers(x)

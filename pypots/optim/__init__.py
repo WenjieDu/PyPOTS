@@ -13,10 +13,10 @@ from .rmsprop import RMSprop
 from .sgd import SGD
 
 __all__ = [
+    "SGD",
+    "Adadelta",
+    "Adagrad",
     "Adam",
     "AdamW",
-    "Adagrad",
-    "Adadelta",
     "RMSprop",
-    "SGD",
 ]

@@ -43,10 +43,10 @@ Vendored from the TS-ICL model architecture: https://github.com/EDF-Lab/ts-icl
 
 from __future__ import annotations
 
+from collections.abc import Callable
+
 # ACKNOWLEDGEMENT:
 # https://github.com/soda-inria/tabicl/blob/main/src/tabicl/_model/encoders.py
-from typing import Callable, Optional
-
 from torch import Tensor, nn
 
 from .layers import MultiheadAttentionBlock
@@ -123,8 +123,8 @@ class Encoder(nn.Module):
     def forward(
         self,
         src: Tensor,
-        key_padding_mask: Optional[Tensor] = None,
-        attn_mask: Optional[Tensor | int] = None,
+        key_padding_mask: Tensor | None = None,
+        attn_mask: Tensor | int | None = None,
     ) -> Tensor:
         """Process input through the stacked blocks.
 

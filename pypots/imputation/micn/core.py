@@ -10,7 +10,7 @@ from ...nn.modules import ModelCore
 from ...nn.modules.fedformer.layers import SeriesDecompositionMultiBlock
 from ...nn.modules.loss import Criterion
 from ...nn.modules.micn import BackboneMICN
-from ...nn.modules.saits import SaitsLoss, SaitsEmbedding
+from ...nn.modules.saits import SaitsEmbedding, SaitsLoss
 
 
 class _MICN(ModelCore):

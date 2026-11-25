@@ -6,20 +6,18 @@ The implementation of CSDI for the partially-observed time-series imputation tas
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-from typing import Union, Optional
-
 import numpy as np
 import torch
 from torch.utils.data import DataLoader
 
-from .core import _CSDI
-from .data import DatasetForCSDI, TestDatasetForCSDI
-from ..base import BaseNNImputer
 from ...data.checking import key_in_data_set
 from ...nn.functional import gather_listed_dicts
 from ...nn.modules.loss import Criterion
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
+from ..base import BaseNNImputer
+from .core import _CSDI
+from .data import DatasetForCSDI, TestDatasetForCSDI
 
 
 class CSDI(BaseNNImputer):
@@ -130,12 +128,12 @@ class CSDI(BaseNNImputer):
         beta_end: float = 0.5,
         batch_size: int = 32,
         epochs: int = 100,
-        patience: Optional[int] = None,
-        optimizer: Union[Optimizer, type] = Adam,
+        patience: int | None = None,
+        optimizer: Optimizer | type = Adam,
         num_workers: int = 0,
-        device: Optional[Union[str, torch.device, list]] = None,
-        saving_path: Optional[str] = None,
-        model_saving_strategy: Optional[str] = "best",
+        device: str | torch.device | list | None = None,
+        saving_path: str | None = None,
+        model_saving_strategy: str | None = "best",
         verbose: bool = True,
     ):
         super().__init__(
@@ -183,7 +181,7 @@ class CSDI(BaseNNImputer):
 
     def _assemble_input_for_training(self, data: list) -> dict:
         (
-            indices,
+            _indices,
             X_ori,
             indicating_mask,
             cond_mask,
@@ -203,7 +201,7 @@ class CSDI(BaseNNImputer):
 
     def _assemble_input_for_testing(self, data: list) -> dict:
         (
-            indices,
+            _indices,
             X,
             cond_mask,
             observed_tp,
@@ -218,8 +216,8 @@ class CSDI(BaseNNImputer):
 
     def fit(
         self,
-        train_set: Union[dict, str],
-        val_set: Optional[Union[dict, str]] = None,
+        train_set: dict | str,
+        val_set: dict | str | None = None,
         file_type: str = "hdf5",
         n_sampling_times: int = 1,
     ) -> None:
@@ -263,7 +261,7 @@ class CSDI(BaseNNImputer):
     @torch.no_grad()
     def predict(
         self,
-        test_set: Union[dict, str],
+        test_set: dict | str,
         file_type: str = "hdf5",
         n_sampling_times: int = 1,
     ) -> dict:
@@ -321,7 +319,7 @@ class CSDI(BaseNNImputer):
 
     def impute(
         self,
-        test_set: Union[dict, str],
+        test_set: dict | str,
         file_type: str = "hdf5",
         n_sampling_times: int = 1,
     ) -> np.ndarray:

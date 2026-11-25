@@ -1,4 +1,4 @@
-""" """
+"""Implementation of pypots.nn.modules.timellm.layers."""
 
 # Created by Wenjie Du <wdu@time-series.ai>
 # License: BSD-3-Clause
@@ -6,7 +6,7 @@
 from math import sqrt
 
 import torch
-import torch.nn as nn
+from torch import nn
 
 
 class ReprogrammingLayer(nn.Module):
@@ -14,8 +14,8 @@ class ReprogrammingLayer(nn.Module):
         self,
         d_model: int,
         n_heads: int,
-        d_k: int = None,
-        d_llm: int = None,
+        d_k: int | None = None,
+        d_llm: int | None = None,
         attention_dropout: float = 0.1,
     ):
         super().__init__()
@@ -45,7 +45,7 @@ class ReprogrammingLayer(nn.Module):
         return self.out_projection(out)
 
     def reprogramming(self, target_embedding, source_embedding, value_embedding):
-        B, L, H, E = target_embedding.shape
+        _B, _L, _H, E = target_embedding.shape
 
         scale = 1.0 / sqrt(E)
 

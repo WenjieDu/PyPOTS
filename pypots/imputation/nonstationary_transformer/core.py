@@ -6,16 +6,16 @@ and takes over the forward progress of the algorithm.
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-import torch.nn as nn
+from torch import nn
 
-from ...nn.functional.normalization import nonstationary_norm, nonstationary_denorm
+from ...nn.functional.normalization import nonstationary_denorm, nonstationary_norm
 from ...nn.modules import ModelCore
 from ...nn.modules.loss import Criterion
 from ...nn.modules.nonstationary_transformer import (
     NonstationaryTransformerEncoder,
     Projector,
 )
-from ...nn.modules.saits import SaitsLoss, SaitsEmbedding
+from ...nn.modules.saits import SaitsEmbedding, SaitsLoss
 
 
 class _NonstationaryTransformer(ModelCore):
@@ -89,7 +89,7 @@ class _NonstationaryTransformer(ModelCore):
         calc_criterion: bool = False,
     ) -> dict:
         X, missing_mask = inputs["X"], inputs["missing_mask"]
-        X_enc, means, stdev = nonstationary_norm(X, missing_mask)
+        _X_enc, means, stdev = nonstationary_norm(X, missing_mask)
 
         tau = self.tau_learner(X, stdev).exp()
         delta = self.delta_learner(X, means)
@@ -102,7 +102,7 @@ class _NonstationaryTransformer(ModelCore):
         enc_out = self.saits_embedding(X, missing_mask)
 
         # NonstationaryTransformer encoder processing
-        enc_out, attns = self.encoder(enc_out, tau=tau, delta=delta)
+        enc_out, _attns = self.encoder(enc_out, tau=tau, delta=delta)
         # project back the original data space
         reconstruction = self.output_projection(enc_out)
         reconstruction = nonstationary_denorm(reconstruction, means, stdev)

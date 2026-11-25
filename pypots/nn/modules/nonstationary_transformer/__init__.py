@@ -20,7 +20,7 @@ from .autoencoder import NonstationaryTransformerEncoder
 from .layers import DeStationaryAttention, Projector
 
 __all__ = [
-    "NonstationaryTransformerEncoder",
     "DeStationaryAttention",
+    "NonstationaryTransformerEncoder",
     "Projector",
 ]

@@ -16,13 +16,13 @@ This implementation is inspired by the official one https://github.com/Thinklab-
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-from .autoencoder import CrossformerEncoder, CrossformerDecoder
-from .layers import TwoStageAttentionLayer, ScaleBlock, CrossformerDecoderLayer
+from .autoencoder import CrossformerDecoder, CrossformerEncoder
+from .layers import CrossformerDecoderLayer, ScaleBlock, TwoStageAttentionLayer
 
 __all__ = [
-    "CrossformerEncoder",
     "CrossformerDecoder",
-    "TwoStageAttentionLayer",
-    "ScaleBlock",
     "CrossformerDecoderLayer",
+    "CrossformerEncoder",
+    "ScaleBlock",
+    "TwoStageAttentionLayer",
 ]

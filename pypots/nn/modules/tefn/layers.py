@@ -1,10 +1,10 @@
-""" """
+"""Implementation of pypots.nn.modules.tefn.layers."""
 
 # Created by Tianxiang Zhan <zhantianxianguestc@hotmail.com>
 # License: BSD-3-Clause
 
 import torch
-import torch.nn as nn
+from torch import nn
 
 
 class EvidenceMachineKernel(nn.Module):

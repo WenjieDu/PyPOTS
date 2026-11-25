@@ -18,11 +18,11 @@ This implementation is inspired by the official one https://github.com/johanndej
 # License: BSD-3-Clause
 
 from .backbone import BackboneVaDER
-from .layers import PeepholeLSTMCell, ImplicitImputation, GMMLayer
+from .layers import GMMLayer, ImplicitImputation, PeepholeLSTMCell
 
 __all__ = [
     "BackboneVaDER",
-    "PeepholeLSTMCell",
-    "ImplicitImputation",
     "GMMLayer",
+    "ImplicitImputation",
+    "PeepholeLSTMCell",
 ]

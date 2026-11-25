@@ -7,18 +7,17 @@ Data saving utilities with HDF5.
 
 import os
 from datetime import datetime
-from typing import Optional
 
 import h5py
 
-from ...utils.file import extract_parent_dir, create_dir_if_not_exist
+from ...utils.file import create_dir_if_not_exist, extract_parent_dir
 from ...utils.logging import logger
 
 
 def save_dict_into_h5(
     data_dict: dict,
     saving_path: str,
-    file_name: Optional[str] = None,
+    file_name: str | None = None,
 ) -> None:
     """Save the given data (in a dictionary) into the given h5 file.
 
@@ -110,13 +109,12 @@ def load_dict_from_h5(
                 datadict[key] = load_set(item, datadict[key])
             elif isinstance(item, h5py.Dataset):
                 value = item[()]
-                if "_type_" in item.attrs:
-                    # in case that datetime type of data was saved as timestamps
-                    if item.attrs["_type_"].astype(str) == "datetime":
-                        if hasattr(value, "__iter__"):
-                            value = [datetime.fromtimestamp(ts) for ts in value]
-                        else:
-                            value = datetime.fromtimestamp(value)
+                # in case that datetime type of data was saved as timestamps
+                if "_type_" in item.attrs and item.attrs["_type_"].astype(str) == "datetime":
+                    if hasattr(value, "__iter__"):
+                        value = [datetime.fromtimestamp(ts) for ts in value]
+                    else:
+                        value = datetime.fromtimestamp(value)
                 datadict[key] = value
 
         return datadict

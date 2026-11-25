@@ -5,7 +5,7 @@ Dataset class for the imputation model BRITS.
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-from typing import Union, Iterable
+from collections.abc import Iterable
 
 import torch
 from pygrinder import fill_and_get_mask_torch
@@ -43,7 +43,7 @@ class DatasetForBRITS(BaseDataset):
 
     def __init__(
         self,
-        data: Union[dict, str],
+        data: dict | str,
         return_X_ori: bool,
         return_y: bool,
         file_type: str = "hdf5",

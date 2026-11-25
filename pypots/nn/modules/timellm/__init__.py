@@ -19,7 +19,6 @@ This implementation is inspired by the official one https://github.com/KimMeen/T
 
 from .backbone import BackboneTimeLLM
 
-
 __all__ = [
     "BackboneTimeLLM",
 ]

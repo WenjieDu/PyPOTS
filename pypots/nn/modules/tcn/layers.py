@@ -1,9 +1,9 @@
-""" """
+"""Implementation of pypots.nn.modules.tcn.layers."""
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-import torch.nn as nn
+from torch import nn
 from torch.nn.utils import weight_norm
 
 

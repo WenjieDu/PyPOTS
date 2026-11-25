@@ -1,10 +1,10 @@
-""" """
+"""Implementation of pypots.nn.modules.usgan.layers."""
 
 # Created by Jun Wang <jwangfx@connect.ust.hk> and Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
 import torch
-import torch.nn as nn
+from torch import nn
 
 from ..rnn_fallback import gru as device_adaptive_gru
 

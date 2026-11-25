@@ -7,7 +7,7 @@ and takes over the forward progress of the algorithm.
 # License: BSD-3-Clause
 
 import torch
-import torch.nn as nn
+from torch import nn
 
 from ...nn.modules import ModelCore
 from ...nn.modules.csdi import BackboneCSDI
@@ -66,7 +66,7 @@ class _CSDI(ModelCore):
         return pe
 
     def get_side_info(self, observed_tp, cond_mask, feature_id):
-        B, K, L = cond_mask.shape
+        B, _K, L = cond_mask.shape
         device = observed_tp.device
         time_embed = self.time_embedding(observed_tp, self.d_time_embedding)  # (B,L,emb)
         time_embed = time_embed.to(device)

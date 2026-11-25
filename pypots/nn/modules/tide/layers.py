@@ -1,12 +1,12 @@
-""" """
+"""Implementation of pypots.nn.modules.tide.layers."""
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
 import torch
 import torch.fft
-import torch.nn as nn
 import torch.nn.functional as F
+from torch import nn
 
 
 class LayerNorm(nn.Module):

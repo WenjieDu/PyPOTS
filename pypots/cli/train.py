@@ -11,10 +11,10 @@ import click
 
 from .utils import (
     SUPPORTED_TASKS,
-    load_config,
-    merge_config_with_overrides,
     get_model_class,
     get_optimizer_class,
+    load_config,
+    merge_config_with_overrides,
 )
 
 
