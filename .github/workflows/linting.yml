@@ -19,16 +19,17 @@ jobs:
         runs-on: ubuntu-latest
         timeout-minutes: 15
         steps:
-            - uses: actions/checkout@v6
+            - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
               with:
                   fetch-depth: 0
                   persist-credentials: false
-            - uses: actions/setup-python@v6
+            - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
               with:
                   python-version: '3.13'
 
             - name: Install lint tools
-              run: python -m pip install ruff==0.17.6 pre-commit
+              run: |
+                  python -m pip install --only-binary=:all: --require-hashes -r requirements/requirements_lint.txt
 
             - name: Ruff lint and formatting
               run: |
@@ -62,15 +63,19 @@ jobs:
         runs-on: ubuntu-latest
         timeout-minutes: 10
         steps:
-            - uses: actions/checkout@v6
+            - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
               with:
                   persist-credentials: false
-            - uses: actions/setup-go@v6
-              with:
-                  go-version: '1.24'
-                  cache: false
-            - name: Install actionlint
-              run: go install github.com/rhysd/actionlint/cmd/actionlint@v1.7.7
+            - name: Install verified actionlint release
+              run: |
+                  archive="$RUNNER_TEMP/actionlint_1.7.7_linux_amd64.tar.gz"
+                  curl --fail --silent --show-error --location --retry 3 \
+                      https://github.com/rhysd/actionlint/releases/download/v1.7.7/actionlint_1.7.7_linux_amd64.tar.gz \
+                      --output "$archive"
+                  echo "023070a287cd8cccd71515fedc843f1985bf96c436b7effaecce67290e7e0757  $archive" | sha256sum --check
+                  mkdir -p "$RUNNER_TEMP/actionlint-bin"
+                  tar -xzf "$archive" -C "$RUNNER_TEMP/actionlint-bin" actionlint
+                  echo "$RUNNER_TEMP/actionlint-bin" >> "$GITHUB_PATH"
             - name: Validate workflow definitions
               run: |
                   actionlint -shellcheck=

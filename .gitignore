@@ -36,3 +36,7 @@ docs/_build
 
 # Track localized READMEs even when a global ignore excludes Markdown files
 !/i18n/README_*.md
+
+# Track maintainer documentation even with global Markdown ignores
+!/.github/SECURITY_MAINTENANCE.md
+!/.github/RELEASE_MAINTENANCE.md
