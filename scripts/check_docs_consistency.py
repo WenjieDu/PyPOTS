@@ -19,27 +19,33 @@ def model_name(value):
     return value.replace("|tsa-logo|", "").replace("`", "").replace("__", "").strip()
 
 
+def normalize_task_cell(task, cell, name, source):
+    """Validate a task marker and its example link."""
+    links = EXAMPLE_URL.findall(cell)
+    marked = "✅" in cell
+    if links:
+        if len(links) != 1 or not marked or not links[0].startswith(f"examples/{task}/"):
+            raise ValueError(f"{source}: invalid {name} / {task} example link: {cell}")
+        if not (ROOT / links[0]).is_file():
+            raise ValueError(f"{source}: missing {links[0]}")
+    elif marked and name != "Time-Series.AI":
+        raise ValueError(f"{source}: {name} / {task} is marked but has no example")
+    elif cell and not marked:
+        raise ValueError(f"{source}: unexpected {name} / {task} cell: {cell}")
+    return marked, tuple(links)
+
+
+def normalize_model_row(row, source):
+    """Validate the model row shape and normalize its six task cells."""
+    if len(row) != 9:
+        raise ValueError(f"{source}: expected 9 columns, got {len(row)} in {row}")
+    name = model_name(row[1])
+    cells = tuple(normalize_task_cell(task, cell, name, source) for task, cell in zip(TASK_DIRS, row[2:8], strict=True))
+    return name, cells
+
+
 def normalize(rows, source):
-    result = []
-    for row in rows:
-        if len(row) != 9:
-            raise ValueError(f"{source}: expected 9 columns, got {len(row)} in {row}")
-        name = model_name(row[1])
-        cells = []
-        for task, cell in zip(TASK_DIRS, row[2:8], strict=True):
-            links = EXAMPLE_URL.findall(cell)
-            marked = "✅" in cell
-            if links:
-                if len(links) != 1 or not marked or not links[0].startswith(f"examples/{task}/"):
-                    raise ValueError(f"{source}: invalid {name} / {task} example link: {cell}")
-                if not (ROOT / links[0]).is_file():
-                    raise ValueError(f"{source}: missing {links[0]}")
-            elif marked and name != "Time-Series.AI":
-                raise ValueError(f"{source}: {name} / {task} is marked but has no example")
-            elif cell and not marked:
-                raise ValueError(f"{source}: unexpected {name} / {task} cell: {cell}")
-            cells.append((marked, tuple(links)))
-        result.append((name, tuple(cells)))
+    result = [normalize_model_row(row, source) for row in rows]
     if not result or len({name for name, _ in result}) != len(result):
         raise ValueError(f"{source}: empty model table or duplicate model names")
     return result

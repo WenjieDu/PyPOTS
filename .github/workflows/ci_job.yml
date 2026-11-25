@@ -101,7 +101,7 @@ jobs:
 
             - name: Submit coverage to Coveralls
               if: inputs.coverage && success()
-              uses: coverallsapp/github-action@v2
+              uses: coverallsapp/github-action@8d6379e14d29928660c4ba802d8e85393440b329 # v2
               continue-on-error: true
               with:
                   github-token: ${{ secrets.GITHUB_TOKEN }}
