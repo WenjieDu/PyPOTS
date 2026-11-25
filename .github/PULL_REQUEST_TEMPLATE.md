@@ -2,7 +2,7 @@
 
 ## Summary
 
-<!-- Describe what changed, why, and the affected APIs/tasks. Link a related issue or discussion when applicable. -->
+<!-- Describe what changed, why, and the affected APIs/tasks. Use a separate closing directive (e.g. Closes #123) for each issue this PR fully resolves. Use a regular issue reference for related or partially addressed issues. -->
 
 ## Validation
 

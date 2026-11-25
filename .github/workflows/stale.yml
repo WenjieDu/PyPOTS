@@ -16,7 +16,37 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  labels:
+    if: github.ref_name == github.event.repository.default_branch
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Ensure stale policy labels exist
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const labels = {
+              "stale-question": "Inactive question in its closing grace period",
+              "stale-reproduction": "Unconfirmed bug awaiting reproduction information",
+              "stale-completed": "Completed issue in its closing grace period",
+            };
+            for (const [name, description] of Object.entries(labels)) {
+              const params = { ...context.repo, name };
+              try {
+                await github.rest.issues.getLabel(params);
+              } catch (error) {
+                if (error.status !== 404) throw error;
+                try {
+                  await github.rest.issues.createLabel({ ...params, color: "ededed", description });
+                } catch (createError) {
+                  if (createError.status !== 422) throw createError;
+                  await github.rest.issues.getLabel(params);
+                }
+              }
+            }
+
   questions:
+    needs: labels
     if: github.ref_name == github.event.repository.default_branch
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -44,6 +74,7 @@ jobs:
           operations-per-run: 30
 
   reproduction:
+    needs: labels
     if: github.ref_name == github.event.repository.default_branch
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -72,6 +103,7 @@ jobs:
           operations-per-run: 30
 
   completed:
+    needs: labels
     if: github.ref_name == github.event.repository.default_branch
     runs-on: ubuntu-latest
     timeout-minutes: 10
