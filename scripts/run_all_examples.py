@@ -49,17 +49,14 @@ def test_standalone_examples_can_run(script_path):
     env = os.environ.copy()
     if env.get("PYPOTS_EXAMPLE_SCOPE") in {"offline", "smoke"}:
         env.update(HF_HUB_OFFLINE="1", TRANSFORMERS_OFFLINE="1")
-    try:
-        result = subprocess.run(
-            [sys.executable, str(script_path)],
-            capture_output=True,
-            text=True,
-            timeout=300,
-            env=env,
-            check=False,
-        )
-    except subprocess.TimeoutExpired as error:
-        pytest.fail(f"{script_path.name} timed out after {error.timeout} seconds")
+    result = subprocess.run(
+        [sys.executable, str(script_path)],
+        capture_output=True,
+        text=True,
+        timeout=300,
+        env=env,
+        check=False,
+    )
     assert result.returncode == 0, (
         f"{script_path.name} exited with {result.returncode}\nstdout:\n{result.stdout}\nstderr:\n{result.stderr}"
     )
