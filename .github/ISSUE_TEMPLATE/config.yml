@@ -15,3 +15,7 @@ contact_links:
   - name: Report a security vulnerability privately
     url: https://github.com/WenjieDu/PyPOTS/security/advisories/new
     about: Do not disclose vulnerability details in a public issue. See SECURITY.md for the reporting policy and fallback contact.
+
+  - name: Report a community conduct concern privately
+    url: https://github.com/WenjieDu/PyPOTS/blob/main/CODE_OF_CONDUCT.md#enforcement
+    about: For harassment, discrimination, or other conduct concerns, use the private reporting process in our Code of Conduct.

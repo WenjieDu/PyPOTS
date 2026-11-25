@@ -49,6 +49,8 @@ The following are usually handled as regular bug reports or upstream issues, rat
 
 For non-security bugs, please open a [regular GitHub issue](https://github.com/WenjieDu/PyPOTS/issues) instead of a private security report.
 
+For harassment, discrimination, or other community conduct concerns, follow the private reporting process in our [Code of Conduct](CODE_OF_CONDUCT.md).
+
 PyPOTS is a Python machine-learning library, **not a sandbox**. Do not execute untrusted code or load untrusted serialized models/checkpoints. Some Python and PyTorch serialization formats can execute code when deserialized. Always verify the provenance of model artifacts and dependencies before using them.
 
 ## Responsible security research
