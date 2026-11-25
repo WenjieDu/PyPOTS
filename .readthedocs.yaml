@@ -29,7 +29,8 @@ build:
         post_install:
             - python -m pip check
             # Fail early if the required syntax-highlighting plugins are missing.
-            - python -c "from pygments.styles import get_style_by_name; get_style_by_name('a11y-light'); get_style_by_name('a11y-dark')"
+            - python -m pygments -S a11y-light -f html
+            - python -m pygments -S a11y-dark -f html
 
 python:
     install:
