@@ -6,7 +6,7 @@ The optimizer wrapper for PyTorch Adagrad.
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-from typing import Iterable, Optional
+from collections.abc import Iterable
 
 from torch.optim import Adagrad as torch_Adagrad
 
@@ -46,7 +46,7 @@ class Adagrad(Optimizer):
         weight_decay: float = 0.01,
         initial_accumulator_value: float = 0.01,  # it is set as 0 in the torch implementation, but delta shouldn't be 0
         eps: float = 1e-08,
-        lr_scheduler: Optional[LRScheduler] = None,
+        lr_scheduler: LRScheduler | None = None,
     ):
         super().__init__(lr, lr_scheduler)
         self.lr_decay = lr_decay

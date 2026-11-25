@@ -6,15 +6,13 @@ The implementation of TimeMixer++ for the partially-observed time-series forecas
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-from typing import Union, Optional
-
 import torch
 
-from .core import _TimeMixerPP
-from ..base import BaseNNForecaster
-from ...nn.modules.loss import Criterion, MSE
+from ...nn.modules.loss import MSE, Criterion
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
+from ..base import BaseNNForecaster
+from .core import _TimeMixerPP
 
 
 class TimeMixerPP(BaseNNForecaster):
@@ -146,14 +144,14 @@ class TimeMixerPP(BaseNNForecaster):
         use_norm: bool = False,
         batch_size: int = 32,
         epochs: int = 100,
-        patience: Optional[int] = None,
-        training_loss: Union[Criterion, type] = MSE,
-        validation_metric: Union[Criterion, type] = MSE,
-        optimizer: Union[Optimizer, type] = Adam,
+        patience: int | None = None,
+        training_loss: Criterion | type = MSE,
+        validation_metric: Criterion | type = MSE,
+        optimizer: Optimizer | type = Adam,
         num_workers: int = 0,
-        device: Optional[Union[str, torch.device, list]] = None,
-        saving_path: Optional[str] = None,
-        model_saving_strategy: Optional[str] = "best",
+        device: str | torch.device | list | None = None,
+        saving_path: str | None = None,
+        model_saving_strategy: str | None = "best",
         verbose: bool = True,
     ):
         super().__init__(

@@ -26,7 +26,7 @@ def _evaluate_imputation_forecasting(task, pred_data, gt_data, metrics_to_comput
     import numpy as np
     import torch
 
-    from ..nn.functional import calc_mse, calc_mae, calc_rmse, calc_mre
+    from ..nn.functional import calc_mae, calc_mre, calc_mse, calc_rmse
     from ..utils.logging import logger
 
     pred_key = task  # "imputation" or "forecasting"

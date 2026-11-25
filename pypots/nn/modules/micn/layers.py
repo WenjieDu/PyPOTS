@@ -1,11 +1,11 @@
-""" """
+"""Implementation of pypots.nn.modules.micn.layers."""
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
 import torch
 import torch.fft
-import torch.nn as nn
+from torch import nn
 
 from ..autoformer import SeriesDecompositionBlock
 
@@ -18,10 +18,16 @@ class MIC(nn.Module):
     def __init__(
         self,
         feature_size=512,
-        decomp_kernel=[32],
-        conv_kernel=[24],
-        isometric_kernel=[18, 6],
+        decomp_kernel=None,
+        conv_kernel=None,
+        isometric_kernel=None,
     ):
+        if isometric_kernel is None:
+            isometric_kernel = [18, 6]
+        if conv_kernel is None:
+            conv_kernel = [24]
+        if decomp_kernel is None:
+            decomp_kernel = [32]
         super().__init__()
         self.conv_kernel = conv_kernel
 
@@ -85,7 +91,7 @@ class MIC(nn.Module):
         self.drop = torch.nn.Dropout(0.05)
 
     def conv_trans_conv(self, input, conv1d, conv1d_trans, isometric):
-        batch, seq_len, channel = input.shape
+        _batch, seq_len, _channel = input.shape
         x = input.permute(0, 2, 1)
 
         # downsampling convolution
@@ -109,7 +115,7 @@ class MIC(nn.Module):
         # multi-scale
         multi = []
         for i in range(len(self.conv_kernel)):
-            src_out, trend1 = self.decomp[i](src)
+            src_out, _trend1 = self.decomp[i](src)
             src_out = self.conv_trans_conv(src_out, self.conv[i], self.conv_trans[i], self.isometric_conv[i])
             multi.append(src_out)
 
@@ -130,11 +136,17 @@ class SeasonalPrediction(nn.Module):
         self,
         embedding_size=512,
         d_layers=1,
-        decomp_kernel=[32],
+        decomp_kernel=None,
         c_out=1,
-        conv_kernel=[2, 4],
-        isometric_kernel=[18, 6],
+        conv_kernel=None,
+        isometric_kernel=None,
     ):
+        if isometric_kernel is None:
+            isometric_kernel = [18, 6]
+        if conv_kernel is None:
+            conv_kernel = [2, 4]
+        if decomp_kernel is None:
+            decomp_kernel = [32]
         super().__init__()
 
         self.mic = nn.ModuleList(

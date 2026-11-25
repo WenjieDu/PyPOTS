@@ -8,7 +8,7 @@ and takes over the forward progress of the algorithm.
 # License: BSD-3-Clause
 
 import torch
-import torch.nn as nn
+from torch import nn
 
 from ...nn.modules import ModelCore
 from ...nn.modules.loss import Criterion

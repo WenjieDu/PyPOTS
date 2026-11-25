@@ -1,9 +1,9 @@
-""" """
+"""Implementation of pypots.nn.modules.segrnn.backbone."""
 
 # Created by Shengsheng Lin
 
 import torch
-import torch.nn as nn
+from torch import nn
 
 
 class BackboneSegRNN(nn.Module):

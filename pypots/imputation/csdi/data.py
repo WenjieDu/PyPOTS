@@ -5,7 +5,7 @@ Dataset class for the imputation model CSDI.
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-from typing import Union, Iterable
+from collections.abc import Iterable
 
 import numpy as np
 import torch
@@ -29,7 +29,7 @@ class DatasetForCSDI(BaseDataset):
 
     def __init__(
         self,
-        data: Union[dict, str],
+        data: dict | str,
         target_strategy: str,
         return_X_ori: bool,
         file_type: str = "hdf5",
@@ -105,7 +105,7 @@ class DatasetForCSDI(BaseDataset):
             if self.target_strategy == "random":
                 cond_mask = self.get_rand_mask(observed_mask)
             else:
-                if "for_pattern_mask" in self.data.keys():
+                if "for_pattern_mask" in self.data:
                     for_pattern_mask = torch.from_numpy(self.data["for_pattern_mask"][idx]).to(torch.float32)
                 else:
                     previous_sample = self.X[idx - 1]
@@ -116,7 +116,7 @@ class DatasetForCSDI(BaseDataset):
 
         observed_tp = (
             torch.arange(0, self.n_steps, dtype=torch.float32)
-            if "time_points" not in self.data.keys()
+            if "time_points" not in self.data
             else torch.from_numpy(self.data["time_points"][idx]).to(torch.float32)
         )
 
@@ -179,7 +179,7 @@ class DatasetForCSDI(BaseDataset):
             if self.target_strategy == "random":
                 cond_mask = self.get_rand_mask(observed_mask)
             else:
-                if "for_pattern_mask" in self.data.keys():
+                if "for_pattern_mask" in self.data:
                     for_pattern_mask = torch.from_numpy(self.file_handle["for_pattern_mask"][idx]).to(torch.float32)
                 else:
                     previous_sample = torch.from_numpy(self.file_handle["X"][idx - 1]).to(torch.float32)
@@ -190,7 +190,7 @@ class DatasetForCSDI(BaseDataset):
 
         observed_tp = (
             torch.arange(0, self.n_steps, dtype=torch.float32)
-            if "time_points" not in self.file_handle.keys()
+            if "time_points" not in self.file_handle
             else torch.from_numpy(self.file_handle["time_points"][idx]).to(torch.float32)
         )
 
@@ -213,7 +213,7 @@ class TestDatasetForCSDI(DatasetForCSDI):
 
     def __init__(
         self,
-        data: Union[dict, str],
+        data: dict | str,
         return_X_ori: bool,
         file_type: str = "hdf5",
     ):
@@ -251,7 +251,7 @@ class TestDatasetForCSDI(DatasetForCSDI):
 
         observed_tp = (
             torch.arange(0, self.n_steps, dtype=torch.float32)
-            if "time_points" not in self.data.keys()
+            if "time_points" not in self.data
             else torch.from_numpy(self.data["time_points"][idx]).to(torch.float32)
         )
 
@@ -304,7 +304,7 @@ class TestDatasetForCSDI(DatasetForCSDI):
 
         observed_tp = (
             torch.arange(0, self.n_steps, dtype=torch.float32)
-            if "time_points" not in self.file_handle.keys()
+            if "time_points" not in self.file_handle
             else torch.from_numpy(self.file_handle["time_points"][idx]).to(torch.float32)
         )
 

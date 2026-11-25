@@ -1,10 +1,10 @@
-""" """
+"""Implementation of pypots.nn.modules.timemixer.layers."""
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
 import torch
-import torch.nn as nn
+from torch import nn
 
 from ..autoformer import SeriesDecompositionBlock
 
@@ -22,7 +22,7 @@ class DFT_series_decomp(nn.Module):
         xf = torch.fft.rfft(x)
         freq = abs(xf)
         freq[0] = 0
-        top_k_freq, top_list = torch.topk(freq, self.top_k)
+        top_k_freq, _top_list = torch.topk(freq, self.top_k)
         xf[freq <= top_k_freq.min()] = 0
         x_season = torch.fft.irfft(xf)
         x_trend = x - x_season

@@ -5,7 +5,7 @@ Dataset class for the clustering model VaDER.
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-from typing import Union, Iterable
+from collections.abc import Iterable
 
 from ...data.dataset.base import BaseDataset
 
@@ -39,7 +39,7 @@ class DatasetForVaDER(BaseDataset):
 
     def __init__(
         self,
-        data: Union[dict, str],
+        data: dict | str,
         return_y: bool = True,
         file_type: str = "hdf5",
     ):

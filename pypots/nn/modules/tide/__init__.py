@@ -17,11 +17,11 @@ https://github.com/google-research/google-research/blob/master/tide and https://
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-from .autoencoder import TideEncoder, TideDecoder
+from .autoencoder import TideDecoder, TideEncoder
 from .layers import ResBlock
 
 __all__ = [
-    "TideEncoder",
-    "TideDecoder",
     "ResBlock",
+    "TideDecoder",
+    "TideEncoder",
 ]

@@ -1,17 +1,15 @@
-""" """
+"""Implementation of pypots.nn.modules.usgan.backbone."""
 
 # Created by Jun Wang <jwangfx@connect.ust.hk> and Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-from typing import Tuple
-
 import torch
-import torch.nn as nn
 import torch.nn.functional as F
+from torch import nn
 
-from .layers import UsganDiscriminator
-from ..brits import BackboneBRITS
 from ....nn.functional import calc_mse
+from ..brits import BackboneBRITS
+from .layers import UsganDiscriminator
 
 
 class BackboneUSGAN(nn.Module):
@@ -41,7 +39,7 @@ class BackboneUSGAN(nn.Module):
         self,
         inputs: dict,
         training_object: str = "generator",
-    ) -> Tuple[torch.Tensor, ...]:
+    ) -> tuple[torch.Tensor, ...]:
         (
             imputed_data,
             f_reconstruction,

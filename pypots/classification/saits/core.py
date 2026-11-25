@@ -8,7 +8,7 @@ and takes over the forward progress of the algorithm.
 # License: BSD-3-Clause
 
 import torch
-import torch.nn as nn
+from torch import nn
 
 from ...nn.modules import ModelCore
 from ...nn.modules.loss import Criterion
@@ -79,8 +79,8 @@ class _SAITS(ModelCore):
 
         # SAITS processing
         (
-            X_tilde_1,
-            X_tilde_2,
+            _X_tilde_1,
+            _X_tilde_2,
             X_tilde_3,
             first_DMSA_attn_weights,
             second_DMSA_attn_weights,

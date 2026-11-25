@@ -1,4 +1,4 @@
-""" """
+"""Implementation of pypots.nn.modules.moment.modules."""
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
@@ -11,8 +11,8 @@ import numpy.typing as npt
 import torch
 from torch import nn
 
-from .masking import Masking
 from ....nn.modules.transformer.embedding import PositionalEncoding
+from .masking import Masking
 
 
 @dataclass

@@ -1,9 +1,9 @@
-""" """
+"""Implementation of pypots.forecasting.segrnn.core."""
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-import torch.nn as nn
+from torch import nn
 
 from ...nn.modules.loss import Criterion
 from ...nn.modules.saits import SaitsEmbedding

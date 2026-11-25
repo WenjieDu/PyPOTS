@@ -45,8 +45,6 @@ from __future__ import annotations
 
 # ACKNOWLEDGEMENT:
 # https://github.com/soda-inria/tabicl/blob/main/src/tabicl/_model/attention.py
-from typing import Optional
-
 import torch
 from torch import Tensor
 from torch.nn import functional as F
@@ -55,7 +53,7 @@ from .rope import RotaryEmbedding
 
 
 def sdpa_with_flattened_batch(
-    q: Tensor, k: Tensor, v: Tensor, attn_mask: Optional[Tensor] = None, dropout_p: float = 0.0
+    q: Tensor, k: Tensor, v: Tensor, attn_mask: Tensor | None = None, dropout_p: float = 0.0
 ) -> Tensor:
     """Applies scaled dot-product attention with flattened batch dimensions.
 
@@ -114,9 +112,9 @@ def multi_head_attention_forward(
     out_proj_weight: Tensor,
     out_proj_bias: Tensor,
     training: bool = True,
-    key_padding_mask: Optional[Tensor] = None,
-    attn_mask: Optional[Tensor | int] = None,
-    rope: Optional[RotaryEmbedding] = None,
+    key_padding_mask: Tensor | None = None,
+    attn_mask: Tensor | int | None = None,
+    rope: RotaryEmbedding | None = None,
 ) -> Tensor:
     """Multi-head attention with support for rotary position embeddings
     as well as specialized processing when attn_mask is an integer.

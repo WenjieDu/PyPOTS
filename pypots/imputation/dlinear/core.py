@@ -6,15 +6,13 @@ and takes over the forward progress of the algorithm.
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-from typing import Optional
-
-import torch.nn as nn
+from torch import nn
 
 from ...nn.modules import ModelCore
 from ...nn.modules.autoformer import SeriesDecompositionBlock
 from ...nn.modules.dlinear import BackboneDLinear
 from ...nn.modules.loss import Criterion
-from ...nn.modules.saits import SaitsLoss, SaitsEmbedding
+from ...nn.modules.saits import SaitsEmbedding, SaitsLoss
 
 
 class _DLinear(ModelCore):
@@ -24,7 +22,7 @@ class _DLinear(ModelCore):
         n_features: int,
         moving_avg_window_size: int,
         individual: bool,
-        d_model: Optional[int],
+        d_model: int | None,
         ORT_weight: float,
         MIT_weight: float,
         training_loss: Criterion,

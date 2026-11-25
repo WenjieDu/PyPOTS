@@ -299,11 +299,14 @@ def main():
                             func = item.value.func
                             if isinstance(func, ast.Name):
                                 temp_name = func.id
-                                if temp_name[0].isupper() or temp_name == "iTransformer":
-                                    if temp_name not in ["Adam", "SGD", "SummaryWriter"]:
-                                        model_name = temp_name
-                                        init_code = extract_clean_init_code(source, item.value)
-                                        break
+                                if (temp_name[0].isupper() or temp_name == "iTransformer") and temp_name not in [
+                                    "Adam",
+                                    "SGD",
+                                    "SummaryWriter",
+                                ]:
+                                    model_name = temp_name
+                                    init_code = extract_clean_init_code(source, item.value)
+                                    break
 
             if model_name and init_code:
                 example_code = TEMPLATES[task].format(model_name=model_name, init_code=init_code)

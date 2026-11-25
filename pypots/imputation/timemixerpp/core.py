@@ -1,11 +1,11 @@
-""" """
+"""Implementation of pypots.imputation.timemixerpp.core."""
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
 from ...nn.functional import (
-    nonstationary_norm,
     nonstationary_denorm,
+    nonstationary_norm,
 )
 from ...nn.modules import ModelCore
 from ...nn.modules.loss import Criterion

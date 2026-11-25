@@ -1,12 +1,12 @@
-""" """
+"""Implementation of pypots.imputation.tefn.core."""
 
 # Created by Tianxiang Zhan <zhantianxianguestc@hotmail.com>
 # License: BSD-3-Clause
 
-from ...nn.functional import nonstationary_norm, nonstationary_denorm
+from ...nn.functional import nonstationary_denorm, nonstationary_norm
 from ...nn.modules import ModelCore
 from ...nn.modules.loss import Criterion
-from ...nn.modules.saits import SaitsLoss, SaitsEmbedding
+from ...nn.modules.saits import SaitsEmbedding, SaitsLoss
 from ...nn.modules.tefn import BackboneTEFN
 
 

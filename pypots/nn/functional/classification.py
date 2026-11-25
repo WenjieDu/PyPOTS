@@ -5,8 +5,6 @@ Evaluation metrics related to classification.
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-from typing import Tuple
-
 import numpy as np
 from sklearn import metrics
 
@@ -90,7 +88,7 @@ def calc_binary_classification_metrics(
     binary_targets[~mask] = mask_val
 
     precision, recall, f1 = calc_precision_recall_f1(prediction_categories, targets, pos_label)
-    pr_auc, precisions, recalls, _ = calc_pr_auc(binary_predictions, binary_targets, pos_label)
+    _pr_auc, precisions, recalls, _ = calc_pr_auc(binary_predictions, binary_targets, pos_label)
     ROC_AUC, fprs, tprs, _ = calc_roc_auc(binary_predictions, binary_targets, pos_label)
     PR_AUC = metrics.auc(recalls, precisions)
     classification_metrics = {
@@ -113,7 +111,7 @@ def calc_precision_recall_f1(
     prob_predictions: np.ndarray,
     targets: np.ndarray,
     pos_label: int = 1,
-) -> Tuple[float, float, float]:
+) -> tuple[float, float, float]:
     """Calculate precision, recall, and F1-score of model predictions.
 
     Parameters
@@ -148,7 +146,7 @@ def calc_pr_auc(
     prob_predictions: np.ndarray,
     targets: np.ndarray,
     pos_label: int = 1,
-) -> Tuple[float, np.ndarray, np.ndarray, np.ndarray]:
+) -> tuple[float, np.ndarray, np.ndarray, np.ndarray]:
     """Calculate precisions, recalls, and area under PR curve of model predictions.
 
     Parameters
@@ -187,7 +185,7 @@ def calc_roc_auc(
     prob_predictions: np.ndarray,
     targets: np.ndarray,
     pos_label: int = 1,
-) -> Tuple[float, np.ndarray, np.ndarray, np.ndarray]:
+) -> tuple[float, np.ndarray, np.ndarray, np.ndarray]:
     """Calculate false positive rates, true positive rates, and area under AUC curve of model predictions.
 
     Parameters

@@ -61,8 +61,6 @@ Vendored from the TS-ICL model architecture: https://github.com/EDF-Lab/ts-icl
 
 from __future__ import annotations
 
-from typing import Optional
-
 import torch
 from einops import rearrange, repeat
 from torch import einsum, nn
@@ -153,8 +151,8 @@ class CrossAttention(nn.Module):
         x: torch.Tensor,
         k: torch.Tensor,
         v: torch.Tensor,
-        mask: Optional[torch.Tensor] = None,
-        pos: Optional[torch.Tensor] = None,
+        mask: torch.Tensor | None = None,
+        pos: torch.Tensor | None = None,
     ) -> torch.Tensor:
 
         h = self.heads
@@ -169,7 +167,7 @@ class CrossAttention(nn.Module):
         v = self.to_v(v)  # (bs, seq_len_kv, d_model)
 
         # sort per head:
-        q, k, v = map(lambda t: rearrange(t, "b n (h d) -> (b h) n d", h=h), (q, k, v))
+        q, k, v = (rearrange(t, "b n (h d) -> (b h) n d", h=h) for t in (q, k, v))
 
         # compute per-head attention scores:
         sim = einsum("b i d, b j d -> b i j", q, k) * self.scale  # (bs x n_heads, seq_len, seq_len_kv)
@@ -208,8 +206,8 @@ class MultiScaleAttention(nn.Module):
     def __init__(
         self,
         query_dim: int,
-        context_dim: Optional[int] = None,
-        out_dim: Optional[int] = None,
+        context_dim: int | None = None,
+        out_dim: int | None = None,
         heads: int = 8,
         dim_head: int = 64,
         dropout: float = 0.0,
@@ -251,9 +249,9 @@ class MultiScaleAttention(nn.Module):
     def forward(
         self,
         x: torch.Tensor,
-        context: Optional[torch.Tensor] = None,
-        mask: Optional[torch.Tensor] = None,
-        pos: Optional[torch.Tensor] = None,
+        context: torch.Tensor | None = None,
+        mask: torch.Tensor | None = None,
+        pos: torch.Tensor | None = None,
     ) -> torch.Tensor:
 
         h = self.heads
@@ -267,9 +265,7 @@ class MultiScaleAttention(nn.Module):
         # get kv:
         context = default(context, x)
         k, v = self.to_kv(context).chunk(2, dim=-1)  # (bs, seq_len_kv, d_model)
-        k, v = map(
-            lambda t: rearrange(t, "b n (h d) -> (b h) n d", h=h), (k, v)
-        )  # (bs x n_heads, seq_len_kv, dim_head)
+        k, v = (rearrange(t, "b n (h d) -> (b h) n d", h=h) for t in (k, v))  # (bs x n_heads, seq_len_kv, dim_head)
 
         # the s stands for scale as we have queries at different frequency bandwidths:
         q = rearrange(q, "b n s (h d) -> (b h) s n d", h=h)  # (bs x n_heads, num_bandwidth, seq_len, dim_head)
@@ -315,8 +311,8 @@ class Attention(nn.Module):
     def __init__(
         self,
         query_dim: int,
-        context_dim: Optional[int] = None,
-        out_dim: Optional[int] = None,
+        context_dim: int | None = None,
+        out_dim: int | None = None,
         heads: int = 8,
         dim_head: int = 64,
         dropout: float = 0.0,
@@ -357,9 +353,9 @@ class Attention(nn.Module):
     def forward(
         self,
         x: torch.Tensor,
-        context: Optional[torch.Tensor] = None,
-        mask: Optional[torch.Tensor] = None,
-        pos: Optional[torch.Tensor] = None,
+        context: torch.Tensor | None = None,
+        mask: torch.Tensor | None = None,
+        pos: torch.Tensor | None = None,
     ) -> torch.Tensor:
 
         h = self.heads
@@ -375,7 +371,7 @@ class Attention(nn.Module):
         k, v = self.to_kv(context).chunk(2, dim=-1)  # (bs, seq_len_kv, d_model)
 
         # rearrange per head:
-        q, k, v = map(lambda t: rearrange(t, "b n (h d) -> (b h) n d", h=h), (q, k, v))
+        q, k, v = (rearrange(t, "b n (h d) -> (b h) n d", h=h) for t in (q, k, v))
 
         # compute dot-product attention:
         sim = einsum("b i d, b j d -> b i j", q, k) * self.scale  # (bs x n_heads, seq_len, seq_len_kv)

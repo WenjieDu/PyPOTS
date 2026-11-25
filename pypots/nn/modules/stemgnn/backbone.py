@@ -1,11 +1,11 @@
-""" """
+"""Implementation of pypots.nn.modules.stemgnn.backbone."""
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
 import torch
-import torch.nn as nn
 import torch.nn.functional as F
+from torch import nn
 
 from .layers import StockBlockLayer
 
@@ -95,7 +95,7 @@ class BackboneStemGNN(nn.Module):
 
     def self_graph_attention(self, input):
         input = input.permute(0, 2, 1).contiguous()
-        bat, N, fea = input.size()
+        bat, N, _fea = input.size()
         key = torch.matmul(input, self.weight_key)
         query = torch.matmul(input, self.weight_query)
         data = key.repeat(1, 1, N).view(bat, N * N, 1) + query.repeat(1, N, 1)

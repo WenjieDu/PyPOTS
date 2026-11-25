@@ -8,13 +8,13 @@ and takes over the forward progress of the algorithm.
 
 from ...nn.modules import ModelCore
 from ...nn.modules.etsformer import (
-    ETSformerEncoderLayer,
-    ETSformerEncoder,
-    ETSformerDecoderLayer,
     ETSformerDecoder,
+    ETSformerDecoderLayer,
+    ETSformerEncoder,
+    ETSformerEncoderLayer,
 )
 from ...nn.modules.loss import Criterion
-from ...nn.modules.saits import SaitsLoss, SaitsEmbedding
+from ...nn.modules.saits import SaitsEmbedding, SaitsLoss
 
 
 class _ETSformer(ModelCore):

@@ -5,7 +5,7 @@ The base dataset class.
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-from typing import Union, Optional, Tuple, Iterable
+from collections.abc import Iterable
 
 import h5py
 import numpy as np
@@ -15,9 +15,9 @@ from pygrinder import fill_and_get_mask_torch
 from torch import Tensor
 from torch.utils.data import Dataset
 
-from .config import SUPPORTED_DATASET_FILE_FORMATS
 from ..saving import load_dict_from_h5
 from ..utils import turn_data_into_specified_dtype
+from .config import SUPPORTED_DATASET_FILE_FORMATS
 
 
 class BaseDataset(Dataset):
@@ -70,7 +70,7 @@ class BaseDataset(Dataset):
 
     def __init__(
         self,
-        data: Union[dict, str],
+        data: dict | str,
         return_X_ori: bool,
         return_X_pred: bool,
         return_y: bool,
@@ -113,41 +113,39 @@ class BaseDataset(Dataset):
             # open the file handle
             self.file_handle = self._open_file_handle()
             # check if X exists in the file
-            assert "X" in self.file_handle.keys(), "The given dataset file doesn't contains X. Please double check."
+            assert "X" in self.file_handle, "The given dataset file doesn't contains X. Please double check."
             # check whether X_ori, X_pred, and y exist in the file if they are required
             if self.return_X_ori:
-                assert "X_ori" in self.file_handle.keys(), (
+                assert "X_ori" in self.file_handle, (
                     "The given dataset file doesn't contains X_ori. Please double check."
                 )
             if self.return_X_pred:
-                assert "X_pred" in self.file_handle.keys(), (
+                assert "X_pred" in self.file_handle, (
                     "The given dataset file doesn't contains X_pred. Please double check."
                 )
             if self.return_y:
-                assert "y" in self.file_handle.keys(), "The given dataset file doesn't contains y. Please double check."
+                assert "y" in self.file_handle, "The given dataset file doesn't contains y. Please double check."
 
             # set up the function fetch_data() to fetch data from file
             self.fetch_data = self._fetch_data_from_file
 
         else:  # data from array
             # check if X exists in the dictionary
-            assert "X" in self.data.keys(), "The given dataset dictionary doesn't contains X. Please double check."
+            assert "X" in self.data, "The given dataset dictionary doesn't contains X. Please double check."
             # check whether X_ori, X_pred, and y exist in the file if they are required
             if self.return_X_ori:
-                assert "X_ori" in self.data.keys(), (
-                    "The given dataset dictionary doesn't contains X_ori. Please double check."
-                )
+                assert "X_ori" in self.data, "The given dataset dictionary doesn't contains X_ori. Please double check."
             if self.return_X_pred:
-                assert "X_pred" in self.data.keys(), (
+                assert "X_pred" in self.data, (
                     "The given dataset dictionary doesn't contains X_pred. Please double check."
                 )
             if self.return_y:
-                assert "y" in self.data.keys(), "The given dataset dictionary doesn't contains y. Please double check."
+                assert "y" in self.data, "The given dataset dictionary doesn't contains y. Please double check."
 
             X = data["X"]
-            X_ori = None if "X_ori" not in data.keys() else data["X_ori"]
-            X_pred = None if "X_pred" not in data.keys() else data["X_pred"]
-            y = None if "y" not in data.keys() else data["y"]
+            X_ori = data.get("X_ori", None)
+            X_pred = data.get("X_pred", None)
+            y = data.get("y", None)
             self.X, self.X_ori, self.X_pred, self.y = self._check_array_input(X, X_ori, X_pred, y, "tensor")
 
             if self.return_X_ori:
@@ -174,7 +172,7 @@ class BaseDataset(Dataset):
             self.n_pred_features,
         ) = self._get_data_sizes()
 
-    def _get_data_sizes(self) -> Tuple[int, ...]:
+    def _get_data_sizes(self) -> tuple[int, ...]:
         """Detect the data sample sizes in the dataset and return the numbers.
 
         Returns
@@ -239,16 +237,16 @@ class BaseDataset(Dataset):
 
     @staticmethod
     def _check_array_input(
-        X: Union[np.ndarray, torch.Tensor],
-        X_ori: Optional[Union[np.ndarray, torch.Tensor]] = None,
-        X_pred: Optional[Union[np.ndarray, torch.Tensor]] = None,
-        y: Optional[Union[np.ndarray, torch.Tensor]] = None,
+        X: np.ndarray | torch.Tensor,
+        X_ori: np.ndarray | torch.Tensor | None = None,
+        X_pred: np.ndarray | torch.Tensor | None = None,
+        y: np.ndarray | torch.Tensor | None = None,
         out_dtype: str = "tensor",
-    ) -> Tuple[
-        Union[Tensor, ndarray],
-        Optional[Union[Tensor, ndarray]],
-        Optional[Union[Tensor, ndarray]],
-        Optional[Union[Tensor, ndarray]],
+    ) -> tuple[
+        Tensor | ndarray,
+        Tensor | ndarray | None,
+        Tensor | ndarray | None,
+        Tensor | ndarray | None,
     ]:
         """Check value type and shape of input X and y
 
@@ -385,7 +383,7 @@ class BaseDataset(Dataset):
                 f"Please confirm that the given file {data_file_path} is an h5 file."
             )
         except Exception as e:
-            raise RuntimeError(e)
+            raise RuntimeError(e) from e
         return file_handler
 
     def _fetch_data_from_file(self, idx: int) -> Iterable:

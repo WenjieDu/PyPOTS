@@ -1,4 +1,4 @@
-""" """
+"""Implementation of pypots.nn.modules.ts2vec.losses."""
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
@@ -13,9 +13,8 @@ def hierarchical_contrastive_loss(z1, z2, alpha=0.5, temporal_unit=0):
     while z1.size(1) > 1:
         if alpha != 0:
             loss += alpha * instance_contrastive_loss(z1, z2)
-        if d >= temporal_unit:
-            if 1 - alpha != 0:
-                loss += (1 - alpha) * temporal_contrastive_loss(z1, z2)
+        if d >= temporal_unit and 1 - alpha != 0:
+            loss += (1 - alpha) * temporal_contrastive_loss(z1, z2)
         d += 1
         z1 = F.max_pool1d(z1.transpose(1, 2), kernel_size=2).transpose(1, 2)
         z2 = F.max_pool1d(z2.transpose(1, 2), kernel_size=2).transpose(1, 2)

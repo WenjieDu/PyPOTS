@@ -17,7 +17,7 @@ Refer to the repo https://github.com/milaogou/HELIX for details.
 # License: BSD-3-Clause
 
 import torch
-import torch.nn as nn
+from torch import nn
 
 from ..transformer.embedding import PositionalEncoding
 

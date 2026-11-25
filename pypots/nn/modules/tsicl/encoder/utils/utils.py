@@ -61,8 +61,9 @@ Vendored from the TS-ICL model architecture: https://github.com/EDF-Lab/ts-icl
 
 from __future__ import annotations
 
+from collections.abc import Callable, Sequence
 from functools import wraps
-from typing import Any, Callable, Sequence
+from typing import Any
 
 import numpy as np
 import torch

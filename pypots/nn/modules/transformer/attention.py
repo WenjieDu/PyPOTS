@@ -12,11 +12,10 @@ and https://github.com/jadore801120/attention-is-all-you-need-pytorch.
 # License: BSD-3-Clause
 
 from abc import abstractmethod
-from typing import Tuple, Optional
 
 import torch
-import torch.nn as nn
 import torch.nn.functional as F
+from torch import nn
 
 
 class AttentionOperator(nn.Module):
@@ -33,9 +32,9 @@ class AttentionOperator(nn.Module):
         q: torch.Tensor,
         k: torch.Tensor,
         v: torch.Tensor,
-        attn_mask: Optional[torch.Tensor] = None,
+        attn_mask: torch.Tensor | None = None,
         **kwargs,
-    ) -> Tuple[torch.Tensor, torch.Tensor]:
+    ) -> tuple[torch.Tensor, torch.Tensor]:
         raise NotImplementedError
 
 
@@ -64,9 +63,9 @@ class ScaledDotProductAttention(AttentionOperator):
         q: torch.Tensor,
         k: torch.Tensor,
         v: torch.Tensor,
-        attn_mask: Optional[torch.Tensor] = None,
+        attn_mask: torch.Tensor | None = None,
         **kwargs,
-    ) -> Tuple[torch.Tensor, torch.Tensor]:
+    ) -> tuple[torch.Tensor, torch.Tensor]:
         """Forward processing of the scaled dot-product attention.
 
         Parameters
@@ -164,9 +163,9 @@ class MultiHeadAttention(nn.Module):
         q: torch.Tensor,
         k: torch.Tensor,
         v: torch.Tensor,
-        attn_mask: Optional[torch.Tensor],
+        attn_mask: torch.Tensor | None,
         **kwargs,
-    ) -> Tuple[torch.Tensor, torch.Tensor]:
+    ) -> tuple[torch.Tensor, torch.Tensor]:
         """Forward processing of the multi-head attention module.
 
         Parameters

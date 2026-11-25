@@ -6,7 +6,6 @@ The base classes for PyPOTS forecasting models.
 # License: BSD-3-Clause
 
 from abc import abstractmethod
-from typing import Optional, Union
 
 import numpy as np
 import torch
@@ -54,10 +53,10 @@ class BaseForecaster(BaseModel):
 
     def __init__(
         self,
-        device: Optional[Union[str, torch.device, list]] = None,
+        device: str | torch.device | list | None = None,
         enable_amp: bool = False,
-        saving_path: str = None,
-        model_saving_strategy: Optional[str] = "best",
+        saving_path: str | None = None,
+        model_saving_strategy: str | None = "best",
         verbose: bool = True,
     ):
         super().__init__(
@@ -71,8 +70,8 @@ class BaseForecaster(BaseModel):
     @abstractmethod
     def fit(
         self,
-        train_set: Union[dict, str],
-        val_set: Optional[Union[dict, str]] = None,
+        train_set: dict | str,
+        val_set: dict | str | None = None,
         file_type: str = "hdf5",
     ) -> None:
         """Train the classifier on the given data.
@@ -104,7 +103,7 @@ class BaseForecaster(BaseModel):
     @abstractmethod
     def predict(
         self,
-        test_set: Union[dict, str],
+        test_set: dict | str,
         file_type: str = "hdf5",
         **kwargs,
     ) -> dict:
@@ -133,7 +132,7 @@ class BaseForecaster(BaseModel):
 
     def forecast(
         self,
-        test_set: Union[dict, str],
+        test_set: dict | str,
         file_type: str = "hdf5",
         **kwargs,
     ) -> np.ndarray:
@@ -230,16 +229,16 @@ class BaseNNForecaster(BaseNNModel):
     def __init__(
         self,
         # n_forecasting_steps: int,
-        training_loss: Union[Criterion, type],
-        validation_metric: Union[Criterion, type],
+        training_loss: Criterion | type,
+        validation_metric: Criterion | type,
         batch_size: int,
         epochs: int,
-        patience: Optional[int] = None,
+        patience: int | None = None,
         num_workers: int = 0,
-        device: Optional[Union[str, torch.device, list]] = None,
+        device: str | torch.device | list | None = None,
         enable_amp: bool = False,
-        saving_path: str = None,
-        model_saving_strategy: Optional[str] = "best",
+        saving_path: str | None = None,
+        model_saving_strategy: str | None = "best",
         verbose: bool = True,
     ):
         super().__init__(
@@ -270,7 +269,7 @@ class BaseNNForecaster(BaseNNModel):
             A python dictionary contains the input data for model training.
         """
         (
-            indices,
+            _indices,
             X,
             missing_mask,
             X_pred,
@@ -322,7 +321,7 @@ class BaseNNForecaster(BaseNNModel):
             A python dictionary contains the input data for model testing.
         """
         (
-            indices,
+            _indices,
             X,
             missing_mask,
         ) = self._send_data_to_given_device(data)
@@ -335,8 +334,8 @@ class BaseNNForecaster(BaseNNModel):
 
     def fit(
         self,
-        train_set: Union[dict, str],
-        val_set: Optional[Union[dict, str]] = None,
+        train_set: dict | str,
+        val_set: dict | str | None = None,
         file_type: str = "hdf5",
     ) -> None:
         """Train the classifier on the given data.
@@ -405,7 +404,7 @@ class BaseNNForecaster(BaseNNModel):
     @torch.no_grad()
     def predict(
         self,
-        test_set: Union[dict, str],
+        test_set: dict | str,
         file_type: str = "hdf5",
         **kwargs,
     ) -> dict:
@@ -463,7 +462,7 @@ class BaseNNForecaster(BaseNNModel):
 
     def forecast(
         self,
-        test_set: Union[dict, str],
+        test_set: dict | str,
         file_type: str = "hdf5",
         **kwargs,
     ) -> np.ndarray:

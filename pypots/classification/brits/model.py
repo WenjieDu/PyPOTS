@@ -6,19 +6,17 @@ The implementation of BRITS for the partially-observed time-series classificatio
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-from typing import Optional, Union
-
 import numpy as np
 import torch
 from torch.utils.data import DataLoader
 
-from .core import _BRITS
-from ..base import BaseNNClassifier
 from ...imputation.brits.data import DatasetForBRITS
 from ...nn.functional import gather_listed_dicts
 from ...nn.modules.loss import Criterion, CrossEntropy
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
+from ..base import BaseNNClassifier
+from .core import _BRITS
 
 
 class BRITS(BaseNNClassifier):
@@ -105,14 +103,14 @@ class BRITS(BaseNNClassifier):
         reconstruction_weight: float = 1,
         batch_size: int = 32,
         epochs: int = 100,
-        patience: Optional[int] = None,
-        training_loss: Union[Criterion, type] = CrossEntropy,
-        validation_metric: Union[Criterion, type] = CrossEntropy,
-        optimizer: Union[Optimizer, type] = Adam,
+        patience: int | None = None,
+        training_loss: Criterion | type = CrossEntropy,
+        validation_metric: Criterion | type = CrossEntropy,
+        optimizer: Optimizer | type = Adam,
         num_workers: int = 0,
-        device: Optional[Union[str, torch.device, list]] = None,
-        saving_path: str = None,
-        model_saving_strategy: Optional[str] = "best",
+        device: str | torch.device | list | None = None,
+        saving_path: str | None = None,
+        model_saving_strategy: str | None = "best",
         verbose: bool = True,
     ):
         super().__init__(
@@ -220,8 +218,8 @@ class BRITS(BaseNNClassifier):
 
     def fit(
         self,
-        train_set: Union[dict, str],
-        val_set: Optional[Union[dict, str]] = None,
+        train_set: dict | str,
+        val_set: dict | str | None = None,
         file_type: str = "hdf5",
     ) -> None:
         # Step 1: wrap the input data with classes Dataset and DataLoader
@@ -251,7 +249,7 @@ class BRITS(BaseNNClassifier):
                 shuffle=False,
                 num_workers=self.num_workers,
             )
-            self.val_dataloader = val_dataloader 
+            self.val_dataloader = val_dataloader
 
         # Step 2: train the model and freeze it
         self._train_model(train_dataloader, val_dataloader)
@@ -263,7 +261,7 @@ class BRITS(BaseNNClassifier):
     @torch.no_grad()
     def predict(
         self,
-        test_set: Union[dict, str],
+        test_set: dict | str,
         file_type: str = "hdf5",
     ) -> dict:
         self.model.eval()  # set the model to evaluation mode

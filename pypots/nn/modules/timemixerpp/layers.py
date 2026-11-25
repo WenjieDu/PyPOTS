@@ -1,12 +1,12 @@
-""" """
+"""Implementation of pypots.nn.modules.timemixerpp.layers."""
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
 import numpy as np
 import torch
-import torch.nn as nn
 import torch.nn.functional as F
+from torch import nn
 
 from ..inception import InceptionBlockV1, InceptionTransBlockV1
 
@@ -15,8 +15,7 @@ def FFT_for_Period(x, k=2):
     xf = torch.fft.rfft(x, dim=1)
     frequency_list = abs(xf).mean(0).mean(-1)
     frequency_list[0] = 0
-    if len(frequency_list) < k:
-        k = len(frequency_list)
+    k = min(k, len(frequency_list))
     _, top_list = torch.topk(frequency_list, k)
     top_list = top_list.detach().cpu().numpy()
     period = x.shape[1] // top_list
@@ -191,7 +190,7 @@ class MixerBlock(nn.Module):
         for x in x_list:
             _, T, _ = x.size()
             length_list.append(T)
-        period_list, period_weight, top_list = FFT_for_Period(x_list[-1], self.k)
+        period_list, period_weight, _top_list = FFT_for_Period(x_list[-1], self.k)
 
         res_list = []
         for i in range(len(period_list)):
@@ -223,7 +222,7 @@ class MixerBlock(nn.Module):
         return res_list_agg
 
     def time_imaging(self, x, period):
-        B, T, N = x.size()
+        B, _T, N = x.size()
         out, length = self.__conv_padding(x, period)
         out = out.reshape(B, length // period, period, N).permute(0, 3, 1, 2).contiguous()
         return out
@@ -257,7 +256,7 @@ class MixerBlock(nn.Module):
 
     @staticmethod
     def multi_reso_mixing(period_weight, x, res):
-        B, T, N = x.size()
+        _B, T, N = x.size()
         period_weight = F.softmax(period_weight, dim=1)
         period_weight = period_weight.unsqueeze(1).unsqueeze(1).repeat(1, T, N, 1)
         res = torch.sum(res * period_weight, -1)

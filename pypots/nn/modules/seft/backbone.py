@@ -13,7 +13,7 @@ In the 37th International Conference on Machine Learning, 2020.
 # License: BSD-3-Clause
 
 import torch
-import torch.nn as nn
+from torch import nn
 
 
 class _SAB(nn.Module):

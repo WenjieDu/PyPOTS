@@ -1,13 +1,11 @@
-""" """
+"""Implementation of pypots.nn.modules.vader.layers."""
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-from typing import Tuple, Optional
-
 import torch
-import torch.nn as nn
 import torch.nn.functional as F
+from torch import nn
 from torch.autograd import Variable
 from torch.nn.parameter import Parameter
 
@@ -44,8 +42,8 @@ class PeepholeLSTMCell(nn.LSTMCell):
     def forward(
         self,
         X: torch.Tensor,
-        hx: Optional[torch.Tensor] = None,
-    ) -> Tuple[torch.Tensor, torch.Tensor]:
+        hx: torch.Tensor | None = None,
+    ) -> tuple[torch.Tensor, torch.Tensor]:
         if hx is None:
             zeros = torch.zeros(X.size(0), self.hidden_size, dtype=X.dtype, device=X.device)
             hx = (zeros, zeros)
@@ -99,7 +97,7 @@ class GMMLayer(nn.Module):
         self.var_c_unscaled = torch.nn.Parameter(var)
         self.phi_c_unscaled = torch.nn.Parameter(phi)
 
-    def forward(self) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+    def forward(self) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         mu_c = self.mu_c_unscaled
         var_c = F.softplus(self.var_c_unscaled)
         phi_c = torch.softmax(self.phi_c_unscaled, dim=0)

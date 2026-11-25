@@ -7,18 +7,17 @@ The implementation of GPT4TS for the partially-observed time-series imputation t
 # License: BSD-3-Clause
 
 from copy import deepcopy
-from typing import Union, Optional
 
 import torch
 from torch.utils.data import DataLoader
 
-from .core import _GPT4TS
-from ..base import BaseNNImputer
-from ..saits.data import DatasetForSAITS
 from ...data.checking import key_in_data_set
-from ...nn.modules.loss import Criterion, MAE, MSE
+from ...nn.modules.loss import MAE, MSE, Criterion
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
+from ..base import BaseNNImputer
+from ..saits.data import DatasetForSAITS
+from .core import _GPT4TS
 
 
 class GPT4TS(BaseNNImputer):
@@ -122,14 +121,14 @@ class GPT4TS(BaseNNImputer):
         freq="h",
         batch_size: int = 32,
         epochs: int = 100,
-        patience: Optional[int] = None,
-        training_loss: Union[Criterion, type] = MAE,
-        validation_metric: Union[Criterion, type] = MSE,
-        optimizer: Union[Optimizer, type] = Adam,
+        patience: int | None = None,
+        training_loss: Criterion | type = MAE,
+        validation_metric: Criterion | type = MSE,
+        optimizer: Optimizer | type = Adam,
         num_workers: int = 0,
-        device: Optional[Union[str, torch.device, list]] = None,
-        saving_path: Optional[str] = None,
-        model_saving_strategy: Optional[str] = "best",
+        device: str | torch.device | list | None = None,
+        saving_path: str | None = None,
+        model_saving_strategy: str | None = "best",
         verbose: bool = True,
     ):
         super().__init__(
@@ -193,14 +192,14 @@ class GPT4TS(BaseNNImputer):
             model_state_dict = deepcopy(self.model.state_dict())
         model_state_dict = {k: v for k, v in model_state_dict.items() if "gpt2" not in k}
 
-        all_attrs = dict({})
+        all_attrs = {}
         all_attrs["model_state_dict"] = model_state_dict
         all_attrs["pypots_version"] = pypots_version
         return all_attrs
 
     def _assemble_input_for_training(self, data: list) -> dict:
         (
-            indices,
+            _indices,
             X,
             missing_mask,
             X_ori,
@@ -220,7 +219,7 @@ class GPT4TS(BaseNNImputer):
         return self._assemble_input_for_training(data)
 
     def _assemble_input_for_testing(self, data: list) -> dict:
-        indices, X, missing_mask = self._send_data_to_given_device(data)
+        _indices, X, missing_mask = self._send_data_to_given_device(data)
 
         inputs = {
             "X": X,
@@ -231,8 +230,8 @@ class GPT4TS(BaseNNImputer):
 
     def fit(
         self,
-        train_set: Union[dict, str],
-        val_set: Optional[Union[dict, str]] = None,
+        train_set: dict | str,
+        val_set: dict | str | None = None,
         file_type: str = "hdf5",
     ) -> None:
         # Step 1: wrap the input data with classes Dataset and DataLoader

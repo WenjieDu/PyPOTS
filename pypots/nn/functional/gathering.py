@@ -29,7 +29,7 @@ def gather_listed_dicts(dict_list: list) -> dict:
     for d in dict_list[1:]:
         assert d.keys() == keys, "All dicts should have the same keys"
 
-    gathered_dict = dict()
+    gathered_dict = {}
     for k in keys:
         if isinstance(dict_list[0][k], torch.Tensor):
             if dict_list[0][k].dim() > 0:
@@ -38,6 +38,6 @@ def gather_listed_dicts(dict_list: list) -> dict:
             if dict_list[0][k].ndim > 0:
                 gathered_dict[k] = np.concatenate([d[k] for d in dict_list], axis=0)
         else:
-            raise ValueError("Only support torch.Tensor and np.ndarray")
+            raise ValueError("Only support torch.Tensor and np.ndarray")  # noqa: TRY004 - preserve the public exception type
 
     return gathered_dict

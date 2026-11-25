@@ -17,11 +17,11 @@ This implementation is inspired by the official one https://github.com/qianlima-
 # License: BSD-3-Clause
 
 from .backbone import BackboneCRLI
-from .layers import CrliGenerator, CrliDecoder, CrliDiscriminator
+from .layers import CrliDecoder, CrliDiscriminator, CrliGenerator
 
 __all__ = [
     "BackboneCRLI",
-    "CrliGenerator",
     "CrliDecoder",
     "CrliDiscriminator",
+    "CrliGenerator",
 ]

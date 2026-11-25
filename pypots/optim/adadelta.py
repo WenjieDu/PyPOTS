@@ -6,7 +6,7 @@ The optimizer wrapper for PyTorch Adadelta.
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-from typing import Iterable, Optional
+from collections.abc import Iterable
 
 from torch.optim import Adadelta as torch_Adadelta
 
@@ -42,7 +42,7 @@ class Adadelta(Optimizer):
         rho: float = 0.9,
         eps: float = 1e-08,
         weight_decay: float = 0.01,
-        lr_scheduler: Optional[LRScheduler] = None,
+        lr_scheduler: LRScheduler | None = None,
     ):
         super().__init__(lr, lr_scheduler)
         self.rho = rho

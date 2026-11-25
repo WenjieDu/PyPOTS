@@ -4,9 +4,10 @@ It ensures that the demo scripts provided for beginners run perfectly during eve
 preventing subsequent PyPOTS updates from causing the example code to fail.
 """
 
-import os
 import glob
+import os
 import subprocess
+
 import pytest
 
 from pypots.utils.logging import logger
@@ -42,7 +43,7 @@ def test_standalone_examples_can_run(script_path):
 
     # Execute the command. A longer timeout is set here to ensure even larger examples can finish training.
     # We expect every example script to run properly as if a beginner executes `python example.py`.
-    result = subprocess.run(["python", script_path], capture_output=True, text=True, timeout=180, env=env)
+    result = subprocess.run(["python", script_path], capture_output=True, text=True, timeout=180, env=env, check=False)
 
     # Verify if the subprocess exited successfully
     if result.returncode != 0:

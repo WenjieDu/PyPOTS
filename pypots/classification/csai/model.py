@@ -1,16 +1,12 @@
-""" """
+"""Implementation of pypots.classification.csai.model."""
 
 # Created by Linglong Qian, Joseph Arul Raj <linglong.qian@kcl.ac.uk, joseph_arul_raj@kcl.ac.uk>
 # License: BSD-3-Clause
-
-from typing import Optional, Union
 
 import numpy as np
 import torch
 from torch.utils.data import DataLoader
 
-from .core import _BCSAI
-from ..base import BaseNNClassifier
 from ...data.saving.h5 import load_dict_from_h5
 from ...imputation.csai.data import DatasetForCSAI
 from ...nn.functional import gather_listed_dicts
@@ -18,6 +14,8 @@ from ...nn.modules.loss import Criterion, CrossEntropy
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
 from ...utils.logging import logger
+from ..base import BaseNNClassifier
+from .core import _BCSAI
 
 
 class CSAI(BaseNNClassifier):
@@ -123,14 +121,14 @@ class CSAI(BaseNNClassifier):
         dropout: float = 0.5,
         batch_size: int = 32,
         epochs: int = 100,
-        patience: Optional[int] = None,
-        training_loss: Union[Criterion, type] = CrossEntropy,
-        validation_metric: Union[Criterion, type] = CrossEntropy,
-        optimizer: Union[Optimizer, type] = Adam,
+        patience: int | None = None,
+        training_loss: Criterion | type = CrossEntropy,
+        validation_metric: Criterion | type = CrossEntropy,
+        optimizer: Optimizer | type = Adam,
         num_workers: int = 0,
-        device: Optional[Union[str, torch.device, list]] = None,
-        saving_path: str = None,
-        model_saving_strategy: Optional[str] = "best",
+        device: str | torch.device | list | None = None,
+        saving_path: str | None = None,
+        model_saving_strategy: str | None = "best",
         verbose: bool = True,
     ):
         super().__init__(
@@ -313,7 +311,7 @@ class CSAI(BaseNNClassifier):
     @torch.no_grad()
     def predict(
         self,
-        test_set: Union[dict, str],
+        test_set: dict | str,
         file_type: str = "hdf5",
     ) -> dict:
         self.model.eval()  # set the model to evaluation mode

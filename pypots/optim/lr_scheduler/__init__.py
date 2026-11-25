@@ -18,11 +18,11 @@ from .multistep_lrs import MultiStepLR
 from .step_lrs import StepLR
 
 __all__ = [
-    "LambdaLR",
-    "MultiplicativeLR",
-    "StepLR",
-    "MultiStepLR",
     "ConstantLR",
     "ExponentialLR",
+    "LambdaLR",
     "LinearLR",
+    "MultiStepLR",
+    "MultiplicativeLR",
+    "StepLR",
 ]

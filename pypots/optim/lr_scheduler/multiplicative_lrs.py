@@ -49,9 +49,7 @@ class MultiplicativeLR(LRScheduler):
             self.lr_lambdas = [self.lr_lambda] * len(optimizer.param_groups)
         else:
             if len(self.lr_lambda) != len(optimizer.param_groups):
-                raise ValueError(
-                    "Expected {} lr_lambdas, but got {}".format(len(optimizer.param_groups), len(self.lr_lambda))
-                )
+                raise ValueError(f"Expected {len(optimizer.param_groups)} lr_lambdas, but got {len(self.lr_lambda)}")
             self.lr_lambdas = list(self.lr_lambda)
 
         super().init_scheduler(optimizer)

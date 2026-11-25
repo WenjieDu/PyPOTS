@@ -43,7 +43,7 @@ Vendored from the TS-ICL model architecture: https://github.com/EDF-Lab/ts-icl
 
 from __future__ import annotations
 
-from typing import Callable
+from collections.abc import Callable
 
 import torch
 from einops import rearrange, repeat

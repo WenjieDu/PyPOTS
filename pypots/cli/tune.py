@@ -11,11 +11,11 @@ import click
 
 from .utils import (
     SUPPORTED_TASKS,
-    load_config,
-    merge_config_with_overrides,
     get_model_class,
     get_model_init_params,
     get_optimizer_class,
+    load_config,
+    merge_config_with_overrides,
 )
 
 # Mapping from config sampler names to Optuna sampler classes
@@ -79,7 +79,7 @@ def _suggest_param(trial, name: str, param_cfg: dict):
         )
 
 
-def _create_sampler(sampler_name: str, search_space: dict = None):
+def _create_sampler(sampler_name: str, search_space: dict | None = None):
     """Create an Optuna sampler instance from its config name.
 
     Parameters

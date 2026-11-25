@@ -50,8 +50,8 @@ Official pretrained weights hosted on Hugging Face are subject to the TS-ICL mod
 
 import importlib
 import warnings
+from collections.abc import Callable
 from pathlib import Path
-from typing import Callable, Dict, List, Optional, Tuple, Union
 
 import h5py
 import numpy as np
@@ -103,7 +103,7 @@ def _instantiate(config):
 
 
 def load_tsicl_checkpoint(
-    model_path: Optional[str],
+    model_path: str | None,
     checkpoint_version: str,
     allow_auto_download: bool = True,
 ) -> dict:
@@ -192,7 +192,7 @@ def make_grid(grid_length: int, num_samples: int) -> torch.Tensor:
     return grid.unsqueeze(-1)
 
 
-def complete_nans(X: torch.Tensor, grid: torch.Tensor) -> Dict[str, torch.Tensor]:
+def complete_nans(X: torch.Tensor, grid: torch.Tensor) -> dict[str, torch.Tensor]:
     """Replace NaNs in `X` by other observed values of the same series (deterministic).
 
     Ported from ``tsicl.utils.utils``.
@@ -216,7 +216,7 @@ def complete_nans(X: torch.Tensor, grid: torch.Tensor) -> Dict[str, torch.Tensor
     return {"values": X_filled.unsqueeze(-1), "coords": grid_filled.unsqueeze(-1)}
 
 
-def prepare_context_tensors(grid: torch.Tensor, series_c: torch.Tensor) -> Dict[str, torch.Tensor]:
+def prepare_context_tensors(grid: torch.Tensor, series_c: torch.Tensor) -> dict[str, torch.Tensor]:
     """Build fixed-length context (coords, values) tensors from a batch with a variable number of
     missing points per sample, right-padding the shorter ones with duplicated observed values.
     Ported (covariate-free) from ``tsicl.utils.task_utils.prepare_context_tensors``.
@@ -254,7 +254,7 @@ def prepare_context_tensors(grid: torch.Tensor, series_c: torch.Tensor) -> Dict[
     }
 
 
-def get_quantile_indices(network: nn.Module, quantile_levels: List[float]) -> List[int]:
+def get_quantile_indices(network: nn.Module, quantile_levels: list[float]) -> list[int]:
     """Map requested quantile levels to their index in a TS-ICL network's output head.
     Ported from ``TSICL._get_quantile_indices``."""
     start_quantile = network.tf_icl.start_quantile
@@ -268,7 +268,7 @@ def get_quantile_indices(network: nn.Module, quantile_levels: List[float]) -> Li
     return [training_quantile_levels.index(q) for q in requested]
 
 
-def fetch_X(data: Union[dict, str], file_type: str = "hdf5") -> np.ndarray:
+def fetch_X(data: dict | str, file_type: str = "hdf5") -> np.ndarray:
     """Load the ``X`` array from a PyPOTS dict/H5-file dataset, as both ``TSICL`` model
     classes (imputation and forecasting) expect it: shape `(n_samples, n_steps, n_features)`,
     NaNs allowed.
@@ -282,17 +282,17 @@ def fetch_X(data: Union[dict, str], file_type: str = "hdf5") -> np.ndarray:
         X = np.asarray(X)
     if isinstance(X, torch.Tensor):
         X = X.detach().cpu().numpy()
-    assert (
-        len(X.shape) == 3
-    ), f"Input X should have 3 dimensions [n_samples, n_steps, n_features], but the actual shape of X: {X.shape}"
+    assert len(X.shape) == 3, (
+        f"Input X should have 3 dimensions [n_samples, n_steps, n_features], but the actual shape of X: {X.shape}"
+    )
     return X
 
 
 def resolve_quantile_selection(
     network: nn.Module,
     point_estimator: str,
-    quantile_levels: Optional[List[float]],
-) -> Tuple[List[int], Optional[int], str]:
+    quantile_levels: list[float] | None,
+) -> tuple[list[int], int | None, str]:
     """Resolve the requested quantile levels to indices in the network's output head, and
     fall back from ``'median'`` to ``'mean'`` if 0.5 wasn't requested (there'd be no median
     to report).
@@ -310,7 +310,7 @@ def resolve_quantile_selection(
     return quantile_indices, median_idx, point_estimator
 
 
-def flatten_channel_independent(X: np.ndarray) -> Tuple[np.ndarray, int, int]:
+def flatten_channel_independent(X: np.ndarray) -> tuple[np.ndarray, int, int]:
     """Flatten a `(n_samples, n_steps, n_features)` array into `(n_samples * n_features,
     n_steps)`, one row per univariate series (TS-ICL models one series at a time; see the
     channel-independence note in ``TSICL``'s docstring).
@@ -349,9 +349,9 @@ def run_batched_point_estimate(
     output_len: int,
     batch_size: int,
     device: torch.device,
-    quantile_indices: List[int],
+    quantile_indices: list[int],
     point_estimator: str,
-    median_idx: Optional[int],
+    median_idx: int | None,
     predict_batch_fn: Callable[[torch.Tensor], torch.Tensor],
 ) -> np.ndarray:
     """Run `predict_batch_fn` batch-wise over `flat` (`n_series, n_steps`, one univariate
@@ -386,7 +386,7 @@ def run_batched_point_estimate(
     return out
 
 
-def resolve_inference_device(device: Union[torch.device, List[torch.device]]) -> torch.device:
+def resolve_inference_device(device: torch.device | list[torch.device]) -> torch.device:
     """Pick the single device TS-ICL inference runs on. A list of devices (PyPOTS' multi-GPU
     training setup) is not supported for this zero-shot model: inference then runs on the first one.
     """

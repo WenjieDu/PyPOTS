@@ -1,9 +1,9 @@
-""" """
+"""Implementation of pypots.forecasting.film.core."""
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-import torch.nn as nn
+from torch import nn
 
 from ...nn.modules.film import BackboneFiLM
 from ...nn.modules.loss import Criterion

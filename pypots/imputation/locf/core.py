@@ -48,7 +48,7 @@ def locf_numpy(
     """
     trans_X = X.transpose((0, 2, 1))
     mask = np.isnan(trans_X)
-    n_samples, n_steps, n_features = mask.shape
+    _n_samples, n_steps, n_features = mask.shape
     idx = np.where(~mask, np.arange(n_features), 0)
     idx = np.maximum.accumulate(idx, axis=2)
 
@@ -74,7 +74,7 @@ def locf_numpy(
             )
             X_imputed = np.flip(X_LOCB, axis=1)
         elif first_step_imputation == "median":
-            bz, n_steps, n_features = X_imputed.shape
+            _bz, n_steps, n_features = X_imputed.shape
             X_imputed_reshaped = np.copy(X_imputed).reshape(-1, n_features)
             median_values = np.nanmedian(X_imputed_reshaped, axis=0)
             for i, v in enumerate(median_values):
@@ -118,7 +118,7 @@ def locf_torch(
     """
     trans_X = X.permute((0, 2, 1))
     mask = torch.isnan(trans_X)
-    n_samples, n_steps, n_features = mask.shape
+    _n_samples, n_steps, n_features = mask.shape
     idx = torch.where(~mask, torch.arange(n_features, device=mask.device), 0)
     idx = torch.cummax(idx, dim=2).values
 
@@ -144,7 +144,7 @@ def locf_torch(
             )
             X_imputed = torch.flip(X_LOCB, dims=[1])
         elif first_step_imputation == "median":
-            bz, n_steps, n_features = X_imputed.shape
+            _bz, n_steps, n_features = X_imputed.shape
             X_imputed_reshaped = X_imputed.clone().reshape(-1, n_features)
             median_values = torch.nanmedian(X_imputed_reshaped, dim=0)
             for i, v in enumerate(median_values.values):

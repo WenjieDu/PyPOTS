@@ -1,11 +1,11 @@
-""" """
+"""Implementation of pypots.nn.modules.totem.autoencoder."""
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
 import torch
-import torch.nn as nn
 import torch.nn.functional as F
+from torch import nn
 
 from .layers import ResidualStack
 

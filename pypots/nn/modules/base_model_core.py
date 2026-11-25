@@ -1,11 +1,11 @@
-""" """
+"""Implementation of pypots.nn.modules.base_model_core."""
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
 from abc import abstractmethod
 
-import torch.nn as nn
+from torch import nn
 
 
 class ModelCore(nn.Module):

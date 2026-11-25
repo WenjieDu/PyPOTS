@@ -1,10 +1,10 @@
-""" """
+"""Implementation of pypots.nn.modules.fits.backbone."""
 
 # Created by Wenjie Du <wdu@time-series.ai>
 # License: BSD-3-Clause
 
 import torch
-import torch.nn as nn
+from torch import nn
 
 
 class BackboneFITS(nn.Module):

@@ -49,7 +49,7 @@ class LRScheduler(ABC):
 
         # Attach optimizer
         if not isinstance(optimizer, Optimizer):
-            raise TypeError("{} is not an Optimizer".format(type(optimizer).__name__))
+            raise TypeError(f"{type(optimizer).__name__} is not an Optimizer")
         if isinstance(optimizer, Optimizer):
             self.optimizer = optimizer
         else:
@@ -64,7 +64,7 @@ class LRScheduler(ABC):
             for i, group in enumerate(optimizer.param_groups):
                 if "initial_lr" not in group:
                     raise KeyError(
-                        "param 'initial_lr' is not specified in param_groups[{}] when resuming an optimizer".format(i)
+                        f"param 'initial_lr' is not specified in param_groups[{i}] when resuming an optimizer"
                     )
         self.base_lrs = [group["initial_lr"] for group in optimizer.param_groups]
 

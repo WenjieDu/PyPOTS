@@ -7,15 +7,14 @@ The implementation of TimeLLM for the partially-observed time-series forecasting
 # License: BSD-3-Clause
 
 from copy import deepcopy
-from typing import Union, Optional
 
 import torch
 
-from .core import _TimeLLM
-from ..base import BaseNNForecaster
-from ...nn.modules.loss import Criterion, MSE
+from ...nn.modules.loss import MSE, Criterion
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
+from ..base import BaseNNForecaster
+from .core import _TimeLLM
 
 
 class TimeLLM(BaseNNForecaster):
@@ -139,14 +138,14 @@ class TimeLLM(BaseNNForecaster):
         domain_prompt_content: str,
         batch_size: int = 32,
         epochs: int = 100,
-        patience: Optional[int] = None,
-        training_loss: Union[Criterion, type] = MSE,
-        validation_metric: Union[Criterion, type] = MSE,
-        optimizer: Union[Optimizer, type] = Adam,
+        patience: int | None = None,
+        training_loss: Criterion | type = MSE,
+        validation_metric: Criterion | type = MSE,
+        optimizer: Optimizer | type = Adam,
         num_workers: int = 0,
-        device: Optional[Union[str, torch.device, list]] = None,
-        saving_path: Optional[str] = None,
-        model_saving_strategy: Optional[str] = "best",
+        device: str | torch.device | list | None = None,
+        saving_path: str | None = None,
+        model_saving_strategy: str | None = "best",
         verbose: bool = True,
     ):
         super().__init__(
@@ -220,7 +219,7 @@ class TimeLLM(BaseNNForecaster):
             model_state_dict = deepcopy(self.model.state_dict())
         model_state_dict = {k: v for k, v in model_state_dict.items() if "llm" not in k}
 
-        all_attrs = dict({})
+        all_attrs = {}
         all_attrs["model_state_dict"] = model_state_dict
         all_attrs["pypots_version"] = pypots_version
         return all_attrs

@@ -6,12 +6,12 @@ and takes over the forward progress of the algorithm.
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-import torch.nn as nn
+from torch import nn
 
 from ...nn.modules import ModelCore
 from ...nn.modules.loss import Criterion
 from ...nn.modules.patchtst import PatchEmbedding, PatchtstEncoder, PredictionHead
-from ...nn.modules.saits import SaitsLoss, SaitsEmbedding
+from ...nn.modules.saits import SaitsEmbedding, SaitsLoss
 
 
 class _PatchTST(ModelCore):
@@ -80,7 +80,7 @@ class _PatchTST(ModelCore):
         enc_out = self.patch_embedding(input_X.permute(0, 2, 1))  # [bz * d_model, n_patches, d_model]
 
         # PatchTST encoder processing
-        enc_out, attns = self.encoder(enc_out)
+        enc_out, _attns = self.encoder(enc_out)
 
         # project back the original data space
         dec_out = self.head(enc_out)  # [bz, n_steps, d_model]

@@ -12,7 +12,6 @@ import importlib
 
 import click
 
-
 # Mapping from command name to the module attribute that holds the Click
 # command/group object.  Format: "cmd_name": ("module_path", "attr_name")
 _COMMAND_MAP = {
@@ -52,7 +51,6 @@ class LazyGroup(click.Group):
 @click.group(cls=LazyGroup, name="pypots-cli", help="PyPOTS Command-Line-Interface tool")
 def cli():
     """PyPOTS CLI — a command-line tool for managing PyPOTS models, data, training, and more."""
-    pass
 
 
 def main():

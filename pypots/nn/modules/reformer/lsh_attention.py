@@ -5,16 +5,16 @@ Locality-Sensitive Hashing (LSH) Attention from https://github.com/lucidrains/re
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-from functools import partial, wraps, reduce
+from functools import partial, reduce, wraps
 from operator import mul
 
 import torch
 import torch.fft
-import torch.nn as nn
 import torch.nn.functional as F
 from einops import rearrange, repeat
+from torch import nn
 
-from .local_attention import LocalAttention, TOKEN_SELF_ATTN_VALUE
+from .local_attention import TOKEN_SELF_ATTN_VALUE, LocalAttention
 
 
 def rotate_every_two(x):
@@ -28,7 +28,7 @@ def apply_rotary_pos_emb(qk, sinu_pos):
     sinu_pos = sinu_pos.type(qk.dtype)
     sinu_pos = rearrange(sinu_pos, "() n (j d) -> n j d", j=2)
     sin, cos = sinu_pos.unbind(dim=-2)
-    sin, cos = map(lambda t: repeat(t, "n d -> n (d j)", j=2), (sin, cos))
+    sin, cos = (repeat(t, "n d -> n (d j)", j=2) for t in (sin, cos))
     seq_len = sin.shape[0]
     qk, qk_pass = qk[:, :seq_len], qk[:, seq_len:]
     qk = (qk * cos) + (rotate_every_two(qk) * sin)
@@ -53,10 +53,10 @@ def batched_index_select(values, indices):
 def process_inputs_chunk(fn, chunks=1, dim=0):
     def inner_fn(*args, **kwargs):
         keys, values, len_args = kwargs.keys(), kwargs.values(), len(args)
-        chunked_args = list(zip(*map(lambda x: x.chunk(chunks, dim=dim), list(args) + list(values))))
-        all_args = map(lambda x: (x[:len_args], dict(zip(keys, x[len_args:]))), chunked_args)
+        chunked_args = list(zip(*(x.chunk(chunks, dim=dim) for x in list(args) + list(values))))
+        all_args = ((x[:len_args], dict(zip(keys, x[len_args:]))) for x in chunked_args)
         outputs = [fn(*c_args, **c_kwargs) for c_args, c_kwargs in all_args]
-        return tuple(map(lambda x: torch.cat(x, dim=dim), zip(*outputs)))
+        return tuple(torch.cat(x, dim=dim) for x in zip(*outputs))
 
     return inner_fn
 
@@ -109,7 +109,7 @@ def cache_method_decorator(cache_attr, cache_namespace, reexecute=False):
             else:
                 val = fn(self, *args, **kwargs)
                 if set_cache:
-                    setattr(self, cache_attr, {**_cache, **{_keyname: val}})
+                    setattr(self, cache_attr, {**_cache, _keyname: val})
             return val
 
         return wrapper
@@ -145,7 +145,7 @@ class FullQKAttention(nn.Module):
         self.dropout = nn.Dropout(dropout)
 
     def forward(self, qk, v, query_len=None, input_mask=None, input_attn_mask=None, **kwargs):
-        b, seq_len, dim = qk.shape
+        _b, seq_len, dim = qk.shape
         query_len = default(query_len, seq_len)
         t = query_len
 

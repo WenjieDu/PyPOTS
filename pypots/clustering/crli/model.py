@@ -8,19 +8,18 @@ the partially-observed time-series clustering task.
 # License: BSD-3-Clause
 
 from copy import deepcopy
-from typing import Union, Optional
 
 import numpy as np
 import torch
 from torch.utils.data import DataLoader
 
-from .core import _CRLI
-from .data import DatasetForCRLI
-from ..base import BaseNNClusterer
 from ...nn.modules.loss import Criterion
 from ...optim.adam import Adam
 from ...optim.base import Optimizer
 from ...utils.logging import logger
+from ..base import BaseNNClusterer
+from .core import _CRLI
+from .data import DatasetForCRLI
 
 
 class CRLI(BaseNNClusterer):
@@ -115,18 +114,18 @@ class CRLI(BaseNNClusterer):
         rnn_hidden_size: int,
         rnn_cell_type: str = "GRU",
         lambda_kmeans: float = 1,
-        decoder_fcn_output_dims: Optional[list] = None,
+        decoder_fcn_output_dims: list | None = None,
         G_steps: int = 1,
         D_steps: int = 1,
         batch_size: int = 32,
         epochs: int = 100,
-        patience: Optional[int] = None,
-        G_optimizer: Union[Optimizer, type] = Adam,
-        D_optimizer: Union[Optimizer, type] = Adam,
+        patience: int | None = None,
+        G_optimizer: Optimizer | type = Adam,
+        D_optimizer: Optimizer | type = Adam,
         num_workers: int = 0,
-        device: Optional[Union[str, torch.device, list]] = None,
-        saving_path: Optional[str] = None,
-        model_saving_strategy: Optional[str] = "best",
+        device: str | torch.device | list | None = None,
+        saving_path: str | None = None,
+        model_saving_strategy: str | None = "best",
         verbose: bool = True,
     ):
         super().__init__(
@@ -194,7 +193,7 @@ class CRLI(BaseNNClusterer):
 
     def _assemble_input_for_training(self, data: list) -> dict:
         # fetch data
-        indices, X, missing_mask = self._send_data_to_given_device(data)
+        _indices, X, missing_mask = self._send_data_to_given_device(data)
 
         inputs = {
             "X": X,
@@ -332,14 +331,14 @@ class CRLI(BaseNNClusterer):
 
         except KeyboardInterrupt:  # if keyboard interrupt, only warning
             logger.warning("‼️ Training got interrupted by the user. Exist now ...")
-        except Exception as e:  # other kind of exception follows below processing
+        except Exception as e:  # noqa: BLE001 - preserve recovery from interrupted training
             logger.error(f"❌ Exception: {e}")
             if self.best_model_dict is None:  # if no best model, raise error
                 raise RuntimeError(
                     "Training got interrupted. Model was not trained. Please investigate the error printed above."
                 )
             else:
-                RuntimeWarning(
+                logger.warning(
                     "Training got interrupted. Please investigate the error printed above.\n"
                     "Model got trained and will load the best checkpoint so far for testing.\n"
                     "If you don't want it, please try fit() again."
@@ -352,8 +351,8 @@ class CRLI(BaseNNClusterer):
 
     def fit(
         self,
-        train_set: Union[dict, str],
-        val_set: Optional[Union[dict, str]] = None,
+        train_set: dict | str,
+        val_set: dict | str | None = None,
         file_type: str = "hdf5",
     ) -> None:
         # Step 1: wrap the input data with classes Dataset and DataLoader
@@ -385,7 +384,7 @@ class CRLI(BaseNNClusterer):
     @torch.no_grad()
     def predict(
         self,
-        test_set: Union[dict, str],
+        test_set: dict | str,
         file_type: str = "hdf5",
         return_latent_vars: bool = False,
     ) -> dict:

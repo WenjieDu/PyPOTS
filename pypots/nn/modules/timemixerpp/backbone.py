@@ -1,16 +1,16 @@
-""" """
+"""Implementation of pypots.nn.modules.timemixerpp.backbone."""
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
 import torch
-import torch.nn as nn
 import torch.nn.functional as F
+from torch import nn
 
-from .layers import MixerBlock
 from ..revin import RevIN
-from ..transformer.attention import ScaledDotProductAttention, MultiHeadAttention
+from ..transformer.attention import MultiHeadAttention, ScaledDotProductAttention
 from ..transformer.embedding import DataEmbedding
+from .layers import MixerBlock
 
 
 class BackboneTimeMixerPP(nn.Module):
@@ -176,8 +176,6 @@ class BackboneTimeMixerPP(nn.Module):
         x_enc = x_enc_sampling_list
         if x_mark_enc_mark_ori is not None:
             x_mark_enc = x_mark_sampling_list
-        else:
-            x_mark_enc = x_mark_enc
 
         return x_enc, x_mark_enc
 

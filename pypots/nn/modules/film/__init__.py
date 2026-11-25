@@ -20,7 +20,7 @@ from .backbone import BackboneFiLM
 from .layers import HiPPO_LegT, SpectralConv1d
 
 __all__ = [
+    "BackboneFiLM",
     "HiPPO_LegT",
     "SpectralConv1d",
-    "BackboneFiLM",
 ]

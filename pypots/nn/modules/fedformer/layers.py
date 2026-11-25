@@ -1,19 +1,17 @@
-""" """
+"""Implementation of pypots.nn.modules.fedformer.layers."""
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
 import math
 from functools import partial
-from typing import List, Tuple, Optional
 
 import numpy as np
 import torch
 import torch.nn.functional as F
 from scipy.special import eval_legendre
-from sympy import Poly, legendre, Symbol, chebyshevt
-from torch import Tensor
-from torch import nn
+from sympy import Poly, Symbol, chebyshevt, legendre
+from torch import Tensor, nn
 
 from ..autoformer.layers import MovingAvgBlock
 from ..transformer.attention import AttentionOperator
@@ -150,7 +148,7 @@ def get_filter(base, k):
         return psi1[i](inp) * mask + psi2[i](inp) * (1 - mask)
 
     if base not in ["legendre", "chebyshev"]:
-        raise Exception("Base not supported")
+        raise ValueError("Base not supported")
 
     x = Symbol("x")
     H0 = np.zeros((k, k))
@@ -284,13 +282,13 @@ class MWT_CZ1d(nn.Module):
         self.register_buffer("rc_o", torch.Tensor(np.concatenate((H1r, G1r), axis=0)))
 
     def forward(self, x):
-        B, N, c, k = x.shape  # (B, N, k)
+        _B, N, _c, _k = x.shape  # (B, N, k)
         ns = math.floor(np.log2(N))
         nl = pow(2, math.ceil(np.log2(N)))
         extra_x = x[:, 0 : nl - N, :, :]
         x = torch.cat([x, extra_x], 1)
-        Ud = torch.jit.annotate(List[Tensor], [])
-        Us = torch.jit.annotate(List[Tensor], [])
+        Ud = torch.jit.annotate(list[Tensor], [])
+        Us = torch.jit.annotate(list[Tensor], [])
         for i in range(ns - self.L):
             d, x = self.wavelet_transform(x)
             Ud += [self.A(d) + self.B(x)]
@@ -363,13 +361,13 @@ class MultiWaveletTransform(AttentionOperator):
         q: torch.Tensor,
         k: torch.Tensor,
         v: torch.Tensor,
-        attn_mask: Optional[torch.Tensor] = None,
+        attn_mask: torch.Tensor | None = None,
         **kwargs,
-    ) -> Tuple[torch.Tensor, None]:
+    ) -> tuple[torch.Tensor, None]:
         # q, k, v all have 4 dimensions [batch_size, n_steps, n_heads, d_tensor]
         # d_tensor could be d_q, d_k, d_v
 
-        B, L, H, E = q.shape
+        B, L, _H, _E = q.shape
         _, S, _, D = v.shape
         if L > S:
             zeros = torch.zeros_like(q[:, : (L - S), :]).float()
@@ -432,8 +430,8 @@ class FourierCrossAttentionW(nn.Module):
         xq = q.permute(0, 3, 2, 1)  # size = [B, H, E, L] torch.Size([3, 8, 64, 512])
         xk = k.permute(0, 3, 2, 1)
         xv = v.permute(0, 3, 2, 1)
-        self.index_q = list(range(0, min(int(L // 2), self.modes1)))
-        self.index_k_v = list(range(0, min(int(xv.shape[3] // 2), self.modes1)))
+        self.index_q = list(range(min(int(L // 2), self.modes1)))
+        self.index_k_v = list(range(min(int(xv.shape[3] // 2), self.modes1)))
 
         # Compute Fourier coefficients
         xq_ft_ = torch.zeros(B, H, E, len(self.index_q), device=xq.device, dtype=torch.cfloat)
@@ -452,7 +450,7 @@ class FourierCrossAttentionW(nn.Module):
             xqk_ft = torch.softmax(abs(xqk_ft), dim=-1)
             xqk_ft = torch.complex(xqk_ft, torch.zeros_like(xqk_ft))
         else:
-            raise Exception("{} actiation function is not implemented".format(self.activation))
+            raise NotImplementedError(f"{self.activation} activation function is not implemented")
         xqkv_ft = self.compl_mul1d("bhxy,bhey->bhex", xqk_ft, xk_ft_)
 
         xqkvw = xqkv_ft
@@ -558,13 +556,13 @@ class MultiWaveletCross(AttentionOperator):
         q: torch.Tensor,
         k: torch.Tensor,
         v: torch.Tensor,
-        attn_mask: Optional[torch.Tensor] = None,
+        attn_mask: torch.Tensor | None = None,
         **kwargs,
-    ) -> Tuple[torch.Tensor, None]:
+    ) -> tuple[torch.Tensor, None]:
         # q, k, v all have 4 dimensions [batch_size, n_steps, n_heads, d_tensor]
         # d_tensor could be d_q, d_k, d_v
 
-        B, N, H, E = q.shape  # (B, N, H, E) torch.Size([3, 768, 8, 2])
+        B, N, _H, _E = q.shape  # (B, N, H, E) torch.Size([3, 768, 8, 2])
         _, S, _, _ = k.shape  # (B, S, H, E) torch.Size([3, 96, 8, 2])
 
         q = q.view(q.shape[0], q.shape[1], -1)
@@ -594,29 +592,29 @@ class MultiWaveletCross(AttentionOperator):
         k = torch.cat([k, extra_k], 1)
         v = torch.cat([v, extra_v], 1)
 
-        Ud_q = torch.jit.annotate(List[Tuple[Tensor]], [])
-        Ud_k = torch.jit.annotate(List[Tuple[Tensor]], [])
-        Ud_v = torch.jit.annotate(List[Tuple[Tensor]], [])
+        Ud_q = torch.jit.annotate(list[tuple[Tensor]], [])
+        Ud_k = torch.jit.annotate(list[tuple[Tensor]], [])
+        Ud_v = torch.jit.annotate(list[tuple[Tensor]], [])
 
-        Us_q = torch.jit.annotate(List[Tensor], [])
-        Us_k = torch.jit.annotate(List[Tensor], [])
-        Us_v = torch.jit.annotate(List[Tensor], [])
+        Us_q = torch.jit.annotate(list[Tensor], [])
+        Us_k = torch.jit.annotate(list[Tensor], [])
+        Us_v = torch.jit.annotate(list[Tensor], [])
 
-        Ud = torch.jit.annotate(List[Tensor], [])
-        Us = torch.jit.annotate(List[Tensor], [])
+        Ud = torch.jit.annotate(list[Tensor], [])
+        Us = torch.jit.annotate(list[Tensor], [])
 
         # decompose
         for i in range(ns - self.L):
             d, q = self.wavelet_transform(q)
-            Ud_q += [tuple([d, q])]
+            Ud_q += [(d, q)]
             Us_q += [d]
         for i in range(ns - self.L):
             d, k = self.wavelet_transform(k)
-            Ud_k += [tuple([d, k])]
+            Ud_k += [(d, k)]
             Us_k += [d]
         for i in range(ns - self.L):
             d, v = self.wavelet_transform(v)
-            Ud_v += [tuple([d, v])]
+            Ud_v += [(d, v)]
             Us_v += [d]
         for i in range(ns - self.L):
             dk, sk = Ud_k[i], Us_k[i]
@@ -666,11 +664,11 @@ def get_frequency_modes(seq_len, modes=64, mode_select_method="random"):
     """
     modes = min(modes, seq_len // 2)
     if mode_select_method == "random":
-        index = list(range(0, seq_len // 2))
+        index = list(range(seq_len // 2))
         np.random.shuffle(index)
         index = index[:modes]
     else:
-        index = list(range(0, modes))
+        index = list(range(modes))
     index.sort()
     return index
 
@@ -710,9 +708,9 @@ class FourierBlock(AttentionOperator):
         q: torch.Tensor,
         k: torch.Tensor,
         v: torch.Tensor,
-        attn_mask: Optional[torch.Tensor] = None,
+        attn_mask: torch.Tensor | None = None,
         **kwargs,
-    ) -> Tuple[torch.Tensor, None]:
+    ) -> tuple[torch.Tensor, None]:
         # q, k, v all have 4 dimensions [batch_size, n_steps, n_heads, d_tensor]
         # d_tensor could be d_q, d_k, d_v
 
@@ -803,9 +801,9 @@ class FourierCrossAttention(AttentionOperator):
         q: torch.Tensor,
         k: torch.Tensor,
         v: torch.Tensor,
-        attn_mask: Optional[torch.Tensor] = None,
+        attn_mask: torch.Tensor | None = None,
         **kwargs,
-    ) -> Tuple[torch.Tensor, None]:
+    ) -> tuple[torch.Tensor, None]:
         # q, k, v all have 4 dimensions [batch_size, n_steps, n_heads, d_tensor]
         # d_tensor could be d_q, d_k, d_v
 
@@ -836,7 +834,7 @@ class FourierCrossAttention(AttentionOperator):
             xqk_ft = torch.softmax(abs(xqk_ft), dim=-1)
             xqk_ft = torch.complex(xqk_ft, torch.zeros_like(xqk_ft))
         else:
-            raise Exception("{} actiation function is not implemented".format(self.activation))
+            raise NotImplementedError(f"{self.activation} activation function is not implemented")
         xqkv_ft = self.compl_mul1d("bhxy,bhey->bhex", xqk_ft, xk_ft_)
         xqkvw = self.compl_mul1d("bhex,heox->bhox", xqkv_ft, torch.complex(self.weights1, self.weights2))
         out_ft = torch.zeros(B, H, E, L // 2 + 1, device=xq.device, dtype=torch.cfloat)

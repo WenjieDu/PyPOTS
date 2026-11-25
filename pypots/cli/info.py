@@ -62,7 +62,7 @@ def info():
             total += count
             print(f"  {task:<25} {count} models")
         print(f"  {'TOTAL':<25} {total} models")
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001 - keep optional model inventory failures local to CLI info
         print(f"  Error listing models: {e}")
 
     # Optional dependencies status

@@ -1,4 +1,4 @@
-""" """
+"""Implementation of pypots.nn.modules.loss."""
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
@@ -8,9 +8,9 @@ from torch.nn.modules.loss import _Loss
 
 from ..functional import (
     calc_mae,
+    calc_mre,
     calc_mse,
     calc_rmse,
-    calc_mre,
 )
 
 

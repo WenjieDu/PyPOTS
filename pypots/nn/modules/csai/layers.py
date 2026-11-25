@@ -1,4 +1,4 @@
-""" """
+"""Implementation of pypots.nn.modules.csai.layers."""
 
 # Created by Joseph Arul Raj <joseph_arul_raj@kcl.ac.uk>
 # License: BSD-3-Clause
@@ -6,8 +6,8 @@
 import math
 
 import torch
-import torch.nn as nn
 import torch.nn.functional as F
+from torch import nn
 from torch.autograd import Variable
 from torch.nn.parameter import Parameter
 

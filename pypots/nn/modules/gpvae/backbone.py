@@ -1,19 +1,19 @@
-""" """
+"""Implementation of pypots.nn.modules.gpvae.backbone."""
 
 # Created by Jun Wang <jwangfx@connect.ust.hk> and Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
 import numpy as np
 import torch
-import torch.nn as nn
+from torch import nn
 
 from .layers import (
+    GpvaeDecoder,
     GpvaeEncoder,
-    rbf_kernel,
+    cauchy_kernel,
     diffusion_kernel,
     matern_kernel,
-    cauchy_kernel,
-    GpvaeDecoder,
+    rbf_kernel,
 )
 
 

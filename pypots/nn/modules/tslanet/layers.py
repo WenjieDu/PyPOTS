@@ -1,4 +1,4 @@
-""" """
+"""Implementation of pypots.nn.modules.tslanet.layers."""
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
@@ -7,7 +7,7 @@ import math
 import warnings
 
 import torch
-import torch.nn as nn
+from torch import nn
 
 
 def drop_path(x, drop_prob: float = 0.0, training: bool = False, scale_by_keep: bool = True):
@@ -34,7 +34,7 @@ class DropPath(nn.Module):
     """timm.models.layers.DropPath"""
 
     def __init__(self, drop_prob: float = 0.0, scale_by_keep: bool = True):
-        super(DropPath, self).__init__()
+        super().__init__()
         self.drop_prob = drop_prob
         self.scale_by_keep = scale_by_keep
 

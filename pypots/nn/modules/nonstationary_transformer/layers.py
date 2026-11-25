@@ -1,14 +1,13 @@
-""" """
+"""Implementation of pypots.nn.modules.nonstationary_transformer.layers."""
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
 import math
-from typing import Optional, Tuple
 
 import torch
 import torch.fft
-import torch.nn as nn
+from torch import nn
 
 from ..transformer.attention import AttentionOperator
 
@@ -26,14 +25,14 @@ class DeStationaryAttention(AttentionOperator):
         q: torch.Tensor,
         v: torch.Tensor,
         k: torch.Tensor,
-        attn_mask: Optional[torch.Tensor] = None,
+        attn_mask: torch.Tensor | None = None,
         **kwargs,
-    ) -> Tuple[torch.Tensor, torch.Tensor]:
+    ) -> tuple[torch.Tensor, torch.Tensor]:
         # q, k, v all have 4 dimensions [batch_size, n_steps, n_heads, d_tensor]
         # d_tensor could be d_q, d_k, d_v
 
-        B, L, H, E = q.shape
-        _, S, _, D = v.shape
+        _B, _L, _H, E = q.shape
+        _, _S, _, _D = v.shape
         temperature = self.temperature or 1.0 / math.sqrt(E)
 
         tau, delta = kwargs["tau"], kwargs["delta"]

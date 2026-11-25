@@ -17,12 +17,12 @@ This implementation is inspired by the official one https://github.com/yuqinie98
 # License: BSD-3-Clause
 
 from .autoencoder import PatchtstEncoder
-from .layers import PatchEmbedding, RegressionHead, ClassificationHead, PredictionHead
+from .layers import ClassificationHead, PatchEmbedding, PredictionHead, RegressionHead
 
 __all__ = [
-    "PatchtstEncoder",
-    "PatchEmbedding",
-    "RegressionHead",
     "ClassificationHead",
+    "PatchEmbedding",
+    "PatchtstEncoder",
     "PredictionHead",
+    "RegressionHead",
 ]

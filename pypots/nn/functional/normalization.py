@@ -5,15 +5,13 @@ Store normalization functions for neural networks.
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-from typing import Tuple, Optional
-
 import torch
 
 
 def nonstationary_norm(
     X: torch.Tensor,
-    missing_mask: Optional[torch.Tensor] = None,
-) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+    missing_mask: torch.Tensor | None = None,
+) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
     """Normalization from Non-stationary Transformer. Please refer to :cite:`liu2022nonstationary` for more details.
 
     Parameters

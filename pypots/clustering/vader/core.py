@@ -8,7 +8,7 @@ and takes over the forward progress of the algorithm.
 
 import numpy as np
 import torch
-import torch.nn as nn
+from torch import nn
 
 from ...nn.functional import calc_mse
 from ...nn.modules.vader import BackboneVaDER

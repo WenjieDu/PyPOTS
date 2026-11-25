@@ -1,4 +1,4 @@
-""" """
+"""Implementation of pypots.nn.modules.timellm.backbone."""
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
@@ -6,19 +6,19 @@
 import os
 
 import torch
-import torch.nn as nn
+from torch import nn
 from transformers import (
-    LlamaModel,
-    LlamaTokenizer,
-    GPT2Model,
-    GPT2Tokenizer,
     BertModel,
     BertTokenizer,
+    GPT2Model,
+    GPT2Tokenizer,
+    LlamaModel,
+    LlamaTokenizer,
 )
 
-from .layers import ReprogrammingLayer
-from ..patchtst.layers import PatchEmbedding, FlattenHead
+from ..patchtst.layers import FlattenHead, PatchEmbedding
 from ..revin import RevIN
+from .layers import ReprogrammingLayer
 
 SUPPORTED_LLM = [
     "LLaMA",
@@ -96,7 +96,7 @@ class BackboneTimeLLM(nn.Module):
             )
             self.tokenizer = BertTokenizer.from_pretrained("google-bert/bert-base-uncased")
         else:
-            raise Exception("LLM model is not defined")
+            raise ValueError("LLM model is not defined")
 
         if self.tokenizer.eos_token:
             self.tokenizer.pad_token = self.tokenizer.eos_token
@@ -171,8 +171,8 @@ class BackboneTimeLLM(nn.Module):
                 prompt_ = (
                     f"<|start_prompt|>Dataset description: {self.domain_prompt_content}"
                     "Task description: "
-                    f"forecast the next {str(self.n_pred_steps)} steps given "
-                    f"the previous {str(self.n_steps)} steps information; "
+                    f"forecast the next {self.n_pred_steps!s} steps given "
+                    f"the previous {self.n_steps!s} steps information; "
                     "Input statistics: "
                     f"min value {min_values_str}, "
                     f"max value {max_values_str}, "
@@ -207,7 +207,7 @@ class BackboneTimeLLM(nn.Module):
 
         x_enc = x_enc.permute(0, 2, 1).contiguous()
 
-        if os.getenv("ENABLE_AMP", False):
+        if os.getenv("ENABLE_AMP", ""):
             enc_out = self.patch_embedding(x_enc.to(torch.bfloat16))
         else:
             enc_out = self.patch_embedding(x_enc)

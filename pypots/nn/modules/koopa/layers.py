@@ -1,4 +1,4 @@
-""" """
+"""Implementation of pypots.nn.modules.koopa.layers."""
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
@@ -7,7 +7,7 @@ import math
 
 import torch
 import torch.fft
-import torch.nn as nn
+from torch import nn
 
 
 class FourierFilter(nn.Module):
@@ -89,7 +89,7 @@ class KPLayer(nn.Module):
         self.K = None  # B E E
 
     def one_step_forward(self, z, return_rec=False, return_K=False):
-        B, input_len, E = z.shape
+        B, input_len, _E = z.shape
         assert input_len > 1, "snapshots number should be larger than 1"
         x, y = z[:, :-1], z[:, 1:]
 
@@ -132,7 +132,7 @@ class KPLayerApprox(nn.Module):
         # z:       B L E, koopman invariance space representation
         # z_rec:   B L E, reconstructed representation
         # z_pred:  B S E, forecasting representation
-        B, input_len, E = z.shape
+        B, input_len, _E = z.shape
         assert input_len > 1, "snapshots number should be larger than 1"
         x, y = z[:, :-1], z[:, 1:]
 
@@ -198,7 +198,7 @@ class TimeVarKP(nn.Module):
 
     def forward(self, x):
         # x: B L C
-        B, L, C = x.shape
+        B, L, _C = x.shape
 
         res = torch.cat((x[:, L - self.padding_len :, :], x), dim=1)
 

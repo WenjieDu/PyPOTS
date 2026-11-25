@@ -1,4 +1,4 @@
-""" """
+"""Implementation of pypots.nn.modules.csai.backbone."""
 
 # Created by Linglong Qian, Joseph Arul Raj <linglong.qian@kcl.ac.uk, joseph_arul_raj@kcl.ac.uk>
 # License: BSD-3-Clause
@@ -6,10 +6,10 @@
 import math
 
 import torch
-import torch.nn as nn
+from torch import nn
 
-from .layers import FeatureRegression, Decay, Decay_obs, PositionalEncoding, Conv1dWithInit, TorchTransformerEncoder
-from ..loss import Criterion, MAE
+from ..loss import MAE, Criterion
+from .layers import Conv1dWithInit, Decay, Decay_obs, FeatureRegression, PositionalEncoding, TorchTransformerEncoder
 
 
 class BackboneCSAI(nn.Module):
@@ -92,9 +92,11 @@ class BackboneCSAI(nn.Module):
         n_features,
         rnn_hidden_size,
         step_channels,
-        training_loss: Criterion = MAE(),
+        training_loss: Criterion | None = None,
     ):
         super().__init__()
+        if training_loss is None:
+            training_loss = MAE()
 
         self.n_steps = n_steps
         self.step_channels = step_channels
@@ -199,9 +201,11 @@ class BackboneBCSAI(nn.Module):
         n_features,
         rnn_hidden_size,
         step_channels,
-        training_loss: Criterion = MAE(),
+        training_loss: Criterion | None = None,
     ):
         super().__init__()
+        if training_loss is None:
+            training_loss = MAE()
 
         self.model_f = BackboneCSAI(n_steps, n_features, rnn_hidden_size, step_channels, training_loss)
         self.model_b = BackboneCSAI(n_steps, n_features, rnn_hidden_size, step_channels, training_loss)

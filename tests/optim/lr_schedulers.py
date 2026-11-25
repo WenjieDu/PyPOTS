@@ -12,15 +12,15 @@ import pytest
 
 from pypots.imputation import SAITS
 from pypots.nn.functional import calc_mae
-from pypots.optim import Adam, AdamW, Adadelta, Adagrad, RMSprop, SGD
+from pypots.optim import SGD, Adadelta, Adagrad, Adam, AdamW, RMSprop
 from pypots.optim.lr_scheduler import (
-    LambdaLR,
     ConstantLR,
     ExponentialLR,
+    LambdaLR,
     LinearLR,
-    StepLR,
-    MultiStepLR,
     MultiplicativeLR,
+    MultiStepLR,
+    StepLR,
 )
 from pypots.utils.logging import logger
 from tests.global_test_config import DATA, DEVICE

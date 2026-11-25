@@ -1,9 +1,9 @@
-""" """
+"""Implementation of pypots.nn.modules.etsformer.autoencoder."""
 
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-import torch.nn as nn
+from torch import nn
 
 
 class ETSformerEncoder(nn.Module):

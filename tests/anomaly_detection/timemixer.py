@@ -16,15 +16,15 @@ from pypots.optim import Adam
 from pypots.utils.logging import logger
 from tests.global_test_config import (
     DATA,
-    EPOCHS,
     DEVICE,
-    TRAIN_SET,
-    VAL_SET,
-    TEST_SET,
+    EPOCHS,
+    GENERAL_H5_TEST_SET_PATH,
     GENERAL_H5_TRAIN_SET_PATH,
     GENERAL_H5_VAL_SET_PATH,
-    GENERAL_H5_TEST_SET_PATH,
     RESULT_SAVING_DIR_FOR_ANOMALY_DETECTION,
+    TEST_SET,
+    TRAIN_SET,
+    VAL_SET,
     check_tb_and_model_checkpoints_existence,
 )
 
@@ -116,9 +116,7 @@ class TestTimeMixer(unittest.TestCase):
             anomaly_detection_results["anomaly_detection"],
             anomaly_labels,
         )
-        logger.info(
-            f"Lazy-loading TimeMixer Accuracy: {accuracy}, F1: {f1}, Precision: {precision}, Recall: {recall}"
-        )
+        logger.info(f"Lazy-loading TimeMixer Accuracy: {accuracy}, F1: {f1}, Precision: {precision}, Recall: {recall}")
 
 
 if __name__ == "__main__":

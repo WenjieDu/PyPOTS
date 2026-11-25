@@ -6,12 +6,10 @@ and takes over the forward progress of the algorithm.
 # Created by Wenjie Du <wenjay.du@gmail.com>
 # License: BSD-3-Clause
 
-from typing import Optional
-
 import torch
-import torch.nn as nn
 import torch.nn.functional as F
 from sklearn.cluster import KMeans
+from torch import nn
 
 from ...nn.functional import calc_mse
 from ...nn.modules.crli import BackboneCRLI
@@ -25,7 +23,7 @@ class _CRLI(nn.Module):
         n_clusters: int,
         n_generator_layers: int,
         rnn_hidden_size: int,
-        decoder_fcn_output_dims: Optional[list],
+        decoder_fcn_output_dims: list | None,
         lambda_kmeans: float,
         rnn_cell_type: str = "GRU",
     ):
@@ -76,7 +74,7 @@ class _CRLI(nn.Module):
             HTH = torch.matmul(fcn_latent, fcn_latent.permute(1, 0))
 
             if self.counter_for_updating_F == 0 or self.counter_for_updating_F % 10 == 0:
-                U, s, V = torch.linalg.svd(fcn_latent)
+                U, _s, _V = torch.linalg.svd(fcn_latent)
                 self.term_F = U[:, : self.n_clusters]
 
             FTHTHF = torch.matmul(torch.matmul(self.term_F.permute(1, 0), HTH), self.term_F)

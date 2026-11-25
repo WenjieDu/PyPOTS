@@ -43,10 +43,10 @@ Vendored from the TS-ICL model architecture: https://github.com/EDF-Lab/ts-icl
 
 from __future__ import annotations
 
+from collections.abc import Callable, Sequence
+
 # ACKNOWLEDGEMENT:
 # https://github.com/soda-inria/tabicl/blob/main/src/tabicl/_model/layers.py
-from typing import Callable, Optional, Sequence
-
 import torch.nn.functional as F
 from torch import Tensor, nn
 
@@ -78,7 +78,7 @@ class MLP(nn.Module):
     def __init__(
         self,
         in_dim: int,
-        out_dim: Optional[int] = None,
+        out_dim: int | None = None,
         hidden_dims: Sequence[int] = (256, 256, 256),
         activation: str = "gelu",
         bias: bool = True,
@@ -176,9 +176,9 @@ class MultiheadAttention(nn.MultiheadAttention):
         query: Tensor,
         key: Tensor,
         value: Tensor,
-        key_padding_mask: Optional[Tensor] = None,
-        attn_mask: Optional[Tensor | int] = None,
-        rope: Optional[RotaryEmbedding] = None,
+        key_padding_mask: Tensor | None = None,
+        attn_mask: Tensor | int | None = None,
+        rope: RotaryEmbedding | None = None,
     ) -> Tensor:
         """Compute multi-head attention with support for rotary positional encoding.
 
@@ -286,11 +286,11 @@ class MultiheadAttentionBlock(nn.TransformerEncoderLayer):
     def forward(
         self,
         q: Tensor,
-        k: Optional[Tensor] = None,
-        v: Optional[Tensor] = None,
-        key_padding_mask: Optional[Tensor] = None,
-        attn_mask: Optional[Tensor | int] = None,
-        rope: Optional[RotaryEmbedding] = None,
+        k: Tensor | None = None,
+        v: Tensor | None = None,
+        key_padding_mask: Tensor | None = None,
+        attn_mask: Tensor | int | None = None,
+        rope: RotaryEmbedding | None = None,
     ) -> Tensor:
         """Process input through attention with optional rotary positional encoding.
 
@@ -382,9 +382,9 @@ class MultiheadAttentionBlock(nn.TransformerEncoderLayer):
         q: Tensor,
         k: Tensor,
         v: Tensor,
-        key_padding_mask: Optional[Tensor],
-        attn_mask: Optional[Tensor | int],
-        rope: Optional[RotaryEmbedding],
+        key_padding_mask: Tensor | None,
+        attn_mask: Tensor | int | None,
+        rope: RotaryEmbedding | None,
     ) -> Tensor:
         attn = self.attn(q, k, v, key_padding_mask, attn_mask, rope)
         return self.dropout1(attn)
