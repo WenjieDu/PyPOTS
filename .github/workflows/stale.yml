@@ -1,43 +1,142 @@
-name: "Stale Manager"
+name: Stale Manager
 
 on:
-  push:
-    branches:
-      - test_stale_manager
   schedule:
     - cron: "0 8 * * *"
+  workflow_dispatch:
 
-permissions:
-  actions: write
-  contents: write # only for delete-branch option
-  issues: write
-  pull-requests: write
+# Grant only the permissions needed by each job.
+permissions: {}
+
+concurrency:
+  group: stale-manager
+  cancel-in-progress: false
 
 jobs:
-  issue-manager:
+  labels:
+    permissions:
+      issues: write
+    if: github.ref_name == github.event.repository.default_branch
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
-      - name: Handle stale items
+      - name: Ensure stale policy labels exist
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const labels = {
+              "stale-question": "Inactive question in its closing grace period",
+              "stale-reproduction": "Unconfirmed bug awaiting reproduction information",
+              "stale-completed": "Completed issue in its closing grace period",
+            };
+            for (const [name, description] of Object.entries(labels)) {
+              const params = { ...context.repo, name };
+              try {
+                await github.rest.issues.getLabel(params);
+              } catch (error) {
+                if (error.status !== 404) throw error;
+                try {
+                  await github.rest.issues.createLabel({ ...params, color: "ededed", description });
+                } catch (createError) {
+                  if (createError.status !== 422) throw createError;
+                  await github.rest.issues.getLabel(params);
+                }
+              }
+            }
+
+  questions:
+    # actions: write is required for the stale action state cache.
+    permissions:
+      actions: write
+      issues: write
+      pull-requests: read
+    needs: labels
+    if: github.ref_name == github.event.repository.default_branch
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Handle inactive questions
         uses: actions/stale@v10
         with:
-          stale-issue-message: 'This issue is stale because it has been open 30 days with no activity. Remove stale label or comment or this will be closed in 10 days.'
-          close-issue-message: 'This issue was closed because it has been stalled for 10 days with no activity.'
+          only-issue-labels: 'question'
+          exempt-issue-labels: 'bug,potential bug,enhancement,new feature,new algo,documentation,security,discussion,good first issue,help wanted,keep,awaiting-approval,work-in-progress,completed,stale-reproduction,stale-completed'
+          exempt-all-issue-assignees: true
+          exempt-all-issue-milestones: true
+          stale-issue-label: 'stale-question'
+          days-before-issue-stale: 60
+          days-before-issue-close: 14
+          stale-issue-message: |
+            This question has had no activity for 60 days. If it is still relevant, please reply with an update.
+            It will be closed after 14 more days without activity. Maintainers may add the keep label to exempt it.
+          close-issue-message: 'Closing this inactive question. Please reply or open a new issue with updated context if further help is needed.'
+          close-issue-reason: not_planned
+          days-before-pr-stale: -1
+          days-before-pr-close: -1
+          remove-pr-stale-when-updated: false
+          remove-issue-stale-when-updated: true
+          delete-branch: false
+          operations-per-run: 30
+
+  reproduction:
+    # actions: write is required for the stale action state cache.
+    permissions:
+      actions: write
+      issues: write
+      pull-requests: read
+    needs: labels
+    if: github.ref_name == github.event.repository.default_branch
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Handle unconfirmed bugs awaiting information
+        uses: actions/stale@v10
+        with:
+          # Both labels are required: a maintainer must explicitly request more information.
+          only-issue-labels: 'potential bug,question'
+          exempt-issue-labels: 'bug,enhancement,new feature,new algo,documentation,security,discussion,good first issue,help wanted,keep,awaiting-approval,work-in-progress,completed,stale-question,stale-completed'
+          exempt-all-issue-assignees: true
+          exempt-all-issue-milestones: true
+          stale-issue-label: 'stale-reproduction'
           days-before-issue-stale: 30
-          days-before-issue-close: 10
-          exempt-issue-labels: 'keep,awaiting-approval,work-in-progress,completed'
+          days-before-issue-close: 14
+          stale-issue-message: |
+            This report has been awaiting additional information for 30 days.
+            Please provide the requested reproduction or logs within 14 days to keep it open. Maintainers may add the keep label to exempt it.
+          close-issue-message: 'Closing because the requested reproduction or information was not provided. Please comment with the requested details to request reopening, or open a new issue if the problem persists.'
+          close-issue-reason: not_planned
+          days-before-pr-stale: -1
+          days-before-pr-close: -1
+          remove-pr-stale-when-updated: false
+          remove-issue-stale-when-updated: true
+          delete-branch: false
+          operations-per-run: 30
 
-          stale-pr-message: 'This PR is stale because it has been open 30 days with no activity. Remove stale label or comment or this will be closed in 10 days.'
-          close-pr-message: 'This PR was closed because it has been stalled for 10 days with no activity.'
-          days-before-pr-stale: 30
-          days-before-pr-close: 10
-          exempt-pr-labels: 'keep,awaiting-approval,work-in-progress,completed'
-
-      - name: Handle completed items
+  completed:
+    # actions: write is required for the stale action state cache.
+    permissions:
+      actions: write
+      issues: write
+      pull-requests: read
+    needs: labels
+    if: github.ref_name == github.event.repository.default_branch
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Handle explicitly completed issues
         uses: actions/stale@v10
         with:
-          any-of-issue-labels: 'completed'
-          stale-issue-message: 'This issue is marked as "completed" and has been open 14 days with no activity. It will be closed in 7 days if no further activity occurs.'
-          close-issue-message: 'This issue was closed because it has been marked as "completed".'
+          only-issue-labels: 'completed'
+          exempt-issue-labels: 'keep,awaiting-approval,work-in-progress,security,stale-question,stale-reproduction'
+          exempt-all-issue-milestones: true
+          stale-issue-label: 'stale-completed'
           days-before-issue-stale: 14
           days-before-issue-close: 7
-          close-issue-reason: 'completed'
+          stale-issue-message: 'This issue was marked completed and has had no activity for 14 days. It will be closed in 7 days unless there is an update.'
+          close-issue-message: 'Closing this issue because it was explicitly marked completed.'
+          close-issue-reason: completed
+          days-before-pr-stale: -1
+          days-before-pr-close: -1
+          remove-pr-stale-when-updated: false
+          remove-issue-stale-when-updated: true
+          delete-branch: false
+          operations-per-run: 30

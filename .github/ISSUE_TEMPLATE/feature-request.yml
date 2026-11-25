@@ -1,32 +1,32 @@
 name: "🙌 Feature Request"
-description: Submit a request to add a new feature.
+description: Propose a new capability or improvement.
 labels: ["new feature", "enhancement"]
 
 body:
   - type: textarea
-    id: feature-description-requested
+    id: motivation
+    attributes:
+      label: Motivation and use case
+      description: What problem are you trying to solve? Who would benefit, and why is the current API insufficient?
     validations:
       required: true
-    attributes:
-      label: 1. Feature description
-      description: |
-        A clear and concise description of the feature proposal. Please provide a link to the paper and code if they exist.
 
   - type: textarea
-    id: motivation
+    id: proposal
+    attributes:
+      label: Proposed feature
+      description: Describe the desired behavior, example usage, affected tasks or APIs, and expected outcomes.
     validations:
       required: true
+
+  - type: textarea
+    id: alternatives
     attributes:
-      label: 2. Motivation
-      description: |
-        Please outline the motivation of your proposal. Is your feature request related to a problem? If this is related to another GitHub issue, please link here.
+      label: Alternatives and related work (optional)
+      description: Existing workarounds, comparable libraries, papers, or related issues.
 
   - type: textarea
     id: contribution
-    validations:
-      required: true
     attributes:
-      label: 3. Your contribution
-      description: |
-        Is there any way that you could help, for example, by submitting a PR?
-        Star🌟 this repository is the easiest way to help us.
+      label: Additional context (optional)
+      description: Implementation considerations, compatibility concerns, or whether you would like to help implement the feature.

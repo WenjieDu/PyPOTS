@@ -1,4 +1,4 @@
-name: Auto reply to new issues and PR
+name: Welcome first-time contributors
 
 on:
   issues:
@@ -7,37 +7,36 @@ on:
     branches: [main, dev]
     types: [opened]
 
+permissions: {}
+
 jobs:
   greeting:
     runs-on: ubuntu-latest
-
+    timeout-minutes: 5
     permissions:
-      pull-requests: write
       issues: write
-      id-token: write
-      contents: read
+      pull-requests: write
 
     steps:
-    - uses: actions/first-interaction@v3
-      with:
-        repo_token: ${{ secrets.GITHUB_TOKEN }}
-        issue_message: |
-          Hi there 👋,
+      # Metadata and comments only. Never check out or run PR-controlled code in this workflow.
+      - uses: actions/first-interaction@v3
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          issue_message: |
+            Hi there 👋,
 
-          Thank you so much for your attention to PyPOTS! You can [follow me](https://github.com/WenjieDu) on GitHub to receive the latest news of PyPOTS.  
-          If you find PyPOTS helpful to your work, please star⭐️ this repository to get this issue prioritized.
-          Your star is your recognition, which can help more people notice PyPOTS and grow PyPOTS community.
-          It matters and is definitely a kind of contribution to the community.
+            Thank you for your first issue in PyPOTS! Please include the affected version, relevant context, and a minimal reproduction for bugs.
 
-          Best,
-          Wenjie
-        pr_message: |
-          Hi there 👋,
+            For usage questions, see the [documentation](https://docs.pypots.com/) or join our [Discord community](https://discord.gg/DXpCTdrvCE). Please report security vulnerabilities [privately](https://github.com/WenjieDu/PyPOTS/security/advisories/new).
 
-          We really appreciate that you have taken the time to make your first PR on PyPOTS!
+            Thanks for helping improve PyPOTS!
 
-          If you are trying to fix a bug, please reference the issue number in the description or give your details about the bug.
-          If you are implementing a feature request, please check with the maintainers that the feature will be accepted first.
+            The PyPOTS team
+          pr_message: |
+            Hi there 👋,
 
-          Best,
-          Wenjie
+            Thank you for your first contribution to PyPOTS! Ordinary contributions should target the dev branch. Please link relevant issues, explain the changes, and include your test results and any compatibility or licensing considerations.
+
+            For new models or major features, please discuss the proposal with maintainers first. See the [developer guide](https://docs.pypots.com/en/latest/dev_getting_started.html) for contribution and testing guidance.
+
+            The PyPOTS team

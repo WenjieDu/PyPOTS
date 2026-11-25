@@ -1,24 +1,31 @@
 name: "🤔 Other Kinds of Issues"
-description: "Didn't find a proper issue template above? Start here!"
+description: Ask a question or raise an issue not covered by the other forms.
 labels: ["question"]
 
 body:
+  - type: markdown
+    attributes:
+      value: |
+        For general discussion and usage questions, you can also join our [Discord community](https://discord.gg/DXpCTdrvCE).
+        Please check the [documentation](https://docs.pypots.com/) and existing issues first.
+        Security vulnerabilities should be [reported privately](https://github.com/WenjieDu/PyPOTS/security/advisories/new).
+
   - type: textarea
-    id: issue-description-requested
+    id: issue-description
+    attributes:
+      label: Issue or question
+      description: Describe what you want to know or discuss. Include the relevant task, model, API, and version where applicable.
     validations:
       required: true
+
+  - type: textarea
+    id: context
     attributes:
-      label: Issue description
-      description: |
-        A clear and concise description of the issue. Please provide a link to related information and code if they exist.
-        Besides, please add according labels to the issue on the right side of the page.
+      label: What have you tried? (optional)
+      description: Relevant code, documentation, related issues, or additional context. Redact private information.
 
   - type: textarea
     id: contribution
-    validations:
-      required: true
     attributes:
-      label: Your contribution
-      description: |
-        Is there any way that you could help, for example, by submitting a PR? 
-        Star🌟 this repository is the easiest way to help us.
+      label: Additional context (optional)
+      description: Any other details or suggestions that may help.
