@@ -19,8 +19,11 @@ build:
 
     jobs:
         pre_install:
-            # Match the minimum-Python CI CPU PyTorch version; install before the PyG extensions.
-            - python -m pip install torch==2.3.0+cpu --index-url https://download.pytorch.org/whl/cpu
+            # Upgrade RTD's bootstrap pip before resolving modern package metadata.
+            - python -m pip install --upgrade pip --index-url https://pypi.org/simple
+            # Select the exact Linux x86-64 / CPython 3.10 CPU wheel.
+            # Resolve all other dependencies from PyPI, not the restricted PyTorch index.
+            - python -m pip install --index-url https://pypi.org/simple -c requirements/requirements_docs.txt "https://download.pytorch.org/whl/cpu/torch-2.3.0%2Bcpu-cp310-cp310-linux_x86_64.whl"
             - python -m pip install -c requirements/requirements_docs.txt torch-geometric==2.8.1 torch-scatter==2.1.2 torch-sparse==0.6.18 --only-binary=torch-scatter,torch-sparse -f https://data.pyg.org/whl/torch-2.3.0+cpu.html
 
         post_install:
