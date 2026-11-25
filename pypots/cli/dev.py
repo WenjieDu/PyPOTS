@@ -62,7 +62,7 @@ IMPORT_ERROR_MESSAGE = (
     "--lint-code",
     "--lint_code",
     is_flag=True,
-    help="Run Black and Flake8 to lint code",
+    help="Format and lint code with Ruff",
 )
 def dev(build, cleanup, run_tests, k, show_coverage, lint_code):
     """Execute the dev command."""

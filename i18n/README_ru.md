@@ -359,6 +359,15 @@ year = {2025},
 - **Тестирование:** добавляйте регрессионные тесты для повышения надёжности и воспроизводимости.
 - **Безопасность:** сообщайте об уязвимостях конфиденциально согласно [SECURITY.md](https://github.com/WenjieDu/PyPOTS/blob/main/SECURITY.md).
 
+Перед отправкой pull request рекомендуем включить [pre-commit](https://pre-commit.com/) в локальном клоне репозитория для автоматического форматирования и проверки ваших изменений:
+
+```bash
+pip install pre-commit
+pre-commit install
+```
+
+Хуки запускаются автоматически при каждом коммите. Если хук изменил файлы, проверьте изменения, повторно добавьте их в индекс Git и повторите коммит. GitHub CI проверяет код и форматирование с помощью Ruff, даже если вы не установили хуки. Подробнее см. в [руководстве разработчика](https://docs.pypots.com/en/latest/dev_getting_started.html#using-pre-commit).
+
 Вклад участников отмечается на [странице участников GitHub](https://github.com/WenjieDu/PyPOTS/graphs/contributors), [сайте PyPOTS](https://pypots.com/about/#volunteer-developers) и, при необходимости, в примечаниях к выпускам. Соблюдайте [кодекс поведения](https://github.com/WenjieDu/PyPOTS/blob/main/CODE_OF_CONDUCT.md).
 
 Если PyPOTS полезен вам, поставьте звезду репозиторию, чтобы другие могли его обнаружить. Посмотрите [организации наших пользователей](https://pypots.com/users/).

@@ -359,6 +359,15 @@ PyPOTS를 사용하고 논문에서 인용하는 연구 프로젝트들이 있�
 - **테스트:** 회귀 테스트를 추가하여 신뢰성과 재현성을 높이세요.
 - **보안:** [SECURITY.md](https://github.com/WenjieDu/PyPOTS/blob/main/SECURITY.md)의 안내에 따라 취약점을 비공개로 신고하세요.
 
+풀 리퀘스트를 제출하기 전에 로컬에 클론한 저장소에서 [pre-commit](https://pre-commit.com/)을 활성화하여 변경 사항을 자동으로 포맷하고 검사하는 것을 권장합니다:
+
+```bash
+pip install pre-commit
+pre-commit install
+```
+
+훅은 커밋할 때 자동으로 실행됩니다. 훅이 파일을 수정하면 변경 사항을 검토하고 다시 스테이징한 다음 커밋을 재시도하세요. 훅을 설치하지 않아도 GitHub CI에서 Ruff 린팅 및 포맷 검사를 수행합니다. 자세한 내용은 [개발자 가이드](https://docs.pypots.com/en/latest/dev_getting_started.html#using-pre-commit)를 참고하세요.
+
 기여자는 [GitHub 기여자 페이지](https://github.com/WenjieDu/PyPOTS/graphs/contributors), [PyPOTS 웹사이트](https://pypots.com/about/#volunteer-developers) 및 해당되는 릴리스 노트에 소개됩니다. [행동 강령](https://github.com/WenjieDu/PyPOTS/blob/main/CODE_OF_CONDUCT.md)을 준수해 주세요.
 
 PyPOTS가 유용하다면 더 많은 사람이 발견할 수 있도록 저장소에 별을 눌러 주세요. [사용자 소속 기관](https://pypots.com/users/)도 확인해 보세요.

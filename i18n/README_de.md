@@ -359,6 +359,15 @@ Wir freuen uns über Beiträge von Forschenden, Entwicklerinnen und Entwicklern 
 - **Tests:** Ergänze Regressionstests zur Steigerung von Zuverlässigkeit und Reproduzierbarkeit.
 - **Sicherheit:** Melde Schwachstellen vertraulich gemäß [SECURITY.md](https://github.com/WenjieDu/PyPOTS/blob/main/SECURITY.md).
 
+Bevor du einen Pull Request einreichst, empfehlen wir dir, [pre-commit](https://pre-commit.com/) in deinem lokalen Klon zu aktivieren, damit deine Änderungen automatisch formatiert und geprüft werden:
+
+```bash
+pip install pre-commit
+pre-commit install
+```
+
+Die Hooks werden bei jedem Commit automatisch ausgeführt. Wenn ein Hook Dateien ändert, überprüfe die Änderungen, füge sie erneut zum Staging-Bereich hinzu und wiederhole den Commit. GitHub CI prüft mit Ruff sowohl den Code als auch die Formatierung, selbst wenn du die Hooks nicht installierst. Weitere Informationen findest du im [Entwicklerleitfaden](https://docs.pypots.com/en/latest/dev_getting_started.html#using-pre-commit).
+
 Mitwirkende werden auf der [GitHub-Seite der Mitwirkenden](https://github.com/WenjieDu/PyPOTS/graphs/contributors), der [PyPOTS-Website](https://pypots.com/about/#volunteer-developers) und gegebenenfalls in Release Notes gewürdigt. Bitte halte dich an den [Verhaltenskodex](https://github.com/WenjieDu/PyPOTS/blob/main/CODE_OF_CONDUCT.md).
 
 Wenn PyPOTS hilfreich ist, gib dem Repository einen Stern, damit andere es leichter entdecken. Sieh dir auch die [Institutionen unserer Nutzenden](https://pypots.com/users/) an.

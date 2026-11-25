@@ -359,6 +359,15 @@ Contribuições de pesquisadores, engenheiros e usuários são bem-vindas:
 - **Testes:** adicione testes de regressão para melhorar a confiabilidade e a reprodutibilidade.
 - **Segurança:** relate vulnerabilidades de forma privada conforme [SECURITY.md](https://github.com/WenjieDu/PyPOTS/blob/main/SECURITY.md).
 
+Antes de enviar um pull request, recomendamos ativar o [pre-commit](https://pre-commit.com/) no seu clone local para formatar e verificar automaticamente suas alterações:
+
+```bash
+pip install pre-commit
+pre-commit install
+```
+
+Os hooks são executados automaticamente ao fazer um commit. Se um hook modificar arquivos, revise as alterações, adicione-as novamente à área de staging e refaça o commit. O GitHub CI verifica o linting e a formatação com Ruff mesmo que você não instale os hooks. Consulte o [guia de desenvolvimento](https://docs.pypots.com/en/latest/dev_getting_started.html#using-pre-commit) para mais detalhes.
+
 Os colaboradores são reconhecidos na [página de colaboradores do GitHub](https://github.com/WenjieDu/PyPOTS/graphs/contributors), no [site do PyPOTS](https://pypots.com/about/#volunteer-developers) e nas notas de versão, quando aplicável. Siga nosso [código de conduta](https://github.com/WenjieDu/PyPOTS/blob/main/CODE_OF_CONDUCT.md).
 
 Se o PyPOTS for útil para você, considere dar uma estrela ao repositório. Conheça as [instituições de nossos usuários](https://pypots.com/users/).
