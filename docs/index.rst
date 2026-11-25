@@ -84,7 +84,7 @@ Welcome to PyPOTS docs!
 
 .. image:: https://pypots.com/figs/pypots_logos/readme/CN.svg
    :alt: README in Chinese
-   :target: https://github.com/WenjieDu/PyPOTS/blob/main/README_zh.md
+   :target: https://github.com/WenjieDu/PyPOTS/blob/main/i18n/README_zh.md
 
 .. image:: https://pypots.com/figs/pypots_logos/readme/US.svg
    :alt: README in English

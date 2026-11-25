@@ -1,4 +1,4 @@
-<img src="https://pypots.com/figs/icons/translate.svg" width="18"> [简体中文](https://github.com/WenjieDu/PyPOTS/blob/main/README_zh.md) | English
+<img src="https://pypots.com/figs/icons/translate.svg" width="18"> English | [简体中文](https://github.com/WenjieDu/PyPOTS/blob/main/i18n/README_zh.md) | [日本語](https://github.com/WenjieDu/PyPOTS/blob/main/i18n/README_ja.md) | [한국어](https://github.com/WenjieDu/PyPOTS/blob/main/i18n/README_ko.md) | [Deutsch](https://github.com/WenjieDu/PyPOTS/blob/main/i18n/README_de.md) | [Français](https://github.com/WenjieDu/PyPOTS/blob/main/i18n/README_fr.md) | [Español](https://github.com/WenjieDu/PyPOTS/blob/main/i18n/README_es.md) | [Português (Brasil)](https://github.com/WenjieDu/PyPOTS/blob/main/i18n/README_pt-BR.md) | [Русский](https://github.com/WenjieDu/PyPOTS/blob/main/i18n/README_ru.md) | [Bahasa Indonesia](https://github.com/WenjieDu/PyPOTS/blob/main/i18n/README_id.md)
 
 #  PyPOTS <a href="https://github.com/WenjieDu/PyPOTS"><img src="https://pypots.com/figs/pypots_logos/PyPOTS/logo_FFBG.svg" width="200" align='right'></a>
 
