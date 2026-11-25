@@ -359,6 +359,15 @@ PyPOTS を利用し、論文で引用する研究が増えています。[PyPOTS
 - **テスト：** 回帰テストを追加し、信頼性と再現性を高めてください。
 - **セキュリティ：** [SECURITY.md](https://github.com/WenjieDu/PyPOTS/blob/main/SECURITY.md) に従って脆弱性を非公開で報告してください。
 
+プルリクエストを送信する前に、ローカルにクローンしたリポジトリで [pre-commit](https://pre-commit.com/) を有効にし、変更内容を自動的にフォーマット・チェックすることを推奨します：
+
+```bash
+pip install pre-commit
+pre-commit install
+```
+
+フックはコミット時に自動実行されます。フックによってファイルが変更された場合は、変更内容を確認して再度ステージングし、コミットし直してください。フックをインストールしていなくても、GitHub CI で Ruff によるリンティングとフォーマットのチェックが行われます。詳しくは[開発者ガイド](https://docs.pypots.com/en/latest/dev_getting_started.html#using-pre-commit)をご覧ください。
+
 貢献者は [GitHub の貢献者一覧](https://github.com/WenjieDu/PyPOTS/graphs/contributors)、[PyPOTS の公式サイト](https://pypots.com/about/#volunteer-developers)、該当するリリースノートで紹介されます。[行動規範](https://github.com/WenjieDu/PyPOTS/blob/main/CODE_OF_CONDUCT.md)を遵守してください。
 
 PyPOTS が役立ったら、より多くの人に知ってもらうためにリポジトリにスターを付けてください。[ユーザーの所属機関](https://pypots.com/users/)もご覧ください。

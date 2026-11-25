@@ -361,6 +361,15 @@ year = {2025},
 - **测试：** 添加回归测试，提升 PyPOTS 的可靠性和可复现性。
 - **安全：** 按照 [SECURITY.md](https://github.com/WenjieDu/PyPOTS/blob/main/SECURITY.md) 的说明私下报告漏洞。
 
+提交 Pull Request 之前，建议在本地克隆的仓库中启用 [pre-commit](https://pre-commit.com/)，以自动格式化并检查你的修改：
+
+```bash
+pip install pre-commit
+pre-commit install
+```
+
+Git Hook 会在提交代码时自动运行。如果 Hook 修改了文件，请检查修改内容，重新暂存后再次提交。即使没有安装 Hook，GitHub CI 仍会执行 Ruff 代码规范和格式检查。详情请参阅[开发者指南](https://docs.pypots.com/en/latest/dev_getting_started.html#using-pre-commit)。
+
 贡献者将在 [GitHub 贡献者页面](https://github.com/WenjieDu/PyPOTS/graphs/contributors)、[PyPOTS 官网](https://pypots.com/about/#volunteer-developers) 及适用的发布说明中获得认可。请遵守[行为准则](https://github.com/WenjieDu/PyPOTS/blob/main/CODE_OF_CONDUCT.md)。
 
 如果 PyPOTS 对你有帮助，欢迎给仓库点亮 Star，让更多人发现它。也可以了解[用户所在机构](https://pypots.com/users/)。

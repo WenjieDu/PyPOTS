@@ -29,6 +29,7 @@ Setting Up the Development Environment
    git clone https://github.com/WenjieDu/PyPOTS.git
    cd PyPOTS
    pip install -e ".[dev]"
+   pre-commit install
 
 Or with conda:
 
@@ -39,6 +40,53 @@ Or with conda:
    git clone https://github.com/WenjieDu/PyPOTS.git
    cd PyPOTS
    pip install -e ".[dev]"
+   pre-commit install
+
+
+Using Pre-commit
+^^^^^^^^^^^^^^^^^^^^
+
+We recommend enabling `pre-commit <https://pre-commit.com/>`_ before contributing.
+The repository's ``.pre-commit-config.yaml`` defines the hooks, but they do not
+run automatically until you install them in your local clone. If you have not
+installed the development dependencies, you can install pre-commit separately:
+
+.. code-block:: bash
+
+   pip install pre-commit
+   pre-commit install
+
+Run the installation commands from the repository root. You only need to install
+the Git hooks once per clone. The first run may take longer because pre-commit
+creates and caches its own hook environments. Ruff is pinned to the same version
+as CI and uses the rules and 120-character line-length setting in ``pyproject.toml``.
+You do not need to install Ruff separately to use the hooks.
+
+During a normal ``git commit``, the hooks check staged files, fix whitespace and
+end-of-file issues, validate YAML and TOML, detect merge conflict markers, format
+Python code, and run Ruff linting. If you prefer to check your staged changes
+before committing, run:
+
+.. code-block:: bash
+
+   pre-commit run
+
+To check all tracked files, including files outside your current changes, run:
+
+.. code-block:: bash
+
+   pre-commit run --all-files
+
+If a hook modifies a file, the commit stops so you can review the changes. Use
+``git diff`` to inspect them, stage the intended changes again with ``git add``,
+and retry the commit. Fix any remaining lint or configuration errors before
+retrying. Keep unrelated automatic fixes out of your pull request when running
+hooks across the whole repository.
+
+Pre-commit installation is recommended, not required. GitHub CI independently
+checks Ruff linting and formatting for pull requests targeting ``main`` or ``dev``,
+regardless of whether contributors enable local hooks. See :doc:`dev_testing`
+for the pre-PR checks.
 
 
 Key Concepts
@@ -206,8 +254,9 @@ Step 5: Validate Locally
    # Run your model's targeted test
    pytest -rA tests/imputation/your_model.py -n 1
 
-   # Lint
-   flake8 .
+   # Check formatting and lint
+   ruff format . --check
+   ruff check .
 
 
 Step 6: Submit with Evidence

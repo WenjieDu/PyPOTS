@@ -359,6 +359,15 @@ Kami menyambut kontribusi peneliti, insinyur, dan pengguna:
 - **Pengujian:** tambahkan uji regresi untuk meningkatkan keandalan dan reproduksibilitas.
 - **Keamanan:** laporkan kerentanan secara privat sesuai [SECURITY.md](https://github.com/WenjieDu/PyPOTS/blob/main/SECURITY.md).
 
+Sebelum mengajukan pull request, kami menyarankan untuk mengaktifkan [pre-commit](https://pre-commit.com/) pada klon lokal agar perubahan Anda diformat dan diperiksa secara otomatis:
+
+```bash
+pip install pre-commit
+pre-commit install
+```
+
+Hook dijalankan secara otomatis setiap kali Anda melakukan commit. Jika hook mengubah berkas, tinjau perubahan tersebut, tambahkan kembali ke staging area, lalu lakukan commit lagi. GitHub CI tetap memeriksa linting dan pemformatan dengan Ruff meskipun Anda tidak memasang hook. Lihat [panduan pengembang](https://docs.pypots.com/en/latest/dev_getting_started.html#using-pre-commit) untuk informasi lebih lanjut.
+
 Kontributor diakui pada [halaman kontributor GitHub](https://github.com/WenjieDu/PyPOTS/graphs/contributors), [situs PyPOTS](https://pypots.com/about/#volunteer-developers), dan catatan rilis jika relevan. Harap patuhi [kode etik](https://github.com/WenjieDu/PyPOTS/blob/main/CODE_OF_CONDUCT.md).
 
 Jika PyPOTS bermanfaat, pertimbangkan memberi bintang pada repositori agar orang lain menemukannya. Lihat juga [afiliasi pengguna kami](https://pypots.com/users/).

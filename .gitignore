@@ -17,6 +17,8 @@ docs/_build
 *results*
 *test*
 !tests/
+!/tests/**/*.py
+!/tests/**/*.pyi
 
 # ignore specific kinds of files like all PDFs
 *.pdf

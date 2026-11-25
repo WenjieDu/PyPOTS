@@ -33,14 +33,12 @@ dependencies:
     - conda-forge::sphinx-autodoc-typehints
 
     # dev
-    - conda-forge::ruff
-    - conda-forge::black
-    - conda-forge::flake8
-    - conda-forge::flake8-pyproject
     - conda-forge::pre-commit
     - conda-forge::jupyterlab
 
     - pip:
+        # linting (same version as pre-commit and CI)
+        - ruff==0.17.6
         # building
         - build
         # doc
