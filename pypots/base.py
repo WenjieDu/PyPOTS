@@ -14,11 +14,20 @@ from datetime import datetime
 
 import numpy as np
 import torch
+from torch.nn.parallel import DistributedDataParallel
 from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
 
 from .nn.functional import autocast
 from .nn.modules.loss import Criterion
+from .utils.devices import (
+    check_device_availability,
+    contains_full_sequence_rnn,
+    get_available_device_type,
+    parse_device_string,
+    supports_device,
+)
+from .utils.distributed import all_reduce_mean, ddp_is_initialized, ddp_rank
 from .utils.file import create_dir_if_not_exist
 from .utils.logging import logger, logger_creator
 
@@ -40,12 +49,12 @@ class BaseModel(ABC):
     Parameters
     ----------
     device :
-        The device for the model to run on. It can be a string, a :class:`torch.device` object, or a list of them.
-        If not given, will try to use CUDA devices first (will use the default CUDA device if there are multiple),
-        then CPUs, considering CUDA and CPU are so far the main devices for people to train ML models.
-        If given a list of devices, e.g. ['cuda:0', 'cuda:1'], or [torch.device('cuda:0'), torch.device('cuda:1')] , the
-        model will be parallely trained on the multiple devices (so far only support parallel training on CUDA devices).
-        Other devices like Google TPU and Apple Silicon accelerator MPS may be added in the future.
+        The device for the model to run on, as a string, a :class:`torch.device` object, or a list of them.
+        If None, PyPOTS selects CUDA, then Ascend NPU, then CPU, depending on availability.
+        Use ``"cuda:0"``, ``"npu:0"``, or ``"cpu"`` to select a specific backend/device.
+        Ascend NPU requires a compatible torch-npu and CANN environment; model and operator support may vary.
+        For compatible neural-network models, a CUDA device list uses DataParallel; for DDP training,
+        pass a single device per process and use :func:`pypots.utils.distributed.run_ddp_fit`.
 
     enable_amp :
         Whether to enable automatic mixed precision (AMP), default as False.
@@ -120,15 +129,13 @@ class BaseModel(ABC):
 
     def _setup_device(self, device: None | str | torch.device | list) -> None:
         if device is None:
-            # if it is None, then use the first cuda device if cuda is available, otherwise use cpu
-            if torch.cuda.is_available() and torch.cuda.device_count() > 0:
-                self.device = torch.device("cuda")
-            else:
-                self.device = torch.device("cpu")
+            # if it is None, probe for an accelerator: cuda first, then npu, cpu as the fallback
+            device_type = get_available_device_type()
+            self.device = torch.device(device_type)
             logger.info(f"No given device, using default device: {self.device}")
         else:
             if isinstance(device, str):
-                self.device = torch.device(device.lower())
+                self.device = parse_device_string(device)
             elif isinstance(device, torch.device):
                 self.device = device
             elif isinstance(device, list):
@@ -136,27 +143,31 @@ class BaseModel(ABC):
                     raise ValueError("The list of devices should have at least 1 device, but got 0.")
                 elif len(device) == 1:
                     return self._setup_device(device[0])
-                # parallely training on multiple CUDA devices
+                # parallely training on multiple devices
 
                 # ensure the list is not empty
                 device_list = []
                 for idx, d in enumerate(device):
                     if isinstance(d, str):
-                        d = d.lower()
-                        assert "cuda" in d, (
-                            "The feature of training on multiple devices currently only support CUDA devices."
-                        )
-                        device_list.append(torch.device(d))
+                        device_list.append(parse_device_string(d))
                     elif isinstance(d, torch.device):
-                        assert "cuda" in d.type, (
-                            "The feature of training on multiple devices currently only support CUDA devices."
-                        )
                         device_list.append(d)
                     else:
                         raise TypeError(
                             f"Devices in the list should be str or torch.device, "
                             f"but the device with index {idx} is {type(d)}."
                         )
+                # all devices in the list must be of the same type
+                device_types = {d.type for d in device_list}
+                assert len(device_types) == 1, (
+                    f"Devices in the list should be of the same type, but got {device_types}."
+                )
+                list_device_type = device_list[0].type
+                assert supports_device(list_device_type), (
+                    f"The feature of training on multiple devices currently only support "
+                    f"{'CUDA and NPU' if list_device_type not in ('cuda', 'npu') else list_device_type.upper()} devices, "
+                    f"but got {list_device_type}."
+                )
                 if len(device_list) > 1:
                     self.device = device_list
                 else:
@@ -168,23 +179,20 @@ class BaseModel(ABC):
 
             logger.info(f"Using the given device: {self.device}")
 
-        # check CUDA availability if using CUDA
-        if (isinstance(self.device, list) and "cuda" in self.device[0].type) or (
-            isinstance(self.device, torch.device) and "cuda" in self.device.type
-        ):
-            assert torch.cuda.is_available() and torch.cuda.device_count() > 0, (
-                "You are trying to use CUDA for model training, but CUDA is not available in your environment."
-            )
+        # check availability if using an accelerator (cuda or npu)
+        device_type = self.device[0].type if isinstance(self.device, list) else self.device.type
+        if device_type in ("cuda", "npu"):
+            check_device_availability(device_type)
 
         if os.getenv("ENABLE_AMP", ""):
             if self.enable_amp:
-                if not torch.cuda.is_available() or torch.cuda.device_count() == 0:
-                    logger.warning(
-                        "‼️ You are trying to use AMP, but CUDA is not available in your environment. "
-                        "AMP will be disabled."
-                    )
-                else:
+                if device_type in ("cuda", "npu"):
                     self.amp_enabled = True
+                else:
+                    logger.warning(
+                        "‼️ You are trying to use AMP, but no accelerator (CUDA/NPU) "
+                        "is available in your environment. AMP will be disabled."
+                    )
             else:
                 logger.warning(
                     f"‼️ You are trying to use AMP, but the model {self.__class__.__name__} "
@@ -221,6 +229,30 @@ class BaseModel(ABC):
         else:
             logger.warning("‼️ saving_path not given. Model files and tensorboard file will not be saved.")
 
+    def _sync_epoch_loss_if_ddp(self, mean_loss: float) -> float:
+        """Average the per-epoch training/validation metric across DDP ranks.
+
+        Without this, each rank decides early stopping on its own shard-local
+        metric; one rank can then exit the epoch loop while others still expect
+        its gradient all-reduces, hanging the job. Averaging makes patience,
+        best_epoch and best_model_dict decisions bit-identical on every rank.
+        No-op in plain single-process runs.
+        """
+        if not ddp_is_initialized():
+            return mean_loss
+        return all_reduce_mean(mean_loss)
+
+    @property
+    def _autocast_device_type(self) -> str:
+        """Device type the AMP autocast context must target: the model's actual
+        training device — NOT torch's global default tensor device (which stays
+        "cpu" even when a model trains on cuda/npu, and would silently route
+        autocast to the wrong backend). "cpu" means AMP is disabled anyway.
+        """
+        if isinstance(self.device, list):
+            return self.device[0].type
+        return self.device.type
+
     def _send_model_to_given_device(self) -> None:
         if isinstance(self.model, torch.nn.DataParallel):
             # in this case, the model has been sent to multi-gpu previously,
@@ -234,6 +266,21 @@ class BaseModel(ABC):
             logger.info(f"Model has been allocated to the given multiple devices: {self.device}")
         else:
             self.model = self.model.to(self.device)
+
+        # NPU: full-sequence fused RNNs (nn.GRU/LSTM/RNN) have no fp32 backward kernel on
+        # Ascend (forward works), so fp32 training would fail asynchronously later.
+        # Warn here once so users know to enable AMP or use the Cell-loop fallback layers.
+        if (
+            (isinstance(self.device, torch.device) and self.device.type == "npu")
+            or (isinstance(self.device, list) and self.device[0].type == "npu")
+        ) and contains_full_sequence_rnn(self.model):
+            logger.warning(
+                "‼️ The model contains full-sequence fused RNN layers (nn.GRU/LSTM/RNN). "
+                "On Ascend NPU, their fp32 backward pass is not supported (forward works), "
+                "so fp32 training will fail asynchronously (often surfacing in optimizer.step). "
+                "Please enable AMP via ENABLE_AMP=1 and enable_amp=True, or use the "
+                "device-adaptive unfused RNN layers. Prediction/inference in fp32 is not affected."
+            )
 
     def _send_data_to_given_device(self, data) -> Iterable:
         if isinstance(self.device, (torch.device, list)):  # single device or parallely training on multiple devices
@@ -290,6 +337,12 @@ class BaseModel(ABC):
 
         """
         if self.saving_path is not None and self.model_saving_strategy is not None:
+            # under DDP every rank would write the same checkpoint path —
+            # only rank 0 saves, all other ranks skip (their parameters are
+            # kept identical by the synchronized training loop anyway)
+            if ddp_is_initialized() and ddp_rank() != 0:
+                return
+
             # construct the saving path
             name = self.__class__.__name__ if saving_name is None else saving_name
             saving_path = os.path.join(self.saving_path, name)
@@ -359,6 +412,10 @@ class BaseModel(ABC):
 
         if isinstance(self.device, list):
             # to save a DataParallel model generically, save the model.module.state_dict()
+            model_state_dict = deepcopy(self.model.module.state_dict())
+        elif isinstance(self.model, DistributedDataParallel):
+            # the DDP wrapper's state_dict carries "module."-prefixed keys;
+            # save the wrapped net's dict so the file loads into a plain model
             model_state_dict = deepcopy(self.model.module.state_dict())
         else:
             model_state_dict = deepcopy(self.model.state_dict())
@@ -598,12 +655,12 @@ class BaseNNModel(BaseModel):
         `0` means data loading will be in the main process, i.e. there won't be subprocesses.
 
     device :
-        The device for the model to run on. It can be a string, a :class:`torch.device` object, or a list of them.
-        If not given, will try to use CUDA devices first (will use the default CUDA device if there are multiple),
-        then CPUs, considering CUDA and CPU are so far the main devices for people to train ML models.
-        If given a list of devices, e.g. ['cuda:0', 'cuda:1'], or [torch.device('cuda:0'), torch.device('cuda:1')] , the
-        model will be parallely trained on the multiple devices (so far only support parallel training on CUDA devices).
-        Other devices like Google TPU and Apple Silicon accelerator MPS may be added in the future.
+        The device for the model to run on, as a string, a :class:`torch.device` object, or a list of them.
+        If None, PyPOTS selects CUDA, then Ascend NPU, then CPU, depending on availability.
+        Use ``"cuda:0"``, ``"npu:0"``, or ``"cpu"`` to select a specific backend/device.
+        Ascend NPU requires a compatible torch-npu and CANN environment; model and operator support may vary.
+        For compatible neural-network models, a CUDA device list uses DataParallel; for DDP training,
+        pass a single device per process and use :func:`pypots.utils.distributed.run_ddp_fit`.
 
     enable_amp :
         Whether to enable automatic mixed precision (AMP), default as False.
@@ -810,7 +867,7 @@ class BaseNNModel(BaseModel):
                     training_step += 1
                     inputs = self._assemble_input_for_training(data)
 
-                    with autocast(enabled=self.amp_enabled):
+                    with autocast(self._autocast_device_type, enabled=self.amp_enabled):
                         self.optimizer.zero_grad()
                         results = self.model(inputs, calc_criterion=True)
                         loss = results["loss"].sum()
@@ -831,7 +888,7 @@ class BaseNNModel(BaseModel):
                         for idx, data in enumerate(val_dataloader):
                             inputs = self._assemble_input_for_validating(data)
 
-                            with autocast(enabled=self.amp_enabled):
+                            with autocast(self._autocast_device_type, enabled=self.amp_enabled):
                                 results = self.model(inputs, calc_criterion=True)
 
                             val_metric = results["metric"].sum()
@@ -855,6 +912,12 @@ class BaseNNModel(BaseModel):
                 else:
                     logger.info(f"Epoch {epoch:03d} - training loss ({self.training_loss_name}): {mean_train_loss:.4f}")
                     mean_loss = mean_train_loss
+
+                # under DDP, average the epoch metric across ranks so that the
+                # early-stopping / best-epoch decisions below are identical on
+                # every rank and no rank breaks the loop while others still
+                # expect its collectives (no-op in single-process runs)
+                mean_loss = self._sync_epoch_loss_if_ddp(mean_loss)
 
                 if np.isnan(mean_loss):
                     logger.warning(f"‼️ Got NaN loss in epoch#{epoch}. This may lead to unexpected errors.")

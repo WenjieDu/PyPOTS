@@ -1,42 +1,53 @@
 .. PyPOTS documentation index page created by Wenjie Du <wenjay.du@gmail.com>
 
+.. |translate| image:: https://pypots.com/figs/icons/translate.svg
+   :width: 18px
+   :alt: README translations
+
 Welcome to PyPOTS docs!
 ===============================
+
+|translate| English | `简体中文 <https://github.com/WenjieDu/PyPOTS/blob/main/i18n/README_zh.md>`__ | `日本語 <https://github.com/WenjieDu/PyPOTS/blob/main/i18n/README_ja.md>`__ | `한국어 <https://github.com/WenjieDu/PyPOTS/blob/main/i18n/README_ko.md>`__ | `Deutsch <https://github.com/WenjieDu/PyPOTS/blob/main/i18n/README_de.md>`__ | `Français <https://github.com/WenjieDu/PyPOTS/blob/main/i18n/README_fr.md>`__ | `Español <https://github.com/WenjieDu/PyPOTS/blob/main/i18n/README_es.md>`__ | `Português (Brasil) <https://github.com/WenjieDu/PyPOTS/blob/main/i18n/README_pt-BR.md>`__ | `Русский <https://github.com/WenjieDu/PyPOTS/blob/main/i18n/README_ru.md>`__ | `Bahasa Indonesia <https://github.com/WenjieDu/PyPOTS/blob/main/i18n/README_id.md>`__
+
 .. image:: https://pypots.com/figs/pypots_logos/PyPOTS/logo_FFBG.svg?sanitize=true
    :height: 156
    :align: right
    :target: https://github.com/WenjieDu/PyPOTS
    :alt: PyPOTS logo
 
-**A Python Toolbox for Machine Learning on Partially-Observed Time Series**
+**A Python Toolbox for Unified Analysis of Real-World Time Series**
 
-.. image:: https://img.shields.io/badge/Python-v3.10+-E97040?logo=python&logoColor=white
+.. image:: https://img.shields.io/badge/Python-v3.10+-F8C6B5?logo=python&logoColor=white
    :alt: Python version
    :target: https://docs.pypots.com/en/latest/install.html#reasons-of-version-limitations-on-dependencies
-
-.. image:: https://img.shields.io/badge/PyTorch%20Landscape-EE4C2C?logo=pytorch&logoColor=white
-   :alt: Pytorch landscape
-   :target: https://landscape.pytorch.org/?item=modeling--specialized--pypots
 
 .. image:: https://img.shields.io/github/v/release/wenjiedu/pypots?color=EE781F&include_prereleases&label=Release&logo=github&logoColor=white
    :alt: the latest release version
    :target: https://github.com/WenjieDu/PyPOTS/releases
 
+.. image:: https://img.shields.io/readthedocs/pypots?logo=readthedocs&label=Docs&logoColor=white&color=395260
+   :alt: Docs building
+   :target: https://docs.pypots.com
+
+.. image:: https://pypots.com/figs/downloads_badges/pypi_pypots_downloads.svg
+   :alt: PyPI downloads
+   :target: https://pepy.tech/project/pypots
+
+.. image:: https://pypots.com/figs/downloads_badges/conda_pypots_downloads.svg
+   :alt: Conda downloads
+   :target: https://anaconda.org/conda-forge/pypots
+
+.. image:: https://img.shields.io/badge/PyTorch%20Landscape-EE4C2C?logo=pytorch&logoColor=white
+   :alt: Pytorch landscape
+   :target: https://landscape.pytorch.org/?item=modeling--specialized--pypots
+
 .. image:: https://img.shields.io/badge/License-BSD--3-E9BB41?logo=opensourceinitiative&logoColor=white
    :alt: BSD-3 license
    :target: https://github.com/WenjieDu/PyPOTS/blob/main/LICENSE
 
-.. image:: https://img.shields.io/badge/Contributor_Covenant-2.1-4baaaa
-   :alt: Code of Conduct
-   :target: https://github.com/WenjieDu/PyPOTS?tab=coc-ov-file
-
 .. image:: https://img.shields.io/badge/join_us-community!-C8A062
    :alt: Community
    :target: https://github.com/WenjieDu/PyPOTS#-community
-
-.. image:: https://img.shields.io/github/contributors/wenjiedu/pypots?color=D8E699&label=Contributors&logo=GitHub
-   :alt: GitHub Contributors
-   :target: https://github.com/WenjieDu/PyPOTS/graphs/contributors
 
 .. image:: https://img.shields.io/github/stars/wenjiedu/pypots?logo=None&color=6BB392&label=%E2%98%85%20Stars
    :alt: GitHub Repo stars
@@ -46,254 +57,304 @@ Welcome to PyPOTS docs!
    :alt: GitHub Repo forks
    :target: https://github.com/WenjieDu/PyPOTS/network/members
 
-.. image:: https://sonarcloud.io/api/project_badges/measure?project=WenjieDu_PyPOTS&metric=sqale_rating
-   :alt: maintainability
-   :target: https://sonarcloud.io/component_measures?id=WenjieDu_PyPOTS&metric=sqale_rating&view=list
-
-.. image:: https://img.shields.io/coverallsCoverage/github/WenjieDu/PyPOTS?branch=full_test&logo=coveralls&color=75C1C4&label=Coverage
-   :alt: Coveralls coverage
-   :target: https://coveralls.io/github/WenjieDu/PyPOTS?branch=full_test
+.. image:: https://img.shields.io/github/contributors/wenjiedu/pypots?color=D8E699&label=Contributors&logo=GitHub
+   :alt: GitHub contributors
+   :target: https://github.com/WenjieDu/PyPOTS/graphs/contributors
 
 .. image:: https://img.shields.io/github/actions/workflow/status/wenjiedu/pypots/testing_ci.yml?logo=circleci&color=C8D8E1&label=CI
    :alt: GitHub Testing
    :target: https://github.com/WenjieDu/PyPOTS/actions/workflows/testing_ci.yml
 
-.. image:: https://img.shields.io/readthedocs/pypots?logo=readthedocs&label=Docs&logoColor=white&color=395260
-   :alt: Docs building
-   :target: https://readthedocs.org/projects/pypots/builds
+.. image:: https://img.shields.io/coverallsCoverage/github/WenjieDu/PyPOTS?branch=full_test&logo=coveralls&color=75C1C4&label=Coverage
+   :alt: Coveralls coverage
+   :target: https://coveralls.io/github/WenjieDu/PyPOTS?branch=full_test
 
-.. image:: https://deepwiki.com/badge.svg
-   :alt: Ask DeepWiki
-   :target: https://deepwiki.com/WenjieDu/PyPOTS
+.. image:: https://sonarcloud.io/api/project_badges/measure?project=WenjieDu_PyPOTS&metric=sqale_rating
+   :alt: maintainability
+   :target: https://sonarcloud.io/component_measures?id=WenjieDu_PyPOTS&metric=sqale_rating&view=list
 
-.. image:: https://img.shields.io/badge/Code_Style-ruff-D7FF64
+.. image:: https://img.shields.io/badge/Code_Style-Ruff-D7FF64?logo=ruff
    :alt: Code Style
    :target: https://github.com/astral-sh/ruff
 
-.. image:: https://pypots.com/figs/downloads_badges/conda_pypots_downloads.svg
-   :alt: Conda downloads
-   :target: https://anaconda.org/conda-forge/pypots
+.. image:: https://img.shields.io/badge/Contributor_Covenant-2.1-4baaaa
+   :alt: Code of Conduct
+   :target: https://github.com/WenjieDu/PyPOTS?tab=coc-ov-file
 
-.. image:: https://pypots.com/figs/downloads_badges/pypi_pypots_downloads.svg
-   :alt: PyPI downloads
-   :target: https://pepy.tech/project/pypots
+.. image:: https://pypots.com/figs/misc/ask_deepwiki.svg
+   :alt: Ask DeepWiki
+   :target: https://deepwiki.com/WenjieDu/PyPOTS
 
 .. image:: https://img.shields.io/badge/DOI-10.48550/arXiv.2305.18811-F8F7F0
    :alt: arXiv DOI
    :target: https://arxiv.org/abs/2305.18811
 
-.. image:: https://pypots.com/figs/pypots_logos/readme/CN.svg
-   :alt: README in Chinese
-   :target: https://github.com/WenjieDu/PyPOTS/blob/main/i18n/README_zh.md
+PyPOTS (pronounced "Pie Pots") is an open-source Python toolbox for time series analysis, offering
+**50+ models and methods with unified APIs** for imputation, forecasting, classification, clustering, anomaly detection,
+and representation learning. It is designed for real-world time series, including those with missing values.
 
-.. image:: https://pypots.com/figs/pypots_logos/readme/US.svg
-   :alt: README in English
-   :target: https://github.com/WenjieDu/PyPOTS/blob/main/README.md
+A time series is not the underlying system itself, but a collection of observations of that system.
+Due to the inherent limitations of measurement and sampling, real-world time series are fundamentally partial
+observations: measured variables capture only certain aspects of the underlying system, observations are collected
+at discrete and potentially irregular intervals, and some measurements may be missing.
 
------------------
+**Being unobserved does not necessarily mean being nonexistent. Partial observation is the norm, not the exception.**
 
-
-⦿ `Motivation`: Due to all kinds of reasons like failure of collection sensors, communication error, and unexpected malfunction, missing values are common to see in time series from the real-world environment.
-This makes partially-observed time series (POTS) a pervasive problem in open-world modeling and prevents advanced data analysis.
-Although this problem is important, the area of data mining on POTS still lacks a dedicated toolkit. PyPOTS is created to fill in this blank.
-
-⦿ `Mission`: PyPOTS is born to become a handy toolbox that is going to make data mining on POTS easy rather than tedious,
-to help engineers and researchers focus more on the core problems in their hands rather than on how to deal with the missing parts in their data.
-PyPOTS will keep integrating classical and the latest state-of-the-art data mining algorithms for partially-observed multivariate time series.
-For sure, besides various algorithms, PyPOTS is going to have unified APIs together with detailed documentation and interactive examples across algorithms as tutorials.
-
-The rest of this readme file is organized as follows:
-`❖ Available Algorithms <#id1>`_,
-`❖ PyPOTS Ecosystem <#id37>`_,
-`❖ Installation <#id39>`_,
-`❖ Usage <#id41>`_,
-`❖ Citing PyPOTS <#id43>`_,
-`❖ Contribution <#id44>`_,
-`❖ Community <#id45>`_.
+We conceptualize real-world time series as **Partially-Observed Time Series (POTS)**. From this perspective,
+time series modeling is fundamentally about learning the underlying system and its dynamics from partial observations.
+PyPOTS is built upon this philosophy to enable unified time series analysis for real-world data.
 
 
-❖ Available Algorithms
-^^^^^^^^^^^^^^^^^^^^^^^
-PyPOTS supports imputation, classification, clustering, forecasting, and anomaly detection tasks on multivariate partially-observed
-time series with missing values. The table below shows the availability of each algorithm in PyPOTS for different tasks.
-The symbol `✅` indicates the algorithm is available for the corresponding task, and you could click `✅` to
-jump to the code example of the algorithm on the task.
-Note that models will be continuously updated in the future to handle tasks that are not currently supported. Stay tuned!
+❖ Key Features
+^^^^^^^^^^^^^^
 
-🌟 Since **v0.2**, all neural-network models in PyPOTS has got hyperparameter-optimization support by `Microsoft NNI <https://github.com/microsoft/nni>`_ until **v2.0**.
-In PyPOTS v2, this functionality is reimplemented with the `Optuna <https://github.com/optuna/optuna>`_ framework. You may want to refer to our time-series
-imputation survey repo `Awesome_Imputation <https://github.com/WenjieDu/Awesome_Imputation>`_ to see how to config and
-tune the hyperparameters.
+- **Multi-task support:** Imputation, forecasting, classification, clustering, anomaly detection, and representation learning in one toolbox.
+- **Native missing-value support:** Missingness-aware models can learn directly from incomplete time series without prior imputation.
+- **Unified APIs:** Consistent training and prediction interfaces across models, making experimentation and model comparison easier.
+- **Rich model zoo:** 50+ models and methods spanning classical approaches, deep learning, LLM-based models, and time series foundation models (TSFMs).
+- **PyTorch Ecosystem:** PyPOTS is built on PyTorch and featured in the `PyTorch Landscape <https://landscape.pytorch.org/?item=modeling--specialized--pypots>`__.
+- **Hardware acceleration:** CPU, NVIDIA CUDA GPUs, and Ascend NPUs; multi-device training via PyTorch DistributedDataParallel (DDP), CUDA DataParallel, and automatic mixed precision for supported models. See the :ref:`acceleration guide <hardware-acceleration>` for setup and limitations.
+- **Flexible data handling:** In-memory data and lazy loading from HDF5 files.
+- **Hyperparameter optimization:** Model tuning powered by `Optuna <https://github.com/optuna/optuna>`__.
+- **Reproducible research:** Datasets, missingness simulation, standardized preprocessing, and evaluation tools across the PyPOTS ecosystem.
+- **Extensible architecture:** Modular model components and standardized templates for integrating new algorithms.
 
-🔥 Note that all models whose name with `🧑‍🔧` in the table (e.g. Transformer, iTransformer, Informer etc.) are not originally
-proposed as algorithms for POTS data in their papers, and they cannot directly accept time series with missing values as input, let alone imputation.
-To make them applicable to POTS data, we specifically apply the embedding strategy and training approach (ORT+MIT)
-the same as we did in `the SAITS paper <https://arxiv.org/pdf/2202.08516)>`_ :cite:`du2023SAITS`.
+❖ Installation
+^^^^^^^^^^^^^^
 
-The task types are abbreviated as follows: **IMPT**: Imputation; **FCST**: Forecasting;
-**CLAF**: Classification; **CLUS**: Clustering; **ANOD**: Anomaly Detection.
-In addition to the 5 tasks, PyPOTS also provides TS2Vec :cite:`yue2022ts2vec` for time series representation learning and vectorization.
-The paper references are all listed at the bottom of this readme file.
+PyPOTS requires Python 3.10 or later and is available on
+`PyPI <https://pypi.org/project/pypots/>`__ and
+`Anaconda <https://anaconda.org/conda-forge/pypots>`__.
+
+.. code-block:: bash
+
+   pip install pypots
+
+See :doc:`install` for pip, Conda, Docker and source installation, dependency
+requirements, and hardware acceleration. See :doc:`npu` and :doc:`distributed`
+for Ascend NPU and distributed training.
+
+❖ Usage
+^^^^^^^
+
+This self-contained SAITS imputation example uses synthetic data and requires no dataset download.
+Inputs have shape ``(n_samples, n_steps, n_features)``, with missing values represented by NaN.
+
+.. code-block:: python
+
+   import numpy as np
+   from pypots.imputation import SAITS
+
+   # Generate synthetic time series with missing values
+   rng = np.random.default_rng(42)
+   X = rng.normal(size=(16, 24, 8)).astype(np.float32)
+   X[rng.random(X.shape) < 0.1] = np.nan
+   train_X, test_X = X[:12], X[12:]
+
+   # Initialize a SAITS imputation model
+   model = SAITS(
+       n_steps=24, n_features=8,
+       n_layers=2, d_model=64, n_heads=4,
+       d_k=16, d_v=16, d_ffn=128,
+       epochs=2, device="cpu",
+   )
+   # Train the model
+   model.fit({"X": train_X})
+
+   # Impute the test set
+   imputed_X = model.impute({"X": test_X})
+   print(imputed_X.shape)  # (4, 24, 8)
+
+Explore PyPOTS by Task
+""""""""""""""""""""""
+
+.. list-table::
+   :widths: 20 35 45
+   :header-rows: 1
+
+   * - Task
+     - What it does
+     - Resources
+   * - Imputation
+     - Estimate missing observations
+     - `Examples <https://github.com/WenjieDu/PyPOTS/tree/main/examples/imputation>`__ · :doc:`API <pypots.imputation>`
+   * - Forecasting
+     - Predict future values
+     - `Examples <https://github.com/WenjieDu/PyPOTS/tree/main/examples/forecasting>`__ · :doc:`API <pypots.forecasting>`
+   * - Classification
+     - Assign labels to time series
+     - `Examples <https://github.com/WenjieDu/PyPOTS/tree/main/examples/classification>`__ · :doc:`API <pypots.classification>`
+   * - Clustering
+     - Discover groups of similar time series
+     - `Examples <https://github.com/WenjieDu/PyPOTS/tree/main/examples/clustering>`__ · :doc:`API <pypots.clustering>`
+   * - Anomaly detection
+     - Identify abnormal observations or patterns
+     - `Examples <https://github.com/WenjieDu/PyPOTS/tree/main/examples/anomaly_detection>`__ · :doc:`API <pypots.anomaly_detection>`
+   * - Representation learning
+     - Learn latent representations of time series
+     - `Examples <https://github.com/WenjieDu/PyPOTS/tree/main/examples/representation>`__ · :doc:`API <pypots.representation>`
+
+See :doc:`tutorials` for the PhysioNet2012 example, BrewPOTS notebooks,
+Google Colab and the KDD 2026 hands-on tutorial.
+
+❖ Model Zoo
+^^^^^^^^^^^
+
+The table below lists the models and methods implemented in PyPOTS, sorted by publication year, alongside the Time-Series.AI waitlist entry.
+Each linked ✅ leads to a standalone, task-specific Python example. An empty cell indicates
+that the corresponding implementation is not currently available in PyPOTS.
+
+Models marked with ``🧑‍🔧`` were adapted to handle explicit missing values. Depending on the task,
+these adaptations use missingness-aware embeddings and training strategies, including observed
+reconstruction and masked imputation (ORT + MIT) for imputation, as introduced in SAITS :cite:`du2023SAITS`.
+Input formats and support for irregular sampling depend on the individual model.
+
+Task abbreviations: **IMPT** (Imputation), **FCST** (Forecasting), **CLAF** (Classification),
+**CLUS** (Clustering), **ANOD** (Anomaly Detection), and **REPR** (Representation Learning).
+Paper references appear in :doc:`references`.
 
 .. include:: algo_table.rst
 
-🙋 Differences between ``LLM (Large Language Model)`` and ``TSFM (Time-Series Foundation Model)`` in the above table:
-``LLM`` refers to the models that are pre-trained on large-scale text data and can be fine-tuned for specific tasks.
-``TSFM`` refers to the models that are pre-trained on large-scale time series data, inspired by recent achievements
-of foundation models in CV and NLP.
+Time-Series.AI is building next-generation AI solutions for unified time series
+analysis, powered by foundation models and AI agents. Join our waitlist for early access.
 
-💯 Contribute your model right now to increase your research impact! PyPOTS downloads are increasing rapidly (`1M+ in total and 2k+ daily on PyPI so far <https://www.pepy.tech/projects/pypots>`_),
-and your work will be widely used and cited by the community.
-Refer to the `contribution guide <#id44>`_ to see how to include your model in PyPOTS.
+**Model types:** LLM-based models build on language models pretrained on text, whereas TSFMs build on models
+pretrained on time series data. These categories describe the underlying modeling approach.
 
+Want to add a model? See the :ref:`contribution guide <contributing-to-pypots>` to make your research more accessible,
+reproducible, and discoverable by the time series community.
 
 ❖ PyPOTS Ecosystem
-^^^^^^^^^^^^^^^^^^^
-At PyPOTS, things are related to coffee, which we're familiar with. Yes, this is a coffee universe!
-As you can see, there is a coffee pot in the PyPOTS logo.
-And what else? Please read on ;-)
+^^^^^^^^^^^^^^^^^^
+
+Welcome to the PyPOTS coffee universe! Our ecosystem takes inspiration from brewing coffee,
+with each library playing a distinct role in the time series analysis pipeline.
 
 .. image:: https://pypots.com/figs/pypots_logos/TSDB/logo_FFBG.svg
-   :width: 150
+   :width: 140
    :alt: TSDB logo
    :align: left
    :target: https://github.com/WenjieDu/TSDB
 
-👈 Time series datasets are taken as coffee beans at PyPOTS, and POTS datasets are incomplete coffee beans with missing parts that have their own meanings.
-To make various public time-series datasets readily available to users,
-*Time Series Data Beans (TSDB)* is created to make loading time-series datasets super easy!
-Visit `TSDB <https://github.com/WenjieDu/TSDB>`_ right now to know more about this handy tool 🛠, and it now supports a total of 172 open-source datasets!
+👈 Time series datasets are our coffee beans, and POTS datasets are beans with missing parts.
+`Time Series Data Beans (TSDB) <https://github.com/WenjieDu/TSDB>`__ makes public time series datasets easy to load.
+Visit its repository for the latest list of supported datasets.
 
 .. image:: https://pypots.com/figs/pypots_logos/PyGrinder/logo_FFBG.svg
-   :width: 150
+   :width: 140
    :alt: PyGrinder logo
    :align: right
    :target: https://github.com/WenjieDu/PyGrinder
 
-👉 To simulate the real-world data beans with missingness, the ecosystem library `PyGrinder <https://github.com/WenjieDu/PyGrinder>`_,
-a toolkit helping grind your coffee beans into incomplete ones, is created. Missing patterns fall into three categories according to Robin's theory :cite:`rubin1976missing`:
-MCAR (missing completely at random), MAR (missing at random), and MNAR (missing not at random).
-PyGrinder supports all of them and additional functionalities related to missingness.
-With PyGrinder, you can introduce synthetic missing values into your datasets with a single line of code.
+👉 `PyGrinder <https://github.com/WenjieDu/PyGrinder>`__ grinds your coffee beans into incomplete ones by simulating missing values.
+It supports all three missingness mechanisms defined by Rubin :cite:`rubin1976missing`, namely MCAR (missing completely at random),
+MAR (missing at random), and MNAR (missing not at random). Introduce synthetic missing values in a single line of code.
 
 .. image:: https://pypots.com/figs/pypots_logos/BenchPOTS/logo_FFBG.svg
-   :width: 150
-   :alt: BrewPOTS logo
+   :width: 140
+   :alt: BenchPOTS logo
    :align: left
    :target: https://github.com/WenjieDu/BenchPOTS
 
-👈 To fairly evaluate the performance of PyPOTS algorithms, the benchmarking suite [BenchPOTS](https://github.com/WenjieDu/BenchPOTS) is created,
-which provides standard and unified data-preprocessing pipelines to prepare datasets for measuring the performance of different
-POTS algorithms on various tasks.
+👈 Take a seat on the bench! `BenchPOTS <https://github.com/WenjieDu/BenchPOTS>`__ provides standardized
+data preprocessing pipelines for fair and reproducible evaluation of time series algorithms across tasks.
 
 .. image:: https://pypots.com/figs/pypots_logos/BrewPOTS/logo_FFBG.svg
-   :width: 150
+   :width: 140
    :alt: BrewPOTS logo
    :align: right
    :target: https://github.com/WenjieDu/BrewPOTS
 
-👉 Now the beans, grinder, and pot are ready, please have a seat on the bench and let's think about how to brew us a cup of coffee.
-Tutorials are necessary! Considering the future workload, PyPOTS tutorials is released in a single repo,
-and you can find them in `BrewPOTS <https://github.com/WenjieDu/BrewPOTS>`_.
-Take a look at it now, and learn how to brew your POTS datasets!
-
-**☕️ Welcome to the universe of PyPOTS. Enjoy it and have fun!**
+👉 Ready to brew? `BrewPOTS <https://github.com/WenjieDu/BrewPOTS>`__ brings together tutorials and notebooks
+to help you learn how to brew your POTS datasets with PyPOTS.
 
 .. image:: https://pypots.com/figs/pypots_logos/Ecosystem/PyPOTS_Ecosystem_Pipeline.png
    :width: 95%
-   :alt: BrewPOTS logo
+   :alt: PyPOTS ecosystem pipeline
    :align: center
    :target: https://pypots.com/ecosystem/
 
-
-❖ Installation
-^^^^^^^^^^^^^^^
-PyPOTS is available on both `PyPI <https://pypi.python.org/pypi/pypots>`_ and `Anaconda <https://anaconda.org/conda-forge/pypots>`_.
-Furthermore, we also provide a `Docker image <https://hub.docker.com/r/wenjie_du/pypots>`_ for PyPOTS.
-
-Refer to the page `Installation <install.html>`_ to see different ways of installing PyPOTS.
-
-
-❖ Usage
-^^^^^^^^
-Besides `BrewPOTS <https://github.com/WenjieDu/BrewPOTS>`_, you can also find a simple and quick-start tutorial notebook
-on Google Colab with `this link <https://colab.research.google.com/drive/1HEFjylEy05-r47jRy0H9jiS_WhD0UWmQ>`_.
-You can also `raise an issue <https://github.com/WenjieDu/PyPOTS/issues>`_ or `ask in our community <#id21>`_.
-
-Additionally, we present you a usage example of imputing missing values in time series with PyPOTS in
-`Section Quick-start Examples <https://docs.pypots.com/en/latest/examples.html>`_, you can click it to view.
-
+**☕️ Welcome to the universe of PyPOTS. Enjoy it and have fun!**
 
 ❖ Citing PyPOTS
-^^^^^^^^^^^^^^^^
-**[Updates in Jun 2023]** 🎉A short version of the PyPOTS paper is accepted by the 9th SIGKDD international workshop on
-Mining and Learning from Time Series (`MiLeTS'23 <https://kdd-milets.github.io/milets2023/>`_).
-Besides, PyPOTS has been included as a `PyTorch Ecosystem <https://landscape.pytorch.org/?item=modeling--specialized--pypots>`_ project.
+^^^^^^^^^^^^^^^
 
-The paper introducing PyPOTS is available on arXiv at `this URL <https://arxiv.org/abs/2305.18811>`_.,
-and we are pursuing to publish it in prestigious academic venues, e.g. JMLR (track for
-`Machine Learning Open Source Software <https://www.jmlr.org/mloss/>`_). If you use PyPOTS in your work,
-please cite it as below and 🌟star `PyPOTS repository <https://github.com/WenjieDu/PyPOTS>`_ to make others notice this library. 🤗
+PyPOTS was first introduced at the `MiLeTS workshop at KDD 2023 <https://kdd-milets.github.io/milets2023/>`__.
+If you use PyPOTS in your research, please cite the `toolkit paper <https://arxiv.org/abs/2305.18811v2>`__.
 
 .. code-block:: bibtex
-   :linenos:
 
-    @article{du2023pypots,
-    title = {{PyPOTS: A Python Toolkit for Data Mining on Partially-Observed Time Series}},
-    author = {Wenjie Du},
-    journal = {SIGKDD MiLeTS Workshop},
-    year = {2023},
-    }
+   @article{du2023pypots,
+   title = {{PyPOTS: A Python Toolkit for Data Mining on Partially-Observed Time Series}},
+   author = {Wenjie Du},
+   journal = {SIGKDD MiLeTS Workshop},
+   url = {https://arxiv.org/abs/2305.18811v1},
+   year = {2023},
+   }
 
-    @article{du2025pypots,
-    title = {{PyPOTS v1: A Python Toolkit for Machine Learning on Partially-Observed Time Series}},
-    author = {Wenjie Du, Yiyuan Yang, Linglong Qian, Jun Wang, and Qingsong Wen},
-    year = {2025},
-    }
+.. code-block:: bibtex
 
+   @article{du2025pypots,
+   title = {{PyPOTS: A Python Toolkit for Machine Learning on Partially-Observed Time Series}},
+   author = {Wenjie Du and Yiyuan Yang and Linglong Qian and Jun Wang and Qingsong Wen},
+   journal = {arXiv preprint arXiv:2305.18811v2},
+   url = {https://arxiv.org/abs/2305.18811v2},
+   year = {2025},
+   }
+
+There are scientific research projects using PyPOTS and referencing it in their papers.
+Explore `research citing or using PyPOTS here <https://scholar.google.com/scholar?as_ylo=2022&q=%E2%80%9CPyPOTS%E2%80%9D&hl=en>`__.
+
+Related Research
+""""""""""""""""
+
+- `SAITS <https://doi.org/10.1016/j.eswa.2023.119619>`__ (ESWA 2023, 1K+ citations): The research project that gave rise to PyPOTS. Its original implementation of self-attention-based time series imputation laid the foundation for the PyPOTS codebase.
+- `TSI-Bench <https://arxiv.org/abs/2406.12747>`__ (arXiv preprint 2024): A standardized time series imputation benchmark spanning 34,804 experiments, 28 algorithms, and 8 datasets under diverse missingness settings. Code repository: `Awesome_Imputation <https://github.com/WenjieDu/Awesome_Imputation>`__.
+- `Deep Learning for Multivariate Time Series Imputation: A Survey <https://doi.org/10.24963/ijcai.2025/1187>`__ (IJCAI 2025): A taxonomy of imputation methods, toolkits, and research directions.
+- `HELIX <https://openreview.net/forum?id=FN20iuPnEU>`__ (ICML 2026 Spotlight): Learnable identities and cross-dimensional synthesis for time series imputation.
+- `End-to-End Learning for Partially-Observed Time Series with PyPOTS <https://doi.org/10.1145/3770855.3816470>`__ (KDD 2026 Hands-on Tutorial): Practical end-to-end workflows for learning from partially observed time series, from data preparation and multi-task modeling to evaluation and custom model integration. `Tutorial materials <https://pypots.com/events/KDD2026Tutorial/>`__.
+
+.. _contributing-to-pypots:
 
 ❖ Contribution
-^^^^^^^^^^^^^^^
-You're very welcome to contribute to this exciting project!
+^^^^^^^^^^^^^^
 
-By committing your code, you'll
+We welcome contributions from researchers, engineers, and users:
 
-1. make your well-established model out-of-the-box for PyPOTS users to run,
-   and help your work obtain more exposure and impact.
-   Take a look at our `inclusion criteria <https://docs.pypots.com/en/latest/faq.html#inclusion-criteria>`_.
-   You can utilize the ``template`` folder in each task package (e.g.
-   `pypots/imputation/template <https://github.com/WenjieDu/PyPOTS/tree/main/pypots/imputation/template>`_) to quickly start;
-2. become one of `PyPOTS contributors <https://github.com/WenjieDu/PyPOTS/graphs/contributors>`_ and
-   be listed as a volunteer developer `on the PyPOTS website <https://pypots.com/about/#volunteer-developers>`_;
-3. get mentioned in PyPOTS `release notes <https://github.com/WenjieDu/PyPOTS/releases>`_;
+- **New models:** Review our `inclusion criteria <https://docs.pypots.com/en/latest/faq.html#inclusion-criteria>`__ and use a task-specific template (e.g., `imputation <https://github.com/WenjieDu/PyPOTS/tree/main/pypots/imputation/template>`__).
+- **Bug fixes and features:** Report reproducible issues or propose improvements through `GitHub Issues <https://github.com/WenjieDu/PyPOTS/issues>`__.
+- **Documentation and examples:** Improve tutorials, API documentation, usage examples, and translations.
+- **Testing:** Add regression tests and help improve the reliability and reproducibility of PyPOTS.
+- **Security:** Report vulnerabilities privately as described in `SECURITY.md <https://github.com/WenjieDu/PyPOTS/blob/main/SECURITY.md>`__.
 
-You can also contribute to PyPOTS by simply staring🌟 this repo to help more people notice it.
-Your star is your recognition to PyPOTS, and it matters!
+Before submitting a pull request, we recommend enabling `pre-commit <https://pre-commit.com/>`__ in your local clone to automatically format and check your changes:
 
-The lists of PyPOTS stargazers and forkers are shown below, and we're so proud to have more and more awesome users, as well as more bright ✨stars:
+.. code-block:: bash
 
-.. image:: https://bytecrank.com/nastyox/reporoster/php/stargazersSVG.php?theme=dark&user=WenjieDu&repo=PyPOTS
-   :alt: PyPOTS stargazers
-   :target: https://github.com/WenjieDu/PyPOTS/stargazers
-.. image:: https://bytecrank.com/nastyox/reporoster/php/forkersSVG.php?theme=dark&user=WenjieDu&repo=PyPOTS
-   :alt: PyPOTS forkers
-   :target: https://github.com/WenjieDu/PyPOTS/network/members
+   pip install pre-commit
+   pre-commit install
 
-👀 Check out a full list of our users' affiliations `on PyPOTS website here <https://pypots.com/users/>`_ !
+The hooks run automatically when you commit. If a hook modifies files, review and stage the changes, then commit again. GitHub CI checks Ruff linting and formatting even if you do not install the hooks. See the `developer guide <https://docs.pypots.com/en/latest/dev_getting_started.html#using-pre-commit>`__ for details.
 
+Contributors are recognized on the `GitHub contributors page <https://github.com/WenjieDu/PyPOTS/graphs/contributors>`__,
+the `PyPOTS website <https://pypots.com/about/#volunteer-developers>`__, and in release notes where applicable.
+Please follow our `Code of Conduct <https://github.com/WenjieDu/PyPOTS/blob/main/CODE_OF_CONDUCT.md>`__.
+
+If you find PyPOTS useful, consider starring the repository to help others discover it.
+Explore the `affiliations of our users <https://pypots.com/users/>`__.
 
 ❖ Community
-^^^^^^^^^^^^
-We care about the feedback from our users, so we're building PyPOTS community on
+^^^^^^^^^^^
 
-- `Slack <https://join.slack.com/t/pypots-org/shared_invite/zt-1gq6ufwsi-p0OZdW~e9UW_IA4_f1OfxA>`_. General discussion, Q&A, and our development team are here;
-- `LinkedIn <https://www.linkedin.com/company/pypots>`_. Official announcements and news are here;
-- `WeChat (微信公众号) <https://mp.weixin.qq.com/s/X3ukIgL1QpNH8ZEXq1YifA>`_. We also run a group chat on WeChat,
-  and you can get the QR code from the official account after following it;
+Join the PyPOTS community to ask questions, discuss research, share feedback, and collaborate:
 
-If you have any suggestions or want to contribute ideas or share time-series related papers, join us and tell.
-PyPOTS community is open, transparent, and surely friendly. Let's work together to build and improve PyPOTS!
+- `Discord <https://discord.gg/DXpCTdrvCE>`__: General discussion, Q&A, and development.
+- **Slack** (retired): We have moved to Discord because Slack's free plan does not retain conversation history indefinitely.
+- `LinkedIn <https://www.linkedin.com/company/pypots>`__: Official announcements and news.
+- `WeChat (微信公众号) <https://mp.weixin.qq.com/s/X3ukIgL1QpNH8ZEXq1YifA>`__: Follow the official account to access the community group QR code.
+- `GitHub Issues <https://github.com/WenjieDu/PyPOTS/issues>`__: Bug reports and feature requests.
 
+We welcome feedback and ideas from everyone working on real-world time series.
 
 .. toctree::
    :maxdepth: 2
@@ -309,6 +370,8 @@ PyPOTS community is open, transparent, and surely friendly. Let's work together 
    :caption: User Docs of PyPOTS
 
    model_api
+   npu
+   distributed
    pypots
    tsdb
    pygrinder

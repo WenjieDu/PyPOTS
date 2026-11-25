@@ -67,8 +67,9 @@ What Each Layer Owns
 
 It owns:
 
-- **Device selection**: CPU, CUDA, multi-GPU via ``DataParallel``
-- **AMP enablement**: Automatic mixed precision
+- **Device selection**: CPU, CUDA, Ascend NPU (auto-probed in CUDA → NPU → CPU order);
+  CUDA device lists use ``DataParallel`` for compatible models. See :doc:`install`.
+- **AMP enablement**: Automatic mixed precision on CUDA/NPU for models that opt in
 - **Checkpoint path setup**: Auto-creates directories for saving
 - **Save/load helpers**: ``save()`` and ``load()`` methods
 - **Abstract** ``fit()`` **and** ``predict()``: These must be implemented by every model
@@ -97,6 +98,12 @@ It owns:
 
 ``BaseNNModel`` (also in ``pypots/base.py``) is the layer that standard NN models reuse.
 It extends ``BaseModel`` with training-specific behavior.
+
+For distributed training, use ``pypots.utils.distributed.run_ddp_fit()`` and reuse
+the shared device and distributed utilities. Preserve epoch metric synchronization,
+sampler sharding and rank-safe checkpoint behavior in custom training loops.
+Do not assume that every model or custom training loop supports DDP.
+See :doc:`distributed` and :doc:`npu` for the user-facing contracts.
 
 Key Attributes
 ^^^^^^^^^^^^^^^^

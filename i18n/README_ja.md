@@ -82,7 +82,7 @@ PyPOTS（発音は「Pie Pots」）は、時系列分析のためのオープン
 - **統一 API：** モデル間で一貫した学習・予測インターフェースを提供し、実験や比較を容易にします。
 - **豊富なモデル：** 古典的手法、深層学習、LLM ベースのモデル、時系列基盤モデル（TSFM）など 50 以上。
 - **<a href="https://landscape.pytorch.org/?item=modeling--specialized--pypots"><img src="https://pypots.com/figs/misc/pytorch.svg" width="26px" align="center">PyTorch Ecosystem</a>：** PyTorch を基盤とし、PyTorch Landscape に掲載されています。
-- **ハードウェアアクセラレーション：** CPU と NVIDIA GPU に対応し、対応モデルでは PyTorch DataParallel によるマルチ GPU 学習と自動混合精度を利用できます。
+- **ハードウェアアクセラレーション：** CPU、NVIDIA CUDA GPU、Ascend NPU に対応。対応モデルでは PyTorch DistributedDataParallel（DDP）によるマルチデバイス学習、CUDA DataParallel、自動混合精度を利用できます。設定方法と制約については[アクセラレーションガイド](https://docs.pypots.com/en/latest/install.html#acceleration)をご覧ください。
 - **柔軟なデータ処理：** メモリ上のデータと HDF5 ファイルの遅延読み込みに対応。
 - **ハイパーパラメータ最適化：** [Optuna](https://github.com/optuna/optuna) によるモデルの調整。
 - **再現可能な研究：** エコシステム全体でデータセット、欠損シミュレーション、標準化された前処理・評価ツールを提供。
@@ -358,6 +358,15 @@ PyPOTS を利用し、論文で引用する研究が増えています。[PyPOTS
 - **ドキュメント・サンプル：** チュートリアル、API ドキュメント、使用例、翻訳を改善してください。
 - **テスト：** 回帰テストを追加し、信頼性と再現性を高めてください。
 - **セキュリティ：** [SECURITY.md](https://github.com/WenjieDu/PyPOTS/blob/main/SECURITY.md) に従って脆弱性を非公開で報告してください。
+
+プルリクエストを送信する前に、ローカルにクローンしたリポジトリで [pre-commit](https://pre-commit.com/) を有効にし、変更内容を自動的にフォーマット・チェックすることを推奨します：
+
+```bash
+pip install pre-commit
+pre-commit install
+```
+
+フックはコミット時に自動実行されます。フックによってファイルが変更された場合は、変更内容を確認して再度ステージングし、コミットし直してください。フックをインストールしていなくても、GitHub CI で Ruff によるリンティングとフォーマットのチェックが行われます。詳しくは[開発者ガイド](https://docs.pypots.com/en/latest/dev_getting_started.html#using-pre-commit)をご覧ください。
 
 貢献者は [GitHub の貢献者一覧](https://github.com/WenjieDu/PyPOTS/graphs/contributors)、[PyPOTS の公式サイト](https://pypots.com/about/#volunteer-developers)、該当するリリースノートで紹介されます。[行動規範](https://github.com/WenjieDu/PyPOTS/blob/main/CODE_OF_CONDUCT.md)を遵守してください。
 

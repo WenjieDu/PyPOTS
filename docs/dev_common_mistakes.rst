@@ -218,5 +218,5 @@ Before opening a PR, verify:
    [ ] Checkpoint semantics preserved if _train_model() is overridden
    [ ] Tests cover fit(), predict(), helper methods, save/load
    [ ] Both dict input and file input tested
-   [ ] flake8 passes
+   [ ] Ruff linting and formatting checks pass
    [ ] Targeted test file passes

@@ -1,0 +1,20 @@
+# Documentation toolchain (compatible with the Read the Docs Python 3.10 environment).
+sphinx==7.4.7
+docutils==0.21.2
+furo==2025.12.19
+pygments==2.20.0
+# Registers the a11y-light and a11y-dark styles used in docs/conf.py.
+accessible-pygments==0.0.5
+sphinxcontrib-bibtex==2.6.5
+sphinxcontrib-gtagjs==0.2.1
+sphinx-autodoc-typehints==2.3.0
+
+# Stable runtime dependencies for autodoc; the +cpu wheel also satisfies this torch pin.
+torch==2.3.0
+numpy==1.26.4
+pandas==2.3.3
+transformers==4.57.6
+tsdb==0.8
+pygrinder==0.7
+benchpots==1
+sentencepiece

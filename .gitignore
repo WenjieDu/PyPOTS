@@ -17,6 +17,8 @@ docs/_build
 *results*
 *test*
 !tests/
+!/tests/**/*.py
+!/tests/**/*.pyi
 
 # ignore specific kinds of files like all PDFs
 *.pdf
@@ -25,6 +27,7 @@ docs/_build
 
 # ignore executable and config files
 *.sh
+!/scripts/build_and_run_sphinx_docs.sh
 *.yml
 
 # to temporally ignore things under development locally, simply append '_indev' to the name of your workdir

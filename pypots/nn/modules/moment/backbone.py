@@ -10,6 +10,7 @@ from math import ceil
 import torch
 from torch import nn
 
+from ....utils.hf_offline import resolve_hf_repo_id
 from ....utils.logging import logger
 from .masking import Masking
 from .modules import (
@@ -171,13 +172,14 @@ class BackboneMOMENT(nn.Module):
     def _get_huggingface_transformer(self, configs):
         from transformers import T5Config, T5EncoderModel, T5Model
 
+        backbone_id = resolve_hf_repo_id(configs.transformer_backbone)
         if configs.getattr("randomly_initialize_backbone", False):
-            model_config = T5Config.from_pretrained(configs.transformer_backbone)
+            model_config = T5Config.from_pretrained(backbone_id)
             transformer_backbone = T5Model(model_config)
-            logger.info(f"Initializing randomly initialized transformer from {configs.transformer_backbone}.")
+            logger.info(f"Initializing randomly initialized transformer from {backbone_id}.")
         else:
-            transformer_backbone = T5EncoderModel.from_pretrained(configs.transformer_backbone)
-            logger.info(f"Initializing pre-trained transformer from {configs.transformer_backbone}.")
+            transformer_backbone = T5EncoderModel.from_pretrained(backbone_id)
+            logger.info(f"Initializing pre-trained transformer from {backbone_id}.")
 
         if configs.transformer_type == "encoder_only":
             transformer_backbone = transformer_backbone.get_encoder()

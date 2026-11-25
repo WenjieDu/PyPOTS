@@ -20,7 +20,7 @@ Once you're done, I will review your PR shortly. I may suggest changes to improv
 
 <!-- You can remove checks that are not relevant to this PR, like the below example:
 
-- [x] This PR is made to fix a typo... 
+- [x] This PR is made to fix a typo...
 
 -->
 
@@ -28,3 +28,4 @@ Once you're done, I will review your PR shortly. I may suggest changes to improv
 - [ ] Was this discussed/approved via a GitHub issue? Please add a link to it if that's the case;
 - [ ] I have commented my code, particularly in hard-to-understand areas;
 - [ ] I have written the necessary tests and already run them locally;
+- [ ] I have run `pre-commit run` on my staged changes (recommended), or verified that `ruff check .` and `ruff format . --check` pass locally. See the [developer guide](https://docs.pypots.com/en/latest/dev_getting_started.html#using-pre-commit);

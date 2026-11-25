@@ -82,7 +82,7 @@ Kami memandang deret waktu dunia nyata sebagai **deret waktu teramati sebagian (
 - **API terpadu:** antarmuka pelatihan dan prediksi yang konsisten memudahkan eksperimen dan perbandingan model.
 - **Katalog model yang kaya:** lebih dari 50 model dan metode, termasuk pendekatan klasik, pembelajaran mendalam, model berbasis LLM, dan model fondasi deret waktu (TSFM).
 - **<a href="https://landscape.pytorch.org/?item=modeling--specialized--pypots"><img src="https://pypots.com/figs/misc/pytorch.svg" width="26px" align="center">PyTorch Ecosystem</a>:** PyPOTS dibangun di atas PyTorch dan tercantum dalam PyTorch Landscape.
-- **Akselerasi perangkat keras:** CPU dan GPU NVIDIA, pelatihan multi-GPU melalui PyTorch DataParallel dan presisi campuran otomatis untuk model yang mendukungnya.
+- **Akselerasi perangkat keras:** CPU, GPU NVIDIA CUDA, dan NPU Ascend; pelatihan multi-perangkat melalui PyTorch DistributedDataParallel (DDP), CUDA DataParallel, dan presisi campuran otomatis untuk model yang mendukungnya. Lihat [panduan akselerasi](https://docs.pypots.com/en/latest/install.html#acceleration) untuk konfigurasi dan batasannya.
 - **Pengelolaan data fleksibel:** data dalam memori dan pemuatan sesuai kebutuhan dari berkas HDF5.
 - **Optimasi hiperparameter:** penyetelan model dengan [Optuna](https://github.com/optuna/optuna).
 - **Penelitian yang dapat direproduksi:** kumpulan data, simulasi nilai hilang, prapemrosesan terstandar, dan alat evaluasi dalam ekosistem.
@@ -358,6 +358,15 @@ Kami menyambut kontribusi peneliti, insinyur, dan pengguna:
 - **Dokumentasi dan contoh:** tingkatkan tutorial, dokumentasi API, contoh penggunaan, dan terjemahan.
 - **Pengujian:** tambahkan uji regresi untuk meningkatkan keandalan dan reproduksibilitas.
 - **Keamanan:** laporkan kerentanan secara privat sesuai [SECURITY.md](https://github.com/WenjieDu/PyPOTS/blob/main/SECURITY.md).
+
+Sebelum mengajukan pull request, kami menyarankan untuk mengaktifkan [pre-commit](https://pre-commit.com/) pada klon lokal agar perubahan Anda diformat dan diperiksa secara otomatis:
+
+```bash
+pip install pre-commit
+pre-commit install
+```
+
+Hook dijalankan secara otomatis setiap kali Anda melakukan commit. Jika hook mengubah berkas, tinjau perubahan tersebut, tambahkan kembali ke staging area, lalu lakukan commit lagi. GitHub CI tetap memeriksa linting dan pemformatan dengan Ruff meskipun Anda tidak memasang hook. Lihat [panduan pengembang](https://docs.pypots.com/en/latest/dev_getting_started.html#using-pre-commit) untuk informasi lebih lanjut.
 
 Kontributor diakui pada [halaman kontributor GitHub](https://github.com/WenjieDu/PyPOTS/graphs/contributors), [situs PyPOTS](https://pypots.com/about/#volunteer-developers), dan catatan rilis jika relevan. Harap patuhi [kode etik](https://github.com/WenjieDu/PyPOTS/blob/main/CODE_OF_CONDUCT.md).
 

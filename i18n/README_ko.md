@@ -82,7 +82,7 @@ PyPOTS(발음은 "Pie Pots")는 시계열 분석을 위한 오픈 소스 Python 
 - **통합 API:** 일관된 학습 및 예측 인터페이스로 실험과 모델 비교를 간소화합니다.
 - **풍부한 모델 목록:** 전통적 방법, 딥러닝, LLM 기반 모델 및 시계열 파운데이션 모델(TSFM)을 포함한 50개 이상의 모델과 방법.
 - **<a href="https://landscape.pytorch.org/?item=modeling--specialized--pypots"><img src="https://pypots.com/figs/misc/pytorch.svg" width="26px" align="center">PyTorch Ecosystem</a>:** PyTorch를 기반으로 구축되었으며 PyTorch Landscape에 등재되었습니다.
-- **하드웨어 가속:** CPU와 NVIDIA GPU를 지원하며, 해당 모델에서는 PyTorch DataParallel을 활용한 다중 GPU 학습과 자동 혼합 정밀도를 사용할 수 있습니다.
+- **하드웨어 가속:** CPU, NVIDIA CUDA GPU 및 Ascend NPU를 지원하며, 지원 모델에서는 PyTorch DistributedDataParallel(DDP)을 통한 다중 장치 학습, CUDA DataParallel 및 자동 혼합 정밀도를 사용할 수 있습니다. 설정 방법과 제한 사항은 [가속 가이드](https://docs.pypots.com/en/latest/install.html#acceleration)를 참고하세요.
 - **유연한 데이터 처리:** 메모리 내 데이터 및 HDF5 파일의 지연 로딩을 지원합니다.
 - **하이퍼파라미터 최적화:** [Optuna](https://github.com/optuna/optuna)를 이용한 모델 튜닝.
 - **재현 가능한 연구:** 생태계 전반의 데이터셋, 결측 시뮬레이션, 표준화된 전처리 및 평가 도구.
@@ -358,6 +358,15 @@ PyPOTS를 사용하고 논문에서 인용하는 연구 프로젝트들이 있�
 - **문서와 예제:** 튜토리얼, API 문서, 사용 예제 및 번역을 개선하세요.
 - **테스트:** 회귀 테스트를 추가하여 신뢰성과 재현성을 높이세요.
 - **보안:** [SECURITY.md](https://github.com/WenjieDu/PyPOTS/blob/main/SECURITY.md)의 안내에 따라 취약점을 비공개로 신고하세요.
+
+풀 리퀘스트를 제출하기 전에 로컬에 클론한 저장소에서 [pre-commit](https://pre-commit.com/)을 활성화하여 변경 사항을 자동으로 포맷하고 검사하는 것을 권장합니다:
+
+```bash
+pip install pre-commit
+pre-commit install
+```
+
+훅은 커밋할 때 자동으로 실행됩니다. 훅이 파일을 수정하면 변경 사항을 검토하고 다시 스테이징한 다음 커밋을 재시도하세요. 훅을 설치하지 않아도 GitHub CI에서 Ruff 린팅 및 포맷 검사를 수행합니다. 자세한 내용은 [개발자 가이드](https://docs.pypots.com/en/latest/dev_getting_started.html#using-pre-commit)를 참고하세요.
 
 기여자는 [GitHub 기여자 페이지](https://github.com/WenjieDu/PyPOTS/graphs/contributors), [PyPOTS 웹사이트](https://pypots.com/about/#volunteer-developers) 및 해당되는 릴리스 노트에 소개됩니다. [행동 강령](https://github.com/WenjieDu/PyPOTS/blob/main/CODE_OF_CONDUCT.md)을 준수해 주세요.
 

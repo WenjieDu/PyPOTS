@@ -87,7 +87,7 @@ PyPOTS is built upon this philosophy to enable unified time series analysis for 
 - **Unified APIs:** Consistent training and prediction interfaces across models, making experimentation and model comparison easier.
 - **Rich model zoo:** 50+ models and methods spanning classical approaches, deep learning, LLM-based models, and time series foundation models (TSFMs).
 - **<a href="https://landscape.pytorch.org/?item=modeling--specialized--pypots"><img src="https://pypots.com/figs/misc/pytorch.svg" width="26px" align="center">PyTorch Ecosystem</a>:** PyPOTS is built on PyTorch and featured in the PyTorch Landscape.
-- **Hardware acceleration:** CPU and NVIDIA GPU support, including multi-GPU training via PyTorch DataParallel and automatic mixed precision for supported models.
+- **Hardware acceleration:** CPU, NVIDIA CUDA GPUs, and Ascend NPUs; multi-device training via PyTorch DistributedDataParallel (DDP), CUDA DataParallel, and automatic mixed precision for supported models. See the [acceleration guide](https://docs.pypots.com/en/latest/install.html#acceleration) for setup and limitations.
 - **Flexible data handling:** In-memory data and lazy loading from HDF5 files.
 - **Hyperparameter optimization:** Model tuning powered by [Optuna](https://github.com/optuna/optuna).
 - **Reproducible research:** Datasets, missingness simulation, standardized preprocessing, and evaluation tools across the PyPOTS ecosystem.
@@ -394,6 +394,15 @@ We welcome contributions from researchers, engineers, and users:
 - **Documentation and examples:** Improve tutorials, API documentation, usage examples, and translations.
 - **Testing:** Add regression tests and help improve the reliability and reproducibility of PyPOTS.
 - **Security:** Report vulnerabilities privately as described in [SECURITY.md](https://github.com/WenjieDu/PyPOTS/blob/main/SECURITY.md).
+
+Before submitting a pull request, we recommend enabling [pre-commit](https://pre-commit.com/) in your local clone to automatically format and check your changes:
+
+```bash
+pip install pre-commit
+pre-commit install
+```
+
+The hooks run automatically when you commit. If a hook modifies files, review and stage the changes, then commit again. GitHub CI checks Ruff linting and formatting even if you do not install the hooks. See the [developer guide](https://docs.pypots.com/en/latest/dev_getting_started.html#using-pre-commit) for details.
 
 Contributors are recognized on the [GitHub contributors page](https://github.com/WenjieDu/PyPOTS/graphs/contributors),
 the [PyPOTS website](https://pypots.com/about/#volunteer-developers), and in release notes where applicable.

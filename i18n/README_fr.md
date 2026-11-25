@@ -82,7 +82,7 @@ Nous considérons les séries temporelles réelles comme des **séries temporell
 - **API unifiées :** interfaces cohérentes d’entraînement et de prédiction facilitant les expériences et les comparaisons.
 - **Catalogue riche :** plus de 50 modèles et méthodes classiques, d’apprentissage profond, basés sur des LLM et modèles de fondation pour les séries temporelles (TSFM).
 - **<a href="https://landscape.pytorch.org/?item=modeling--specialized--pypots"><img src="https://pypots.com/figs/misc/pytorch.svg" width="26px" align="center">PyTorch Ecosystem</a> :** PyPOTS repose sur PyTorch et figure dans le PyTorch Landscape.
-- **Accélération matérielle :** CPU et GPU NVIDIA, entraînement multi-GPU via PyTorch DataParallel et précision mixte automatique pour les modèles compatibles.
+- **Accélération matérielle :** CPU, GPU NVIDIA CUDA et NPU Ascend ; entraînement sur plusieurs appareils via PyTorch DistributedDataParallel (DDP), CUDA DataParallel et précision mixte automatique pour les modèles compatibles. Consultez le [guide d'accélération](https://docs.pypots.com/en/latest/install.html#acceleration) pour la configuration et les limitations.
 - **Gestion flexible des données :** données en mémoire et chargement à la demande depuis des fichiers HDF5.
 - **Optimisation des hyperparamètres :** réglage des modèles avec [Optuna](https://github.com/optuna/optuna).
 - **Recherche reproductible :** jeux de données, simulation de valeurs manquantes, prétraitement standardisé et outils d’évaluation dans l’écosystème.
@@ -358,6 +358,15 @@ Les contributions des chercheurs, ingénieurs et utilisateurs sont les bienvenue
 - **Documentation et exemples :** améliorez les tutoriels, la documentation des API, les exemples et les traductions.
 - **Tests :** ajoutez des tests de régression pour améliorer la fiabilité et la reproductibilité.
 - **Sécurité :** signalez les vulnérabilités en privé selon [SECURITY.md](https://github.com/WenjieDu/PyPOTS/blob/main/SECURITY.md).
+
+Avant de soumettre une pull request, nous vous recommandons d'activer [pre-commit](https://pre-commit.com/) dans votre clone local afin de formater et de vérifier automatiquement vos modifications :
+
+```bash
+pip install pre-commit
+pre-commit install
+```
+
+Les hooks s'exécutent automatiquement lors de chaque commit. Si un hook modifie des fichiers, examinez les modifications, ajoutez-les de nouveau à l'index Git, puis relancez le commit. GitHub CI vérifie le code et le formatage avec Ruff même si vous n'installez pas les hooks. Consultez le [guide de développement](https://docs.pypots.com/en/latest/dev_getting_started.html#using-pre-commit) pour plus de détails.
 
 Les contributeurs sont reconnus sur la [page des contributeurs GitHub](https://github.com/WenjieDu/PyPOTS/graphs/contributors), le [site de PyPOTS](https://pypots.com/about/#volunteer-developers) et les notes de version le cas échéant. Veuillez respecter le [code de conduite](https://github.com/WenjieDu/PyPOTS/blob/main/CODE_OF_CONDUCT.md).
 

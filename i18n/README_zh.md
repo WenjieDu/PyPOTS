@@ -82,7 +82,7 @@ PyPOTS（发音为“Pie Pots”）是一个开源 Python 时间序列分析工�
 - **统一 API：** 各模型采用一致的训练和预测接口，便于实验和比较。
 - **丰富的模型库：** 50+ 种模型和方法，涵盖经典方法、深度学习、基于大语言模型（LLM）的模型及时间序列基础模型（TSFM）。
 - **<a href="https://landscape.pytorch.org/?item=modeling--specialized--pypots"><img src="https://pypots.com/figs/misc/pytorch.svg" width="26px" align="center">PyTorch Ecosystem</a>：** PyPOTS 基于 PyTorch 构建，并被收录于 PyTorch Landscape。
-- **硬件加速：** 支持 CPU 和 NVIDIA GPU，适用模型支持 PyTorch DataParallel 多 GPU 训练和自动混合精度。
+- **硬件加速：** 支持 CPU、NVIDIA CUDA GPU 和 Ascend NPU（昇腾）；适用模型支持 PyTorch DistributedDataParallel（DDP）多设备训练、CUDA DataParallel 及自动混合精度。环境配置与限制详见[硬件加速指南](https://docs.pypots.com/en/latest/install.html#acceleration)。
 - **灵活的数据处理：** 支持内存数据及 HDF5 文件的按需加载。
 - **超参数优化：** 基于 [Optuna](https://github.com/optuna/optuna) 进行模型调优。
 - **可复现研究：** PyPOTS 生态提供数据集、缺失值模拟、标准化预处理与评估工具。
@@ -360,6 +360,15 @@ year = {2025},
 - **文档和示例：** 改进教程、API 文档、使用示例及翻译。
 - **测试：** 添加回归测试，提升 PyPOTS 的可靠性和可复现性。
 - **安全：** 按照 [SECURITY.md](https://github.com/WenjieDu/PyPOTS/blob/main/SECURITY.md) 的说明私下报告漏洞。
+
+提交 Pull Request 之前，建议在本地克隆的仓库中启用 [pre-commit](https://pre-commit.com/)，以自动格式化并检查你的修改：
+
+```bash
+pip install pre-commit
+pre-commit install
+```
+
+Git Hook 会在提交代码时自动运行。如果 Hook 修改了文件，请检查修改内容，重新暂存后再次提交。即使没有安装 Hook，GitHub CI 仍会执行 Ruff 代码规范和格式检查。详情请参阅[开发者指南](https://docs.pypots.com/en/latest/dev_getting_started.html#using-pre-commit)。
 
 贡献者将在 [GitHub 贡献者页面](https://github.com/WenjieDu/PyPOTS/graphs/contributors)、[PyPOTS 官网](https://pypots.com/about/#volunteer-developers) 及适用的发布说明中获得认可。请遵守[行为准则](https://github.com/WenjieDu/PyPOTS/blob/main/CODE_OF_CONDUCT.md)。
 

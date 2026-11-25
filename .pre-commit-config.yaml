@@ -1,17 +1,29 @@
 repos:
-    # hooks for checking files
-    -   repo: https://github.com/pre-commit/pre-commit-hooks
-        rev: v4.6.0
-        hooks:
-            -   id: trailing-whitespace
-            -   id: end-of-file-fixer
-            -   id: check-yaml
+    # General file checks
+    - repo: https://github.com/pre-commit/pre-commit-hooks
+      rev: v4.6.0
+      hooks:
+          - id: trailing-whitespace
+            args: [--markdown-linebreak-ext=md]
+          - id: end-of-file-fixer
+          - id: check-yaml
+          - id: check-toml
+          - id: check-merge-conflict
+            args: [--assume-in-merge]
 
-    # hooks for linting code
-    -   repo: local
-        hooks:
-            -   id: ruff
-                name: ruff
-                entry: ruff check --config pyproject.toml --force-exclude
-                language: unsupported
-                types_or: [python, pyi]
+    # Use an isolated environment with the same Ruff version as CI.
+    - repo: local
+      hooks:
+          - id: ruff-format
+            name: Ruff Formatting
+            entry: ruff format --config pyproject.toml --force-exclude
+            language: python
+            additional_dependencies: [ruff==0.17.6]
+            types_or: [python, pyi]
+
+          - id: ruff-check
+            name: Ruff Linting
+            entry: ruff check --config pyproject.toml --force-exclude
+            language: python
+            additional_dependencies: [ruff==0.17.6]
+            types_or: [python, pyi]

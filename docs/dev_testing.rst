@@ -57,8 +57,8 @@ The file ``tests/global_test_config.py`` sets up shared test data and configurat
    FORECASTING_VAL_SET = {"X": ..., "X_pred": ...}
    FORECASTING_TEST_SET = {"X": ..., "X_pred": ...}
 
-   # Device selection (auto-detects CUDA):
-   DEVICE = None  # or cuda device if available
+   # Device selection (auto-detects CUDA, then Ascend NPU, then CPU):
+   DEVICE = None  # or explicitly select "cuda", "npu", or "cpu"
 
 The test data is generated using ``benchpots.datasets.preprocess_random_walk()``
 which creates a synthetic random walk dataset with configurable missingness.
@@ -302,9 +302,25 @@ What CI Checks
 
 The CI workflows currently perform these core checks:
 
-1. ``flake8 .`` — code style linting
+1. ``ruff check .`` and ``ruff format . --check`` — linting and formatting
 2. Package build — ``python -m build``
 3. Full pytest with coverage — parallel execution with ``--dist=loadgroup``
+
+
+Pre-commit Checks Before Opening a PR
+----------------------------------------
+
+We recommend installing the Git hooks as described in :doc:`dev_getting_started`.
+After staging your intended changes, run ``pre-commit run`` to check them before
+committing. To check all tracked files, run ``pre-commit run --all-files``; this
+may also modify unrelated files, so review the diff and keep the PR focused.
+If a hook changes files or reports errors, review the fixes, stage the intended
+changes again, and rerun the checks. Pre-commit does not replace model tests or
+GitHub CI.
+
+If you do not use pre-commit, run the Ruff commands below using the version
+pinned in ``requirements/requirements_dev.txt``. GitHub CI requires linting and
+formatting to pass regardless of local hook installation.
 
 
 Local Commands That Match CI
@@ -315,8 +331,23 @@ Lint
 
 .. code-block:: bash
 
-   flake8 .
+   ruff check .
+   ruff format . --check
 
+
+Device and Distributed Training Tests
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. code-block:: bash
+
+   python -m pytest -rA tests/utils/devices.py tests/utils/distributed.py
+
+The CPU tests cover device helpers and real multi-process Gloo training, including
+data sharding, synchronized early stopping and checkpoint handling. NPU-specific
+tests require a working Ascend environment and are skipped when no NPU is visible.
+Run those tests on a suitable host (including at least two visible NPUs for HCCL
+collectives). CPU and mocked device checks do not establish accelerator runtime
+compatibility.
 
 Test Environment Setup
 ^^^^^^^^^^^^^^^^^^^^^^^^
@@ -362,7 +393,7 @@ Fast Triage Rules
    * - Problem
      - Action
    * - Lint failure only
-     - Start with ``flake8 .``
+     - Start with ``ruff check .`` and ``ruff format . --check``
    * - One-model failure
      - Run that model's test file directly
    * - Shared-module change
@@ -394,7 +425,8 @@ Example PR evidence:
    ```
    python tests/global_test_config.py
    pytest -rA tests/imputation/my_model.py -n 1
-   flake8 .
+   ruff check .
+   ruff format . --check
    ```
 
    ### Results

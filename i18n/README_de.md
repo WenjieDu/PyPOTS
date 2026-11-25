@@ -82,7 +82,7 @@ Wir verstehen reale Zeitreihen als **partiell beobachtete Zeitreihen (Partially-
 - **Einheitliche APIs:** Konsistente Trainings- und Vorhersageschnittstellen erleichtern Experimente und Modellvergleiche.
 - **Umfangreicher Modellkatalog:** Über 50 Modelle und Methoden, darunter klassische Ansätze, Deep Learning, LLM-basierte Modelle und Zeitreihen-Basismodelle (TSFM).
 - **<a href="https://landscape.pytorch.org/?item=modeling--specialized--pypots"><img src="https://pypots.com/figs/misc/pytorch.svg" width="26px" align="center">PyTorch Ecosystem</a>:** PyPOTS basiert auf PyTorch und ist in der PyTorch Landscape gelistet.
-- **Hardwarebeschleunigung:** CPU und NVIDIA-GPU, bei unterstützten Modellen Multi-GPU-Training mittels PyTorch DataParallel und automatische gemischte Genauigkeit.
+- **Hardwarebeschleunigung:** CPU, NVIDIA-CUDA-GPUs und Ascend-NPUs; Training auf mehreren Geräten mit PyTorch DistributedDataParallel (DDP), CUDA DataParallel und automatische gemischte Genauigkeit für unterstützte Modelle. Einrichtung und Einschränkungen siehe [Beschleunigungsleitfaden](https://docs.pypots.com/en/latest/install.html#acceleration).
 - **Flexible Datenverarbeitung:** Daten im Arbeitsspeicher und bedarfsgerechtes Laden aus HDF5-Dateien.
 - **Hyperparameteroptimierung:** Modelloptimierung mit [Optuna](https://github.com/optuna/optuna).
 - **Reproduzierbare Forschung:** Datensätze, Simulation fehlender Werte, standardisierte Vorverarbeitung und Evaluierungswerkzeuge im Ökosystem.
@@ -358,6 +358,15 @@ Wir freuen uns über Beiträge von Forschenden, Entwicklerinnen und Entwicklern 
 - **Dokumentation und Beispiele:** Verbessere Tutorials, API-Dokumentation, Beispiele und Übersetzungen.
 - **Tests:** Ergänze Regressionstests zur Steigerung von Zuverlässigkeit und Reproduzierbarkeit.
 - **Sicherheit:** Melde Schwachstellen vertraulich gemäß [SECURITY.md](https://github.com/WenjieDu/PyPOTS/blob/main/SECURITY.md).
+
+Bevor du einen Pull Request einreichst, empfehlen wir dir, [pre-commit](https://pre-commit.com/) in deinem lokalen Klon zu aktivieren, damit deine Änderungen automatisch formatiert und geprüft werden:
+
+```bash
+pip install pre-commit
+pre-commit install
+```
+
+Die Hooks werden bei jedem Commit automatisch ausgeführt. Wenn ein Hook Dateien ändert, überprüfe die Änderungen, füge sie erneut zum Staging-Bereich hinzu und wiederhole den Commit. GitHub CI prüft mit Ruff sowohl den Code als auch die Formatierung, selbst wenn du die Hooks nicht installierst. Weitere Informationen findest du im [Entwicklerleitfaden](https://docs.pypots.com/en/latest/dev_getting_started.html#using-pre-commit).
 
 Mitwirkende werden auf der [GitHub-Seite der Mitwirkenden](https://github.com/WenjieDu/PyPOTS/graphs/contributors), der [PyPOTS-Website](https://pypots.com/about/#volunteer-developers) und gegebenenfalls in Release Notes gewürdigt. Bitte halte dich an den [Verhaltenskodex](https://github.com/WenjieDu/PyPOTS/blob/main/CODE_OF_CONDUCT.md).
 

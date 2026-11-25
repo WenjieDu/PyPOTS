@@ -66,10 +66,9 @@ class VaDER(BaseNNClusterer):
         `0` means data loading will be in the main process, i.e. there won't be subprocesses.
 
     device :
-        The device for the model to run on.
-        If not given, will try to use CUDA devices first (will use the GPU with device number 0 only by default),
-        then CPUs, considering CUDA and CPU are so far the main devices for people to train ML models.
-        Other devices like Google TPU and Apple Silicon accelerator MPS may be added in the future.
+        The device for the model to run on. If None, PyPOTS selects CUDA, then Ascend NPU, then CPU,
+        depending on availability. Ascend NPU requires a compatible torch-npu and CANN environment;
+        model and operator support may vary.
 
     saving_path :
         The path for automatically saving model checkpoints and tensorboard files (i.e. loss values recorded during
@@ -297,6 +296,12 @@ class VaDER(BaseNNClusterer):
                 else:
                     logger.info(f"Epoch {epoch:03d} - training loss ({self.training_loss_name}): {mean_train_loss:.4f}")
                     mean_loss = mean_train_loss
+
+                # under DDP, average the epoch metric across ranks so the
+                # early-stopping / best-epoch decisions below are identical on
+                # every rank and no rank breaks the loop while others still
+                # expect its collectives (no-op in single-process runs)
+                mean_loss = self._sync_epoch_loss_if_ddp(mean_loss)
 
                 if np.isnan(mean_loss):
                     logger.warning(f"‼️ Attention: got NaN loss in Epoch {epoch}. This may lead to unexpected errors.")
