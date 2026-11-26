@@ -80,6 +80,6 @@ jobs:
             - name: Validate workflow definitions
               run: |
                   actionlint -shellcheck=
-                  actionlint .github/workflows/{ci_job,testing_ci,testing_nightly,run_examples,linting}.yml
+                  actionlint .github/workflows/{ci_job,testing_ci,testing_nightly,run_examples,linting,publish_to_PyPI}.yml
             - name: ShellCheck testing and documentation scripts
               run: shellcheck scripts/build_and_run_sphinx_docs.sh scripts/run_full_test.sh

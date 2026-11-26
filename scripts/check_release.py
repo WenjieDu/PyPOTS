@@ -1,4 +1,4 @@
-"""Validate an immutable stable release checkout and its distribution artifacts."""
+"""Validate an immutable release checkout and its distribution artifacts."""
 
 # License: BSD-3-Clause
 
@@ -12,7 +12,10 @@ from email.parser import BytesParser
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-STABLE_TAG = re.compile(r"v(?:0|[1-9]\d*)(?:\.(?:0|[1-9]\d*)){1,2}", flags=re.ASCII)
+RELEASE_TAG = re.compile(
+    r"v(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)(?:\.(?:0|[1-9]\d*))?(?:(?:a|b|rc)(?:0|[1-9]\d*))?",
+    flags=re.ASCII,
+)
 
 
 def git(*args):
@@ -30,8 +33,8 @@ def source_version():
 
 
 def validate_checkout(tag, event_sha):
-    if not STABLE_TAG.fullmatch(tag):
-        raise ValueError(f"Expected a stable vX.Y or vX.Y.Z release tag, got {tag!r}")
+    if not RELEASE_TAG.fullmatch(tag):
+        raise ValueError(f"Expected a stable or pre-release vX.Y[.Z][aN|bN|rcN] tag, got {tag!r}")
     head = git("rev-parse", "HEAD")
     tagged = git("rev-parse", "--verify", f"refs/tags/{tag}^{{commit}}")
     if head != tagged or (event_sha and head != event_sha):

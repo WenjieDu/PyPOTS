@@ -41,9 +41,35 @@ def test_exact_stable_tag(release_repo):
     assert check_release.validate_checkout("v2.1", "") == ("2.1", head)
 
 
-@pytest.mark.parametrize("tag", ["v2.1rc1", "v2.1.dev0", "2.1", "v02.1", "v2.1/evil", "v2١.1", "v2.1２", "v2.1.3٤"])
-def test_nonstable_or_invalid_tag(release_repo, tag):
-    with pytest.raises(ValueError, match="Expected a stable"):
+@pytest.mark.parametrize("version", ["2.2a1", "2.2b1", "2.2rc1", "2.2.1rc1"])
+def test_exact_prerelease_tag(release_repo, version):
+    git, _, _ = release_repo
+    (check_release.ROOT / "pypots/version.py").write_text(f'__version__ = "{version}"\n', encoding="utf-8")
+    git("add", "pypots/version.py")
+    git("commit", "-m", f"release {version}")
+    head = git("rev-parse", "HEAD")
+    git("tag", f"v{version}")
+    git("update-ref", "refs/remotes/origin/main", head)
+    assert check_release.validate_checkout(f"v{version}", head) == (version, head)
+
+
+@pytest.mark.parametrize(
+    "tag",
+    [
+        "v2.1.dev0",
+        "v2.1.post1",
+        "v2.1rc",
+        "v2.1rc01",
+        "2.1",
+        "v02.1",
+        "v2.1/evil",
+        "v2١.1",
+        "v2.1２",
+        "v2.1.3٤",
+    ],
+)
+def test_unsupported_or_invalid_tag(release_repo, tag):
+    with pytest.raises(ValueError, match="Expected a stable or pre-release"):
         check_release.validate_checkout(tag, "")
 
 
