@@ -56,7 +56,7 @@ jobs:
     timeout-minutes: 10
     steps:
       - name: Handle inactive questions
-        uses: actions/stale@1e223db275d687790206a7acac4d1a11bd6fe629 # v10
+        uses: actions/stale@4391f3da665fdf50b6810c1a66712fb9ba21aa93 # v11.0.0
         with:
           only-issue-labels: 'question'
           exempt-issue-labels: 'bug,potential bug,enhancement,new feature,new algo,documentation,security,discussion,good first issue,help wanted,keep,awaiting-approval,work-in-progress,completed,stale-reproduction,stale-completed'
@@ -89,7 +89,7 @@ jobs:
     timeout-minutes: 10
     steps:
       - name: Handle unconfirmed bugs awaiting information
-        uses: actions/stale@1e223db275d687790206a7acac4d1a11bd6fe629 # v10
+        uses: actions/stale@4391f3da665fdf50b6810c1a66712fb9ba21aa93 # v11.0.0
         with:
           # Both labels are required: a maintainer must explicitly request more information.
           only-issue-labels: 'potential bug,question'
@@ -123,7 +123,7 @@ jobs:
     timeout-minutes: 10
     steps:
       - name: Handle explicitly completed issues
-        uses: actions/stale@1e223db275d687790206a7acac4d1a11bd6fe629 # v10
+        uses: actions/stale@4391f3da665fdf50b6810c1a66712fb9ba21aa93 # v11.0.0
         with:
           only-issue-labels: 'completed'
           exempt-issue-labels: 'keep,awaiting-approval,work-in-progress,security,stale-question,stale-reproduction'
