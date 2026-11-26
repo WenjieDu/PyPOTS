@@ -2,9 +2,10 @@ version: 2
 updates:
   # Routine dependency updates go to dev. Security updates still target main.
   - package-ecosystem: pip
-    directories:
-      - /
-      - /requirements
+    # The root pip scan already discovers requirements/ manifests.
+    directory: /
+    # Keep compatible lower bounds; update exact pins when needed.
+    versioning-strategy: increase-if-necessary
     target-branch: dev
     schedule:
       interval: weekly
