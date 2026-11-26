@@ -9,6 +9,11 @@ on:
 
 permissions: {}
 
+# Serialize reruns for the same issue/PR to prevent duplicate comments.
+concurrency:
+  group: pypots-greeting-${{ github.event.issue.number || github.event.pull_request.number }}
+  cancel-in-progress: false
+
 jobs:
   greeting:
     runs-on: ubuntu-latest
@@ -19,10 +24,9 @@ jobs:
 
     steps:
       # Metadata and comments only. Never check out or run PR-controlled code in this workflow.
-      - uses: actions/first-interaction@1c4688942c71f71d4f5502a26ea67c331730fa4d # v3
-        with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          issue_message: |
+      - uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        env:
+          ISSUE_MESSAGE: |
             Hi there 👋,
 
             Thank you for your first issue in PyPOTS! Please include the affected version, relevant context, and a minimal reproduction for bugs.
@@ -32,7 +36,7 @@ jobs:
             Thanks for helping improve PyPOTS!
 
             The PyPOTS team
-          pr_message: |
+          PR_MESSAGE: |
             Hi there 👋,
 
             Thank you for your first contribution to PyPOTS! Ordinary contributions should target the dev branch. Please link relevant issues, explain the changes, and include your test results and any compatibility or licensing considerations.
@@ -40,3 +44,34 @@ jobs:
             For new models or major features, please discuss the proposal with maintainers first. See the [developer guide](https://docs.pypots.com/en/latest/dev_getting_started.html) for contribution and testing guidance.
 
             The PyPOTS team
+        with:
+          script: |
+            const item = context.payload.issue || context.payload.pull_request;
+            const author = item?.user;
+            if (author?.type !== "User" || !author.login || !author.id ||
+                /\[bot\]$/i.test(author.login)) {
+              core.info("Skipping non-human or missing author");
+              return;
+            }
+            // The issues API includes pull requests. Count earlier contributions of
+            // either type, regardless of their state, using the event author's ID.
+            const history = await github.paginate(github.rest.issues.listForRepo, {
+              ...context.repo, creator: author.login, state: "all", per_page: 100,
+            });
+            if (history.some(entry => entry.number < item.number && entry.user?.id === author.id)) {
+              core.info(`Skipping returning contributor ${author.login}`);
+              return;
+            }
+            const params = { ...context.repo, issue_number: item.number };
+            const message = (context.payload.issue ? process.env.ISSUE_MESSAGE : process.env.PR_MESSAGE).trimEnd();
+            const marker = "<!-- pypots-first-contribution-greeting -->";
+            const comments = await github.paginate(github.rest.issues.listComments, {
+              ...params, per_page: 100,
+            });
+            // Recognize both the new marker and the previous workflow's exact message.
+            if (comments.some(comment => comment.user?.login === "github-actions[bot]" &&
+                (comment.body?.includes(marker) || comment.body?.trim() === message.trim()))) {
+              core.info(`Already greeted #${item.number}`);
+              return;
+            }
+            await github.rest.issues.createComment({ ...params, body: `${message}\n\n${marker}` });
