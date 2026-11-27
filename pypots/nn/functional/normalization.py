@@ -36,7 +36,8 @@ def nonstationary_norm(
     """
     if torch.isnan(X).any():
         if missing_mask is None:
-            missing_mask = torch.isnan(X)
+            missing_mask = (~torch.isnan(X)).to(X.dtype)
+            X = torch.nan_to_num(X, nan=0.0)
         else:
             raise ValueError("missing_mask is given but X still contains nan values.")
 
@@ -47,9 +48,10 @@ def nonstationary_norm(
         stdev = torch.sqrt(variance).detach()
     else:
         # for data contain missing values, add a small number to avoid dividing by 0
+        X_masked = X.masked_fill(missing_mask == 0, 0)
         missing_sum = torch.sum(missing_mask == 1, dim=1, keepdim=True) + 1e-9
-        means = torch.sum(X, dim=1, keepdim=True) / missing_sum
-        X_enc = X - means
+        means = torch.sum(X_masked, dim=1, keepdim=True) / missing_sum
+        X_enc = X_masked - means
         X_enc = X_enc.masked_fill(missing_mask == 0, 0)
         variance = torch.sum(X_enc * X_enc, dim=1, keepdim=True) + 1e-9
         stdev = torch.sqrt(variance / missing_sum)
