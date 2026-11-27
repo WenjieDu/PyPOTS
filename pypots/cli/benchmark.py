@@ -10,6 +10,7 @@ import json
 
 import click
 
+from .base import safe_print
 from .utils import get_model_class, load_config, merge_config_with_overrides
 
 # Tasks that use regression-style metrics (mse, mae, rmse, mre)
@@ -174,11 +175,11 @@ def _print_comparison_table(task: str, all_results: dict, metrics_list: list):
 
     separator_width = model_col_width + (metric_col_width + 2) * len(available_metrics)
 
-    print("\n" + "=" * separator_width)
-    print(f"Benchmark Results - Task: {task}")
-    print("=" * separator_width)
-    print(header_line)
-    print("-" * separator_width)
+    safe_print("\n" + "=" * separator_width)
+    safe_print(f"Benchmark Results - Task: {task}")
+    safe_print("=" * separator_width)
+    safe_print(header_line)
+    safe_print("-" * separator_width)
 
     for model_name, model_metrics in all_results.items():
         row = f"{model_name:<{model_col_width}}"
@@ -188,9 +189,9 @@ def _print_comparison_table(task: str, all_results: dict, metrics_list: list):
                 row += f"| {value:<{metric_col_width}.4f}"
             else:
                 row += f"| {'N/A':<{metric_col_width}}"
-        print(row)
+        safe_print(row)
 
-    print("=" * separator_width + "\n")
+    safe_print("=" * separator_width + "\n")
 
 
 def _save_results(output_path: str, task: str, all_results: dict):
@@ -209,7 +210,7 @@ def _save_results(output_path: str, task: str, all_results: dict):
         "task": task,
         "results": all_results,
     }
-    with open(output_path, "w") as f:
+    with open(output_path, "w", encoding="utf-8") as f:
         json.dump(output, f, indent=2)
 
     from ..utils.logging import logger
