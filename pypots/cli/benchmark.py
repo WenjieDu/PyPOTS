@@ -7,6 +7,7 @@ CLI command for benchmarking multiple models on the same dataset.
 
 import inspect
 import json
+from pathlib import Path
 
 import click
 
@@ -218,6 +219,35 @@ def _save_results(output_path: str, task: str, all_results: dict):
     logger.info(f"Benchmark results saved to {output_path}")
 
 
+def _resolve_output_path(config_path: str, configured_output: str | None, cli_output: str | None) -> str | None:
+    """Resolve benchmark output while containing paths sourced from config files.
+
+    A path passed explicitly with ``--output`` is an intentional user choice and
+    may point anywhere the process can write. A path read indirectly from a
+    benchmark config is constrained to the config directory (or a child of it)
+    so an untrusted/shared config cannot redirect writes elsewhere.
+    """
+    if cli_output is not None:
+        return str(Path(cli_output).expanduser().resolve())
+    if configured_output is None:
+        return None
+
+    config_dir = Path(config_path).expanduser().resolve().parent
+    candidate = Path(configured_output).expanduser()
+    if not candidate.is_absolute():
+        candidate = config_dir / candidate
+    candidate = candidate.resolve()
+    try:
+        candidate.relative_to(config_dir)
+    except ValueError as exc:
+        raise click.BadParameter(
+            "output paths from a benchmark config must stay within the config directory; "
+            "use --output to explicitly write elsewhere",
+            param_hint="output",
+        ) from exc
+    return str(candidate)
+
+
 def _checkup(config_path: str):
     """Validate the benchmark configuration before running."""
     cfg = load_config(config_path)
@@ -255,13 +285,13 @@ def benchmark(config, device, seed, output):
 
     # Load config and merge CLI overrides
     cfg = load_config(config)
-    cfg = merge_config_with_overrides(cfg, {"device": device, "seed": seed, "output": output})
+    output_path = _resolve_output_path(config, cfg.get("output"), output)
+    cfg = merge_config_with_overrides(cfg, {"device": device, "seed": seed})
 
     task = cfg["task"]
     models_cfg = cfg["models"]
     data_cfg = cfg["data"]
     metrics_list = cfg.get("metrics", ["mse", "mae"])
-    output_path = cfg.get("output")
     resolved_device = cfg.get("device")
     resolved_seed = cfg.get("seed", 2024)
 
