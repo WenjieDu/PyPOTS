@@ -45,6 +45,8 @@ jobs:
             OPENBLAS_NUM_THREADS: '1'
             MPLBACKEND: Agg
             PYTHONUNBUFFERED: '1'
+            PYTHONUTF8: '1'
+            PYTHONIOENCODING: 'utf-8'
             PIP_INDEX_URL: https://pypi.org/simple
 
         steps:

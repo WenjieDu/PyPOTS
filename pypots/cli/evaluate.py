@@ -10,6 +10,8 @@ import os
 
 import click
 
+from .base import safe_print
+
 TASK_CHOICES = ["imputation", "classification", "forecasting", "anomaly_detection", "clustering"]
 
 TASK_METRICS = {
@@ -162,12 +164,12 @@ def _print_results(task, results):
     logger.info(f"Evaluation results for task '{task}':")
     header = f"{'Metric':<30} {'Value':>15}"
     separator = "-" * 46
-    print(separator)
-    print(header)
-    print(separator)
+    safe_print(separator)
+    safe_print(header)
+    safe_print(separator)
     for metric_name, value in results.items():
-        print(f"{metric_name:<30} {value:>15.6f}")
-    print(separator)
+        safe_print(f"{metric_name:<30} {value:>15.6f}")
+    safe_print(separator)
 
 
 def _save_results(output_path, results):
@@ -178,7 +180,7 @@ def _save_results(output_path, results):
     if output_dir:
         os.makedirs(output_dir, exist_ok=True)
 
-    with open(output_path, "w") as f:
+    with open(output_path, "w", encoding="utf-8") as f:
         json.dump(results, f, indent=4)
     logger.info(f"Evaluation results saved to {output_path}")
 

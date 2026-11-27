@@ -9,6 +9,8 @@ import os
 
 import click
 
+from .base import safe_print
+
 # Reserved column names in the ai4ts data protocol
 _RESERVED_COLUMNS = {"SAMPLE_ID", "TIMESTAMP", "SAMPLE_LABEL", "STEP_LABEL"}
 
@@ -229,51 +231,51 @@ def data_profile(input_path, task, json_output):
     d = profile.to_dict()
 
     if json_output:
-        print(json_mod.dumps(d, indent=2))
+        safe_print(json_mod.dumps(d, indent=2))
     else:
         stats = d["dataset_stats"]
         schema = d["schema_mapping"]
         ts_info = d["timestamp_info"]
 
-        print(f"\n{'=' * 65}")
-        print(f"Data Profile: {input_path}")
-        print(f"{'=' * 65}")
-        print(f"  Samples:          {stats['n_samples']}")
-        print(f"  Features:         {stats['n_features']}")
-        print(f"  Total rows:       {stats['total_rows']}")
-        print(f"  Missing rate:     {stats['missing_rate']:.2%}")
-        print(
+        safe_print(f"\n{'=' * 65}")
+        safe_print(f"Data Profile: {input_path}")
+        safe_print(f"{'=' * 65}")
+        safe_print(f"  Samples:          {stats['n_samples']}")
+        safe_print(f"  Features:         {stats['n_features']}")
+        safe_print(f"  Total rows:       {stats['total_rows']}")
+        safe_print(f"  Missing rate:     {stats['missing_rate']:.2%}")
+        safe_print(
             f"  Sample lengths:   min={stats['min_sample_length']}, "
             f"max={stats['max_sample_length']}, "
             f"avg={stats['avg_sample_length']:.1f}"
         )
-        print(f"  Variable length:  {stats['has_variable_length']}")
-        print("\n  Schema:")
-        print(f"    SAMPLE_ID:      {schema['sample_id_col'] or '(not present)'}")
-        print(f"    TIMESTAMP:      {schema['timestamp_col'] or '(not present)'}")
-        print(f"    Features:       {schema['feature_cols']}")
-        print(f"    Label column:   {schema['label_col'] or '(none)'}")
+        safe_print(f"  Variable length:  {stats['has_variable_length']}")
+        safe_print("\n  Schema:")
+        safe_print(f"    SAMPLE_ID:      {schema['sample_id_col'] or '(not present)'}")
+        safe_print(f"    TIMESTAMP:      {schema['timestamp_col'] or '(not present)'}")
+        safe_print(f"    Features:       {schema['feature_cols']}")
+        safe_print(f"    Label column:   {schema['label_col'] or '(none)'}")
         if schema["n_classes"]:
-            print(f"    Classes:        {schema['n_classes']}")
-        print(f"\n  Task type:        {d['task_type']}")
+            safe_print(f"    Classes:        {schema['n_classes']}")
+        safe_print(f"\n  Task type:        {d['task_type']}")
 
         if ts_info.get("warning"):
-            print(f"\n  ⚠ WARNING: {ts_info['warning']}")
+            safe_print(f"\n  ⚠ WARNING: {ts_info['warning']}")
 
         # Suggest appropriate strategy
         if stats["has_variable_length"] or stats["max_sample_length"] > 200:
             if d["task_type"] == "classification":
-                print(f"\n  → Strategy: pad_only (pad to max_len={stats['max_sample_length']})")
+                safe_print(f"\n  → Strategy: pad_only (pad to max_len={stats['max_sample_length']})")
             else:
-                print("\n  → Strategy: sliding_window (non-overlapping, window_size≤200)")
+                safe_print("\n  → Strategy: sliding_window (non-overlapping, window_size≤200)")
         else:
-            print("\n  → Strategy: direct (uniform length ≤ 200)")
+            safe_print("\n  → Strategy: direct (uniform length ≤ 200)")
 
-        print(f"\n{'=' * 65}")
-        print(
+        safe_print(f"\n{'=' * 65}")
+        safe_print(
             f"Next: pypots-cli data prepare --input {input_path} --output data.h5 --task {d['task_type'] or 'imputation'}"
         )
-        print(f"{'=' * 65}\n")
+        safe_print(f"{'=' * 65}\n")
 
 
 @data.command(name="prepare", help="Convert CSV data to PyPOTS H5 format with proper data structure for model training")
@@ -415,40 +417,40 @@ def data_prepare(
         all_summaries.append(summary)
 
     # print summary
-    print(f"\n{'=' * 65}")
-    print(f"Data Preparation Complete — Task: {task}")
-    print(f"{'=' * 65}")
+    safe_print(f"\n{'=' * 65}")
+    safe_print(f"Data Preparation Complete — Task: {task}")
+    safe_print(f"{'=' * 65}")
     for s in all_summaries:
-        print(f"\n  [{s['set_type'].upper()}]")
-        print(f"    Samples:   {s['n_samples']}")
+        safe_print(f"\n  [{s['set_type'].upper()}]")
+        safe_print(f"    Samples:   {s['n_samples']}")
         n_windows = s.get("n_windows", s["n_samples"])
         if n_windows != s["n_samples"]:
-            print(f"    Windows:   {n_windows} (from sliding window)")
-        print(f"    Steps:     {s['n_steps']}")
-        print(f"    Features:  {s['n_features']}")
-        print(f"    Strategy:  {s.get('strategy', 'direct')}")
-        print(f"    Natural missing rate:  {s['natural_missing_rate']:.2%}")
-        print(f"    Actual missing rate:   {s['actual_missing_rate']:.2%}")
+            safe_print(f"    Windows:   {n_windows} (from sliding window)")
+        safe_print(f"    Steps:     {s['n_steps']}")
+        safe_print(f"    Features:  {s['n_features']}")
+        safe_print(f"    Strategy:  {s.get('strategy', 'direct')}")
+        safe_print(f"    Natural missing rate:  {s['natural_missing_rate']:.2%}")
+        safe_print(f"    Actual missing rate:   {s['actual_missing_rate']:.2%}")
         if s["has_labels"]:
-            print(f"    Labels:    yes ({s['n_classes']} classes)")
-        print(f"    H5 keys:   {s['keys_saved']}")
+            safe_print(f"    Labels:    yes ({s['n_classes']} classes)")
+        safe_print(f"    H5 keys:   {s['keys_saved']}")
         if s.get("registry_path"):
-            print(f"    Registry:  {s['registry_path']}")
+            safe_print(f"    Registry:  {s['registry_path']}")
 
     if batch_mode:
-        print(f"\n  Output directory: {output_dir}/")
+        safe_print(f"\n  Output directory: {output_dir}/")
 
     # print recommended next steps
-    print(f"\n{'=' * 65}")
-    print("Next steps:")
+    safe_print(f"\n{'=' * 65}")
+    safe_print("Next steps:")
     if batch_mode:
         desc_target = os.path.join(output_dir, "train.h5")
     else:
         desc_target = output_path
-    print(f"  1. Inspect: pypots-cli data describe --input {desc_target}")
-    print(f"  2. Recommend: pypots-cli recommend --task {task} --data {desc_target}")
-    print("  3. Train:   pypots-cli train --config <config.yaml>")
-    print(f"{'=' * 65}\n")
+    safe_print(f"  1. Inspect: pypots-cli data describe --input {desc_target}")
+    safe_print(f"  2. Recommend: pypots-cli recommend --task {task} --data {desc_target}")
+    safe_print("  3. Train:   pypots-cli train --config <config.yaml>")
+    safe_print(f"{'=' * 65}\n")
 
 
 def _check_ai4ts_pipeline() -> bool:
@@ -589,15 +591,15 @@ def data_reconstruct(predictions, registry_path, output_path, key):
     os.makedirs(os.path.dirname(os.path.abspath(output_path)), exist_ok=True)
     output_df.to_csv(output_path, index=False)
 
-    print(f"\n{'=' * 65}")
-    print("Reconstruction Complete")
-    print(f"{'=' * 65}")
-    print(f"  Samples:    {len(reconstructed)}")
+    safe_print(f"\n{'=' * 65}")
+    safe_print("Reconstruction Complete")
+    safe_print(f"{'=' * 65}")
+    safe_print(f"  Samples:    {len(reconstructed)}")
     total_steps = sum(arr.shape[0] for arr in reconstructed.values())
-    print(f"  Total rows: {total_steps}")
-    print(f"  Features:   {n_features}")
-    print(f"  Output:     {output_path}")
-    print(f"{'=' * 65}\n")
+    safe_print(f"  Total rows: {total_steps}")
+    safe_print(f"  Features:   {n_features}")
+    safe_print(f"  Output:     {output_path}")
+    safe_print(f"{'=' * 65}\n")
 
 
 @data.command(name="convert", help="Convert data between formats (csv/npy/npz/pkl -> h5/npy/pkl)")
@@ -810,33 +812,35 @@ def _describe_csv(input_path, json_output, logger):
         result["n_steps_max"] = n_steps_max
 
     if json_output:
-        print(json_mod.dumps(result, indent=2))
+        safe_print(json_mod.dumps(result, indent=2))
     else:
-        print(f"\n{'=' * 65}")
-        print(f"Dataset: {input_path} (CSV)")
-        print(f"{'=' * 65}")
-        print(f"  Total rows:     {len(df)}")
-        print(f"  Total columns:  {len(df.columns)}")
-        print(f"  Samples:        {n_samples}")
-        print(f"  Time steps:     {n_steps}" + ("" if uniform_length else f" (range: {n_steps_min}-{n_steps_max})"))
-        print(f"  Features:       {n_features}")
-        print(f"  Missing rate:   {missing_rate:.2%} ({nan_count}/{total_elements})")
-        print(f"  SAMPLE_ID:      {'yes' if sample_id_col else 'no (single sample)'}")
+        safe_print(f"\n{'=' * 65}")
+        safe_print(f"Dataset: {input_path} (CSV)")
+        safe_print(f"{'=' * 65}")
+        safe_print(f"  Total rows:     {len(df)}")
+        safe_print(f"  Total columns:  {len(df.columns)}")
+        safe_print(f"  Samples:        {n_samples}")
+        safe_print(
+            f"  Time steps:     {n_steps}" + ("" if uniform_length else f" (range: {n_steps_min}-{n_steps_max})")
+        )
+        safe_print(f"  Features:       {n_features}")
+        safe_print(f"  Missing rate:   {missing_rate:.2%} ({nan_count}/{total_elements})")
+        safe_print(f"  SAMPLE_ID:      {'yes' if sample_id_col else 'no (single sample)'}")
         if label_col:
-            print(f"  Labels:         yes — column '{label_col}' ({n_classes} classes)")
+            safe_print(f"  Labels:         yes — column '{label_col}' ({n_classes} classes)")
         else:
-            print("  Labels:         no")
+            safe_print("  Labels:         no")
 
-        print(f"\n  Feature columns: {feature_cols}")
-        print("\n  Per-feature missing rates:")
+        safe_print(f"\n  Feature columns: {feature_cols}")
+        safe_print("\n  Per-feature missing rates:")
         for col, rate in per_feature_missing.items():
             bar = "█" * int(rate * 30) + "░" * (30 - int(rate * 30))
-            print(f"    {col:20s} {bar} {rate:.2%}")
+            safe_print(f"    {col:20s} {bar} {rate:.2%}")
 
-        print(f"\n{'=' * 65}")
-        print("To prepare for PyPOTS:")
-        print(f"  pypots-cli data prepare --input {input_path} --output data.h5 --task <task>")
-        print(f"{'=' * 65}\n")
+        safe_print(f"\n{'=' * 65}")
+        safe_print("To prepare for PyPOTS:")
+        safe_print(f"  pypots-cli data prepare --input {input_path} --output data.h5 --task <task>")
+        safe_print(f"{'=' * 65}\n")
 
 
 def _describe_h5(input_path, json_output, logger):
@@ -894,44 +898,44 @@ def _describe_h5(input_path, json_output, logger):
     }
 
     if json_output:
-        print(json_mod.dumps(result, indent=2))
+        safe_print(json_mod.dumps(result, indent=2))
     else:
-        print(f"\n{'=' * 60}")
-        print(f"Dataset: {input_path}")
-        print(f"{'=' * 60}")
-        print(f"Number of keys: {len(loaded)}")
-        print(f"{'-' * 60}")
+        safe_print(f"\n{'=' * 60}")
+        safe_print(f"Dataset: {input_path}")
+        safe_print(f"{'=' * 60}")
+        safe_print(f"Number of keys: {len(loaded)}")
+        safe_print(f"{'-' * 60}")
 
         for key, value in loaded.items():
             if isinstance(value, np.ndarray):
-                print(f"\n  Key: '{key}'")
-                print(f"    dtype: {value.dtype}")
-                print(f"    shape: {value.shape}")
+                safe_print(f"\n  Key: '{key}'")
+                safe_print(f"    dtype: {value.dtype}")
+                safe_print(f"    shape: {value.shape}")
 
                 if np.issubdtype(value.dtype, np.number):
                     total_elements = value.size
                     nan_count = np.isnan(value).sum() if np.issubdtype(value.dtype, np.floating) else 0
                     missing_rate = nan_count / total_elements if total_elements > 0 else 0.0
 
-                    print(f"    min: {np.nanmin(value):.6g}")
-                    print(f"    max: {np.nanmax(value):.6g}")
-                    print(f"    mean: {np.nanmean(value):.6g}")
-                    print(f"    std: {np.nanstd(value):.6g}")
-                    print(f"    missing rate: {missing_rate:.4%} ({nan_count}/{total_elements})")
+                    safe_print(f"    min: {np.nanmin(value):.6g}")
+                    safe_print(f"    max: {np.nanmax(value):.6g}")
+                    safe_print(f"    mean: {np.nanmean(value):.6g}")
+                    safe_print(f"    std: {np.nanstd(value):.6g}")
+                    safe_print(f"    missing rate: {missing_rate:.4%} ({nan_count}/{total_elements})")
             else:
-                print(f"\n  Key: '{key}'")
-                print(f"    type: {type(value).__name__}")
-                print(f"    value: {value}")
+                safe_print(f"\n  Key: '{key}'")
+                safe_print(f"    type: {type(value).__name__}")
+                safe_print(f"    value: {value}")
 
-        print(f"\n{'-' * 60}")
-        print("Summary:")
+        safe_print(f"\n{'-' * 60}")
+        safe_print("Summary:")
         if n_samples is not None:
-            print(f"  Total samples: {n_samples}")
+            safe_print(f"  Total samples: {n_samples}")
         if seq_length is not None:
-            print(f"  Sequence length: {seq_length}")
+            safe_print(f"  Sequence length: {seq_length}")
         if n_features is not None:
-            print(f"  Number of features: {n_features}")
-        print(f"{'=' * 60}\n")
+            safe_print(f"  Number of features: {n_features}")
+        safe_print(f"{'=' * 60}\n")
 
 
 @data.command(name="list", help="List available benchmark datasets")
@@ -946,15 +950,15 @@ def data_list(task):
         )
 
     available = tsdb.list()
-    print(f"\n{'=' * 60}")
-    print("Available Benchmark Datasets")
-    print(f"{'=' * 60}")
-    print(f"Total: {len(available)} datasets\n")
+    safe_print(f"\n{'=' * 60}")
+    safe_print("Available Benchmark Datasets")
+    safe_print(f"{'=' * 60}")
+    safe_print(f"Total: {len(available)} datasets\n")
     for i, name in enumerate(available, 1):
-        print(f"  {i:3d}. {name}")
-    print(f"\n{'=' * 60}")
-    print("Use 'pypots-cli data load --dataset <name> --output_dir <dir>' to load a dataset.")
-    print(f"{'=' * 60}\n")
+        safe_print(f"  {i:3d}. {name}")
+    safe_print(f"\n{'=' * 60}")
+    safe_print("Use 'pypots-cli data load --dataset <name> --output_dir <dir>' to load a dataset.")
+    safe_print(f"{'=' * 60}\n")
 
 
 @data.command(name="load", help="Load a benchmark dataset and save as train/val/test H5 files")
@@ -1076,18 +1080,18 @@ def data_load(dataset, output_dir, subset, rate, n_steps, pattern):
         logger.info(f"Saved test set with keys: {list(test_data.keys())}")
 
     # print dataset summary
-    print(f"\n{'=' * 60}")
-    print(f"Benchmark Dataset: {dataset_name}")
-    print(f"{'=' * 60}")
+    safe_print(f"\n{'=' * 60}")
+    safe_print(f"Benchmark Dataset: {dataset_name}")
+    safe_print(f"{'=' * 60}")
     if metadata:
         for k, v in metadata.items():
-            print(f"  {k}: {v}")
+            safe_print(f"  {k}: {v}")
     if train_data and "X" in train_data:
-        print(f"  Train samples: {train_data['X'].shape[0]}")
+        safe_print(f"  Train samples: {train_data['X'].shape[0]}")
     if val_data and "X" in val_data:
-        print(f"  Val samples: {val_data['X'].shape[0]}")
+        safe_print(f"  Val samples: {val_data['X'].shape[0]}")
     if test_data and "X" in test_data:
-        print(f"  Test samples: {test_data['X'].shape[0]}")
-    print(f"\n  Saved to: {output_dir}/")
-    print("    train.h5  val.h5  test.h5")
-    print(f"{'=' * 60}\n")
+        safe_print(f"  Test samples: {test_data['X'].shape[0]}")
+    safe_print(f"\n  Saved to: {output_dir}/")
+    safe_print("    train.h5  val.h5  test.h5")
+    safe_print(f"{'=' * 60}\n")

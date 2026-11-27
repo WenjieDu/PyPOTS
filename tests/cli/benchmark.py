@@ -9,12 +9,14 @@ import os
 import shutil
 import tempfile
 import unittest
+from pathlib import Path
 
+import click
 import pytest
 import yaml
 from click.testing import CliRunner
 
-from pypots.cli.benchmark import benchmark
+from pypots.cli.benchmark import _resolve_output_path, benchmark
 from tests.cli.config import PROJECT_ROOT_DIR
 from tests.global_test_config import (
     GENERAL_H5_TEST_SET_PATH,
@@ -73,6 +75,20 @@ class TestPyPOTSCLIBenchmark(unittest.TestCase):
             catch_exceptions=False,
         )
         assert result.exit_code == 0, result.output
+
+    def test_1_config_output_is_contained(self):
+        nested = Path(self.temp_dir) / "results" / "benchmark.json"
+        resolved = _resolve_output_path(self.config_path, "results/benchmark.json", None)
+        assert resolved == str(nested.resolve())
+
+    def test_2_config_output_rejects_traversal(self):
+        with pytest.raises(click.BadParameter, match="must stay within the config directory"):
+            _resolve_output_path(self.config_path, "../benchmark.json", None)
+
+    def test_3_cli_output_may_explicitly_leave_config_directory(self):
+        outside = Path(self.temp_dir).parent / "explicit-benchmark.json"
+        resolved = _resolve_output_path(self.config_path, "ignored.json", str(outside))
+        assert resolved == str(outside.resolve())
 
 
 if __name__ == "__main__":

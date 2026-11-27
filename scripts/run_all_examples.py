@@ -47,12 +47,15 @@ def test_standalone_examples_can_run(script_path):
     """Execute the public script with the same interpreter as pytest."""
     assert script_path.is_file(), f"Missing example: {script_path}"
     env = os.environ.copy()
+    # Match the child's pipe encoding to the parent's decoder on every OS.
+    env["PYTHONIOENCODING"] = "utf-8"
     if env.get("PYPOTS_EXAMPLE_SCOPE") in {"offline", "smoke"}:
         env.update(HF_HUB_OFFLINE="1", TRANSFORMERS_OFFLINE="1")
     result = subprocess.run(
         [sys.executable, str(script_path)],
         capture_output=True,
         text=True,
+        encoding="utf-8",
         timeout=300,
         env=env,
         check=False,

@@ -11,6 +11,28 @@ import subprocess
 import sys
 
 
+def safe_print(*values, sep: str = " ", end: str = "\n", file=None, flush: bool = False) -> None:
+    """Print human-readable CLI text without failing on limited stream encodings.
+
+    Unicode is preserved when the target stream can encode it. Characters that
+    are unsupported by the stream are escaped with ``backslashreplace`` instead
+    of raising ``UnicodeEncodeError``. This is intentionally local to PyPOTS CLI
+    output and does not reconfigure ``sys.stdout`` or ``sys.stderr``.
+    """
+    stream = sys.stdout if file is None else file
+    message = sep.join(str(value) for value in values) + end
+    encoding = getattr(stream, "encoding", None)
+    if encoding:
+        message = message.encode(encoding, errors="backslashreplace").decode(encoding)
+    try:
+        stream.write(message)
+    except UnicodeEncodeError as exc:
+        message = message.encode(exc.encoding, errors="backslashreplace").decode(exc.encoding)
+        stream.write(message)
+    if flush:
+        stream.flush()
+
+
 def _has_real_fileno(stream) -> bool:
     """Return True if *stream* backs a real OS file descriptor.
 
