@@ -57,7 +57,7 @@ class _Transformer(ModelCore):
             dropout=dropout,
         )
         self.decoder_saits_embedding = SaitsEmbedding(
-            n_features * 2,
+            n_pred_features * 2,
             d_model,
             with_pos=True,
             n_max_steps=n_pred_steps,
@@ -93,15 +93,11 @@ class _Transformer(ModelCore):
     ) -> dict:
         X, missing_mask = inputs["X"], inputs["missing_mask"]
 
-        if self.training:
-            X_pred, X_pred_missing_mask = inputs["X_pred"], inputs["X_pred_missing_mask"]
-        else:
-            batch_size = X.shape[0]
-            device = X.device
-            X_pred, X_pred_missing_mask = (
-                torch.zeros(batch_size, self.n_pred_steps, self.n_pred_features, device=device),
-                torch.ones(batch_size, self.n_pred_steps, self.n_pred_features, device=device),
-            )
+        # The decoder gets the same placeholder in training and inference: feeding it the ground-truth X_pred
+        # during training would let it copy the targets it is scored on (issue #964).
+        batch_size = X.shape[0]
+        X_pred = torch.zeros(batch_size, self.n_pred_steps, self.n_pred_features, device=X.device)
+        X_pred_missing_mask = torch.ones_like(X_pred)
 
         # apply the SAITS embedding strategy, concatenate X and missing mask for input
         input_X = self.encoder_saits_embedding(X, missing_mask)

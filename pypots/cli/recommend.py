@@ -9,6 +9,8 @@ import os
 
 import click
 
+from .base import safe_print
+
 
 def _get_data_properties(data_path):
     """Extract data properties from an H5 or CSV file.
@@ -343,39 +345,39 @@ def recommend(task, model_name, data_path, n_steps, n_features, n_samples, n_cla
             raise ImportError("PyYAML is required to save config files. Install: pip install pyyaml")
 
         os.makedirs(os.path.dirname(os.path.abspath(output_path)), exist_ok=True)
-        with open(output_path, "w") as f:
-            yaml.dump(config, f, default_flow_style=False, sort_keys=False)
+        with open(output_path, "w", encoding="utf-8") as f:
+            yaml.dump(config, f, default_flow_style=False, sort_keys=False, allow_unicode=True)
         logger.info(f"Saved recommended config to {output_path}")
 
     # print recommendation
-    print(f"\n{'=' * 65}")
-    print(f"Recommended Configuration: {model_name} for {task}")
-    print(f"{'=' * 65}")
+    safe_print(f"\n{'=' * 65}")
+    safe_print(f"Recommended Configuration: {model_name} for {task}")
+    safe_print(f"{'=' * 65}")
 
-    print("\n  Data properties:")
-    print(f"    n_samples:    {n_samples}")
-    print(f"    n_steps:      {n_steps}")
-    print(f"    n_features:   {n_features}")
-    print(f"    missing_rate: {missing_rate:.2%}")
+    safe_print("\n  Data properties:")
+    safe_print(f"    n_samples:    {n_samples}")
+    safe_print(f"    n_steps:      {n_steps}")
+    safe_print(f"    n_features:   {n_features}")
+    safe_print(f"    missing_rate: {missing_rate:.2%}")
     if n_classes:
-        print(f"    n_classes:    {n_classes}")
+        safe_print(f"    n_classes:    {n_classes}")
 
-    print("\n  Model hyperparameters:")
+    safe_print("\n  Model hyperparameters:")
     for k, v in config["model"].items():
         if k != "name":
-            print(f"    {k}: {v}")
+            safe_print(f"    {k}: {v}")
 
-    print("\n  Training parameters:")
+    safe_print("\n  Training parameters:")
     for k, v in config["training"].items():
-        print(f"    {k}: {v}")
+        safe_print(f"    {k}: {v}")
 
     if output_path:
-        print(f"\n  Config saved to: {output_path}")
-        print(f"\n  To train: pypots-cli train --config {output_path}")
+        safe_print(f"\n  Config saved to: {output_path}")
+        safe_print(f"\n  To train: pypots-cli train --config {output_path}")
     else:
-        print(
+        safe_print(
             f"\n  To save: pypots-cli recommend --task {task} --model {model_name} "
             f"--data <data_file> --output config.yaml"
         )
 
-    print(f"{'=' * 65}\n")
+    safe_print(f"{'=' * 65}\n")

@@ -82,7 +82,7 @@ def load_config(path: str) -> dict:
     assert os.path.exists(path), f"Configuration file not found: {path}"
 
     ext = os.path.splitext(path)[1].lower()
-    with open(path, "r") as f:
+    with open(path, "r", encoding="utf-8-sig") as f:
         if ext in (".yaml", ".yml"):
             try:
                 import yaml

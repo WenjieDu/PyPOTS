@@ -45,6 +45,7 @@ class FEDformerEncoder(nn.Module):
                 seq_len=n_steps,
                 modes=modes,
                 mode_select_method=mode_select,
+                n_heads=n_heads,
             )
         else:
             raise ValueError(f"Unsupported version: {version}. Please choose from ['Wavelets', 'Fourier'].")
@@ -108,6 +109,7 @@ class FEDformerDecoder(nn.Module):
                 seq_len=n_steps // 2 + n_pred_steps,
                 modes=modes,
                 mode_select_method=mode_select,
+                n_heads=n_heads,
             )
             decoder_cross_att = FourierCrossAttention(
                 in_channels=d_model,
@@ -121,6 +123,7 @@ class FEDformerDecoder(nn.Module):
         else:
             raise ValueError(f"Unsupported version: {version}. Please choose from ['Wavelets', 'Fourier'].")
 
+        self.d_output = d_output
         self.decoder = InformerDecoder(
             [
                 AutoformerDecoderLayer(
@@ -140,6 +143,29 @@ class FEDformerDecoder(nn.Module):
             projection=nn.Linear(d_model, d_output, bias=True),
         )
 
-    def forward(self, X, attn_mask=None):
-        dec_out, attns = self.decoder(X, attn_mask)
-        return dec_out, attns
+    def forward(self, X, memory, trend=None, attn_mask=None, cross_mask=None):
+        """Decode X against the encoder output.
+
+        Parameters
+        ----------
+        X :
+            Decoder input of shape [batch_size, n_steps // 2 + n_pred_steps, d_model].
+
+        memory :
+            Encoder output of shape [batch_size, n_steps, d_model], read by cross-attention.
+
+        trend :
+            Initial trend of shape [batch_size, n_steps // 2 + n_pred_steps, d_output]. Zeros if not given.
+
+        attn_mask, cross_mask :
+            Optional masks for self-attention and cross-attention.
+
+        Returns
+        -------
+        seasonal, trend :
+            The seasonal and accumulated trend parts, each [batch_size, n_steps // 2 + n_pred_steps, d_output]; the
+            forecast is their sum.
+        """
+        if trend is None:
+            trend = X.new_zeros(*X.shape[:2], self.d_output)
+        return self.decoder(X, memory, x_mask=attn_mask, cross_mask=cross_mask, trend=trend)

@@ -10,6 +10,7 @@ import unittest
 
 import numpy as np
 import pytest
+import torch
 
 from pypots.forecasting import Transformer
 from pypots.nn.functional import calc_mse
@@ -119,6 +120,43 @@ class TestTransformer(unittest.TestCase):
             ~np.isnan(FORECASTING_TEST_SET["X_pred"]),
         )
         logger.info(f"Lazy-loading Transformer test_MSE: {test_MSE}")
+
+    @pytest.mark.xdist_group(name="forecasting-transformer")
+    def test_5_decoder_does_not_see_targets_and_subset_features(self):
+        # issue #964: training-mode output must not depend on X_pred, and n_pred_features < n_features must work
+        model = Transformer(
+            n_steps=12,
+            n_features=3,
+            n_pred_steps=4,
+            n_pred_features=1,
+            n_encoder_layers=1,
+            n_decoder_layers=1,
+            d_model=16,
+            n_heads=2,
+            d_k=8,
+            d_v=8,
+            d_ffn=16,
+            dropout=0,
+            attn_dropout=0,
+            epochs=1,
+            device="cpu",
+        )
+        rng = np.random.default_rng(0)
+        X, X_pred = rng.normal(size=(8, 12, 3)), rng.normal(size=(8, 4, 1))
+        model.fit({"X": X, "X_pred": X_pred})
+        batch = {
+            "X": torch.tensor(X, dtype=torch.float32),
+            "missing_mask": torch.ones(8, 12, 3),
+            "X_pred": torch.tensor(X_pred, dtype=torch.float32),
+            "X_pred_missing_mask": torch.ones(8, 4, 1),
+        }
+        model.model.train()
+        with torch.no_grad():
+            seen = model.model(batch)["forecasting"]
+            batch["X_pred"] = torch.zeros_like(batch["X_pred"])
+            unseen = model.model(batch)["forecasting"]
+        assert torch.equal(seen, unseen)
+        assert model.predict({"X": X})["forecasting"].shape == (8, 4, 1)
 
 
 if __name__ == "__main__":

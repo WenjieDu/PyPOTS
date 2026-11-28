@@ -675,8 +675,11 @@ def get_frequency_modes(seq_len, modes=64, mode_select_method="random"):
 
 # ########## fourier layer #############
 class FourierBlock(AttentionOperator):
-    def __init__(self, in_channels, out_channels, seq_len, modes=0, mode_select_method="random"):
+    def __init__(self, in_channels, out_channels, seq_len, modes=0, mode_select_method="random", n_heads=8):
         super().__init__()
+        # The official implementation hard-codes 8 heads (MAZiqing/FEDformer#22, #92); size them from n_heads instead.
+        if in_channels % n_heads or out_channels % n_heads:
+            raise ValueError(f"in_channels and out_channels must be divisible by n_heads={n_heads}")
         # print("fourier enhanced block used!")
         """
         1D Fourier block. It performs representation learning on frequency domain,
@@ -690,9 +693,9 @@ class FourierBlock(AttentionOperator):
         self.weights1 = nn.Parameter(
             self.scale
             * torch.rand(
-                8,
-                in_channels // 8,
-                out_channels // 8,
+                n_heads,
+                in_channels // n_heads,
+                out_channels // n_heads,
                 len(self.index),
                 dtype=torch.cfloat,
             )

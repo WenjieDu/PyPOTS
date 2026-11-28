@@ -7,9 +7,11 @@ CLI command for benchmarking multiple models on the same dataset.
 
 import inspect
 import json
+from pathlib import Path
 
 import click
 
+from .base import safe_print
 from .utils import get_model_class, load_config, merge_config_with_overrides
 
 # Tasks that use regression-style metrics (mse, mae, rmse, mre)
@@ -174,11 +176,11 @@ def _print_comparison_table(task: str, all_results: dict, metrics_list: list):
 
     separator_width = model_col_width + (metric_col_width + 2) * len(available_metrics)
 
-    print("\n" + "=" * separator_width)
-    print(f"Benchmark Results - Task: {task}")
-    print("=" * separator_width)
-    print(header_line)
-    print("-" * separator_width)
+    safe_print("\n" + "=" * separator_width)
+    safe_print(f"Benchmark Results - Task: {task}")
+    safe_print("=" * separator_width)
+    safe_print(header_line)
+    safe_print("-" * separator_width)
 
     for model_name, model_metrics in all_results.items():
         row = f"{model_name:<{model_col_width}}"
@@ -188,9 +190,9 @@ def _print_comparison_table(task: str, all_results: dict, metrics_list: list):
                 row += f"| {value:<{metric_col_width}.4f}"
             else:
                 row += f"| {'N/A':<{metric_col_width}}"
-        print(row)
+        safe_print(row)
 
-    print("=" * separator_width + "\n")
+    safe_print("=" * separator_width + "\n")
 
 
 def _save_results(output_path: str, task: str, all_results: dict):
@@ -209,12 +211,41 @@ def _save_results(output_path: str, task: str, all_results: dict):
         "task": task,
         "results": all_results,
     }
-    with open(output_path, "w") as f:
+    with open(output_path, "w", encoding="utf-8") as f:
         json.dump(output, f, indent=2)
 
     from ..utils.logging import logger
 
     logger.info(f"Benchmark results saved to {output_path}")
+
+
+def _resolve_output_path(config_path: str, configured_output: str | None, cli_output: str | None) -> str | None:
+    """Resolve benchmark output while containing paths sourced from config files.
+
+    A path passed explicitly with ``--output`` is an intentional user choice and
+    may point anywhere the process can write. A path read indirectly from a
+    benchmark config is constrained to the config directory (or a child of it)
+    so an untrusted/shared config cannot redirect writes elsewhere.
+    """
+    if cli_output is not None:
+        return str(Path(cli_output).expanduser().resolve())
+    if configured_output is None:
+        return None
+
+    config_dir = Path(config_path).expanduser().resolve().parent
+    candidate = Path(configured_output).expanduser()
+    if not candidate.is_absolute():
+        candidate = config_dir / candidate
+    candidate = candidate.resolve()
+    try:
+        candidate.relative_to(config_dir)
+    except ValueError as exc:
+        raise click.BadParameter(
+            "output paths from a benchmark config must stay within the config directory; "
+            "use --output to explicitly write elsewhere",
+            param_hint="output",
+        ) from exc
+    return str(candidate)
 
 
 def _checkup(config_path: str):
@@ -254,13 +285,13 @@ def benchmark(config, device, seed, output):
 
     # Load config and merge CLI overrides
     cfg = load_config(config)
-    cfg = merge_config_with_overrides(cfg, {"device": device, "seed": seed, "output": output})
+    output_path = _resolve_output_path(config, cfg.get("output"), output)
+    cfg = merge_config_with_overrides(cfg, {"device": device, "seed": seed})
 
     task = cfg["task"]
     models_cfg = cfg["models"]
     data_cfg = cfg["data"]
     metrics_list = cfg.get("metrics", ["mse", "mae"])
-    output_path = cfg.get("output")
     resolved_device = cfg.get("device")
     resolved_seed = cfg.get("seed", 2024)
 
