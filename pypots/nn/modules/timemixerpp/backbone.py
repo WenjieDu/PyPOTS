@@ -287,7 +287,7 @@ class BackboneTimeMixerPP(nn.Module):
         dec_out = self.projection_layer(enc_out_list[0])
         dec_out = dec_out.reshape(B, self.c_out, -1).permute(0, 2, 1).contiguous()
 
-        dec_out = self.revin_layers[0](dec_out, "denorm") if self.use_norm else dec_out
+        dec_out = self.revin_layers[0](dec_out, mode="denorm") if self.use_norm else dec_out
         return dec_out
 
     def imputation(self, x_enc, x_mark_enc):
