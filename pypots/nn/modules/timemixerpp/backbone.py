@@ -189,7 +189,7 @@ class BackboneTimeMixerPP(nn.Module):
             for i, x, x_mark in zip(range(len(x_enc)), x_enc, x_mark_enc):
                 B, T, N = x.size()
 
-                x = self.revin_layers[i](x, x_mark, mode="norm") if self.use_norm else x
+                x = self.revin_layers[i](x, mode="norm") if self.use_norm else x
                 if self.channel_independence:
                     x = x.permute(0, 2, 1).contiguous().reshape(B * N, T, 1)
                     x_mark = x_mark.repeat(N, 1, 1)
@@ -263,7 +263,7 @@ class BackboneTimeMixerPP(nn.Module):
 
         for i, x in zip(range(len(x_enc)), x_enc):
             B, T, N = x.size()
-            x = self.revin_layers[i](x, "norm") if self.use_norm else x
+            x = self.revin_layers[i](x, mode="norm") if self.use_norm else x
             if self.channel_independence:
                 x = x.permute(0, 2, 1).contiguous().reshape(B * N, T, 1)
             x_list.append(x)
