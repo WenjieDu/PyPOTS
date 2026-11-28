@@ -45,6 +45,7 @@ class FEDformerEncoder(nn.Module):
                 seq_len=n_steps,
                 modes=modes,
                 mode_select_method=mode_select,
+                n_heads=n_heads,
             )
         else:
             raise ValueError(f"Unsupported version: {version}. Please choose from ['Wavelets', 'Fourier'].")
@@ -108,6 +109,7 @@ class FEDformerDecoder(nn.Module):
                 seq_len=n_steps // 2 + n_pred_steps,
                 modes=modes,
                 mode_select_method=mode_select,
+                n_heads=n_heads,
             )
             decoder_cross_att = FourierCrossAttention(
                 in_channels=d_model,
