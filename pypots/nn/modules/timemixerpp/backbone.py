@@ -189,7 +189,7 @@ class BackboneTimeMixerPP(nn.Module):
             for i, x, x_mark in zip(range(len(x_enc)), x_enc, x_mark_enc):
                 B, T, N = x.size()
 
-                x = self.revin_layers[i](x, x_mark, mode="norm") if self.use_norm else x
+                x = self.revin_layers[i](x, mode="norm") if self.use_norm else x
                 if self.channel_independence:
                     x = x.permute(0, 2, 1).contiguous().reshape(B * N, T, 1)
                     x_mark = x_mark.repeat(N, 1, 1)
@@ -263,7 +263,7 @@ class BackboneTimeMixerPP(nn.Module):
 
         for i, x in zip(range(len(x_enc)), x_enc):
             B, T, N = x.size()
-            x = self.revin_layers[i](x, "norm") if self.use_norm else x
+            x = self.revin_layers[i](x, mode="norm") if self.use_norm else x
             if self.channel_independence:
                 x = x.permute(0, 2, 1).contiguous().reshape(B * N, T, 1)
             x_list.append(x)
@@ -287,7 +287,7 @@ class BackboneTimeMixerPP(nn.Module):
         dec_out = self.projection_layer(enc_out_list[0])
         dec_out = dec_out.reshape(B, self.c_out, -1).permute(0, 2, 1).contiguous()
 
-        dec_out = self.revin_layers[0](dec_out, "denorm") if self.use_norm else dec_out
+        dec_out = self.revin_layers[0](dec_out, mode="denorm") if self.use_norm else dec_out
         return dec_out
 
     def imputation(self, x_enc, x_mark_enc):
