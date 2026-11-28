@@ -61,9 +61,11 @@ class RevIN(nn.Module):
             stdev = torch.sqrt(torch.var(x, dim=dim2reduce, keepdim=True, unbiased=False) + self.eps)
         else:
             # pypots implementation for POTS data
-            missing_sum = torch.sum(missing_mask == 1, dim=dim2reduce, keepdim=True) + self.eps
-            mean = torch.sum(x, dim=dim2reduce, keepdim=True) / missing_sum
-            x_enc = x.masked_fill(missing_mask == 0, 0)
+            observed = missing_mask == 1
+            missing_sum = torch.sum(observed, dim=dim2reduce, keepdim=True) + self.eps
+            mean = torch.sum(x.masked_fill(~observed, 0), dim=dim2reduce, keepdim=True) / missing_sum
+            # center before squaring: the scale is the standard deviation of the observed values (issue #968)
+            x_enc = (x - mean).masked_fill(~observed, 0)
             variance = torch.sum(x_enc * x_enc, dim=dim2reduce, keepdim=True) + self.eps
             stdev = torch.sqrt(variance / missing_sum)
 
