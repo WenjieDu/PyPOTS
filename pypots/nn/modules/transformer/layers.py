@@ -212,6 +212,10 @@ class TransformerDecoderLayer(nn.Module):
             d_k,
             d_v,
         )
+        # Each attention is followed by dropout, a residual connection and layer norm, as in TransformerEncoderLayer.
+        self.dropout = nn.Dropout(dropout)
+        self.slf_attn_norm = nn.LayerNorm(d_model, eps=1e-6)
+        self.enc_attn_norm = nn.LayerNorm(d_model, eps=1e-6)
         self.pos_ffn = PositionWiseFeedForward(d_model, d_ffn, dropout)
 
     def forward(
@@ -252,19 +256,21 @@ class TransformerDecoderLayer(nn.Module):
             The encoding attention map.
 
         """
-        dec_output, dec_slf_attn = self.slf_attn(
+        slf_output, dec_slf_attn = self.slf_attn(
             dec_input,
             dec_input,
             dec_input,
             attn_mask=slf_attn_mask,
             **kwargs,
         )
-        dec_output, dec_enc_attn = self.enc_attn(
+        dec_output = self.slf_attn_norm(dec_input + self.dropout(slf_output))
+        enc_attn_output, dec_enc_attn = self.enc_attn(
             dec_output,
             enc_output,
             enc_output,
             attn_mask=dec_enc_attn_mask,
             **kwargs,
         )
+        dec_output = self.enc_attn_norm(dec_output + self.dropout(enc_attn_output))
         dec_output = self.pos_ffn(dec_output)
         return dec_output, dec_slf_attn, dec_enc_attn
